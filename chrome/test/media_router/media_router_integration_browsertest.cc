@@ -699,14 +699,13 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
   ASSERT_EQ(session_id, reconnected_session_id);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
 // Tests that creating a route with a local file opens the file in a new tab.
-// TODO(crbug.com/818767): Fails when run with Chromium component.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileInCurrentTab) {
+                       MANUAL_OpenLocalMediaFileInCurrentTab) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -726,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 // Tests that creating a route with a local file opens the file in a new tab.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileInNewTab) {
+                       MANUAL_OpenLocalMediaFileInNewTab) {
   // Start at a tab with content in it, the file will open in a new tab.
   ui_test_utils::NavigateToURL(browser(), GURL("http://google.com"));
   // Make sure there is 1 tab.
@@ -746,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 // Tests that failing to create a route with a local file shows an issue.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileFailsAndShowsIssue) {
+                       MANUAL_OpenLocalMediaFileFailsAndShowsIssue) {
   OpenDialogAndCastFileFails();
   // Expect that the issue is showing.
   ASSERT_TRUE(IsUIShowingIssue());
@@ -754,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 // Tests that creating a route with a local file opens in fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileFullscreen) {
+                       MANUAL_OpenLocalMediaFileFullscreen) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -777,7 +776,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 // Tests that failed route creation of local file does not enter fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       OpenLocalMediaFileCastFailNoFullscreen) {
+                       MANUAL_OpenLocalMediaFileCastFailNoFullscreen) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -797,11 +796,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       web_contents->GetDelegate()->IsFullscreenForTabOrPending(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, SendAndOnMessage) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, CloseOnError) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_CloseOnError) {
   SetTestData(FILE_PATH_LITERAL("close_route_with_error_on_send.json"));
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
@@ -809,29 +809,33 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, CloseOnError) {
                        kSendMessageAndExpectConnectionCloseOnErrorScript);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_SendMessage) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_NoProvider) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_NoProvider) {
   SetTestData(FILE_PATH_LITERAL("no_provider.json"));
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckStartFailed(web_contents, "UnknownError",
                    "No provider supports createRoute with source");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_CreateRoute) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_CreateRoute) {
   SetTestData(FILE_PATH_LITERAL("fail_create_route.json"));
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckStartFailed(web_contents, "UnknownError", "Unknown sink");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, ReconnectSession) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       Fail_ReconnectSession) {
+                       MANUAL_Fail_ReconnectSession) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   std::string session_id(GetStartedConnectionId(web_contents));
@@ -846,20 +850,21 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                          session_id.c_str()));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_StartCancelled) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_StartCancelled) {
   WebContents* web_contents = StartSessionWithTestPageAndSink();
   GetControllerForShownDialog(web_contents)->HideMediaRouterDialog();
   CheckStartFailed(web_contents, "NotAllowedError", "Dialog closed.");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       Fail_StartCancelledNoSinks) {
+                       MANUAL_Fail_StartCancelledNoSinks) {
   SetTestData(FILE_PATH_LITERAL("no_sinks.json"));
   StartSessionAndAssertNotFoundError();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       Fail_StartCancelledNoSupportedSinks) {
+                       MANUAL_Fail_StartCancelledNoSupportedSinks) {
   SetTestData(FILE_PATH_LITERAL("no_supported_sinks.json"));
   StartSessionAndAssertNotFoundError();
 }
@@ -882,12 +887,13 @@ Browser* MediaRouterIntegrationIncognitoBrowserTest::browser() {
   return incognito_browser_;
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest,
+                       MANUAL_Basic) {
   RunBasicTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest,
-                       ReconnectSession) {
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
