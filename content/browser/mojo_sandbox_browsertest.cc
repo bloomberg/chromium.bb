@@ -9,9 +9,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/browser/utility_process_host_impl.h"
+#include "content/browser/utility_process_host.h"
+#include "content/browser/utility_process_host_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_service.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -46,11 +47,11 @@ class MojoSandboxTest : public ContentBrowserTest {
   }
 
  protected:
-  std::unique_ptr<UtilityProcessHostImpl> host_;
+  std::unique_ptr<UtilityProcessHost> host_;
 
  private:
   void StartUtilityProcessOnIoThread() {
-    host_.reset(new UtilityProcessHostImpl(nullptr, nullptr));
+    host_.reset(new UtilityProcessHost(nullptr, nullptr));
     ASSERT_TRUE(host_->Start());
   }
 

@@ -88,10 +88,10 @@ void UtilityThreadImpl::ReleaseProcess() {
     return;
   }
 
-  // Close the channel to cause the UtilityProcessHostImpl to be deleted. We
-  // need to take a different code path than the multi-process case because
-  // that case depends on the child process going away to close the channel,
-  // but that can't happen when we're in single process mode.
+  // Close the channel to cause the UtilityProcessHost to be deleted. We need to
+  // take a different code path than the multi-process case because that case
+  // depends on the child process going away to close the channel, but that
+  // can't happen when we're in single process mode.
   channel()->Close();
 }
 

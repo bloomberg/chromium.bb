@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
-#define CONTENT_PUBLIC_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
+#ifndef CONTENT_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
+#define CONTENT_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -38,4 +38,4 @@ class UtilityProcessHostClient
 
 };  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
+#endif  // CONTENT_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_
