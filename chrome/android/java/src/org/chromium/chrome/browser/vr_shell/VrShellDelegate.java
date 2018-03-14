@@ -89,6 +89,10 @@ public class VrShellDelegate
     public static final int VR_SERVICES_UPDATE_RESULT = 7213;
     public static final int GVR_KEYBOARD_UPDATE_RESULT = 7214;
 
+    // Android N doesn't allow us to dynamically control the preview window based on headset mode,
+    // so we used an animation to hide the preview window instead.
+    public static final boolean USE_HIDE_ANIMATION = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+
     private static final int ENTER_VR_NOT_NECESSARY = 0;
     private static final int ENTER_VR_CANCELLED = 1;
     private static final int ENTER_VR_REQUESTED = 2;
@@ -231,25 +235,23 @@ public class VrShellDelegate
             getInstance(activity);
             assert sInstance != null;
             if (sInstance == null) return;
+
+            // Note that even though we are definitely entering VR here, we don't want to set
+            // the window mode yet, as setting the window mode while we're in the background can
+            // racily lead to that window mode change essentially being ignored, with future
+            // attempts to set the same window mode also being ignored.
+
             sInstance.mDonSucceeded = true;
             sInstance.mProbablyInDon = false;
             sInstance.mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
             sInstance.mVrClassesWrapper.setVrModeEnabled(sInstance.mActivity, true);
             if (DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
 
-            if (sInstance.mPaused) {
-                // Note that even though we are definitely entering VR here, we don't want to set
-                // the window mode yet, as setting the window mode while we're in the background can
-                // racily lead to that window mode change essentially being ignored, with future
-                // attempts to set the same window mode also being ignored.
+            // We add a black overlay view so that we can show black while the VR UI is loading.
+            if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
 
+            if (sInstance.mPaused) {
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
-                // We add a black overlay view so that we can show black while the VR UI is loading.
-                // Note that this alone isn't sufficient to prevent 2D UI from showing while
-                // resuming the Activity, see the comment about the custom animation below.
-                // However, if we're already in VR (in one of the cases where we chose not to exit
-                // VR before the DON flow), we don't need to add the overlay.
-                if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
 
                 if (activity instanceof ChromeTabbedActivity) {
                     // We can special case singleInstance activities like CTA to avoid having to use
@@ -266,7 +268,7 @@ public class VrShellDelegate
                     // starting up to avoid Android showing stale 2D screenshots when the user is in
                     // their VR headset. The animation lasts up to 10 seconds, but is cancelled when
                     // we're resumed as at that time we'll be showing the black overlay added above.
-                    int animation = sInstance.mInVr ? 0 : R.anim.stay_hidden;
+                    int animation = !sInstance.mInVr && USE_HIDE_ANIMATION ? R.anim.stay_hidden : 0;
                     sInstance.mNeedsAnimationCancel = animation != 0;
                     Bundle options =
                             ActivityOptions.makeCustomAnimation(activity, animation, 0).toBundle();
@@ -990,7 +992,7 @@ public class VrShellDelegate
     private void onVrIntent() {
         if (mInVr) return;
 
-        mNeedsAnimationCancel = true;
+        if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
         mEnterVrOnStartup = true;
 
         // TODO(mthiesse): Assuming we've gone through DON flow saves ~2 seconds on VR entry. See
@@ -1006,7 +1008,7 @@ public class VrShellDelegate
         // Autopresent intents are only expected from trusted first party apps while
         // we're not in vr.
         assert !mInVr;
-        mNeedsAnimationCancel = true;
+        if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
         mAutopresentWebVr = true;
 
         // We assume that the user is already in VR mode when launched for auto-presentation.
@@ -1095,19 +1097,21 @@ public class VrShellDelegate
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
-        // If we're already in VR, or launching from an internal intent, we don't want to set system
-        // ui visibility here, or we'll incorrectly restore window mode later.
-        if (sInstance != null && (sInstance.mInVr || sInstance.mInternalIntentUsedToStartVr)) {
-            return;
-        }
-        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
+
         // We add a black overlay view so that we can show black while the VR UI is loading.
         // Note that this alone isn't sufficient to prevent 2D UI from showing when
         // auto-presenting WebVR. See comment about the custom animation in {@link
         // getVrIntentOptions}.
         // TODO(crbug.com/775574): This hack doesn't really work to hide the 2D UI on Samsung
         // devices since Chrome gets paused and we prematurely remove the overlay.
-        addBlackOverlayViewForActivity(activity);
+        if (sInstance == null || !sInstance.mInVr) addBlackOverlayViewForActivity(activity);
+
+        // If we're already in VR, or launching from an internal intent, we don't want to set system
+        // ui visibility here, or we'll incorrectly restore window mode later.
+        if (sInstance != null && (sInstance.mInVr || sInstance.mInternalIntentUsedToStartVr)) {
+            return;
+        }
+        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
 
         // Enable VR mode and hide system UI. We do this here so we don't get kicked out of
         // VR mode and to prevent seeing a flash of system UI.
@@ -1377,18 +1381,19 @@ public class VrShellDelegate
             });
         }
 
+        mCancellingEntryAnimation = false;
+
         if (mEnterVrOnStartup) {
             // This means that Chrome was started with a VR intent, so we should enter VR.
             // TODO(crbug.com/776235): VR intents are dispatched to ChromeActivity via a launcher
             // which should handle the DON flow to simplify the logic in VrShellDelegate.
             assert !mProbablyInDon;
             if (DEBUG_LOGS) Log.i(TAG, "onResume: entering VR mode for VR intent");
-            mCancellingEntryAnimation = false;
+
             if (enterVrInternal() == ENTER_VR_CANCELLED) {
                 cancelPendingVrEntry();
             }
         } else if (mDonSucceeded) {
-            mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
         } else {
             if (mProbablyInDon) {
