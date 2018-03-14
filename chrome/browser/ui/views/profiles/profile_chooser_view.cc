@@ -693,7 +693,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         accounts, GetImagesForAccounts(accounts, browser_->profile()),
         base::BindOnce(&ProfileChooserView::EnableSync,
                        base::Unretained(this)));
-    dice_accounts_menu_->Show(sender);
+    dice_accounts_menu_->Show(sender, sync_to_another_account_button_);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.

@@ -36,6 +36,7 @@ class LabelButton;
 
 class Browser;
 class DiceSigninButtonView;
+class HoverButton;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -201,7 +202,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::Link* manage_accounts_link_;
   views::LabelButton* manage_accounts_button_;
   views::LabelButton* signin_current_profile_button_;
-  views::LabelButton* sync_to_another_account_button_;
+  HoverButton* sync_to_another_account_button_;
   views::LabelButton* signin_with_gaia_account_button_;
 
   // For material design user menu, the active profile card owns the profile
