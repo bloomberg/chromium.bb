@@ -722,29 +722,28 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
 
         if (conv_params->use_jnt_comp_avg) {
           if (do_average) {
-            __m128i mul = _mm_mullo_epi16(d32_0, wt1);
+            __m128i mul = _mm_madd_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i tmp = _mm_loadu_si128(p + 0);
-            __m128i sum =
-                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            __m128i sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
-            mul = _mm_mullo_epi16(d32_1, wt1);
+            mul = _mm_madd_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             tmp = _mm_loadu_si128(p + 1);
-            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
-            mul = _mm_mullo_epi16(d32_2, wt1);
+            mul = _mm_madd_epi16(d32_2, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             tmp = _mm_loadu_si128(p + 2);
-            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_2 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
-            mul = _mm_mullo_epi16(d32_3, wt1);
+            mul = _mm_madd_epi16(d32_3, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             tmp = _mm_loadu_si128(p + 3);
-            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_3 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
@@ -797,17 +796,16 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
         __m128i *const p = (__m128i *)&dst[j];
         if (conv_params->use_jnt_comp_avg) {
           if (do_average) {
-            __m128i mul = _mm_mullo_epi16(d32_0, wt1);
+            __m128i mul = _mm_madd_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i tmp = _mm_loadu_si128(p + 0);
-            __m128i sum =
-                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            __m128i sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
 
-            mul = _mm_mullo_epi16(d32_1, wt1);
+            mul = _mm_madd_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             tmp = _mm_loadu_si128(p + 1);
-            sum = _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
@@ -845,11 +843,10 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
         __m128i *const p = (__m128i *)&dst[j];
         if (conv_params->use_jnt_comp_avg) {
           if (do_average) {
-            __m128i mul = _mm_mullo_epi16(d32_0, wt1);
+            __m128i mul = _mm_madd_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i tmp = _mm_loadu_si128(p + 0);
-            __m128i sum =
-                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            __m128i sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
@@ -880,11 +877,10 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
         __m128i *const p = (__m128i *)&dst[j];
         if (conv_params->use_jnt_comp_avg) {
           if (do_average) {
-            __m128i mul = _mm_mullo_epi16(d32_0, wt1);
+            __m128i mul = _mm_madd_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i tmp = _mm_loadl_epi64(p);
-            __m128i sum =
-                _mm_add_epi32(_mm_mullo_epi16(tmp, wt0), weighted_res);
+            __m128i sum = _mm_add_epi32(_mm_madd_epi16(tmp, wt0), weighted_res);
             d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS);
           } else {
             d32_0 = _mm_sll_epi32(d32_0, left_shift);
