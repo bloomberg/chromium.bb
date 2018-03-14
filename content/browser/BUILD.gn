@@ -1809,12 +1809,6 @@ jumbo_source_set("browser") {
       "renderer_host/p2p/socket_host_throttler.h",
       "renderer_host/p2p/socket_host_udp.cc",
       "renderer_host/p2p/socket_host_udp.h",
-      "webrtc/webrtc_event_log_manager.cc",
-      "webrtc/webrtc_event_log_manager.h",
-      "webrtc/webrtc_event_log_manager_common.cc",
-      "webrtc/webrtc_event_log_manager_common.h",
-      "webrtc/webrtc_event_log_uploader.cc",
-      "webrtc/webrtc_event_log_uploader.h",
       "webrtc/webrtc_internals.cc",
       "webrtc/webrtc_internals.h",
       "webrtc/webrtc_internals_message_handler.cc",
@@ -1822,10 +1816,6 @@ jumbo_source_set("browser") {
       "webrtc/webrtc_internals_ui.cc",
       "webrtc/webrtc_internals_ui.h",
       "webrtc/webrtc_internals_ui_observer.h",
-      "webrtc/webrtc_local_event_log_manager.cc",
-      "webrtc/webrtc_local_event_log_manager.h",
-      "webrtc/webrtc_remote_event_log_manager.cc",
-      "webrtc/webrtc_remote_event_log_manager.h",
     ]
 
     deps += [

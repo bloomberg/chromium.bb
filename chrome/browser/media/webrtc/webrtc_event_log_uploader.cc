@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webrtc/webrtc_event_log_uploader.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_uploader.h"
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-
-namespace content {
 
 WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
     const base::FilePath& path,
@@ -39,5 +37,3 @@ WebRtcEventLogUploaderImpl::Factory::Create(
     WebRtcEventLogUploaderObserver* observer) {
   return std::make_unique<WebRtcEventLogUploaderImpl>(log_file, observer);
 }
-
-}  // namespace content

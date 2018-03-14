@@ -230,7 +230,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/browser/webrtc/webrtc_event_log_manager.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #endif
 
@@ -1373,13 +1372,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  // WebRtcEventLogManager must be instantiated before WebRTCInternals, since
-  // the latter uses the former. Both are instantiated once, here, then live
-  // forever. When Chrome shuts down, they are allowed to be leaked. This allows
-  // us to be confident that messages posted to the internal task queue of
-  // WebRtcEventLogManager with base::Unretained(this), are always OK, and that
-  // subobjects are similarly always alive.
-  WebRtcEventLogManager::CreateSingletonInstance();
+  // Instantiated once using CreateSingletonInstance(), and accessed only using
+  // GetInstance(), which is not allowed to create the object. This allows us
+  // to ensure that it cannot be used before objects it relies on have been
+  // created; namely, WebRtcEventLogManager.
+  // Allowed to leak when the browser exits.
   WebRTCInternals::CreateSingletonInstance();
 #endif
 

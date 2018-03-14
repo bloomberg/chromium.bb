@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webrtc/webrtc_event_log_manager_common.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
 #include <limits>
-
-namespace content {
 
 bool LogFileWriter::WriteToLogFile(LogFilesMap::iterator it,
                                    const std::string& message) {
@@ -48,5 +46,3 @@ bool LogFileWriter::WriteToLogFile(LogFilesMap::iterator it,
 
   return (static_cast<size_t>(written) == message.length());
 }
-
-}  // namespace content

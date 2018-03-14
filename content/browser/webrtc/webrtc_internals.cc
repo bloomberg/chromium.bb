@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_platform_file.h"
@@ -135,7 +136,10 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
   if (!command_line_derived_logging_path_.empty()) {
     const base::FilePath local_logs_path =
         command_line_derived_logging_path_.Append(kEventLogFilename);
-    WebRtcEventLogManager::GetInstance()->EnableLocalLogging(local_logs_path);
+    WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+    if (logger) {
+      logger->EnableLocalLogging(local_logs_path);
+    }
     // For clarity's sake, though these aren't supposed to be regarded now:
     event_log_recordings_ = true;
     event_log_recordings_file_path_.clear();
@@ -381,8 +385,10 @@ void WebRTCInternals::EnableLocalEventLogRecordings(
   DCHECK(CanToggleEventLogRecordings());
 #if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_ANDROID)
-  WebRtcEventLogManager::GetInstance()->EnableLocalLogging(
-      event_log_recordings_file_path_);
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->EnableLocalLogging(event_log_recordings_file_path_);
+  }
 #else
   DCHECK(web_contents);
   DCHECK(!select_file_dialog_);
@@ -402,7 +408,10 @@ void WebRTCInternals::DisableLocalEventLogRecordings() {
   // Tear down the dialog since the user has unchecked the event log checkbox.
   select_file_dialog_ = nullptr;
   DCHECK(CanToggleEventLogRecordings());
-  WebRtcEventLogManager::GetInstance()->DisableLocalLogging();
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->DisableLocalLogging();
+  }
 #endif
 }
 
@@ -450,7 +459,10 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
     case SelectionType::kRtcEventLogs: {
       event_log_recordings_file_path_ = path;
       event_log_recordings_ = true;
-      WebRtcEventLogManager::GetInstance()->EnableLocalLogging(path);
+      WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+      if (logger) {
+        logger->EnableLocalLogging(path);
+      }
       break;
     }
     case SelectionType::kAudioDebugRecordings: {

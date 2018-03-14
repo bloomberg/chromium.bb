@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webrtc/webrtc_remote_event_log_manager.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
 
 #include <algorithm>
 #include <limits>
@@ -18,8 +18,6 @@
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
-
-namespace content {
 
 // TODO(eladalon): Block remote-bound logging on mobile devices.
 // https://crbug.com/775415
@@ -90,12 +88,12 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer)
     : observer_(observer),
       uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
 }
 
 WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(eladalon): Purge from disk files which were being uploaded  while
   // destruction took place, thereby avoiding endless attempts to upload
   // the same file. https://crbug.com/775415
@@ -354,7 +352,7 @@ void WebRtcRemoteEventLogManager::AddPendingLogs(
 
   base::FilePath::StringType pattern =
       base::FilePath::StringType(FILE_PATH_LITERAL("*")) +
-      kRemoteBoundLogExtension;
+      base::FilePath::kExtensionSeparator + kRemoteBoundLogExtension;
   base::FileEnumerator enumerator(remote_bound_logs_dir,
                                   /*recursive=*/false,
                                   base::FileEnumerator::FILES, pattern);
@@ -542,5 +540,3 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal() {
   uploader_.reset();
   MaybeStartUploading();
 }
-
-}  // namespace content

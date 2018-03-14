@@ -43,7 +43,11 @@ class TestingProfileManager {
   // valid state. Some work cannot be done in a constructor because it may
   // call gtest asserts to verify setup. The result of this call can be used
   // to ASSERT before doing more SetUp work in the test.
-  bool SetUp() WARN_UNUSED_RESULT;
+  // |profiles_dir| is the path in which new directories would be placed.
+  // If empty, one will be created (and deleted upon destruction of |this|).
+  // If not empty, it will be used, but ownership is maintained by the caller.
+  bool SetUp(const base::FilePath& profiles_path = base::FilePath())
+      WARN_UNUSED_RESULT;
 
   // Creates a new TestingProfile whose data lives in a directory related to
   // profile_name, which is a non-user-visible key for the test environment.
@@ -118,7 +122,7 @@ class TestingProfileManager {
   // Does the actual ASSERT-checked SetUp work. This function cannot have a
   // return value, so it sets the |called_set_up_| flag on success and that is
   // returned in the public SetUp.
-  void SetUpInternal();
+  void SetUpInternal(const base::FilePath& profiles_path);
 
   // Deprecated helper accessor. Use profile_attributes_storage() instead.
   ProfileInfoCache* profile_info_cache();
@@ -126,7 +130,13 @@ class TestingProfileManager {
   // Whether SetUp() was called to put the object in a valid state.
   bool called_set_up_;
 
-  // The directory in which new profiles are placed.
+  // |profiles_path_| is the path under which new directories for the profiles
+  // will be placed. Depending on the way SetUp is invoked, this path might
+  // either be a directory owned by TestingProfileManager, in which case
+  // ownership will be managed by |profiles_dir_|, or the directory will be
+  // owned by the test which has instantiated |this|, and then |profiles_dir_|
+  // will remain empty.
+  base::FilePath profiles_path_;
   base::ScopedTempDir profiles_dir_;
 
   // The user data directory in the path service is overriden because some

@@ -9,7 +9,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/browser/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/test/test_browser_thread.h"
@@ -91,11 +90,6 @@ class WebRTCInternalsForTest : public WebRTCInternals {
 };
 
 class WebRtcInternalsTest : public testing::Test {
- public:
-  WebRtcInternalsTest()
-      : synchronous_webrtc_event_log_manager_(
-            base::ThreadTaskRunnerHandle::Get()) {}
-
  protected:
   void VerifyString(const base::DictionaryValue* dict,
                     const std::string& key,
@@ -138,9 +132,6 @@ class WebRtcInternalsTest : public testing::Test {
   }
 
   TestBrowserThreadBundle test_browser_thread_bundle_;
-
-  // Must be constructed before the unit under test.
-  WebRtcEventLogManager synchronous_webrtc_event_log_manager_;
 };
 
 TEST_F(WebRtcInternalsTest, AddRemoveObserver) {
@@ -506,5 +497,8 @@ TEST_F(WebRtcInternalsTest, WakeLock) {
 
   base::RunLoop().RunUntilIdle();
 }
+
+// TODO(eladalon): Add tests that WebRtcEventLogger::Enable/Disable is
+// correctly called. https://crbug.com/775415
 
 }  // namespace content

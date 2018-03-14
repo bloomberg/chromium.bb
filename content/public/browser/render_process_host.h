@@ -288,6 +288,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       bool incoming,
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) = 0;
+
+  // Start/stop event log output from WebRTC on this RPH for the peer connection
+  // identified locally within the RPH using the ID |lid|.
+  virtual void SetWebRtcEventLogOutput(int lid, bool enabled) = 0;
 #endif
 
   // Tells the ResourceDispatcherHost to resume a deferred navigation without
