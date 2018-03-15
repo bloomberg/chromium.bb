@@ -36,6 +36,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   // The error code. ERR_FAILED is set for CORS errors.
   int error_code = 0;
 
+  // A copy of the data requested exists in the cache.
+  bool exists_in_cache = false;
+
   // Time the request completed.
   base::TimeTicks completion_time;
 

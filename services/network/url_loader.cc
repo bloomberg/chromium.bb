@@ -47,7 +47,6 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.headers = request->response_headers();
   request->GetCharset(&response->head.charset);
   response->head.content_length = request->GetExpectedContentSize();
-  response->head.was_cached = request->was_cached();
   request->GetMimeType(&response->head.mime_type);
   net::HttpResponseInfo response_info = request->response_info();
   response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
@@ -689,6 +688,7 @@ void URLLoader::NotifyCompleted(int error_code) {
 
   URLLoaderCompletionStatus status;
   status.error_code = error_code;
+  status.exists_in_cache = url_request_->response_info().was_cached;
   status.completion_time = base::TimeTicks::Now();
   status.encoded_data_length = url_request_->GetTotalReceivedBytes();
   status.encoded_body_length = url_request_->GetRawBodyBytes();

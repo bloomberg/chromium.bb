@@ -15,7 +15,6 @@ ResourceResponseInfo::ResourceResponseInfo()
       content_length(-1),
       encoded_data_length(-1),
       encoded_body_length(-1),
-      was_cached(false),
       appcache_id(0),
       was_fetched_via_spdy(false),
       was_alpn_negotiated(false),

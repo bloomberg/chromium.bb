@@ -246,6 +246,7 @@ TEST_F(ResourceDispatcherTest, DelegateTest) {
   // peer at once.
   network::URLLoaderCompletionStatus status;
   status.error_code = net::OK;
+  status.exists_in_cache = false;
   status.encoded_data_length = strlen(kTestPageContents);
   client->OnComplete(status);
 
@@ -291,6 +292,7 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
   // OnCompletedRequest, but it should not lead to crashes.)
   network::URLLoaderCompletionStatus status;
   status.error_code = net::OK;
+  status.exists_in_cache = false;
   status.encoded_data_length = strlen(kTestPageContents);
   client->OnComplete(status);
 
