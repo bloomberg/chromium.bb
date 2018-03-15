@@ -2,7 +2,9 @@
 # anntotation auditor. Refer to AuditorException::ExceptionType in
 # 'tools/traffic_annotation/auditor/traffic_annotation_auditor.h' for types of
 # exceptions.
-all,tools
+# Use * as wildcard for zero or more characters.
+all,tools/*
 missing,net/url_request/url_fetcher.cc
 missing,net/url_request/url_request_context.cc
 direct_assignment,download::ProtoConversions::EntryFromProto@components/download/internal/background_service/proto_conversions.cc
+test_annotation,*test*,*fuzzer*,*mock*,*fake*,net/quic/chromium/quic_chromium_client_session_peer.cc

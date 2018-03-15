@@ -28,7 +28,8 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_MISSING_TAG_USED ||
          type == AuditorResult::Type::ERROR_NO_ANNOTATION ||
          type == AuditorResult::Type::ERROR_MISSING_SECOND_ID ||
-         type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT);
+         type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT ||
+         type == AuditorResult::Type::ERROR_TEST_ANNOTATION);
   if (!message.empty())
     details_.push_back(message);
 };
@@ -162,6 +163,10 @@ std::string AuditorResult::ToText() const {
           "do it manually:%s\n\n If you are using build flags that modify "
           "files (like jumbo), rerun the auditor using --all-files switch.",
           details_[0].c_str());
+
+    case AuditorResult::Type::ERROR_TEST_ANNOTATION:
+      return base::StringPrintf("Annotation for tests is used in '%s:%i'.",
+                                file_path_.c_str(), line_);
 
     default:
       return std::string();

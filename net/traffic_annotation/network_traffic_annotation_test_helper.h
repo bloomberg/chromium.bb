@@ -7,7 +7,7 @@
 
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-// Macro for unit tests traffic annotations.
+// Macros for tests traffic annotations.
 #define TRAFFIC_ANNOTATION_FOR_TESTS   \
   net::DefineNetworkTrafficAnnotation( \
       "test", "Traffic annotation for unit, browser and other tests")
