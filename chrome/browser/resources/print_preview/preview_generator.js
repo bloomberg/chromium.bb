@@ -101,6 +101,12 @@ cr.define('print_preview', function() {
       this.scalingValue_ = 100;
 
       /**
+       * Whether the PDF should be rasterized for printing.
+       * @private {boolean}
+       */
+      this.rasterize_ = false;
+
+      /**
        * Page ranges setting used used to generate the last preview.
        * @private {Array<{from: number, to: number}>}
        */
@@ -176,6 +182,7 @@ cr.define('print_preview', function() {
           this.printTicketStore_.headerFooter.getValue();
       this.colorValue_ = this.printTicketStore_.color.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
+      this.rasterize_ = this.printTicketStore_.rasterize.getValue();
       this.scalingValue_ = this.printTicketStore_.scaling.getValueAsNumber();
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
       this.marginsType_ = this.printTicketStore_.marginsType.getValue();
@@ -240,7 +247,7 @@ cr.define('print_preview', function() {
         printWithCloudPrint: !destination.isLocal,
         printWithPrivet: destination.isPrivet,
         printWithExtension: destination.isExtension,
-        rasterizePDF: false,
+        rasterizePDF: printTicketStore.rasterize.getValue(),
         shouldPrintBackgrounds: printTicketStore.cssBackground.getValue(),
         shouldPrintSelectionOnly: printTicketStore.selectionOnly.getValue()
       };
@@ -321,6 +328,7 @@ cr.define('print_preview', function() {
           !ticketStore.color.isValueEqual(this.colorValue_) ||
           !ticketStore.scaling.isValueEqual(this.scalingValue_) ||
           !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||
+          !ticketStore.rasterize.isValueEqual(this.rasterize_) ||
           (!ticketStore.marginsType.isValueEqual(this.marginsType_) &&
            !ticketStore.marginsType.isValueEqual(
                print_preview.ticket_items.MarginsTypeValue.CUSTOM)) ||
