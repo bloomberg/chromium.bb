@@ -63,6 +63,7 @@ For Chromium contributors that have different nicks on other domains.
 | levin             | dave\_levin     | levin           |
 | lfg               | lfg\_           | lfg             |
 | littledan         | littledan       | dehrenberg      |
+| loonybear         | loonybear       | lunalu          |
 | luken             | luken_chromium  | luken           |
 | mark              | markmentovai    | mmentovai       |
 | mbarbella         | mbarbella       | mbarbella       |
