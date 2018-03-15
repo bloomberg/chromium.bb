@@ -30,6 +30,7 @@
 #include "core/css/CSSValueList.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSFontStyleRangeValue final : public CSSValue {
  public:
@@ -72,6 +73,7 @@ class CSSFontStyleRangeValue final : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontStyleRangeValue, IsFontStyleRangeValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif
