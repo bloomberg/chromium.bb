@@ -757,7 +757,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonWindowLeak) {
 // Tests that a disposition of SINGLETON_TAB cannot see outside its
 // window, and that a disposition of SWITCH_TO_TAB can't see outside
 // its profile, except for certain non-incognito affinity URLs.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonProfileLeak) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// https://crbug.com/822033
+#define MAYBE_SingletonProfileLeak DISABLED_SingletonProfileLeak
+#else
+#define MAYBE_SingletonProfileLeak SingletonProfileLeak
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SingletonProfileLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
