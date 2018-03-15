@@ -13,7 +13,7 @@
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/view_utils.h"
 
-@interface WebViewController () {
+@interface WebViewController ()<WKUIDelegate> {
   NSString* _urlString;
 }
 @end
@@ -37,6 +37,7 @@
   NSURLRequest* request =
       [NSURLRequest requestWithURL:[NSURL URLWithString:_urlString]];
   [webView loadRequest:request];
+  webView.UIDelegate = self;
   self.view = webView;
 }
 
@@ -58,6 +59,21 @@
     remoting::SetAccessibilityInfoFromImage(
         self.navigationItem.leftBarButtonItem);
   }
+}
+
+#pragma mark - WKUIDelegate
+
+- (WKWebView*)webView:(WKWebView*)webView
+    createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
+               forNavigationAction:(WKNavigationAction*)navigationAction
+                    windowFeatures:(WKWindowFeatures*)windowFeatures {
+  // This is called when the web view needs to open a webpage in new window,
+  // i.e. target="_blank".
+  [UIApplication.sharedApplication openURL:navigationAction.request.URL
+                                   options:@{}
+                         completionHandler:nil];
+
+  return nil;
 }
 
 #pragma mark - Private
