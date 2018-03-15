@@ -217,6 +217,17 @@ source_set("v4_protocol_manager_util") {
   ]
 }
 
+source_set("prefix_iterator") {
+  sources = [
+    "prefix_iterator.cc",
+    "prefix_iterator.h",
+  ]
+  deps = [
+    ":v4_protocol_manager_util",
+    "//base",
+  ]
+}
+
 if (is_android) {
   import("//build/config/android/rules.gni")
   java_cpp_enum("sb_threat_values") {
@@ -247,6 +258,7 @@ source_set("v4_store") {
     ":v4_store_proto",
   ]
   deps = [
+    ":prefix_iterator",
     ":v4_protocol_manager_util",
     ":v4_rice",
     "//base",

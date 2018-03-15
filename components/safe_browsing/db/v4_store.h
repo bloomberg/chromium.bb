@@ -319,10 +319,11 @@ class V4Store {
       const IteratorMap& iterator_map,
       HashPrefix* smallest_hash_prefix);
 
-  // Returns true if |hash_prefix| exists between |begin| and |end| iterators.
-  static bool HashPrefixMatches(const HashPrefix& hash_prefix,
-                                const HashPrefixes::const_iterator& begin,
-                                const HashPrefixes::const_iterator& end);
+  // Returns true if |hash_prefix| with PrefixSize |size| exists in |prefixes|.
+  // This small method is exposed in the header so it can be tested separately.
+  static bool HashPrefixMatches(base::StringPiece prefix,
+                                const HashPrefixes& prefixes,
+                                const PrefixSize& size);
 
   // For each key in |hash_prefix_map|, sets the iterator at that key
   // |iterator_map| to hash_prefix_map[key].begin().
