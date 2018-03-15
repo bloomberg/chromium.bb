@@ -6,8 +6,6 @@
 
 namespace device {
 
-constexpr base::TimeDelta U2fDevice::kDeviceTimeout;
-
 U2fDevice::U2fDevice() = default;
 U2fDevice::~U2fDevice() = default;
 

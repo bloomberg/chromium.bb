@@ -159,7 +159,7 @@ void U2fRequest::OnDeviceVersionRequest(
       apdu_response->status() == apdu::ApduResponse::Status::SW_NO_ERROR &&
       std::equal(apdu_response->data().cbegin(), apdu_response->data().cend(),
                  kU2fVersionResponse.cbegin(), kU2fVersionResponse.cend())) {
-    std::move(callback).Run(U2fDevice::ProtocolVersion::U2F_V2);
+    std::move(callback).Run(ProtocolVersion::kU2f);
   } else if (!legacy) {
     // Standard GetVersion failed, attempt legacy GetVersion command.
     device->DeviceTransact(
@@ -168,7 +168,7 @@ void U2fRequest::OnDeviceVersionRequest(
                        weak_factory_.GetWeakPtr(), std::move(callback), device,
                        true /* legacy */));
   } else {
-    std::move(callback).Run(U2fDevice::ProtocolVersion::UNKNOWN);
+    std::move(callback).Run(ProtocolVersion::kUnknown);
   }
 }
 

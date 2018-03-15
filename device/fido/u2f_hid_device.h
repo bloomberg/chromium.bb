@@ -53,9 +53,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
   static constexpr uint8_t kLockCapability = 0x02;
   static constexpr uint32_t kBroadcastChannel = 0xffffffff;
 
-  // Internal state machine states
-  enum class State { INIT, CONNECTED, BUSY, IDLE, DEVICE_ERROR };
-
   using U2fHidMessageCallback =
       base::OnceCallback<void(bool, std::unique_ptr<FidoHidMessage>)>;
   using ConnectCallback = device::mojom::HidManager::ConnectCallback;
@@ -104,7 +101,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
 
   uint32_t channel_id_ = kBroadcastChannel;
   uint8_t capabilities_ = 0;
-  State state_ = State::INIT;
+  State state_ = State::kInit;
 
   base::CancelableOnceClosure timeout_callback_;
   std::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>

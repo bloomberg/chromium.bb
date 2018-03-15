@@ -13,6 +13,7 @@
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_hid_device.h"
 #include "device/fido/u2f_request.h"
@@ -52,9 +53,8 @@ std::vector<uint8_t> MakePacket(base::StringPiece hex) {
 }
 
 // Returns HID_INIT request to send to device with mock connection.
-std::vector<uint8_t> CreateMockHidInitResponse(
-    std::vector<uint8_t> nonce,
-    std::vector<uint8_t> channel_id) {
+std::vector<uint8_t> CreateMockInitResponse(std::vector<uint8_t> nonce,
+                                            std::vector<uint8_t> channel_id) {
   // 4 bytes of broadcast channel identifier(ffffffff), followed by
   // HID_INIT command(86) and 2 byte payload length(11).
   return MakePacket("ffffffff860011" + HexEncode(nonce) +
@@ -156,7 +156,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
   // Put device in IDLE state.
-  device->state_ = U2fHidDevice::State::IDLE;
+  device->state_ = U2fDevice::State::kReady;
 
   // Manually delete connection.
   device->connection_ = nullptr;
@@ -172,7 +172,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_3.callback());
 
-  EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
+  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
 
   EXPECT_FALSE(std::get<0>(*receiver_1.result()));
   EXPECT_FALSE(std::get<0>(*receiver_2.result()));
@@ -196,13 +196,13 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
 
   // Mock connection where writes always fail.
   FakeHidConnection::mock_connection_error_ = true;
-  device->state_ = U2fHidDevice::State::IDLE;
+  device->state_ = U2fDevice::State::kReady;
 
   TestDeviceCallbackReceiver receiver_0;
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_0.callback());
   EXPECT_FALSE(std::get<0>(*receiver_0.result()));
-  EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
+  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
 
   // Add pending transactions manually and ensure they are processed.
   // Add pending transactions manually and ensure they are processed.
@@ -217,7 +217,7 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
                          receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;
 
-  EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
+  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
   EXPECT_FALSE(std::get<0>(*receiver_1.result()));
   EXPECT_FALSE(std::get<0>(*receiver_2.result()));
   EXPECT_FALSE(std::get<0>(*receiver_3.result()));
@@ -260,14 +260,14 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
                      device::mojom::HidConnection::ReadCallback* cb) {
             std::move(*cb).Run(
                 true, 0,
-                CreateMockHidInitResponse(
+                CreateMockInitResponse(
                     kIncorrectNonce, mock_connection.connection_channel_id()));
           })))
       // Second response to HID_INIT request with correct nonce.
       .WillOnce(WithArg<0>(Invoke(
           [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
             std::move(*cb).Run(true, 0,
-                               CreateMockHidInitResponse(
+                               CreateMockInitResponse(
                                    mock_connection.nonce(),
                                    mock_connection.connection_channel_id()));
           })))

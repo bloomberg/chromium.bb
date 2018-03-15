@@ -33,8 +33,8 @@ std::unique_ptr<FidoHidInitPacket> FidoHidInitPacket::CreateFromSerializedData(
   channel_id |= (serialized[index++] & 0xff) << 8;
   channel_id |= serialized[index++] & 0xff;
 
-  auto command = static_cast<CtapHidDeviceCommand>(serialized[index++] & 0x7f);
-  if (!base::ContainsValue(GetCtapHidDeviceCommandList(), command))
+  auto command = static_cast<FidoHidDeviceCommand>(serialized[index++] & 0x7f);
+  if (!base::ContainsValue(GetFidoHidDeviceCommandList(), command))
     return nullptr;
 
   uint16_t payload_size = serialized[index++] << 8;
@@ -62,7 +62,7 @@ std::unique_ptr<FidoHidInitPacket> FidoHidInitPacket::CreateFromSerializedData(
 // 6      1       Low order packet payload size
 // 7      (s-7)   Payload data
 FidoHidInitPacket::FidoHidInitPacket(uint32_t channel_id,
-                                     CtapHidDeviceCommand cmd,
+                                     FidoHidDeviceCommand cmd,
                                      std::vector<uint8_t> data,
                                      uint16_t payload_length)
     : FidoHidPacket(std::move(data), channel_id),

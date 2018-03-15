@@ -84,7 +84,7 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.FastForwardBy(U2fDevice::kDeviceTimeout);
+        scoped_task_environment_.FastForwardBy(kDeviceTimeout);
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
@@ -101,7 +101,7 @@ TEST_F(U2fBleDeviceTest, SendPingTest) {
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
         auto almost_time_out =
-            U2fDevice::kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
+            kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
         scoped_task_environment_.FastForwardBy(almost_time_out);
         connection()->read_callback().Run(data);
         std::move(*cb).Run(true);

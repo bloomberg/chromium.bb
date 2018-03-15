@@ -19,7 +19,7 @@ TEST(FidoHidMessageTest, TestPacketSize) {
   std::vector<uint8_t> data;
 
   auto init_packet = std::make_unique<FidoHidInitPacket>(
-      channel_id, CtapHidDeviceCommand::kCtapHidInit, data, data.size());
+      channel_id, FidoHidDeviceCommand::kInit, data, data.size());
   EXPECT_EQ(64u, init_packet->GetSerializedData().size());
 
   auto continuation_packet =
@@ -40,7 +40,7 @@ TEST(FidoHidMessageTest, TestPacketSize) {
 TEST(FidoHidMessageTest, TestPacketData) {
   uint32_t channel_id = 0xF5060708;
   std::vector<uint8_t> data{10, 11};
-  CtapHidDeviceCommand cmd = CtapHidDeviceCommand::kCtapHidWink;
+  FidoHidDeviceCommand cmd = FidoHidDeviceCommand::kWink;
   auto init_packet =
       std::make_unique<FidoHidInitPacket>(channel_id, cmd, data, data.size());
   size_t index = 0;
@@ -63,7 +63,7 @@ TEST(FidoHidMessageTest, TestPacketData) {
 TEST(FidoHidMessageTest, TestPacketConstructors) {
   uint32_t channel_id = 0x05060708;
   std::vector<uint8_t> data{10, 11};
-  CtapHidDeviceCommand cmd = CtapHidDeviceCommand::kCtapHidWink;
+  FidoHidDeviceCommand cmd = FidoHidDeviceCommand::kWink;
   auto orig_packet =
       std::make_unique<FidoHidInitPacket>(channel_id, cmd, data, data.size());
 
@@ -96,8 +96,8 @@ TEST(FidoHidMessageTest, TestMaxLengthPacketConstructors) {
   for (size_t i = 0; i < kHidMaxMessageSize; ++i)
     data.push_back(static_cast<uint8_t>(i % 0xff));
 
-  auto orig_msg = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidMsg, data);
+  auto orig_msg =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kMsg, data);
   ASSERT_TRUE(orig_msg);
 
   const auto& original_msg_packets = orig_msg->GetPacketsForTesting();
@@ -137,20 +137,20 @@ TEST(FidoHidMessageTest, TestMaxLengthPacketConstructors) {
 TEST(FidoHidMessageTest, TestMessagePartitoning) {
   uint32_t channel_id = 0x01010203;
   std::vector<uint8_t> data(kHidInitPacketDataSize + 1);
-  auto two_packet_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto two_packet_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   ASSERT_TRUE(two_packet_message);
   EXPECT_EQ(2U, two_packet_message->NumPackets());
 
   data.resize(kHidInitPacketDataSize);
-  auto one_packet_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto one_packet_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   ASSERT_TRUE(one_packet_message);
   EXPECT_EQ(1U, one_packet_message->NumPackets());
 
   data.resize(kHidInitPacketDataSize + kHidContinuationPacketDataSize + 1);
-  auto three_packet_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto three_packet_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   ASSERT_TRUE(three_packet_message);
   EXPECT_EQ(3U, three_packet_message->NumPackets());
 }
@@ -158,16 +158,16 @@ TEST(FidoHidMessageTest, TestMessagePartitoning) {
 TEST(FidoHidMessageTest, TestMaxSize) {
   uint32_t channel_id = 0x00010203;
   std::vector<uint8_t> data(kHidMaxMessageSize + 1);
-  auto oversize_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto oversize_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   EXPECT_EQ(nullptr, oversize_message);
 }
 
 TEST(FidoHidMessageTest, TestDeconstruct) {
   uint32_t channel_id = 0x0A0B0C0D;
   std::vector<uint8_t> data(kHidMaxMessageSize, 0x7F);
-  auto filled_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto filled_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   ASSERT_TRUE(filled_message);
   EXPECT_THAT(data,
               ::testing::ContainerEq(filled_message->GetMessagePayload()));
@@ -177,8 +177,8 @@ TEST(FidoHidMessageTest, TestDeserialize) {
   uint32_t channel_id = 0x0A0B0C0D;
   std::vector<uint8_t> data(kHidMaxMessageSize);
 
-  auto orig_message = FidoHidMessage::Create(
-      channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
+  auto orig_message =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
   ASSERT_TRUE(orig_message);
 
   base::circular_deque<std::vector<uint8_t>> orig_list;

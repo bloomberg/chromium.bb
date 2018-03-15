@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "device/fido/u2f_command_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,7 +26,7 @@ TEST(U2fBleFramesTest, InitializationFragment) {
   constexpr uint16_t kDataLength = 21123;
 
   U2fBleFrameInitializationFragment fragment(
-      U2fCommandType::CMD_MSG, kDataLength, base::make_span(data));
+      FidoBleDeviceCommand::kMsg, kDataLength, base::make_span(data));
 
   std::vector<uint8_t> buffer;
   const size_t binary_size = fragment.Serialize(&buffer);
@@ -41,7 +40,7 @@ TEST(U2fBleFramesTest, InitializationFragment) {
 
   EXPECT_EQ(kDataLength, parsed_fragment.data_length());
   EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
-  EXPECT_EQ(U2fCommandType::CMD_MSG, parsed_fragment.command());
+  EXPECT_EQ(FidoBleDeviceCommand::kMsg, parsed_fragment.command());
 }
 
 TEST(U2fBleFramesTest, ContinuationFragment) {
@@ -68,7 +67,7 @@ TEST(U2fBleFramesTest, SplitAndAssemble) {
                       37, 39, 40, 41, 54, 55, 56, 60, 100, 65535}) {
     SCOPED_TRACE(size);
 
-    U2fBleFrame frame(U2fCommandType::CMD_PING, GetSomeData(size));
+    U2fBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(size));
 
     auto fragments = frame.ToFragments(20);
 
@@ -92,7 +91,7 @@ TEST(U2fBleFramesTest, SplitAndAssemble) {
 }
 
 TEST(U2fBleFramesTest, FrameAssemblerError) {
-  U2fBleFrame frame(U2fCommandType::CMD_PING, GetSomeData(30));
+  U2fBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(30));
 
   auto fragments = frame.ToFragments(20);
   ASSERT_EQ(1u, fragments.second.size());
@@ -110,17 +109,18 @@ TEST(U2fBleFramesTest, FrameAssemblerError) {
 
 TEST(U2fBleFramesTest, FrameGettersAndValidity) {
   {
-    U2fBleFrame frame(U2fCommandType::CMD_KEEPALIVE, std::vector<uint8_t>(2));
+    U2fBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
+                      std::vector<uint8_t>(2));
     EXPECT_FALSE(frame.IsValid());
   }
   {
-    U2fBleFrame frame(U2fCommandType::CMD_ERROR, {});
+    U2fBleFrame frame(FidoBleDeviceCommand::kError, {});
     EXPECT_FALSE(frame.IsValid());
   }
 
   for (auto code : {U2fBleFrame::KeepaliveCode::TUP_NEEDED,
                     U2fBleFrame::KeepaliveCode::PROCESSING}) {
-    U2fBleFrame frame(U2fCommandType::CMD_KEEPALIVE,
+    U2fBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
                       std::vector<uint8_t>(1, static_cast<uint8_t>(code)));
     EXPECT_TRUE(frame.IsValid());
     EXPECT_EQ(code, frame.GetKeepaliveCode());
@@ -134,7 +134,8 @@ TEST(U2fBleFramesTest, FrameGettersAndValidity) {
            U2fBleFrame::ErrorCode::REQ_TIMEOUT, U2fBleFrame::ErrorCode::NA_1,
            U2fBleFrame::ErrorCode::NA_2, U2fBleFrame::ErrorCode::NA_3,
        }) {
-    U2fBleFrame frame(U2fCommandType::CMD_ERROR, {static_cast<uint8_t>(code)});
+    U2fBleFrame frame(FidoBleDeviceCommand::kError,
+                      {static_cast<uint8_t>(code)});
     EXPECT_TRUE(frame.IsValid());
     EXPECT_EQ(code, frame.GetErrorCode());
   }

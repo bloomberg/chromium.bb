@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_ble_frames.h"
-#include "device/fido/u2f_command_type.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   auto data_span = base::make_span(raw_data, size);
@@ -16,7 +16,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
 
   {
     device::U2fBleFrameInitializationFragment fragment(
-        device::U2fCommandType::CMD_MSG, 21123, data_span);
+        device::FidoBleDeviceCommand::kMsg, 21123, data_span);
     std::vector<uint8_t> buffer;
     fragment.Serialize(&buffer);
 
@@ -42,7 +42,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   }
 
   {
-    device::U2fBleFrame frame(device::U2fCommandType::CMD_PING, data);
+    device::U2fBleFrame frame(device::FidoBleDeviceCommand::kPing, data);
     auto fragments = frame.ToFragments(20);
 
     device::U2fBleFrameAssembler assembler(fragments.first);

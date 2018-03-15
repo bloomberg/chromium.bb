@@ -36,7 +36,7 @@ class FakeU2fRequest : public U2fRequest {
 };
 
 using TestVersionCallback =
-    ::device::test::TestCallbackReceiver<U2fDevice::ProtocolVersion>;
+    ::device::test::TestCallbackReceiver<ProtocolVersion>;
 
 }  // namespace
 
@@ -371,7 +371,7 @@ TEST_F(U2fRequestTest, TestLegacyVersionRequest) {
                                  device_ptr->GetWeakPtr(), false /* legacy */,
                                  std::vector<uint8_t>());
 
-  EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2,
+  EXPECT_EQ(ProtocolVersion::kU2f,
             std::get<0>(*version_callback_receiver().result()));
 }
 

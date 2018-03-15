@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
  public:
   // Static functions to create CTAP/U2F HID commands.
   static std::unique_ptr<FidoHidMessage> Create(uint32_t channel_id,
-                                                CtapHidDeviceCommand cmd,
+                                                FidoHidDeviceCommand cmd,
                                                 base::span<const uint8_t> data);
 
   // Reconstruct a message from serialized message data.
@@ -47,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
 
   size_t NumPackets() const;
   uint32_t channel_id() const { return channel_id_; }
-  CtapHidDeviceCommand cmd() const { return cmd_; }
+  FidoHidDeviceCommand cmd() const { return cmd_; }
   const base::circular_deque<std::unique_ptr<FidoHidPacket>>&
   GetPacketsForTesting() const {
     return packets_;
@@ -55,12 +55,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
 
  private:
   FidoHidMessage(uint32_t channel_id,
-                 CtapHidDeviceCommand type,
+                 FidoHidDeviceCommand type,
                  base::span<const uint8_t> data);
   FidoHidMessage(std::unique_ptr<FidoHidInitPacket> init_packet,
                  size_t remaining_size);
   uint32_t channel_id_ = kHidBroadcastChannel;
-  CtapHidDeviceCommand cmd_ = CtapHidDeviceCommand::kCtapHidMsg;
+  FidoHidDeviceCommand cmd_ = FidoHidDeviceCommand::kMsg;
   base::circular_deque<std::unique_ptr<FidoHidPacket>> packets_;
   size_t remaining_size_ = 0;
 

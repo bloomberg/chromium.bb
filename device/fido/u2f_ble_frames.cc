@@ -9,12 +9,14 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
 U2fBleFrame::U2fBleFrame() = default;
 
-U2fBleFrame::U2fBleFrame(U2fCommandType command, std::vector<uint8_t> data)
+U2fBleFrame::U2fBleFrame(FidoBleDeviceCommand command,
+                         std::vector<uint8_t> data)
     : command_(command), data_(std::move(data)) {}
 
 U2fBleFrame::U2fBleFrame(U2fBleFrame&&) = default;
@@ -24,26 +26,26 @@ U2fBleFrame::~U2fBleFrame() = default;
 
 bool U2fBleFrame::IsValid() const {
   switch (command_) {
-    case U2fCommandType::CMD_PING:
-    case U2fCommandType::CMD_MSG:
+    case FidoBleDeviceCommand::kPing:
+    case FidoBleDeviceCommand::kMsg:
+    case FidoBleDeviceCommand::kCancel:
       return true;
-    case U2fCommandType::CMD_KEEPALIVE:
-    case U2fCommandType::CMD_ERROR:
+    case FidoBleDeviceCommand::kKeepAlive:
+    case FidoBleDeviceCommand::kError:
       return data_.size() == 1;
-    case U2fCommandType::UNDEFINED:
-    default:
-      return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 U2fBleFrame::KeepaliveCode U2fBleFrame::GetKeepaliveCode() const {
-  DCHECK_EQ(command_, U2fCommandType::CMD_KEEPALIVE);
+  DCHECK_EQ(command_, FidoBleDeviceCommand::kKeepAlive);
   DCHECK_EQ(data_.size(), 1u);
   return static_cast<KeepaliveCode>(data_[0]);
 }
 
 U2fBleFrame::ErrorCode U2fBleFrame::GetErrorCode() const {
-  DCHECK_EQ(command_, U2fCommandType::CMD_ERROR);
+  DCHECK_EQ(command_, FidoBleDeviceCommand::kError);
   DCHECK_EQ(data_.size(), 1u);
   return static_cast<ErrorCode>(data_[0]);
 }
@@ -97,7 +99,7 @@ bool U2fBleFrameInitializationFragment::Parse(
   if (data.size() < 3)
     return false;
 
-  const auto command = static_cast<U2fCommandType>(data[0]);
+  const auto command = static_cast<FidoBleDeviceCommand>(data[0]);
   const uint16_t data_length = (static_cast<uint16_t>(data[1]) << 8) + data[2];
   if (static_cast<size_t>(data_length) + 3 < data.size())
     return false;

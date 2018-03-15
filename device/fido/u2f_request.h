@@ -30,8 +30,7 @@ namespace device {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
  public:
-  using VersionCallback =
-      base::OnceCallback<void(U2fDevice::ProtocolVersion version)>;
+  using VersionCallback = base::OnceCallback<void(ProtocolVersion version)>;
 
   // U2fRequest will create a discovery instance and register itself as an
   // observer for each passed in transport protocol.
