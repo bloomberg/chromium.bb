@@ -207,20 +207,20 @@ class VisibleNetworks {
          * proto.
          */
         PartnerLocationDescriptor.VisibleNetwork toProto(boolean connected) {
-            PartnerLocationDescriptor.VisibleNetwork visibleNetwork =
-                    new PartnerLocationDescriptor.VisibleNetwork();
+            PartnerLocationDescriptor.VisibleNetwork.Builder visibleNetworkBuilder =
+                    PartnerLocationDescriptor.VisibleNetwork.newBuilder();
 
-            PartnerLocationDescriptor.VisibleNetwork.WiFi wifi =
-                    new PartnerLocationDescriptor.VisibleNetwork.WiFi();
+            PartnerLocationDescriptor.VisibleNetwork.WiFi.Builder wifiBuilder =
+                    PartnerLocationDescriptor.VisibleNetwork.WiFi.newBuilder();
 
-            wifi.bssid = bssid();
-            wifi.levelDbm = level();
+            if (bssid() != null) wifiBuilder.setBssid(bssid());
+            if (level() != null) wifiBuilder.setLevelDbm(level());
 
-            visibleNetwork.wifi = wifi;
-            visibleNetwork.timestampMs = timestampMs();
-            visibleNetwork.connected = connected;
+            visibleNetworkBuilder.setWifi(wifiBuilder.build());
+            if (timestampMs() != null) visibleNetworkBuilder.setTimestampMs(timestampMs());
+            visibleNetworkBuilder.setConnected(connected);
 
-            return visibleNetwork;
+            return visibleNetworkBuilder.build();
         }
     }
 
@@ -394,44 +394,45 @@ class VisibleNetworks {
          * proto.
          */
         PartnerLocationDescriptor.VisibleNetwork toProto(boolean connected) {
-            PartnerLocationDescriptor.VisibleNetwork visibleNetwork =
-                    new PartnerLocationDescriptor.VisibleNetwork();
+            PartnerLocationDescriptor.VisibleNetwork.Builder visibleNetworkBuilder =
+                    PartnerLocationDescriptor.VisibleNetwork.newBuilder();
 
-            PartnerLocationDescriptor.VisibleNetwork.Cell cell =
-                    new PartnerLocationDescriptor.VisibleNetwork.Cell();
+            PartnerLocationDescriptor.VisibleNetwork.Cell.Builder cellBuilder =
+                    PartnerLocationDescriptor.VisibleNetwork.Cell.newBuilder();
 
             switch (radioType()) {
                 case VisibleCell.CDMA_RADIO_TYPE:
-                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.CDMA;
+                    cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.CDMA);
                     break;
                 case VisibleCell.GSM_RADIO_TYPE:
-                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.GSM;
+                    cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.GSM);
                     break;
                 case VisibleCell.LTE_RADIO_TYPE:
-                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.LTE;
+                    cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.LTE);
                     break;
                 case VisibleCell.WCDMA_RADIO_TYPE:
-                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.WCDMA;
+                    cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.WCDMA);
                     break;
                 case VisibleCell.UNKNOWN_RADIO_TYPE:
                 case VisibleCell.UNKNOWN_MISSING_LOCATION_PERMISSION_RADIO_TYPE:
                 default:
-                    cell.type = PartnerLocationDescriptor.VisibleNetwork.Cell.UNKNOWN;
+                    cellBuilder.setType(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.UNKNOWN);
                     break;
             }
-            cell.cellId = cellId();
-            cell.locationAreaCode = locationAreaCode();
-            cell.mobileCountryCode = mobileCountryCode();
-            cell.mobileNetworkCode = mobileNetworkCode();
-            cell.primaryScramblingCode = primaryScramblingCode();
-            cell.physicalCellId = physicalCellId();
-            cell.trackingAreaCode = trackingAreaCode();
+            if (cellId() != null) cellBuilder.setCellId(cellId());
+            if (locationAreaCode() != null) cellBuilder.setLocationAreaCode(locationAreaCode());
+            if (mobileCountryCode() != null) cellBuilder.setMobileCountryCode(mobileCountryCode());
+            if (mobileNetworkCode() != null) cellBuilder.setMobileNetworkCode(mobileNetworkCode());
+            if (primaryScramblingCode() != null)
+                cellBuilder.setPrimaryScramblingCode(primaryScramblingCode());
+            if (physicalCellId() != null) cellBuilder.setPhysicalCellId(physicalCellId());
+            if (trackingAreaCode() != null) cellBuilder.setTrackingAreaCode(trackingAreaCode());
 
-            visibleNetwork.cell = cell;
-            visibleNetwork.timestampMs = timestampMs();
-            visibleNetwork.connected = connected;
+            visibleNetworkBuilder.setCell(cellBuilder.build());
+            if (timestampMs() != null) visibleNetworkBuilder.setTimestampMs(timestampMs());
+            visibleNetworkBuilder.setConnected(connected);
 
-            return visibleNetwork;
+            return visibleNetworkBuilder.build();
         }
 
         /**

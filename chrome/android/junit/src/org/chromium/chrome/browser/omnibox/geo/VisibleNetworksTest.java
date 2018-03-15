@@ -7,12 +7,9 @@ package org.chromium.chrome.browser.omnibox.geo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.util.Base64;
-
-import com.google.protobuf.nano.MessageNano;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,12 +138,12 @@ public class VisibleNetworksTest {
     public void testVisibleWifiToProto() {
         boolean connected = true;
         PartnerLocationDescriptor.VisibleNetwork visibleNetwork = VISIBLE_WIFI1.toProto(connected);
-        PartnerLocationDescriptor.VisibleNetwork.WiFi wifi = visibleNetwork.wifi;
+        PartnerLocationDescriptor.VisibleNetwork.WiFi wifi = visibleNetwork.getWifi();
 
-        assertEquals(VISIBLE_WIFI1.bssid(), wifi.bssid);
-        assertEquals(VISIBLE_WIFI1.level(), wifi.levelDbm);
-        assertEquals(VISIBLE_WIFI1.timestampMs(), visibleNetwork.timestampMs);
-        assertEquals(connected, visibleNetwork.connected);
+        assertEquals(VISIBLE_WIFI1.bssid(), wifi.getBssid());
+        assertEquals(VISIBLE_WIFI1.level().intValue(), wifi.getLevelDbm());
+        assertEquals(VISIBLE_WIFI1.timestampMs().longValue(), visibleNetwork.getTimestampMs());
+        assertEquals(connected, visibleNetwork.getConnected());
 
         assertEquals(VISIBLE_WIFI1_PROTO_ENCODED, encodeVisibleNetwork(visibleNetwork));
     }
@@ -155,12 +152,12 @@ public class VisibleNetworksTest {
     public void testVisibleWifiToProtoEmptyWifi() {
         boolean connected = true;
         PartnerLocationDescriptor.VisibleNetwork visibleNetwork = EMPTY_WIFI.toProto(connected);
-        PartnerLocationDescriptor.VisibleNetwork.WiFi wifi = visibleNetwork.wifi;
+        PartnerLocationDescriptor.VisibleNetwork.WiFi wifi = visibleNetwork.getWifi();
 
-        assertNull(wifi.bssid);
-        assertNull(wifi.levelDbm);
-        assertNull(visibleNetwork.timestampMs);
-        assertEquals(connected, visibleNetwork.connected);
+        assertFalse(wifi.hasBssid());
+        assertFalse(wifi.hasLevelDbm());
+        assertFalse(visibleNetwork.hasTimestampMs());
+        assertEquals(connected, visibleNetwork.getConnected());
 
         assertEquals(EMPTY_WIFI_PROTO_ENCODED, encodeVisibleNetwork(visibleNetwork));
     }
@@ -224,18 +221,19 @@ public class VisibleNetworksTest {
     public void testVisibleCellToProto() {
         boolean connected = true;
         PartnerLocationDescriptor.VisibleNetwork visibleNetwork = VISIBLE_CELL1.toProto(connected);
-        PartnerLocationDescriptor.VisibleNetwork.Cell cell = visibleNetwork.cell;
+        PartnerLocationDescriptor.VisibleNetwork.Cell cell = visibleNetwork.getCell();
 
-        assertEquals(VISIBLE_CELL1.cellId(), cell.cellId);
-        assertEquals(VISIBLE_CELL1.locationAreaCode(), cell.locationAreaCode);
-        assertEquals(VISIBLE_CELL1.mobileCountryCode(), cell.mobileCountryCode);
-        assertEquals(VISIBLE_CELL1.mobileNetworkCode(), cell.mobileNetworkCode);
-        assertEquals(VISIBLE_CELL1.primaryScramblingCode(), cell.primaryScramblingCode);
-        assertEquals(VISIBLE_CELL1.physicalCellId(), cell.physicalCellId);
-        assertEquals(VISIBLE_CELL1.trackingAreaCode(), cell.trackingAreaCode);
-        assertEquals(VISIBLE_CELL1.timestampMs(), visibleNetwork.timestampMs);
-        assertEquals(connected, visibleNetwork.connected);
-        assertEquals(PartnerLocationDescriptor.VisibleNetwork.Cell.GSM, cell.type.intValue());
+        assertEquals(VISIBLE_CELL1.cellId().intValue(), cell.getCellId());
+        assertEquals(VISIBLE_CELL1.locationAreaCode().intValue(), cell.getLocationAreaCode());
+        assertEquals(VISIBLE_CELL1.mobileCountryCode().intValue(), cell.getMobileCountryCode());
+        assertEquals(VISIBLE_CELL1.mobileNetworkCode().intValue(), cell.getMobileNetworkCode());
+        assertEquals(
+                VISIBLE_CELL1.primaryScramblingCode().intValue(), cell.getPrimaryScramblingCode());
+        assertEquals(VISIBLE_CELL1.physicalCellId().intValue(), cell.getPhysicalCellId());
+        assertEquals(VISIBLE_CELL1.trackingAreaCode().intValue(), cell.getTrackingAreaCode());
+        assertEquals(VISIBLE_CELL1.timestampMs().longValue(), visibleNetwork.getTimestampMs());
+        assertEquals(connected, visibleNetwork.getConnected());
+        assertEquals(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.GSM, cell.getType());
 
         assertEquals(VISIBLE_CELL1_PROTO_ENCODED, encodeVisibleNetwork(visibleNetwork));
     }
@@ -244,18 +242,18 @@ public class VisibleNetworksTest {
     public void testVisibleCellToProtoEmptyCell() {
         boolean connected = true;
         PartnerLocationDescriptor.VisibleNetwork visibleNetwork = EMPTY_CELL.toProto(connected);
-        PartnerLocationDescriptor.VisibleNetwork.Cell cell = visibleNetwork.cell;
+        PartnerLocationDescriptor.VisibleNetwork.Cell cell = visibleNetwork.getCell();
 
-        assertEquals(VisibleCell.UNKNOWN_RADIO_TYPE, cell.type.intValue());
-        assertNull(cell.cellId);
-        assertNull(cell.locationAreaCode);
-        assertNull(cell.mobileCountryCode);
-        assertNull(cell.mobileNetworkCode);
-        assertNull(cell.primaryScramblingCode);
-        assertNull(cell.physicalCellId);
-        assertNull(cell.trackingAreaCode);
-        assertNull(visibleNetwork.timestampMs);
-        assertEquals(connected, visibleNetwork.connected);
+        assertEquals(PartnerLocationDescriptor.VisibleNetwork.Cell.Type.UNKNOWN, cell.getType());
+        assertFalse(cell.hasCellId());
+        assertFalse(cell.hasLocationAreaCode());
+        assertFalse(cell.hasMobileCountryCode());
+        assertFalse(cell.hasMobileNetworkCode());
+        assertFalse(cell.hasPrimaryScramblingCode());
+        assertFalse(cell.hasPhysicalCellId());
+        assertFalse(cell.hasTrackingAreaCode());
+        assertFalse(visibleNetwork.hasTimestampMs());
+        assertEquals(connected, visibleNetwork.getConnected());
 
         assertEquals(EMPTY_CELL_PROTO_ENCODED, encodeVisibleNetwork(visibleNetwork));
     }
@@ -304,13 +302,13 @@ public class VisibleNetworksTest {
     private static String encodeVisibleNetwork(
             PartnerLocationDescriptor.VisibleNetwork visibleNetwork) {
         PartnerLocationDescriptor.LocationDescriptor locationDescriptor =
-                new PartnerLocationDescriptor.LocationDescriptor();
-        locationDescriptor.role = PartnerLocationDescriptor.CURRENT_LOCATION;
-        locationDescriptor.producer = PartnerLocationDescriptor.DEVICE_LOCATION;
-        locationDescriptor.visibleNetwork = new PartnerLocationDescriptor.VisibleNetwork[1];
-        locationDescriptor.visibleNetwork[0] = visibleNetwork;
+                PartnerLocationDescriptor.LocationDescriptor.newBuilder()
+                        .setRole(PartnerLocationDescriptor.LocationRole.CURRENT_LOCATION)
+                        .setProducer(PartnerLocationDescriptor.LocationProducer.DEVICE_LOCATION)
+                        .addVisibleNetwork(visibleNetwork)
+                        .build();
 
         return Base64.encodeToString(
-                MessageNano.toByteArray(locationDescriptor), Base64.NO_WRAP | Base64.URL_SAFE);
+                locationDescriptor.toByteArray(), Base64.NO_WRAP | Base64.URL_SAFE);
     }
 }

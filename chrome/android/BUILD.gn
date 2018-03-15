@@ -408,6 +408,7 @@ proto_java_library("partner_location_descriptor_proto_java") {
   sources = [
     "$proto_path/partner_location_descriptor.proto",
   ]
+  generate_lite = true
 }
 
 proto_java_library("thumbnail_cache_entry_proto_java") {
