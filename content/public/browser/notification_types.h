@@ -5,12 +5,17 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPES_H_
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPES_H_
 
-// This file describes various types used to describe and filter notifications
-// that pass through the NotificationService.
-//
-// Only notifications that are fired from the content module should be here. We
-// should never have a notification that is fired by the embedder and listened
-// to by content.
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984 and https://crbug.com/170921.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
+
 namespace content {
 
 enum NotificationType {
@@ -66,14 +71,6 @@ enum NotificationType {
   NOTIFICATION_LOAD_STOP,
 
   // WebContents ---------------------------------------------------------------
-
-  // This notification is sent when a render view host has connected to a
-  // renderer process. The source is a Source<WebContents> with a pointer to
-  // the WebContents.  A WEB_CONTENTS_DISCONNECTED notification is
-  // guaranteed before the source pointer becomes junk.  No details are
-  // expected.
-  // DEPRECATED: Use WebContentsObserver::RenderViewReady()
-  NOTIFICATION_WEB_CONTENTS_CONNECTED,
 
   // This message is sent after a WebContents is disconnected from the
   // renderer process.  The source is a Source<WebContents> with a pointer to
@@ -144,5 +141,16 @@ enum NotificationType {
 };
 
 }  // namespace content
+
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984 and https://crbug.com/170921.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
 
 #endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_TYPES_H_

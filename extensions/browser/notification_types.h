@@ -14,6 +14,17 @@
 #error "Extensions must be enabled"
 #endif
 
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984 and https://crbug.com/411569.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
+
 namespace extensions {
 
 // Only notifications fired by the extensions module should be here. The
@@ -175,6 +186,17 @@ struct ExtensionCommandRemovedDetails {
   std::string command_name;
   std::string accelerator;
 };
+
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984 and https://crbug.com/411569.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
 
 }  // namespace extensions
 

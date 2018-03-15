@@ -20,11 +20,19 @@
 #define PREVIOUS_END content::NOTIFICATION_CONTENT_END
 #endif
 
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
+
 namespace chrome {
 
-// NotificationService &c. are deprecated (https://crbug.com/268984).
-// Don't add any new notification types, and migrate existing uses of the
-// notification types below to observers.
 enum NotificationType {
   NOTIFICATION_CHROME_START = PREVIOUS_END,
 
@@ -417,5 +425,16 @@ enum NotificationType {
 };
 
 }  // namespace chrome
+
+// **
+// ** NOTICE
+// **
+// ** The notification system is deprecated, obsolete, and is slowly being
+// ** removed. See https://crbug.com/268984.
+// **
+// ** Please don't add any new notification types, and please help migrate
+// ** existing uses of the notification types below to use the Observer and
+// ** Callback patterns.
+// **
 
 #endif  // CHROME_BROWSER_CHROME_NOTIFICATION_TYPES_H_
