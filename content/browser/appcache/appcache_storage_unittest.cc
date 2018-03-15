@@ -79,8 +79,8 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
 }
 
 TEST_F(AppCacheStorageTest, DelegateReferences) {
-  typedef scoped_refptr<AppCacheStorage::DelegateReference>
-      ScopedDelegateReference;
+  using ScopedDelegateReference =
+      scoped_refptr<AppCacheStorage::DelegateReference>;
   MockAppCacheService service;
   MockStorageDelegate delegate;
   ScopedDelegateReference delegate_reference1;

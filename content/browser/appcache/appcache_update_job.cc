@@ -97,63 +97,56 @@ void EmptyCompletionCallback(int result) {}
 // so that only one notification is sent for all hosts using the same frontend.
 class HostNotifier {
  public:
-  typedef std::vector<int> HostIds;
-  typedef std::map<AppCacheFrontend*, HostIds> NotifyHostMap;
+  using HostIds = std::vector<int>;
+  using NotifyHostMap = std::map<AppCacheFrontend*, HostIds>;
 
   // Caller is responsible for ensuring there will be no duplicate hosts.
   void AddHost(AppCacheHost* host) {
-    std::pair<NotifyHostMap::iterator, bool> ret = hosts_to_notify.insert(
+    std::pair<NotifyHostMap::iterator, bool> ret = hosts_to_notify_.insert(
         NotifyHostMap::value_type(host->frontend(), HostIds()));
     ret.first->second.push_back(host->host_id());
   }
 
   void AddHosts(const std::set<AppCacheHost*>& hosts) {
-    for (std::set<AppCacheHost*>::const_iterator it = hosts.begin();
-         it != hosts.end(); ++it) {
-      AddHost(*it);
-    }
+    for (AppCacheHost* host : hosts)
+      AddHost(host);
   }
 
   void SendNotifications(AppCacheEventID event_id) {
-    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
-         it != hosts_to_notify.end(); ++it) {
-      AppCacheFrontend* frontend = it->first;
-      frontend->OnEventRaised(it->second, event_id);
+    for (auto& pair : hosts_to_notify_) {
+      AppCacheFrontend* frontend = pair.first;
+      frontend->OnEventRaised(pair.second, event_id);
     }
   }
 
   void SendProgressNotifications(const GURL& url,
                                  int num_total,
                                  int num_complete) {
-    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
-         it != hosts_to_notify.end(); ++it) {
-      AppCacheFrontend* frontend = it->first;
-      frontend->OnProgressEventRaised(it->second, url, num_total, num_complete);
+    for (const auto& pair : hosts_to_notify_) {
+      AppCacheFrontend* frontend = pair.first;
+      frontend->OnProgressEventRaised(pair.second, url, num_total,
+                                      num_complete);
     }
   }
 
   void SendErrorNotifications(const AppCacheErrorDetails& details) {
     DCHECK(!details.message.empty());
-    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
-         it != hosts_to_notify.end(); ++it) {
-      AppCacheFrontend* frontend = it->first;
-      frontend->OnErrorEventRaised(it->second, details);
+    for (const auto& pair : hosts_to_notify_) {
+      AppCacheFrontend* frontend = pair.first;
+      frontend->OnErrorEventRaised(pair.second, details);
     }
   }
 
   void SendLogMessage(const std::string& message) {
-    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
-         it != hosts_to_notify.end(); ++it) {
-      AppCacheFrontend* frontend = it->first;
-      for (HostIds::iterator id = it->second.begin(); id != it->second.end();
-           ++id) {
-        frontend->OnLogMessage(*id, APPCACHE_LOG_WARNING, message);
-      }
+    for (const auto& pair : hosts_to_notify_) {
+      AppCacheFrontend* frontend = pair.first;
+      for (const auto& id : pair.second)
+        frontend->OnLogMessage(id, APPCACHE_LOG_WARNING, message);
     }
   }
 
  private:
-  NotifyHostMap hosts_to_notify;
+  NotifyHostMap hosts_to_notify_;
 };
 AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
                                           bool checked,
@@ -467,13 +460,10 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   inprogress_cache_->InitializeWithManifest(&manifest);
 
   // Associate all pending master hosts with the newly created cache.
-  for (PendingMasters::iterator it = pending_master_entries_.begin();
-       it != pending_master_entries_.end(); ++it) {
-    PendingHosts& hosts = it->second;
-    for (PendingHosts::iterator host_it = hosts.begin();
-         host_it != hosts.end(); ++host_it) {
-      (*host_it)
-          ->AssociateIncompleteCache(inprogress_cache_.get(), manifest_url_);
+  for (const auto& pair : pending_master_entries_) {
+    const PendingHosts& hosts = pair.second;
+    for (AppCacheHost* host : hosts) {
+      host->AssociateIncompleteCache(inprogress_cache_.get(), manifest_url_);
     }
   }
 
@@ -630,16 +620,12 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
     if (!inprogress_cache_.get()) {
       // TODO(michaeln): defer until the updated cache has been stored
       DCHECK(cache == group_->newest_complete_cache());
-      for (PendingHosts::iterator host_it = hosts.begin();
-           host_it != hosts.end(); ++host_it) {
-        (*host_it)->AssociateCompleteCache(cache);
-      }
+      for (AppCacheHost* host : hosts)
+        host->AssociateCompleteCache(cache);
     }
   } else {
     HostNotifier host_notifier;
-    for (PendingHosts::iterator host_it = hosts.begin();
-         host_it != hosts.end(); ++host_it) {
-      AppCacheHost* host = *host_it;
+    for (AppCacheHost* host : hosts) {
       host_notifier.AddHost(host);
 
       // In downloading case, disassociate host from inprogress cache.
@@ -863,11 +849,8 @@ void AppCacheUpdateJob::AddAllAssociatedHostsToNotifier(
     host_notifier->AddHosts(inprogress_cache_->associated_hosts());
   }
 
-  AppCacheGroup::Caches old_caches = group_->old_caches();
-  for (AppCacheGroup::Caches::const_iterator it = old_caches.begin();
-       it != old_caches.end(); ++it) {
-    host_notifier->AddHosts((*it)->associated_hosts());
-  }
+  for (AppCache* cache : group_->old_caches())
+    host_notifier->AddHosts(cache->associated_hosts());
 
   AppCache* newest_cache = group_->newest_complete_cache();
   if (newest_cache)
@@ -942,35 +925,21 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
 }
 
 void AppCacheUpdateJob::BuildUrlFileList(const AppCacheManifest& manifest) {
-  for (base::hash_set<std::string>::const_iterator it =
-           manifest.explicit_urls.begin();
-       it != manifest.explicit_urls.end(); ++it) {
-    AddUrlToFileList(GURL(*it), AppCacheEntry::EXPLICIT);
-  }
+  for (const std::string& explicit_url : manifest.explicit_urls)
+    AddUrlToFileList(GURL(explicit_url), AppCacheEntry::EXPLICIT);
 
-  const std::vector<AppCacheNamespace>& intercepts =
-      manifest.intercept_namespaces;
-  for (std::vector<AppCacheNamespace>::const_iterator it = intercepts.begin();
-       it != intercepts.end(); ++it) {
-    AddUrlToFileList(it->target_url, AppCacheEntry::INTERCEPT);
-  }
+  for (const auto& intercept : manifest.intercept_namespaces)
+    AddUrlToFileList(intercept.target_url, AppCacheEntry::INTERCEPT);
 
-  const std::vector<AppCacheNamespace>& fallbacks =
-      manifest.fallback_namespaces;
-  for (std::vector<AppCacheNamespace>::const_iterator it = fallbacks.begin();
-       it != fallbacks.end(); ++it) {
-     AddUrlToFileList(it->target_url, AppCacheEntry::FALLBACK);
-  }
+  for (const auto& fallback : manifest.fallback_namespaces)
+    AddUrlToFileList(fallback.target_url, AppCacheEntry::FALLBACK);
 
   // Add all master entries from newest complete cache.
   if (update_type_ == UPGRADE_ATTEMPT) {
-    const AppCache::EntryMap& entries =
-        group_->newest_complete_cache()->entries();
-    for (AppCache::EntryMap::const_iterator it = entries.begin();
-         it != entries.end(); ++it) {
-      const AppCacheEntry& entry = it->second;
+    for (const auto& pair : group_->newest_complete_cache()->entries()) {
+      const AppCacheEntry& entry = pair.second;
       if (entry.IsMaster())
-        AddUrlToFileList(it->first, AppCacheEntry::MASTER);
+        AddUrlToFileList(pair.first, AppCacheEntry::MASTER);
     }
   }
 }
@@ -1033,10 +1002,8 @@ void AppCacheUpdateJob::FetchUrls() {
 
 void AppCacheUpdateJob::CancelAllUrlFetches() {
   // Cancel any pending URL requests.
-  for (PendingUrlFetches::iterator it = pending_url_fetches_.begin();
-       it != pending_url_fetches_.end(); ++it) {
-    delete it->second;
-  }
+  for (auto& pair : pending_url_fetches_)
+    delete pair.second;
 
   url_fetches_completed_ +=
       pending_url_fetches_.size() + urls_to_fetch_.size();
@@ -1127,10 +1094,8 @@ void AppCacheUpdateJob::FetchMasterEntries() {
         PendingMasters::iterator found = pending_master_entries_.find(url);
         DCHECK(found != pending_master_entries_.end());
         PendingHosts& hosts = found->second;
-        for (PendingHosts::iterator host_it = hosts.begin();
-             host_it != hosts.end(); ++host_it) {
-          (*host_it)->AssociateCompleteCache(cache);
-        }
+        for (AppCacheHost* host : hosts)
+          host->AssociateCompleteCache(cache);
       }
     } else {
       URLFetcher* fetcher = new URLFetcher(url, URLFetcher::MASTER_ENTRY_FETCH,
@@ -1151,10 +1116,9 @@ void AppCacheUpdateJob::CancelAllMasterEntryFetches(
   // directly.
 
   // Cancel all in-progress fetches.
-  for (PendingUrlFetches::iterator it = master_entry_fetches_.begin();
-       it != master_entry_fetches_.end(); ++it) {
-    delete it->second;
-    master_entries_to_fetch_.insert(it->first);  // back in unfetched list
+  for (auto& pair : master_entry_fetches_) {
+    delete pair.second;
+    master_entries_to_fetch_.insert(pair.first);  // back in unfetched list
   }
   master_entry_fetches_.clear();
 
@@ -1169,9 +1133,7 @@ void AppCacheUpdateJob::CancelAllMasterEntryFetches(
     PendingMasters::iterator found = pending_master_entries_.find(url);
     DCHECK(found != pending_master_entries_.end());
     PendingHosts& hosts = found->second;
-    for (PendingHosts::iterator host_it = hosts.begin();
-         host_it != hosts.end(); ++host_it) {
-      AppCacheHost* host = *host_it;
+    for (AppCacheHost* host : hosts) {
       host->AssociateNoCache(GURL());
       host_notifier.AddHost(host);
       host->RemoveObserver(this);
@@ -1340,16 +1302,12 @@ void AppCacheUpdateJob::Cancel() {
     manifest_fetcher_ = nullptr;
   }
 
-  for (PendingUrlFetches::iterator it = pending_url_fetches_.begin();
-       it != pending_url_fetches_.end(); ++it) {
-    delete it->second;
-  }
+  for (auto& pair : pending_url_fetches_)
+    delete pair.second;
   pending_url_fetches_.clear();
 
-  for (PendingUrlFetches::iterator it = master_entry_fetches_.begin();
-       it != master_entry_fetches_.end(); ++it) {
-    delete it->second;
-  }
+  for (auto& pair : master_entry_fetches_)
+    delete pair.second;
   master_entry_fetches_.clear();
 
   ClearPendingMasterEntries();
@@ -1363,13 +1321,10 @@ void AppCacheUpdateJob::Cancel() {
 }
 
 void AppCacheUpdateJob::ClearPendingMasterEntries() {
-  for (PendingMasters::iterator it = pending_master_entries_.begin();
-       it != pending_master_entries_.end(); ++it) {
-    PendingHosts& hosts = it->second;
-    for (PendingHosts::iterator host_it = hosts.begin();
-         host_it != hosts.end(); ++host_it) {
-      (*host_it)->RemoveObserver(this);
-    }
+  for (auto& pair : pending_master_entries_) {
+    PendingHosts& hosts = pair.second;
+    for (AppCacheHost* host : hosts)
+      host->RemoveObserver(this);
   }
 
   pending_master_entries_.clear();
@@ -1390,10 +1345,8 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
   if (!inprogress_cache_.get()) {
     // We have to undo the changes we made, if any, to the existing cache.
     if (group_ && group_->newest_complete_cache()) {
-      for (std::vector<GURL>::iterator iter = added_master_entries_.begin();
-           iter != added_master_entries_.end(); ++iter) {
-        group_->newest_complete_cache()->RemoveEntry(*iter);
-      }
+      for (auto& url : added_master_entries_)
+        group_->newest_complete_cache()->RemoveEntry(url);
     }
     added_master_entries_.clear();
     return;

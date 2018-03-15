@@ -56,7 +56,7 @@ class CONTENT_EXPORT AppCacheBackendImpl {
     return (it != hosts_.end()) ? (it->second.get()) : nullptr;
   }
 
-  typedef base::hash_map<int, std::unique_ptr<AppCacheHost>> HostMap;
+  using HostMap = base::hash_map<int, std::unique_ptr<AppCacheHost>>;
   const HostMap& hosts() { return hosts_; }
 
   // Methods to support cross site navigations. Hosts are transferred

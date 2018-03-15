@@ -74,12 +74,11 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
 const AppCacheEntry* AppCache::GetEntryAndUrlWithResponseId(
     int64_t response_id,
     GURL* optional_url_out) {
-  for (EntryMap::const_iterator iter = entries_.begin();
-       iter !=  entries_.end(); ++iter) {
-    if (iter->second.response_id() == response_id) {
+  for (const auto& pair : entries_) {
+    if (pair.second.response_id() == response_id) {
       if (optional_url_out)
-        *optional_url_out = iter->first;
-      return &iter->second;
+        *optional_url_out = pair.first;
+      return &pair.second;
     }
   }
   return nullptr;
@@ -174,15 +173,14 @@ void AppCache::ToDatabaseRecords(
   cache_record->update_time = update_time_;
   cache_record->cache_size = 0;
 
-  for (EntryMap::const_iterator iter = entries_.begin();
-       iter != entries_.end(); ++iter) {
+  for (const auto& pair : entries_) {
     entries->push_back(AppCacheDatabase::EntryRecord());
     AppCacheDatabase::EntryRecord& record = entries->back();
-    record.url = iter->first;
+    record.url = pair.first;
     record.cache_id = cache_id_;
-    record.flags = iter->second.types();
-    record.response_id = iter->second.response_id();
-    record.response_size = iter->second.response_size();
+    record.flags = pair.second.types();
+    record.response_id = pair.second.response_id();
+    record.response_size = pair.second.response_size();
     cache_record->cache_size += record.response_size;
   }
 
@@ -266,19 +264,18 @@ bool AppCache::FindResponseForRequest(const GURL& url,
 
 void AppCache::ToResourceInfoVector(AppCacheResourceInfoVector* infos) const {
   DCHECK(infos && infos->empty());
-  for (EntryMap::const_iterator iter = entries_.begin();
-       iter !=  entries_.end(); ++iter) {
+  for (const auto& pair : entries_) {
     infos->push_back(AppCacheResourceInfo());
     AppCacheResourceInfo& info = infos->back();
-    info.url = iter->first;
-    info.is_master = iter->second.IsMaster();
-    info.is_manifest = iter->second.IsManifest();
-    info.is_intercept = iter->second.IsIntercept();
-    info.is_fallback = iter->second.IsFallback();
-    info.is_foreign = iter->second.IsForeign();
-    info.is_explicit = iter->second.IsExplicit();
-    info.size = iter->second.response_size();
-    info.response_id = iter->second.response_id();
+    info.url = pair.first;
+    info.is_master = pair.second.IsMaster();
+    info.is_manifest = pair.second.IsManifest();
+    info.is_intercept = pair.second.IsIntercept();
+    info.is_fallback = pair.second.IsFallback();
+    info.is_foreign = pair.second.IsForeign();
+    info.is_explicit = pair.second.IsExplicit();
+    info.size = pair.second.response_size();
+    info.response_id = pair.second.response_id();
   }
 }
 

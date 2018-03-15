@@ -93,7 +93,7 @@ class CONTENT_EXPORT AppCacheDatabase {
     AppCacheNamespace namespace_;
   };
 
-  typedef std::vector<NamespaceRecord> NamespaceRecordVector;
+  using NamespaceRecordVector = std::vector<NamespaceRecord>;
 
   struct OnlineWhiteListRecord {
     OnlineWhiteListRecord() : cache_id(0), is_pattern(false) {}

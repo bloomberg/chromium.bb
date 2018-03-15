@@ -56,9 +56,9 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 }
 
-typedef base::OnceCallback<void(AppCacheStatus)> GetStatusCallback;
-typedef base::OnceCallback<void(bool)> StartUpdateCallback;
-typedef base::OnceCallback<void(bool)> SwapCacheCallback;
+using GetStatusCallback = base::OnceCallback<void(AppCacheStatus)>;
+using StartUpdateCallback = base::OnceCallback<void(bool)>;
+using SwapCacheCallback = base::OnceCallback<void(bool)>;
 
 // Server-side representation of an application cache host.
 class CONTENT_EXPORT AppCacheHost

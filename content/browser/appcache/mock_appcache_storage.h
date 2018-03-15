@@ -93,11 +93,11 @@ class MockAppCacheStorage : public AppCacheStorage {
   friend class appcache_update_job_unittest::AppCacheUpdateJobTest;
   friend class MockAppCacheStorageTest;
 
-  typedef base::hash_map<int64_t, scoped_refptr<AppCache>> StoredCacheMap;
-  typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
-  typedef std::set<int64_t> DoomedResponseIds;
-  typedef std::map<int64_t, std::pair<base::Time, base::Time>>
-      StoredEvictionTimesMap;
+  using StoredCacheMap = base::hash_map<int64_t, scoped_refptr<AppCache>>;
+  using StoredGroupMap = std::map<GURL, scoped_refptr<AppCacheGroup>>;
+  using DoomedResponseIds = std::set<int64_t>;
+  using StoredEvictionTimesMap =
+      std::map<int64_t, std::pair<base::Time, base::Time>>;
 
   void ProcessGetAllInfo(scoped_refptr<DelegateReference> delegate_ref);
   void ProcessLoadCache(int64_t id,

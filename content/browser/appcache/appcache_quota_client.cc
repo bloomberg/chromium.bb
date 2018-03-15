@@ -180,12 +180,10 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
     return;
   }
 
-  const AppCacheStorage::UsageMap* map = GetUsageMap();
   std::set<url::Origin> origins;
-  for (AppCacheStorage::UsageMap::const_iterator iter = map->begin();
-       iter != map->end(); ++iter) {
-    if (opt_host.empty() || iter->first.host_piece() == opt_host)
-      origins.insert(url::Origin::Create(iter->first));
+  for (const auto& pair : *GetUsageMap()) {
+    if (opt_host.empty() || pair.first.host_piece() == opt_host)
+      origins.insert(url::Origin::Create(pair.first));
   }
   std::move(callback).Run(origins);
 }

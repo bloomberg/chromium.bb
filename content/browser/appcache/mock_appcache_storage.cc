@@ -191,11 +191,8 @@ void MockAppCacheStorage::DeleteResponses(
     const std::vector<int64_t>& response_ids) {
   // We don't bother with actually removing responses from the disk-cache,
   // just keep track of which ids have been doomed or deleted
-  std::vector<int64_t>::const_iterator it = response_ids.begin();
-  while (it != response_ids.end()) {
-    doomed_response_ids_.insert(*it);
-    ++it;
-  }
+  for (const auto& id : response_ids)
+    doomed_response_ids_.insert(id);
 }
 
 bool MockAppCacheStorage::IsInitialized() {
@@ -353,9 +350,8 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
   FoundCandidate found_fallback_candidate;
   GURL found_fallback_candidate_namespace;
 
-  for (StoredGroupMap::const_iterator it = stored_groups_.begin();
-       it != stored_groups_.end(); ++it) {
-    AppCacheGroup* group = it->second.get();
+  for (const auto& pair : stored_groups_) {
+    AppCacheGroup* group = pair.second.get();
     AppCache* cache = group->newest_complete_cache();
     if (group->is_obsolete() || !cache ||
         (url.GetOrigin() != group->manifest_url().GetOrigin())) {
@@ -501,11 +497,8 @@ void MockAppCacheStorage::RemoveStoredCache(AppCache* cache) {
 
 void MockAppCacheStorage::RemoveStoredCaches(
     const AppCacheGroup::Caches& caches) {
-  AppCacheGroup::Caches::const_iterator it = caches.begin();
-  while (it != caches.end()) {
-    RemoveStoredCache(*it);
-    ++it;
-  }
+  for (AppCache* cache : caches)
+    RemoveStoredCache(cache);
 }
 
 void MockAppCacheStorage::AddStoredGroup(AppCacheGroup* group) {
@@ -541,13 +534,10 @@ bool MockAppCacheStorage::ShouldGroupLoadAppearAsync(
 
   // If any of the old caches are "in use", then the group must also
   // be memory resident and not require async loading.
-  const AppCacheGroup::Caches& old_caches = group->old_caches();
-  AppCacheGroup::Caches::const_iterator it = old_caches.begin();
-  while (it != old_caches.end()) {
+  for (const AppCache* cache : group->old_caches()) {
     // "in use" caches don't require async loading
-    if (!ShouldCacheLoadAppearAsync(*it))
+    if (!ShouldCacheLoadAppearAsync(cache))
       return false;
-    ++it;
   }
 
   return true;

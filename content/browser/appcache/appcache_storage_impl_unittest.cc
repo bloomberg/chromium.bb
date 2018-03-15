@@ -1062,13 +1062,10 @@ class AppCacheStorageImplTest : public testing::Test {
                               &fallbacks,
                               &whitelists);
 
-    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
-        entries.begin();
-    while (iter != entries.end()) {
+    for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted the default entry record already.
-      if (iter->url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
-      ++iter;
+      if (entry.url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&entry));
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
@@ -1136,13 +1133,10 @@ class AppCacheStorageImplTest : public testing::Test {
                               &fallbacks,
                               &whitelists);
 
-    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
-        entries.begin();
-    while (iter != entries.end()) {
+    for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted  the default entry record already
-      if (iter->url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
-      ++iter;
+      if (entry.url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&entry));
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(intercepts));
@@ -1203,13 +1197,10 @@ class AppCacheStorageImplTest : public testing::Test {
                               &fallbacks,
                               &whitelists);
 
-    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
-        entries.begin();
-    while (iter != entries.end()) {
+    for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted  the default entry record already
-      if (iter->url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
-      ++iter;
+      if (entry.url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&entry));
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(intercepts));
@@ -1290,13 +1281,10 @@ class AppCacheStorageImplTest : public testing::Test {
                               &fallbacks,
                               &whitelists);
 
-    std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
-        entries.begin();
-    while (iter != entries.end()) {
+    for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted the default entry record already.
-      if (iter->url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&(*iter)));
-      ++iter;
+      if (entry.url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&entry));
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
