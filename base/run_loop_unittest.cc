@@ -596,8 +596,6 @@ class MockTask {
 }  // namespace
 
 TEST_P(RunLoopTest, NestingObservers) {
-  EXPECT_TRUE(RunLoop::IsNestingAllowedOnCurrentThread());
-
   testing::StrictMock<MockNestingObserver> nesting_observer;
   testing::StrictMock<MockTask> mock_task_a;
   testing::StrictMock<MockTask> mock_task_b;
@@ -606,10 +604,6 @@ TEST_P(RunLoopTest, NestingObservers) {
 
   const RepeatingClosure run_nested_loop = Bind([]() {
     RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce([]() {
-          EXPECT_TRUE(RunLoop::IsNestingAllowedOnCurrentThread());
-        }));
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             nested_run_loop.QuitClosure());
     nested_run_loop.Run();
@@ -617,7 +611,9 @@ TEST_P(RunLoopTest, NestingObservers) {
 
   // Generate a stack of nested RunLoops. OnBeginNestedRunLoop() is expected
   // when beginning each nesting depth and OnExitNestedRunLoop() is expected
-  // when exiting each nesting depth.
+  // when exiting each nesting depth. Each one of these tasks is ahead of the
+  // QuitClosures as those are only posted at the end of the queue when
+  // |run_nested_loop| is executed.
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, run_nested_loop);
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -639,21 +635,6 @@ TEST_P(RunLoopTest, NestingObservers) {
 
   RunLoop::RemoveNestingObserverOnCurrentThread(&nesting_observer);
 }
-
-// Disabled on Android per http://crbug.com/643760.
-#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-TEST_P(RunLoopTest, DisallowNestingDeathTest) {
-  EXPECT_TRUE(RunLoop::IsNestingAllowedOnCurrentThread());
-  RunLoop::DisallowNestingOnCurrentThread();
-  EXPECT_FALSE(RunLoop::IsNestingAllowedOnCurrentThread());
-
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce([]() {
-                                            RunLoop nested_run_loop;
-                                            nested_run_loop.RunUntilIdle();
-                                          }));
-  EXPECT_DEATH({ run_loop_.RunUntilIdle(); }, "");
-}
-#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 TEST_P(RunLoopTest, DisallowRunningForTesting) {
   RunLoop::ScopedDisallowRunningForTesting disallow_running;

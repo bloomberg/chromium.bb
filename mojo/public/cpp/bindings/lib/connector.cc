@@ -89,10 +89,8 @@ class Connector::RunLoopNestingObserver
   }
 
   static RunLoopNestingObserver* GetForThread() {
-    if (!base::MessageLoop::current() ||
-        !base::RunLoop::IsNestingAllowedOnCurrentThread()) {
+    if (!base::MessageLoop::current())
       return nullptr;
-    }
     auto* observer = static_cast<RunLoopNestingObserver*>(
         g_tls_nesting_observer.Get().Get());
     if (!observer) {

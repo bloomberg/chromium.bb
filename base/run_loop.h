@@ -50,9 +50,7 @@ class BASE_EXPORT RunLoop {
   // recursive task processing is disabled.
   //
   // In general, nestable RunLoops are to be avoided. They are dangerous and
-  // difficult to get right, so please use with extreme caution. To further
-  // protect this: kNestableTasksAllowed RunLoops are only allowed on threads
-  // where IsNestingAllowedOnCurrentThread().
+  // difficult to get right, so please use with extreme caution.
   //
   // A specific example where this makes a difference is:
   // - The thread is running a RunLoop.
@@ -145,13 +143,6 @@ class BASE_EXPORT RunLoop {
   static void AddNestingObserverOnCurrentThread(NestingObserver* observer);
   static void RemoveNestingObserverOnCurrentThread(NestingObserver* observer);
 
-  // Returns true if nesting is allowed on this thread.
-  static bool IsNestingAllowedOnCurrentThread();
-
-  // Disallow nesting. After this is called, running a nested RunLoop or calling
-  // Add/RemoveNestingObserverOnCurrentThread() on this thread will crash.
-  static void DisallowNestingOnCurrentThread();
-
   // A RunLoop::Delegate is a generic interface that allows RunLoop to be
   // separate from the underlying implementation of the message loop for this
   // thread. It holds private state used by RunLoops on its associated thread.
@@ -207,7 +198,6 @@ class BASE_EXPORT RunLoop {
     // have more than a few entries.
     using RunLoopStack = base::stack<RunLoop*, std::vector<RunLoop*>>;
 
-    bool allow_nesting_ = true;
     RunLoopStack active_run_loops_;
     ObserverList<RunLoop::NestingObserver> nesting_observers_;
 

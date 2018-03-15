@@ -225,8 +225,6 @@ Closure MessageLoop::QuitWhenIdleClosure() {
 
 void MessageLoop::SetNestableTasksAllowed(bool allowed) {
   if (allowed) {
-    CHECK(RunLoop::IsNestingAllowedOnCurrentThread());
-
     // Kick the native pump just in case we enter a OS-driven nested message
     // loop that does not go through RunLoop::Run().
     pump_->ScheduleWork();
@@ -243,13 +241,11 @@ bool MessageLoop::NestableTasksAllowed() const {
 // implementation detail. http://crbug.com/703346
 void MessageLoop::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_EQ(this, current());
-  CHECK(allow_task_observers_);
   task_observers_.AddObserver(task_observer);
 }
 
 void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_EQ(this, current());
-  CHECK(allow_task_observers_);
   task_observers_.RemoveObserver(task_observer);
 }
 
