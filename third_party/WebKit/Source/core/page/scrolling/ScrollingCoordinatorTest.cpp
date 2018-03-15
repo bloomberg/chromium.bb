@@ -1120,6 +1120,18 @@ TEST_P(ScrollingCoordinatorTest,
   }
 }
 
+TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
+  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  LoadHTML(
+      "<body style='height: 1200px'>"
+      "<div style='position: sticky; top: 0'>sticky</div>");
+  ForceFullCompositingUpdate();
+  ScrollableArea* viewport = GetFrame()->View()->LayoutViewportScrollableArea();
+  WebLayer* scroll_layer = viewport->LayerForScrolling()->PlatformLayer();
+  ASSERT_EQ(MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
+            scroll_layer->MainThreadScrollingReasons());
+}
+
 class NonCompositedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
   static const uint32_t kLCDTextRelatedReasons =
