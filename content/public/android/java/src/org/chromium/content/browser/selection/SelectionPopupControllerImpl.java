@@ -1397,6 +1397,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         }
     }
 
+    @CalledByNative
+    public void hidePopupsAndPreserveSelection() {
+        destroyActionModeAndKeepSelection();
+        getPopupController().hideAllPopups();
+    }
+
     public void destroyActionModeAndUnselect() {
         mUnselectAllOnDismiss = true;
         finishActionMode();

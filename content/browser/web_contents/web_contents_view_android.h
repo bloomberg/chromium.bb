@@ -22,6 +22,7 @@ namespace content {
 class ContentViewCore;
 class RenderWidgetHostViewAndroid;
 class SelectPopup;
+class SelectionPopupController;
 class SynchronousCompositorClient;
 class WebContentsImpl;
 
@@ -44,6 +45,10 @@ class WebContentsViewAndroid : public WebContentsView,
 
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;
+  }
+
+  void set_selection_popup_controller(SelectionPopupController* controller) {
+    selection_popup_controller_ = controller;
   }
 
   SynchronousCompositorClient* synchronous_compositor_client() const {
@@ -144,6 +149,8 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // Interface used to get notified of events from the synchronous compositor.
   SynchronousCompositorClient* synchronous_compositor_client_;
+
+  SelectionPopupController* selection_popup_controller_ = nullptr;
 
   // Show/hide popup UI for <select> tag.
   std::unique_ptr<SelectPopup> select_popup_;

@@ -10,6 +10,7 @@
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/common/context_menu_params.h"
 #include "jni/SelectionPopupControllerImpl_jni.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
@@ -43,6 +44,9 @@ SelectionPopupController::SelectionPopupController(
     WebContents* web_contents)
     : RenderWidgetHostConnector(web_contents) {
   java_obj_ = JavaObjectWeakGlobalRef(env, obj);
+  auto* wcva = static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(web_contents)->GetView());
+  wcva->set_selection_popup_controller(this);
 }
 
 ScopedJavaLocalRef<jobject> SelectionPopupController::GetContext() const {
@@ -195,6 +199,15 @@ void SelectionPopupController::OnSelectWordAroundCaretAck(bool did_select,
     return;
   Java_SelectionPopupControllerImpl_onSelectWordAroundCaretAck(
       env, obj, did_select, start_adjust, end_adjust);
+}
+
+void SelectionPopupController::HidePopupsAndPreserveSelection() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_SelectionPopupControllerImpl_hidePopupsAndPreserveSelection(env, obj);
 }
 
 }  // namespace content

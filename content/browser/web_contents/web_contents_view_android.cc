@@ -12,6 +12,7 @@
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
+#include "content/browser/android/selection_popup_controller.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -350,8 +351,8 @@ void WebContentsViewAndroid::StartDragging(
     return;
   }
 
-  if (content_view_core_)
-    content_view_core_->HidePopupsAndPreserveSelection();
+  if (selection_popup_controller_)
+    selection_popup_controller_->HidePopupsAndPreserveSelection();
 }
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {

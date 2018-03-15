@@ -475,10 +475,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         PopupController.hideAll(mWebContents);
     }
 
-    @CalledByNative
     private void hidePopupsAndPreserveSelection() {
-        getSelectionPopupController().destroyActionModeAndKeepSelection();
-        PopupController.hideAll(mWebContents);
+        getSelectionPopupController().hidePopupsAndPreserveSelection();
     }
 
     private void resetGestureDetection() {
