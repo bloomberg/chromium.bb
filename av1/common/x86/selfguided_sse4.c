@@ -289,7 +289,6 @@ static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
   }
 }
 
-#if CONFIG_FAST_SGR
 // Assumes that C, D are integral images for the original buffer which has been
 // extended to have a padding of SGRPROJ_BORDER_VERT/SGRPROJ_BORDER_HORZ pixels
 // on the sides. A, B, C, D point at logical position (0, 0).
@@ -428,7 +427,7 @@ static __m128i cross_sum_fast_odd_row(const int32_t *buf) {
       sixes);
 }
 
-// The final filter for the FAST_SGR self-guided restoration. Computes a
+// The final filter for the self-guided restoration. Computes a
 // weighted average across A, B with "cross sums" (see cross_sum_...
 // implementations above).
 static void final_filter_fast(int32_t *dst, int dst_stride, const int32_t *A,
@@ -482,7 +481,6 @@ static void final_filter_fast(int32_t *dst, int dst_stride, const int32_t *A,
     }
   }
 }
-#endif
 
 void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
                                        int height, int dgd_stride,
@@ -544,7 +542,6 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
   // the radii to be 0, as having both equal to 0 would be equivalent to
   // skipping SGR entirely.
   assert(!(params->r0 == 0 && params->r1 == 0));
-#if CONFIG_FAST_SGR
   assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
   assert(params->r1 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
@@ -561,23 +558,7 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
     final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                  height, highbd);
   }
-#else   // CONFIG_FAST_SGR
-  for (int i = 0; i < 2; ++i) {
-    int r = i ? params->r1 : params->r0;
-    int e = i ? params->e1 : params->e0;
-    if (r == 0) continue;
-
-    int32_t *flt = i ? flt1 : flt0;
-
-    assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-
-    calc_ab(A, B, C, D, width, height, buf_stride, e, bit_depth, r);
-    final_filter(flt, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
-                 height, highbd);
-  }
-#endif  // CONFIG_FAST_SGR
 #else   // CONFIG_SKIP_SGR
-#if CONFIG_FAST_SGR
   assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
   // r == 2 filter
@@ -593,19 +574,6 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
           params->r1);
   final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                height, highbd);
-#else   // CONFIG_FAST_SGR
-  for (int i = 0; i < 2; ++i) {
-    int r = i ? params->r1 : params->r0;
-    int e = i ? params->e1 : params->e0;
-    int32_t *flt = i ? flt1 : flt0;
-
-    assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-
-    calc_ab(A, B, C, D, width, height, buf_stride, e, bit_depth, r);
-    final_filter(flt, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
-                 height, highbd);
-  }
-#endif  // CONFIG_FAST_SGR
 #endif  // CONFIG_SKIP_SGR
 }
 
