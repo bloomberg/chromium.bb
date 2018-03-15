@@ -1562,7 +1562,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
 
     if (mbmi->comp_group_idx == 0) {
-      if (cm->seq_params.enable_jnt_comp && !cm->error_resilient_mode) {
+      if (cm->seq_params.enable_jnt_comp) {
         const int comp_index_ctx = get_comp_index_context(cm, xd);
         mbmi->compound_idx = aom_read_symbol(
             r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
