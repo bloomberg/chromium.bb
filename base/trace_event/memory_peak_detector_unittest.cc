@@ -176,10 +176,9 @@ class MemoryPeakDetectorTest : public testing::Test {
     std::unique_ptr<MockMemoryDumpProvider> mdp(new MockMemoryDumpProvider());
     MemoryDumpProvider::Options opt;
     opt.is_fast_polling_supported = true;
-    scoped_refptr<MemoryDumpProviderInfo> mdp_info(
-        new MemoryDumpProviderInfo(mdp.get(), "Mock MDP", nullptr, opt,
-                                   false /* whitelisted_for_background_mode */,
-                                   false /* whitelisted_for_summary_mode */));
+    scoped_refptr<MemoryDumpProviderInfo> mdp_info(new MemoryDumpProviderInfo(
+        mdp.get(), "Mock MDP", nullptr, opt,
+        false /* whitelisted_for_background_mode */));
 
     // The |mdp| instance will be destroyed together with the |mdp_info|.
     mdp_info->owned_dump_provider = std::move(mdp);

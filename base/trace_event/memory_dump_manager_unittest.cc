@@ -59,12 +59,7 @@ namespace {
 
 const char* kMDPName = "TestDumpProvider";
 const char* kWhitelistedMDPName = "WhitelistedTestDumpProvider";
-const char* kBackgroundButNotSummaryWhitelistedMDPName =
-    "BackgroundButNotSummaryWhitelistedTestDumpProvider";
-const char* const kTestMDPWhitelist[] = {
-    kWhitelistedMDPName, kBackgroundButNotSummaryWhitelistedMDPName, nullptr};
-const char* const kTestMDPWhitelistForSummary[] = {kWhitelistedMDPName,
-                                                   nullptr};
+const char* const kTestMDPWhitelist[] = {kWhitelistedMDPName, nullptr};
 
 void RegisterDumpProvider(
     MemoryDumpProvider* mdp,
@@ -752,23 +747,17 @@ TEST_F(MemoryDumpManagerTest, TriggerDumpWithoutTracing) {
                                         MemoryDumpLevelOfDetail::DETAILED));
 }
 
-TEST_F(MemoryDumpManagerTest, SummaryOnlyWhitelisting) {
-  // Summary only MDPs are a subset of background MDPs.
+TEST_F(MemoryDumpManagerTest, BackgroundWhitelisting) {
   SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
-  SetDumpProviderSummaryWhitelistForTesting(kTestMDPWhitelistForSummary);
 
   // Standard provider with default options (create dump for current process).
-  MockMemoryDumpProvider summaryMdp;
-  RegisterDumpProvider(&summaryMdp, nullptr, kDefaultOptions,
-                       kWhitelistedMDPName);
   MockMemoryDumpProvider backgroundMdp;
   RegisterDumpProvider(&backgroundMdp, nullptr, kDefaultOptions,
-                       kBackgroundButNotSummaryWhitelistedMDPName);
+                       kWhitelistedMDPName);
 
   EnableForTracing();
 
-  EXPECT_CALL(backgroundMdp, OnMemoryDump(_, _)).Times(0);
-  EXPECT_CALL(summaryMdp, OnMemoryDump(_, _)).Times(1);
+  EXPECT_CALL(backgroundMdp, OnMemoryDump(_, _)).Times(1);
   EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
                                         MemoryDumpLevelOfDetail::BACKGROUND));
   DisableTracing();
@@ -1046,18 +1035,12 @@ class SimpleMockMemoryDumpProvider : public MemoryDumpProvider {
 
 TEST_F(MemoryDumpManagerTest, NoStackOverflowWithTooManyMDPs) {
   SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
-  SetDumpProviderSummaryWhitelistForTesting(kTestMDPWhitelistForSummary);
 
   int kMDPCount = 1000;
   std::vector<std::unique_ptr<SimpleMockMemoryDumpProvider>> mdps;
   for (int i = 0; i < kMDPCount; ++i) {
     mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(1));
     RegisterDumpProvider(mdps.back().get(), nullptr);
-  }
-  for (int i = 0; i < kMDPCount; ++i) {
-    mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(2));
-    RegisterDumpProvider(mdps.back().get(), nullptr, kDefaultOptions,
-                         kBackgroundButNotSummaryWhitelistedMDPName);
   }
   for (int i = 0; i < kMDPCount; ++i) {
     mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(3));

@@ -18,48 +18,9 @@ namespace {
 // The names of dump providers whitelisted for background tracing. Dump
 // providers can be added here only if the background mode dump has very
 // little processor and memory overhead.
-const char* const kDumpProviderWhitelist[] = {
-    "android::ResourceManagerImpl",
-    "AutocompleteController",
-    "BlinkGC",
-    "BlinkObjectCounters",
-    "BlobStorageContext",
-    "ClientDiscardableSharedMemoryManager",
-    "DOMStorage",
-    "DownloadService",
-    "DiscardableSharedMemoryManager",
-    "gpu::BufferManager",
-    "gpu::RenderbufferManager",
-    "gpu::TextureManager",
-    "FontCaches",
-    "HistoryReport",
-    "IndexedDBBackingStore",
-    "InMemoryURLIndex",
-    "JavaHeap",
-    "LevelDB",
-    "LeveldbValueStore",
-    "LocalStorage",
-    "Malloc",
-    "MemoryCache",
-    "MojoHandleTable",
-    "MojoLevelDB",
-    "PartitionAlloc",
-    "ProcessMemoryMetrics",
-    "Skia",
-    "SharedMemoryTracker",
-    "Sql",
-    "URLRequestContext",
-    "V8Isolate",
-    "WinHeap",
-    "SyncDirectory",
-    "TabRestoreServiceHelper",
-    nullptr  // End of list marker.
-};
-
-// The names of dump providers whitelisted for summary tracing.
 // TODO(ssid): Some dump providers do not create ownership edges on background
 // dump. So, the effective size will not be correct.
-const char* const kDumpProviderSummaryWhitelist[] = {
+const char* const kDumpProviderWhitelist[] = {
     "android::ResourceManagerImpl",
     "AutocompleteController",
     "BlinkGC",
@@ -298,8 +259,6 @@ const char* const kAllocatorDumpNameWhitelist[] = {
 };
 
 const char* const* g_dump_provider_whitelist = kDumpProviderWhitelist;
-const char* const* g_dump_provider_whitelist_for_summary =
-    kDumpProviderSummaryWhitelist;
 const char* const* g_allocator_dump_name_whitelist =
     kAllocatorDumpNameWhitelist;
 
@@ -315,11 +274,6 @@ bool IsMemoryDumpProviderInList(const char* mdp_name, const char* const* list) {
 
 bool IsMemoryDumpProviderWhitelisted(const char* mdp_name) {
   return IsMemoryDumpProviderInList(mdp_name, g_dump_provider_whitelist);
-}
-
-bool IsMemoryDumpProviderWhitelistedForSummary(const char* mdp_name) {
-  return IsMemoryDumpProviderInList(mdp_name,
-                                    g_dump_provider_whitelist_for_summary);
 }
 
 bool IsMemoryAllocatorDumpNameWhitelisted(const std::string& name) {
@@ -367,10 +321,6 @@ bool IsMemoryAllocatorDumpNameWhitelisted(const std::string& name) {
 
 void SetDumpProviderWhitelistForTesting(const char* const* list) {
   g_dump_provider_whitelist = list;
-}
-
-void SetDumpProviderSummaryWhitelistForTesting(const char* const* list) {
-  g_dump_provider_whitelist_for_summary = list;
 }
 
 void SetAllocatorDumpNameWhitelistForTesting(const char* const* list) {
