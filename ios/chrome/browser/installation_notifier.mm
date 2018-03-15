@@ -59,9 +59,6 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 @interface InstallationNotifier (Testing)
 // Sets the dispatcher.
 - (void)setDispatcher:(id<DispatcherProtocol>)dispatcher;
-// Sets the UIApplication used to determine if a scheme can be opened by an
-// application.
-- (void)setSharedApplication:(UIApplication*)sharedApplication;
 @end
 
 @implementation InstallationNotifier {
@@ -89,7 +86,6 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
     _dispatcher = [[DefaultDispatcher alloc] init];
     _installedAppObservers = [[NSMutableDictionary alloc] init];
     _notificationCenter = [NSNotificationCenter defaultCenter];
-    sharedApplication_ = [UIApplication sharedApplication];
     _backoffEntry.reset(new net::BackoffEntry([self backOffPolicy]));
   }
   return self;
@@ -186,7 +182,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
     DCHECK([observers count] > 0);
     NSURL* testSchemeURL =
         [NSURL URLWithString:[NSString stringWithFormat:@"%@:", scheme]];
-    if ([sharedApplication_ canOpenURL:testSchemeURL]) {
+    if ([[UIApplication sharedApplication] canOpenURL:testSchemeURL]) {
       [_notificationCenter postNotificationName:scheme object:self];
       for (id weakReferenceToObserver in observers) {
         id observer = [weakReferenceToObserver nonretainedObjectValue];
@@ -216,11 +212,8 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
   _dispatcher = dispatcher;
 }
 
-- (void)setSharedApplication:(id)sharedApplication {
-  // Verify that the test application object responds to all the selectors that
-  // will be called on it.
-  CHECK([sharedApplication respondsToSelector:@selector(canOpenURL:)]);
-  sharedApplication_ = (UIApplication*)sharedApplication;
+- (void)resetDispatcher {
+  _dispatcher = [[DefaultDispatcher alloc] init];
 }
 
 @end
