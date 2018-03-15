@@ -321,8 +321,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_FALSE(offline_item.is_resumable);
 }
 
+// Flaky. See https://crbug.com/822276
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       OfflineItemCollection_VerifyIconReceived) {
+                       DISABLED_OfflineItemCollection_VerifyIconReceived) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection. We then
   // verify that the expected icon is associated with the newly added offline
