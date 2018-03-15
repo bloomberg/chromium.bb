@@ -343,9 +343,7 @@ message GetAccountDiskUsageReply {
   optional int64 size = 1;
 }
 
-// Request parameters for MigrateToDircryptoEx.
-// TODO(pmarko): Update comment when MigrateToDircryptoEx gets renamed to
-// MigrateToDircrypto: crbug.com/758837.
+// Request parameters for MigrateToDircrypto.
 message MigrateToDircryptoRequest {
   // Next ID to use: 2
 
