@@ -8,8 +8,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.SparseArray;
 
-import com.google.protobuf.nano.MessageNano;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
@@ -169,15 +167,15 @@ public class StorageDelegate extends TabPersister {
         if (metadataBytes != null) {
             DocumentList list = null;
             try {
-                list = MessageNano.mergeFrom(new DocumentList(), metadataBytes);
+                list = DocumentList.parseFrom(metadataBytes);
             } catch (IOException e) {
                 Log.e(TAG, "I/O exception", e);
             }
             if (list == null) return;
 
-            for (int i = 0; i < list.entries.length; i++) {
-                DocumentEntry savedEntry = list.entries[i];
-                int tabId = savedEntry.tabId;
+            for (int i = 0; i < list.getEntriesCount(); i++) {
+                DocumentEntry savedEntry = list.getEntries(i);
+                int tabId = savedEntry.getTabId();
 
                 // If the tab ID isn't in the list, it must have been closed after Chrome died.
                 if (entryMap.indexOfKey(tabId) < 0) {
@@ -186,7 +184,7 @@ public class StorageDelegate extends TabPersister {
                 }
 
                 // Restore information about the Tab.
-                entryMap.get(tabId).canGoBack = savedEntry.canGoBack;
+                entryMap.get(tabId).canGoBack = savedEntry.getCanGoBack();
             }
         }
     }
