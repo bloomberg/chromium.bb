@@ -41,8 +41,8 @@ class AppCacheUpdateJobTest;
 class CONTENT_EXPORT AppCache
     : public base::RefCounted<AppCache> {
  public:
-  typedef std::map<GURL, AppCacheEntry> EntryMap;
-  typedef std::set<AppCacheHost*> AppCacheHosts;
+  using EntryMap = std::map<GURL, AppCacheEntry>;
+  using AppCacheHosts = std::set<AppCacheHost*>;
 
   AppCache(AppCacheStorage* storage, int64_t cache_id);
 

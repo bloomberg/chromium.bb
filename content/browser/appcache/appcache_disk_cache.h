@@ -89,11 +89,11 @@ class CONTENT_EXPORT AppCacheDiskCache
 
     ~PendingCall();
   };
-  typedef std::vector<PendingCall> PendingCalls;
+  using PendingCalls = std::vector<PendingCall>;
 
   class ActiveCall;
-  typedef std::set<ActiveCall*> ActiveCalls;
-  typedef std::set<EntryImpl*> OpenEntries;
+  using ActiveCalls = std::set<ActiveCall*>;
+  using OpenEntries = std::set<EntryImpl*>;
 
   bool is_initializing_or_waiting_to_initialize() const {
     return create_backend_callback_.get() != NULL || is_waiting_to_initialize_;

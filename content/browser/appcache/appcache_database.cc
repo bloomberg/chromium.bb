@@ -224,11 +224,8 @@ int64_t AppCacheDatabase::GetOriginUsage(const GURL& origin) {
     return 0;
 
   int64_t origin_usage = 0;
-  std::vector<CacheRecord>::const_iterator iter = records.begin();
-  while (iter != records.end()) {
-    origin_usage += iter->cache_size;
-    ++iter;
-  }
+  for (const auto& record : records)
+    origin_usage += record.cache_size;
   return origin_usage;
 }
 
@@ -236,10 +233,8 @@ bool AppCacheDatabase::GetAllOriginUsage(std::map<GURL, int64_t>* usage_map) {
   std::set<GURL> origins;
   if (!FindOriginsWithGroups(&origins))
     return false;
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
-    (*usage_map)[*origin] = GetOriginUsage(*origin);
-  }
+  for (const auto& origin : origins)
+    (*usage_map)[origin] = GetOriginUsage(origin);
   return true;
 }
 
@@ -534,11 +529,9 @@ bool AppCacheDatabase::FindCachesForOrigin(
     return false;
 
   CacheRecord cache_record;
-  std::vector<GroupRecord>::const_iterator iter = group_records.begin();
-  while (iter != group_records.end()) {
-    if (FindCacheForGroup(iter->group_id, &cache_record))
+  for (const auto& record : group_records) {
+    if (FindCacheForGroup(record.group_id, &cache_record))
       records->push_back(cache_record);
-    ++iter;
   }
   return true;
 }
@@ -668,11 +661,9 @@ bool AppCacheDatabase::InsertEntryRecords(
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
-  std::vector<EntryRecord>::const_iterator iter = records.begin();
-  while (iter != records.end()) {
-    if (!InsertEntry(&(*iter)))
+  for (const auto& record : records) {
+    if (!InsertEntry(&record))
       return false;
-    ++iter;
   }
   return transaction.Commit();
 }
@@ -776,11 +767,9 @@ bool AppCacheDatabase::InsertNamespaceRecords(
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
-  std::vector<NamespaceRecord>::const_iterator iter = records.begin();
-  while (iter != records.end()) {
-    if (!InsertNamespace(&(*iter)))
+  for (const auto& record : records) {
+    if (!InsertNamespace(&record))
       return false;
-    ++iter;
   }
   return transaction.Commit();
 }
@@ -844,11 +833,9 @@ bool AppCacheDatabase::InsertOnlineWhiteListRecords(
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
-  std::vector<OnlineWhiteListRecord>::const_iterator iter = records.begin();
-  while (iter != records.end()) {
-    if (!InsertOnlineWhiteList(&(*iter)))
+  for (const auto& record : records) {
+    if (!InsertOnlineWhiteList(&record))
       return false;
-    ++iter;
   }
   return transaction.Commit();
 }
@@ -915,13 +902,11 @@ bool AppCacheDatabase::RunCachedStatementWithIds(
 
   sql::Statement statement(db_->GetCachedStatement(statement_id, sql));
 
-  std::vector<int64_t>::const_iterator iter = ids.begin();
-  while (iter != ids.end()) {
-    statement.BindInt64(0, *iter);
+  for (const auto& id : ids) {
+    statement.BindInt64(0, id);
     if (!statement.Run())
       return false;
     statement.Reset(true);
-    ++iter;
   }
 
   return transaction.Commit();

@@ -108,26 +108,22 @@ void AppCacheStorageImpl::ClearSessionOnlyOrigins(
     return;
   }
 
-  std::set<GURL>::const_iterator origin;
-  DCHECK(special_storage_policy.get());
-  for (origin = origins.begin(); origin != origins.end(); ++origin) {
-    if (!special_storage_policy->IsStorageSessionOnly(*origin))
+  for (const GURL& origin : origins) {
+    if (!special_storage_policy->IsStorageSessionOnly(origin))
       continue;
-    if (special_storage_policy->IsStorageProtected(*origin))
+    if (special_storage_policy->IsStorageProtected(origin))
       continue;
 
     std::vector<AppCacheDatabase::GroupRecord> groups;
-    database->FindGroupsForOrigin(*origin, &groups);
-    std::vector<AppCacheDatabase::GroupRecord>::const_iterator group;
-    for (group = groups.begin(); group != groups.end(); ++group) {
+    database->FindGroupsForOrigin(origin, &groups);
+    for (const auto& group : groups) {
       sql::Transaction transaction(connection);
       if (!transaction.Begin()) {
         NOTREACHED() << "Failed to start transaction";
         return;
       }
       std::vector<int64_t> deletable_response_ids;
-      bool success = DeleteGroupAndRelatedRecords(database,
-                                                  group->group_id,
+      bool success = DeleteGroupAndRelatedRecords(database, group.group_id,
                                                   &deletable_response_ids);
       success = success && transaction.Commit();
       DCHECK(success);
@@ -365,25 +361,21 @@ class AppCacheStorageImpl::GetAllInfoTask : public DatabaseTask {
 void AppCacheStorageImpl::GetAllInfoTask::Run() {
   std::set<GURL> origins;
   database_->FindOriginsWithGroups(&origins);
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
-    AppCacheInfoVector& infos =
-        info_collection_->infos_by_origin[*origin];
+  for (const GURL& origin : origins) {
+    AppCacheInfoVector& infos = info_collection_->infos_by_origin[origin];
     std::vector<AppCacheDatabase::GroupRecord> groups;
-    database_->FindGroupsForOrigin(*origin, &groups);
-    for (std::vector<AppCacheDatabase::GroupRecord>::const_iterator
-         group = groups.begin();
-         group != groups.end(); ++group) {
+    database_->FindGroupsForOrigin(origin, &groups);
+    for (const auto& group : groups) {
       AppCacheDatabase::CacheRecord cache_record;
-      database_->FindCacheForGroup(group->group_id, &cache_record);
+      database_->FindCacheForGroup(group.group_id, &cache_record);
       AppCacheInfo info;
-      info.manifest_url = group->manifest_url;
-      info.creation_time = group->creation_time;
+      info.manifest_url = group.manifest_url;
+      info.creation_time = group.creation_time;
       info.size = cache_record.cache_size;
-      info.last_access_time = group->last_access_time;
+      info.last_access_time = group.last_access_time;
       info.last_update_time = cache_record.update_time;
       info.cache_id = cache_record.cache_id;
-      info.group_id = group->group_id;
+      info.group_id = group.group_id;
       info.is_complete = true;
       infos.push_back(info);
     }
@@ -487,12 +479,11 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
 
   // We have to update foriegn entries if MarkEntryAsForeignTasks
   // are in flight.
-  std::vector<GURL> urls;
-  storage_->GetPendingForeignMarkingsForCache(cache->get()->cache_id(), &urls);
-  for (std::vector<GURL>::iterator iter = urls.begin();
-       iter != urls.end(); ++iter) {
-    DCHECK(cache->get()->GetEntry(*iter));
-    cache->get()->GetEntry(*iter)->add_types(AppCacheEntry::FOREIGN);
+  std::vector<GURL> urls =
+      storage_->GetPendingForeignMarkingsForCache(cache->get()->cache_id());
+  for (const auto& url : urls) {
+    DCHECK(cache->get()->GetEntry(url));
+    cache->get()->GetEntry(url)->add_types(AppCacheEntry::FOREIGN);
   }
 
   storage_->NotifyStorageAccessed(group_record_.origin);
@@ -725,19 +716,12 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
                                               &existing_response_ids);
 
       // Remove those that remain in the new cache.
-      std::vector<AppCacheDatabase::EntryRecord>::const_iterator entry_iter =
-          entry_records_.begin();
-      while (entry_iter != entry_records_.end()) {
-        existing_response_ids.erase(entry_iter->response_id);
-        ++entry_iter;
-      }
+      for (const auto& entry : entry_records_)
+        existing_response_ids.erase(entry.response_id);
 
       // The rest are deletable.
-      std::set<int64_t>::const_iterator id_iter = existing_response_ids.begin();
-      while (id_iter != existing_response_ids.end()) {
-        newly_deletable_response_ids_.push_back(*id_iter);
-        ++id_iter;
-      }
+      for (const auto& id : existing_response_ids)
+        newly_deletable_response_ids_.push_back(id);
 
       success_ =
           database_->DeleteCache(cache.cache_id) &&
@@ -864,8 +848,7 @@ class NetworkNamespaceHelper {
   }
 
   bool IsInNetworkNamespace(const GURL& url, int64_t cache_id) {
-    typedef std::pair<WhiteListMap::iterator, bool> InsertResult;
-    InsertResult result = namespaces_map_.insert(
+    std::pair<WhiteListMap::iterator, bool> result = namespaces_map_.insert(
         WhiteListMap::value_type(cache_id, AppCacheNamespaceVector()));
     if (result.second)
       GetOnlineWhiteListForCache(cache_id, &result.first->second);
@@ -876,22 +859,21 @@ class NetworkNamespaceHelper {
   void GetOnlineWhiteListForCache(int64_t cache_id,
                                   AppCacheNamespaceVector* namespaces) {
     DCHECK(namespaces && namespaces->empty());
-    typedef std::vector<AppCacheDatabase::OnlineWhiteListRecord>
-        WhiteListVector;
+    using WhiteListVector =
+        std::vector<AppCacheDatabase::OnlineWhiteListRecord>;
     WhiteListVector records;
     if (!database_->FindOnlineWhiteListForCache(cache_id, &records))
       return;
-    WhiteListVector::const_iterator iter = records.begin();
-    while (iter != records.end()) {
-      namespaces->push_back(
-            AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE, iter->namespace_url,
-                GURL(), iter->is_pattern));
-      ++iter;
+
+    for (const auto& record : records) {
+      namespaces->push_back(AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
+                                              record.namespace_url, GURL(),
+                                              record.is_pattern));
     }
   }
 
   // Key is cache id
-  typedef std::map<int64_t, AppCacheNamespaceVector> WhiteListMap;
+  using WhiteListMap = std::map<int64_t, AppCacheNamespaceVector>;
   WhiteListMap namespaces_map_;
   AppCacheDatabase* database_;
 };
@@ -908,10 +890,8 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
         preferred_manifest_url_(preferred_manifest_url),
         cache_id_(kAppCacheNoCacheId), group_id_(0) {
     if (groups_in_use) {
-      for (AppCacheWorkingSet::GroupMap::const_iterator it =
-               groups_in_use->begin();
-           it != groups_in_use->end(); ++it) {
-        AppCacheGroup* group = it->second;
+      for (const auto& pair : *groups_in_use) {
+        AppCacheGroup* group = pair.second;
         AppCache* cache = group->newest_complete_cache();
         if (group->is_obsolete() || !cache)
           continue;
@@ -928,8 +908,8 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   ~FindMainResponseTask() override {}
 
  private:
-  typedef std::vector<AppCacheDatabase::NamespaceRecord*>
-      NamespaceRecordPtrVector;
+  using NamespaceRecordPtrVector =
+      std::vector<AppCacheDatabase::NamespaceRecord*>;
 
   bool FindExactMatch(int64_t preferred_id);
   bool FindNamespaceMatch(int64_t preferred_id);
@@ -997,17 +977,16 @@ bool AppCacheStorageImpl::FindMainResponseTask::FindExactMatch(
               SortByCachePreference(preferred_cache_id, cache_ids_in_use_));
 
     // Take the first with a valid, non-foreign entry.
-    std::vector<AppCacheDatabase::EntryRecord>::iterator iter;
-    for (iter = entries.begin(); iter < entries.end(); ++iter) {
+    for (const auto& entry : entries) {
       AppCacheDatabase::GroupRecord group_record;
-      if ((iter->flags & AppCacheEntry::FOREIGN) ||
-          !database_->FindGroupForCache(iter->cache_id, &group_record)) {
+      if ((entry.flags & AppCacheEntry::FOREIGN) ||
+          !database_->FindGroupForCache(entry.cache_id, &group_record)) {
         continue;
       }
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
-      entry_ = AppCacheEntry(iter->flags, iter->response_id);
-      cache_id_ = iter->cache_id;
+      entry_ = AppCacheEntry(entry.flags, entry.response_id);
+      cache_id_ = entry.cache_id;
       return true;  // We found an exact match.
     }
   }
@@ -1047,24 +1026,25 @@ bool AppCacheStorageImpl::FindMainResponseTask::FindNamespaceHelper(
   NamespaceRecordPtrVector preferred_namespaces;
   NamespaceRecordPtrVector inuse_namespaces;
   NamespaceRecordPtrVector other_namespaces;
-  std::vector<AppCacheDatabase::NamespaceRecord>::iterator iter;
-  for (iter = namespaces->begin(); iter < namespaces->end(); ++iter) {
+  for (auto& namespace_record : *namespaces) {
     // Skip those that aren't a match.
-    if (!iter->namespace_.IsMatch(url_))
+    if (!namespace_record.namespace_.IsMatch(url_))
       continue;
 
     // Skip namespaces where the requested url falls into a network
     // namespace of its containing appcache.
-    if (network_namespace_helper->IsInNetworkNamespace(url_, iter->cache_id))
+    if (network_namespace_helper->IsInNetworkNamespace(
+            url_, namespace_record.cache_id))
       continue;
 
     // Bin them into one of our three buckets.
-    if (iter->cache_id == preferred_cache_id)
-      preferred_namespaces.push_back(&(*iter));
-    else if (cache_ids_in_use_.find(iter->cache_id) != cache_ids_in_use_.end())
-      inuse_namespaces.push_back(&(*iter));
+    if (namespace_record.cache_id == preferred_cache_id)
+      preferred_namespaces.push_back(&namespace_record);
+    else if (cache_ids_in_use_.find(namespace_record.cache_id) !=
+             cache_ids_in_use_.end())
+      inuse_namespaces.push_back(&namespace_record);
     else
-      other_namespaces.push_back(&(*iter));
+      other_namespaces.push_back(&namespace_record);
   }
 
   if (FindFirstValidNamespace(preferred_namespaces) ||
@@ -1080,10 +1060,10 @@ bool AppCacheStorageImpl::
 FindMainResponseTask::FindFirstValidNamespace(
     const NamespaceRecordPtrVector& namespaces) {
   // Take the first with a valid, non-foreign entry.
-  NamespaceRecordPtrVector::const_iterator iter;
-  for (iter = namespaces.begin(); iter < namespaces.end();  ++iter) {
+  for (auto* namespace_record : namespaces) {
     AppCacheDatabase::EntryRecord entry_record;
-    if (database_->FindEntry((*iter)->cache_id, (*iter)->namespace_.target_url,
+    if (database_->FindEntry(namespace_record->cache_id,
+                             namespace_record->namespace_.target_url,
                              &entry_record)) {
       AppCacheDatabase::GroupRecord group_record;
       if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
@@ -1092,9 +1072,9 @@ FindMainResponseTask::FindFirstValidNamespace(
       }
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
-      cache_id_ = (*iter)->cache_id;
-      namespace_entry_url_ = (*iter)->namespace_.target_url;
-      if ((*iter)->namespace_.type == APPCACHE_FALLBACK_NAMESPACE)
+      cache_id_ = namespace_record->cache_id;
+      namespace_entry_url_ = namespace_record->namespace_.target_url;
+      if (namespace_record->namespace_.type == APPCACHE_FALLBACK_NAMESPACE)
         fallback_entry_ = AppCacheEntry(entry_record.flags,
                                         entry_record.response_id);
       else
@@ -1399,9 +1379,9 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
       weak_factory_(this) {}
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {
-  for (auto* task : pending_quota_queries_)
+  for (StoreGroupAndCacheTask* task : pending_quota_queries_)
     task->CancelCompletion();
-  for (auto* task : scheduled_database_tasks_)
+  for (DatabaseTask* task : scheduled_database_tasks_)
     task->CancelCompletion();
 
   if (database_ &&
@@ -1569,11 +1549,9 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
           return;
       }
     } else {
-      for (AppCacheWorkingSet::GroupMap::const_iterator it =
-              groups_in_use->begin();
-           it != groups_in_use->end(); ++it) {
-        if (FindResponseForMainRequestInGroup(
-                it->second, *url_ptr, delegate)) {
+      for (const auto& pair : *groups_in_use) {
+        if (FindResponseForMainRequestInGroup(pair.second, *url_ptr,
+                                              delegate)) {
           return;
         }
       }
@@ -1853,15 +1831,14 @@ AppCacheStorageImpl::GetPendingGroupLoadTask(const GURL& manifest_url) {
   return nullptr;
 }
 
-void AppCacheStorageImpl::GetPendingForeignMarkingsForCache(
-    int64_t cache_id,
-    std::vector<GURL>* urls) {
-  PendingForeignMarkings::iterator iter = pending_foreign_markings_.begin();
-  while (iter != pending_foreign_markings_.end()) {
-    if (iter->second == cache_id)
-      urls->push_back(iter->first);
-    ++iter;
+std::vector<GURL> AppCacheStorageImpl::GetPendingForeignMarkingsForCache(
+    int64_t cache_id) {
+  std::vector<GURL> urls;
+  for (const auto& pair : pending_foreign_markings_) {
+    if (pair.second == cache_id)
+      urls.push_back(pair.first);
   }
+  return urls;
 }
 
 void AppCacheStorageImpl::ScheduleSimpleTask(base::OnceClosure task) {

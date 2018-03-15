@@ -118,11 +118,10 @@ void AppCacheStorage::UpdateUsageMapAndNotify(const GURL& origin,
 
 void AppCacheStorage::ClearUsageMapAndNotify() {
   if (service()->quota_manager_proxy()) {
-    for (UsageMap::const_iterator iter = usage_map_.begin();
-         iter != usage_map_.end(); ++iter) {
+    for (const auto& pair : usage_map_) {
       service()->quota_manager_proxy()->NotifyStorageModified(
-          storage::QuotaClient::kAppcache, url::Origin::Create(iter->first),
-          blink::mojom::StorageType::kTemporary, -(iter->second));
+          storage::QuotaClient::kAppcache, url::Origin::Create(pair.first),
+          blink::mojom::StorageType::kTemporary, -(pair.second));
     }
   }
   usage_map_.clear();

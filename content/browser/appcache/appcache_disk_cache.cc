@@ -245,9 +245,8 @@ void AppCacheDiskCache::Disable() {
   // We need to close open file handles in order to reinitalize the
   // appcache system on the fly. File handles held in both entries and in
   // the main disk_cache::Backend class need to be released.
-  for (OpenEntries::const_iterator iter = open_entries_.begin();
-       iter != open_entries_.end(); ++iter) {
-    (*iter)->Abandon();
+  for (EntryImpl* entry : open_entries_) {
+    entry->Abandon();
   }
   open_entries_.clear();
   disk_cache_.reset();
@@ -370,25 +369,24 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   }
 
   // Service pending calls that were queued up while we were initializing.
-  for (PendingCalls::const_iterator iter = pending_calls_.begin();
-       iter < pending_calls_.end(); ++iter) {
+  for (const auto& call : pending_calls_) {
     rv = net::ERR_FAILED;
-    switch (iter->call_type) {
+    switch (call.call_type) {
       case CREATE:
-        rv = CreateEntry(iter->key, iter->entry, iter->callback);
+        rv = CreateEntry(call.key, call.entry, call.callback);
         break;
       case OPEN:
-        rv = OpenEntry(iter->key, iter->entry, iter->callback);
+        rv = OpenEntry(call.key, call.entry, call.callback);
         break;
       case DOOM:
-        rv = DoomEntry(iter->key, iter->callback);
+        rv = DoomEntry(call.key, call.callback);
         break;
       default:
         NOTREACHED();
         break;
     }
     if (rv != net::ERR_IO_PENDING)
-      iter->callback.Run(rv);
+      call.callback.Run(rv);
   }
   pending_calls_.clear();
 }

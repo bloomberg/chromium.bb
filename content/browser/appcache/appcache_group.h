@@ -127,9 +127,9 @@ class CONTENT_EXPORT AppCacheGroup
 
   ~AppCacheGroup();
 
-  typedef std::vector<AppCache*> Caches;
-  typedef std::map<UpdateObserver*, std::pair<AppCacheHost*, GURL>>
-      QueuedUpdates;
+  using Caches = std::vector<AppCache*>;
+  using QueuedUpdates =
+      std::map<UpdateObserver*, std::pair<AppCacheHost*, GURL>>;
 
   static const int kUpdateRestartDelayMs = 1000;
 

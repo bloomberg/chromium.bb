@@ -28,7 +28,7 @@ class MockAppCacheStorage;
 
 static const int kUnkownResponseDataSize = -1;
 
-typedef base::OnceCallback<void(int)> OnceCompletionCallback;
+using OnceCompletionCallback = base::OnceCallback<void(int)>;
 
 // Response info for a particular response id. Instances are tracked in
 // the working set.

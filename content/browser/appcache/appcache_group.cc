@@ -98,13 +98,13 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
     newest_complete_cache_ = complete_cache;
 
     // Update hosts of older caches to add a reference to the newest cache.
-    for (Caches::iterator it = old_caches_.begin();
-         it != old_caches_.end(); ++it) {
-      AppCache::AppCacheHosts& hosts = (*it)->associated_hosts();
-      for (AppCache::AppCacheHosts::iterator host_it = hosts.begin();
-           host_it != hosts.end(); ++host_it) {
-        (*host_it)->SetSwappableCache(this);
-      }
+    // (This loop mutates |old_caches_| so a range-based for-loop cannot be
+    // used, because it caches the end iterator.)
+    for (Caches::iterator it = old_caches_.begin(); it != old_caches_.end();
+         ++it) {
+      AppCache* cache = *it;
+      for (AppCacheHost* host : cache->associated_hosts())
+        host->SetSwappableCache(this);
     }
   } else {
     old_caches_.push_back(complete_cache);
@@ -211,9 +211,8 @@ void AppCacheGroup::RunQueuedUpdates() {
   queued_updates_.swap(updates_to_run);
   DCHECK(queued_updates_.empty());
 
-  for (QueuedUpdates::iterator it = updates_to_run.begin();
-       it != updates_to_run.end(); ++it) {
-    AppCacheHost* host = it->second.first;
+  for (auto& pair : updates_to_run) {
+    AppCacheHost* host = pair.second.first;
     host->RemoveObserver(host_observer_.get());
     if (FindObserver(host, queued_observers_)) {
       queued_observers_.RemoveObserver(host);
@@ -221,7 +220,7 @@ void AppCacheGroup::RunQueuedUpdates() {
     }
 
     if (!is_obsolete() && !is_being_deleted())
-      StartUpdateWithNewMasterEntry(host, it->second.second);
+      StartUpdateWithNewMasterEntry(host, pair.second.second);
   }
 }
 

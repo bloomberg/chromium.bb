@@ -109,8 +109,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   CacheLoadTask* GetPendingCacheLoadTask(int64_t cache_id);
   GroupLoadTask* GetPendingGroupLoadTask(const GURL& manifest_url);
-  void GetPendingForeignMarkingsForCache(int64_t cache_id,
-                                         std::vector<GURL>* urls);
+  std::vector<GURL> GetPendingForeignMarkingsForCache(int64_t cache_id);
 
   void ScheduleSimpleTask(base::OnceClosure task);
   void RunOnePendingSimpleTask();
