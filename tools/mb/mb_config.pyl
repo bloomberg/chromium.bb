@@ -413,6 +413,8 @@
       'Battor Agent Linux': 'release_bot',
       'Battor Agent Mac': 'release_bot',
       'Battor Agent Win': 'release_bot',
+      'Mac Builder FYI': 'official_goma',
+      'Win Builder FYI': 'official_goma_x86',
     },
 
     'chromium.swarm': {
