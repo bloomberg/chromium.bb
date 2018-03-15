@@ -22,9 +22,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         selected: true,
       }],
     };
-    var request = new PaymentRequest(
-        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
-        details);
+    var request = new PaymentRequest([{supportedMethods: ['visa']}], details);
     request.show()
         .then(function(resp) {
           resp.complete('success')

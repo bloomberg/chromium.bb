@@ -22,14 +22,7 @@ function buy() {  // eslint-disable-line no-unused-vars
       }],
     };
     var request = new PaymentRequest(
-        [
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-          {supportedMethods: 'https://bobpay.com'},
-        ],
-        details, {
+        [{supportedMethods: ['visa', 'https://bobpay.com']}], details, {
           requestPayerName: true,
           requestPayerEmail: true,
           requestPayerPhone: true,
