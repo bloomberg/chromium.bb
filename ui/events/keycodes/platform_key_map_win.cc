@@ -279,7 +279,7 @@ base::LazyInstance<base::ThreadLocalStorage::Slot,
 
 // TODO(crbug.com/25503): Controls Control+Alt vs AltGraph disambiguation.
 const base::Feature kFixAltGraphModifier{"FixAltGraph",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // anonymous namespace
 
