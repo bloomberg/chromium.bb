@@ -21,7 +21,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.ct_policy_compliance = head.ct_policy_compliance;
   new_response->head.is_legacy_symantec_cert = head.is_legacy_symantec_cert;
   new_response->head.content_length = head.content_length;
-  new_response->head.was_cached = head.was_cached;
   new_response->head.encoded_data_length = head.encoded_data_length;
   new_response->head.encoded_body_length = head.encoded_body_length;
   new_response->head.appcache_id = head.appcache_id;
