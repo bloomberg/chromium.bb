@@ -217,11 +217,7 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
     case IPC_CLOSED:
       // We must make sure to not access |callback_| in case Stop() has already
       // been called.
-      {
-        base::AutoLock auto_lock_(audio_thread_lock_);
-        if (!stopping_hack_)
-          callback_->OnRenderError();
-      }
+      NotifyRenderCallbackOfError();
       break;
 
     case IDLE:
@@ -330,11 +326,7 @@ void AudioOutputDevice::OnError() {
   // TODO(tommi): Add an explicit contract for clearing the callback
   // object.  Possibly require calling Initialize again or provide
   // a callback object via Start() and clear it in Stop().
-  {
-    base::AutoLock auto_lock_(audio_thread_lock_);
-    if (audio_thread_)
-      callback_->OnRenderError();
-  }
+  NotifyRenderCallbackOfError();
 }
 
 void AudioOutputDevice::OnDeviceAuthorized(
@@ -407,8 +399,8 @@ void AudioOutputDevice::OnDeviceAuthorized(
     // indefinitely after this method returns.
     ipc_->CloseStream();
     OnIPCClosed();
-    if (callback_)
-      callback_->OnRenderError();
+
+    NotifyRenderCallbackOfError();
   }
 }
 
@@ -471,6 +463,17 @@ void AudioOutputDevice::OnIPCClosed() {
 
   // Signal to unblock any blocked threads waiting for parameters
   did_receive_auth_.Signal();
+}
+
+void AudioOutputDevice::NotifyRenderCallbackOfError() {
+  TRACE_EVENT0("audio", "AudioOutputDevice::NotifyRenderCallbackOfError");
+  DCHECK(task_runner()->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(audio_thread_lock_);
+  // Avoid signaling error if Initialize() hasn't been called yet, or if
+  // Stop() has already been called.
+  if (callback_ && !stopping_hack_)
+    callback_->OnRenderError();
 }
 
 void AudioOutputDevice::WillDestroyCurrentMessageLoop() {

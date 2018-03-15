@@ -392,6 +392,31 @@ TEST_F(AudioOutputDeviceTest,
   StopAudioDevice();
 }
 
+TEST_F(AudioOutputDeviceTest, AuthorizationFailsBeforeInitialize_NoError) {
+  // Clear audio device set by fixture.
+  StopAudioDevice();
+  audio_output_ipc_ = new MockAudioOutputIPC();
+  audio_device_ = new AudioOutputDevice(
+      base::WrapUnique(audio_output_ipc_), io_loop_.task_runner(), 0,
+      kDefaultDeviceId, url::Origin(),
+      base::TimeDelta::FromMilliseconds(kAuthTimeoutForTestingMs));
+  EXPECT_CALL(
+      *audio_output_ipc_,
+      RequestDeviceAuthorization(audio_device_.get(), 0, kDefaultDeviceId, _));
+
+  audio_device_->RequestDeviceAuthorization();
+  audio_device_->Initialize(default_audio_parameters_, &callback_);
+  base::RunLoop().RunUntilIdle();
+  audio_device_->Stop();
+
+  // We've stopped, so accessing |callback_| isn't ok.
+  EXPECT_CALL(callback_, OnRenderError()).Times(0);
+  audio_device_->OnDeviceAuthorized(OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
+                                    default_audio_parameters_,
+                                    kDefaultDeviceId);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(AudioOutputDeviceTest, AuthorizationTimedOut) {
   base::Thread thread("DeviceInfo");
   thread.Start();
