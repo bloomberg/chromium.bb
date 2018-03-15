@@ -44,6 +44,8 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
 
   // For non-length properties and special cases.
   switch (property_id) {
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
     case CSSPropertyFontSize:
       return value < 0;
     case CSSPropertyFontWeight:
