@@ -609,24 +609,31 @@ void OmniboxViewIOS::OnClear() {
 
 bool OmniboxViewIOS::OnCopy() {
   UIPasteboard* board = [UIPasteboard generalPasteboard];
-  UITextRange* selected_range = [field_ selectedTextRange];
-  base::string16 text =
-      base::SysNSStringToUTF16([field_ textInRange:selected_range]);
-
-  UITextPosition* start = [field_ beginningOfDocument];
-  UITextPosition* end = [field_ endOfDocument];
-  BOOL is_select_all = ([field_ comparePosition:[selected_range start]
-                                     toPosition:start] == NSOrderedSame) &&
-                       ([field_ comparePosition:[selected_range end]
-                                     toPosition:end] == NSOrderedSame);
-
-  // The following call to |-offsetFromPosition:toPosition:| gives the offset in
-  // terms of the number of "visible characters."  The documentation does not
-  // specify whether this means glyphs or UTF16 chars.  This does not matter for
-  // the current implementation of AdjustTextForCopy(), but it may become an
-  // issue at some point.
-  NSInteger start_location =
-      [field_ offsetFromPosition:start toPosition:[selected_range start]];
+  NSString* selectedText = nil;
+  BOOL is_select_all = NO;
+  NSInteger start_location = 0;
+  if ([field_ isPreEditing]) {
+    selectedText = [field_ preEditText];
+    is_select_all = YES;
+    start_location = 0;
+  } else {
+    UITextRange* selected_range = [field_ selectedTextRange];
+    selectedText = [field_ textInRange:selected_range];
+    UITextPosition* start = [field_ beginningOfDocument];
+    UITextPosition* end = [field_ endOfDocument];
+    is_select_all = ([field_ comparePosition:[selected_range start]
+                                  toPosition:start] == NSOrderedSame) &&
+                    ([field_ comparePosition:[selected_range end]
+                                  toPosition:end] == NSOrderedSame);
+    // The following call to |-offsetFromPosition:toPosition:| gives the offset
+    // in terms of the number of "visible characters."  The documentation does
+    // not specify whether this means glyphs or UTF16 chars.  This does not
+    // matter for the current implementation of AdjustTextForCopy(), but it may
+    // become an issue at some point.
+    start_location =
+        [field_ offsetFromPosition:start toPosition:[selected_range start]];
+  }
+  base::string16 text = base::SysNSStringToUTF16(selectedText);
 
   GURL url;
   bool write_url = false;
