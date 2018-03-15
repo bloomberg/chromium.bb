@@ -15,13 +15,7 @@ var request;
 function noQueryShow() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
+        [{supportedMethods: ['https://bobpay.com', 'visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.show()
         .then(function(resp) {
@@ -47,13 +41,7 @@ function noQueryShow() {  // eslint-disable-line no-unused-vars
 function queryShow() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
+        [{supportedMethods: ['https://bobpay.com', 'visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()
         .then(function(result) {
@@ -87,13 +75,7 @@ function queryShow() {  // eslint-disable-line no-unused-vars
 function queryNoShow() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
+        [{supportedMethods: ['https://bobpay.com', 'visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()
         .then(function(result) {
