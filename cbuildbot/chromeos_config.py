@@ -538,11 +538,12 @@ _x86_internal_release_boards = frozenset([
     'banjo',
     'banon',
     'betty',
-    'betty-arcnext',
     'betty-arc64',
+    'betty-arcnext',
     'buddy',
     'candy',
     'caroline',
+    'caroline-arcnext',
     'cave',
     'celes',
     'chell',
@@ -730,8 +731,8 @@ _vmtest_boards = frozenset([
     # from betty & co.
     'amd64-generic', # Has kernel 4.4, used with public Chromium.
     'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
-    'betty-arcnext', # Like betty but with the next version of ARC++.
     'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
+    'betty-arcnext', # Like betty but with the next version of ARC++.
     'newbie',        # AOSP variant of betty.
     'novato',        # Like betty but with GMSCore but not the Play Store
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
@@ -2209,7 +2210,11 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
 
   _mst_hwtest_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([
+  ])
+  _mst_no_hwtest_experimental_boards = frozenset([
+      'betty-arcnext',
       'eve-arcnext',
+      'kevin-arcnext',
   ])
   _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
@@ -2428,7 +2433,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
+      'caroline-arcnext',
       'grunt',
+      'kevin-arcnext',
       'nami',
       'octopus',
   ])
@@ -3178,8 +3185,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'betty-arcnext',
       'bob',
+      'caroline-arcnext',
+      'eve-arcnext',
       'hana',
+      'kevin-arcnext',
       'nyan_big',
       'scarlet',
       'terra',
