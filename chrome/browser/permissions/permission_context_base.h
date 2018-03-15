@@ -80,8 +80,6 @@ class PermissionContextBase : public KeyedService {
   // Returns whether the permission has been granted, denied etc.
   // |render_frame_host| may be nullptr if the call is coming from a context
   // other than a specific frame.
-  // TODO(meredithl): Ensure that the result accurately reflects whether the
-  // origin is blacklisted for this permission.
   PermissionResult GetPermissionStatus(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
@@ -158,17 +156,6 @@ class PermissionContextBase : public KeyedService {
 
   // Called when a request is no longer used so it can be cleaned up.
   void CleanUpRequest(const PermissionRequestID& id);
-
-  // Called when the requesting origin and permission have been checked by Safe
-  // Browsing. |permission_blocked| determines whether to auto-block the
-  // permission request without prompting the user for a decision.
-  void ContinueRequestPermission(content::WebContents* web_contents,
-                                 const PermissionRequestID& id,
-                                 const GURL& requesting_origin,
-                                 const GURL& embedding_origin,
-                                 bool user_gesture,
-                                 const BrowserPermissionCallback& callback,
-                                 bool permission_blocked);
 
   // This is the callback for PermissionRequestImpl and is called once the user
   // allows/blocks/dismisses a permission prompt.

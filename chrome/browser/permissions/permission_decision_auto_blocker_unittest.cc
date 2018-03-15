@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/safe_browsing/db/test_database_manager.h"
 
 namespace {
 
@@ -30,56 +29,6 @@ bool FilterAll(const GURL& url) {
   return true;
 }
 
-class MockSafeBrowsingDatabaseManager
-    : public safe_browsing::TestSafeBrowsingDatabaseManager {
- public:
-  explicit MockSafeBrowsingDatabaseManager(bool perform_callback, bool enabled)
-      : perform_callback_(perform_callback), enabled_(enabled) {}
-
-  bool CheckApiBlacklistUrl(
-      const GURL& url,
-      safe_browsing::SafeBrowsingDatabaseManager::Client* client) override {
-    // Return true when able to synchronously determine that the url is safe.
-    if (!enabled_) {
-      return true;
-    }
-
-    if (perform_callback_) {
-      safe_browsing::ThreatMetadata metadata;
-      const auto& blacklisted_permissions = permissions_blacklist_.find(url);
-      if (blacklisted_permissions != permissions_blacklist_.end())
-        metadata.api_permissions = blacklisted_permissions->second;
-      client->OnCheckApiBlacklistUrlResult(url, metadata);
-    }
-    return false;
-  }
-
-  bool CancelApiCheck(Client* client) override {
-    DCHECK(!perform_callback_);
-    // Returns true when client check could be stopped.
-    return true;
-  }
-
-  void BlacklistUrlPermissions(const GURL& url,
-                               const std::set<std::string> permissions) {
-    permissions_blacklist_[url] = permissions;
-  }
-
-  void SetPerformCallback(bool perform_callback) {
-    perform_callback_ = perform_callback;
-  }
-
- protected:
-  ~MockSafeBrowsingDatabaseManager() override {}
-
- private:
-  bool perform_callback_;
-  bool enabled_;
-  std::map<GURL, std::set<std::string>> permissions_blacklist_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
-};
-
 }  // namespace
 
 class PermissionDecisionAutoBlockerUnitTest
@@ -89,8 +38,7 @@ class PermissionDecisionAutoBlockerUnitTest
     ChromeRenderViewHostTestHarness::SetUp();
     autoblocker_ = PermissionDecisionAutoBlocker::GetForProfile(profile());
     feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
-                                    features::kBlockPromptsIfIgnoredOften,
-                                    features::kPermissionsBlacklist},
+                                    features::kBlockPromptsIfIgnoredOften},
                                    {});
     last_embargoed_status_ = false;
     std::unique_ptr<base::SimpleTestClock> clock =
@@ -98,33 +46,6 @@ class PermissionDecisionAutoBlockerUnitTest
     clock_ = clock.get();
     autoblocker_->SetClockForTesting(std::move(clock));
     callback_was_run_ = false;
-  }
-
-  void SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(
-      scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager,
-      int timeout) {
-    autoblocker_->SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                                     timeout);
-  }
-
-  void CheckSafeBrowsingBlacklist(const GURL& url,
-                                  ContentSettingsType permission) {
-    base::RunLoop run_loop;
-    autoblocker_->CheckSafeBrowsingBlacklist(
-        nullptr, url, permission,
-        base::Bind(&PermissionDecisionAutoBlockerUnitTest::SetLastEmbargoStatus,
-                   base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
-  // Manually placing an (origin, permission) pair under embargo for
-  // blacklisting. To embargo on dismissals, RecordDismissAndEmbargo can be
-  // used.
-  void PlaceUnderBlacklistEmbargo(const GURL& url,
-                                  ContentSettingsType permission) {
-    autoblocker_->PlaceUnderEmbargo(
-        url, permission,
-        PermissionDecisionAutoBlocker::kPermissionBlacklistEmbargoKey);
   }
 
   PermissionDecisionAutoBlocker* autoblocker() { return autoblocker_; }
@@ -211,26 +132,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveEmbargoByUrl) {
       autoblocker()->GetEmbargoResult(url2, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-}
-
-// Test that removing embargo from blacklisted permissions also works.
-TEST_F(PermissionDecisionAutoBlockerUnitTest,
-       RemoveEmbargoByUrlForBlacklistedPermission) {
-  GURL url("https://www.example.com");
-
-  // Place under embargo and verify.
-  PlaceUnderBlacklistEmbargo(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
-
-  // Remove embargo and verify.
-  autoblocker()->RemoveEmbargoByUrl(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }
 
 // Test it still only takes one more dismissal to re-trigger embargo after
@@ -387,53 +288,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
       0, autoblocker()->GetIgnoreCount(url2, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
 }
 
-// Test that an origin that has been blacklisted for a permission is embargoed.
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestUpdateEmbargoBlacklist) {
-  GURL url("https://www.google.com");
-  base::HistogramTester histograms;
-
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
-                                          true /* enabled */);
-  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     2000 /* timeout in ms */);
-
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_TRUE(callback_was_run());
-  EXPECT_TRUE(last_embargoed_status());
-  histograms.ExpectUniqueSample(
-      "Permissions.AutoBlocker.SafeBrowsingResponse",
-      static_cast<int>(SafeBrowsingResponse::BLACKLISTED), 1);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
-}
-
-// Test that an origin that is blacklisted for a permission will not be placed
-// under embargo for another permission.
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestRequestNotBlacklisted) {
-  GURL url("https://www.google.com");
-  clock()->SetNow(base::Time::Now());
-  base::HistogramTester histograms;
-
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
-                                          true /* enabled */);
-  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     0 /* timeout in ms */);
-
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  EXPECT_FALSE(last_embargoed_status());
-  histograms.ExpectUniqueSample(
-      "Permissions.AutoBlocker.SafeBrowsingResponse",
-      static_cast<int>(SafeBrowsingResponse::NOT_BLACKLISTED), 1);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
-}
-
 // Check that we do not apply embargo to the plugins content type, as prompts
 // should be triggered only when necessary by Html5ByDefault.
 TEST_F(PermissionDecisionAutoBlockerUnitTest,
@@ -518,11 +372,16 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Place under embargo and verify.
-  PlaceUnderBlacklistEmbargo(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   result =
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
   // Check that the origin is not under embargo for a different permission.
   result =
@@ -535,7 +394,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   result =
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
   // Check embargo is lifted on expiry day. A small offset after the exact
   // embargo expiration date has been added to account for any precision errors
@@ -554,12 +413,21 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 
   // Place under embargo again and verify the embargo status.
-  PlaceUnderBlacklistEmbargo(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   clock()->Advance(base::TimeDelta::FromDays(1));
   result =
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+  result =
+      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }
 
 // Tests the alternating pattern of the block on multiple dismiss behaviour. On
@@ -592,10 +460,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 
-  histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                              0);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 0);
   // Accelerate time forward, check that the embargo status is lifted and the
   // request won't be automatically blocked.
   clock()->Advance(base::TimeDelta::FromDays(8));
@@ -627,10 +491,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDismissEmbargoBackoff) {
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-  histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                              0);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 0);
 }
 
 // Tests the alternating pattern of the block on multiple ignores behaviour.
@@ -661,10 +521,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoBackoff) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
 
-  histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                              0);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 0);
   // Accelerate time forward, check that the embargo status is lifted and the
   // request won't be automatically blocked.
   clock()->Advance(base::TimeDelta::FromDays(8));
@@ -696,140 +552,4 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestIgnoreEmbargoBackoff) {
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
-  histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                              0);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 0);
-}
-
-// Test the logic for a combination of blacklisting and dismissal embargo.
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestExpiringOverlappingEmbargo) {
-  GURL url("https://www.google.com");
-  clock()->SetNow(base::Time::Now());
-
-  // Place under blacklist embargo and check the status.
-  PlaceUnderBlacklistEmbargo(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  clock()->Advance(base::TimeDelta::FromDays(5));
-  PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
-
-  // Record dismisses to place it under dismissal embargo.
-  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  // Accelerate time to a point where the blacklist embargo should be expired
-  // and check that dismissal embargo is still set.
-  clock()->Advance(base::TimeDelta::FromDays(3));
-  result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-
-  // Record an ignore embargo.
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
-      url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  // Ensure the ignore embargo is still set.
-  clock()->Advance(base::TimeDelta::FromDays(5));
-  result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::MULTIPLE_IGNORES, result.source);
-}
-
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
-  GURL url("https://www.google.com");
-  clock()->SetNow(base::Time::Now());
-  base::HistogramTester histograms;
-
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(false /* perform_callback */,
-                                          true /* enabled */);
-  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     0 /* timeout in ms */);
-
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_TRUE(callback_was_run());
-  EXPECT_FALSE(last_embargoed_status());
-
-  PermissionResult result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
-
-  histograms.ExpectUniqueSample("Permissions.AutoBlocker.SafeBrowsingResponse",
-                                static_cast<int>(SafeBrowsingResponse::TIMEOUT),
-                                1);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 1);
-  db_manager->SetPerformCallback(true);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     2000 /* timeout in ms */);
-
-  clock()->Advance(base::TimeDelta::FromDays(1));
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_TRUE(callback_was_run());
-  EXPECT_TRUE(last_embargoed_status());
-  histograms.ExpectTotalCount("Permissions.AutoBlocker.SafeBrowsingResponse",
-                              2);
-  histograms.ExpectTotalCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponseTime", 2);
-  histograms.ExpectBucketCount(
-      "Permissions.AutoBlocker.SafeBrowsingResponse",
-      static_cast<int>(SafeBrowsingResponse::BLACKLISTED), 1);
-  clock()->Advance(base::TimeDelta::FromDays(1));
-  result =
-      autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
-}
-
-// Test that a blacklisted permission should not be autoblocked if the database
-// manager is disabled.
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDisabledDatabaseManager) {
-  GURL url("https://www.google.com");
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
-                                          false /* enabled */);
-  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     2000 /* timeout in ms */);
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  EXPECT_TRUE(callback_was_run());
-  EXPECT_FALSE(last_embargoed_status());
-}
-
-TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingResponse) {
-  GURL url("https://www.google.com");
-  clock()->SetNow(base::Time::Now());
-  base::HistogramTester histograms;
-
-  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
-                                          true /* enabled */);
-  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
-  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
-  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
-                                                     0 /* timeout in ms */);
-
-  CheckSafeBrowsingBlacklist(url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  EXPECT_FALSE(last_embargoed_status());
-  histograms.ExpectUniqueSample(
-      "Permissions.AutoBlocker.SafeBrowsingResponse",
-      static_cast<int>(SafeBrowsingResponse::NOT_BLACKLISTED), 1);
 }

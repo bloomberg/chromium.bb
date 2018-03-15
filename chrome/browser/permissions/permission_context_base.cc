@@ -24,13 +24,11 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -72,9 +70,6 @@ const char kPermissionBlockedRepeatedIgnoresMessage[] =
     "https://www.chromestatus.com/features/6443143280984064 for more "
     "information.";
 #endif
-
-const char kPermissionBlockedBlacklistMessage[] =
-    "this origin is not allowed to request %s permission.";
 
 const char kPermissionBlockedFeaturePolicyMessage[] =
     "%s permission has been blocked because of a Feature Policy applied to the "
@@ -137,9 +132,8 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  // Synchronously check the content setting to see if the user has already made
-  // a decision, or if the origin is under embargo. If so, respect that
-  // decision.
+  // Check the content setting to see if the user has already made a decision,
+  // or if the origin is under embargo. If so, respect that decision.
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       id.render_process_id(), id.render_frame_id());
   PermissionResult result =
@@ -165,11 +159,6 @@ void PermissionContextBase::RequestPermission(
                                     kPermissionBlockedRepeatedIgnoresMessage,
                                     content_settings_type_);
         break;
-      case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
-        LogPermissionBlockedMessage(web_contents,
-                                    kPermissionBlockedBlacklistMessage,
-                                    content_settings_type_);
-        break;
       case PermissionStatusSource::FEATURE_POLICY:
         LogPermissionBlockedMessage(web_contents,
                                     kPermissionBlockedFeaturePolicyMessage,
@@ -185,40 +174,6 @@ void PermissionContextBase::RequestPermission(
     PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(result.source);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, result.content_setting);
-    return;
-  }
-
-  // Asynchronously check whether the origin should be blocked from making this
-  // permission request, e.g. it may be on the Safe Browsing API blacklist.
-  PermissionDecisionAutoBlocker::GetForProfile(profile_)
-      ->CheckSafeBrowsingBlacklist(
-          web_contents, requesting_origin, content_settings_type_,
-          base::Bind(&PermissionContextBase::ContinueRequestPermission,
-                     weak_factory_.GetWeakPtr(), web_contents, id,
-                     requesting_origin, embedding_origin, user_gesture,
-                     callback));
-}
-
-void PermissionContextBase::ContinueRequestPermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool user_gesture,
-    const BrowserPermissionCallback& callback,
-    bool permission_blocked) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (permission_blocked) {
-    LogPermissionBlockedMessage(web_contents,
-                                kPermissionBlockedBlacklistMessage,
-                                content_settings_type_);
-    // Permission has been automatically blocked. Record that the prompt was
-    // suppressed and that we hit the blacklist.
-    PermissionUmaUtil::RecordEmbargoPromptSuppression(
-        PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
-    PermissionUmaUtil::RecordEmbargoStatus(
-        PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
-    callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
 

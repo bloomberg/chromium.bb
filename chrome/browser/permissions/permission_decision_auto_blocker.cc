@@ -13,16 +13,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_blacklist_client.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/safe_browsing/db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
@@ -46,16 +42,6 @@ int g_dismissal_embargo_days = kDefaultEmbargoDays;
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated ignores.
 int g_ignore_embargo_days = kDefaultEmbargoDays;
-
-// The number of days that an origin will stay under embargo for a requested
-// permission due to blacklisting.
-int g_blacklist_embargo_days = kDefaultEmbargoDays;
-
-// Maximum time in milliseconds to wait for safe browsing service to check a
-// url for blacklisting. After this amount of time, the check will be aborted
-// and the url will be treated as not safe.
-// TODO(meredithl): Revisit this once UMA metrics have data about request time.
-const int kCheckUrlTimeoutMs = 2000;
 
 std::unique_ptr<base::DictionaryValue> GetOriginAutoBlockerData(
     HostContentSettingsMap* settings,
@@ -201,10 +187,6 @@ const char PermissionDecisionAutoBlocker::kPermissionIgnoreEmbargoKey[] =
     "ignore_embargo_days";
 
 // static
-const char PermissionDecisionAutoBlocker::kPermissionBlacklistEmbargoKey[] =
-    "blacklisting_embargo_days";
-
-// static
 PermissionDecisionAutoBlocker* PermissionDecisionAutoBlocker::GetForProfile(
     Profile* profile) {
   return PermissionDecisionAutoBlocker::Factory::GetForProfile(profile);
@@ -221,13 +203,6 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
       GetOriginAutoBlockerData(settings_map, request_origin);
   base::Value* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
-
-  if (IsUnderEmbargo(permission_dict, features::kPermissionsBlacklist,
-                     kPermissionBlacklistEmbargoKey, current_time,
-                     base::TimeDelta::FromDays(g_blacklist_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
-  }
 
   if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
                      kPermissionDismissalEmbargoKey, current_time,
@@ -262,9 +237,6 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
   std::string ignore_embargo_days_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfIgnoredOften, kPermissionIgnoreEmbargoKey);
-  std::string blacklist_embargo_days_value =
-      variations::GetVariationParamValueByFeature(
-          features::kPermissionsBlacklist, kPermissionBlacklistEmbargoKey);
 
   // If converting the value fails, revert to the original value.
   UpdateValueFromVariation(dismissals_before_block_value,
@@ -276,33 +248,6 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
                            &g_dismissal_embargo_days, kDefaultEmbargoDays);
   UpdateValueFromVariation(ignore_embargo_days_value, &g_ignore_embargo_days,
                            kDefaultEmbargoDays);
-  UpdateValueFromVariation(blacklist_embargo_days_value,
-                           &g_blacklist_embargo_days, kDefaultEmbargoDays);
-}
-
-void PermissionDecisionAutoBlocker::CheckSafeBrowsingBlacklist(
-    content::WebContents* web_contents,
-    const GURL& request_origin,
-    ContentSettingsType permission,
-    base::Callback<void(bool)> callback) {
-  DCHECK_EQ(CONTENT_SETTING_ASK,
-            GetEmbargoResult(request_origin, permission).content_setting);
-
-  if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist) &&
-      db_manager_) {
-    // The CheckSafeBrowsingResult callback won't be called if the profile is
-    // destroyed before a result is received. In that case this object will have
-    // been destroyed by that point.
-    PermissionBlacklistClient::CheckSafeBrowsingBlacklist(
-        web_contents, db_manager_, request_origin, permission,
-        safe_browsing_timeout_,
-        base::Bind(&PermissionDecisionAutoBlocker::CheckSafeBrowsingResult,
-                   base::Unretained(this), request_origin, permission,
-                   callback));
-    return;
-  }
-
-  callback.Run(false /* permission blocked */);
 }
 
 PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
@@ -372,10 +317,8 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
 
   // Don't proceed if |permission| was not under embargo for |url|.
   PermissionResult result = GetEmbargoResult(url, permission);
-  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS &&
-      result.source != PermissionStatusSource::SAFE_BROWSING_BLACKLIST) {
+  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS)
     return;
-  }
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -384,14 +327,9 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
   base::Value* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
 
-  // Deleting non-existent entries will return a false value. Since it should be
-  // impossible for a permission to have been embargoed for two different
-  // reasons at the same time, check that exactly one deletion was successful.
   const bool dismissal_key_deleted =
       permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
-  const bool blacklist_key_deleted =
-      permission_dict->RemoveKey(kPermissionBlacklistEmbargoKey);
-  DCHECK(dismissal_key_deleted != blacklist_key_deleted);
+  DCHECK(dismissal_key_deleted);
 
   map->SetWebsiteSettingDefaultScope(
       url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
@@ -421,30 +359,10 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
 PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
     : profile_(profile),
-      db_manager_(nullptr),
-      safe_browsing_timeout_(kCheckUrlTimeoutMs),
       clock_(new base::DefaultClock()) {
-  safe_browsing::SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (sb_service)
-    db_manager_ = sb_service->database_manager();
 }
 
 PermissionDecisionAutoBlocker::~PermissionDecisionAutoBlocker() {}
-
-void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(
-    const GURL& request_origin,
-    ContentSettingsType permission,
-    base::Callback<void(bool)> callback,
-    bool should_be_embargoed) {
-  if (should_be_embargoed) {
-    // Requesting site is blacklisted for this permission, update the content
-    // setting to place it under embargo.
-    PlaceUnderEmbargo(request_origin, permission,
-                      kPermissionBlacklistEmbargoKey);
-  }
-  callback.Run(should_be_embargoed /* permission blocked */);
-}
 
 void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
     const GURL& request_origin,
@@ -461,14 +379,6 @@ void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
   map->SetWebsiteSettingDefaultScope(
       request_origin, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
-}
-
-void PermissionDecisionAutoBlocker::
-    SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(
-        scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
-        int timeout) {
-  db_manager_ = db_manager;
-  safe_browsing_timeout_ = timeout;
 }
 
 void PermissionDecisionAutoBlocker::SetClockForTesting(

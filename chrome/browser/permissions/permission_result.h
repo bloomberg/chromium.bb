@@ -12,10 +12,6 @@ enum class PermissionStatusSource {
   // The reason for the status is not specified.
   UNSPECIFIED,
 
-  // The status is the result of being blocked because the permission is on the
-  // safe browsing blacklist.
-  SAFE_BROWSING_BLACKLIST,
-
   // The status is the result of being blocked by the permissions kill switch.
   KILL_SWITCH,
 

@@ -1170,11 +1170,6 @@ const char kPdfIsolationName[] = "PDF Isolation";
 const char kPdfIsolationDescription[] =
     "Render PDF files from different origins in different plugin processes.";
 
-const char kPermissionsBlacklistName[] = "Permissions Blacklist";
-const char kPermissionsBlacklistDescription[] =
-    "Enables the Permissions Blacklist, which blocks permissions for "
-    "blacklisted sites for Safe Browsing users.";
-
 const char kPinchScaleName[] = "Pinch scale";
 const char kPinchScaleDescription[] =
     "Enables experimental support for scale using pinch.";
