@@ -85,7 +85,10 @@ public class ContentView
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
-        return WebContentsAccessibility.fromWebContents(mWebContents);
+        // TODO(jinsukkim): Make it possible to check WebContents directly rather than doing it
+        //     via examining the availiability of ContentViewCore;
+        return getContentViewCore() != null ? WebContentsAccessibility.fromWebContents(mWebContents)
+                                            : null;
     }
 
     @Override
@@ -133,12 +136,14 @@ public class ContentView
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (getContentViewCore() == null) return null;
         return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (mWebContents == null) return false;
+        if (getContentViewCore() == null) return false;
+
         return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 
