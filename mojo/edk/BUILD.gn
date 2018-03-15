@@ -1,0 +1,113 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/nacl/config.gni")
+
+# Targets should depend on this if directly referencing the |mojo::edk|
+# namespace.
+component("edk") {
+  output_name = "mojo_edk"
+
+  public = [
+    "embedder/embedder.h",
+    "embedder/incoming_broker_client_invitation.h",
+    "embedder/outgoing_broker_client_invitation.h",
+    "embedder/peer_connection.h",
+  ]
+
+  sources = [
+    "embedder/embedder.cc",
+    "embedder/incoming_broker_client_invitation.cc",
+    "embedder/outgoing_broker_client_invitation.cc",
+    "embedder/peer_connection.cc",
+  ]
+
+  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+
+  deps = []
+  if (!is_nacl) {
+    deps += [ "//crypto" ]
+  }
+
+  public_deps = [
+    ":core",
+    "//mojo/public/cpp/system",
+  ]
+}
+
+# Bits of the EDK library which do not depend on public API linkage. It is
+# not allowed for this target or any of its transitive dependencies to depend
+# on anything under //mojo/public beyond strict C type definitions.
+source_set("core") {
+  visibility = [ ":edk" ]
+
+  public = [
+    "embedder/configuration.h",
+    "embedder/connection_params.h",
+    "embedder/embedder_internal.h",
+    "embedder/entrypoints.h",
+    "embedder/named_platform_channel_pair.h",
+    "embedder/named_platform_handle.h",
+    "embedder/named_platform_handle_utils.h",
+    "embedder/platform_channel_pair.h",
+    "embedder/platform_handle.h",
+    "embedder/platform_handle_utils.h",
+    "embedder/process_error_callback.h",
+    "embedder/scoped_ipc_support.h",
+    "embedder/scoped_platform_handle.h",
+    "embedder/transport_protocol.h",
+  ]
+
+  sources = [
+    "embedder/connection_params.cc",
+    "embedder/entrypoints.cc",
+    "embedder/named_platform_channel_pair_win.cc",
+    "embedder/named_platform_handle_utils_win.cc",
+    "embedder/platform_channel_pair.cc",
+    "embedder/platform_channel_pair_win.cc",
+    "embedder/platform_handle.cc",
+    "embedder/platform_handle_utils_win.cc",
+    "embedder/platform_shared_buffer.cc",
+    "embedder/scoped_ipc_support.cc",
+  ]
+
+  if (is_fuchsia) {
+    sources += [
+      "embedder/named_platform_handle_utils_fuchsia.cc",
+      "embedder/platform_channel_pair_fuchsia.cc",
+      "embedder/platform_handle_utils_fuchsia.cc",
+    ]
+  } else if (is_posix) {
+    public += [ "embedder/platform_channel_utils_posix.h" ]
+
+    sources += [
+      "embedder/platform_channel_pair_posix.cc",
+      "embedder/platform_channel_utils_posix.cc",
+      "embedder/platform_handle_utils_posix.cc",
+    ]
+
+    if (!is_nacl) {
+      sources += [ "embedder/named_platform_handle_utils_posix.cc" ]
+    }
+  }
+
+  if (is_nacl && !is_nacl_nonsfi) {
+    sources -= [ "embedder/platform_channel_utils_posix.cc" ]
+  }
+
+  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//base",
+    "//mojo/edk/system:system_impl",
+    "//mojo/public/c/system:headers",
+  ]
+
+  deps = []
+  if (is_android) {
+    deps += [ "//third_party/ashmem" ]
+  }
+
+  allow_circular_includes_from = [ "//mojo/edk/system:system_impl" ]
+}

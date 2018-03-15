@@ -11,6 +11,7 @@
 #include <queue>
 #include <unordered_map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -61,7 +62,7 @@ class NodeDelegate;
 // by Nodes to coordinate Port behavior and lifetime within and across Nodes.
 // See Event documentation for description of different types of events used by
 // a Node to coordinate behavior.
-class Node {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) Node {
  public:
   enum class ShutdownPolicy {
     DONT_ALLOW_LOCAL_PORTS,

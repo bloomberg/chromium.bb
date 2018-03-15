@@ -10,8 +10,18 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-component("system") {
-  output_name = "mojo_system_impl"
+# Temporary alias to avoid having to update the world with a new target
+# structure just yet. This will be imminently deleted.
+group("system") {
+  public_deps = [
+    "//mojo/edk",
+  ]
+}
+
+source_set("system_impl") {
+  # All sources in this target should really just be private sources in
+  # "//mojo/edk:core". Make sure that's the only target than can see this one.
+  visibility = [ "//mojo/edk:core" ]
 
   sources = [
     "atomic_flag.h",
@@ -89,11 +99,8 @@ component("system") {
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
   public_deps = [
-    "//mojo/edk/embedder",
-    "//mojo/edk/embedder:platform",
     "//mojo/edk/system/ports",
-    "//mojo/public/c/system",
-    "//mojo/public/cpp/system",
+    "//mojo/public/c/system:headers",
   ]
 
   deps = [
@@ -114,8 +121,6 @@ component("system") {
   if (is_android || target_os == "chromeos") {
     defines += [ "MOJO_EDK_LEGACY_PROTOCOL" ]
   }
-
-  allow_circular_includes_from = [ "//mojo/edk/embedder" ]
 }
 
 source_set("test_utils") {

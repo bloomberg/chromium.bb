@@ -20,9 +20,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
+#include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
@@ -186,21 +186,18 @@ void Core::SetDefaultProcessErrorCallback(
   default_process_error_callback_ = callback;
 }
 
-ScopedMessagePipeHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
+MojoHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
   RequestContext request_context;
   ports::PortRef local_port;
   GetNodeController()->node()->CreatePortPair(&local_port, peer);
-  MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
+  return AddDispatcher(new MessagePipeDispatcher(
       GetNodeController(), local_port, kUnknownPipeIdForDebug, 0));
-  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
 
-ScopedMessagePipeHandle Core::CreatePartialMessagePipe(
-    const ports::PortRef& port) {
+MojoHandle Core::CreatePartialMessagePipe(const ports::PortRef& port) {
   RequestContext request_context;
-  return ScopedMessagePipeHandle(
-      MessagePipeHandle(AddDispatcher(new MessagePipeDispatcher(
-          GetNodeController(), port, kUnknownPipeIdForDebug, 1))));
+  return AddDispatcher(new MessagePipeDispatcher(GetNodeController(), port,
+                                                 kUnknownPipeIdForDebug, 1));
 }
 
 void Core::SendBrokerClientInvitation(
@@ -382,15 +379,14 @@ void Core::RequestShutdown(const base::Closure& callback) {
   GetNodeController()->RequestShutdown(callback);
 }
 
-ScopedMessagePipeHandle Core::ExtractMessagePipeFromInvitation(
-    const std::string& name) {
+MojoHandle Core::ExtractMessagePipeFromInvitation(const std::string& name) {
   RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(new MessagePipeDispatcher(
       GetNodeController(), port0, kUnknownPipeIdForDebug, 1));
   GetNodeController()->MergePortIntoInviter(name, port1);
-  return ScopedMessagePipeHandle(MessagePipeHandle(handle));
+  return handle;
 }
 
 MojoResult Core::SetProperty(MojoPropertyType type, const void* value) {

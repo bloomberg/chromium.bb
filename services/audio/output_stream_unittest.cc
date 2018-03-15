@@ -12,7 +12,7 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/edk/system/core.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/audio/stream_factory.h"
 #include "services/audio/test/mock_log.h"

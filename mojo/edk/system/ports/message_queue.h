@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/edk/system/ports/event.h"
 
@@ -27,7 +28,7 @@ class MessageFilter;
 // known sequence number and can indicate whether the next sequential message is
 // available. Thus the queue enforces message ordering for the consumer without
 // enforcing it for the producer (see AcceptMessage() below.)
-class MessageQueue {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) MessageQueue {
  public:
   explicit MessageQueue();
   explicit MessageQueue(uint64_t next_sequence_num);

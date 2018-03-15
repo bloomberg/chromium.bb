@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 
