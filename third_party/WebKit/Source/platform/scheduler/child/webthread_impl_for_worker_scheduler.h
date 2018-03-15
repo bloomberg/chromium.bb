@@ -25,14 +25,14 @@ class SingleThreadIdleTaskRunner;
 class TaskQueue;
 class WebSchedulerImpl;
 class WorkerScheduler;
+class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
     : public WebThreadBase,
       public base::MessageLoop::DestructionObserver {
  public:
-  explicit WebThreadImplForWorkerScheduler(const char* name);
-  WebThreadImplForWorkerScheduler(const char* name,
-                                  base::Thread::Options options);
+  explicit WebThreadImplForWorkerScheduler(
+      const WebThreadCreationParams& params);
   ~WebThreadImplForWorkerScheduler() override;
 
   // WebThread implementation.
@@ -52,11 +52,15 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   }
 
  protected:
+  virtual std::unique_ptr<WorkerScheduler> CreateWorkerScheduler();
+
   base::Thread* GetThread() const { return thread_.get(); }
 
- private:
-  virtual std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();
+  scheduler::WorkerSchedulerProxy* worker_scheduler_proxy() const {
+    return worker_scheduler_proxy_.get();
+  }
 
+ private:
   void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
   void RemoveTaskObserverInternal(
@@ -66,6 +70,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   void ShutdownOnThread(base::WaitableEvent* completion);
 
   std::unique_ptr<base::Thread> thread_;
+  std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
   std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   std::unique_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;

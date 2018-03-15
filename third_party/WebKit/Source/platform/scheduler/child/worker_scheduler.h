@@ -19,12 +19,13 @@
 
 namespace blink {
 namespace scheduler {
+class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
  public:
   ~WorkerScheduler() override;
 
-  static std::unique_ptr<WorkerScheduler> Create();
+  static std::unique_ptr<WorkerScheduler> Create(WorkerSchedulerProxy* proxy);
 
   // Blink should use WorkerScheduler::DefaultTaskQueue instead of
   // ChildScheduler::DefaultTaskRunner.

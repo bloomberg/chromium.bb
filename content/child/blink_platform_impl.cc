@@ -373,24 +373,21 @@ WebString BlinkPlatformImpl::UserAgent() {
 std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateThread(
     const blink::WebThreadCreationParams& params) {
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =
-      blink::scheduler::WebThreadBase::CreateWorkerThread(
-          params.name, base::Thread::Options());
+      blink::scheduler::WebThreadBase::CreateWorkerThread(params);
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
   return std::move(thread);
 }
 
 std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateWebAudioThread() {
-  base::Thread::Options thread_options;
-
+  blink::WebThreadCreationParams params(blink::WebThreadType::kWebAudioThread);
   // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
-  thread_options.priority = base::ThreadPriority::DISPLAY;
+  params.thread_options.priority = base::ThreadPriority::DISPLAY;
 
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =
-      blink::scheduler::WebThreadBase::CreateWorkerThread(
-          "WebAudio Rendering Thread", thread_options);
+      blink::scheduler::WebThreadBase::CreateWorkerThread(params);
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
   return std::move(thread);

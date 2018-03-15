@@ -107,8 +107,8 @@ namespace {
 
 class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
-  explicit WebThreadForCompositor(base::Thread::Options options)
-      : WebThreadImplForWorkerScheduler("Compositor", options) {
+  explicit WebThreadForCompositor(const WebThreadCreationParams& params)
+      : WebThreadImplForWorkerScheduler(params) {
     Init();
   }
   ~WebThreadForCompositor() override = default;
@@ -127,14 +127,13 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
 }  // namespace
 
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateWorkerThread(
-    const char* name,
-    base::Thread::Options options) {
-  return std::make_unique<WebThreadImplForWorkerScheduler>(name, options);
+    const WebThreadCreationParams& params) {
+  return std::make_unique<WebThreadImplForWorkerScheduler>(params);
 }
 
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateCompositorThread(
-    base::Thread::Options options) {
-  return std::make_unique<WebThreadForCompositor>(options);
+    const WebThreadCreationParams& params) {
+  return std::make_unique<WebThreadForCompositor>(params);
 }
 
 std::unique_ptr<WebThreadBase> WebThreadBase::InitializeUtilityThread() {

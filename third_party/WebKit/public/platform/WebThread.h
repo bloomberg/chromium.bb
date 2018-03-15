@@ -30,6 +30,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 
 #include <stdint.h>
 
@@ -39,6 +40,7 @@ class TaskTimeObserver;
 }
 
 class WebScheduler;
+class WebFrameScheduler;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
@@ -48,8 +50,14 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
 
   WebThreadCreationParams& SetThreadName(const char* name);
 
+  // Sets a scheduler for the frame which was responsible for the creation
+  // of this thread.
+  WebThreadCreationParams& SetFrameScheduler(WebFrameScheduler*);
+
   WebThreadType thread_type;
   const char* name;
+  WebFrameScheduler* frame_scheduler;  // NOT OWNED
+  base::Thread::Options thread_options;
 };
 
 // Provides an interface to an embedder-defined thread implementation.
