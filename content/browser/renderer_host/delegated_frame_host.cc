@@ -288,7 +288,7 @@ void DelegatedFrameHost::WasResized(
 #endif
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_id, current_frame_size_in_dip_, GetGutterColor(),
-          deadline_policy);
+          deadline_policy, false /* stretch_content_to_fill_bounds */);
       if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                              switches::kDisableResizeLock)) {
         compositor_->OnChildResizing();
@@ -521,7 +521,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   } else {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         surface_info.id(), frame_size_in_dip, GetGutterColor(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+        cc::DeadlinePolicy::UseDefaultDeadline(),
+        false /* stretch_content_to_fill_bounds */);
   }
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(

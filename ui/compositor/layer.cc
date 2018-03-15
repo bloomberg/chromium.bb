@@ -193,7 +193,8 @@ std::unique_ptr<Layer> Layer::Clone() const {
           surface_layer_->deadline_in_frames()
               ? cc::DeadlinePolicy::UseSpecifiedDeadline(
                     *surface_layer_->deadline_in_frames())
-              : cc::DeadlinePolicy::UseDefaultDeadline());
+              : cc::DeadlinePolicy::UseDefaultDeadline(),
+          surface_layer_->stretch_content_to_fill_bounds());
     }
     if (surface_layer_->fallback_surface_id().is_valid())
       clone->SetFallbackSurfaceId(surface_layer_->fallback_surface_id());
@@ -706,6 +707,11 @@ void Layer::RemoveTrilinearFilteringRequest() {
     cc_layer_->SetTrilinearFiltering(false);
 }
 
+bool Layer::StretchContentToFillBounds() const {
+  DCHECK(surface_layer_);
+  return surface_layer_->stretch_content_to_fill_bounds();
+}
+
 void Layer::SetTransferableResource(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,
@@ -752,7 +758,8 @@ bool Layer::TextureFlipped() const {
 void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
                                   const gfx::Size& frame_size_in_dip,
                                   SkColor default_background_color,
-                                  const cc::DeadlinePolicy& deadline_policy) {
+                                  const cc::DeadlinePolicy& deadline_policy,
+                                  bool stretch_content_to_fill_bounds) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   if (!surface_layer_) {
@@ -763,14 +770,15 @@ void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
 
   surface_layer_->SetPrimarySurfaceId(surface_id, deadline_policy);
   surface_layer_->SetBackgroundColor(default_background_color);
+  surface_layer_->SetStretchContentToFillBounds(stretch_content_to_fill_bounds);
 
   frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
 
   for (const auto& mirror : mirrors_) {
-    mirror->dest()->SetShowPrimarySurface(surface_id, frame_size_in_dip,
-                                          default_background_color,
-                                          deadline_policy);
+    mirror->dest()->SetShowPrimarySurface(
+        surface_id, frame_size_in_dip, default_background_color,
+        deadline_policy, stretch_content_to_fill_bounds);
   }
 }
 
