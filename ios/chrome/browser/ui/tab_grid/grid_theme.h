@@ -7,8 +7,7 @@
 
 // Theme describing the look of the grid.
 typedef NS_ENUM(NSUInteger, GridTheme) {
-  GridThemeInvalid = 0,
-  GridThemeLight,
+  GridThemeLight = 1,
   GridThemeDark,
 };
 
