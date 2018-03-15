@@ -581,5 +581,15 @@ if (!is_ios) {
         deps += [ "//v8:v8_external_startup_data_assets" ]
       }
     }
+
+    if (!is_android) {
+      sources += [ "safe_browsing/db/v4_store_perftest.cc" ]
+      deps += [
+        "//components/safe_browsing/db:v4_protocol_manager_util",
+        "//components/safe_browsing/db:v4_store",
+        "//components/safe_browsing/db:v4_test_util",
+        "//crypto",
+      ]
+    }
   }
 }

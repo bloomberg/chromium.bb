@@ -593,43 +593,37 @@ TEST_F(V4StoreTest, TestReadFullResponseWithInvalidHashPrefixMap) {
 TEST_F(V4StoreTest, TestHashPrefixExistsAtTheBeginning) {
   HashPrefixes hash_prefixes = "abcdebbbbbccccc";
   HashPrefix hash_prefix = "abcde";
-  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
-                                         std::end(hash_prefixes)));
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestHashPrefixExistsInTheMiddle) {
   HashPrefixes hash_prefixes = "abcdebbbbbccccc";
   HashPrefix hash_prefix = "bbbbb";
-  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
-                                         std::end(hash_prefixes)));
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestHashPrefixExistsAtTheEnd) {
   HashPrefixes hash_prefixes = "abcdebbbbbccccc";
   HashPrefix hash_prefix = "ccccc";
-  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
-                                         std::end(hash_prefixes)));
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestHashPrefixExistsAtTheBeginningOfEven) {
   HashPrefixes hash_prefixes = "abcdebbbbb";
   HashPrefix hash_prefix = "abcde";
-  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
-                                         std::end(hash_prefixes)));
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestHashPrefixExistsAtTheEndOfEven) {
   HashPrefixes hash_prefixes = "abcdebbbbb";
   HashPrefix hash_prefix = "bbbbb";
-  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, std::begin(hash_prefixes),
-                                         std::end(hash_prefixes)));
+  EXPECT_TRUE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestHashPrefixDoesNotExistInConcatenatedList) {
   HashPrefixes hash_prefixes = "abcdebbbbb";
   HashPrefix hash_prefix = "bbbbc";
-  EXPECT_FALSE(V4Store::HashPrefixMatches(
-      hash_prefix, std::begin(hash_prefixes), std::end(hash_prefixes)));
+  EXPECT_FALSE(V4Store::HashPrefixMatches(hash_prefix, hash_prefixes, 5));
 }
 
 TEST_F(V4StoreTest, TestFullHashExistsInMapWithSingleSize) {

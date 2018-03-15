@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/db/v4_store.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/base64.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/safe_browsing/db/prefix_iterator.h"
 #include "components/safe_browsing/db/v4_rice.h"
 #include "components/safe_browsing/db/v4_store.pb.h"
 #include "components/safe_browsing/proto/webui.pb.h"
@@ -782,37 +784,20 @@ HashPrefix V4Store::GetMatchingHashPrefix(const FullHash& full_hash) {
   checks_attempted_++;
   for (const auto& pair : hash_prefix_map_) {
     const PrefixSize& prefix_size = pair.first;
-    const HashPrefixes& hash_prefixes = pair.second;
-    HashPrefix hash_prefix = full_hash.substr(0, prefix_size);
-    if (HashPrefixMatches(hash_prefix, hash_prefixes.begin(),
-                          hash_prefixes.end())) {
-      return hash_prefix;
-    }
+    base::StringPiece hash_prefix =
+        base::StringPiece(full_hash).substr(0, prefix_size);
+    if (HashPrefixMatches(hash_prefix, pair.second, prefix_size))
+      return hash_prefix.as_string();
   }
   return HashPrefix();
 }
 
-// static
-bool V4Store::HashPrefixMatches(const HashPrefix& hash_prefix,
-                                const HashPrefixes::const_iterator& begin,
-                                const HashPrefixes::const_iterator& end) {
-  if (begin == end) {
-    return false;
-  }
-  size_t distance = std::distance(begin, end);
-  const PrefixSize prefix_size = hash_prefix.length();
-  DCHECK_EQ(0u, distance % prefix_size);
-  size_t mid_prefix_index = ((distance / prefix_size) / 2) * prefix_size;
-  HashPrefixes::const_iterator mid = begin + mid_prefix_index;
-  HashPrefix mid_prefix = HashPrefix(mid, mid + prefix_size);
-  int result = hash_prefix.compare(mid_prefix);
-  if (result == 0) {
-    return true;
-  } else if (result < 0) {
-    return HashPrefixMatches(hash_prefix, begin, mid);
-  } else {
-    return HashPrefixMatches(hash_prefix, mid + prefix_size, end);
-  }
+bool V4Store::HashPrefixMatches(base::StringPiece prefix,
+                                const HashPrefixes& prefixes,
+                                const PrefixSize& size) {
+  return std::binary_search(
+      PrefixIterator(prefixes, 0, size),
+      PrefixIterator(prefixes, prefixes.size() / size, size), prefix);
 }
 
 bool V4Store::VerifyChecksum() {

@@ -4,9 +4,11 @@
 
 #include "components/safe_browsing/db/v4_test_util.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "components/safe_browsing/db/util.h"
 #include "crypto/sha2.h"
 
@@ -47,7 +49,16 @@ bool TestV4Store::HasValidData() const {
 }
 
 void TestV4Store::MarkPrefixAsBad(HashPrefix prefix) {
-  hash_prefix_map_[prefix.size()] += prefix;
+  auto& vec = mock_prefixes_[prefix.size()];
+  vec.insert(std::upper_bound(vec.begin(), vec.end(), prefix), prefix);
+  hash_prefix_map_[prefix.size()] = base::StrCat(vec);
+}
+
+void TestV4Store::SetPrefixes(std::vector<HashPrefix> prefixes,
+                              PrefixSize size) {
+  std::sort(prefixes.begin(), prefixes.end());
+  mock_prefixes_[size] = prefixes;
+  hash_prefix_map_[size] = base::StrCat(prefixes);
 }
 
 TestV4Database::TestV4Database(
