@@ -152,11 +152,35 @@
       status: "experimental",
     },
     {
+      name: "Canvas2dContextLostRestored",
+      status: "experimental",
+    },
+    {
       name: "Canvas2dFixedRenderingMode",
       status: "test",
     },
     {
       name: "Canvas2dImageChromium",
+    },
+    {
+      name: "Canvas2dScrollPathIntoView",
+      status: "experimental",
+    },
+    {
+      name: "CanvasColorManagement",
+      status: "experimental",
+    },
+    {
+      name: "CanvasHitRegion",
+      status: "experimental",
+    },
+    {
+      name: "CanvasImageSmoothing",
+      status: "experimental",
+    },
+    {
+      name: "CanvasTransformations",
+      status: "experimental",
     },
     {
       name: "ClickRetargetting",
@@ -387,10 +411,6 @@
       status: "stable",
     },
     {
-      name: "ExperimentalCanvasFeatures",
-      status: "test",
-    },
-    {
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
@@ -401,6 +421,18 @@
     },
     {
       name: "ExperimentalV8Extras",
+      status: "experimental",
+    },
+    {
+      name: "ExtendedImageBitmapOptions",
+      status: "experimental",
+    },
+    {
+      name: "ExtendedTextMetrics",
+      status: "experimental",
+    },
+    {
+      name: "ExtraWebGLVideoTextureMetadata",
       status: "experimental",
     },
     {

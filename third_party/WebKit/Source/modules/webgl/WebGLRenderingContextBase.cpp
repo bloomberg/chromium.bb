@@ -5278,7 +5278,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
   int already_uploaded_id = -1;
   WebMediaPlayer::VideoFrameUploadMetadata* frame_metadata_ptr = nullptr;
-  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()) {
+  if (RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled()) {
     already_uploaded_id = texture->GetLastUploadedVideoFrameId();
     frame_metadata_ptr = &frame_metadata;
   }

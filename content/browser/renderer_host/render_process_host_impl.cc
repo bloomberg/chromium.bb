@@ -2560,7 +2560,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableAutomation,
     switches::kEnableDistanceFieldText,
-    switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,
     switches::kEnableHeapProfiling,
     switches::kEnableGPUClientLogging,

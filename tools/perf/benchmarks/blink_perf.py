@@ -239,8 +239,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     options.AppendExtraBrowserArgs([
         '--js-flags=--expose_gc',
         '--enable-experimental-web-platform-features',
-        '--autoplay-policy=no-user-gesture-required',
-        '--enable-experimental-canvas-features'
+        '--autoplay-policy=no-user-gesture-required'
     ])
 
   def SetOptions(self, options):

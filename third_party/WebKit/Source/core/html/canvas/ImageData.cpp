@@ -811,7 +811,7 @@ DOMArrayBufferBase* ImageData::BufferBase() const {
 }
 
 CanvasColorParams ImageData::GetCanvasColorParams() {
-  if (!RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled())
+  if (!RuntimeEnabledFeatures::CanvasColorManagementEnabled())
     return CanvasColorParams();
   CanvasColorSpace color_space =
       ImageData::GetCanvasColorSpace(color_settings_.colorSpace());

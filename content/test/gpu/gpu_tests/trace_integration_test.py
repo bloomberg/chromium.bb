@@ -121,7 +121,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     path_util.SetupTelemetryPaths()
     cls.CustomizeBrowserArgs([
       '--enable-logging',
-      '--enable-experimental-canvas-features'])
+      '--enable-experimental-web-platform-features'])
     cls.StartBrowser()
     cls.SetStaticServerDirs(data_paths)
 

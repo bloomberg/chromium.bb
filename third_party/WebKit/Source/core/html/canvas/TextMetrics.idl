@@ -29,17 +29,17 @@
 interface TextMetrics {
     // x-direction
     readonly attribute float width; // advance width
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxLeft;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxRight;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxLeft;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxRight;
 
     // y-direction
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double fontBoundingBoxAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double fontBoundingBoxDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double emHeightAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double emHeightDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double hangingBaseline;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double alphabeticBaseline;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double ideographicBaseline;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double fontBoundingBoxAscent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double fontBoundingBoxDescent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxAscent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double actualBoundingBoxDescent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double emHeightAscent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double emHeightDescent;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double hangingBaseline;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double alphabeticBaseline;
+    [RuntimeEnabled=ExtendedTextMetrics] readonly attribute double ideographicBaseline;
 };

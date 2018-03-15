@@ -356,10 +356,6 @@ const char kEnableBackgroundFetchPersistence[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// Enable experimental canvas features, e.g. canvas 2D context attributes
-const char kEnableExperimentalCanvasFeatures[] =
-    "enable-experimental-canvas-features";
-
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
