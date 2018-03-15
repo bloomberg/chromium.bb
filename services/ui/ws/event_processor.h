@@ -40,6 +40,7 @@ class Accelerator;
 class DragController;
 class DragSource;
 class DragTargetConnection;
+class EventDispatcher;
 class EventProcessorDelegate;
 class ServerWindow;
 class ServerWindowDrawnTracker;
@@ -67,7 +68,8 @@ class EventProcessor : public ServerWindowDrawnTrackerObserver,
     POST_ONLY,
   };
 
-  explicit EventProcessor(EventProcessorDelegate* delegate);
+  EventProcessor(EventProcessorDelegate* delegate,
+                 EventDispatcher* event_dispatcher);
   ~EventProcessor() override;
 
   ModalWindowController* modal_window_controller() {
@@ -355,6 +357,7 @@ class EventProcessor : public ServerWindowDrawnTrackerObserver,
   void OnDragCursorUpdated() override;
 
   EventProcessorDelegate* delegate_;
+  EventDispatcher* event_dispatcher_;
 
   ServerWindow* capture_window_;
   ClientSpecificId capture_window_client_id_;

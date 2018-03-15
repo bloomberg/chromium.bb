@@ -44,6 +44,7 @@ static_library("lib") {
     "drag_cursor_updater.h",
     "drag_source.h",
     "drag_target_connection.h",
+    "event_dispatcher.h",
     "event_location.h",
     "event_matcher.cc",
     "event_matcher.h",

@@ -18,6 +18,7 @@
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/ws/cursor_state.h"
 #include "services/ui/ws/cursor_state_delegate.h"
+#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_processor.h"
 #include "services/ui/ws/event_processor_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
@@ -44,7 +45,8 @@ class WindowManagerStateTestApi;
 // associated with.
 class WindowManagerState : public EventProcessorDelegate,
                            public ServerWindowObserver,
-                           public CursorStateDelegate {
+                           public CursorStateDelegate,
+                           public EventDispatcher {
  public:
   explicit WindowManagerState(WindowTree* window_tree);
   ~WindowManagerState() override;
@@ -247,10 +249,6 @@ class WindowManagerState : public EventProcessorDelegate,
   void AdjustEventLocation(int64_t display_id, LocatedEvent* event);
 
   // EventProcessorDelegate:
-  void OnAccelerator(uint32_t accelerator_id,
-                     int64_t display_id,
-                     const Event& event,
-                     AcceleratorPhase phase) override;
   void SetFocusedWindowFromEventProcessor(ServerWindow* window) override;
   ServerWindow* GetFocusedWindowForEventProcessor(int64_t display_id) override;
   void SetNativeCapture(ServerWindow* window) override;
@@ -264,11 +262,6 @@ class WindowManagerState : public EventProcessorDelegate,
                                       bool visible) override;
   void OnEventChangesCursorTouchVisibility(const ui::Event& event,
                                            bool visible) override;
-  void DispatchInputEventToWindow(ServerWindow* target,
-                                  ClientSpecificId client_id,
-                                  const EventLocation& event_location,
-                                  const Event& event,
-                                  Accelerator* accelerator) override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
   ServerWindow* GetRootWindowForDisplay(int64_t display_id) override;
@@ -280,6 +273,17 @@ class WindowManagerState : public EventProcessorDelegate,
   viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) override;
   ServerWindow* GetWindowFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) override;
+
+  // EventDispatcher:
+  void DispatchInputEventToWindow(ServerWindow* target,
+                                  ClientSpecificId client_id,
+                                  const EventLocation& event_location,
+                                  const Event& event,
+                                  Accelerator* accelerator) override;
+  void OnAccelerator(uint32_t accelerator_id,
+                     int64_t display_id,
+                     const Event& event,
+                     AcceleratorPhase phase) override;
 
   // ServerWindowObserver:
   void OnWindowEmbeddedAppDisconnected(ServerWindow* window) override;
