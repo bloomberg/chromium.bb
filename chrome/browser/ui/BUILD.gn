@@ -2525,8 +2525,6 @@ split_static_library("ui") {
         "cocoa/simple_message_box_bridge_views.mm",
         "cocoa/simple_message_box_cocoa.h",
         "cocoa/simple_message_box_cocoa.mm",
-        "cocoa/tab_dialogs_cocoa.h",
-        "cocoa/tab_dialogs_cocoa.mm",
         "javascript_dialogs/javascript_dialog_cocoa.h",
         "javascript_dialogs/javascript_dialog_cocoa.mm",
         "javascript_dialogs/javascript_dialog_mac.cc",

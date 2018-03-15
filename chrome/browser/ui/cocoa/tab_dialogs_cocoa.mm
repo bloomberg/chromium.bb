@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/cocoa/tab_dialogs_views_mac.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/ui_features.h"
 
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
@@ -27,6 +29,7 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
     contents->SetUserData(UserDataKey(), std::move(tab_dialogs));
   }
 }
+#endif
 
 TabDialogsCocoa::TabDialogsCocoa(content::WebContents* contents)
     : web_contents_(contents) {

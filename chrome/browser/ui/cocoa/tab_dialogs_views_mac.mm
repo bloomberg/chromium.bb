@@ -15,8 +15,11 @@
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
+#include "chrome/browser/ui/views/tab_dialogs_views.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/ui_features.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
@@ -26,6 +29,32 @@ gfx::Point ScreenPointFromBrowser(Browser* browser, NSPoint ns_point) {
       browser->window()->GetNativeWindow(), ns_point));
 }
 }
+
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+// static
+void TabDialogs::CreateForWebContents(content::WebContents* contents) {
+  DCHECK(contents);
+
+  if (!FromWebContents(contents)) {
+    // This is a bit subtle: if IsViewsBrowserCocoa(), that means this is a
+    // mac_views_browser build using a Cocoa browser window, in which case
+    // TabDialogsViewsMac is the right implementation; mostly it inherits
+    // behavior from TabDialogsCocoa, which will only work with a Cocoa browser
+    // window. If !IsViewsBrowserCocoa(), there is a Views browser window, so
+    // TabDialogsViews (which is the only implementation that works with a Views
+    // browser window) is the right implementation.
+    //
+    // Note that the ternary below can't use std::make_unique<> because
+    // TabDialogsViewsMac and TabDialogsViews are not compatible types (neither
+    // is an ancestor of the other).
+    std::unique_ptr<TabDialogs> tab_dialogs(
+        views_mode_controller::IsViewsBrowserCocoa()
+            ? static_cast<TabDialogs*>(new TabDialogsViewsMac(contents))
+            : static_cast<TabDialogs*>(new TabDialogsViews(contents)));
+    contents->SetUserData(UserDataKey(), std::move(tab_dialogs));
+  }
+}
+#endif
 
 TabDialogsViewsMac::TabDialogsViewsMac(content::WebContents* contents)
     : TabDialogsCocoa(contents) {}
