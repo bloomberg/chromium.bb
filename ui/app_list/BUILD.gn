@@ -9,6 +9,8 @@ assert(is_chromeos)
 
 component("app_list") {
   sources = [
+    "answer_card_contents_registry.cc",
+    "answer_card_contents_registry.h",
     "app_list_constants.cc",
     "app_list_constants.h",
     "app_list_export.h",

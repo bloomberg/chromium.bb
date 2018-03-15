@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -30,7 +31,7 @@ class AnswerCardWebContents : public AnswerCardContents,
 
   // AnswerCardContents overrides:
   void LoadURL(const GURL& url) override;
-  views::View* GetView() override;
+  const base::UnguessableToken& GetToken() const override;
 
   // content::WebContentsDelegate overrides:
   void ResizeDueToAutoResize(content::WebContents* web_contents,
@@ -64,6 +65,8 @@ class AnswerCardWebContents : public AnswerCardContents,
   content::RenderWidgetHost* host_ = nullptr;
 
   Profile* const profile_;  // Unowned
+
+  base::UnguessableToken token_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardWebContents);
 };

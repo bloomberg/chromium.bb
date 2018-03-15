@@ -15,15 +15,12 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/unguessable_token.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 
 namespace ui {
 class MenuModel;
-}
-
-namespace views {
-class View;
 }
 
 namespace app_list {
@@ -130,8 +127,12 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const base::string16& formatted_price() const { return formatted_price_; }
   void SetFormattedPrice(const base::string16& formatted_price);
 
-  views::View* view() const { return view_; }
-  void set_view(views::View* view) { view_ = view; }
+  const base::UnguessableToken& answer_card_contents_token() const {
+    return answer_card_contents_token_;
+  }
+  void set_answer_card_contents_token(const base::UnguessableToken& token) {
+    answer_card_contents_token_ = token;
+  }
 
   const std::string& id() const { return id_; }
   const std::string& comparable_id() const { return comparable_id_; }
@@ -225,11 +226,12 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // Formatted price label of the app in play store. Not exist if set to empty.
   base::string16 formatted_price_;
 
-  // Unowned pointer to a view containing a rendered result, or nullptr if there
-  // is no such view for the result.
-  // The view has set_owned_by_client() property set. It's a responsibility of
-  // SearchProvider to set this property and own this view.
-  views::View* view_ = nullptr;
+  // A token used to show answer card contents. When answer card provider and ui
+  // runs in the same process (i.e classic ash, or mash before UI migration),
+  // AnswerCardContensRegistry could be used to map the token to a view.
+  // Otherwise (mash after UI migration), the token is used to embed the answer
+  // card contents.
+  base::UnguessableToken answer_card_contents_token_;
 
   std::string id_;
   // ID that can be compared across results from different providers to remove

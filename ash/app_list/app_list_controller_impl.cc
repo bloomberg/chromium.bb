@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "extensions/common/constants.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -59,6 +60,13 @@ AppListControllerImpl::AppListControllerImpl()
               std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_)),
           this) {
   model_.AddObserver(this);
+
+  // Create only for non-mash. Mash uses window tree embed API to get a
+  // token to map answer card contents.
+  if (Shell::GetAshConfig() != Config::MASH) {
+    answer_card_contents_registry_ =
+        std::make_unique<app_list::AnswerCardContentsRegistry>();
+  }
 }
 
 AppListControllerImpl::~AppListControllerImpl() {

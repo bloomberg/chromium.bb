@@ -19,6 +19,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -159,9 +160,15 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
   content::RenderViewHost* const rvh = web_contents_->GetRenderViewHost();
   if (rvh)
     AttachToHost(rvh->GetWidget());
+
+  if (AnswerCardContentsRegistry::Get())
+    token_ = AnswerCardContentsRegistry::Get()->Register(web_view_.get());
 }
 
 AnswerCardWebContents::~AnswerCardWebContents() {
+  if (AnswerCardContentsRegistry::Get() && !token_.is_empty())
+    AnswerCardContentsRegistry::Get()->Unregister(token_);
+
   DetachFromHost();
   web_contents_->SetDelegate(nullptr);
   Observe(nullptr);
@@ -177,8 +184,8 @@ void AnswerCardWebContents::LoadURL(const GURL& url) {
       gfx::Size(1, 1), gfx::Size(INT_MAX, INT_MAX));
 }
 
-views::View* AnswerCardWebContents::GetView() {
-  return web_view_.get();
+const base::UnguessableToken& AnswerCardWebContents::GetToken() const {
+  return token_;
 }
 
 void AnswerCardWebContents::ResizeDueToAutoResize(

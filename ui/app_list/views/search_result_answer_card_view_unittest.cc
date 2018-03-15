@@ -10,7 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
@@ -43,6 +45,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 
     result_view_ = std::make_unique<views::View>();
     result_view_->set_owned_by_client();
+    token_ = contents_registry_.Register(result_view_.get());
 
     SetUpSearchResult();
   }
@@ -54,7 +57,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
         std::make_unique<TestSearchResult>();
     result->set_display_type(SearchResult::DISPLAY_CARD);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
-    result->set_view(result_view_.get());
+    result->set_answer_card_contents_token(token_);
     result->set_relevance(kRelevance);
     results->Add(std::move(result));
 
@@ -116,6 +119,9 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   // View sent within the search result. May be shown within
   // result_container_view_. Has set_owned_by_client() called.
   std::unique_ptr<views::View> result_view_;
+
+  AnswerCardContentsRegistry contents_registry_;
+  base::UnguessableToken token_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultAnswerCardViewTest);
 };
