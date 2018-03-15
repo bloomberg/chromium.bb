@@ -19,6 +19,7 @@
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
+#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -219,6 +220,9 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
   base::UnguessableToken devtools_worker_token =
       document->GetFrame() ? document->GetFrame()->GetDevToolsFrameToken()
                            : base::UnguessableToken::Create();
+  // TODO(nhiroki); Set the coordinator for module fetch.
+  // (https://crbug.com/680046)
+  WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
@@ -226,7 +230,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       CreateWorkerClients(), document->AddressSpace(),
       OriginTrialContext::GetTokens(document).get(), devtools_worker_token,
       std::make_unique<WorkerSettings>(document->GetSettings()),
-      kV8CacheOptionsDefault,
+      kV8CacheOptionsDefault, module_fetch_coordinator,
       ConnectToWorkerInterfaceProvider(document,
                                        SecurityOrigin::Create(script_url_)));
 }

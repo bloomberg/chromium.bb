@@ -22,6 +22,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,
     V8CacheOptions v8_cache_options,
+    WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info)
     : script_url(script_url.Copy()),
@@ -34,6 +35,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       parent_devtools_token(parent_devtools_token),
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options),
+      module_fetch_coordinator(module_fetch_coordinator),
       interface_provider(std::move(interface_provider_info)) {
   this->content_security_policy_parsed_headers =
       std::make_unique<Vector<CSPHeaderAndType>>();

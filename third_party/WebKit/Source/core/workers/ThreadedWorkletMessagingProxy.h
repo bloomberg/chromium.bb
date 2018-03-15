@@ -13,6 +13,7 @@ namespace blink {
 
 class ThreadedWorkletObjectProxy;
 class WorkerClients;
+class WorkletModuleResponsesMap;
 
 class CORE_EXPORT ThreadedWorkletMessagingProxy
     : public ThreadedMessagingProxyBase,
@@ -23,14 +24,13 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   // WorkletGlobalScopeProxy implementation.
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) final;
   void WorkletObjectDestroyed() final;
   void TerminateWorkletGlobalScope() final;
 
-  void Initialize(WorkerClients*);
+  void Initialize(WorkerClients*, WorkletModuleResponsesMap*);
 
   void Trace(blink::Visitor*) override;
 

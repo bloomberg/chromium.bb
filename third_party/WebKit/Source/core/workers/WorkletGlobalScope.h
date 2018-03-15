@@ -20,7 +20,6 @@
 
 namespace blink {
 
-class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
 class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
@@ -64,15 +63,12 @@ class CORE_EXPORT WorkletGlobalScope
   // parent frame's task runner).
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 
   WorkerOrWorkletModuleFetchCoordinatorProxy* ModuleFetchCoordinatorProxy()
       const;
-  void SetModuleFetchCoordinatorProxyForTesting(
-      WorkerOrWorkletModuleFetchCoordinatorProxy*);
 
   const SecurityOrigin* DocumentSecurityOrigin() const {
     return document_security_origin_.get();
@@ -94,9 +90,12 @@ class CORE_EXPORT WorkletGlobalScope
   // Partial implementation of the "set up a worklet environment settings
   // object" algorithm:
   // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                     v8::Isolate*,
-                     WorkerReportingProxy&);
+  WorkletGlobalScope(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      v8::Isolate*,
+      WorkerReportingProxy&,
+      scoped_refptr<base::SingleThreadTaskRunner> document_loading_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> worklet_loading_task_runner);
 
  private:
   EventTarget* ErrorEventTarget() final { return nullptr; }

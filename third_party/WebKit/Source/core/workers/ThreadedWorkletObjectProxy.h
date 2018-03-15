@@ -15,7 +15,6 @@
 namespace blink {
 
 class ThreadedWorkletMessagingProxy;
-class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
 class WorkerThread;
 
@@ -35,7 +34,6 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
 
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*,

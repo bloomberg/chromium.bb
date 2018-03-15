@@ -15,6 +15,7 @@ namespace blink {
 
 class CSSPaintDefinition;
 class LocalFrame;
+class WorkletModuleResponsesMap;
 
 // A proxy for PaintWorklet to talk to PaintWorkletGlobalScope.
 class MODULES_EXPORT PaintWorkletGlobalScopeProxy
@@ -26,6 +27,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
   PaintWorkletGlobalScopeProxy(LocalFrame*,
+                               WorkletModuleResponsesMap*,
                                PaintWorkletPendingGeneratorRegistry*,
                                size_t global_scope_number);
   ~PaintWorkletGlobalScopeProxy() override = default;
@@ -33,7 +35,6 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   // Implements WorkletGlobalScopeProxy.
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) override;

@@ -15,6 +15,7 @@
 #include "core/testing/PageTestBase.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "modules/animationworklet/AnimationWorklet.h"
 #include "modules/animationworklet/AnimationWorkletThread.h"
 #include "modules/animationworklet/Animator.h"
@@ -64,7 +65,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             document->IsSecureContext(), clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault),
+            kV8CacheOptionsDefault,
+            new WorkletModuleResponsesMap(document->Fetcher())),
         WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
         ParentFrameTaskRunners::Create());
     return thread;

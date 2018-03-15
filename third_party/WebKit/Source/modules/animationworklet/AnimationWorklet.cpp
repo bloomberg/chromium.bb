@@ -38,7 +38,7 @@ WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
 
   AnimationWorkletMessagingProxy* proxy =
       new AnimationWorkletMessagingProxy(GetExecutionContext());
-  proxy->Initialize(worker_clients);
+  proxy->Initialize(worker_clients, ModuleResponsesMap());
   return proxy;
 }
 

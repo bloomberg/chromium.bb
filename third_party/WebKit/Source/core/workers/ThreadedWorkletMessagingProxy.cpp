@@ -28,7 +28,9 @@ ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
     ExecutionContext* execution_context)
     : ThreadedMessagingProxyBase(execution_context) {}
 
-void ThreadedWorkletMessagingProxy::Initialize(WorkerClients* worker_clients) {
+void ThreadedWorkletMessagingProxy::Initialize(
+    WorkerClients* worker_clients,
+    WorkletModuleResponsesMap* module_responses_map) {
   DCHECK(IsMainThread());
   if (AskedToTerminate())
     return;
@@ -47,7 +49,7 @@ void ThreadedWorkletMessagingProxy::Initialize(WorkerClients* worker_clients) {
           OriginTrialContext::GetTokens(document).get(),
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
-          kV8CacheOptionsDefault);
+          kV8CacheOptionsDefault, module_responses_map);
 
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.
@@ -60,7 +62,6 @@ void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {
 
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
-    WorkletModuleResponsesMap* module_responses_map,
     network::mojom::FetchCredentialsMode credentials_mode,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
@@ -70,7 +71,6 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
       CrossThreadBind(&ThreadedWorkletObjectProxy::FetchAndInvokeScript,
                       CrossThreadUnretained(worklet_object_proxy_.get()),
                       module_url_record,
-                      WrapCrossThreadPersistent(module_responses_map),
                       credentials_mode, std::move(outside_settings_task_runner),
                       WrapCrossThreadPersistent(pending_tasks),
                       CrossThreadUnretained(GetWorkerThread())));

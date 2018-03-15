@@ -13,6 +13,7 @@
 namespace blink {
 
 class LocalFrame;
+class WorkletModuleResponsesMap;
 
 // A proxy for LayoutWorklet to talk to LayoutWorkletGlobalScope.
 class CORE_EXPORT LayoutWorkletGlobalScopeProxy
@@ -24,6 +25,7 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
   static LayoutWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
   LayoutWorkletGlobalScopeProxy(LocalFrame*,
+                                WorkletModuleResponsesMap*,
                                 PendingLayoutRegistry*,
                                 size_t global_scope_number);
   ~LayoutWorkletGlobalScopeProxy() override = default;
@@ -31,7 +33,6 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
   // Implements WorkletGlobalScopeProxy.
   void FetchAndInvokeScript(
       const KURL& module_url_record,
-      WorkletModuleResponsesMap*,
       network::mojom::FetchCredentialsMode,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) override;

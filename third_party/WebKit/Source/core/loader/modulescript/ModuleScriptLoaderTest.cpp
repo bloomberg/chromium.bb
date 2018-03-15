@@ -66,13 +66,11 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
  public:
   ModuleScriptLoaderTestModulator(
       scoped_refptr<ScriptState> script_state,
-      scoped_refptr<const SecurityOrigin> security_origin)
+      scoped_refptr<const SecurityOrigin> security_origin,
+      ResourceFetcher* fetcher)
       : script_state_(std::move(script_state)),
-        security_origin_(std::move(security_origin)) {
-    auto* fetch_context =
-        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
-    fetcher_ = ResourceFetcher::Create(fetch_context);
-  }
+        security_origin_(std::move(security_origin)),
+        fetcher_(fetcher) {}
 
   ~ModuleScriptLoaderTestModulator() override = default;
 
@@ -164,12 +162,18 @@ void ModuleScriptLoaderTest::SetUp() {
 }
 
 void ModuleScriptLoaderTest::InitializeForDocument() {
+  auto* fetch_context =
+      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+  auto* fetcher = ResourceFetcher::Create(fetch_context);
   modulator_ = new ModuleScriptLoaderTestModulator(
-      ToScriptStateForMainWorld(&GetFrame()),
-      GetDocument().GetSecurityOrigin());
+      ToScriptStateForMainWorld(&GetFrame()), GetDocument().GetSecurityOrigin(),
+      fetcher);
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
+  auto* fetch_context =
+      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+  auto* fetcher = ResourceFetcher::Create(fetch_context);
   reporting_proxy_ =
       std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
@@ -180,18 +184,13 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault);
+      kV8CacheOptionsDefault, new WorkletModuleResponsesMap(fetcher));
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), std::move(creation_params), *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),
-      GetDocument().GetSecurityOrigin());
-  global_scope_->SetModuleFetchCoordinatorProxyForTesting(
-      WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
-          new WorkletModuleResponsesMap(modulator_->Fetcher()),
-          GetDocument().GetTaskRunner(TaskType::kInternalTest),
-          global_scope_->GetTaskRunner(TaskType::kInternalTest)));
+      GetDocument().GetSecurityOrigin(), fetcher);
 }
 
 void ModuleScriptLoaderTest::TestFetchDataURL(
