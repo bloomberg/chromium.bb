@@ -3156,12 +3156,16 @@ void HttpCache::Transaction::ResetPartialState(bool delete_object) {
   if (!delete_object) {
     // The simplest way to re-initialize partial_ is to create a new object.
     partial_.reset(new PartialData());
-    if (partial_->Init(request_->extra_headers))
+
+    // Reset the range header to the original value (http://crbug.com/820599).
+    custom_request_->extra_headers.RemoveHeader(HttpRequestHeaders::kRange);
+    if (partial_->Init(initial_request_->extra_headers))
       partial_->SetHeaders(custom_request_->extra_headers);
     else
       partial_.reset();
   }
 }
+
 void HttpCache::Transaction::ResetNetworkTransaction() {
   SaveNetworkTransactionInfo(*network_trans_);
   network_trans_.reset();

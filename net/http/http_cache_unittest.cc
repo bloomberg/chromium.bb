@@ -1977,6 +1977,91 @@ TEST(HttpCache, RangeGET_ParallelValidationCacheLockTimeout) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
+// Tests a full request and a simultaneous range request and the range request
+// dooms the entry created by the full request due to not being able to
+// conditionalize.
+TEST(HttpCache, RangeGET_ParallelValidationCouldntConditionalize) {
+  MockHttpCache cache;
+
+  MockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.url = kRangeGET_TransactionOK.url;
+  ScopedMockTransaction transaction(mock_transaction);
+
+  // Remove the cache-control and other headers so that the response cannot be
+  // conditionalized.
+  transaction.response_headers = "";
+
+  std::vector<std::unique_ptr<Context>> context_list;
+  const int kNumTransactions = 2;
+
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(std::make_unique<Context>());
+  }
+
+  // Let 1st transaction complete headers phase for no range and read some part
+  // of the response and write in the cache.
+  std::string first_read;
+  MockHttpRequest request1(transaction);
+  {
+    request1.url = GURL(kRangeGET_TransactionOK.url);
+    auto& c = context_list[0];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request1, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    const int kBufferSize = 5;
+    scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
+    ReleaseBufferCompletionCallback cb(buffer.get());
+    c->result = c->trans->Read(buffer.get(), kBufferSize, cb.callback());
+    EXPECT_EQ(kBufferSize, cb.GetResult(c->result));
+
+    std::string data_read(buffer->data(), kBufferSize);
+    first_read = data_read;
+
+    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+  }
+
+  // 2nd transaction requests a range.
+  ScopedMockTransaction range_transaction(kRangeGET_TransactionOK);
+  range_transaction.request_headers = "Range: bytes = 0-29\r\n" EXTRA_HEADER;
+  MockHttpRequest request2(range_transaction);
+  {
+    auto& c = context_list[1];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request2, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+  }
+
+  // The second request would have doomed the 1st entry and created a new entry.
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  for (int i = 0; i < kNumTransactions; ++i) {
+    auto& c = context_list[i];
+    if (c->result == ERR_IO_PENDING)
+      c->result = c->callback.WaitForResult();
+
+    if (i == 0) {
+      ReadRemainingAndVerifyTransaction(c->trans.get(), first_read,
+                                        transaction);
+      continue;
+    }
+    range_transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 ";
+    ReadAndVerifyTransaction(c->trans.get(), range_transaction);
+  }
+}
+
 // Tests parallel validation on range requests with overlapping ranges.
 TEST(HttpCache, RangeGET_ParallelValidationOverlappingRanges) {
   MockHttpCache cache;
