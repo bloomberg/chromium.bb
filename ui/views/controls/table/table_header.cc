@@ -242,7 +242,7 @@ bool TableHeader::StartResize(const ui::LocatedEvent& event) {
   resize_details_.reset(new ColumnResizeDetails);
   resize_details_->column_index = index;
   resize_details_->initial_x = event.root_location().x();
-  resize_details_->initial_width = table_->visible_columns()[index].width;
+  resize_details_->initial_width = table_->GetVisibleColumn(index).width;
   return true;
 }
 
@@ -253,9 +253,15 @@ void TableHeader::ContinueResize(const ui::LocatedEvent& event) {
   const int scale = base::i18n::IsRTL() ? -1 : 1;
   const int delta = scale *
       (event.root_location().x() - resize_details_->initial_x);
+  const TableView::VisibleColumn& column =
+      table_->GetVisibleColumn(resize_details_->column_index);
+  const int needed_for_title =
+      gfx::GetStringWidth(column.column.title, font_list_) +
+      2 * kHorizontalPadding;
   table_->SetVisibleColumnWidth(
       resize_details_->column_index,
-      std::max(kMinColumnWidth, resize_details_->initial_width + delta));
+      std::max({kMinColumnWidth, needed_for_title,
+                resize_details_->initial_width + delta}));
 }
 
 void TableHeader::ToggleSortOrder(const ui::LocatedEvent& event) {
@@ -264,7 +270,7 @@ void TableHeader::ToggleSortOrder(const ui::LocatedEvent& event) {
 
   const int x = GetMirroredXInView(event.x());
   const int index = GetClosestVisibleColumnIndex(table_, x);
-  const TableView::VisibleColumn& column(table_->visible_columns()[index]);
+  const TableView::VisibleColumn& column(table_->GetVisibleColumn(index));
   if (x >= column.x && x < column.x + column.width && event.y() >= 0 &&
       event.y() < height())
     table_->ToggleSortOrder(index);
@@ -277,7 +283,7 @@ int TableHeader::GetResizeColumn(int x) const {
 
   const int index = GetClosestVisibleColumnIndex(table_, x);
   DCHECK_NE(-1, index);
-  const TableView::VisibleColumn& column(table_->visible_columns()[index]);
+  const TableView::VisibleColumn& column(table_->GetVisibleColumn(index));
   if (index > 0 && x >= column.x - kResizePadding &&
       x <= column.x + kResizePadding) {
     return index - 1;

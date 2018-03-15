@@ -139,6 +139,8 @@ class VIEWS_EXPORT TableView
     return visible_columns_;
   }
 
+  const VisibleColumn& GetVisibleColumn(int index);
+
   // Sets the width of the column. |index| is in terms of |visible_columns_|.
   void SetVisibleColumnWidth(int index, int width);
 
