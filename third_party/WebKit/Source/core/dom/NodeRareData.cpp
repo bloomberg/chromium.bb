@@ -30,8 +30,10 @@
 
 #include "core/dom/NodeRareData.h"
 
+#include "core/dom/ContainerNode.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/page/Page.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/Handle.h"
@@ -89,9 +91,21 @@ void NodeRareData::IncrementConnectedSubframeCount() {
   ++connected_frame_count_;
 }
 
+NodeListsNodeData& NodeRareData::CreateNodeLists() {
+  node_lists_ = NodeListsNodeData::Create();
+  return *node_lists_;
+}
+
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
 static_assert(Page::kMaxNumberOfFrames <
                   (1 << NodeRareData::kConnectedFrameCountBits),
               "Frame limit should fit in rare data count");
+static_assert(static_cast<int>(NodeRareData::kNumberOfElementFlags) ==
+                  static_cast<int>(ElementFlags::kNumberOfElementFlags),
+              "kNumberOfElementFlags must match.");
+static_assert(
+    static_cast<int>(NodeRareData::kNumberOfDynamicRestyleFlags) ==
+        static_cast<int>(DynamicRestyleFlags::kNumberOfDynamicRestyleFlags),
+    "kNumberOfDynamicRestyleFlags must match.");
 
 }  // namespace blink

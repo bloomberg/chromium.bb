@@ -238,7 +238,7 @@ void Element::setTabIndex(int value) {
 }
 
 int Element::tabIndex() const {
-  return HasElementFlag(kTabIndexWasSetExplicitly)
+  return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly)
              ? GetIntegralAttribute(tabindexAttr)
              : 0;
 }
@@ -1895,7 +1895,7 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 
   GetDocument().RemoveFromTopLayer(this);
 
-  ClearElementFlag(kIsInCanvasSubtree);
+  ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
 
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
@@ -3086,7 +3086,7 @@ bool Element::SupportsFocus() const {
   // But supportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
-  return HasElementFlag(kTabIndexWasSetExplicitly) ||
+  return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
          IsRootEditableElement(*this) ||
          (IsShadowHost(this) && AuthorShadowRoot() &&
           AuthorShadowRoot()->delegatesFocus()) ||
@@ -4001,7 +4001,7 @@ void Element::SetFloatingPointAttribute(const QualifiedName& attribute_name,
 }
 
 void Element::SetContainsFullScreenElement(bool flag) {
-  SetElementFlag(kContainsFullScreenElement, flag);
+  SetElementFlag(ElementFlags::kContainsFullScreenElement, flag);
   // When exiting fullscreen, the element's document may not be active.
   if (flag) {
     DCHECK(GetDocument().IsActive());
@@ -4039,7 +4039,7 @@ void Element::SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
 }
 
 void Element::SetContainsPersistentVideo(bool value) {
-  SetElementFlag(kContainsPersistentVideo, value);
+  SetElementFlag(ElementFlags::kContainsPersistentVideo, value);
   PseudoStateChanged(CSSSelector::kPseudoVideoPersistentAncestor);
 
   // In some rare situations, when the persistent video has been removed from
@@ -4061,7 +4061,7 @@ void Element::SetContainsPersistentVideo(bool value) {
 void Element::SetIsInTopLayer(bool in_top_layer) {
   if (IsInTopLayer() == in_top_layer)
     return;
-  SetElementFlag(kIsInTopLayer, in_top_layer);
+  SetElementFlag(ElementFlags::kIsInTopLayer, in_top_layer);
 
   // We must ensure a reattach occurs so the layoutObject is inserted in the
   // correct sibling order under LayoutView according to its top layer position,
