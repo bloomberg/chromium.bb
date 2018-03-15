@@ -34151,7 +34151,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordManagerAndroidPasswordEntryActions">
   <int value="0" label="Viewed"/>
   <int value="1" label="Deleted"/>
-  <int value="2" label="Cancelled"/>
+  <int value="2" label="Cancelled (obsolete)"/>
   <int value="3" label="ViewedAfterSearched"/>
 </enum>
 

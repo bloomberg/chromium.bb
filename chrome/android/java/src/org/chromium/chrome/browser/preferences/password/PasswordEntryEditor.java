@@ -48,7 +48,7 @@ public class PasswordEntryEditor extends Fragment {
     // entries must not be overwritten.
     private static final int PASSWORD_ENTRY_ACTION_VIEWED = 0;
     private static final int PASSWORD_ENTRY_ACTION_DELETED = 1;
-    private static final int PASSWORD_ENTRY_ACTION_CANCELLED = 2;
+    // Value 2 used to mean 'cancel' and is now obsolete. See https://crbug.com/807577 for details.
     private static final int PASSWORD_ENTRY_ACTION_VIEWED_AFTER_SEARCH = 3;
     private static final int PASSWORD_ENTRY_ACTION_BOUNDARY = 4;
 
