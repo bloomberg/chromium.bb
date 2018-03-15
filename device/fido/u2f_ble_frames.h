@@ -14,7 +14,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "device/fido/u2f_command_type.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -56,14 +56,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
   };
 
   U2fBleFrame();
-  U2fBleFrame(U2fCommandType command, std::vector<uint8_t> data);
+  U2fBleFrame(FidoBleDeviceCommand command, std::vector<uint8_t> data);
 
   U2fBleFrame(U2fBleFrame&&);
   U2fBleFrame& operator=(U2fBleFrame&&);
 
   ~U2fBleFrame();
 
-  U2fCommandType command() const { return command_; }
+  FidoBleDeviceCommand command() const { return command_; }
 
   bool IsValid() const;
   KeepaliveCode GetKeepaliveCode() const;
@@ -83,7 +83,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
   ToFragments(size_t max_fragment_size) const;
 
  private:
-  U2fCommandType command_ = U2fCommandType::UNDEFINED;
+  FidoBleDeviceCommand command_ = FidoBleDeviceCommand::kMsg;
   std::vector<uint8_t> data_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fBleFrame);
@@ -121,20 +121,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameInitializationFragment
                     U2fBleFrameInitializationFragment* fragment);
 
   U2fBleFrameInitializationFragment() = default;
-  U2fBleFrameInitializationFragment(U2fCommandType command,
+  U2fBleFrameInitializationFragment(FidoBleDeviceCommand command,
                                     uint16_t data_length,
                                     base::span<const uint8_t> fragment)
       : U2fBleFrameFragment(fragment),
         command_(command),
         data_length_(data_length) {}
 
-  U2fCommandType command() const { return command_; }
+  FidoBleDeviceCommand command() const { return command_; }
   uint16_t data_length() const { return data_length_; }
 
   size_t Serialize(std::vector<uint8_t>* buffer) const override;
 
  private:
-  U2fCommandType command_ = U2fCommandType::UNDEFINED;
+  FidoBleDeviceCommand command_ = FidoBleDeviceCommand::kMsg;
   uint16_t data_length_ = 0;
 };
 

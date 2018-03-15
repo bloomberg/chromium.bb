@@ -19,7 +19,7 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
-#include "device/fido/u2f_ble_uuids.h"
+#include "device/fido/fido_ble_uuids.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -332,7 +332,7 @@ class U2fBleConnectionTest : public ::testing::Test {
 
   void AddU2fService() {
     auto u2f_service = std::make_unique<NiceMockBluetoothGattService>(
-        u2f_device_, "u2f_service", BluetoothUUID(kU2fServiceUUID),
+        u2f_device_, "u2f_service", BluetoothUUID(kFidoServiceUUID),
         /* is_primary */ true, /* is_local */ false);
     u2f_service_ = u2f_service.get();
     u2f_device_->AddMockService(std::move(u2f_service));
@@ -353,7 +353,7 @@ class U2fBleConnectionTest : public ::testing::Test {
       auto u2f_control_point =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               u2f_service_, "u2f_control_point",
-              BluetoothUUID(kU2fControlPointUUID), is_local,
+              BluetoothUUID(kFidoControlPointUUID), is_local,
               BluetoothGattCharacteristic::PROPERTY_WRITE,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       u2f_control_point_ = u2f_control_point.get();
@@ -362,7 +362,7 @@ class U2fBleConnectionTest : public ::testing::Test {
 
     {
       auto u2f_status = std::make_unique<NiceMockBluetoothGattCharacteristic>(
-          u2f_service_, "u2f_status", BluetoothUUID(kU2fStatusUUID), is_local,
+          u2f_service_, "u2f_status", BluetoothUUID(kFidoStatusUUID), is_local,
           BluetoothGattCharacteristic::PROPERTY_NOTIFY,
           BluetoothGattCharacteristic::PERMISSION_NONE);
       u2f_status_ = u2f_status.get();
@@ -373,7 +373,7 @@ class U2fBleConnectionTest : public ::testing::Test {
       auto u2f_control_point_length =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               u2f_service_, "u2f_control_point_length",
-              BluetoothUUID(kU2fControlPointLengthUUID), is_local,
+              BluetoothUUID(kFidoControlPointLengthUUID), is_local,
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       u2f_control_point_length_ = u2f_control_point_length.get();
@@ -384,7 +384,7 @@ class U2fBleConnectionTest : public ::testing::Test {
       auto u2f_service_revision =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               u2f_service_, "u2f_service_revision",
-              BluetoothUUID(kU2fServiceRevisionUUID), is_local,
+              BluetoothUUID(kFidoServiceRevisionUUID), is_local,
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       u2f_service_revision_ = u2f_service_revision.get();
@@ -395,7 +395,7 @@ class U2fBleConnectionTest : public ::testing::Test {
       auto u2f_service_revision_bitfield =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               u2f_service_, "u2f_service_revision_bitfield",
-              BluetoothUUID(kU2fServiceRevisionBitfieldUUID), is_local,
+              BluetoothUUID(kFidoServiceRevisionBitfieldUUID), is_local,
               BluetoothGattCharacteristic::PROPERTY_READ |
                   BluetoothGattCharacteristic::PROPERTY_WRITE,
               BluetoothGattCharacteristic::PERMISSION_NONE);

@@ -106,7 +106,7 @@ void U2fBleTransaction::ProcessResponseFrame(U2fBleFrame response_frame) {
     return;
   }
 
-  if (response_frame.command() == U2fCommandType::CMD_KEEPALIVE) {
+  if (response_frame.command() == FidoBleDeviceCommand::kKeepAlive) {
     DVLOG(2) << "CMD_KEEPALIVE: "
              << static_cast<uint8_t>(response_frame.GetKeepaliveCode());
     // Expect another reponse frame soon.
@@ -114,15 +114,14 @@ void U2fBleTransaction::ProcessResponseFrame(U2fBleFrame response_frame) {
     return;
   }
 
-  DCHECK_EQ(response_frame.command(), U2fCommandType::CMD_ERROR);
+  DCHECK_EQ(response_frame.command(), FidoBleDeviceCommand::kError);
   DLOG(ERROR) << "CMD_ERROR: "
               << static_cast<uint8_t>(response_frame.GetErrorCode());
   OnError();
 }
 
 void U2fBleTransaction::StartTimeout() {
-  timer_.Start(FROM_HERE, U2fDevice::kDeviceTimeout, this,
-               &U2fBleTransaction::OnError);
+  timer_.Start(FROM_HERE, kDeviceTimeout, this, &U2fBleTransaction::OnError);
 }
 
 void U2fBleTransaction::StopTimeout() {

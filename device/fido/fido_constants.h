@@ -11,8 +11,15 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/time/time.h"
 
 namespace device {
+
+enum class ProtocolVersion {
+  kCtap,
+  kU2f,
+  kUnknown,
+};
 
 // CTAP protocol device response code, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
@@ -126,29 +133,36 @@ constexpr std::array<CtapDeviceResponseCode, 51> GetCtapResponseCodeList() {
 
 // Commands supported by CTAPHID device as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid-commands
-enum class CtapHidDeviceCommand : uint8_t {
-  kCtapHidMsg = 0x03,
-  kCtapHidCBOR = 0x10,
-  kCtapHidInit = 0x06,
-  kCtapHidPing = 0x01,
-  kCtapHidCancel = 0x11,
-  kCtapHidError = 0x3F,
-  kCtapHidKeepAlive = 0x3B,
-  kCtapHidWink = 0x08,
-  kCtapHidLock = 0x04,
+enum class FidoHidDeviceCommand : uint8_t {
+  kMsg = 0x03,
+  kCbor = 0x10,
+  kInit = 0x06,
+  kPing = 0x01,
+  kCancel = 0x11,
+  kError = 0x3F,
+  kKeepAlive = 0x3B,
+  kWink = 0x08,
+  kLock = 0x04,
 };
 
-constexpr std::array<CtapHidDeviceCommand, 9> GetCtapHidDeviceCommandList() {
-  return {CtapHidDeviceCommand::kCtapHidMsg,
-          CtapHidDeviceCommand::kCtapHidCBOR,
-          CtapHidDeviceCommand::kCtapHidInit,
-          CtapHidDeviceCommand::kCtapHidPing,
-          CtapHidDeviceCommand::kCtapHidCancel,
-          CtapHidDeviceCommand::kCtapHidError,
-          CtapHidDeviceCommand::kCtapHidKeepAlive,
-          CtapHidDeviceCommand::kCtapHidWink,
-          CtapHidDeviceCommand::kCtapHidLock};
+constexpr std::array<FidoHidDeviceCommand, 9> GetFidoHidDeviceCommandList() {
+  return {FidoHidDeviceCommand::kMsg,       FidoHidDeviceCommand::kCbor,
+          FidoHidDeviceCommand::kInit,      FidoHidDeviceCommand::kPing,
+          FidoHidDeviceCommand::kCancel,    FidoHidDeviceCommand::kError,
+          FidoHidDeviceCommand::kKeepAlive, FidoHidDeviceCommand::kWink,
+          FidoHidDeviceCommand::kLock};
 }
+
+// BLE device command as specified in
+//  https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#command-status-and-error-constants
+// U2F BLE device does not support cancel command.
+enum class FidoBleDeviceCommand : uint8_t {
+  kPing = 0x81,
+  kKeepAlive = 0x82,
+  kMsg = 0x83,
+  kCancel = 0xBE,
+  kError = 0xBF,
+};
 
 // Authenticator API commands supported by CTAP devices, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
@@ -229,6 +243,9 @@ extern const std::array<uint8_t, 2> kLegacyVersionSuffix;
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#getversion-request-and-response---u2f_version
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const std::array<uint8_t, 6> kU2fVersionResponse;
+
+// Maximum wait time before client error outs on device.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 
 }  // namespace device
 

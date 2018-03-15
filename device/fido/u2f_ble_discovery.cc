@@ -15,8 +15,8 @@
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/fido/fido_ble_uuids.h"
 #include "device/fido/u2f_ble_device.h"
-#include "device/fido/u2f_ble_uuids.h"
 
 namespace device {
 
@@ -55,7 +55,7 @@ void U2fBleDiscovery::Stop() {
 
 // static
 const BluetoothUUID& U2fBleDiscovery::U2fServiceUUID() {
-  static const BluetoothUUID service_uuid(kU2fServiceUUID);
+  static const BluetoothUUID service_uuid(kFidoServiceUUID);
   return service_uuid;
 }
 

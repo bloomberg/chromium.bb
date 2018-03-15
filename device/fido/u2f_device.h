@@ -23,17 +23,12 @@ namespace device {
 // standardized Register, Sign, and GetVersion methods.
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
  public:
-  enum class ProtocolVersion {
-    U2F_V2,
-    UNKNOWN,
-  };
-
   using WinkCallback = base::OnceClosure;
-
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>> response)>;
 
-  static constexpr auto kDeviceTimeout = base::TimeDelta::FromSeconds(3);
+  // Internal state machine states.
+  enum class State { kInit, kConnected, kBusy, kReady, kDeviceError };
 
   U2fDevice();
   virtual ~U2fDevice();

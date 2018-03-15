@@ -27,18 +27,18 @@ U2fBleDevice::U2fBleDevice(std::unique_ptr<U2fBleConnection> connection)
 U2fBleDevice::~U2fBleDevice() = default;
 
 void U2fBleDevice::Connect() {
-  if (state_ != State::INIT)
+  if (state_ != State::kInit)
     return;
 
   StartTimeout();
-  state_ = State::BUSY;
+  state_ = State::kBusy;
   connection_->Connect();
 }
 
 void U2fBleDevice::SendPing(std::vector<uint8_t> data,
                             DeviceCallback callback) {
   pending_frames_.emplace(
-      U2fBleFrame(U2fCommandType::CMD_PING, std::move(data)),
+      U2fBleFrame(FidoBleDeviceCommand::kPing, std::move(data)),
       base::BindOnce(
           [](DeviceCallback callback, base::Optional<U2fBleFrame> frame) {
             std::move(callback).Run(frame ? base::make_optional(frame->data())
@@ -76,7 +76,7 @@ U2fBleConnection::ReadCallback U2fBleDevice::GetReadCallbackForTesting() {
 void U2fBleDevice::DeviceTransact(std::vector<uint8_t> command,
                                   DeviceCallback callback) {
   pending_frames_.emplace(
-      U2fBleFrame(U2fCommandType::CMD_MSG, std::move(command)),
+      U2fBleFrame(FidoBleDeviceCommand::kMsg, std::move(command)),
       base::BindOnce(
           [](DeviceCallback callback, base::Optional<U2fBleFrame> frame) {
             std::move(callback).Run(frame ? base::make_optional(frame->data())
@@ -92,16 +92,16 @@ base::WeakPtr<U2fDevice> U2fBleDevice::GetWeakPtr() {
 
 void U2fBleDevice::Transition() {
   switch (state_) {
-    case State::INIT:
+    case State::kInit:
       Connect();
       break;
-    case State::CONNECTED:
+    case State::kConnected:
       StartTimeout();
-      state_ = State::BUSY;
+      state_ = State::kBusy;
       connection_->ReadControlPointLength(base::BindOnce(
           &U2fBleDevice::OnReadControlPointLength, base::Unretained(this)));
       break;
-    case State::READY:
+    case State::kReady:
       if (!pending_frames_.empty()) {
         U2fBleFrame frame;
         FrameCallback callback;
@@ -110,9 +110,9 @@ void U2fBleDevice::Transition() {
         SendRequestFrame(std::move(frame), std::move(callback));
       }
       break;
-    case State::BUSY:
+    case State::kBusy:
       break;
-    case State::DEVICE_ERROR:
+    case State::kDeviceError:
       auto self = GetWeakPtr();
       // Executing callbacks may free |this|. Check |self| first.
       while (self && !pending_frames_.empty()) {
@@ -127,7 +127,7 @@ void U2fBleDevice::Transition() {
 
 void U2fBleDevice::OnConnectionStatus(bool success) {
   StopTimeout();
-  state_ = success ? State::CONNECTED : State::DEVICE_ERROR;
+  state_ = success ? State::kConnected : State::kDeviceError;
   Transition();
 }
 
@@ -135,9 +135,9 @@ void U2fBleDevice::OnReadControlPointLength(base::Optional<uint16_t> length) {
   StopTimeout();
   if (length) {
     transaction_.emplace(connection_.get(), *length);
-    state_ = State::READY;
+    state_ = State::kReady;
   } else {
-    state_ = State::DEVICE_ERROR;
+    state_ = State::kDeviceError;
   }
   Transition();
 }
@@ -148,7 +148,7 @@ void U2fBleDevice::OnStatusMessage(std::vector<uint8_t> data) {
 }
 
 void U2fBleDevice::SendRequestFrame(U2fBleFrame frame, FrameCallback callback) {
-  state_ = State::BUSY;
+  state_ = State::kBusy;
   transaction_->WriteRequestFrame(
       std::move(frame),
       base::BindOnce(&U2fBleDevice::OnResponseFrame, base::Unretained(this),
@@ -157,7 +157,7 @@ void U2fBleDevice::SendRequestFrame(U2fBleFrame frame, FrameCallback callback) {
 
 void U2fBleDevice::OnResponseFrame(FrameCallback callback,
                                    base::Optional<U2fBleFrame> frame) {
-  state_ = frame ? State::READY : State::DEVICE_ERROR;
+  state_ = frame ? State::kReady : State::kDeviceError;
   auto self = GetWeakPtr();
   std::move(callback).Run(std::move(frame));
   // Executing callbacks may free |this|. Check |self| first.
@@ -166,8 +166,7 @@ void U2fBleDevice::OnResponseFrame(FrameCallback callback,
 }
 
 void U2fBleDevice::StartTimeout() {
-  timer_.Start(FROM_HERE, U2fDevice::kDeviceTimeout, this,
-               &U2fBleDevice::OnTimeout);
+  timer_.Start(FROM_HERE, kDeviceTimeout, this, &U2fBleDevice::OnTimeout);
 }
 
 void U2fBleDevice::StopTimeout() {
@@ -175,7 +174,7 @@ void U2fBleDevice::StopTimeout() {
 }
 
 void U2fBleDevice::OnTimeout() {
-  state_ = State::DEVICE_ERROR;
+  state_ = State::kDeviceError;
 }
 
 }  // namespace device

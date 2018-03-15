@@ -16,7 +16,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/fido/u2f_ble_uuids.h"
+#include "device/fido/fido_ble_uuids.h"
 
 namespace device {
 
@@ -317,7 +317,7 @@ void U2fBleConnection::ConnectToU2fService() {
       device->GetGattServices();
   auto found =
       std::find_if(services.begin(), services.end(), [](const auto* service) {
-        return service->GetUUID().canonical_value() == kU2fServiceUUID;
+        return service->GetUUID().canonical_value() == kFidoServiceUUID;
       });
 
   if (found == services.end()) {
@@ -334,19 +334,19 @@ void U2fBleConnection::ConnectToU2fService() {
     // NOTE: Since GetUUID() returns a temporary |uuid| can't be a reference,
     // even though canonical_value() returns a const reference.
     const std::string uuid = characteristic->GetUUID().canonical_value();
-    if (uuid == kU2fControlPointLengthUUID) {
+    if (uuid == kFidoControlPointLengthUUID) {
       control_point_length_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Control Point Length: " << *control_point_length_id_;
-    } else if (uuid == kU2fControlPointUUID) {
+    } else if (uuid == kFidoControlPointUUID) {
       control_point_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Control Point: " << *control_point_id_;
-    } else if (uuid == kU2fStatusUUID) {
+    } else if (uuid == kFidoStatusUUID) {
       status_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Status: " << *status_id_;
-    } else if (uuid == kU2fServiceRevisionUUID) {
+    } else if (uuid == kFidoServiceRevisionUUID) {
       service_revision_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Service Revision: " << *service_revision_id_;
-    } else if (uuid == kU2fServiceRevisionBitfieldUUID) {
+    } else if (uuid == kFidoServiceRevisionBitfieldUUID) {
       service_revision_bitfield_id_ = characteristic->GetIdentifier();
       DVLOG(2) << "Got U2F Service Revision Bitfield: "
                << *service_revision_bitfield_id_;

@@ -62,17 +62,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket : public FidoHidPacket {
       size_t* remaining_size);
 
   FidoHidInitPacket(uint32_t channel_id,
-                    CtapHidDeviceCommand cmd,
+                    FidoHidDeviceCommand cmd,
                     std::vector<uint8_t> data,
                     uint16_t payload_length);
   ~FidoHidInitPacket() final;
 
   std::vector<uint8_t> GetSerializedData() const final;
-  CtapHidDeviceCommand command() const { return command_; }
+  FidoHidDeviceCommand command() const { return command_; }
   uint16_t payload_length() const { return payload_length_; }
 
  private:
-  CtapHidDeviceCommand command_;
+  FidoHidDeviceCommand command_;
   uint16_t payload_length_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoHidInitPacket);

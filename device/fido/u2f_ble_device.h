@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_ble_connection.h"
 #include "device/fido/u2f_ble_transaction.h"
 #include "device/fido/u2f_device.h"
@@ -51,10 +52,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
  private:
-  // INIT --> BUSY --> CONNECTED --> BUSY <--> READY.
-  // DEVICE_ERROR persists.
-  enum class State { INIT, CONNECTED, READY, BUSY, DEVICE_ERROR };
-
   void Transition();
 
   void OnConnectionStatus(bool success);
@@ -72,7 +69,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
   void StopTimeout();
   void OnTimeout();
 
-  State state_ = State::INIT;
+  State state_ = State::kInit;
   base::OneShotTimer timer_;
 
   std::unique_ptr<U2fBleConnection> connection_;

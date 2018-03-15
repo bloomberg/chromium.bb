@@ -16,39 +16,39 @@ namespace device {
 // static
 std::unique_ptr<FidoHidMessage> FidoHidMessage::Create(
     uint32_t channel_id,
-    CtapHidDeviceCommand type,
+    FidoHidDeviceCommand type,
     base::span<const uint8_t> data) {
   if (data.size() > kHidMaxMessageSize)
     return nullptr;
 
   switch (type) {
-    case CtapHidDeviceCommand::kCtapHidPing:
+    case FidoHidDeviceCommand::kPing:
       break;
-    case CtapHidDeviceCommand::kCtapHidMsg:
-    case CtapHidDeviceCommand::kCtapHidCBOR: {
+    case FidoHidDeviceCommand::kMsg:
+    case FidoHidDeviceCommand::kCbor: {
       if (data.empty())
         return nullptr;
       break;
     }
 
-    case CtapHidDeviceCommand::kCtapHidCancel:
-    case CtapHidDeviceCommand::kCtapHidWink: {
+    case FidoHidDeviceCommand::kCancel:
+    case FidoHidDeviceCommand::kWink: {
       if (!data.empty())
         return nullptr;
       break;
     }
-    case CtapHidDeviceCommand::kCtapHidLock: {
+    case FidoHidDeviceCommand::kLock: {
       if (data.size() != 1 || data[0] > kHidMaxLockSeconds)
         return nullptr;
       break;
     }
-    case CtapHidDeviceCommand::kCtapHidInit: {
+    case FidoHidDeviceCommand::kInit: {
       if (data.size() != 8)
         return nullptr;
       break;
     }
-    case CtapHidDeviceCommand::kCtapHidKeepAlive:
-    case CtapHidDeviceCommand::kCtapHidError:
+    case FidoHidDeviceCommand::kKeepAlive:
+    case FidoHidDeviceCommand::kError:
       if (data.size() != 1)
         return nullptr;
   }
@@ -124,7 +124,7 @@ size_t FidoHidMessage::NumPackets() const {
 }
 
 FidoHidMessage::FidoHidMessage(uint32_t channel_id,
-                               CtapHidDeviceCommand type,
+                               FidoHidDeviceCommand type,
                                base::span<const uint8_t> data)
     : channel_id_(channel_id) {
   uint8_t sequence = 0;
