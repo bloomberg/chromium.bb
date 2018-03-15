@@ -35,6 +35,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/SaturatedArithmetic.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -239,13 +240,10 @@ inline bool operator!=(const FloatRect& a, const FloatRect& b) {
 
 // Returns a IntRect containing the given FloatRect.
 inline IntRect EnclosingIntRect(const FloatRect& rect) {
-  // Compute the enclosing rect using float types directly rather than
-  // FlooredIntPoint(...) etc. to avoid triggering integer overflows.
-  FloatPoint location(floorf(rect.X()), floorf(rect.Y()));
-  FloatPoint max_point(ceilf(rect.MaxX()), ceilf(rect.MaxY()));
-  FloatSize size = max_point - location;
-  return IntRect(clampTo<int>(location.X()), clampTo<int>(location.Y()),
-                 clampTo<int>(size.Width()), clampTo<int>(size.Height()));
+  IntPoint location = FlooredIntPoint(rect.Location());
+  IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
+  return IntRect(location, IntSize(ClampSub(max_point.X(), location.X()),
+                                   ClampSub(max_point.Y(), location.Y())));
 }
 
 // Returns a valid IntRect contained within the given FloatRect.
