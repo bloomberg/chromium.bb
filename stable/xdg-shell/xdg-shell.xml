@@ -1031,9 +1031,6 @@
       surface of their own is clicked should dismiss the popup using the destroy
       request.
 
-      The parent surface must have either the xdg_toplevel or xdg_popup surface
-      role.
-
       A newly created xdg_popup will be stacked on top of all previously created
       xdg_popup surfaces associated with the same xdg_toplevel.
 
