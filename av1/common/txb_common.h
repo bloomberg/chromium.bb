@@ -23,7 +23,7 @@ extern const int8_t av1_coeff_band_16x16[256];
 
 extern const int8_t av1_coeff_band_32x32[1024];
 
-extern const int8_t av1_nz_map_ctx_offset[TX_SIZES_ALL][5][5];
+extern const int8_t *av1_nz_map_ctx_offset[TX_SIZES_ALL];
 
 typedef struct txb_ctx {
   int txb_skip_ctx;
@@ -492,18 +492,30 @@ static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
   return count;
 }
 
+#define NZ_MAP_CTX_0 SIG_COEF_CONTEXTS_2D
+#define NZ_MAP_CTX_5 (NZ_MAP_CTX_0 + 5)
+#define NZ_MAP_CTX_10 (NZ_MAP_CTX_0 + 10)
+
+static const int nz_map_ctx_offset_1d[32] = {
+  NZ_MAP_CTX_0,  NZ_MAP_CTX_5,  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+};
+
 static INLINE int get_nz_map_ctx_from_stats(
     const int stats,
     const int coeff_idx,  // raster order
     const int bwl, const TX_SIZE tx_size, const TX_CLASS tx_class) {
-  const int row = coeff_idx >> bwl;
-  const int col = coeff_idx - (row << bwl);
+  // tx_class == 0(TX_CLASS_2D)
+  if ((tx_class | coeff_idx) == 0) return 0;
   int ctx = (stats + 1) >> 1;
   ctx = AOMMIN(ctx, 4);
-
-  if (tx_class == TX_CLASS_2D) {
-    if (row == 0 && col == 0) return 0;
-
+  switch (tx_class) {
+    case TX_CLASS_2D: {
 #if 0
     // This is the algorithm to generate table av1_nz_map_ctx_offset[].
     const int width = tx_size_wide[tx_size];
@@ -519,15 +531,22 @@ static INLINE int get_nz_map_ctx_from_stats(
 
     return 21 + ctx;
 #endif
-    return ctx + av1_nz_map_ctx_offset[tx_size][AOMMIN(row, 4)][AOMMIN(col, 4)];
-  } else {
-    static const int pos_to_offset[3] = {
-      SIG_COEF_CONTEXTS_2D, SIG_COEF_CONTEXTS_2D + 5, SIG_COEF_CONTEXTS_2D + 10
-    };
-    const int idx = (tx_class == TX_CLASS_VERT) ? row : col;
-    const int *map = pos_to_offset;
-    return ctx + map[AOMMIN(idx, 2)];
+      return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
+    }
+    case TX_CLASS_HORIZ: {
+      const int row = coeff_idx >> bwl;
+      const int col = coeff_idx - (row << bwl);
+      return ctx + nz_map_ctx_offset_1d[col];
+      break;
+    }
+    case TX_CLASS_VERT: {
+      const int row = coeff_idx >> bwl;
+      return ctx + nz_map_ctx_offset_1d[row];
+      break;
+    }
+    default: break;
   }
+  return 0;
 }
 
 typedef aom_cdf_prob (*base_cdf_arr)[CDF_SIZE(4)];
@@ -553,9 +572,7 @@ static INLINE int get_lower_levels_ctx_2d(const uint8_t *levels, int coeff_idx,
   mag += AOMMIN(levels[(2 << bwl) + (2 << TX_PAD_HOR_LOG2)], 3);  // { 2, 0 }
 
   const int ctx = AOMMIN((mag + 1) >> 1, 4);
-  const int row = coeff_idx >> bwl;
-  const int col = coeff_idx - (row << bwl);
-  return ctx + av1_nz_map_ctx_offset[tx_size][AOMMIN(row, 4)][AOMMIN(col, 4)];
+  return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
 }
 static INLINE int get_lower_levels_ctx(const uint8_t *levels, int coeff_idx,
                                        int bwl, TX_SIZE tx_size,
