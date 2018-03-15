@@ -644,6 +644,12 @@
         <message name="IDS_REPORT_THIS" desc="Label text for a button to report a connection failure to the developers.">
           Report this
         </message>
+        <message name="IDS_IOS_PHOTO_LIBRARY_USAGE_DESCRIPTION" desc="Message shown when the app requests permission to access the user's photo library.">
+          To choose a profile picture, allow Chrome Remote Desktop to access your photos
+        </message>
+        <message name="IDS_IOS_CAMERA_USAGE_DESCRIPTION" desc="Message shown when the app requests permission to use the camera of the device.">
+          To choose a profile picture, allow Chrome Remote Desktop to access your camera
+        </message>
 
 <!-- Play Store listings text. These Android-specific strings are not marked
      with formatter_data="android_java" since they are used only for the Play
