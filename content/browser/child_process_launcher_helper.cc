@@ -207,10 +207,8 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
       launcher_task_runner(
           android::LauncherThread::GetMessageLoop()->task_runner());
 #else   // defined(OS_ANDROID)
-  // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
   constexpr base::TaskTraits task_traits = {
-      base::MayBlock(), base::WithBaseSyncPrimitives(),
-      base::TaskPriority::USER_BLOCKING,
+      base::MayBlock(), base::TaskPriority::USER_BLOCKING,
       base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
   // TODO(wez): Investigates whether we could use SequencedTaskRunner on
   // platforms other than Windows. http://crbug.com/820200.
