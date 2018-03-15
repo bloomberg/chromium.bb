@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Makes sure that Link headers on subresources preload resources assert_equals: /preload/resources/CanvasTest.ttf?link-header-on-subresource expected 1 but got 0
-Harness: the test ran to completion.
-
