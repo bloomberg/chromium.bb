@@ -1521,6 +1521,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ExpireBookmarkFavicons) {
   EXPECT_TRUE(favicon_tester.HasExpiredFaviconForPageURL(bookmarked_page));
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
+  GURL bookmarked_page("http://a");
+
+  TestingProfile* profile = GetProfile();
+  profile->CreateBookmarkModel(true);
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
+                         base::ASCIIToUTF16("a"), bookmarked_page);
+  EXPECT_EQ(1, bookmark_model->bookmark_bar_node()->child_count());
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS, false);
+  EXPECT_EQ(0, bookmark_model->bookmark_bar_node()->child_count());
+}
+
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,

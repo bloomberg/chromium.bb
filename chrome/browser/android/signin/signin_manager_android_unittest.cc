@@ -13,16 +13,39 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/core/stub_offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
+ public:
+  void DeleteCachedPagesByURLPredicate(
+      const offline_pages::UrlPredicate& predicate,
+      const offline_pages::DeletePageCallback& callback) override {
+    callback.Run(DeletePageResult::SUCCESS);
+  }
+};
+
+std::unique_ptr<KeyedService> BuildOfflinePageModel(
+    content::BrowserContext* context) {
+  return std::make_unique<MockOfflinePageModel>();
+}
+
+}  // namespace
 
 class SigninManagerAndroidTest : public ::testing::Test {
  public:
@@ -33,18 +56,22 @@ class SigninManagerAndroidTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("Testing Profile");
+    // TODO(crbug.com/748484): Remove requirement for this delegate in
+    // unit_tests.
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+        ->SetDownloadManagerDelegateForTesting(
+            std::make_unique<ChromeDownloadManagerDelegate>(profile_));
   }
 
   TestingProfile* profile() { return profile_; }
 
-  static std::unique_ptr<KeyedService> GetEmptyBrowsingDataRemoverDelegate(
-      content::BrowserContext* context) {
-    return nullptr;
-  }
-
   // Adds two testing bookmarks to |profile_|.
   bookmarks::BookmarkModel* AddTestBookmarks() {
     profile_->CreateBookmarkModel(true);
+    // Creating a BookmarkModel also a creates a StubOfflinePageModel.
+    // We need to replace this with a mock that responds to deletions.
+    offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
+        profile_, BuildOfflinePageModel);
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
@@ -61,17 +88,6 @@ class SigninManagerAndroidTest : public ::testing::Test {
 
   // Calls SigninManager::WipeData(|all_data|) and waits for its completion.
   void WipeData(bool all_data) {
-    // ChromeBrowsingDataRemoverDelegate deletes a lot of data storage backends
-    // that will not work correctly in a unittest. Remove it. Note that
-    // bookmarks deletion is currently not performed in the delegate, so this
-    // test remains valid.
-    // TODO(crbug.com/748484): Make ChromeBrowsingDataRemoverDelegate usable
-    // in unittests.
-    ChromeBrowsingDataRemoverDelegateFactory::GetInstance()
-        ->SetTestingFactoryAndUse(
-            profile(),
-            SigninManagerAndroidTest::GetEmptyBrowsingDataRemoverDelegate);
-
     std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop());
     SigninManagerAndroid::WipeData(profile(), all_data,
                                    run_loop->QuitClosure());

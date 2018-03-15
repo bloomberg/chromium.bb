@@ -778,6 +778,23 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  // DATA_TYPE_BOOKMARKS
+  if (remove_mask & DATA_TYPE_BOOKMARKS) {
+    auto* bookmark_model = BookmarkModelFactory::GetForBrowserContext(profile_);
+    if (bookmark_model) {
+      if (delete_begin_.is_null() &&
+          (delete_end_.is_null() || delete_end_.is_max())) {
+        bookmark_model->RemoveAllUserBookmarks();
+      } else {
+        // Bookmark deletion is only implemented to remove all data after a
+        // profile deletion. A full implementation would need to traverse the
+        // whole tree and check timestamps against delete_begin and delete_end.
+        NOTIMPLEMENTED();
+      }
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DURABLE_PERMISSION
   if (remove_mask & DATA_TYPE_DURABLE_PERMISSION) {
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
