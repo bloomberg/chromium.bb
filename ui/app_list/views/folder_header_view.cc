@@ -217,6 +217,7 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
   if (key_event.key_code() == ui::VKEY_RETURN &&
       key_event.type() == ui::ET_KEY_PRESSED) {
     delegate_->GiveBackFocusToSearchBox();
+    delegate_->NavigateBack(folder_item_, key_event);
     return true;
   }
   if (!CanProcessLeftRightKeyTraversal(key_event))
