@@ -11,6 +11,7 @@
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/drag_source.h"
+#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_location.h"
 #include "services/ui/ws/event_processor_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -63,8 +64,10 @@ int32_t GetPointerId(const Event& event) {
 EventProcessor::ObservedWindow::ObservedWindow() = default;
 EventProcessor::ObservedWindow::~ObservedWindow() = default;
 
-EventProcessor::EventProcessor(EventProcessorDelegate* delegate)
+EventProcessor::EventProcessor(EventProcessorDelegate* delegate,
+                               EventDispatcher* event_dispatcher)
     : delegate_(delegate),
+      event_dispatcher_(event_dispatcher),
       capture_window_(nullptr),
       capture_window_client_id_(kInvalidClientId),
       event_targeter_(std::make_unique<EventTargeter>(this)),
@@ -309,9 +312,9 @@ void EventProcessor::ProcessEvent(const ui::Event& event,
       Accelerator* pre_target =
           FindAccelerator(*key_event, ui::mojom::AcceleratorPhase::PRE_TARGET);
       if (pre_target) {
-        delegate_->OnAccelerator(pre_target->id(), event_location.display_id,
-                                 event,
-                                 EventProcessorDelegate::AcceleratorPhase::PRE);
+        event_dispatcher_->OnAccelerator(
+            pre_target->id(), event_location.display_id, event,
+            EventDispatcher::AcceleratorPhase::kPre);
         return;
       }
     }
@@ -413,15 +416,15 @@ void EventProcessor::ProcessKeyEvent(const ui::KeyEvent& event,
     const bool in_nonclient_area = false;
     const ClientSpecificId client_id =
         delegate_->GetEventTargetClientId(focused_window, in_nonclient_area);
-    delegate_->DispatchInputEventToWindow(focused_window, client_id,
-                                          EventLocation(display_id), event,
-                                          post_target);
+    event_dispatcher_->DispatchInputEventToWindow(focused_window, client_id,
+                                                  EventLocation(display_id),
+                                                  event, post_target);
     return;
   }
   delegate_->OnEventTargetNotFound(event, display_id);
   if (post_target)
-    delegate_->OnAccelerator(post_target->id(), display_id, event,
-                             EventProcessorDelegate::AcceleratorPhase::POST);
+    event_dispatcher_->OnAccelerator(post_target->id(), display_id, event,
+                                     EventDispatcher::AcceleratorPhase::kPost);
 }
 
 void EventProcessor::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
@@ -736,8 +739,8 @@ void EventProcessor::DispatchToClient(ServerWindow* window,
   clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators
   // support pointer events.
-  delegate_->DispatchInputEventToWindow(window, client_id, event_location,
-                                        *clone, nullptr);
+  event_dispatcher_->DispatchInputEventToWindow(
+      window, client_id, event_location, *clone, nullptr);
 }
 
 void EventProcessor::CancelPointerEventsToTarget(ServerWindow* window) {

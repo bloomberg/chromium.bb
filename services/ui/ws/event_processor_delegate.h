@@ -23,23 +23,12 @@ class Event;
 
 namespace ws {
 
-class Accelerator;
 class ServerWindow;
 
 // Used by EventProcessor for dispatching of events, as well as to inform the
 // delegate of various state changes.
 class EventProcessorDelegate {
  public:
-  enum class AcceleratorPhase {
-    PRE,
-    POST,
-  };
-
-  virtual void OnAccelerator(uint32_t accelerator,
-                             int64_t display_id,
-                             const ui::Event& event,
-                             AcceleratorPhase phase) = 0;
-
   virtual void SetFocusedWindowFromEventProcessor(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventProcessor(
       int64_t display_id) = 0;
@@ -70,13 +59,6 @@ class EventProcessorDelegate {
 
   virtual void OnEventChangesCursorTouchVisibility(const ui::Event& event,
                                                    bool visible) = 0;
-
-  // Dispatches an event to the specific client.
-  virtual void DispatchInputEventToWindow(ServerWindow* target,
-                                          ClientSpecificId client_id,
-                                          const EventLocation& event_location,
-                                          const ui::Event& event,
-                                          Accelerator* accelerator) = 0;
 
   // Returns the id of the client to send events to. |in_nonclient_area| is
   // true if the event occurred in the non-client area of the window.

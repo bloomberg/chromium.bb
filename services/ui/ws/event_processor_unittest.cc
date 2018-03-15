@@ -21,6 +21,7 @@
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/accelerator.h"
+#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_location.h"
 #include "services/ui/ws/event_processor_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -52,7 +53,10 @@ struct DispatchedEventDetails {
   Accelerator* accelerator;
 };
 
-class TestEventProcessorDelegate : public EventProcessorDelegate {
+// Serves as both the EventProcessorDelegate and EventDispatcher
+// implementation. Records interesting calls for various assertions.
+class TestEventProcessorDelegate : public EventProcessorDelegate,
+                                   public EventDispatcher {
  public:
   // Delegate interface used by this class to release capture on event
   // dispatcher.
@@ -81,7 +85,7 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
   uint32_t GetAndClearLastAccelerator() {
     uint32_t return_value = last_accelerator_;
     last_accelerator_ = 0;
-    last_accelerator_phase_ = AcceleratorPhase::POST;
+    last_accelerator_phase_ = AcceleratorPhase::kPost;
     return return_value;
   }
 
@@ -131,7 +135,19 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
   }
 
  private:
-  // EventProcessorDelegate:
+  // EventDispatcher:
+  void DispatchInputEventToWindow(ServerWindow* target,
+                                  ClientSpecificId client_id,
+                                  const EventLocation& event_location,
+                                  const ui::Event& event,
+                                  Accelerator* accelerator) override {
+    std::unique_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
+    details->window = target;
+    details->client_id = client_id;
+    details->event = ui::Event::Clone(event);
+    details->accelerator = accelerator;
+    dispatched_event_queue_.push(std::move(details));
+  }
   void OnAccelerator(uint32_t accelerator,
                      int64_t display_id,
                      const ui::Event& event,
@@ -140,6 +156,8 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
     last_accelerator_ = accelerator;
     last_accelerator_phase_ = phase;
   }
+
+  // EventProcessorDelegate:
   ServerWindow* GetFocusedWindowForEventProcessor(int64_t display_id) override {
     return focused_window_;
   }
@@ -161,18 +179,6 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
   }
   void OnEventChangesCursorTouchVisibility(const ui::Event& event,
                                            bool visible) override {}
-  void DispatchInputEventToWindow(ServerWindow* target,
-                                  ClientSpecificId client_id,
-                                  const EventLocation& event_location,
-                                  const ui::Event& event,
-                                  Accelerator* accelerator) override {
-    std::unique_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
-    details->window = target;
-    details->client_id = client_id;
-    details->event = ui::Event::Clone(event);
-    details->accelerator = accelerator;
-    dispatched_event_queue_.push(std::move(details));
-  }
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override {
     return in_nonclient_area ? kNonclientAreaId : kClientAreaId;
@@ -211,7 +217,7 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
   ServerWindow* focused_window_;
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
-  AcceleratorPhase last_accelerator_phase_ = AcceleratorPhase::POST;
+  AcceleratorPhase last_accelerator_phase_ = AcceleratorPhase::kPost;
   base::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
   ServerWindow* root_ = nullptr;
   std::unique_ptr<ui::Event> last_event_target_not_found_;
@@ -452,7 +458,8 @@ void EventProcessorTest::SetUp() {
   test_event_dispatcher_delegate_ =
       std::make_unique<TestEventProcessorDelegate>(this);
   event_dispatcher_ =
-      std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get());
+      std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get(),
+                                       test_event_dispatcher_delegate_.get());
   test_event_dispatcher_delegate_->set_root(root_window_.get());
 }
 
@@ -538,7 +545,8 @@ void EventProcessorVizTargeterTest::SetUp() {
   test_event_dispatcher_delegate_ =
       std::make_unique<TestEventProcessorDelegate>(this);
   event_dispatcher_ =
-      std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get());
+      std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get(),
+                                       test_event_dispatcher_delegate_.get());
   test_event_dispatcher_delegate_->set_root(root_window_.get());
 
   uint32_t handle_size = 100;
@@ -603,7 +611,8 @@ TEST_P(EventProcessorTest, ProcessEventNoTarget) {
 TEST_P(EventProcessorTest, AcceleratorBasic) {
   ClearSetup();
   TestEventProcessorDelegate event_dispatcher_delegate(nullptr);
-  EventProcessor dispatcher(&event_dispatcher_delegate);
+  EventProcessor dispatcher(&event_dispatcher_delegate,
+                            &event_dispatcher_delegate);
 
   uint32_t accelerator_1 = 1;
   mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
@@ -754,7 +763,7 @@ TEST_P(EventProcessorTest, ProcessPost) {
   // DispatchInputEventToWindow().
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
   DispatchEvent(dispatcher, key, EventProcessor::AcceleratorMatchPhase::ANY);
-  EXPECT_EQ(EventProcessorDelegate::AcceleratorPhase::PRE,
+  EXPECT_EQ(EventDispatcher::AcceleratorPhase::kPre,
             event_dispatcher_delegate->last_accelerator_phase());
   EXPECT_EQ(pre_id, event_dispatcher_delegate->GetAndClearLastAccelerator());
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());

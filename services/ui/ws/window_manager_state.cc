@@ -204,7 +204,7 @@ struct WindowManagerState::EventTask {
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
     : window_tree_(window_tree),
-      event_processor_(this),
+      event_processor_(this, this),
       cursor_state_(window_tree_->display_manager(), this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
@@ -480,7 +480,7 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
   if (result == mojom::EventResult::UNHANDLED &&
       details->post_target_accelerator) {
     OnAccelerator(details->post_target_accelerator->id(), details->display_id,
-                  *details->event, AcceleratorPhase::POST);
+                  *details->event, AcceleratorPhase::kPost);
   }
 
   ProcessEventTasks();
@@ -703,7 +703,7 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        int64_t display_id,
                                        const ui::Event& event,
                                        AcceleratorPhase phase) {
-  const bool needs_ack = phase == AcceleratorPhase::PRE;
+  const bool needs_ack = phase == AcceleratorPhase::kPre;
   WindowTree::AcceleratorCallback ack_callback;
   if (needs_ack) {
     DCHECK(!in_flight_event_dispatch_details_);
