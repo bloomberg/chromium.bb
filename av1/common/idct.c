@@ -461,61 +461,6 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                            const TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  static const transform_2d IHT_16[] = {
-    { aom_idct16_c, aom_idct16_c },    // DCT_DCT  = 0
-    { aom_iadst16_c, aom_idct16_c },   // ADST_DCT = 1
-    { aom_idct16_c, aom_iadst16_c },   // DCT_ADST = 2
-    { aom_iadst16_c, aom_iadst16_c },  // ADST_ADST = 3
-    { aom_iadst16_c, aom_idct16_c },   // FLIPADST_DCT
-    { aom_idct16_c, aom_iadst16_c },   // DCT_FLIPADST
-    { aom_iadst16_c, aom_iadst16_c },  // FLIPADST_FLIPADST
-    { aom_iadst16_c, aom_iadst16_c },  // ADST_FLIPADST
-    { aom_iadst16_c, aom_iadst16_c },  // FLIPADST_ADST
-    { iidtx16_c, iidtx16_c },          // IDTX
-    { aom_idct16_c, iidtx16_c },       // V_DCT
-    { iidtx16_c, aom_idct16_c },       // H_DCT
-    { aom_iadst16_c, iidtx16_c },      // V_ADST
-    { iidtx16_c, aom_iadst16_c },      // H_ADST
-    { aom_iadst16_c, iidtx16_c },      // V_FLIPADST
-    { iidtx16_c, aom_iadst16_c },      // H_FLIPADST
-  };
-
-  tran_low_t tmp[16][16];
-  tran_low_t out[16][16];
-  tran_low_t *outp = &out[0][0];
-  int outstride = 16;
-
-  // inverse transform row vectors
-  for (int i = 0; i < 16; ++i) {
-    IHT_16[tx_type].rows(input, out[i]);
-    input += 16;
-  }
-
-  // transpose
-  for (int i = 0; i < 16; i++) {
-    for (int j = 0; j < 16; j++) {
-      tmp[j][i] = out[i][j];
-    }
-  }
-
-  // inverse transform column vectors
-  for (int i = 0; i < 16; ++i) IHT_16[tx_type].cols(tmp[i], out[i]);
-
-  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 16, 16);
-
-  // Sum with the destination
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
-      int d = i * stride + j;
-      int s = j * outstride + i;
-      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
-    }
-  }
-}
-
 void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                              const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
