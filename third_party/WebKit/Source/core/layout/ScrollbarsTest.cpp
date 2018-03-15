@@ -102,12 +102,12 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
 
   void TimeAdvance() {
     WebView().Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::kAdvance);
+        PageScheduler::VirtualTimePolicy::kAdvance);
   }
 
   void StopVirtualTimeAndExitRunLoop() {
     WebView().Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::kPause);
+        PageScheduler::VirtualTimePolicy::kPause);
     testing::ExitRunLoop();
   }
 

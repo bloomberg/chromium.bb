@@ -10,7 +10,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 
@@ -27,7 +27,7 @@ class RGBA;
 
 class CORE_EXPORT InspectorEmulationAgent final
     : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
-      public WebViewScheduler::VirtualTimeObserver {
+      public PageScheduler::VirtualTimeObserver {
  public:
   explicit InspectorEmulationAgent(WebLocalFrameImpl*);
   ~InspectorEmulationAgent() override;
@@ -72,7 +72,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response disable() override;
   void Restore() override;
 
-  // scheduler::WebViewScheduler::VirtualTimeObserver implementation.
+  // scheduler::PageScheduler::VirtualTimeObserver implementation.
   void OnVirtualTimeAdvanced(WTF::TimeDelta virtual_time_offset) override;
   void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
 
@@ -83,7 +83,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void VirtualTimeBudgetExpired();
 
   struct PendingVirtualTimePolicy {
-    WebViewScheduler::VirtualTimePolicy policy;
+    PageScheduler::VirtualTimePolicy policy;
     WTF::Optional<double> virtual_time_budget_ms;
     WTF::Optional<int> max_virtual_time_task_starvation_count;
   };

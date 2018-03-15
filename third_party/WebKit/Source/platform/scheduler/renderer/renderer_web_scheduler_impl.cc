@@ -10,8 +10,8 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/task_runner_impl.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {
@@ -38,13 +38,13 @@ RendererWebSchedulerImpl::PauseScheduler() {
   return renderer_scheduler_->PauseRenderer();
 }
 
-std::unique_ptr<blink::WebViewScheduler>
-RendererWebSchedulerImpl::CreateWebViewScheduler(
-    WebViewScheduler::WebViewSchedulerDelegate* delegate) {
+std::unique_ptr<blink::PageScheduler>
+RendererWebSchedulerImpl::CreatePageScheduler(
+    PageScheduler::Delegate* delegate) {
   return base::WrapUnique(
-      new WebViewSchedulerImpl(delegate, renderer_scheduler_,
-                               !blink::RuntimeEnabledFeatures::
-                                   TimerThrottlingForBackgroundTabsEnabled()));
+      new PageSchedulerImpl(delegate, renderer_scheduler_,
+                            !blink::RuntimeEnabledFeatures::
+                                TimerThrottlingForBackgroundTabsEnabled()));
 }
 
 base::TimeTicks RendererWebSchedulerImpl::MonotonicallyIncreasingVirtualTime()

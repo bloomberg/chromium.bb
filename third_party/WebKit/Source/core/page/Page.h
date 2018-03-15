@@ -43,7 +43,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/heap/Handle.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/WTFString.h"
@@ -83,12 +83,11 @@ typedef uint64_t LinkHash;
 
 float DeviceScaleFactorDeprecated(LocalFrame*);
 
-class CORE_EXPORT Page final
-    : public GarbageCollectedFinalized<Page>,
-      public Supplementable<Page>,
-      public PageVisibilityNotifier,
-      public SettingsDelegate,
-      public WebViewScheduler::WebViewSchedulerDelegate {
+class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
+                               public Supplementable<Page>,
+                               public PageVisibilityNotifier,
+                               public SettingsDelegate,
+                               public PageScheduler::Delegate {
   USING_GARBAGE_COLLECTED_MIXIN(Page);
   friend class Settings;
 
@@ -307,9 +306,9 @@ class CORE_EXPORT Page final
 
   ScrollbarTheme& GetScrollbarTheme() const;
 
-  WebViewScheduler* GetPageScheduler() const;
+  PageScheduler* GetPageScheduler() const;
 
-  // WebViewScheduler::WebViewSchedulerDelegate implementation.
+  // PageScheduler::Delegate implementation.
   void ReportIntervention(const String& message) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetPageFrozen(bool frozen) override;
@@ -330,7 +329,7 @@ class CORE_EXPORT Page final
   // Notify |plugins_changed_observers_| that plugins have changed.
   void NotifyPluginsChanged() const;
 
-  void SetPageScheduler(std::unique_ptr<WebViewScheduler>);
+  void SetPageScheduler(std::unique_ptr<PageScheduler>);
 
   Member<PageAnimator> animator_;
   const Member<AutoscrollController> autoscroll_controller_;
@@ -406,7 +405,7 @@ class CORE_EXPORT Page final
   Member<Page> next_related_page_;
   Member<Page> prev_related_page_;
 
-  std::unique_ptr<WebViewScheduler> page_scheduler_;
+  std::unique_ptr<PageScheduler> page_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

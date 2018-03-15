@@ -29,19 +29,19 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
 class FakeWebFrameScheduler : public WebFrameScheduler {
  public:
   FakeWebFrameScheduler()
-      : web_view_scheduler_(nullptr),
+      : page_scheduler_(nullptr),
         is_page_visible_(false),
         is_frame_visible_(false),
         frame_type_(WebFrameScheduler::FrameType::kSubframe),
         is_cross_origin_(false),
         is_exempt_from_throttling_(false) {}
-  FakeWebFrameScheduler(WebViewScheduler* web_view_scheduler,
+  FakeWebFrameScheduler(PageScheduler* page_scheduler,
                         bool is_page_visible,
                         bool is_frame_visible,
                         WebFrameScheduler::FrameType frame_type,
                         bool is_cross_origin,
                         bool is_exempt_from_throttling)
-      : web_view_scheduler_(web_view_scheduler),
+      : page_scheduler_(page_scheduler),
         is_page_visible_(is_page_visible),
         is_frame_visible_(is_frame_visible),
         frame_type_(frame_type),
@@ -57,12 +57,12 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
 
     std::unique_ptr<FakeWebFrameScheduler> Build() {
       return std::make_unique<FakeWebFrameScheduler>(
-          web_view_scheduler_, is_page_visible_, is_frame_visible_, frame_type_,
+          page_scheduler_, is_page_visible_, is_frame_visible_, frame_type_,
           is_cross_origin_, is_exempt_from_throttling_);
     }
 
-    Builder& SetWebViewScheduler(WebViewScheduler* web_view_scheduler) {
-      web_view_scheduler_ = web_view_scheduler;
+    Builder& SetPageScheduler(PageScheduler* page_scheduler) {
+      page_scheduler_ = page_scheduler;
       return *this;
     }
 
@@ -92,7 +92,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
     }
 
    private:
-    WebViewScheduler* web_view_scheduler_ = nullptr;
+    PageScheduler* page_scheduler_ = nullptr;
     bool is_page_visible_ = false;
     bool is_frame_visible_ = false;
     WebFrameScheduler::FrameType frame_type_ =
@@ -120,9 +120,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override {
     return nullptr;
   }
-  WebViewScheduler* GetWebViewScheduler() const override {
-    return web_view_scheduler_;
-  }
+  PageScheduler* GetPageScheduler() const override { return page_scheduler_; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
     return WebScopedVirtualTimePauser();
@@ -143,7 +141,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   }
 
  private:
-  WebViewScheduler* web_view_scheduler_;  // NOT OWNED
+  PageScheduler* page_scheduler_;  // NOT OWNED
 
   bool is_page_visible_;
   bool is_frame_visible_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_H_
 
 #include <memory>
 #include "platform/PlatformExport.h"
@@ -14,19 +14,18 @@
 
 namespace blink {
 
-// TODO(yutak): Rename this class to PageScheduler.
-class PLATFORM_EXPORT WebViewScheduler {
+class PLATFORM_EXPORT PageScheduler {
  public:
-  class PLATFORM_EXPORT WebViewSchedulerDelegate {
+  class PLATFORM_EXPORT Delegate {
    public:
-    virtual ~WebViewSchedulerDelegate() = default;
+    virtual ~Delegate() = default;
 
     virtual void ReportIntervention(const WTF::String& message) = 0;
     virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
     virtual void SetPageFrozen(bool frozen) = 0;
   };
 
-  virtual ~WebViewScheduler() = default;
+  virtual ~PageScheduler() = default;
 
   // The scheduler may throttle tasks associated with background pages.
   virtual void SetPageVisible(bool) = 0;
@@ -37,10 +36,10 @@ class PLATFORM_EXPORT WebViewScheduler {
   // it. All tasks executed by the frame scheduler will be attributed to
   // |blame_context|.
   virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext* blame_context,
+      BlameContext*,
       WebFrameScheduler::FrameType) = 0;
 
-  // Instructs this WebViewScheduler to use virtual time. When virtual time is
+  // Instructs this PageScheduler to use virtual time. When virtual time is
   // enabled the system doesn't actually sleep for the delays between tasks
   // before executing them. Returns the TimeTicks that virtual time offsets will
   // be relative to.
@@ -137,4 +136,4 @@ class PLATFORM_EXPORT WebViewScheduler {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_H_

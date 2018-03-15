@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
@@ -65,10 +65,10 @@ class PLATFORM_EXPORT WebScheduler {
   // and should not generally be used.
   virtual base::SingleThreadTaskRunner* CompositorTaskRunner() = 0;
 
-  // Creates a new WebViewScheduler for a given WebView. Must be called from
-  // the associated WebThread.
-  virtual std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      WebViewScheduler::WebViewSchedulerDelegate*) = 0;
+  // Creates a new PageScheduler for a given Page. Must be called from the
+  // associated WebThread.
+  virtual std::unique_ptr<PageScheduler> CreatePageScheduler(
+      PageScheduler::Delegate*) = 0;
 
   // Pauses the scheduler. See RendererScheduler::PauseRenderer for details.
   // May only be called from the main thread.

@@ -83,7 +83,7 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   WebFrameScheduler::FrameType GetFrameType() const override {
     return WebFrameScheduler::FrameType::kSubframe;
   }
-  WebViewScheduler* GetWebViewScheduler() const override { return nullptr; }
+  PageScheduler* GetPageScheduler() const override { return nullptr; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       WebScopedVirtualTimePauser::VirtualTaskDuration) {
     return WebScopedVirtualTimePauser();

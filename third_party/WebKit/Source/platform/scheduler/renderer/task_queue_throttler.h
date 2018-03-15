@@ -19,7 +19,6 @@
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/cpu_time_budget_pool.h"
 #include "platform/scheduler/renderer/wake_up_budget_pool.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {

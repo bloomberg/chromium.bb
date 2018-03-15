@@ -12,7 +12,6 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Time.h"

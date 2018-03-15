@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class PageScheduler;
 class WebFrame;
 class WebHitTestResult;
 class WebLocalFrame;
@@ -50,7 +51,6 @@ class WebRemoteFrame;
 class WebSettings;
 class WebString;
 class WebViewClient;
-class WebViewScheduler;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebMediaPlayerAction;
@@ -404,7 +404,7 @@ class WebView : protected WebWidget {
 
   // Scheduling -----------------------------------------------------------
 
-  virtual WebViewScheduler* Scheduler() const = 0;
+  virtual PageScheduler* Scheduler() const = 0;
 
   // Visibility -----------------------------------------------------------
 

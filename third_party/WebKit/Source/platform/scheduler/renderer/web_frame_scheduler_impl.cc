@@ -16,8 +16,8 @@
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/util/tracing_helper.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebString.h"
@@ -90,11 +90,11 @@ WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
 
 WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler,
-    WebViewSchedulerImpl* parent_web_view_scheduler,
+    PageSchedulerImpl* parent_page_scheduler,
     base::trace_event::BlameContext* blame_context,
     WebFrameScheduler::FrameType frame_type)
     : renderer_scheduler_(renderer_scheduler),
-      parent_web_view_scheduler_(parent_web_view_scheduler),
+      parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
       throttling_state_(WebFrameScheduler::ThrottlingState::kNotThrottled),
       frame_visible_(true,
@@ -154,18 +154,18 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   CleanUpQueue(pausable_task_queue_.get());
   CleanUpQueue(unpausable_task_queue_.get());
 
-  if (parent_web_view_scheduler_) {
-    parent_web_view_scheduler_->Unregister(this);
+  if (parent_page_scheduler_) {
+    parent_page_scheduler_->Unregister(this);
 
     if (active_connection_count_)
-      parent_web_view_scheduler_->OnConnectionUpdated();
+      parent_page_scheduler_->OnConnectionUpdated();
   }
 }
 
-void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
+void WebFrameSchedulerImpl::DetachFromPageScheduler() {
   RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
 
-  parent_web_view_scheduler_ = nullptr;
+  parent_page_scheduler_ = nullptr;
 }
 
 void WebFrameSchedulerImpl::
@@ -173,11 +173,11 @@ void WebFrameSchedulerImpl::
   if (!throttleable_task_queue_)
     return;
 
-  if (!parent_web_view_scheduler_)
+  if (!parent_page_scheduler_)
     return;
 
   CPUTimeBudgetPool* time_budget_pool =
-      parent_web_view_scheduler_->BackgroundCPUTimeBudgetPool();
+      parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
 
   if (!time_budget_pool)
     return;
@@ -203,7 +203,7 @@ void WebFrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
 }
 
 void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (frame_visible_ == frame_visible)
     return;
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
@@ -217,7 +217,7 @@ bool WebFrameSchedulerImpl::IsFrameVisible() const {
 }
 
 void WebFrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (cross_origin_ == cross_origin)
     return;
   bool was_throttled = ShouldThrottleTimers();
@@ -299,7 +299,7 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
@@ -313,7 +313,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoadingControl);
@@ -327,7 +327,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
     throttleable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
@@ -343,7 +343,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
     throttleable_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
 
     CPUTimeBudgetPool* time_budget_pool =
-        parent_web_view_scheduler_->BackgroundCPUTimeBudgetPool();
+        parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
     if (time_budget_pool) {
       time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
                                  throttleable_task_queue_.get());
@@ -358,7 +358,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
@@ -376,7 +376,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!pausable_task_queue_) {
     pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
@@ -393,7 +393,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
@@ -405,12 +405,12 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
 }
 
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ControlTaskQueue() {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   return renderer_scheduler_->ControlTaskQueue();
 }
 
-blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() const {
-  return parent_web_view_scheduler_;
+blink::PageScheduler* WebFrameSchedulerImpl::GetPageScheduler() const {
+  return parent_page_scheduler_;
 }
 
 void WebFrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
@@ -433,15 +433,15 @@ WebFrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
 
 void WebFrameSchedulerImpl::DidOpenActiveConnection() {
   ++active_connection_count_;
-  if (parent_web_view_scheduler_)
-    parent_web_view_scheduler_->OnConnectionUpdated();
+  if (parent_page_scheduler_)
+    parent_page_scheduler_->OnConnectionUpdated();
 }
 
 void WebFrameSchedulerImpl::DidCloseActiveConnection() {
   DCHECK_GT(active_connection_count_, 0);
   --active_connection_count_;
-  if (parent_web_view_scheduler_)
-    parent_web_view_scheduler_->OnConnectionUpdated();
+  if (parent_page_scheduler_)
+    parent_page_scheduler_->OnConnectionUpdated();
 }
 
 void WebFrameSchedulerImpl::AsValueInto(
@@ -489,7 +489,7 @@ void WebFrameSchedulerImpl::AsValueInto(
 
 void WebFrameSchedulerImpl::SetPageVisibility(
     PageVisibilityState page_visibility) {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (page_visibility_ == page_visibility)
     return;
   bool was_throttled = ShouldThrottleTimers();
@@ -505,7 +505,7 @@ bool WebFrameSchedulerImpl::IsPageVisible() const {
 }
 
 void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
-  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_page_scheduler_);
   if (frame_paused_ == frame_paused)
     return;
 

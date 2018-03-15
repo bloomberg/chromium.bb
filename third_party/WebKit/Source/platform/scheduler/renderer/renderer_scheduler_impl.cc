@@ -29,8 +29,8 @@
 #include "platform/scheduler/child/features.h"
 #include "platform/scheduler/child/process_state.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/scheduler/renderer_process_type.h"
@@ -966,9 +966,8 @@ void RendererSchedulerImpl::ResumeTimersForAndroidWebView() {
 
 void RendererSchedulerImpl::OnAudioStateChanged() {
   bool is_audio_playing = false;
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    is_audio_playing = is_audio_playing || web_view_scheduler->IsPlayingAudio();
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    is_audio_playing = is_audio_playing || page_scheduler->IsPlayingAudio();
   }
 
   if (is_audio_playing == main_thread_only().is_audio_playing)
@@ -1755,10 +1754,9 @@ bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
 }
 
 void RendererSchedulerImpl::SetStoppedInBackground(bool stopped) const {
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     // This moves the page to FROZEN lifecycle state.
-    web_view_scheduler->SetPageFrozen(stopped);
+    page_scheduler->SetPageFrozen(stopped);
   }
 }
 
@@ -2111,11 +2109,10 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       VirtualTimePolicyToString(main_thread_only().virtual_time_policy));
   state->SetBoolean("virtual_time", main_thread_only().use_virtual_time);
 
-  state->BeginDictionary("web_view_schedulers");
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    state->BeginDictionaryWithCopiedName(PointerToString(web_view_scheduler));
-    web_view_scheduler->AsValueInto(state.get());
+  state->BeginDictionary("page_schedulers");
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    state->BeginDictionaryWithCopiedName(PointerToString(page_scheduler));
+    page_scheduler->AsValueInto(state.get());
     state->EndDictionary();
   }
   state->EndDictionary();
@@ -2236,9 +2233,8 @@ void RendererSchedulerImpl::OnPendingTasksChanged(bool has_tasks) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::OnPendingTasksChanged", "has_tasks",
                has_tasks);
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    web_view_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    page_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
   }
 }
 
@@ -2322,19 +2318,17 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   main_thread_only().have_seen_a_begin_main_frame = false;
   main_thread_only().have_reported_blocking_intervention_since_navigation =
       false;
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    web_view_scheduler->OnNavigation();
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    page_scheduler->OnNavigation();
   }
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
-                           main_thread_only().web_view_schedulers.size());
+                           main_thread_only().page_schedulers.size());
 
   size_t frame_count = 0;
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    frame_count += web_view_scheduler->FrameCount();
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    frame_count += page_scheduler->FrameCount();
   }
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebFramesPerScheduler",
                            frame_count);
@@ -2421,22 +2415,22 @@ base::TickClock* RendererSchedulerImpl::tick_clock() const {
   return helper_.GetClock();
 }
 
-void RendererSchedulerImpl::AddWebViewScheduler(
-    WebViewSchedulerImpl* web_view_scheduler) {
-  main_thread_only().web_view_schedulers.insert(web_view_scheduler);
+void RendererSchedulerImpl::AddPageScheduler(
+    PageSchedulerImpl* page_scheduler) {
+  main_thread_only().page_schedulers.insert(page_scheduler);
 }
 
-void RendererSchedulerImpl::RemoveWebViewScheduler(
-    WebViewSchedulerImpl* web_view_scheduler) {
-  DCHECK(main_thread_only().web_view_schedulers.find(web_view_scheduler) !=
-         main_thread_only().web_view_schedulers.end());
-  main_thread_only().web_view_schedulers.erase(web_view_scheduler);
+void RendererSchedulerImpl::RemovePageScheduler(
+    PageSchedulerImpl* page_scheduler) {
+  DCHECK(main_thread_only().page_schedulers.find(page_scheduler) !=
+         main_thread_only().page_schedulers.end());
+  main_thread_only().page_schedulers.erase(page_scheduler);
 }
 
 void RendererSchedulerImpl::BroadcastIntervention(const std::string& message) {
   helper_.CheckOnValidThread();
-  for (auto* web_view_scheduler : main_thread_only().web_view_schedulers)
-    web_view_scheduler->ReportIntervention(message);
+  for (auto* page_scheduler : main_thread_only().page_schedulers)
+    page_scheduler->ReportIntervention(message);
 }
 
 void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
@@ -2579,9 +2573,8 @@ TimeDomain* RendererSchedulerImpl::GetActiveTimeDomain() {
 void RendererSchedulerImpl::OnTraceLogEnabled() {
   CreateTraceEventObjectSnapshot();
   tracing_controller_.OnTraceLogEnabled();
-  for (WebViewSchedulerImpl* web_view_scheduler :
-      main_thread_only().web_view_schedulers) {
-    web_view_scheduler->OnTraceLogEnabled();
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    page_scheduler->OnTraceLogEnabled();
   }
 }
 

@@ -3244,11 +3244,11 @@ TEST_F(RendererSchedulerImplTest,
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
+class PageSchedulerImplForTest : public PageSchedulerImpl {
  public:
-  WebViewSchedulerImplForTest(RendererSchedulerImpl* scheduler)
-      : WebViewSchedulerImpl(nullptr, scheduler, false) {}
-  ~WebViewSchedulerImplForTest() override = default;
+  explicit PageSchedulerImplForTest(RendererSchedulerImpl* scheduler)
+      : PageSchedulerImpl(nullptr, scheduler, false) {}
+  ~PageSchedulerImplForTest() override = default;
 
   void ReportIntervention(const std::string& message) override {
     interventions_.push_back(message);
@@ -3261,7 +3261,7 @@ class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
  private:
   std::vector<std::string> interventions_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImplForTest);
+  DISALLOW_COPY_AND_ASSIGN(PageSchedulerImplForTest);
 };
 
 namespace {
@@ -3817,14 +3817,13 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
 }
 
 TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
-  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler =
-      base::WrapUnique(new WebViewSchedulerImpl(
-          nullptr, scheduler_.get(),
-          false /* disable_background_timer_throttling */));
-  scheduler_->AddWebViewScheduler(web_view_scheduler.get());
+  std::unique_ptr<PageSchedulerImpl> page_scheduler = base::WrapUnique(
+      new PageSchedulerImpl(nullptr, scheduler_.get(),
+                            false /* disable_background_timer_throttling */));
+  scheduler_->AddPageScheduler(page_scheduler.get());
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      web_view_scheduler->CreateWebFrameSchedulerImpl(
+      page_scheduler->CreateWebFrameSchedulerImpl(
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   TaskQueue* timer_tq = ThrottableTaskQueue(web_frame_scheduler.get()).get();
@@ -3869,7 +3868,7 @@ TEST_F(RendererSchedulerImplTest, VirtualTimePauser) {
   scheduler_->EnableVirtualTime(
       RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   scheduler_->SetVirtualTimePolicy(
-      WebViewSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
   WebScopedVirtualTimePauser pauser =
       scheduler_->CreateWebScopedVirtualTimePauser(
@@ -3890,7 +3889,7 @@ TEST_F(RendererSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   scheduler_->EnableVirtualTime(
       RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   scheduler_->SetVirtualTimePolicy(
-      WebViewSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
+      PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
   WebScopedVirtualTimePauser pauser =
       scheduler_->CreateWebScopedVirtualTimePauser(
@@ -3908,17 +3907,17 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   // (by posting tasks, creating child schedulers, etc) and converts it into a
   // traced value. This test checks that no internal checks fire during this.
 
-  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler1 = base::WrapUnique(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
-  scheduler_->AddWebViewScheduler(web_view_scheduler1.get());
+  std::unique_ptr<PageSchedulerImpl> page_scheduler1 =
+      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+  scheduler_->AddPageScheduler(page_scheduler1.get());
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      web_view_scheduler1->CreateWebFrameSchedulerImpl(
+      page_scheduler1->CreateWebFrameSchedulerImpl(
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
-  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2 = base::WrapUnique(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
-  scheduler_->AddWebViewScheduler(web_view_scheduler2.get());
+  std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
+      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+  scheduler_->AddPageScheduler(page_scheduler2.get());
 
   CPUTimeBudgetPool* time_budget_pool =
       scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool("test");
@@ -4201,7 +4200,7 @@ class RendererSchedulerImplWithInitalVirtualTimeTest
 
 TEST_F(RendererSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
-  EXPECT_EQ(WebViewSchedulerImpl::VirtualTimePolicy::kPause,
+  EXPECT_EQ(PageSchedulerImpl::VirtualTimePolicy::kPause,
             scheduler_->virtual_time_policy());
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }
