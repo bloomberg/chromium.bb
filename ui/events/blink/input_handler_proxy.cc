@@ -765,12 +765,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
         return DID_HANDLE;
       case cc::InputHandler::SCROLL_IGNORED:
         return DROP_EVENT;
-      case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
-      case cc::InputHandler::SCROLL_UNKNOWN:
-        if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
-          gesture_scroll_on_impl_thread_ = false;
-          client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
-        }
+      default:
         return DID_NOT_HANDLE;
     }
   }
