@@ -13,6 +13,16 @@ class AppListModel;
 class SearchModel;
 class SearchResult;
 
+// The UMA histogram that logs the input latency from input event to the
+// representation time of the shown launcher UI.
+constexpr char kAppListShowInputLatencyHistogram[] =
+    "Apps.AppListShow.InputLatency";
+
+// The UMA histogram that logs the input latency from input event to the
+// representation time of the dismissed launcher UI.
+constexpr char kAppListHideInputLatencyHistogram[] =
+    "Apps.AppListHide.InputLatency";
+
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);

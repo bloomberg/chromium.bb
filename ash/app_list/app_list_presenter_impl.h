@@ -62,18 +62,24 @@ class ASH_EXPORT AppListPresenterImpl
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
 
-  // Show the app list window on the display with the given id.
-  void Show(int64_t display_id);
+  // Show the app list window on the display with the given id. If
+  // |event_time_stamp| is not 0, it means |Show()| was triggered by one of the
+  // AppListShowSources: kSearchKey, kShelfButton, or kSwipeFromShelf.
+  void Show(int64_t display_id, base::TimeTicks event_time_stamp);
 
   // Hide the open app list window. This may leave the view open but hidden.
-  void Dismiss();
+  // If |event_time_stamp| is not 0, it means |Dismiss()| was triggered by
+  // one AppListShowSource or focusing out side of the launcher.
+  void Dismiss(base::TimeTicks event_time_stamp);
 
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
   bool Back();
 
-  // Show the app list if it is visible, hide it if it is hidden.
-  void ToggleAppList(int64_t display_id);
+  // Show the app list if it is visible, hide it if it is hidden. If
+  // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
+  // one of the AppListShowSources: kSearchKey or kShelfButton.
+  void ToggleAppList(int64_t display_id, base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list.
   bool IsVisible() const;
@@ -128,6 +134,11 @@ class ASH_EXPORT AppListPresenterImpl
   void TransitionStarted() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
+
+  // Registers a callback that is run when the next frame successfully makes it
+  // to the screen.
+  void RequestPresentationTime(int64_t display_id,
+                               base::TimeTicks event_time_stamp);
 
   // The factory for the presenter's delegate.
   std::unique_ptr<AppListPresenterDelegateFactory> factory_;

@@ -1131,7 +1131,7 @@ void ShelfLayoutManager::StartGestureDrag(
         display::Screen::GetScreen()
             ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
             .id(),
-        app_list::kSwipeFromShelf);
+        app_list::kSwipeFromShelf, gesture_in_screen.time_stamp());
     Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
         shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
     launcher_above_shelf_bottom_amount_ =

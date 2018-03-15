@@ -49,7 +49,7 @@ void AppListViewDelegateMash::ViewShown(int64_t display_id) {
 }
 
 void AppListViewDelegateMash::Dismiss() {
-  owner_->presenter()->Dismiss();
+  owner_->presenter()->Dismiss(base::TimeTicks());
 }
 
 void AppListViewDelegateMash::ViewClosing() {

@@ -508,7 +508,7 @@ void HandleToggleAppList(const ui::Accelerator& accelerator) {
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
           .id(),
-      app_list::kSearchKey);
+      app_list::kSearchKey, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {

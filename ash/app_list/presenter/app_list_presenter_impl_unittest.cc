@@ -156,7 +156,7 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
 
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  presenter()->Show(GetDisplayId());
+  presenter()->Show(GetDisplayId(), base::TimeTicks());
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
@@ -182,7 +182,7 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
 
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  presenter()->Show(GetDisplayId());
+  presenter()->Show(GetDisplayId(), base::TimeTicks());
   focus_client->FocusWindow(presenter()->GetWindow());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_TRUE(delegate()->init_called());
@@ -206,7 +206,7 @@ TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
   if (features::IsFullscreenAppListEnabled())
     return;
 
-  presenter()->Show(GetDisplayId());
+  presenter()->Show(GetDisplayId(), base::TimeTicks());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   presenter()->GetView()->GetWidget()->CloseNow();
   EXPECT_FALSE(presenter()->GetTargetVisibility());
