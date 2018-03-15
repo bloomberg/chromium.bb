@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <style>
   body {
     margin: 0px;
@@ -29,21 +29,21 @@ var rect = div.getBoundingClientRect();
 const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
 
 function changeStyleToScrollOnMain() {
-  if(div.scrollTop > 150)
+  if(div.scrollTop > 100)
     div.style = "border-radius:40px; position:fixed;";
 }
-div.addEventListener("scroll", changeStyleToScrollOnMain, {passive: true});
+div.addEventListener("wheel", changeStyleToScrollOnMain, {passive: true});
 
-const MAX_RAF = 1000;
 let last_scroll_offset = div.scrollTop;
 var last_changed_count = 0;
 var raf_count = 0;
 function waitForAnimationEnd() {
   return new Promise((resolve, reject) => {
     function tick() {
-    // We requestAnimationFrame either for 1000 frames or until 20 frames with
-    // no change have been observed.
-      if (raf_count >= MAX_RAF || raf_count - last_changed_count > 20) {
+    // We requestAnimationFrame until either 70 frames with no change observed
+    // or the div is fully scrolled.
+      if (raf_count - last_changed_count > 70 ||
+          div.scrollTop == div.scrollHeight - div.clientHeight) {
         resolve();
       } else {
         if (div.scrollTop != last_scroll_offset) {
@@ -66,7 +66,7 @@ promise_test(() => {
                                           (rect.top + rect.bottom) / 2,
                                           GESTURE_SOURCE_TYPE,
                                           'down',
-                                          4000);
+                                          2000);
   }).then(waitForAnimationEnd)
   .then(() => {
     assert_equals(div.scrollTop, div.scrollHeight - div.clientHeight,
