@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -28,6 +29,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/gfx/switches.h"
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -274,9 +276,13 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(!frame_sink_manager_);
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
   display_provider_ = std::make_unique<GpuDisplayProvider>(
       params->restart_id, gpu_command_service_,
-      gpu_service_->gpu_channel_manager());
+      gpu_service_->gpu_channel_manager(),
+      command_line->HasSwitch(switches::kHeadless),
+      command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw));
 
   mojom::FrameSinkManagerClientPtr client(
       std::move(params->frame_sink_manager_client));
