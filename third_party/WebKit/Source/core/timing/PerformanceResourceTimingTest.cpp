@@ -32,11 +32,11 @@ TEST_F(PerformanceResourceTimingTest,
   EXPECT_EQ(GetNextHopProtocol(alpn_negotiated_protocol, connection_info), "");
 }
 
-TEST_F(PerformanceResourceTimingTest, TestFallbackToHQWhenContainsQuic) {
+TEST_F(PerformanceResourceTimingTest, TestNoChangeWhenContainsQuic) {
   AtomicString connection_info = "http/1.1";
-  AtomicString alpn_negotiated_protocol = "quic/1spdy/3";
+  AtomicString alpn_negotiated_protocol = "http/2+quic/39";
   EXPECT_EQ(GetNextHopProtocol(alpn_negotiated_protocol, connection_info),
-            "hq");
+            alpn_negotiated_protocol);
 }
 
 TEST_F(PerformanceResourceTimingTest, TestNoChangeWhenOtherwise) {

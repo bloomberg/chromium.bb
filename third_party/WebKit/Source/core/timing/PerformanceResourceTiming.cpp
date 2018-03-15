@@ -133,10 +133,6 @@ AtomicString PerformanceResourceTiming::GetNextHopProtocol(
   // If connection_info is also unknown, return empty string.
   // (https://github.com/w3c/navigation-timing/issues/71)
   returnedProtocol = (returnedProtocol == "unknown") ? "" : returnedProtocol;
-  // If the protocol is http over quic (e.g. http/2+quic/37), convert it to the
-  // alpn id "hq". (https://github.com/w3c/navigation-timing/issues/71)
-  if (returnedProtocol.Contains("quic"))
-    returnedProtocol = "hq";
 
   return returnedProtocol;
 }
