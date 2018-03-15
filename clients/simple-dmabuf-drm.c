@@ -44,7 +44,8 @@
 #ifdef HAVE_LIBDRM_INTEL
 #include <i915_drm.h>
 #include <intel_bufmgr.h>
-#elif HAVE_LIBDRM_FREEDRENO
+#endif
+#ifdef HAVE_LIBDRM_FREEDRENO
 #include <freedreno/freedreno_drmif.h>
 #endif
 #include <drm_fourcc.h>
@@ -93,10 +94,11 @@ struct buffer {
 
 #ifdef HAVE_LIBDRM_INTEL
 	drm_intel_bufmgr *bufmgr;
-	drm_intel_bo *bo;
-#elif HAVE_LIBDRM_FREEDRENO
+	drm_intel_bo *intel_bo;
+#endif /* HAVE_LIBDRM_INTEL */
+#if HAVE_LIBDRM_FREEDRENO
 	struct fd_device *fd_dev;
-	struct fd_bo *bo;
+	struct fd_bo *fd_bo;
 #endif /* HAVE_LIBDRM_FREEDRENO */
 
 	uint32_t gem_handle;
@@ -152,15 +154,15 @@ intel_alloc_bo(struct buffer *my_buf)
 
 	assert(my_buf->bufmgr);
 
-	my_buf->bo = drm_intel_bo_alloc_tiled(my_buf->bufmgr, "test",
-					      my_buf->width, my_buf->height,
-					      (my_buf->bpp / 8), &tiling,
-					      &my_buf->stride, 0);
+	my_buf->intel_bo = drm_intel_bo_alloc_tiled(my_buf->bufmgr, "test",
+						    my_buf->width, my_buf->height,
+						    (my_buf->bpp / 8), &tiling,
+						    &my_buf->stride, 0);
 
 	printf("buffer allocated w %d, h %d, stride %lu, size %lu\n",
-	       my_buf->width, my_buf->height, my_buf->stride, my_buf->bo->size);
+	       my_buf->width, my_buf->height, my_buf->stride, my_buf->intel_bo->size);
 
-	if (!my_buf->bo)
+	if (!my_buf->intel_bo)
 		return 0;
 
 	if (tiling != I915_TILING_NONE)
@@ -172,16 +174,16 @@ intel_alloc_bo(struct buffer *my_buf)
 static void
 intel_free_bo(struct buffer *my_buf)
 {
-	drm_intel_bo_unreference(my_buf->bo);
+	drm_intel_bo_unreference(my_buf->intel_bo);
 }
 
 static int
 intel_map_bo(struct buffer *my_buf)
 {
-	if (drm_intel_gem_bo_map_gtt(my_buf->bo) != 0)
+	if (drm_intel_gem_bo_map_gtt(my_buf->intel_bo) != 0)
 		return 0;
 
-	my_buf->mmap = my_buf->bo->virtual;
+	my_buf->mmap = my_buf->intel_bo->virtual;
 
 	return 1;
 }
@@ -189,15 +191,16 @@ intel_map_bo(struct buffer *my_buf)
 static int
 intel_bo_export_to_prime(struct buffer *buffer)
 {
-	return drm_intel_bo_gem_export_to_prime(buffer->bo, &buffer->dmabuf_fd);
+	return drm_intel_bo_gem_export_to_prime(buffer->intel_bo, &buffer->dmabuf_fd);
 }
 
 static void
 intel_unmap_bo(struct buffer *my_buf)
 {
-	drm_intel_gem_bo_unmap_gtt(my_buf->bo);
+	drm_intel_gem_bo_unmap_gtt(my_buf->intel_bo);
 }
-#elif HAVE_LIBDRM_FREEDRENO
+#endif /* HAVE_LIBDRM_INTEL */
+#ifdef HAVE_LIBDRM_FREEDRENO
 #define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
 
 static
@@ -207,9 +210,9 @@ int fd_alloc_bo(struct buffer *buf)
 	int size = buf->width * buf->height * buf->bpp / 8;
 	buf->fd_dev = fd_device_new(buf->drm_fd);
 
-	buf->bo = fd_bo_new(buf->fd_dev, size, flags);
+	buf->fd_bo = fd_bo_new(buf->fd_dev, size, flags);
 
-	if (!buf->bo)
+	if (!buf->fd_bo)
 		return 0;
 	buf->stride = ALIGN(buf->width, 32) * buf->bpp / 8;
 	return 1;
@@ -218,13 +221,13 @@ int fd_alloc_bo(struct buffer *buf)
 static
 void fd_free_bo(struct buffer *buf)
 {
-	fd_bo_del(buf->bo);
+	fd_bo_del(buf->fd_bo);
 }
 
 static
 int fd_bo_export_to_prime(struct buffer *buf)
 {
-	buf->dmabuf_fd = fd_bo_dmabuf(buf->bo);
+	buf->dmabuf_fd = fd_bo_dmabuf(buf->fd_bo);
 	if (buf->dmabuf_fd > 0)
 		return 0;
 
@@ -234,7 +237,7 @@ int fd_bo_export_to_prime(struct buffer *buf)
 static
 int fd_map_bo(struct buffer *buf)
 {
-	buf->mmap = fd_bo_map(buf->bo);
+	buf->mmap = fd_bo_map(buf->fd_bo);
 
 	if (buf->mmap != NULL)
 		return 1;
@@ -246,7 +249,7 @@ static
 void fd_unmap_bo(struct buffer *buf)
 {
 }
-#endif
+#endif /* HAVE_LIBDRM_FREEDRENO */
 
 static void
 fill_content(struct buffer *my_buf)
@@ -278,7 +281,8 @@ drm_device_destroy(struct buffer *buf)
 {
 #ifdef HAVE_LIBDRM_INTEL
 	drm_intel_bufmgr_destroy(buf->bufmgr);
-#elif HAVE_LIBDRM_FREEDRENO
+#endif
+#ifdef HAVE_LIBDRM_FREEDRENO
 	fd_device_del(buf->fd_dev);
 #endif
 
@@ -308,7 +312,8 @@ drm_device_init(struct buffer *buf)
 		dev->map_bo = intel_map_bo;
 		dev->unmap_bo = intel_unmap_bo;
 	}
-#elif HAVE_LIBDRM_FREEDRENO
+#endif
+#ifdef HAVE_LIBDRM_FREEDRENO
 	else if (!strcmp(dev->name, "msm")) {
 		dev->alloc_bo = fd_alloc_bo;
 		dev->free_bo = fd_free_bo;

@@ -627,7 +627,10 @@ nodist_weston_simple_dmabuf_drm_SOURCES =		\
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
 	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_simple_dmabuf_drm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_DRM_CLIENT_CFLAGS)
-weston_simple_dmabuf_drm_LDADD = $(SIMPLE_DMABUF_DRM_CLIENT_LIBS) $(LIBDRM_PLATFORM_LIBS) libshared.la
+weston_simple_dmabuf_drm_LDADD = $(SIMPLE_DMABUF_DRM_CLIENT_LIBS) \
+	$(LIBDRM_PLATFORM_FREEDRENO_LIBS) \
+	$(LIBDRM_PLATFORM_INTEL_LIBS)     \
+	libshared.la
 endif
 
 if BUILD_SIMPLE_DMABUF_V4L_CLIENT

@@ -384,19 +384,23 @@ AC_ARG_ENABLE(simple-dmabuf-drm-client,
                              [do not build the simple dmabuf drm client]),,
               enable_simple_dmabuf_drm_client="auto")
 if ! test "x$enable_simple_dmabuf_drm_client" = "xno"; then
-  PKG_CHECK_MODULES(SIMPLE_DMABUF_DRM_CLIENT, [wayland-client libdrm egl],
-    [PKG_CHECK_MODULES(LIBDRM_PLATFORM, [libdrm_freedreno],
-      AC_DEFINE([HAVE_LIBDRM_FREEDRENO], [1], [Build freedreno dmabuf client]) have_simple_dmabuf_drm_client=freedreno,
-    [PKG_CHECK_MODULES(LIBDRM_PLATFORM, [libdrm_intel],
-      AC_DEFINE([HAVE_LIBDRM_INTEL], [1], [Build intel dmabuf client]) have_simple_dmabuf_drm_client=intel,
-    have_simple_dmabuf_drm_client=unsupported)])],
-  have_simple_dmabuf_drm_client=unsupported)
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_DRM_CLIENT, [wayland-client libdrm egl], [have_simple_dmabuf_libs=yes],
+		    [have_simple_dmabuf_libs=no])
 
-  if test "x$have_simple_dmabuf_drm_client" = "xunsupported" -a "x$enable_simple_dmabuf_drm_client" = "xyes"; then
+  PKG_CHECK_MODULES(LIBDRM_PLATFORM_FREEDRENO, [libdrm_freedreno],
+      AC_DEFINE([HAVE_LIBDRM_FREEDRENO], [1], [Build freedreno dmabuf client]) have_simple_dmabuf_drm_client=yes,
+      [true])
+  PKG_CHECK_MODULES(LIBDRM_PLATFORM_INTEL, [libdrm_intel],
+      AC_DEFINE([HAVE_LIBDRM_INTEL], [1], [Build intel dmabuf client]) have_simple_dmabuf_drm_client=yes,
+      [true])
+
+  if test "x$have_simple_dmabuf_drm_client" != "xyes" -o \
+	  "x$have_simple_dmabuf_libs" = "xno" && \
+     test "x$enable_simple_dmabuf_drm_client" = "xyes"; then
     AC_MSG_ERROR([DRM dmabuf client explicitly enabled, but libdrm_intel or libdrm_freedreno not found])
   fi
 
-  if test "x$have_simple_dmabuf_drm_client" = "xfreedreno" -o "x$have_simple_dmabuf_drm_client" = "xintel"; then
+  if test "x$have_simple_dmabuf_drm_client" = "xyes" -a "x$have_simple_dmabuf_libs" = "xyes"; then
     enable_simple_dmabuf_drm_client="yes"
   fi
 fi
