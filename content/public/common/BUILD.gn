@@ -158,6 +158,8 @@ jumbo_source_set("common_sources") {
     "main_function_params.h",
     "manifest.cc",
     "manifest.h",
+    "manifest_share_target_util.cc",
+    "manifest_share_target_util.h",
     "manifest_util.cc",
     "manifest_util.h",
     "media_metadata.cc",

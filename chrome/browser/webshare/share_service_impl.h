@@ -39,12 +39,6 @@ class ShareServiceImpl : public blink::mojom::ShareService {
              ShareCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest,
-                           ReplaceUrlPlaceholdersInvalidTemplate);
-  FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest, ReplaceUrlPlaceholders);
-  FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest,
-                           ReplaceUrlPlaceholders_Escaping);
-
   Browser* GetBrowser();
 
   // Returns the URL template of the target identified by |target_url|
@@ -72,20 +66,6 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   // Returns all stored Share Targets that have a high enough engagement score
   // with the user.
   std::vector<WebShareTarget> GetTargetsWithSufficientEngagement();
-
-  // Writes to |url_template_filled|, a copy of |url_template| with all
-  // instances of "{title}", "{text}", and "{url}" in the query and fragment
-  // parts of the URL replaced with |title|, |text|, and |url| respectively.
-  // Replaces instances of "{X}" where "X" is any string besides "title",
-  // "text", and "url", with an empty string, for forwards compatibility.
-  // Returns false, if there are badly nested placeholders.
-  // This includes any case in which two "{" occur before a "}", or a "}"
-  // occurs with no preceding "{".
-  static bool ReplaceUrlPlaceholders(const GURL& url_template,
-                                     base::StringPiece title,
-                                     base::StringPiece text,
-                                     const GURL& share_url,
-                                     GURL* url_template_filled);
 
   void OnPickerClosed(const std::string& title,
                       const std::string& text,
