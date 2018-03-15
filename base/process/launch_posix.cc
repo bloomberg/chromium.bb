@@ -33,6 +33,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
@@ -40,6 +41,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #if defined(OS_LINUX) || defined(OS_AIX)
@@ -297,6 +300,7 @@ Process LaunchProcess(const CommandLine& cmdline,
 
 Process LaunchProcess(const std::vector<std::string>& argv,
                       const LaunchOptions& options) {
+  TRACE_EVENT0("base", "LaunchProcess");
 #if defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kMacLaunchProcessPosixSpawn)) {
     // TODO(rsesek): Do this unconditionally. There is one user for each of
@@ -335,6 +339,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   }
 
   pid_t pid;
+  base::TimeTicks before_fork = TimeTicks::Now();
 #if defined(OS_LINUX) || defined(OS_AIX)
   if (options.clone_flags) {
     // Signal handling in this function assumes the creation of a new
@@ -361,7 +366,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
   // Always restore the original signal mask in the parent.
   if (pid != 0) {
+    base::TimeTicks after_fork = TimeTicks::Now();
     SetSignalMask(orig_sigmask);
+
+    base::TimeDelta fork_time = after_fork - before_fork;
+    UMA_HISTOGRAM_TIMES("MPArch.ForkTime", fork_time);
   }
 
   if (pid < 0) {
