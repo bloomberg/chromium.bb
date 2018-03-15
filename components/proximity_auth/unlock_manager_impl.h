@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
@@ -18,10 +19,6 @@
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/proximity_auth/unlock_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/power_manager_client.h"
-#endif
 
 namespace proximity_auth {
 
@@ -36,9 +33,7 @@ class UnlockManagerImpl : public UnlockManager,
                           public MessengerObserver,
                           public ProximityMonitorObserver,
                           public ScreenlockBridge::Observer,
-#if defined(OS_CHROMEOS)
                           chromeos::PowerManagerClient::Observer,
-#endif  // defined(OS_CHROMEOS)
                           public device::BluetoothAdapter::Observer {
  public:
   // The |proximity_auth_client| is not owned and should outlive the constructed
@@ -100,10 +95,8 @@ class UnlockManagerImpl : public UnlockManager,
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
 
-#if defined(OS_CHROMEOS)
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
-#endif  // defined(OS_CHROMEOS)
 
   // Called when auth is attempted to send the sign-in challenge to the remote
   // device for decryption.

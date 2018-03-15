@@ -295,7 +295,6 @@ test("components_unittests") {
       # guest_view is currently non-mobile.
       "//components/guest_view/browser:unit_tests",
       "//components/multidevice:unit_tests",
-      "//components/proximity_auth:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/web_modal:unit_tests",
       "//components/zoom:unit_tests",
@@ -311,6 +310,7 @@ test("components_unittests") {
       "//components/arc:unit_tests",
       "//components/ownership:unit_tests",
       "//components/pairing:unit_tests",
+      "//components/proximity_auth:unit_tests",
       "//components/sync_wifi:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
