@@ -89,7 +89,7 @@ enum SpellcheckAttributeState {
   kSpellcheckAttributeDefault
 };
 
-enum ElementFlags {
+enum class ElementFlags {
   kTabIndexWasSetExplicitly = 1 << 0,
   kStyleAffectedByEmpty = 1 << 1,
   kIsInCanvasSubtree = 1 << 2,
@@ -532,14 +532,18 @@ class CORE_EXPORT Element : public ContainerNode {
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
   bool StyleAffectedByEmpty() const {
-    return HasElementFlag(kStyleAffectedByEmpty);
+    return HasElementFlag(ElementFlags::kStyleAffectedByEmpty);
   }
-  void SetStyleAffectedByEmpty() { SetElementFlag(kStyleAffectedByEmpty); }
+  void SetStyleAffectedByEmpty() {
+    SetElementFlag(ElementFlags::kStyleAffectedByEmpty);
+  }
 
   void SetIsInCanvasSubtree(bool value) {
-    SetElementFlag(kIsInCanvasSubtree, value);
+    SetElementFlag(ElementFlags::kIsInCanvasSubtree, value);
   }
-  bool IsInCanvasSubtree() const { return HasElementFlag(kIsInCanvasSubtree); }
+  bool IsInCanvasSubtree() const {
+    return HasElementFlag(ElementFlags::kIsInCanvasSubtree);
+  }
 
   bool IsDefined() const {
     return !(static_cast<int>(GetCustomElementState()) &
@@ -759,10 +763,14 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual bool ShouldForceLegacyLayout() const { return false; }
 
   bool HasPendingResources() const {
-    return HasElementFlag(kHasPendingResources);
+    return HasElementFlag(ElementFlags::kHasPendingResources);
   }
-  void SetHasPendingResources() { SetElementFlag(kHasPendingResources); }
-  void ClearHasPendingResources() { ClearElementFlag(kHasPendingResources); }
+  void SetHasPendingResources() {
+    SetElementFlag(ElementFlags::kHasPendingResources);
+  }
+  void ClearHasPendingResources() {
+    ClearElementFlag(ElementFlags::kHasPendingResources);
+  }
   virtual void BuildPendingResource() {}
 
   void V0SetCustomElementDefinition(V0CustomElementDefinition*);
@@ -775,17 +783,19 @@ class CORE_EXPORT Element : public ContainerNode {
   const AtomicString& IsValue() const;
 
   bool ContainsFullScreenElement() const {
-    return HasElementFlag(kContainsFullScreenElement);
+    return HasElementFlag(ElementFlags::kContainsFullScreenElement);
   }
   void SetContainsFullScreenElement(bool);
   void SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
 
   bool ContainsPersistentVideo() const {
-    return HasElementFlag(kContainsPersistentVideo);
+    return HasElementFlag(ElementFlags::kContainsPersistentVideo);
   }
   void SetContainsPersistentVideo(bool);
 
-  bool IsInTopLayer() const { return HasElementFlag(kIsInTopLayer); }
+  bool IsInTopLayer() const {
+    return HasElementFlag(ElementFlags::kIsInTopLayer);
+  }
   void SetIsInTopLayer(bool);
 
   void requestPointerLock();

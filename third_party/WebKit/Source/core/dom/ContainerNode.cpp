@@ -36,6 +36,7 @@
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
@@ -1419,7 +1420,7 @@ void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,
       GetStyleChangeType() >= kSubtreeStyleChange)
     return;
 
-  if (!HasRestyleFlag(kChildrenAffectedByStructuralRules))
+  if (!HasRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByStructuralRules))
     return;
 
   Element* element_after_change =

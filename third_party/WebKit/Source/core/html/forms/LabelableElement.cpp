@@ -24,6 +24,7 @@
 
 #include "core/html/forms/LabelableElement.h"
 
+#include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/forms/LabelsNodeList.h"
 

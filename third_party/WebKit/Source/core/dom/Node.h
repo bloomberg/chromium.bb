@@ -29,6 +29,7 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/NodeRareData.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/dom/events/SimulatedClickOptions.h"
@@ -99,52 +100,6 @@ enum class SlotChangeType {
 };
 
 enum class CloneChildrenFlag { kClone, kSkip };
-
-class NodeRenderingData {
- public:
-  explicit NodeRenderingData(LayoutObject* layout_object,
-                             scoped_refptr<ComputedStyle> non_attached_style);
-  ~NodeRenderingData();
-
-  LayoutObject* GetLayoutObject() const { return layout_object_; }
-  void SetLayoutObject(LayoutObject* layout_object) {
-    DCHECK_NE(&SharedEmptyData(), this);
-    layout_object_ = layout_object;
-  }
-
-  ComputedStyle* GetNonAttachedStyle() const {
-    return non_attached_style_.get();
-  }
-  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
-
-  static NodeRenderingData& SharedEmptyData();
-  bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
-
- private:
-  LayoutObject* layout_object_;
-  scoped_refptr<ComputedStyle> non_attached_style_;
-  DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
-};
-
-class NodeRareDataBase {
- public:
-  NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
-  void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
-    DCHECK(node_layout_data);
-    node_layout_data_ = node_layout_data;
-  }
-
- protected:
-  explicit NodeRareDataBase(NodeRenderingData* node_layout_data)
-      : node_layout_data_(node_layout_data) {}
-  ~NodeRareDataBase() {
-    if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())
-      delete node_layout_data_;
-  }
-
- protected:
-  NodeRenderingData* node_layout_data_;
-};
 
 class Node;
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
@@ -961,8 +916,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool HasRareData() const { return GetFlag(kHasRareDataFlag); }
 
-  NodeRareData* RareData() const;
-  NodeRareData& EnsureRareData();
+  NodeRareData* RareData() const {
+    SECURITY_DCHECK(HasRareData());
+    return static_cast<NodeRareData*>(data_.rare_data_);
+  }
+  NodeRareData& EnsureRareData() {
+    if (HasRareData())
+      return *RareData();
+
+    return CreateRareData();
+  }
 
   void SetHasCustomStyleCallbacks() {
     SetFlag(true, kHasCustomStyleCallbacksFlag);
@@ -1000,6 +963,8 @@ class CORE_EXPORT Node : public EventTarget {
       PseudoId = kPseudoIdNone);
 
   void TrackForDebugging();
+
+  NodeRareData& CreateRareData();
 
   const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
   MutationObserverRegistry();

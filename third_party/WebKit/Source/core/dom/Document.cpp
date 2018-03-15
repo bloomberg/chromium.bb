@@ -87,6 +87,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
+#include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"

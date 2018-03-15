@@ -24,12 +24,17 @@
 
 #include "base/macros.h"
 #include "core/dom/MutationObserverRegistration.h"
-#include "core/dom/NodeListsNodeData.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
+
+class ComputedStyle;
+enum class DynamicRestyleFlags;
+enum class ElementFlags;
+class LayoutObject;
+class NodeListsNodeData;
 
 class NodeMutationObserverData final
     : public GarbageCollected<NodeMutationObserverData> {
@@ -91,6 +96,52 @@ class NodeMutationObserverData final
 
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeMutationObserverData);
 
+class NodeRenderingData {
+ public:
+  explicit NodeRenderingData(LayoutObject*,
+                             scoped_refptr<ComputedStyle> non_attached_style);
+  ~NodeRenderingData();
+
+  LayoutObject* GetLayoutObject() const { return layout_object_; }
+  void SetLayoutObject(LayoutObject* layout_object) {
+    DCHECK_NE(&SharedEmptyData(), this);
+    layout_object_ = layout_object;
+  }
+
+  ComputedStyle* GetNonAttachedStyle() const {
+    return non_attached_style_.get();
+  }
+  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
+
+  static NodeRenderingData& SharedEmptyData();
+  bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
+
+ private:
+  LayoutObject* layout_object_;
+  scoped_refptr<ComputedStyle> non_attached_style_;
+  DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
+};
+
+class NodeRareDataBase {
+ public:
+  NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
+  void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
+    DCHECK(node_layout_data);
+    node_layout_data_ = node_layout_data;
+  }
+
+ protected:
+  explicit NodeRareDataBase(NodeRenderingData* node_layout_data)
+      : node_layout_data_(node_layout_data) {}
+  ~NodeRareDataBase() {
+    if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())
+      delete node_layout_data_;
+  }
+
+ protected:
+  NodeRenderingData* node_layout_data_;
+};
+
 class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
                      public NodeRareDataBase {
  public:
@@ -105,9 +156,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   // initialized m_nodeLists is cleared by NodeRareData::traceAfterDispatch().
   NodeListsNodeData& EnsureNodeLists() {
     DCHECK(ThreadState::Current()->IsGCForbidden());
-    if (!node_lists_) {
-      node_lists_ = NodeListsNodeData::Create();
-    }
+    if (!node_lists_)
+      return CreateNodeLists();
     return *node_lists_;
   }
 
@@ -128,17 +178,22 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
     --connected_frame_count_;
   }
 
-  bool HasElementFlag(ElementFlags mask) const { return element_flags_ & mask; }
-  void SetElementFlag(ElementFlags mask, bool value) {
-    element_flags_ = (element_flags_ & ~mask) | (-(int32_t)value & mask);
+  bool HasElementFlag(ElementFlags mask) const {
+    return element_flags_ & static_cast<unsigned>(mask);
   }
-  void ClearElementFlag(ElementFlags mask) { element_flags_ &= ~mask; }
+  void SetElementFlag(ElementFlags mask, bool value) {
+    element_flags_ = (element_flags_ & ~static_cast<unsigned>(mask)) |
+                     (-(int32_t)value & static_cast<unsigned>(mask));
+  }
+  void ClearElementFlag(ElementFlags mask) {
+    element_flags_ &= ~static_cast<unsigned>(mask);
+  }
 
   bool HasRestyleFlag(DynamicRestyleFlags mask) const {
-    return restyle_flags_ & mask;
+    return restyle_flags_ & static_cast<unsigned>(mask);
   }
   void SetRestyleFlag(DynamicRestyleFlags mask) {
-    restyle_flags_ |= mask;
+    restyle_flags_ |= static_cast<unsigned>(mask);
     CHECK(restyle_flags_);
   }
   bool HasRestyleFlags() const { return restyle_flags_; }
@@ -146,6 +201,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
 
   enum {
     kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
+    kNumberOfElementFlags = 7,
+    kNumberOfDynamicRestyleFlags = 14
   };
 
   void Trace(blink::Visitor*);
@@ -167,6 +224,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   }
 
  private:
+  NodeListsNodeData& CreateNodeLists();
+
   TraceWrapperMember<NodeListsNodeData> node_lists_;
   TraceWrapperMember<NodeMutationObserverData> mutation_observer_data_;
 

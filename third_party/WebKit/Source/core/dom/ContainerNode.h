@@ -36,13 +36,16 @@ namespace blink {
 
 class ClassCollection;
 class ExceptionState;
+class Element;
 class HTMLCollection;
 class NameNodeList;
+template <typename NodeType>
+class StaticNodeTypeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 class RadioNodeList;
 class WhitespaceAttacher;
 
-enum DynamicRestyleFlags {
+enum class DynamicRestyleFlags {
   kChildrenOrSiblingsAffectedByFocus = 1 << 0,
   kChildrenOrSiblingsAffectedByHover = 1 << 1,
   kChildrenOrSiblingsAffectedByActive = 1 << 2,
@@ -157,101 +160,118 @@ class CORE_EXPORT ContainerNode : public Node {
   void SetHovered(bool = true) override;
 
   bool ChildrenOrSiblingsAffectedByFocus() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByFocus);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocus);
   }
   void SetChildrenOrSiblingsAffectedByFocus() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByFocus);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocus);
   }
 
   bool ChildrenOrSiblingsAffectedByFocusVisible() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByFocusVisible);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocusVisible);
   }
   void SetChildrenOrSiblingsAffectedByFocusVisible() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByFocusVisible);
+    SetRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocusVisible);
   }
 
   bool ChildrenOrSiblingsAffectedByFocusWithin() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByFocusWithin);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocusWithin);
   }
   void SetChildrenOrSiblingsAffectedByFocusWithin() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByFocusWithin);
+    SetRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByFocusWithin);
   }
 
   bool ChildrenOrSiblingsAffectedByHover() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByHover);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByHover);
   }
   void SetChildrenOrSiblingsAffectedByHover() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByHover);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenOrSiblingsAffectedByHover);
   }
 
   bool ChildrenOrSiblingsAffectedByActive() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByActive);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByActive);
   }
   void SetChildrenOrSiblingsAffectedByActive() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByActive);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenOrSiblingsAffectedByActive);
   }
 
   bool ChildrenOrSiblingsAffectedByDrag() const {
-    return HasRestyleFlag(kChildrenOrSiblingsAffectedByDrag);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenOrSiblingsAffectedByDrag);
   }
   void SetChildrenOrSiblingsAffectedByDrag() {
-    SetRestyleFlag(kChildrenOrSiblingsAffectedByDrag);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenOrSiblingsAffectedByDrag);
   }
 
   bool ChildrenAffectedByFirstChildRules() const {
-    return HasRestyleFlag(kChildrenAffectedByFirstChildRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByFirstChildRules);
   }
   void SetChildrenAffectedByFirstChildRules() {
-    SetRestyleFlag(kChildrenAffectedByFirstChildRules);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByFirstChildRules);
   }
 
   bool ChildrenAffectedByLastChildRules() const {
-    return HasRestyleFlag(kChildrenAffectedByLastChildRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByLastChildRules);
   }
   void SetChildrenAffectedByLastChildRules() {
-    SetRestyleFlag(kChildrenAffectedByLastChildRules);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByLastChildRules);
   }
 
   bool ChildrenAffectedByDirectAdjacentRules() const {
-    return HasRestyleFlag(kChildrenAffectedByDirectAdjacentRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByDirectAdjacentRules);
   }
   void SetChildrenAffectedByDirectAdjacentRules() {
-    SetRestyleFlag(kChildrenAffectedByDirectAdjacentRules);
+    SetRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByDirectAdjacentRules);
   }
 
   bool ChildrenAffectedByIndirectAdjacentRules() const {
-    return HasRestyleFlag(kChildrenAffectedByIndirectAdjacentRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByIndirectAdjacentRules);
   }
   void SetChildrenAffectedByIndirectAdjacentRules() {
-    SetRestyleFlag(kChildrenAffectedByIndirectAdjacentRules);
+    SetRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByIndirectAdjacentRules);
   }
 
   bool ChildrenAffectedByForwardPositionalRules() const {
-    return HasRestyleFlag(kChildrenAffectedByForwardPositionalRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByForwardPositionalRules);
   }
   void SetChildrenAffectedByForwardPositionalRules() {
-    SetRestyleFlag(kChildrenAffectedByForwardPositionalRules);
+    SetRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByForwardPositionalRules);
   }
 
   bool ChildrenAffectedByBackwardPositionalRules() const {
-    return HasRestyleFlag(kChildrenAffectedByBackwardPositionalRules);
+    return HasRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByBackwardPositionalRules);
   }
   void SetChildrenAffectedByBackwardPositionalRules() {
-    SetRestyleFlag(kChildrenAffectedByBackwardPositionalRules);
+    SetRestyleFlag(
+        DynamicRestyleFlags::kChildrenAffectedByBackwardPositionalRules);
   }
 
   bool AffectedByFirstChildRules() const {
-    return HasRestyleFlag(kAffectedByFirstChildRules);
+    return HasRestyleFlag(DynamicRestyleFlags::kAffectedByFirstChildRules);
   }
   void SetAffectedByFirstChildRules() {
-    SetRestyleFlag(kAffectedByFirstChildRules);
+    SetRestyleFlag(DynamicRestyleFlags::kAffectedByFirstChildRules);
   }
 
   bool AffectedByLastChildRules() const {
-    return HasRestyleFlag(kAffectedByLastChildRules);
+    return HasRestyleFlag(DynamicRestyleFlags::kAffectedByLastChildRules);
   }
   void SetAffectedByLastChildRules() {
-    SetRestyleFlag(kAffectedByLastChildRules);
+    SetRestyleFlag(DynamicRestyleFlags::kAffectedByLastChildRules);
   }
 
   bool NeedsAdjacentStyleRecalc() const;

@@ -60,11 +60,11 @@ class ElementRareData : public NodeRareData {
   PseudoElement* GetPseudoElement(PseudoId) const;
 
   void SetTabIndexExplicitly() {
-    SetElementFlag(kTabIndexWasSetExplicitly, true);
+    SetElementFlag(ElementFlags::kTabIndexWasSetExplicitly, true);
   }
 
   void ClearTabIndexExplicitly() {
-    ClearElementFlag(kTabIndexWasSetExplicitly);
+    ClearElementFlag(ElementFlags::kTabIndexWasSetExplicitly);
   }
 
   CSSStyleDeclaration& EnsureInlineCSSStyleDeclaration(Element* owner_element);
