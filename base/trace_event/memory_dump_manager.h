@@ -252,10 +252,6 @@ class BASE_EXPORT MemoryDumpManager {
   void ContinueAsyncProcessDump(
       ProcessMemoryDumpAsyncState* owned_pmd_async_state);
 
-  // Returns true if the given dump type and mode allows the given MDP to dump.
-  bool IsDumpProviderAllowedToDump(const MemoryDumpRequestArgs& req_args,
-                                   const MemoryDumpProviderInfo& mdpinfo) const;
-
   // Invokes OnMemoryDump() of the given MDP. Should be called on the MDP task
   // runner.
   void InvokeOnMemoryDump(MemoryDumpProviderInfo* mdpinfo,
