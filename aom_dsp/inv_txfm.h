@@ -46,21 +46,10 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 #define HIGHBD_WRAPLOW(x, bd) ((int32_t)check_range((x), bd))
 
 void aom_idct4_c(const tran_low_t *input, tran_low_t *output);
-void aom_idct8_c(const tran_low_t *input, tran_low_t *output);
-void aom_idct16_c(const tran_low_t *input, tran_low_t *output);
-void aom_idct32_c(const tran_low_t *input, tran_low_t *output);
 void aom_iadst4_c(const tran_low_t *input, tran_low_t *output);
-void aom_iadst8_c(const tran_low_t *input, tran_low_t *output);
-void aom_iadst16_c(const tran_low_t *input, tran_low_t *output);
 
 void aom_highbd_idct4_c(const tran_low_t *input, tran_low_t *output, int bd);
-void aom_highbd_idct8_c(const tran_low_t *input, tran_low_t *output, int bd);
-void aom_highbd_idct16_c(const tran_low_t *input, tran_low_t *output, int bd);
-void aom_highbd_idct32_c(const tran_low_t *input, tran_low_t *output, int bd);
-
 void aom_highbd_iadst4_c(const tran_low_t *input, tran_low_t *output, int bd);
-void aom_highbd_iadst8_c(const tran_low_t *input, tran_low_t *output, int bd);
-void aom_highbd_iadst16_c(const tran_low_t *input, tran_low_t *output, int bd);
 
 static INLINE uint16_t highbd_clip_pixel_add(uint16_t dest, tran_high_t trans,
                                              int bd) {
