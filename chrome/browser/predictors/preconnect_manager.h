@@ -141,6 +141,7 @@ class PreconnectManager {
   void FinishPreresolve(const PreresolveJob& job, bool found, bool cached);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
   GURL GetHSTSRedirect(const GURL& url) const;
+  bool WouldLikelyProxyURL(const GURL& url) const;
 
   base::WeakPtr<Delegate> delegate_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
