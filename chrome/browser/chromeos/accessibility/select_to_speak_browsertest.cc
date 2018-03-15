@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
   chromeos::AccessibilityManager::Get()->SetFocusRingObserverForTest(callback);
 
   ash::AccessibilityFocusRingController* controller =
-      ash::AccessibilityFocusRingController::GetInstance();
+      ash::Shell::Get()->accessibility_focus_ring_controller();
   std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
       focus_rings = controller->focus_ring_layers_for_testing();
 

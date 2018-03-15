@@ -148,7 +148,7 @@ TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
 
   // Simulate a mouse event on the primary display.
   AccessibilityFocusRingController* controller =
-      AccessibilityFocusRingController::GetInstance();
+      Shell::Get()->accessibility_focus_ring_controller();
   gfx::Point location(90, 90);
   controller->SetCursorRing(location);
   AccessibilityCursorRingLayer* cursor_layer =

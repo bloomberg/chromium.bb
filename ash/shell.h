@@ -77,6 +77,7 @@ namespace ash {
 class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
+class AccessibilityFocusRingController;
 class AshDisplayController;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
@@ -306,6 +307,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
+  }
+  AccessibilityFocusRingController* accessibility_focus_ring_controller() {
+    return accessibility_focus_ring_controller_.get();
   }
   ::wm::ActivationClient* activation_client();
   AppListControllerImpl* app_list_controller() {
@@ -659,6 +663,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
+  std::unique_ptr<AccessibilityFocusRingController>
+      accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;

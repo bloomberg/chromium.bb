@@ -42,10 +42,12 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
 }
 
 AccessibilityHighlightController::~AccessibilityHighlightController() {
-  AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-      std::vector<gfx::Rect>(), mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING);
-  AccessibilityFocusRingController::GetInstance()->HideCaretRing();
-  AccessibilityFocusRingController::GetInstance()->HideCursorRing();
+  AccessibilityFocusRingController* controller =
+      Shell::Get()->accessibility_focus_ring_controller();
+  controller->SetFocusRing(std::vector<gfx::Rect>(),
+                           mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING);
+  controller->HideCaretRing();
+  controller->HideCursorRing();
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ui::InputMethod* input_method = GetInputMethod(root_window);
@@ -141,7 +143,8 @@ bool AccessibilityHighlightController::IsCaretVisible(
 }
 
 void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
-  auto* controller = AccessibilityFocusRingController::GetInstance();
+  AccessibilityFocusRingController* controller =
+      Shell::Get()->accessibility_focus_ring_controller();
 
   // The caret highlight takes precedence over the focus highlight if
   // both are visible.
@@ -164,12 +167,12 @@ void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
 }
 
 void AccessibilityHighlightController::UpdateCursorHighlight() {
-  if (cursor_ && IsCursorVisible()) {
-    AccessibilityFocusRingController::GetInstance()->SetCursorRing(
-        cursor_point_);
-  } else {
-    AccessibilityFocusRingController::GetInstance()->HideCursorRing();
-  }
+  AccessibilityFocusRingController* controller =
+      Shell::Get()->accessibility_focus_ring_controller();
+  if (cursor_ && IsCursorVisible())
+    controller->SetCursorRing(cursor_point_);
+  else
+    controller->HideCursorRing();
 }
 
 }  // namespace ash
