@@ -629,10 +629,14 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
 
   //  Deadline triggers normally when root resources are unlocked.
   AdvanceTimeAndBeginFrameForTest({sid1, root_surface_id});
-  late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
+  EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(sid1);
+
+  // The deadline is not updated because the display scheduler does not receive
+  // a BeginFrame while root resources are locked.
   EXPECT_EQ(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.SetRootSurfaceResourcesLocked(false);
+  EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(root_surface_id);
   EXPECT_EQ(base::TimeTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
