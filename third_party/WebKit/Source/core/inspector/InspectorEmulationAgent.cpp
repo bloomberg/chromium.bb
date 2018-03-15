@@ -177,13 +177,12 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   state_->setString(EmulationAgentState::kVirtualTimePolicy, policy);
 
   PendingVirtualTimePolicy new_policy;
-  new_policy.policy = WebViewScheduler::VirtualTimePolicy::kPause;
+  new_policy.policy = PageScheduler::VirtualTimePolicy::kPause;
   if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
-    new_policy.policy = WebViewScheduler::VirtualTimePolicy::kAdvance;
+    new_policy.policy = PageScheduler::VirtualTimePolicy::kAdvance;
   } else if (protocol::Emulation::VirtualTimePolicyEnum::
                  PauseIfNetworkFetchesPending == policy) {
-    new_policy.policy =
-        WebViewScheduler::VirtualTimePolicy::kDeterministicLoading;
+    new_policy.policy = PageScheduler::VirtualTimePolicy::kDeterministicLoading;
   }
 
   if (virtual_time_budget_ms.isJust()) {
@@ -271,7 +270,7 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::kPause);
+      PageScheduler::VirtualTimePolicy::kPause);
   GetFrontend()->virtualTimeBudgetExpired();
 }
 

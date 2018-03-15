@@ -12,8 +12,8 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/fake_page_scheduler.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
-#include "platform/scheduler/test/fake_web_view_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/common/page/launching_process_state.h"
@@ -96,7 +96,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kMainFrameVisibleService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
-            .SetWebViewScheduler(playing_view_.get())
+            .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kMainFrameHidden:
@@ -105,7 +105,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kMainFrameHiddenService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
-            .SetWebViewScheduler(playing_view_.get());
+            .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kMainFrameBackground:
         builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame);
@@ -116,7 +116,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kMainFrameBackgroundExemptOther:
         builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
-            .SetWebViewScheduler(throtting_exempt_view_.get());
+            .SetPageScheduler(throtting_exempt_view_.get());
         break;
       case FrameStatus::kSameOriginVisible:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
@@ -125,7 +125,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kSameOriginVisibleService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
-            .SetWebViewScheduler(playing_view_.get())
+            .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kSameOriginHidden:
@@ -134,7 +134,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kSameOriginHiddenService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
-            .SetWebViewScheduler(playing_view_.get());
+            .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kSameOriginBackground:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe);
@@ -145,7 +145,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         break;
       case FrameStatus::kSameOriginBackgroundExemptOther:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
-            .SetWebViewScheduler(throtting_exempt_view_.get());
+            .SetPageScheduler(throtting_exempt_view_.get());
         break;
       case FrameStatus::kCrossOriginVisible:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
@@ -156,7 +156,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
       case FrameStatus::kCrossOriginVisibleService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
-            .SetWebViewScheduler(playing_view_.get())
+            .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kCrossOriginHidden:
@@ -167,7 +167,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
       case FrameStatus::kCrossOriginHiddenService:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
-            .SetWebViewScheduler(playing_view_.get());
+            .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kCrossOriginBackground:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
@@ -181,7 +181,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
       case FrameStatus::kCrossOriginBackgroundExemptOther:
         builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
-            .SetWebViewScheduler(throtting_exempt_view_.get());
+            .SetPageScheduler(throtting_exempt_view_.get());
         break;
       case FrameStatus::kCount:
         NOTREACHED();
@@ -195,10 +195,10 @@ class RendererMetricsHelperTest : public ::testing::Test {
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-  std::unique_ptr<FakeWebViewScheduler> playing_view_ =
-      FakeWebViewScheduler::Builder().SetIsPlayingAudio(true).Build();
-  std::unique_ptr<FakeWebViewScheduler> throtting_exempt_view_ =
-      FakeWebViewScheduler::Builder().SetIsThrottlingExempt(true).Build();
+  std::unique_ptr<FakePageScheduler> playing_view_ =
+      FakePageScheduler::Builder().SetIsPlayingAudio(true).Build();
+  std::unique_ptr<FakePageScheduler> throtting_exempt_view_ =
+      FakePageScheduler::Builder().SetIsThrottlingExempt(true).Build();
 
   DISALLOW_COPY_AND_ASSIGN(RendererMetricsHelperTest);
 };

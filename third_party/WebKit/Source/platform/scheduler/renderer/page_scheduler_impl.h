@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_IMPL_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_IMPL_H_
 
 #include <memory>
 #include <set>
@@ -16,8 +16,8 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {
@@ -34,24 +34,24 @@ class RendererSchedulerImpl;
 class CPUTimeBudgetPool;
 class WebFrameSchedulerImpl;
 
-class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
+class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
-  WebViewSchedulerImpl(WebViewScheduler::WebViewSchedulerDelegate*,
-                       RendererSchedulerImpl*,
-                       bool disable_background_timer_throttling);
+  PageSchedulerImpl(PageScheduler::Delegate*,
+                    RendererSchedulerImpl*,
+                    bool disable_background_timer_throttling);
 
-  ~WebViewSchedulerImpl() override;
+  ~PageSchedulerImpl() override;
 
-  // WebViewScheduler implementation:
+  // PageScheduler implementation:
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext* blame_context,
-      WebFrameScheduler::FrameType frame_type) override;
+      BlameContext*,
+      WebFrameScheduler::FrameType) override;
   base::TimeTicks EnableVirtualTime() override;
   void DisableVirtualTimeForTesting() override;
   bool VirtualTimeAllowedToAdvance() const override;
-  void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
+  void SetVirtualTimePolicy(VirtualTimePolicy) override;
   void SetInitialVirtualTimeOffset(base::TimeDelta offset) override;
   void GrantVirtualTimeBudget(
       base::TimeDelta budget,
@@ -70,22 +70,22 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   virtual void ReportIntervention(const std::string& message);
 
   std::unique_ptr<WebFrameSchedulerImpl> CreateWebFrameSchedulerImpl(
-      base::trace_event::BlameContext* blame_context,
-      WebFrameScheduler::FrameType frame_type);
+      base::trace_event::BlameContext*,
+      WebFrameScheduler::FrameType);
 
-  void Unregister(WebFrameSchedulerImpl* frame_scheduler);
+  void Unregister(WebFrameSchedulerImpl*);
   void OnNavigation();
 
   void OnConnectionUpdated();
 
   void OnTraceLogEnabled();
 
-  // Return a number of child web frame schedulers for this WebViewScheduler.
+  // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  base::WeakPtr<WebViewSchedulerImpl> GetWeakPtr() {
+  base::WeakPtr<PageSchedulerImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -117,13 +117,13 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool has_active_connection_;
   bool nested_runloop_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
-  WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
-  base::WeakPtrFactory<WebViewSchedulerImpl> weak_factory_;
+  PageScheduler::Delegate* delegate_;               // Not owned.
+  base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
+  DISALLOW_COPY_AND_ASSIGN(PageSchedulerImpl);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_IMPL_H_

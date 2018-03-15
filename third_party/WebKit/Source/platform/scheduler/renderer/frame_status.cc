@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/frame_status.h"
 
 #include "platform/WebFrameScheduler.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -40,8 +40,8 @@ FrameThrottlingState GetFrameThrottlingState(
     return FrameThrottlingState::kHidden;
   }
 
-  WebViewScheduler* web_view_scheduler = frame_scheduler.GetWebViewScheduler();
-  if (web_view_scheduler && web_view_scheduler->IsPlayingAudio()) {
+  PageScheduler* page_scheduler = frame_scheduler.GetPageScheduler();
+  if (page_scheduler && page_scheduler->IsPlayingAudio()) {
     if (frame_scheduler.IsFrameVisible())
       return FrameThrottlingState::kVisibleService;
     return FrameThrottlingState::kHiddenService;
@@ -50,8 +50,7 @@ FrameThrottlingState GetFrameThrottlingState(
   if (frame_scheduler.IsExemptFromBudgetBasedThrottling())
     return FrameThrottlingState::kBackgroundExemptSelf;
 
-  if (web_view_scheduler &&
-      web_view_scheduler->IsExemptFromBudgetBasedThrottling())
+  if (page_scheduler && page_scheduler->IsExemptFromBudgetBasedThrottling())
     return FrameThrottlingState::kBackgroundExemptOther;
 
   return FrameThrottlingState::kBackground;

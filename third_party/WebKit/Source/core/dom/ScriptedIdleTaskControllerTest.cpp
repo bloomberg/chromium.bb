@@ -37,8 +37,8 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   }
   void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override {}
-  std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      WebViewScheduler::WebViewSchedulerDelegate*) override {
+  std::unique_ptr<PageScheduler> CreatePageScheduler(
+      PageScheduler::Delegate*) override {
     return nullptr;
   }
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override {

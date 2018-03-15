@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_VIEW_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_VIEW_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_PAGE_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_PAGE_SCHEDULER_H_
 
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 
-class FakeWebViewScheduler : public WebViewScheduler {
+class FakePageScheduler final : public PageScheduler {
  public:
-  FakeWebViewScheduler(bool is_playing_audio, bool is_throttling_exempt)
+  FakePageScheduler(bool is_playing_audio, bool is_throttling_exempt)
       : is_playing_audio_(is_playing_audio),
         is_throttling_exempt_(is_throttling_exempt) {}
 
@@ -30,9 +30,9 @@ class FakeWebViewScheduler : public WebViewScheduler {
       return *this;
     }
 
-    std::unique_ptr<FakeWebViewScheduler> Build() {
-      return std::make_unique<FakeWebViewScheduler>(is_playing_audio_,
-                                                    is_throttling_exempt_);
+    std::unique_ptr<FakePageScheduler> Build() {
+      return std::make_unique<FakePageScheduler>(is_playing_audio_,
+                                                 is_throttling_exempt_);
     }
 
    private:
@@ -74,10 +74,10 @@ class FakeWebViewScheduler : public WebViewScheduler {
   bool is_playing_audio_;
   bool is_throttling_exempt_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeWebViewScheduler);
+  DISALLOW_COPY_AND_ASSIGN(FakePageScheduler);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_VIEW_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_PAGE_SCHEDULER_H_

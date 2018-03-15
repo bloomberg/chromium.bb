@@ -8,9 +8,9 @@
 #include "platform/WaitableEvent.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,17 +89,17 @@ class WorkerSchedulerProxyTest : public ::testing::Test {
                                           mock_main_thread_task_runner_,
                                           &clock_),
             base::nullopt)),
-        web_view_scheduler_(
-            std::make_unique<WebViewSchedulerImpl>(nullptr,
-                                                   renderer_scheduler_.get(),
-                                                   false)),
-        frame_scheduler_(web_view_scheduler_->CreateWebFrameSchedulerImpl(
+        page_scheduler_(
+            std::make_unique<PageSchedulerImpl>(nullptr,
+                                                renderer_scheduler_.get(),
+                                                false)),
+        frame_scheduler_(page_scheduler_->CreateWebFrameSchedulerImpl(
             nullptr,
             WebFrameScheduler::FrameType::kMainFrame)) {}
 
   ~WorkerSchedulerProxyTest() {
     frame_scheduler_.reset();
-    web_view_scheduler_.reset();
+    page_scheduler_.reset();
     renderer_scheduler_->Shutdown();
   }
 
@@ -108,7 +108,7 @@ class WorkerSchedulerProxyTest : public ::testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_main_thread_task_runner_;
 
   std::unique_ptr<RendererSchedulerImpl> renderer_scheduler_;
-  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler_;
+  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler_;
 };
 
@@ -124,12 +124,12 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
 
-  web_view_scheduler_->SetPageVisible(true);
+  page_scheduler_->SetPageVisible(true);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
@@ -151,7 +151,7 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
@@ -176,7 +176,7 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
@@ -185,7 +185,7 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   proxy.reset();
   mock_main_thread_task_runner_->RunUntilIdle();
 
-  web_view_scheduler_->SetPageVisible(true);
+  page_scheduler_->SetPageVisible(true);
   mock_main_thread_task_runner_->RunUntilIdle();
 
   frame_scheduler_.reset();

@@ -346,7 +346,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return link_highlights_timeline_.get();
   }
 
-  WebViewScheduler* Scheduler() const override;
+  PageScheduler* Scheduler() const override;
   void SetVisibilityState(mojom::PageVisibilityState, bool) override;
 
   bool HasOpenedPopup() const { return page_popup_.get(); }

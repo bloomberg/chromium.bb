@@ -12,8 +12,8 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,15 +35,15 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
     scheduler_.reset(new RendererSchedulerImpl(
         CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
         base::nullopt));
-    web_view_scheduler_.reset(
-        new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
-    web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
+    page_scheduler_.reset(
+        new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+    web_frame_scheduler_ = page_scheduler_->CreateWebFrameSchedulerImpl(
         nullptr, WebFrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
     web_frame_scheduler_.reset();
-    web_view_scheduler_.reset();
+    page_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
   }
@@ -72,7 +72,7 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
-  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler_;
+  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;
 };
 
@@ -152,7 +152,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
   ScopedTimerThrottlingForHiddenFramesForTest
       timer_throttling_for_hidden_frames(true);
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
@@ -210,7 +210,7 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin) {
 TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
   ScopedTimerThrottlingForHiddenFramesForTest
       timer_throttling_for_hidden_frames(false);
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
 
   int run_count = 0;
   ThrottleableTaskQueue()->PostDelayedTask(
@@ -286,36 +286,36 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
 
   // Once the page gets to be invisible, it should notify the observer of
   // kThrottled synchronously.
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
   observer->CheckObserverState(++throttled_count, not_throttled_count,
                                stopped_count);
 
   // When no state has changed, observers are not called.
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                stopped_count);
 
   // Setting background page to STOPPED, notifies observers of kStopped.
-  web_view_scheduler_->SetPageFrozen(true);
+  page_scheduler_->SetPageFrozen(true);
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                ++stopped_count);
 
   // When page is not in the STOPPED state, then page visibility is used,
   // notifying observer of kThrottled.
-  web_view_scheduler_->SetPageFrozen(false);
+  page_scheduler_->SetPageFrozen(false);
   observer->CheckObserverState(++throttled_count, not_throttled_count,
                                stopped_count);
 
   // Going back to visible state should notify the observer of kNotThrottled
   // synchronously.
-  web_view_scheduler_->SetPageVisible(true);
+  page_scheduler_->SetPageVisible(true);
   observer->CheckObserverState(throttled_count, ++not_throttled_count,
                                stopped_count);
 
   // Remove from the observer list, and see if any other callback should not be
   // invoked when the condition is changed.
   observer_handle.reset();
-  web_view_scheduler_->SetPageVisible(false);
+  page_scheduler_->SetPageVisible(false);
 
   // Wait 100 secs virtually and run pending tasks just in case.
   clock_.Advance(base::TimeDelta::FromSeconds(100));

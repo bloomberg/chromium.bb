@@ -28,10 +28,10 @@ class TracedValue;
 namespace blink {
 namespace scheduler {
 
-class RendererSchedulerImpl;
 class MainThreadTaskQueue;
+class PageSchedulerImpl;
+class RendererSchedulerImpl;
 class TaskQueue;
-class WebViewSchedulerImpl;
 
 namespace renderer_scheduler_impl_unittest {
 class RendererSchedulerImplTest;
@@ -41,14 +41,14 @@ namespace web_frame_scheduler_impl_unittest {
 class WebFrameSchedulerImplTest;
 }
 
-namespace web_view_scheduler_impl_unittest {
-class WebViewSchedulerImplTest;
+namespace page_scheduler_impl_unittest {
+class PageSchedulerImplTest;
 }
 
 class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
  public:
   WebFrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
-                        WebViewSchedulerImpl* parent_web_view_scheduler,
+                        PageSchedulerImpl* parent_page_scheduler,
                         base::trace_event::BlameContext* blame_context,
                         WebFrameScheduler::FrameType frame_type);
 
@@ -69,7 +69,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void TraceUrlChange(const String& url) override;
   WebFrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
-  WebViewScheduler* GetWebViewScheduler() const override;
+  PageScheduler* GetPageScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                 bool is_reload,
@@ -91,10 +91,10 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   }
 
  private:
-  friend class WebViewSchedulerImpl;
+  friend class PageSchedulerImpl;
   friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
   friend class web_frame_scheduler_impl_unittest::WebFrameSchedulerImplTest;
-  friend class web_view_scheduler_impl_unittest::WebViewSchedulerImplTest;
+  friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
 
   class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
    public:
@@ -120,7 +120,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
     DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandleImpl);
   };
 
-  void DetachFromWebViewScheduler();
+  void DetachFromPageScheduler();
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
@@ -155,10 +155,10 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
       throttleable_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> deferrable_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> pausable_queue_enabled_voter_;
-  RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
-  WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
-  base::trace_event::BlameContext* blame_context_;   // NOT OWNED
-  std::set<Observer*> loader_observers_;             // NOT OWNED
+  RendererSchedulerImpl* renderer_scheduler_;       // NOT OWNED
+  PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
+  base::trace_event::BlameContext* blame_context_;  // NOT OWNED
+  std::set<Observer*> loader_observers_;            // NOT OWNED
   WebFrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>

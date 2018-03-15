@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
+#include "platform/scheduler/renderer/page_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -69,9 +69,8 @@ base::SingleThreadTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
   return nullptr;
 }
 
-std::unique_ptr<blink::WebViewScheduler>
-WebSchedulerImpl::CreateWebViewScheduler(
-    WebViewScheduler::WebViewSchedulerDelegate* delegate) {
+std::unique_ptr<blink::PageScheduler> WebSchedulerImpl::CreatePageScheduler(
+    PageScheduler::Delegate* delegate) {
   NOTREACHED();
   return nullptr;
 }

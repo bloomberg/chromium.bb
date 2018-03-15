@@ -114,7 +114,7 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
   Page* page = Create(page_clients);
   page->SetPageScheduler(
-      Platform::Current()->CurrentThread()->Scheduler()->CreateWebViewScheduler(
+      Platform::Current()->CurrentThread()->Scheduler()->CreatePageScheduler(
           page));
 
   if (opener) {
@@ -780,11 +780,11 @@ ScrollbarTheme& Page::GetScrollbarTheme() const {
   return ScrollbarTheme::DeprecatedStaticGetTheme();
 }
 
-WebViewScheduler* Page::GetPageScheduler() const {
+PageScheduler* Page::GetPageScheduler() const {
   return page_scheduler_.get();
 }
 
-void Page::SetPageScheduler(std::unique_ptr<WebViewScheduler> page_scheduler) {
+void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
   page_scheduler_ = std::move(page_scheduler);
 }
 
@@ -806,7 +806,7 @@ void Page::RequestBeginMainFrameNotExpected(bool new_state) {
       // This can happen while swapping out web frames because the scheduler can
       // be invoked in the middle of Oilpan allocation.
       // TODO(https://crbug.com/820893): Figure out how to avoid this
-      // complicated corner case. As written, it's not clear WebViewScheduler
+      // complicated corner case. As written, it's not clear PageScheduler
       // does this correctly for OOPIF anyway since it only talks to the root
       // WebLayerTreeView, but a page with OOPIFs also has local roots.
       return;

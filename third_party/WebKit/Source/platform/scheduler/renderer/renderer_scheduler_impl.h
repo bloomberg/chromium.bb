@@ -26,12 +26,12 @@
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
+#include "platform/scheduler/renderer/page_scheduler_impl.h"
 #include "platform/scheduler/renderer/queueing_time_estimator.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
 #include "platform/scheduler/renderer/user_model.h"
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/util/tracing_helper.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
@@ -49,7 +49,7 @@ class RendererSchedulerImplTest;
 FORWARD_DECLARE_TEST(RendererSchedulerImplTest, Tracing);
 }  // namespace renderer_scheduler_impl_unittest
 class RenderWidgetSchedulingState;
-class WebViewSchedulerImpl;
+class PageSchedulerImpl;
 class TaskQueueThrottler;
 
 class PLATFORM_EXPORT RendererSchedulerImpl
@@ -105,7 +105,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(v8::RAILMode rail_mode);
   static const char* VirtualTimePolicyToString(
-      WebViewScheduler::VirtualTimePolicy virtual_time_policy);
+      PageScheduler::VirtualTimePolicy);
   // The lowest bucket for fine-grained Expected Queueing Time reporting.
   static const int kMinExpectedQueueingTimeBucket = 1;
   // The highest bucket for fine-grained Expected Queueing Time reporting, in
@@ -215,8 +215,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
-  using VirtualTimePolicy = WebViewScheduler::VirtualTimePolicy;
-  using VirtualTimeObserver = WebViewScheduler::VirtualTimeObserver;
+  using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
+  using VirtualTimeObserver = PageScheduler::VirtualTimeObserver;
 
   using BaseTimeOverridePolicy =
       AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy;
@@ -240,17 +240,16 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void DecrementVirtualTimePauseCount();
   void MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
 
-  void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
-  void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
+  void AddPageScheduler(PageSchedulerImpl*);
+  void RemovePageScheduler(PageSchedulerImpl*);
 
-  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer);
-  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
+  void AddTaskTimeObserver(TaskTimeObserver*);
+  void RemoveTaskTimeObserver(TaskTimeObserver*);
 
   // Snapshots this RendererScheduler for tracing.
   void CreateTraceEventObjectSnapshot() const;
 
-  // Called when one of associated WebView schedulers has changed audio
-  // state.
+  // Called when one of associated page schedulers has changed audio state.
   void OnAudioStateChanged();
 
   // Tells the scheduler that a provisional load has committed. Must be called
@@ -710,9 +709,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
-    std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
-    RAILModeObserver* rail_mode_observer;                 // Not owned.
-    WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
+    std::set<PageSchedulerImpl*> page_schedulers;  // Not owned.
+    RAILModeObserver* rail_mode_observer;          // Not owned.
+    WakeUpBudgetPool* wake_up_budget_pool;         // Not owned.
     RendererMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
         process_type;
