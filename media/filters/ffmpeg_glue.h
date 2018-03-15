@@ -17,10 +17,6 @@
 //
 // The glue in turn processes those read and seek requests using the
 // FFmpegURLProtocol provided during construction.
-//
-// FFmpegGlue is also responsible for initializing FFmpeg, which is done once
-// per process.  Initialization includes: turning off log messages, registering
-// a lock manager, and finally registering all demuxers and codecs.
 
 #ifndef MEDIA_FILTERS_FFMPEG_GLUE_H_
 #define MEDIA_FILTERS_FFMPEG_GLUE_H_
@@ -63,8 +59,6 @@ class MEDIA_EXPORT FFmpegURLProtocol {
 
 class MEDIA_EXPORT FFmpegGlue {
  public:
-  static void InitializeFFmpeg();
-
   // See file documentation for usage.  |protocol| must outlive FFmpegGlue.
   explicit FFmpegGlue(FFmpegURLProtocol* protocol);
   ~FFmpegGlue();
