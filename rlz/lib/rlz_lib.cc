@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/syslog_logging.h"
 #include "build/build_config.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/financial_ping.h"
@@ -386,21 +387,24 @@ bool ParseFinancialPingResponse(Product product, const char* response) {
   return ParsePingResponse(product, response);
 }
 
-bool SendFinancialPing(Product product, const AccessPoint* access_points,
+bool SendFinancialPing(Product product,
+                       const AccessPoint* access_points,
                        const char* product_signature,
                        const char* product_brand,
-                       const char* product_id, const char* product_lang,
+                       const char* product_id,
+                       const char* product_lang,
                        bool exclude_machine_id) {
   return SendFinancialPing(product, access_points, product_signature,
                            product_brand, product_id, product_lang,
                            exclude_machine_id, false);
 }
 
-
-bool SendFinancialPing(Product product, const AccessPoint* access_points,
+bool SendFinancialPing(Product product,
+                       const AccessPoint* access_points,
                        const char* product_signature,
                        const char* product_brand,
-                       const char* product_id, const char* product_lang,
+                       const char* product_id,
+                       const char* product_lang,
                        bool exclude_machine_id,
                        const bool skip_time_check) {
   // Create the financial ping request.
@@ -414,11 +418,27 @@ bool SendFinancialPing(Product product, const AccessPoint* access_points,
   if (!FinancialPing::IsPingTime(product, skip_time_check))
     return false;
 
+#if defined(OS_CHROMEOS)
+  // Write to syslog that an RLZ ping is being attempted.  This is purposefully
+  // done via syslog so that admin and/or end users can monitor RLZ activity
+  // from this machine.  If RLZ is turned off in crosh, these messages will
+  // be absent.
+  SYSLOG(INFO) << "Attempting to send RLZ ping brand=" << product_brand;
+#endif
+
   // Send out the ping, update the last ping time irrespective of success.
   FinancialPing::UpdateLastPingTime(product);
   std::string response;
-  if (!FinancialPing::PingServer(request.c_str(), &response))
+  if (!FinancialPing::PingServer(request.c_str(), &response)) {
+#if defined(OS_CHROMEOS)
+    SYSLOG(INFO) << "Failed sending RLZ ping";
+#endif
     return false;
+  }
+
+#if defined(OS_CHROMEOS)
+  SYSLOG(INFO) << "Succeeded in sending RLZ ping";
+#endif
 
   // Parse the ping response - update RLZs, clear events.
   return ParsePingResponse(product, response.c_str());

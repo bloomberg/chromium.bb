@@ -44,7 +44,11 @@ ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {}
 void ChromeRLZTrackerDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(ENABLE_RLZ)
+#if defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds, 24 * 3600);
+#else
   registry->RegisterIntegerPref(prefs::kRlzPingDelaySeconds, 90);
+#endif
 #endif
 }
 

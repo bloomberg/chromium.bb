@@ -55,6 +55,14 @@ int64_t GetSystemTimeAsInt64() {
 #endif
 }
 
+#if defined(OS_CHROMEOS)
+void RemoveMachineIdFromUrl(std::string* url) {
+  size_t id_offset = url->find("&id=");
+  EXPECT_NE(std::string::npos, id_offset);
+  url->resize(id_offset);
+}
+#endif
+
 // Ping times in 100-nanosecond intervals.
 const int64_t k1MinuteInterval = 60LL * 10000000LL;  // 1 minute
 
@@ -87,17 +95,30 @@ TEST_F(FinancialPingTest, FormRequest) {
     {rlz_lib::IETB_SEARCH_BOX, rlz_lib::NO_ACCESS_POINT,
      rlz_lib::NO_ACCESS_POINT};
 
+  // Don't check the machine Id on Chrome OS since a random one is generated
+  // each time.
   std::string machine_id;
+#if defined(OS_CHROMEOS)
+  bool got_machine_id = false;
+#else
   bool got_machine_id = rlz_lib::GetMachineId(&machine_id);
+#endif
 
   std::string request;
   EXPECT_TRUE(rlz_lib::FinancialPing::FormRequest(rlz_lib::TOOLBAR_NOTIFIER,
       points, "swg", brand, NULL, "en", false, &request));
+
+#if defined(OS_CHROMEOS)
+  // Ignore the machine Id of the request URL.  On Chrome OS a random Id is
+  // generated with each request.
+  RemoveMachineIdFromUrl(&request);
+#endif
+
   std::string expected_response;
   base::StringAppendF(&expected_response,
-      "/tools/pso/ping?as=swg&brand=%s&hl=en&"
-      "events=I7S,W1I&rep=2&rlz=T4:TbRlzValue" DCC_PARAM
-, brand);
+                      "/tools/pso/ping?as=swg&brand=%s&hl=en&"
+                      "events=I7S,W1I&rep=2&rlz=T4:TbRlzValue" DCC_PARAM,
+                      brand);
 
   if (got_machine_id)
     base::StringAppendF(&expected_response, "&id=%s", machine_id.c_str());
@@ -106,6 +127,13 @@ TEST_F(FinancialPingTest, FormRequest) {
   EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, ""));
   EXPECT_TRUE(rlz_lib::FinancialPing::FormRequest(rlz_lib::TOOLBAR_NOTIFIER,
       points, "swg", brand, "IdOk2", NULL, false, &request));
+
+#if defined(OS_CHROMEOS)
+  // Ignore the machine Id of the request URL.  On Chrome OS a random Id is
+  // generated with each request.
+  RemoveMachineIdFromUrl(&request);
+#endif
+
   expected_response.clear();
   base::StringAppendF(&expected_response,
       "/tools/pso/ping?as=swg&brand=%s&pid=IdOk2&"

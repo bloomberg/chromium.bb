@@ -204,6 +204,9 @@ bool FinancialPing::SetURLRequestContext(
   return true;
 }
 
+// Signal to stop the ShutdownCheck() task.
+AtomicWord g_cancelShutdownCheck;
+
 namespace {
 
 // A waitable event used to detect when either:
@@ -278,7 +281,11 @@ bool send_financial_ping_interrupted_for_test = false;
 
 }  // namespace
 
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
+  if (base::subtle::Acquire_Load(&g_cancelShutdownCheck))
+    return;
+
   if (!base::subtle::Acquire_Load(&g_context)) {
     send_financial_ping_interrupted_for_test = true;
     event->SignalShutdown();
@@ -291,6 +298,7 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
                                   base::BindOnce(&ShutdownCheck, event),
                                   kInterval);
 }
+#endif
 
 void PingRlzServer(std::string url,
                    scoped_refptr<RefCountedWaitableEvent> event) {
@@ -417,6 +425,8 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   // wininet implementation.
   auto event = base::MakeRefCounted<RefCountedWaitableEvent>();
 
+  base::subtle::Release_Store(&g_cancelShutdownCheck, 0);
+
   base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
                            base::BindOnce(&ShutdownCheck, event));
 
@@ -435,6 +445,9 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
     base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
     is_signaled = event->TimedWait(base::TimeDelta::FromMinutes(5));
   }
+
+  base::subtle::Release_Store(&g_cancelShutdownCheck, 1);
+
   if (!is_signaled || event->GetResponseCode() != 200)
     return false;
 

@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include "base/rand_util.h"
 #include "base/sha1.h"
+#include "base/strings/stringprintf.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/crc8.h"
 #include "rlz/lib/string_utils.h"
@@ -16,6 +18,26 @@ namespace rlz_lib {
 bool GetMachineId(std::string* machine_id) {
   if (!machine_id)
     return false;
+
+#if defined(OS_CHROMEOS)
+
+  // Generate a random machine Id each time this function is called.  This
+  // prevents the RLZ server from correlating two RLZ pings from the same
+  // Chrome OS device.
+  //
+  // The Id should be 50 characters long and begin with "nonce-".  Generate 22
+  // cryptographically random bytes, then convert to a printable string using
+  // 2 hex digits per byte for a string of length 44 characters.
+  unsigned char bytes[22];
+  std::string str_bytes;
+  base::RandBytes(bytes, sizeof(bytes));
+  rlz_lib::BytesToString(bytes, sizeof(bytes), &str_bytes);
+  machine_id->clear();
+  base::StringAppendF(machine_id, "nonce-%s", str_bytes.c_str());
+  DCHECK_EQ(50u, machine_id->length());
+  return true;
+
+#else
 
   static std::string calculated_id;
   static bool calculated = false;
@@ -35,6 +57,8 @@ bool GetMachineId(std::string* machine_id) {
   calculated = true;
   calculated_id = *machine_id;
   return true;
+
+#endif  // defined(OS_CHROMEOS)
 }
 
 namespace testing {

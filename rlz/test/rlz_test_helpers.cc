@@ -144,6 +144,16 @@ void RlzLibTestNoMachineStateHelper::TearDown() {
 #endif  // defined(OS_POSIX)
 }
 
+void RlzLibTestNoMachineStateHelper::Reset() {
+#if defined(OS_POSIX)
+  ASSERT_TRUE(temp_dir_.Delete());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.GetPath());
+#else
+  NOTREACHED();
+#endif  // defined(OS_POSIX)
+}
+
 void RlzLibTestNoMachineState::SetUp() {
   m_rlz_test_helper_.SetUp();
 }
@@ -157,4 +167,11 @@ void RlzLibTestBase::SetUp() {
 #if defined(OS_WIN)
   rlz_lib::CreateMachineState();
 #endif  // defined(OS_WIN)
+
+#if defined(OS_POSIX)
+  // Make sure the values of RLZ strings for access points used in tests start
+  // out not set, since on Chrome OS RLZ string can only be set once.
+  EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, ""));
+  EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IE_HOME_PAGE, ""));
+#endif  // defined(OS_CHROMEOS)
 }

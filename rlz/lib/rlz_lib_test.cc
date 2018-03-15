@@ -176,6 +176,20 @@ TEST_F(RlzLibTest, SetAccessPointRlz) {
   EXPECT_STREQ("IeTbRlz", rlz_50);
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(RlzLibTest, SetAccessPointRlzOnlyOnce) {
+  // On Chrome OS, and RLZ string can ne set only once.
+  char rlz_50[50];
+  EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, "First"));
+  EXPECT_TRUE(rlz_lib::GetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, rlz_50, 50));
+  EXPECT_STREQ("First", rlz_50);
+
+  EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, "Second"));
+  EXPECT_TRUE(rlz_lib::GetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, rlz_50, 50));
+  EXPECT_STREQ("First", rlz_50);
+}
+#endif
+
 TEST_F(RlzLibTest, GetAccessPointRlz) {
   char rlz_1[1];
   char rlz_50[50];
@@ -335,12 +349,6 @@ TEST_F(RlzLibTest, ParsePingResponse) {
   EXPECT_TRUE(rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
       rlz_lib::IE_HOME_PAGE, rlz_lib::INSTALL));
 
-  EXPECT_TRUE(rlz_lib::SetAccessPointRlz(
-      rlz_lib::IETB_SEARCH_BOX, "TbRlzValue"));
-
-  EXPECT_TRUE(rlz_lib::ParsePingResponse(rlz_lib::TOOLBAR_NOTIFIER,
-                                         kPingResponse));
-
 #if defined(OS_WIN)
   EXPECT_TRUE(rlz_lib::MachineDealCode::Set("dcc_value"));
 #endif
@@ -360,13 +368,23 @@ TEST_F(RlzLibTest, ParsePingResponse) {
   EXPECT_TRUE(rlz_lib::ParsePingResponse(rlz_lib::TOOLBAR_NOTIFIER,
                                          kPingResponse2));
   EXPECT_TRUE(rlz_lib::GetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, value, 50));
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the RLZ string is not modified by response once set.
+  EXPECT_STREQ("1T4_____en__252", value);
+#else
   EXPECT_STREQ("1T4_____de__253", value);
+#endif
 
   const char* kPingResponse3 =
     "crc32: 0\r\n";  // Good RLZ - empty response.
   EXPECT_TRUE(rlz_lib::ParsePingResponse(rlz_lib::TOOLBAR_NOTIFIER,
                                          kPingResponse3));
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the RLZ string is not modified by response once set.
+  EXPECT_STREQ("1T4_____en__252", value);
+#else
   EXPECT_STREQ("1T4_____de__253", value);
+#endif
 }
 
 // Test whether a stateful event will only be sent in financial pings once.
@@ -930,6 +948,10 @@ TEST_F(RlzLibTest, LockAcquistionSucceedsButStoreFileCannotBeCreated) {
   // See the comment at the top of WriteFails.
   if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
     return;
+
+  // Make sure to use a brand new directory for this test, since
+  // RlzLibTest::SetUp() will have created a store file to setup the tests.
+  m_rlz_test_helper_.Reset();
 
   // Create a directory where the rlz file is supposed to appear. This way,
   // the lock file can be created successfully, but creation of the rlz file

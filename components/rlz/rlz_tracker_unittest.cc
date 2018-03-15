@@ -889,6 +889,9 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
 
+#if !defined(OS_CHROMEOS)
+  // By design, on Chrome OS the RLZ string can only be set once.  Once set,
+  // pings cannot change int.
 TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(RLZTracker::ChromeOmnibox(), kOmniboxRlzString);
@@ -944,6 +947,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   EXPECT_STREQ(kNewAppListRlzString, base::UTF16ToUTF8(rlz).c_str());
 #endif  // !defined(OS_IOS)
 }
+#endif  // !defined(OS_CHROMEOS)
 
 // TODO(thakis): Reactivation doesn't exist on Mac yet.
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {

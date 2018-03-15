@@ -28,7 +28,11 @@ namespace {
 
 // Maximum and minimum delay for financial ping we would allow to be set through
 // master preferences. Somewhat arbitrary, may need to be adjusted in future.
+#if defined(OS_CHROMEOS)
+const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromHours(24);
+#else
 const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromSeconds(200);
+#endif
 const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(20);
 
 void RecordProductEvents(bool first_run,
