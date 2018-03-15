@@ -41,7 +41,8 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="syncConsentOverviewDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
+        no-footer-padding>
       <hd-iron-icon class="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
@@ -80,18 +81,14 @@
             </div>
           </div>
         </div>
-        <div id="reviewSettings" class="layout horizontal">
-          <paper-checkbox id="reviewSettingsBox">
-          </paper-checkbox>
-          <div id="reviewSettingsLabelContainer">
-            [[i18nDynamic(locale, 'syncConsentReviewSyncOptionsText')]]
-          </div>
-        </div>
+        <paper-checkbox id="reviewSettingsBox">
+          [[i18nDynamic(locale, 'syncConsentReviewSyncOptionsText')]]
+        </paper-checkbox>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button id="acceptAndContinue"
           on-tap="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
-          [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
+          <div>[[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]</div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
