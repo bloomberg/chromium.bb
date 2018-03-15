@@ -4369,13 +4369,13 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, and Mac smoothing draws to the
-      // left of text.  This appears to be a preexisting issue that wasn't
-      // revealed by the prior unit tests.  RenderText currently only uses
-      // origins and advances and ignores bounding boxes so cannot account for
-      // under- and over-hang.
+      // TODO(dschuyler): On Windows, Chrome OS, Linux, and Mac smoothing draws
+      // to the left of text.  This appears to be a preexisting issue that
+      // wasn't revealed by the prior unit tests.  RenderText currently only
+      // uses origins and advances and ignores bounding boxes so cannot account
+      // for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
                                   string_size.height());
 #else
@@ -4385,13 +4385,13 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     }
     {
       SCOPED_TRACE("TextDoesntClip Right Side");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) || \
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(ARCH_CPU_MIPS_FAMILY)
-      // TODO(dschuyler): On Windows, Chrome OS, and Mac smoothing draws to the
-      // right of text.  This appears to be a preexisting issue that wasn't
-      // revealed by the prior unit tests.  RenderText currently only uses
-      // origins and advances and ignores bounding boxes so cannot account for
-      // under- and over-hang.
+      // TODO(dschuyler): On Windows, Chrome OS, Linux, and Mac smoothing draws
+      // to the right of text.  This appears to be a preexisting issue that
+      // wasn't revealed by the prior unit tests.  RenderText currently only
+      // uses origins and advances and ignores bounding boxes so cannot account
+      // for under- and over-hang.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE,
                                   kTestSize + string_size.width() + 1,
                                   kTestSize, kTestSize - 1,

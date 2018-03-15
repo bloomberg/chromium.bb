@@ -1004,7 +1004,7 @@ hooks = [
     ]
   },
  {
-    'name': 'content_shell_fonts',
+    'name': 'test_fonts',
     'pattern': '.',
     'condition': 'checkout_linux or (checkout_android or checkout_fuchsia)',
     'action': [ 'download_from_google_storage',
@@ -1012,7 +1012,7 @@ hooks = [
                 '--extract',
                 '--no_auth',
                 '--bucket', 'chromium-fonts',
-                '-s', 'src/third_party/content_shell_fonts/content_shell_test_fonts.tar.gz.sha1',
+                '-s', 'src/third_party/test_fonts/test_fonts.tar.gz.sha1',
     ],
   },
   # Pull order files for the win/clang build.

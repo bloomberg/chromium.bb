@@ -69,7 +69,7 @@ MS_TRUETYPE_FONTS_DIR = '/usr/share/fonts/truetype/msttcorefonts/'
 MS_TRUETYPE_FONTS_PACKAGE = 'ttf-mscorefonts-installer'
 
 # Path relative to the build directory.
-CONTENT_SHELL_FONTS_DIR = "content_shell_test_fonts"
+CONTENT_SHELL_FONTS_DIR = "test_fonts"
 
 FONT_FILES = [
     [[MS_TRUETYPE_FONTS_DIR], 'Arial.ttf', MS_TRUETYPE_FONTS_PACKAGE],

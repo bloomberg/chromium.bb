@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "ui/gfx/test/fontconfig_util_linux.h"
+#include "base/test/fontconfig_util_linux.h"
 
 namespace content {
 
@@ -30,29 +30,12 @@ bool CheckLayoutSystemDeps() {
 }
 
 bool BlinkTestPlatformInitialize() {
-  gfx::SetUpFontconfig();
+  base::SetUpFontconfig();
 
   base::FilePath base_path;
   PathService::Get(base::DIR_MODULE, &base_path);
-  if (!gfx::LoadConfigFileIntoFontconfig(
-          base_path.Append(FILE_PATH_LITERAL("fonts.conf"))))
-    return false;
-
-  for (size_t i = 0; i < gfx::kNumSystemFontsForFontconfig; ++i) {
-    if (!gfx::LoadFontIntoFontconfig(
-            base::FilePath(gfx::kSystemFontsForFontconfig[i]))) {
-      return false;
-    }
-  }
-
-  for (size_t i = 0; i < gfx::kNumCloudStorageSyncedFonts; ++i) {
-    if (!gfx::LoadCloudStorageSyncedFontIntoFontConfig(
-            gfx::kCloudStorageSyncedFonts[i]))
-      return false;
-  }
-
   for (size_t i = 0; i < arraysize(kLocalFonts); ++i) {
-    if (!gfx::LoadFontIntoFontconfig(base_path.Append(kLocalFonts[i])))
+    if (!base::LoadFontIntoFontconfig(base_path.Append(kLocalFonts[i])))
       return false;
   }
 

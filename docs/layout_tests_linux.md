@@ -31,10 +31,10 @@ build/install-build-deps.sh
 2.  Double check that
 
 ```shell
-ls third_party/content_shell_fonts/content_shell_test_fonts/
+ls third_party/test_fonts/test_fonts/
 ```
 
-is not empty and lists the fonts downloaded through the `content_shell_fonts`
+is not empty and lists the fonts downloaded through the `test_fonts`
 hook in the top level `DEPS` file.
 
 ## Plugins

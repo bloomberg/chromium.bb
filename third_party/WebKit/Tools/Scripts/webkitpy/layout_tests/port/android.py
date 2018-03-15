@@ -390,10 +390,10 @@ class AndroidPort(base.Port):
             # TODO(sergeyu): Rename these files, they can be used on platforms
             # other than Android.
             host_device_tuples.append(
-                (self._build_path('content_shell_test_fonts/android_main_fonts.xml'),
+                (self._build_path('test_fonts/android_main_fonts.xml'),
                  device_path('android_main_fonts.xml')))
             host_device_tuples.append(
-                (self._build_path('content_shell_test_fonts/android_fallback_fonts.xml'),
+                (self._build_path('test_fonts/android_fallback_fonts.xml'),
                  device_path('android_fallback_fonts.xml')))
             for font_file in self._get_font_files():
                 host_device_tuples.append(

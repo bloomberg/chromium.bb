@@ -16,7 +16,6 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace content {
 
@@ -25,7 +24,6 @@ class LinuxIPCBrowserTest : public ContentBrowserTest,
                             public testing::WithParamInterface<std::string> {
  public:
   LinuxIPCBrowserTest() {
-    SetUpFontConfigForTest();
     SandboxIPCHandler::SetObserverForTests(this);
   }
   ~LinuxIPCBrowserTest() override {}
@@ -36,16 +34,6 @@ class LinuxIPCBrowserTest : public ContentBrowserTest,
     if (GetParam() == "no-zygote") {
       command_line->AppendSwitch(switches::kNoZygote);
       command_line->AppendSwitch(switches::kNoSandbox);
-    }
-  }
-
-  // Override the system fontconfig configuration with a test configuration so
-  // that the tested font fallback will work the same across systems.
-  void SetUpFontConfigForTest() {
-    gfx::SetUpFontconfig();
-    for (size_t i = 0; i < gfx::kNumSystemFontsForFontconfig; ++i) {
-      gfx::LoadFontIntoFontconfig(
-          base::FilePath(gfx::kSystemFontsForFontconfig[i]));
     }
   }
 
