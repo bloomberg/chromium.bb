@@ -106,7 +106,8 @@ class WritersTest : public testing::Test {
 
   void CreateWritersAddTransaction(
       HttpCache::ParallelWritingPattern parallel_writing_pattern_ =
-          HttpCache::PARALLEL_WRITING_JOIN) {
+          HttpCache::PARALLEL_WRITING_JOIN,
+      bool content_encoding_present = false) {
     TestCompletionCallback callback;
 
     // Create and Start a mock network transaction.
@@ -116,6 +117,8 @@ class WritersTest : public testing::Test {
                                NetLogWithSource());
     base::RunLoop().RunUntilIdle();
     response_info_ = *(network_transaction->GetResponseInfo());
+    if (content_encoding_present)
+      response_info_.headers->AddHeader("Content-Encoding: gzip");
 
     // Create a mock cache transaction.
     std::unique_ptr<TestHttpCacheTransaction> transaction =
@@ -185,6 +188,28 @@ class WritersTest : public testing::Test {
     } while (rv > 0);
 
     result->swap(content);
+    return OK;
+  }
+
+  int ReadFewBytes(std::string* result) {
+    EXPECT_TRUE(transactions_.size() >= (size_t)1);
+    TestHttpCacheTransaction* transaction = transactions_.begin()->get();
+    TestCompletionCallback callback;
+
+    std::string content;
+    int rv = 0;
+    scoped_refptr<IOBuffer> buf(new IOBuffer(5));
+    rv = writers_->Read(buf.get(), 5, callback.callback(), transaction);
+    if (rv == ERR_IO_PENDING) {
+      rv = callback.WaitForResult();
+      base::RunLoop().RunUntilIdle();
+    }
+
+    if (rv > 0)
+      result->append(buf->data(), rv);
+    else if (rv < 0)
+      return rv;
+
     return OK;
   }
 
@@ -779,6 +804,19 @@ TEST_F(WritersTest, StopCachingWithNotKeepEntry) {
 
   writers_->StopCaching(false /* keep_entry */);
   EXPECT_TRUE(writers_->network_read_only());
+  EXPECT_FALSE(ShouldKeepEntry());
+}
+
+// Tests that if content-encoding is set, the entry should not be marked as
+// truncated, since we should not be creating range requests for compressed
+// entries.
+TEST_F(WritersTest, ContentEncodingShouldNotTruncate) {
+  CreateWritersAddTransaction(HttpCache::PARALLEL_WRITING_JOIN,
+                              true /* content_encoding_present */);
+  std::string result;
+  ReadFewBytes(&result);
+
+  EXPECT_FALSE(ShouldTruncate());
   EXPECT_FALSE(ShouldKeepEntry());
 }
 

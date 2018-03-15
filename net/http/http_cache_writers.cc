@@ -283,6 +283,11 @@ bool HttpCache::Writers::ShouldTruncate() {
     return false;
   }
 
+  if (response_info_truncation_.headers->HasHeader("Content-Encoding")) {
+    should_keep_entry_ = false;
+    return false;
+  }
+
   int64_t content_length =
       response_info_truncation_.headers->GetContentLength();
   if (content_length >= 0 && content_length <= current_size)
