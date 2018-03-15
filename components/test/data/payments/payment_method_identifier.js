@@ -38,7 +38,7 @@ function canMakePaymentHelper(methodData) {
  */
 function checkBasicCard() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
   }]);
 }
 
@@ -47,7 +47,7 @@ function checkBasicCard() {  // eslint-disable-line no-unused-vars
  */
 function checkBasicDebit() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
     data: {
       supportedTypes: ['debit'],
     },
@@ -60,7 +60,7 @@ function checkBasicDebit() {  // eslint-disable-line no-unused-vars
  */
 function checkBasicMasterCard() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
     data: {
       supportedNetworks: ['mastercard'],
     },
@@ -73,7 +73,7 @@ function checkBasicMasterCard() {  // eslint-disable-line no-unused-vars
  */
 function checkBasicVisa() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
     data: {
       supportedNetworks: ['visa'],
     },
@@ -85,7 +85,7 @@ function checkBasicVisa() {  // eslint-disable-line no-unused-vars
  */
 function checkMasterCard() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['mastercard'],
+    supportedMethods: 'mastercard',
   }]);
 }
 
@@ -94,7 +94,7 @@ function checkMasterCard() {  // eslint-disable-line no-unused-vars
  */
 function checkVisa() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['visa'],
+    supportedMethods: 'visa',
   }]);
 }
 
@@ -103,7 +103,7 @@ function checkVisa() {  // eslint-disable-line no-unused-vars
  */
 function checkAlicePay() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['https://alicepay.com/webpay'],
+    supportedMethods: 'https://alicepay.com/webpay',
   }]);
 }
 
@@ -112,7 +112,7 @@ function checkAlicePay() {  // eslint-disable-line no-unused-vars
  */
 function checkBobPay() {  // eslint-disable-line no-unused-vars
   canMakePaymentHelper([{
-    supportedMethods: ['https://bobpay.com/webpay'],
+    supportedMethods: 'https://bobpay.com/webpay',
   }]);
 }
 
@@ -121,11 +121,14 @@ function checkBobPay() {  // eslint-disable-line no-unused-vars
  * "basic-card".
  */
 function checkBobPayAndBasicCard() {  // eslint-disable-line no-unused-vars
-  canMakePaymentHelper([{
-    supportedMethods: ['https://bobpay.com/webpay'],
-  }, {
-    supportedMethods: ['basic-card'],
-  }]);
+  canMakePaymentHelper([
+    {
+      supportedMethods: 'https://bobpay.com/webpay',
+    },
+    {
+      supportedMethods: 'basic-card',
+    },
+  ]);
 }
 
 /**
@@ -133,11 +136,14 @@ function checkBobPayAndBasicCard() {  // eslint-disable-line no-unused-vars
  * "visa".
  */
 function checkBobPayAndVisa() {  // eslint-disable-line no-unused-vars
-  canMakePaymentHelper([{
-    supportedMethods: ['https://bobpay.com/webpay'],
-  }, {
-    supportedMethods: ['visa'],
-  }]);
+  canMakePaymentHelper([
+    {
+      supportedMethods: 'https://bobpay.com/webpay',
+    },
+    {
+      supportedMethods: 'visa',
+    },
+  ]);
 }
 
 /**
@@ -181,10 +187,10 @@ function buyHelper(methodData) {
 function buy() {  // eslint-disable-line no-unused-vars
   buyHelper([
     {
-      supportedMethods: ['mastercard'],
+      supportedMethods: 'mastercard',
     },
     {
-      supportedMethods: ['basic-card'],
+      supportedMethods: 'basic-card',
       data: {
         supportedNetworks: ['visa'],
       },
@@ -197,10 +203,7 @@ function buy() {  // eslint-disable-line no-unused-vars
  */
 function buyBasicCard() {  // eslint-disable-line no-unused-vars
   buyHelper([{
-    supportedMethods: ['basic-card'],
-    data: {
-      supportedTypes: ['debit'],
-    },
+    supportedMethods: 'basic-card',
   }]);
 }
 
@@ -210,20 +213,7 @@ function buyBasicCard() {  // eslint-disable-line no-unused-vars
  */
 function buyBasicDebit() {  // eslint-disable-line no-unused-vars
   buyHelper([{
-    supportedMethods: ['basic-card'],
-    data: {
-      supportedTypes: ['debit'],
-    },
-  }]);
-}
-
-/**
- * Merchant requests payment via "basic-card" with "debit" as the supported card
- * type.
- */
-function buyBasicDebit() {  // eslint-disable-line no-unused-vars
-  buyHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
     data: {
       supportedTypes: ['debit'],
     },
@@ -236,7 +226,7 @@ function buyBasicDebit() {  // eslint-disable-line no-unused-vars
  */
 function buyBasicMasterCard() {  // eslint-disable-line no-unused-vars
   buyHelper([{
-    supportedMethods: ['basic-card'],
+    supportedMethods: 'basic-card',
     data: {
       supportedNetworks: ['mastercard'],
     },

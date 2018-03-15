@@ -13,7 +13,8 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
-        [{supportedMethods: ['visa']}], {
+        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
+        {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           shippingOptions: [{
             id: 'freeShippingOption',

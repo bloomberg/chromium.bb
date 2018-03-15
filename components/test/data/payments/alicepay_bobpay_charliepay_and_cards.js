@@ -13,15 +13,14 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{
-          supportedMethods: [
-            'https://alicepay.com',
-            'https://bobpay.com',
-            'https://charliepay.com',
-            'visa',
-            'mastercard',
-          ],
-        }],
+        [
+          {supportedMethods: 'https://alicepay.com'},
+          {supportedMethods: 'https://bobpay.com'},
+          {supportedMethods: 'https://charliepay.com'}, {
+            supportedMethods: 'basic-card',
+            data: {supportedNetworks: ['visa', 'mastercard']},
+          },
+        ],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .show()
         .then(function(resp) {

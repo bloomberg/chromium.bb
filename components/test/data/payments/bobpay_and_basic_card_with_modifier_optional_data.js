@@ -8,14 +8,17 @@
  * Launches the PaymentRequest UI with Bob Pay and 'basic-card' as
  * payment methods, and Bob Pay modifier.
  */
- function buy() {  // eslint-disable-line no-unused-vars
+function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'basic-card']}],
+        [
+          {supportedMethods: 'https://bobpay.com'},
+          {supportedMethods: 'basic-card'},
+        ],
         {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           modifiers: [{
-            supportedMethods: ['https://bobpay.com'],
+            supportedMethods: 'https://bobpay.com',
             total: {
               label: 'Total',
               amount: {currency: 'USD', value: '4.00'},
@@ -51,25 +54,23 @@
  * Launches the PaymentRequest UI with 'basic-card' payment method and
  * all cards modifier.
  */
- function buyWithAllCardsModifier() {  // eslint-disable-line no-unused-vars
+function buyWithAllCardsModifier() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest(
-        [{supportedMethods: ['basic-card']}],
-        {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          modifiers: [{
-            supportedMethods: ['basic-card'],
-            total: {
-              label: 'Total',
-              amount: {currency: 'USD', value: '4.00'},
-            },
-            additionalDisplayItems: [{
-              label: 'basic-card discount',
-              amount: {currency: 'USD', value: '-1.00'},
-            }],
-            data: {discountProgramParticipantId: '86328764873265'},
-          }],
-        })
+    new PaymentRequest([{supportedMethods: 'basic-card'}], {
+      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+      modifiers: [{
+        supportedMethods: 'basic-card',
+        total: {
+          label: 'Total',
+          amount: {currency: 'USD', value: '4.00'},
+        },
+        additionalDisplayItems: [{
+          label: 'basic-card discount',
+          amount: {currency: 'USD', value: '-1.00'},
+        }],
+        data: {discountProgramParticipantId: '86328764873265'},
+      }],
+    })
         .show()
         .then(function(resp) {
           resp.complete('success')
@@ -92,16 +93,14 @@
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa credit card modifier.
  */
- function buyWithVisaCreditModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaCreditModifier() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{
-          supportedMethods: ['basic-card'],
-        }],
+        [{supportedMethods: 'basic-card'}],
         {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           modifiers: [{
-            supportedMethods: ['basic-card'],
+            supportedMethods: 'basic-card',
             total: {
               label: 'Total',
               amount: {currency: 'USD', value: '4.00'},
@@ -117,38 +116,38 @@
             },
           }],
         })
-      .show()
-      .then(function(resp) {
-        resp.complete('success')
-          .then(function() {
-            print(JSON.stringify(resp, undefined, 2));
-          })
-          .catch(function(error) {
-            print('complete() rejected<br>' + error.message);
-          });
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
+              })
+              .catch(function(error) {
+                print('complete() rejected<br>' + error.message);
+              });
         })
-      .catch(function(error) {
-        print('show() rejected<br>' + error.message);
-      });
-    } catch (error) {
-      print('exception thrown<br>' + error.message);
-    }
+        .catch(function(error) {
+          print('show() rejected<br>' + error.message);
+        });
+  } catch (error) {
+    print('exception thrown<br>' + error.message);
   }
+}
 
 /**
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa debit card modifier.
  */
- function buyWithVisaDebitModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaDebitModifier() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{
-          supportedMethods: ['basic-card'],
+          supportedMethods: 'basic-card',
         }],
         {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           modifiers: [{
-            supportedMethods: ['basic-card'],
+            supportedMethods: 'basic-card',
             total: {
               label: 'Total',
               amount: {currency: 'USD', value: '4.00'},
@@ -164,84 +163,84 @@
             },
           }],
         })
-      .show()
-      .then(function(resp) {
-        resp.complete('success')
-          .then(function() {
-            print(JSON.stringify(resp, undefined, 2));
-          })
-          .catch(function(error) {
-            print('complete() rejected<br>' + error.message);
-          });
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
+              })
+              .catch(function(error) {
+                print('complete() rejected<br>' + error.message);
+              });
         })
-      .catch(function(error) {
-        print('show() rejected<br>' + error.message);
-      });
-    } catch (error) {
-      print('exception thrown<br>' + error.message);
-    }
- }
+        .catch(function(error) {
+          print('show() rejected<br>' + error.message);
+        });
+  } catch (error) {
+    print('exception thrown<br>' + error.message);
+  }
+}
 
 /**
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * credit card modifier.
  */
- function buyWithCreditModifier() {  // eslint-disable-line no-unused-vars
+function buyWithCreditModifier() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-      [{
-        supportedMethods: ['basic-card'],
-      }],
-      {
-        total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-        modifiers: [{
-          supportedMethods: ['basic-card'],
-          total: {
-            label: 'Total',
-            amount: {currency: 'USD', value: '4.00'},
-          },
-          additionalDisplayItems: [{
-            label: 'Credit card discount',
-            amount: {currency: 'USD', value: '-1.00'},
-          }],
-          data: {
-            discountProgramParticipantId: '86328764873265',
-            supportedTypes: ['credit'],
-          },
+        [{
+          supportedMethods: 'basic-card',
         }],
-      })
-      .show()
-      .then(function(resp) {
-        resp.complete('success')
-          .then(function() {
-            print(JSON.stringify(resp, undefined, 2));
-          })
-          .catch(function(error) {
-            print('complete() rejected<br>' + error.message);
-          });
+        {
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+          modifiers: [{
+            supportedMethods: 'basic-card',
+            total: {
+              label: 'Total',
+              amount: {currency: 'USD', value: '4.00'},
+            },
+            additionalDisplayItems: [{
+              label: 'Credit card discount',
+              amount: {currency: 'USD', value: '-1.00'},
+            }],
+            data: {
+              discountProgramParticipantId: '86328764873265',
+              supportedTypes: ['credit'],
+            },
+          }],
         })
-      .catch(function(error) {
-        print('show() rejected<br>' + error.message);
-      });
-    } catch (error) {
-      print('exception thrown<br>' + error.message);
-    }
- }
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
+              })
+              .catch(function(error) {
+                print('complete() rejected<br>' + error.message);
+              });
+        })
+        .catch(function(error) {
+          print('show() rejected<br>' + error.message);
+        });
+  } catch (error) {
+    print('exception thrown<br>' + error.message);
+  }
+}
 
 /**
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa card modifier.
  */
- function buyWithVisaModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaModifier() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{
-          supportedMethods: ['basic-card'],
+          supportedMethods: 'basic-card',
         }],
         {
           total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           modifiers: [{
-            supportedMethods: ['basic-card'],
+            supportedMethods: 'basic-card',
             total: {
               label: 'Total',
               amount: {currency: 'USD', value: '4.00'},
@@ -256,20 +255,20 @@
             },
           }],
         })
-      .show()
-      .then(function(resp) {
-        resp.complete('success')
-          .then(function() {
-            print(JSON.stringify(resp, undefined, 2));
-          })
-          .catch(function(error) {
-            print('complete() rejected<br>' + error.message);
-          });
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
+              })
+              .catch(function(error) {
+                print('complete() rejected<br>' + error.message);
+              });
         })
-      .catch(function(error) {
-        print('show() rejected<br>' + error.message);
-      });
-    } catch (error) {
-      print('exception thrown<br>' + error.message);
-    }
- }
+        .catch(function(error) {
+          print('show() rejected<br>' + error.message);
+        });
+  } catch (error) {
+    print('exception thrown<br>' + error.message);
+  }
+}

@@ -12,7 +12,7 @@ function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{
-          supportedMethods: ['foo'],
+          supportedMethods: 'foo',
         }],
         {
           total: {
@@ -23,7 +23,7 @@ function buy() {  // eslint-disable-line no-unused-vars
             },
           },
           modifiers: [{
-            supportedMethods: ['foo'],
+            supportedMethods: 'foo',
           }],
         })
         .show()

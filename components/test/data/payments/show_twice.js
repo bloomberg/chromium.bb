@@ -9,10 +9,10 @@
  */
 function buy() {  // eslint-disable-line no-unused-vars
   var payment1 = new PaymentRequest(
-      [{supportedMethods: ['visa']}],
+      [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
       {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
   var payment2 = new PaymentRequest(
-      [{supportedMethods: ['visa']}],
+      [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
       {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
   payment1.show();
   payment2.show().catch(function(error) {

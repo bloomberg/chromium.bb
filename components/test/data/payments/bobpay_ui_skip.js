@@ -17,7 +17,7 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com']}],
+        [{supportedMethods: 'https://bobpay.com'}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .show()
         .then(function(resp) {

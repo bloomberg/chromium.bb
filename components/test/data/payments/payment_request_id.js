@@ -10,10 +10,12 @@
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest([{supportedMethods: ['visa']}], {
-      id: 'my_payment_id',
-      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-    })
+    new PaymentRequest(
+        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
+        {
+          id: 'my_payment_id',
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+        })
         .show()
         .then(function(resp) {
           resp.complete('success')
