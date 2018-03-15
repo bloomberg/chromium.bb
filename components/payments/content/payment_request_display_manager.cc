@@ -27,7 +27,6 @@ void PaymentRequestDisplayManager::DisplayHandle::Show(
     PaymentRequest* request) {
   DCHECK(request);
   DCHECK(delegate_);
-
   delegate_->ShowDialog(request);
 }
 

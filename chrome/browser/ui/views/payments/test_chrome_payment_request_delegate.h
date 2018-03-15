@@ -41,7 +41,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   bool IsBrowserWindowActive() const override;
 
   PaymentRequestDialogView* dialog_view() {
-    return static_cast<PaymentRequestDialogView*>(dialog_);
+    return static_cast<PaymentRequestDialogView*>(shown_dialog_);
   }
 
  private:

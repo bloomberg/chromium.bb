@@ -141,6 +141,19 @@ void PaymentRequestDialogView::ShowDialog() {
   constrained_window::ShowWebModalDialogViews(this, request_->web_contents());
 }
 
+void PaymentRequestDialogView::ShowDialogAtPaymentHandlerSheet(
+    const GURL& url,
+    PaymentHandlerOpenWindowCallback callback) {
+  view_stack_->Push(CreateViewAndInstallController(
+                        std::make_unique<PaymentHandlerWebFlowViewController>(
+                            request_->spec(), request_->state(), this,
+                            GetProfile(), url, std::move(callback)),
+                        &controller_map_),
+                    /* animate = */ false);
+  HideProcessingSpinner();
+  ShowDialog();
+}
+
 void PaymentRequestDialogView::CloseDialog() {
   // This calls PaymentRequestDialogView::Cancel() before closing.
   // ViewHierarchyChanged() also gets called after Cancel().

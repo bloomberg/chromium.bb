@@ -16,6 +16,7 @@
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_prefs.h"
@@ -352,6 +353,19 @@ bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
 }
 
+bool PaymentRequest::SatisfiesSkipUIConstraints() const {
+  return base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
+         base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
+         state()->is_get_all_instruments_finished() &&
+         state()->available_instruments().size() == 1 &&
+         spec()->stringified_method_data().size() == 1 &&
+         !spec()->request_shipping() && !spec()->request_payer_name() &&
+         !spec()->request_payer_phone() &&
+         !spec()->request_payer_email()
+         // Only allowing URL base payment apps to skip the payment sheet.
+         && spec()->url_payment_method_identifiers().size() == 1;
+}
+
 void PaymentRequest::RecordFirstAbortReason(
     JourneyLogger::AbortReason abort_reason) {
   if (!has_recorded_completion_) {
@@ -382,7 +396,7 @@ void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
   if (delegate_->IsIncognito()) {
     can_make_payment =
         spec()->HasBasicCardMethodName() ||
-        base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps);
+        base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps);
   }
 
   mojom::CanMakePaymentQueryResult positive =

@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -53,31 +54,35 @@ std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
 
 ChromePaymentRequestDelegate::ChromePaymentRequestDelegate(
     content::WebContents* web_contents)
-    : dialog_(nullptr), web_contents_(web_contents) {}
+    : shown_dialog_(nullptr), web_contents_(web_contents) {}
 
 ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() {}
 
 void ChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
-  DCHECK_EQ(nullptr, dialog_);
-  dialog_ = chrome::CreatePaymentRequestDialog(request);
-  dialog_->ShowDialog();
+  DCHECK_EQ(nullptr, shown_dialog_);
+  hidden_dialog_ = std::unique_ptr<PaymentRequestDialog>(
+      chrome::CreatePaymentRequestDialog(request));
+  MaybeShowHiddenDialog(request);
 }
 
 void ChromePaymentRequestDelegate::CloseDialog() {
-  if (dialog_) {
-    dialog_->CloseDialog();
-    dialog_ = nullptr;
+  if (shown_dialog_) {
+    shown_dialog_->CloseDialog();
+    shown_dialog_ = nullptr;
   }
+
+  if (hidden_dialog_)
+    hidden_dialog_.reset();
 }
 
 void ChromePaymentRequestDelegate::ShowErrorMessage() {
-  if (dialog_)
-    dialog_->ShowErrorMessage();
+  if (shown_dialog_)
+    shown_dialog_->ShowErrorMessage();
 }
 
 void ChromePaymentRequestDelegate::ShowProcessingSpinner() {
-  if (dialog_)
-    dialog_->ShowProcessingSpinner();
+  if (shown_dialog_)
+    shown_dialog_->ShowProcessingSpinner();
 }
 
 autofill::PersonalDataManager*
@@ -111,7 +116,9 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
     const autofill::CreditCard& credit_card,
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate) {
-  dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate, web_contents_);
+  if (shown_dialog_)
+    shown_dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate,
+                                       web_contents_);
 }
 
 autofill::RegionDataLoader*
@@ -171,10 +178,26 @@ ChromePaymentRequestDelegate::GetDisplayManager() {
 void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {
-  if (dialog_)
-    dialog_->ShowPaymentHandlerScreen(url, std::move(callback));
-  else
-    std::move(callback).Run(false, 0, 0);
+  if (hidden_dialog_) {
+    shown_dialog_ = hidden_dialog_.release();
+    shown_dialog_->ShowDialogAtPaymentHandlerSheet(url, std::move(callback));
+  } else if (shown_dialog_) {
+    shown_dialog_->ShowPaymentHandlerScreen(url, std::move(callback));
+  } else {
+    std::move(callback).Run(/*success=*/false,
+                            /*render_process_id=*/0,
+                            /*render_frame_id=*/0);
+  }
+}
+
+void ChromePaymentRequestDelegate::MaybeShowHiddenDialog(
+    PaymentRequest* request) {
+  if (request->SatisfiesSkipUIConstraints()) {
+    request->Pay();
+  } else {
+    shown_dialog_ = hidden_dialog_.release();
+    shown_dialog_->ShowDialog();
+  }
 }
 
 }  // namespace payments

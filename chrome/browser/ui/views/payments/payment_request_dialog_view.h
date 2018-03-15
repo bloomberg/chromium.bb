@@ -106,6 +106,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   // payments::PaymentRequestDialog:
   void ShowDialog() override;
+  void ShowDialogAtPaymentHandlerSheet(
+      const GURL& url,
+      PaymentHandlerOpenWindowCallback callback) override;
   void CloseDialog() override;
   void ShowErrorMessage() override;
   void ShowProcessingSpinner() override;

@@ -103,10 +103,18 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   bool IsIncognito() const;
 
+  // Returns true if this payment request supports skipping the Payment Sheet.
+  // Typically, this means only one payment method is supported, it's a URL
+  // based method, and no other info is requested from the user.
+  bool SatisfiesSkipUIConstraints() const;
+
   content::WebContents* web_contents() { return web_contents_; }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
   PaymentRequestState* state() { return state_.get(); }
+
+  PaymentRequestSpec* spec() const { return spec_.get(); }
+  PaymentRequestState* state() const { return state_.get(); }
 
  private:
   // Only records the abort reason if it's the first completion for this Payment

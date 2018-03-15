@@ -272,6 +272,12 @@ const char kEnableAsmWasmDescription[] =
     R"*(Validate Asm.js when "use asm" is present and then convert to )*"
     R"*(WebAssembly.)*";
 
+const char kEnableWebPaymentsSingleAppUiSkipName[] =
+    "Enable Web Payments single app UI skip";
+const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
+    "Enable Web Payments to skip showing its UI if the developer specifies a "
+    "single app.";
+
 const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
     "Credit card autofill ablation experiment.";
 const char kEnableAutofillCreditCardAblationExperimentDescription[] =
@@ -2040,12 +2046,6 @@ const char kEnableWebPaymentsMethodSectionOrderV2Name[] =
 const char kEnableWebPaymentsMethodSectionOrderV2Description[] =
     "Enable this option to display payment method section above address "
     "section instead of below it.";
-
-const char kEnableWebPaymentsSingleAppUiSkipName[] =
-    "Enable Web Payments single app UI skip";
-const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
-    "Enable Web Payments to skip showing its UI if the developer specifies a "
-    "single app.";
 
 const char kGrantNotificationsToDSEName[] =
     "Grant notifications to the Default Search Engine";
