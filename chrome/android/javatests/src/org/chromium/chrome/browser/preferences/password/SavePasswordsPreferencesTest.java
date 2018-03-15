@@ -1524,6 +1524,58 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that searching doesn't push the help icon into the overflow menu permanently.
+     * On screen sizes where the help item starts out in the overflow menu, ensure it stays there.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
+    public void testTriggeringSearchRestoresHelpIcon() throws Exception {
+        setPasswordSource(null);
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView(
+                                (ViewGroup) root, withText(R.string.prefs_saved_passwords_title)));
+
+        // Retrieve the initial status and ensure that the help option is there at all.
+        final AtomicReference<Boolean> helpInOverflowMenu = new AtomicReference<>(false);
+        Espresso.onView(withId(R.id.menu_id_general_help)).check((helpMenuItem, e) -> {
+            ActionMenuItemView view = (ActionMenuItemView) helpMenuItem;
+            helpInOverflowMenu.set(view == null || !view.showsIcon());
+        });
+        if (helpInOverflowMenu.get()) {
+            openActionBarOverflowOrOptionsMenu(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+            Espresso.onView(withText(R.string.menu_help)).check(matches(isDisplayed()));
+            Espresso.pressBack(); // to close the Overflow menu.
+        } else {
+            Espresso.onView(withId(R.id.menu_id_general_help)).check(matches(isDisplayed()));
+        }
+
+        // Trigger the search, close it and wait for UI to be restored.
+        Espresso.onView(withSearchMenuIdOrText()).perform(click());
+        Espresso.onView(withId(R.id.search_close_btn)).perform(click());
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView(
+                                (ViewGroup) root, withText(R.string.prefs_saved_passwords_title)));
+
+        // Check that the help option is exactly where it was to begin with.
+        if (helpInOverflowMenu.get()) {
+            openActionBarOverflowOrOptionsMenu(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+            Espresso.onView(withText(R.string.menu_help)).check(matches(isDisplayed()));
+            Espresso.onView(withId(R.id.menu_id_general_help)).check(doesNotExist());
+        } else {
+            Espresso.onView(withText(R.string.menu_help)).check(doesNotExist());
+            Espresso.onView(withId(R.id.menu_id_general_help)).check(matches(isDisplayed()));
+        }
+    }
+
+    /**
      * Check that the search item is not visible if the Feature is disabled.
      */
     @Test

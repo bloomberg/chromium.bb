@@ -651,7 +651,7 @@ public class SavePasswordsPreferences
     private boolean filterPasswords(String query) {
         mSearchQuery = query;
         // Hide the help option. It's not useful during search but might be clicked by accident.
-        mHelpItem.setShowAsAction(mSearchQuery == null ? MenuItem.SHOW_AS_ACTION_NEVER
+        mHelpItem.setShowAsAction(mSearchQuery != null ? MenuItem.SHOW_AS_ACTION_NEVER
                                                        : MenuItem.SHOW_AS_ACTION_IF_ROOM);
         rebuildPasswordLists();
         return false; // Query has been handled. Don't trigger default action of SearchView.
