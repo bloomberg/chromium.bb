@@ -45,7 +45,7 @@ void LoginPolicyTestBase::SetUp() {
   GetMandatoryPoliciesValue(&mandatory);
   base::DictionaryValue recommended;
   GetRecommendedPoliciesValue(&recommended);
-  user_policy_helper_.reset(new UserPolicyTestHelper(kAccountId));
+  user_policy_helper_.reset(new UserPolicyTestHelper(GetAccount()));
   user_policy_helper_->Init(mandatory, recommended);
   OobeBaseTest::SetUp();
 }
@@ -57,8 +57,20 @@ void LoginPolicyTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
 void LoginPolicyTestBase::SetUpOnMainThread() {
   SetMergeSessionParams();
-  SetupFakeGaiaForLogin(kAccountId, "", kTestRefreshToken);
+  SetupFakeGaiaForLogin(GetAccount(), "", kTestRefreshToken);
   OobeBaseTest::SetUpOnMainThread();
+
+  FakeGaia::MergeSessionParams params;
+  params.id_token = GetIdToken();
+  fake_gaia_->UpdateMergeSessionParams(params);
+}
+
+std::string LoginPolicyTestBase::GetAccount() const {
+  return kAccountId;
+}
+
+std::string LoginPolicyTestBase::GetIdToken() const {
+  return std::string();
 }
 
 void LoginPolicyTestBase::GetMandatoryPoliciesValue(
@@ -76,10 +88,11 @@ void LoginPolicyTestBase::SetMergeSessionParams() {
   params.auth_code = kTestAuthCode;
   params.refresh_token = kTestRefreshToken;
   params.access_token = kTestAuthLoginAccessToken;
+  params.id_token = GetIdToken();
   params.gaia_uber_token = kTestGaiaUberToken;
   params.session_sid_cookie = kTestSessionSIDCookie;
   params.session_lsid_cookie = kTestSessionLSIDCookie;
-  params.email = kAccountId;
+  params.email = GetAccount();
   fake_gaia_->SetMergeSessionParams(params);
 }
 

@@ -65,6 +65,8 @@ const wchar_t* const kNonManagedDomainPatterns[] = {
   L"consumer\\.example\\.com",
 };
 
+const char* non_managed_domain_for_testing = nullptr;
+
 // Returns true if |domain| matches the regex |pattern|.
 bool MatchDomain(const base::string16& domain, const base::string16& pattern,
                  size_t index) {
@@ -145,7 +147,17 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
     if (MatchDomain(domain, pattern, i))
       return true;
   }
+  if (non_managed_domain_for_testing &&
+      domain == base::UTF8ToUTF16(non_managed_domain_for_testing)) {
+    return true;
+  }
   return false;
+}
+
+// static
+void BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
+    const char* domain) {
+  non_managed_domain_for_testing = domain;
 }
 
 // static
