@@ -323,13 +323,12 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'TypingTest.testShouldReportKeyCodeOfArrowKeys',
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1006
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+	 # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2330
+	 'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
          # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
         'WindowSwitchingTest.*',
 
         'TakesScreenshotTest.testShouldCaptureScreenshot',
-        # TODO(gmanikpure): re-enable this test when we stop supporting
-        # WebView on KitKat.
-        'ClickTest.testCanClickAnImageMapArea',
     ]
 )
 
