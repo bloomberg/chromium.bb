@@ -66,10 +66,11 @@ Status ParseInterval(int* to_set,
 Status ParseTimeDelta(base::TimeDelta* to_set,
                       const base::Value& option,
                       Capabilities* capabilities) {
-  int milliseconds;
-  Status status = ParseInterval(&milliseconds, option, capabilities);
-  if (status.IsError())
-    return status;
+  int milliseconds = 0;
+  if (!option.GetAsInteger(&milliseconds))
+    return Status(kUnknownError, "must be an integer");
+  if (milliseconds < 0)
+    return Status(kUnknownError, "must be positive or zero");
   *to_set = base::TimeDelta::FromMilliseconds(milliseconds);
   return Status(kOk);
 }
