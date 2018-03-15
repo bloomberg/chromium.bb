@@ -380,55 +380,32 @@ TEST(SimpleColorSpace, DefaultToSRGB) {
   EXPECT_EQ(t2->NumberOfStepsForTesting(), 0u);
 }
 
-// This tests to make sure that we don't emit the "if" or "pow" parts of a
+// This tests to make sure that we don't emit "pow" parts of a
 // transfer function unless necessary.
 TEST(SimpleColorSpace, ShaderSourceTrFnOptimizations) {
   SkMatrix44 primaries;
   gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&primaries);
 
-  SkColorSpaceTransferFn fn_no_pow_no_if = {
+  SkColorSpaceTransferFn fn_no_pow = {
       1.f, 2.f, 0.f, 1.f, 0.f, 0.f, 0.f,
   };
-  SkColorSpaceTransferFn fn_no_pow_yes_if = {
-      1.f, 2.f, 0.f, 1.f, 0.5f, 0.f, 0.f,
-  };
-  SkColorSpaceTransferFn fn_yes_pow_no_if = {
+  SkColorSpaceTransferFn fn_yes_pow = {
       2.f, 2.f, 0.f, 1.f, 0.f, 0.f, 0.f,
   };
-  SkColorSpaceTransferFn fn_yes_pow_yes_if = {
-      2.f, 2.f, 0.f, 1.f, 0.5f, 0.f, 0.f,
-  };
-
   gfx::ColorSpace src;
   gfx::ColorSpace dst = gfx::ColorSpace::CreateXYZD50();
   std::string shader_string;
 
-  src = gfx::ColorSpace::CreateCustom(primaries, fn_no_pow_no_if);
+  src = gfx::ColorSpace::CreateCustom(primaries, fn_no_pow);
   shader_string = ColorTransform::NewColorTransform(
                       src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL)
                       ->GetShaderSource();
-  EXPECT_EQ(shader_string.find("if ("), std::string::npos);
   EXPECT_EQ(shader_string.find("pow("), std::string::npos);
 
-  src = gfx::ColorSpace::CreateCustom(primaries, fn_no_pow_yes_if);
+  src = gfx::ColorSpace::CreateCustom(primaries, fn_yes_pow);
   shader_string = ColorTransform::NewColorTransform(
                       src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL)
                       ->GetShaderSource();
-  EXPECT_NE(shader_string.find("if ("), std::string::npos);
-  EXPECT_EQ(shader_string.find("pow("), std::string::npos);
-
-  src = gfx::ColorSpace::CreateCustom(primaries, fn_yes_pow_no_if);
-  shader_string = ColorTransform::NewColorTransform(
-                      src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL)
-                      ->GetShaderSource();
-  EXPECT_EQ(shader_string.find("if ("), std::string::npos);
-  EXPECT_NE(shader_string.find("pow("), std::string::npos);
-
-  src = gfx::ColorSpace::CreateCustom(primaries, fn_yes_pow_yes_if);
-  shader_string = ColorTransform::NewColorTransform(
-                      src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL)
-                      ->GetShaderSource();
-  EXPECT_NE(shader_string.find("if ("), std::string::npos);
   EXPECT_NE(shader_string.find("pow("), std::string::npos);
 }
 
@@ -456,6 +433,8 @@ TEST(SimpleColorSpace, MAYBE_SampleShaderSource) {
       "  return pow(9.47867334e-01 * v + 5.21326549e-02, 2.40000010e+00);\n"
       "}\n"
       "float TransferFn3(float v) {\n"
+      "  if (v < 0.00000000e+00)\n"
+      "    return v;\n"
       "  return pow(v, 3.57142866e-01);\n"
       "}\n"
       "vec3 DoColorConversion(vec3 color) {\n"
