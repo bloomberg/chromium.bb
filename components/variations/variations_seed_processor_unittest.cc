@@ -404,7 +404,7 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   EXPECT_FALSE(processed_study.Init(&study, false));
 }
 
-TEST_F(VariationsSeedProcessorTest, ValidateStudySingleFeature) {
+TEST_F(VariationsSeedProcessorTest, ValidateStudyWithAssociatedFeatures) {
   Study study;
   study.set_default_experiment_name("def");
   Study_Experiment* exp1 = AddExperiment("exp1", 100, &study);
@@ -430,9 +430,10 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudySingleFeature) {
   exp1->mutable_feature_association()->add_enable_feature(kFeature1Name);
   exp1->mutable_feature_association()->add_enable_feature(kFeature2Name);
   EXPECT_TRUE(processed_study.Init(&study, false));
-  // Since there's multiple different features, |associated_features| should be
-  // unset.
-  EXPECT_THAT(processed_study.associated_features(), IsEmpty());
+  // Since there's multiple different features, |associated_features| should now
+  // contain them all.
+  EXPECT_THAT(processed_study.associated_features(),
+              ElementsAre(kFeature1Name, kFeature2Name));
 
   exp1->clear_feature_association();
   exp1->mutable_feature_association()->add_enable_feature(kFeature1Name);
@@ -443,8 +444,15 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudySingleFeature) {
               ElementsAre(kFeature1Name));
 
   // Setting a different feature name on exp2 should cause |associated_features|
-  // to be not set.
+  // to contain both feature names.
   exp2->mutable_feature_association()->set_enable_feature(0, kFeature2Name);
+  EXPECT_TRUE(processed_study.Init(&study, false));
+  EXPECT_THAT(processed_study.associated_features(),
+              ElementsAre(kFeature1Name, kFeature2Name));
+
+  // Setting a different activation type should result in empty
+  // |associated_features|.
+  study.set_activation_type(Study_ActivationType_ACTIVATION_AUTO);
   EXPECT_TRUE(processed_study.Init(&study, false));
   EXPECT_THAT(processed_study.associated_features(), IsEmpty());
 }

@@ -39,10 +39,10 @@ bool ValidateStudyAndComputeTotalProbability(
 
   bool multiple_assigned_groups = false;
   bool found_default_group = false;
-  std::string single_feature_name_seen;
-  bool has_multiple_features = false;
 
   std::set<std::string> experiment_names;
+  std::set<std::string> features_to_associate;
+
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
     if (experiment.name().empty()) {
@@ -55,25 +55,17 @@ bool ValidateStudyAndComputeTotalProbability(
       return false;
     }
 
-    if (!has_multiple_features) {
+    // Note: This checks for ACTIVATION_EXPLICIT, since there is no reason to
+    // have this association with ACTIVATION_AUTO (where the trial starts
+    // active), as well as allowing flexibility to disable this behavior in the
+    // future from the server by introducing a new activation type.
+    if (study.activation_type() == Study_ActivationType_ACTIVATION_EXPLICIT) {
       const auto& features = experiment.feature_association();
       for (int i = 0; i < features.enable_feature_size(); ++i) {
-        const std::string& feature_name = features.enable_feature(i);
-        if (single_feature_name_seen.empty()) {
-          single_feature_name_seen = feature_name;
-        } else if (feature_name != single_feature_name_seen) {
-          has_multiple_features = true;
-          break;
-        }
+        features_to_associate.insert(features.enable_feature(i));
       }
       for (int i = 0; i < features.disable_feature_size(); ++i) {
-        const std::string& feature_name = features.disable_feature(i);
-        if (single_feature_name_seen.empty()) {
-          single_feature_name_seen = feature_name;
-        } else if (feature_name != single_feature_name_seen) {
-          has_multiple_features = true;
-          break;
-        }
+        features_to_associate.insert(features.disable_feature(i));
       }
     }
 
@@ -97,18 +89,13 @@ bool ValidateStudyAndComputeTotalProbability(
     return false;
   }
 
-  // Check if this study enables/disables a single feature and uses explicit
-  // activation (i.e. the trial should be activated when queried). If so, ensure
-  // that groups that don't explicitly enable/disable that feature are still
-  // associated with it (i.e. so "Default" group gets reported).
-  //
-  // Note: This checks for ACTIVATION_EXPLICIT, since there is no reason to
-  // have this association with ACTIVATION_AUTO (where the trial starts active),
-  // as well as allowing flexibility to disable this behavior in the future from
-  // the server by introducing a new activation type.
-  if (!has_multiple_features && !single_feature_name_seen.empty() &&
-      study.activation_type() == Study_ActivationType_ACTIVATION_EXPLICIT) {
-    associated_features->push_back(single_feature_name_seen);
+  // Ensure that groups that don't explicitly enable/disable that feature get
+  // associated with all features in the study (i.e. so "Default" group gets
+  // reported).
+  if (!features_to_associate.empty()) {
+    associated_features->insert(associated_features->end(),
+                                features_to_associate.begin(),
+                                features_to_associate.end());
   }
 
   *total_probability = divisor;
