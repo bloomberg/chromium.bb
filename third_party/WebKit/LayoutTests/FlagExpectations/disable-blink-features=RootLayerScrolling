@@ -2704,6 +2704,9 @@ crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jump
 # Sheriff failures 2017-07-28
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 
+# Sheriff failure 2017-08-07
+crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
+
 # Sheriff failure 2017-08-29
 crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
@@ -2887,6 +2890,7 @@ crbug.com/757165 [ Win ] paint/invalidation/scroll/scrollbar-damage-and-full-vie
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
+crbug.com/757165 [ Win ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-clipping.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-color-over-color.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-color-over-gradient.html [ Skip ]
@@ -3185,6 +3189,9 @@ crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 # Sheriff failures 2018-01-18
 # This test has been flaky for some time on Win 7 (dgb)
 crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
+
+# This test is flaking (failing, crashing) on mac_chromium_rel_ng.
+crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
 
 # Sheriff failures 2018-01-19
 # This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),

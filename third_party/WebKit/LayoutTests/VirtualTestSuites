@@ -319,13 +319,7 @@
   },
   {
     "prefix": "wheelscrolllatching",
-    "base": "fast/compositor-wheel-scroll-latching/animated-scroll",
-    "args": ["--enable-features=TouchpadAndWheelScrollLatching",
-             "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "wheelscrolllatching",
-    "base": "fast/compositor-wheel-scroll-latching/non-animated-scroll",
+    "base": "fast/compositor-wheel-scroll-latching",
     "args": ["--enable-features=TouchpadAndWheelScrollLatching",
              "--enable-threaded-compositing",
              "--disable-smooth-scrolling"]
