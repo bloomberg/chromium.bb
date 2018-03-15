@@ -495,7 +495,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       self.floatingButton.hidden = YES;
       self.doneButton = self.bottomToolbar.leadingButton;
       self.closeAllButton = self.bottomToolbar.trailingButton;
-      self.newTabButton = self.bottomToolbar.roundButton;
+      self.newTabButton = self.bottomToolbar.centerButton;
       break;
     case TabGridConfigurationFloatingButton:
       self.topToolbar.leadingButton.hidden = NO;
