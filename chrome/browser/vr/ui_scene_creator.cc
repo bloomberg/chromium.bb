@@ -1032,6 +1032,7 @@ void UiSceneCreator::CreateContentQuad() {
       VR_BIND_LAMBDA([](ContentElement* e,
                         const EditedText& value) { e->UpdateInput(value); },
                      base::Unretained(main_content.get()))));
+
   shadow->AddChild(std::move(main_content));
   resizer->AddChild(std::move(shadow));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(resizer));
@@ -1965,7 +1966,6 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->set_hit_testable(false);
   omnibox_text_field->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
-  omnibox_text_field->set_x_anchoring(LEFT);
   omnibox_text_field->SetSize(kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
                                   kOmniboxTextFieldIconButtonSizeDMM -
                                   kOmniboxTextFieldRightMargin,
