@@ -147,9 +147,6 @@ class BASE_EXPORT ProcessMetrics {
   // usage in bytes, as per definition of WorkingSetBytes. Note that this
   // function is somewhat expensive on Windows (a few ms per process).
   bool GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const;
-  // Computes pss (proportional set size) of a process. Note that this
-  // function is somewhat expensive on Windows (a few ms per process).
-  bool GetProportionalSetSizeBytes(uint64_t* pss_bytes) const;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Resident Set Size is a Linux/Android specific memory concept. Do not
