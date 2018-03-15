@@ -9,6 +9,11 @@
 
 namespace vr {
 
+enum CursorType {
+  kCursorDefault,
+  kCursorReposition,
+};
+
 // The ReticleModel contains information related to the target of the
 // controller's laser. It is computed by the UiInputManager and is used by the
 // input manager in the production of gestures as well as by the Reticle element
@@ -17,6 +22,7 @@ struct ReticleModel {
   gfx::Point3F target_point;
   gfx::PointF target_local_point;
   int target_element_id = 0;
+  CursorType cursor_type = kCursorDefault;
 };
 
 }  // namespace vr

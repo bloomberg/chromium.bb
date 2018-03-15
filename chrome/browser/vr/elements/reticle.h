@@ -47,6 +47,8 @@ class Reticle : public UiElement {
  private:
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
+  gfx::Transform LocalTransform() const final;
+  gfx::Transform GetTargetLocalTransform() const final;
 
   gfx::Point3F origin_;
   gfx::Point3F target_;

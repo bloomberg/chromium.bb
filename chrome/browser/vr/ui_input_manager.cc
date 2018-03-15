@@ -84,6 +84,7 @@ void HitTestElements(UiElement* root_element,
     reticle_model->target_element_id = element->id();
     reticle_model->target_local_point = result.local_hit_point;
     reticle_model->target_point = result.hit_point;
+    reticle_model->cursor_type = element->cursor_type();
     break;
   }
 }

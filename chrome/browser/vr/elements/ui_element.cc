@@ -87,6 +87,7 @@ void DumpTransformOperations(const cc::TransformOperations& ops,
 
 EventHandlers::EventHandlers() = default;
 EventHandlers::~EventHandlers() = default;
+EventHandlers::EventHandlers(const EventHandlers& other) = default;
 
 UiElement::UiElement() : id_(AllocateId()) {
   animation_.set_target(this);
@@ -256,7 +257,11 @@ void UiElement::SetSize(float width, float height) {
 void UiElement::OnSetSize(const gfx::SizeF& size) {}
 
 gfx::SizeF UiElement::ContributedSize() const {
-  return size();
+  gfx::RectF bounds(size());
+  if (!bounds_contain_padding_) {
+    bounds.Inset(left_padding_, bottom_padding_, right_padding_, top_padding_);
+  }
+  return bounds.size();
 }
 
 void UiElement::SetVisible(bool visible) {
@@ -687,8 +692,10 @@ bool UiElement::SizeAndLayOut() {
 void UiElement::DoLayOutChildren() {
   LayOutChildren();
   if (!bounds_contain_children_) {
-    DCHECK_EQ(0.0f, x_padding_);
-    DCHECK_EQ(0.0f, y_padding_);
+    DCHECK_EQ(0.0f, right_padding_);
+    DCHECK_EQ(0.0f, left_padding_);
+    DCHECK_EQ(0.0f, top_padding_);
+    DCHECK_EQ(0.0f, bottom_padding_);
     return;
   }
 
@@ -719,7 +726,8 @@ void UiElement::DoLayOutChildren() {
     bounds.Union(local_rect);
   }
 
-  bounds.Inset(-x_padding_, -y_padding_);
+  bounds.Inset(-left_padding_, -bottom_padding_, -right_padding_,
+               -top_padding_);
   bounds.set_origin(bounds.CenterPoint());
   local_origin_ = bounds.origin();
   if (bounds.size() == GetTargetSize())

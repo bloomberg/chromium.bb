@@ -13,6 +13,7 @@ namespace vr {
 
 namespace {
 
+constexpr float kDragThresholdDegrees = 3.0f;
 constexpr float kHeadUpTransitionStartDegrees = 60.0f;
 constexpr float kHeadUpTransitionEndDegrees = 30.0f;
 constexpr gfx::Vector3dF kUp = {0, 1, 0};
@@ -58,6 +59,7 @@ void Repositioner::SetEnabled(bool enabled) {
   if (enabled) {
     initial_transform_ = transform_;
     initial_laser_direction_ = laser_direction_;
+    has_moved_beyond_threshold_ = false;
   }
 }
 
@@ -93,6 +95,10 @@ void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
   gfx::Vector3dF expected_right = gfx::CrossProduct(new_forward, up);
   gfx::Quaternion rotate_to_expected_right(new_right, expected_right);
   transform_.ConcatTransform(gfx::Transform(rotate_to_expected_right));
+  if (gfx::AngleBetweenVectorsInDegrees(
+          initial_laser_direction_, laser_direction_) > kDragThresholdDegrees) {
+    has_moved_beyond_threshold_ = true;
+  }
 
   // Potentially bake our current transform, to avoid situations where
   // |laser_direction_| and |initial_laser_direction_| are nearly 180 degrees

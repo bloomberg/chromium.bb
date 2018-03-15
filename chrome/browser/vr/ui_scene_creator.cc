@@ -588,6 +588,22 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   return controller;
 }
 
+EventHandlers CreateRepositioningHandlers(Model* model, UiScene* scene) {
+  EventHandlers handlers;
+  handlers.button_down = base::BindRepeating(
+      [](Model* model) { model->push_mode(kModeRepositionWindow); },
+      base::Unretained(model));
+  handlers.button_up = base::BindRepeating(
+      [](Model* model, Repositioner* repositioner) {
+        if (repositioner->HasMovedBeyondThreshold())
+          model->pop_mode(kModeRepositionWindow);
+      },
+      base::Unretained(model),
+      base::Unretained(static_cast<Repositioner*>(
+          scene->GetUiElementByName(k2dBrowsingRepositioner))));
+  return handlers;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -925,9 +941,13 @@ void UiSceneCreator::CreateSystemIndicators() {
 void UiSceneCreator::CreateContentQuad() {
   // Place an invisible but hittable plane behind the content quad, to keep the
   // reticle roughly planar with the content if near content.
-  auto hit_plane = Create<InvisibleHitTarget>(kBackplane, kPhaseForeground);
+  auto hit_plane = Create<InvisibleHitTarget>(kBackplane, kPhaseBackplanes);
   hit_plane->SetSize(kBackplaneSize, kSceneHeight);
   hit_plane->set_contributes_to_parent_bounds(false);
+  hit_plane->set_cursor_type(kCursorReposition);
+
+  hit_plane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
+
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
   auto resizer = Create<Resizer>(kContentResizer, kPhaseNone);
@@ -1476,77 +1496,6 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
 }
 
 void UiSceneCreator::CreateContentRepositioningAffordance() {
-  auto reposition_button = Create<DiscButton>(
-      kContentQuadRepositionButton, kPhaseForeground,
-      base::BindRepeating(
-          [](Model* model) { model->push_mode(kModeRepositionWindow); },
-          base::Unretained(model_)),
-      kRepositionIcon, audio_delegate_);
-  reposition_button->SetSize(kRepositionButtonDiameter,
-                             kRepositionButtonDiameter);
-  reposition_button->set_y_anchoring(BOTTOM);
-  reposition_button->set_x_anchoring(RIGHT);
-  reposition_button->set_x_centering(LEFT);
-  reposition_button->set_y_centering(BOTTOM);
-  reposition_button->SetTranslate(kRepositionButtonXOffset,
-                                  kRepositionButtonYOffset, 0);
-  reposition_button->SetTransitionedProperties({OPACITY});
-  reposition_button->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kRepositionButtonTransitionDurationMs));
-  reposition_button->background()->SetTransitionedProperties(
-      {BACKGROUND_COLOR, TRANSFORM});
-  reposition_button->SetOpacity(kRepositionButtonMinOpacity);
-  reposition_button->SetSounds(kSoundNone, kSoundNone, nullptr);
-  reposition_button->AddBinding(std::make_unique<Binding<float>>(
-      VR_BIND_LAMBDA(
-          [](Model* model, Button* button) {
-            if (!model->experimental_features_enabled)
-              return 0.0f;
-            if (button->hovered())
-              return kRepositionButtonMaxOpacity;
-            if (!model->controller.quiescent)
-              return kRepositionButtonMidOpacity;
-            return kRepositionButtonMinOpacity;
-          },
-          base::Unretained(model_), base::Unretained(reposition_button.get())),
-      VR_BIND_LAMBDA(
-          [](UiElement* button, const float& opacity) {
-            if (opacity == 1.0f)
-              button->SetVisibleImmediately(true);
-            else
-              button->SetOpacity(opacity);
-          },
-          base::Unretained(reposition_button.get()))));
-  VR_BIND_BUTTON_COLORS(model_, reposition_button.get(),
-                        &ColorScheme::button_colors,
-                        &DiscButton::SetButtonColors);
-  scene_->AddUiElement(kContentQuad, std::move(reposition_button));
-
-  auto label_background =
-      Create<Rect>(kContentRepositionLabel, kPhaseForeground);
-  label_background->set_bounds_contain_children(true);
-  label_background->set_corner_radius(kRepositionLabelBackgroundCornerRadius);
-  label_background->set_padding(kRepositionLabelBackgroundPadding,
-                                kRepositionLabelBackgroundPadding);
-  label_background->set_contributes_to_parent_bounds(false);
-  VR_BIND_COLOR(model_, label_background.get(),
-                &ColorScheme::reposition_label_background, &Rect::SetColor);
-  VR_BIND_VISIBILITY(label_background, model->reposition_window_enabled());
-
-  auto label =
-      Create<Text>(kNone, kPhaseForeground, kRepositionLabelFontHeight);
-  label->SetText(l10n_util::GetStringUTF16(IDS_VR_REPOSITION_LABEL));
-  label->SetVisible(true);
-  label->SetAlignment(UiTexture::kTextAlignmentCenter);
-  label->SetLayoutMode(kSingleLineFixedHeight);
-  label->SetScale(kRepositionLabelFontScale, kRepositionLabelFontScale,
-                  kRepositionLabelFontScale);
-  VR_BIND_COLOR(model_, label.get(), &ColorScheme::reposition_label,
-                &Text::SetColor);
-
-  label_background->AddChild(std::move(label));
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(label_background));
-
   auto content_toggle =
       Create<UiElement>(kContentRepositionVisibilityToggle, kPhaseNone);
   content_toggle->SetTransitionedProperties({OPACITY});
@@ -1555,13 +1504,15 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
       float, Model, model_,
       model->reposition_window_enabled() ? kRepositionContentOpacity : 1.0f,
       UiElement, content_toggle.get(), SetOpacity));
-  scene_->AddParentUiElement(kContentResizer, std::move(content_toggle));
+  scene_->AddParentUiElement(k2dBrowsingForeground,
+                             std::move(content_toggle));
 
   auto hit_plane =
       Create<InvisibleHitTarget>(kContentRepositionHitPlane, kPhaseForeground);
   hit_plane->set_contributes_to_parent_bounds(false);
   hit_plane->SetSize(kSceneSize, kSceneSize);
   hit_plane->SetTranslate(0.0f, 0.0f, -kContentDistance);
+  hit_plane->set_cursor_type(kCursorReposition);
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
       [](Model* m) {
@@ -1653,6 +1604,35 @@ void UiSceneCreator::CreateController() {
   auto reticle = std::make_unique<Reticle>(scene_, model_);
   reticle->SetDrawPhase(kPhaseForeground);
 
+  auto reposition_group = Create<UiElement>(kRepositionCursor, kPhaseNone);
+  VR_BIND_VISIBILITY(reposition_group,
+                     model->reticle.cursor_type == kCursorReposition);
+
+  auto reposition_bg = Create<Rect>(kNone, kPhaseForeground);
+  reposition_bg->set_owner_name_for_test(kRepositionCursor);
+  reposition_bg->SetType(kTypeCursorBackground);
+  reposition_bg->SetSize(kRepositionCursorBackgroundSize,
+                         kRepositionCursorBackgroundSize);
+  reposition_bg->SetDrawPhase(kPhaseForeground);
+  VR_BIND_COLOR(model_, reposition_bg.get(),
+                &ColorScheme::cursor_background_edge, &Rect::SetEdgeColor);
+  VR_BIND_COLOR(model_, reposition_bg.get(),
+                &ColorScheme::cursor_background_center, &Rect::SetCenterColor);
+
+  auto reposition_icon = std::make_unique<VectorIcon>(128);
+  reposition_icon->set_owner_name_for_test(kRepositionCursor);
+  reposition_icon->SetType(kTypeCursorForeground);
+  reposition_icon->SetIcon(kRepositionIcon);
+  reposition_icon->SetDrawPhase(kPhaseForeground);
+  reposition_icon->SetSize(kRepositionCursorSize, kRepositionCursorSize);
+  VR_BIND_COLOR(model_, reposition_icon.get(), &ColorScheme::cursor_foreground,
+                &VectorIcon::SetColor);
+
+  reposition_group->AddChild(std::move(reposition_bg));
+  reposition_group->AddChild(std::move(reposition_icon));
+
+  reticle->AddChild(std::move(reposition_group));
+
   reticle_laser_group->AddChild(std::move(laser));
   reticle_laser_group->AddChild(std::move(reticle));
 
@@ -1706,11 +1686,20 @@ void UiSceneCreator::CreateUrlBar() {
   scaler->set_contributes_to_parent_bounds(false);
   scene_->AddUiElement(kUrlBarPositioner, std::move(scaler));
 
+  auto backplane =
+      Create<InvisibleHitTarget>(kUrlBarBackplane, kPhaseBackplanes);
+  backplane->set_bounds_contain_children(true);
+  backplane->set_contributes_to_parent_bounds(false);
+  backplane->set_padding(kUrlBarBackplanePadding, kUrlBarBackplaneTopPadding,
+                         kUrlBarBackplanePadding, kUrlBarBackplanePadding);
+  backplane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
+  VR_BIND_VISIBILITY(backplane, !model->fullscreen_enabled());
+  scene_->AddUiElement(kUrlBarDmmRoot, std::move(backplane));
+
   auto url_bar = Create<UiElement>(kUrlBar, kPhaseNone);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
-  VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
-  scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
+  scene_->AddUiElement(kUrlBarBackplane, std::move(url_bar));
 
   auto layout =
       Create<LinearLayout>(kUrlBarLayout, kPhaseNone, LinearLayout::kRight);

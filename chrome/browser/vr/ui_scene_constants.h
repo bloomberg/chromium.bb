@@ -75,6 +75,8 @@ static constexpr float kUrlBarOfflineIconTextSpacingDMM = 0.004f;
 static constexpr float kUrlBarSecuritySeparatorHeightDMM = 0.026f;
 static constexpr float kUrlBarOriginFadeWidth = 0.044f;
 static constexpr float kUrlBarOriginMinimumPathWidth = 0.044f;
+static constexpr float kUrlBarBackplaneTopPadding = 0.065f;
+static constexpr float kUrlBarBackplanePadding = 0.005f;
 
 static constexpr float kOverlayPlaneDistance = 2.3f;
 
@@ -283,26 +285,16 @@ static constexpr float kControllerHomeButtonZ = kControllerLength * 0.075f;
 static constexpr float kSkyDistance = 1000.0f;
 static constexpr float kGridOpacity = 0.5f;
 
-static constexpr float kRepositionButtonDiameter = 0.75f * kCloseButtonDiameter;
-// This allows the button to be hittable even when hidden.
-static constexpr float kRepositionButtonMinOpacity = 0.001f;
-static constexpr float kRepositionButtonMidOpacity = 0.3f;
-static constexpr float kRepositionButtonMaxOpacity = 1.0f;
-static constexpr float kRepositionButtonXOffset = kIndicatorGap;
-static constexpr float kRepositionButtonYOffset = 0.5f * kIndicatorGap;
-static constexpr int kRepositionButtonTransitionDurationMs = 750;
-static constexpr float kRepositionLabelWidth = 0.55f * kContentWidth;
-static constexpr float kRepositionLabelFontHeight = kControllerLabelFontHeight;
-static constexpr float kRepositionLabelFontScale = 1.5f;
-static constexpr float kRepositionLabelBackgroundPadding = 0.06f;
 static constexpr float kRepositionContentOpacity = 0.2f;
-static constexpr float kRepositionLabelBackgroundCornerRadius = 0.02f;
 
 static constexpr float kPromptWidthDMM = 0.63f;
 static constexpr float kPromptHeightDMM = 0.218f;
 static constexpr float kPromptVerticalOffsetDMM = -0.1f;
 static constexpr float kPromptShadowOffsetDMM = 0.1f;
 static constexpr float kPromptDistance = 2.4f;
+
+static constexpr float kRepositionCursorBackgroundSize = 1.4f;
+static constexpr float kRepositionCursorSize = 1.2f;
 
 static constexpr float kMinResizerScale = 0.5f;
 static constexpr float kMaxResizerScale = 1.5f;
