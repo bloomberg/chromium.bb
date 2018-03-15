@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/GlobalScopeCreationParams.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/WTF.h"
 
@@ -22,6 +23,7 @@ PaintWorkletGlobalScopeProxy* PaintWorkletGlobalScopeProxy::From(
 
 PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
     LocalFrame* frame,
+    WorkletModuleResponsesMap* module_responses_map,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   DCHECK(IsMainThread());
@@ -36,7 +38,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       document->IsSecureContext(), nullptr /* worker_clients */,
       document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault);
+      kV8CacheOptionsDefault, module_responses_map);
   global_scope_ = PaintWorkletGlobalScope::Create(
       frame, std::move(creation_params), *reporting_proxy_,
       pending_generator_registry, global_scope_number);
@@ -44,14 +46,13 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
-    WorkletModuleResponsesMap* module_responses_map,
     network::mojom::FetchCredentialsMode credentials_mode,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
-  global_scope_->FetchAndInvokeScript(
-      module_url_record, module_responses_map, credentials_mode,
-      std::move(outside_settings_task_runner), pending_tasks);
+  global_scope_->FetchAndInvokeScript(module_url_record, credentials_mode,
+                                      std::move(outside_settings_task_runner),
+                                      pending_tasks);
 }
 
 void PaintWorkletGlobalScopeProxy::WorkletObjectDestroyed() {

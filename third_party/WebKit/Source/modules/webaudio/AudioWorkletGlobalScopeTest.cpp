@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/ScriptModule.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -17,6 +16,7 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/messaging/MessageChannel.h"
 #include "core/messaging/MessagePort.h"
@@ -26,6 +26,7 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
@@ -74,7 +75,8 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
             document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault),
+            kV8CacheOptionsDefault,
+            new WorkletModuleResponsesMap(document->Fetcher())),
         WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
         ParentFrameTaskRunners::Create());
     return thread;

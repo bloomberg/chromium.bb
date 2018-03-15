@@ -54,6 +54,10 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
 
   size_t GetNumberOfGlobalScopes() const { return proxies_.size(); }
 
+  WorkletModuleResponsesMap* ModuleResponsesMap() const {
+    return module_responses_map_.Get();
+  }
+
  private:
   virtual void FetchAndInvokeScript(const KURL& module_url_record,
                                     const WorkletOptions&,

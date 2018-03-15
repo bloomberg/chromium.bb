@@ -20,9 +20,14 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy)
-    : WorkletGlobalScope(std::move(creation_params),
-                         ToIsolate(frame),
-                         reporting_proxy),
+    : WorkletGlobalScope(
+          std::move(creation_params),
+          ToIsolate(frame),
+          reporting_proxy,
+          // Specify |kUnspecedLoading| because these task runners are used
+          // during module loading and this usage is not explicitly spec'ed.
+          frame->FrameScheduler()->GetTaskRunner(TaskType::kUnspecedLoading),
+          frame->FrameScheduler()->GetTaskRunner(TaskType::kUnspecedLoading)),
       ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() = default;

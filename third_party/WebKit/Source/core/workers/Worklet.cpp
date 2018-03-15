@@ -114,7 +114,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
       GetExecutionContext()->GetTaskRunner(TaskType::kUnspecedLoading);
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."
-  WorkletModuleResponsesMap* module_responses_map = module_responses_map_;
+  // ModuleResponsesMap() returns moduleResponsesMap.
 
   // Step 9: "Let workletGlobalScopeType be worklet's worklet global scope
   // type."
@@ -141,11 +141,11 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // invoke a worklet script given workletGlobalScope, moduleURLRecord,
   // moduleResponsesMap, credentialOptions, outsideSettings, pendingTaskStruct,
   // and promise."
+  // moduleResponsesMap is already passed via CreateGlobalScope().
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
-    proxy->FetchAndInvokeScript(module_url_record, module_responses_map,
-                                credentials_mode, outside_settings_task_runner,
-                                pending_tasks);
+    proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
+                                outside_settings_task_runner, pending_tasks);
   }
 }
 

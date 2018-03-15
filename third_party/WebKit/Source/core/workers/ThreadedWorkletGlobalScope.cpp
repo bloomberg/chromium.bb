@@ -22,9 +22,12 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     v8::Isolate* isolate,
     WorkerThread* thread)
-    : WorkletGlobalScope(std::move(creation_params),
-                         isolate,
-                         thread->GetWorkerReportingProxy()),
+    : WorkletGlobalScope(
+          std::move(creation_params),
+          isolate,
+          thread->GetWorkerReportingProxy(),
+          thread->GetParentFrameTaskRunners()->Get(TaskType::kUnspecedLoading),
+          thread->GetTaskRunner(TaskType::kUnspecedLoading)),
       thread_(thread) {}
 
 ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {

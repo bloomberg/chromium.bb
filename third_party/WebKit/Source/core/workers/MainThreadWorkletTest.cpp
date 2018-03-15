@@ -9,6 +9,7 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/MainThreadWorkletReportingProxy.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/TaskType.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +66,8 @@ class MainThreadWorkletTest : public PageTestBase {
         document->IsSecureContext(), nullptr /* worker_clients */,
         document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
-        kV8CacheOptionsDefault);
+        kV8CacheOptionsDefault,
+        new WorkletModuleResponsesMap(document->Fetcher()));
     global_scope_ = new MainThreadWorkletGlobalScope(
         &GetFrame(), std::move(creation_params), *reporting_proxy_);
   }

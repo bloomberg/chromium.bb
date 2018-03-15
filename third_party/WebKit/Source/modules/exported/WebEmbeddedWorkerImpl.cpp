@@ -347,6 +347,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
 
+  // TODO(nhiroki); Set the coordinator for module fetch.
+  // (https://crbug.com/680046)
+  WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
+
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
   if (main_script_loader_) {
@@ -363,7 +367,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
-        std::move(interface_provider_info_));
+        module_fetch_coordinator, std::move(interface_provider_info_));
     source_code = main_script_loader_->SourceText();
     cached_meta_data = main_script_loader_->ReleaseCachedMetadata();
     main_script_loader_ = nullptr;
@@ -378,7 +382,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
         devtools_worker_token_, std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
-        std::move(interface_provider_info_));
+        module_fetch_coordinator, std::move(interface_provider_info_));
   }
 
   if (RuntimeEnabledFeatures::ServiceWorkerScriptFullCodeCacheEnabled()) {

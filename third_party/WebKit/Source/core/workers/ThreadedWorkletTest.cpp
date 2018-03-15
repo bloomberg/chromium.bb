@@ -13,6 +13,7 @@
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadTestHelper.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "core/workers/WorkletThreadHolder.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -187,7 +188,8 @@ class ThreadedWorkletMessagingProxyForTest
             document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault),
+            kV8CacheOptionsDefault,
+            new WorkletModuleResponsesMap(document->Fetcher())),
         WTF::nullopt);
   }
 
