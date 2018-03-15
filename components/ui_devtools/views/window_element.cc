@@ -112,4 +112,20 @@ aura::Window* WindowElement::From(const UIElement* element) {
   return static_cast<const WindowElement*>(element)->window_;
 }
 
+template <>
+int UIElement::FindUIElementIdForBackendElement<aura::Window>(
+    aura::Window* element) const {
+  if (type_ == UIElementType::WINDOW &&
+      UIElement::GetBackingElement<aura::Window, WindowElement>(this) ==
+          element) {
+    return node_id_;
+  }
+  for (auto* child : children_) {
+    int ui_element_id = child->FindUIElementIdForBackendElement(element);
+    if (ui_element_id)
+      return ui_element_id;
+  }
+  return 0;
+}
+
 }  // namespace ui_devtools

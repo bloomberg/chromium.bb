@@ -105,4 +105,19 @@ views::View* ViewElement::From(const UIElement* element) {
   return static_cast<const ViewElement*>(element)->view_;
 }
 
+template <>
+int UIElement::FindUIElementIdForBackendElement<views::View>(
+    views::View* element) const {
+  if (type_ == UIElementType::VIEW &&
+      UIElement::GetBackingElement<views::View, ViewElement>(this) == element) {
+    return node_id_;
+  }
+  for (auto* child : children_) {
+    int ui_element_id = child->FindUIElementIdForBackendElement(element);
+    if (ui_element_id)
+      return ui_element_id;
+  }
+  return 0;
+}
+
 }  // namespace ui_devtools
