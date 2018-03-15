@@ -63,9 +63,13 @@ Chrome TPMs.
 
 **Phase 2: First Four Weeks of Beta Rollout**
 
-During the first four weeks of Beta, merges should only be requested if
-the bug is considered either release blocking or
-considered a high-impact regression.
+During the first four weeks of Beta, merges should only be requested if:
+
+* The bug is considered either release blocking or
+  considered a high-impact regression
+* The merge is related to a feature which (1) is entirely gated behind
+  a flag and (2) does not change user functionality in a substantial way
+  (e.g. minor tweaks and metrics code are OK, workflow changes are not)
 
 Security bugs should be consulted with
 [chrome-security@google.com](chrome-security@google.com) to
