@@ -2296,7 +2296,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Waiting for Google Play Services to finish updating
       </message>
 
-      <!-- New Signin Promos Strings -->
+      <!-- Strings for Streamlined Signin and Unified Consent. -->
+      <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
+      <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]" translateable="false">
+        Yes, I'm in
+      </message>
+
+      <!-- Personalized Signin Promos Strings -->
       <message name="IDS_SIGNIN_PROMO_DESCRIPTION_BOOKMARKS" desc="Description string for 'Continue as' signin promo shown in Bookmarks screen.">
         To get your bookmarks on all your devices, sign in to Chrome.
       </message>
