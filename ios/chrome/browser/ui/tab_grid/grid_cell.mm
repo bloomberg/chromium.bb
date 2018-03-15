@@ -202,7 +202,7 @@ const CGFloat kBorderWidth = 6.0f;
 
   UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-  UIImage* closeImage = [[UIImage imageNamed:@"grid_close_cell"]
+  UIImage* closeImage = [[UIImage imageNamed:@"grid_cell_close_button"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [closeButton setImage:closeImage forState:UIControlStateNormal];
   [closeButton addTarget:self

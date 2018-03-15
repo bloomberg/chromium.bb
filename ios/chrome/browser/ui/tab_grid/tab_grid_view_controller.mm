@@ -551,12 +551,9 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   }
   switch (self.configuration) {
     case TabGridConfigurationBottomToolbar:
-      // TODO(crbug.com/818198) : Add toolbar new tab assets and modify names
-      // passed below.
-      [self
-          updateNewTabButtonWithIncognitoImageName:
-              @"new_tab_floating_button_incognito"
-                                  regularImageName:@"new_tab_floating_button"];
+      [self updateNewTabButtonWithIncognitoImageName:
+                @"new_tab_toolbar_button_incognito"
+                                    regularImageName:@"new_tab_toolbar_button"];
       break;
     case TabGridConfigurationFloatingButton:
       [self
