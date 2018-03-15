@@ -121,9 +121,6 @@ void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
 
   const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
-  // Determine an activation deadline for the pending CompositorFrame.
-  bool deadline_changed = false;
-
   // Inherit the deadline from the first parent blocked on this surface.
   auto it = blocked_surfaces_from_dependency_.find(
       surface->surface_id().frame_sink_id());
@@ -133,7 +130,7 @@ void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
       Surface* parent = surface_manager_->GetSurfaceForId(parent_id);
       if (parent && parent->has_deadline() &&
           parent->activation_dependencies().count(surface->surface_id())) {
-        deadline_changed = surface->InheritActivationDeadlineFrom(parent);
+        surface->InheritActivationDeadlineFrom(parent);
         break;
       }
     }

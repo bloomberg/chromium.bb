@@ -64,6 +64,8 @@ class SurfaceDependencyDeadlineTest : public testing::Test {
 
   SurfaceDependencyDeadline* deadline() { return deadline_.get(); }
 
+  SurfaceDependencyDeadline* deadline2() { return deadline2_.get(); }
+
   void SendLateBeginFrame(uint32_t frames_late) {
     // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
@@ -83,9 +85,14 @@ class SurfaceDependencyDeadlineTest : public testing::Test {
 
     deadline_ = std::make_unique<SurfaceDependencyDeadline>(
         &client_, begin_frame_source_.get(), now_src_.get());
+
+    deadline2_ = std::make_unique<SurfaceDependencyDeadline>(
+        &client_, begin_frame_source_.get(), now_src_.get());
   }
 
   void TearDown() override {
+    deadline2_->Cancel();
+    deadline2_.reset();
     deadline_->Cancel();
     deadline_.reset();
     begin_frame_source_.reset();
@@ -97,6 +104,7 @@ class SurfaceDependencyDeadlineTest : public testing::Test {
   std::unique_ptr<FakeSlowBeginFrameSource> begin_frame_source_;
   FakeSurfaceDeadlineClient client_;
   std::unique_ptr<SurfaceDependencyDeadline> deadline_;
+  std::unique_ptr<SurfaceDependencyDeadline> deadline2_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyDeadlineTest);
 };
@@ -126,6 +134,66 @@ TEST_F(SurfaceDependencyDeadlineTest, SetMatchesHasDeadlineIfTrue) {
   SendLateBeginFrame(2u);
   EXPECT_TRUE(deadline()->Set(frame_deadline));
   EXPECT_TRUE(deadline()->has_deadline());
+}
+
+// This test verifies that inheriting a deadline with no pre-existing deadline
+// sets up the start time of the event to the time of inheritance.
+TEST_F(SurfaceDependencyDeadlineTest, InheritDeadline) {
+  FrameDeadline frame_deadline = MakeDefaultDeadline();
+  SendLateBeginFrame(1u);
+  EXPECT_TRUE(deadline()->Set(frame_deadline));
+  EXPECT_TRUE(deadline()->has_deadline());
+
+  SendLateBeginFrame(1u);
+  EXPECT_FALSE(deadline2()->has_deadline());
+  deadline2()->InheritFrom(*deadline());
+  EXPECT_TRUE(deadline()->has_deadline());
+  EXPECT_EQ(deadline()->deadline_for_testing(),
+            deadline2()->deadline_for_testing());
+
+  base::Optional<base::TimeDelta> duration1 = deadline()->Cancel();
+  base::Optional<base::TimeDelta> duration2 = deadline2()->Cancel();
+  ASSERT_TRUE(duration1.has_value());
+  ASSERT_TRUE(duration2.has_value());
+
+  // We inject time on BeginFrameSource::AddObserver and in practice we cannot
+  // know the exact difference in duration between two events a priori so we
+  // just verify that the first event was longer than the second.
+  EXPECT_GT(duration1, duration2);
+}
+
+// This test verifies that if an active deadline object inherits a deadline
+// from another object, it does not inherit the start time of the event.
+TEST_F(SurfaceDependencyDeadlineTest, InheritDeadlineWithActiveDeadline) {
+  {
+    FrameDeadline frame_deadline = MakeDefaultDeadline();
+    SendLateBeginFrame(1u);
+    EXPECT_TRUE(deadline()->Set(frame_deadline));
+    EXPECT_TRUE(deadline()->has_deadline());
+  }
+
+  {
+    FrameDeadline frame_deadline = MakeDefaultDeadline();
+    SendLateBeginFrame(1u);
+    // deadline2's start time is later than deadline2.
+    EXPECT_TRUE(deadline2()->Set(frame_deadline));
+    EXPECT_TRUE(deadline2()->has_deadline());
+  }
+
+  deadline()->InheritFrom(*deadline2());
+  EXPECT_TRUE(deadline()->has_deadline());
+  EXPECT_EQ(deadline()->deadline_for_testing(),
+            deadline2()->deadline_for_testing());
+
+  base::Optional<base::TimeDelta> duration1 = deadline()->Cancel();
+  base::Optional<base::TimeDelta> duration2 = deadline2()->Cancel();
+  ASSERT_TRUE(duration1.has_value());
+  ASSERT_TRUE(duration2.has_value());
+
+  // We inject time on BeginFrameSource::AddObserver and in practice we cannot
+  // know the exact difference in duration between two events a priori so we
+  // just verify that the first event was longer than the second.
+  EXPECT_GT(duration1, duration2);
 }
 
 }  // namespace test

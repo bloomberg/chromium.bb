@@ -102,7 +102,12 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool has_deadline() const { return deadline_ && deadline_->has_deadline(); }
 
-  bool InheritActivationDeadlineFrom(Surface* surface);
+  // Inherits the same deadline as the one specified by |surface|. A deadline
+  // may be set further out in order to avoid doing unnecessary work while a
+  // parent surface is blocked on dependencies. A deadline may be shortened
+  // in order to minimize guttering (by unblocking children blocked on their
+  // grandchildren sooner).
+  void InheritActivationDeadlineFrom(Surface* surface);
 
   void SetPreviousFrameSurface(Surface* surface);
 
