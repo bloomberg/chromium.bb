@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
@@ -55,6 +56,12 @@ void BindAcceleratorControllerRequestOnMainThread(
 void BindAccessibilityControllerRequestOnMainThread(
     mojom::AccessibilityControllerRequest request) {
   Shell::Get()->accessibility_controller()->BindRequest(std::move(request));
+}
+
+void BindAccessibilityFocusRingControllerRequestOnMainThread(
+    mojom::AccessibilityFocusRingControllerRequest request) {
+  AccessibilityFocusRingController::GetInstance()->BindRequest(
+      std::move(request));
 }
 
 void BindAppListControllerRequestOnMainThread(
@@ -181,6 +188,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindAccessibilityControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindAccessibilityFocusRingControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindAppListControllerRequestOnMainThread),
                          main_thread_task_runner);

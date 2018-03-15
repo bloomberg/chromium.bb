@@ -190,13 +190,13 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
 }
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
-  ash::AccessibilityFocusRingController* controller =
-      ash::AccessibilityFocusRingController::GetInstance();
   // Create a callback for the focus ring observer.
   base::RepeatingCallback<void()> callback =
       base::BindRepeating(&SelectToSpeakTest::OnFocusRingChanged, GetWeakPtr());
-  controller->set_focus_ring_observer_for_testing(callback);
+  chromeos::AccessibilityManager::Get()->SetFocusRingObserverForTest(callback);
 
+  ash::AccessibilityFocusRingController* controller =
+      ash::AccessibilityFocusRingController::GetInstance();
   std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
       focus_rings = controller->focus_ring_layers_for_testing();
 

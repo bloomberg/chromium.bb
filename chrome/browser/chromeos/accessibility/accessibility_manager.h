@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -230,7 +233,7 @@ class AccessibilityManager
 
   // Notify registered callbacks of a status change in an accessibility setting.
   void NotifyAccessibilityStatusChanged(
-      AccessibilityStatusEventDetails& details);
+      const AccessibilityStatusEventDetails& details);
 
   // Notify accessibility when locale changes occur.
   void OnLocaleChanged();
@@ -292,11 +295,37 @@ class AccessibilityManager
   // Starts or stops dictation (type what you speak).
   void ToggleDictation();
 
+  // Sets the focus ring color.
+  void SetFocusRingColor(SkColor color);
+
+  // Resets the focus ring color back to the default.
+  void ResetFocusRingColor();
+
+  // Draws a focus ring around the given set of rects in screen coordinates. Use
+  // |focus_ring_behavior| to specify whether the focus ring should persist or
+  // fade out.
+  void SetFocusRing(const std::vector<gfx::Rect>& rects_in_screen,
+                    ash::mojom::FocusRingBehavior focus_ring_behavior);
+
+  // Hides focus ring on screen.
+  void HideFocusRing();
+
+  // Draws a highlight at the given rects in screen coordinates. Rects may be
+  // overlapping and will be merged into one layer. This looks similar to
+  // selecting a region with the cursor, except it is drawn in the foreground
+  // rather than behind a text layer.
+  void SetHighlights(const std::vector<gfx::Rect>& rects_in_screen,
+                     SkColor color);
+
+  // Hides highlight on screen.
+  void HideHighlights();
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
       extensions::api::braille_display_private::BrailleController* controller);
   void FlushForTesting();
+  void SetFocusRingObserverForTest(base::RepeatingCallback<void()> observer);
 
  protected:
   AccessibilityManager();
@@ -423,9 +452,16 @@ class AccessibilityManager
   // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
+  // Ash's mojom::AccessibilityFocusRingController used to request Ash's a11y
+  // focus ring feature.
+  ash::mojom::AccessibilityFocusRingControllerPtr
+      accessibility_focus_ring_controller_;
+
   bool app_terminating_ = false;
 
   std::unique_ptr<DictationChromeos> dictation_;
+
+  base::RepeatingCallback<void()> focus_ring_observer_for_test_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

@@ -5,6 +5,9 @@
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 
 #include <stddef.h>
+#include <memory>
+#include <set>
+#include <vector>
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,14 +33,12 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_sink.h"
-
-using ash::AccessibilityFocusRingController;
 #endif
 
 namespace accessibility_private = extensions::api::accessibility_private;
@@ -78,18 +79,19 @@ AccessibilityPrivateSetFocusRingFunction::Run() {
     rects.push_back(gfx::Rect(rect.left, rect.top, rect.width, rect.height));
   }
 
+  auto* accessibility_manager = chromeos::AccessibilityManager::Get();
   if (params->color) {
     SkColor color;
     if (!extensions::image_util::ParseHexColorString(*(params->color), &color))
       return RespondNow(Error("Could not parse hex color"));
-    AccessibilityFocusRingController::GetInstance()->SetFocusRingColor(color);
+    accessibility_manager->SetFocusRingColor(color);
   } else {
-    AccessibilityFocusRingController::GetInstance()->ResetFocusRingColor();
+    accessibility_manager->ResetFocusRingColor();
   }
 
   // Move the visible focus ring to cover all of these rects.
-  AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-      rects, AccessibilityFocusRingController::PERSIST_FOCUS_RING);
+  accessibility_manager->SetFocusRing(
+      rects, ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
 
   // Also update the touch exploration controller so that synthesized
   // touch events are anchored within the focused object.
@@ -125,7 +127,7 @@ AccessibilityPrivateSetHighlightsFunction::Run() {
     return RespondNow(Error("Could not parse hex color"));
 
   // Set the highlights to cover all of these rects.
-  AccessibilityFocusRingController::GetInstance()->SetHighlights(rects, color);
+  chromeos::AccessibilityManager::Get()->SetHighlights(rects, color);
 
   return RespondNow(NoArguments());
 #endif  // defined(OS_CHROMEOS)

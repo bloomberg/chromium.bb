@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -317,6 +317,12 @@ AccessibilityManager::AccessibilityManager()
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
+
+  // Connect to ash's AccessibilityFocusRingController interface.
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName,
+                      &accessibility_focus_ring_controller_);
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -1079,7 +1085,7 @@ AccessibilityManager::RegisterCallback(const AccessibilityStatusCallback& cb) {
 }
 
 void AccessibilityManager::NotifyAccessibilityStatusChanged(
-    AccessibilityStatusEventDetails& details) {
+    const AccessibilityStatusEventDetails& details) {
   callback_list_.Notify(details);
 
   // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
@@ -1274,9 +1280,8 @@ void AccessibilityManager::PostUnloadChromeVox() {
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 
   // Clear the accessibility focus ring.
-  ash::AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-      std::vector<gfx::Rect>(),
-      ash::AccessibilityFocusRingController::PERSIST_FOCUS_RING);
+  SetFocusRing(std::vector<gfx::Rect>(),
+               ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
 
   if (chromevox_panel_) {
     chromevox_panel_->Close();
@@ -1320,8 +1325,8 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   // unloads.
 
   // Clear the accessibility focus ring and highlight.
-  ash::AccessibilityFocusRingController::GetInstance()->HideFocusRing();
-  ash::AccessibilityFocusRingController::GetInstance()->HideHighlights();
+  HideFocusRing();
+  HideHighlights();
 
   // Stop speech.
   TtsController::GetInstance()->Stop();
@@ -1353,6 +1358,39 @@ void AccessibilityManager::ToggleDictation() {
   dictation_->OnToggleDictation();
 }
 
+void AccessibilityManager::SetFocusRingColor(SkColor color) {
+  accessibility_focus_ring_controller_->SetFocusRingColor(color);
+}
+
+void AccessibilityManager::ResetFocusRingColor() {
+  accessibility_focus_ring_controller_->ResetFocusRingColor();
+}
+
+void AccessibilityManager::SetFocusRing(
+    const std::vector<gfx::Rect>& rects_in_screen,
+    ash::mojom::FocusRingBehavior focus_ring_behavior) {
+  accessibility_focus_ring_controller_->SetFocusRing(rects_in_screen,
+                                                     focus_ring_behavior);
+  if (focus_ring_observer_for_test_)
+    focus_ring_observer_for_test_.Run();
+}
+
+void AccessibilityManager::HideFocusRing() {
+  accessibility_focus_ring_controller_->HideFocusRing();
+  if (focus_ring_observer_for_test_)
+    focus_ring_observer_for_test_.Run();
+}
+
+void AccessibilityManager::SetHighlights(
+    const std::vector<gfx::Rect>& rects_in_screen,
+    SkColor color) {
+  accessibility_focus_ring_controller_->SetHighlights(rects_in_screen, color);
+}
+
+void AccessibilityManager::HideHighlights() {
+  accessibility_focus_ring_controller_->HideHighlights();
+}
+
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
 }
@@ -1365,6 +1403,11 @@ void AccessibilityManager::SetBrailleControllerForTest(
 
 void AccessibilityManager::FlushForTesting() {
   accessibility_controller_.FlushForTesting();
+}
+
+void AccessibilityManager::SetFocusRingObserverForTest(
+    base::RepeatingCallback<void()> observer) {
+  focus_ring_observer_for_test_ = observer;
 }
 
 }  // namespace chromeos

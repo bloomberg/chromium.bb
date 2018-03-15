@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "ash/accessibility/accessibility_highlight_layer.h"
@@ -68,7 +69,8 @@ AccessibilityFocusRingController::GetInstance() {
   return base::Singleton<AccessibilityFocusRingController>::get();
 }
 
-AccessibilityFocusRingController::AccessibilityFocusRingController() {
+AccessibilityFocusRingController::AccessibilityFocusRingController()
+    : binding_(this) {
   focus_animation_info_.fade_in_time =
       base::TimeDelta::FromMilliseconds(kFocusFadeInTimeMilliseconds);
   focus_animation_info_.fade_out_time =
@@ -85,6 +87,11 @@ AccessibilityFocusRingController::AccessibilityFocusRingController() {
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() = default;
 
+void AccessibilityFocusRingController::BindRequest(
+    mojom::AccessibilityFocusRingControllerRequest request) {
+  binding_.Bind(std::move(request));
+}
+
 void AccessibilityFocusRingController::SetFocusRingColor(SkColor color) {
   focus_ring_color_ = color;
   UpdateFocusRingsFromFocusRects();
@@ -97,7 +104,7 @@ void AccessibilityFocusRingController::ResetFocusRingColor() {
 
 void AccessibilityFocusRingController::SetFocusRing(
     const std::vector<gfx::Rect>& rects,
-    AccessibilityFocusRingController::FocusRingBehavior focus_ring_behavior) {
+    mojom::FocusRingBehavior focus_ring_behavior) {
   std::vector<gfx::Rect> clean_rects(rects);
   // Remove duplicates
   if (rects.size() > 1) {
@@ -112,15 +119,25 @@ void AccessibilityFocusRingController::SetFocusRing(
   OnLayerChange(&focus_animation_info_);
   focus_rects_ = clean_rects;
   UpdateFocusRingsFromFocusRects();
-  if (focus_ring_observer_for_testing_)
-    focus_ring_observer_for_testing_.Run();
 }
 
 void AccessibilityFocusRingController::HideFocusRing() {
   focus_rects_.clear();
   UpdateFocusRingsFromFocusRects();
-  if (focus_ring_observer_for_testing_)
-    focus_ring_observer_for_testing_.Run();
+}
+
+void AccessibilityFocusRingController::SetHighlights(
+    const std::vector<gfx::Rect>& rects,
+    SkColor color) {
+  highlight_rects_ = rects;
+  GetColorAndOpacityFromColor(color, kHighlightOpacity, &highlight_color_,
+                              &highlight_opacity_);
+  UpdateHighlightFromHighlightRects();
+}
+
+void AccessibilityFocusRingController::HideHighlights() {
+  highlight_rects_.clear();
+  UpdateHighlightFromHighlightRects();
 }
 
 void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
@@ -136,7 +153,7 @@ void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
       focus_layers_[i] = std::make_unique<AccessibilityFocusRingLayer>(this);
   }
 
-  if (focus_ring_behavior_ == PERSIST_FOCUS_RING &&
+  if (focus_ring_behavior_ == mojom::FocusRingBehavior::PERSIST_FOCUS_RING &&
       focus_layers_[0]->CanAnimate()) {
     // In PERSIST mode, animate the first ring to its destination
     // location, then set the rest of the rings directly.
@@ -201,20 +218,6 @@ void AccessibilityFocusRingController::SetCaretRing(
 
 void AccessibilityFocusRingController::HideCaretRing() {
   caret_layer_.reset();
-}
-
-void AccessibilityFocusRingController::SetHighlights(
-    const std::vector<gfx::Rect>& rects,
-    SkColor color) {
-  highlight_rects_ = rects;
-  GetColorAndOpacityFromColor(color, kHighlightOpacity, &highlight_color_,
-                              &highlight_opacity_);
-  UpdateHighlightFromHighlightRects();
-}
-
-void AccessibilityFocusRingController::HideHighlights() {
-  highlight_rects_.clear();
-  UpdateHighlightFromHighlightRects();
 }
 
 void AccessibilityFocusRingController::SetNoFadeForTesting() {
@@ -455,7 +458,7 @@ void AccessibilityFocusRingController::AnimateFocusRings(
   if (timestamp < focus_animation_info_.change_time)
     timestamp = focus_animation_info_.change_time;
 
-  if (focus_ring_behavior_ == PERSIST_FOCUS_RING) {
+  if (focus_ring_behavior_ == mojom::FocusRingBehavior::PERSIST_FOCUS_RING) {
     base::TimeDelta delta = timestamp - focus_animation_info_.change_time;
     base::TimeDelta transition_time =
         base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
