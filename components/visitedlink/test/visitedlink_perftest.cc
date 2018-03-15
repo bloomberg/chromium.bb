@@ -140,7 +140,8 @@ TEST_F(VisitedLink, TestAddAndQuery) {
 }
 
 // Tests how long it takes to write and read a large database to and from disk.
-TEST_F(VisitedLink, TestLoad) {
+// Flaky, see crbug.com/822308.
+TEST_F(VisitedLink, DISABLED_TestLoad) {
   // create a big DB
   {
     TimeLogger table_initialization_timer("Table_initialization");
