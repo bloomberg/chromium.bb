@@ -388,14 +388,19 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
   if (IsActiveDirectoryUserForProfile(profile))
     return true;
 
-  if (profile->GetPrefs()->IsManagedPreference(
-          prefs::kArcBackupRestoreEnabled) &&
-      profile->GetPrefs()->IsManagedPreference(
-          prefs::kArcLocationServiceEnabled)) {
-    return true;
+  // Otherwise, the preferences are ignorable iff both backup&restore and
+  // location services are set off by policy.
+  const PrefService* prefs = profile->GetPrefs();
+  if (!prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) ||
+      prefs->GetBoolean(prefs::kArcBackupRestoreEnabled) == true) {
+    return false;
+  }
+  if (!prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled) ||
+      prefs->GetBoolean(prefs::kArcLocationServiceEnabled) == true) {
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 bool IsActiveDirectoryUserForProfile(const Profile* profile) {
