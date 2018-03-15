@@ -17,6 +17,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 class FontFaceCacheTest : public PageTestBase {
   USING_FAST_MALLOC(FontFaceCacheTest);
 

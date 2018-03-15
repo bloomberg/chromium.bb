@@ -593,8 +593,8 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
           break;
       }
     } else if (style_->IsFontStyleRangeValue()) {
-      const CSSFontStyleRangeValue* range_value =
-          ToCSSFontStyleRangeValue(style_);
+      const cssvalue::CSSFontStyleRangeValue* range_value =
+          cssvalue::ToCSSFontStyleRangeValue(style_);
       if (range_value->GetFontStyleValue()->IsIdentifierValue()) {
         CSSValueID font_style_id =
             range_value->GetFontStyleValue()->GetValueID();

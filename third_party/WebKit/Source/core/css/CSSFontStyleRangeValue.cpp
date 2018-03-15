@@ -28,6 +28,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 String CSSFontStyleRangeValue::CustomCSSText() const {
   if (!oblique_values_)
@@ -53,4 +54,5 @@ void CSSFontStyleRangeValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
