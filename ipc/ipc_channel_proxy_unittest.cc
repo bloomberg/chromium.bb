@@ -418,14 +418,11 @@ class IPCChannelBadMessageTest : public IPCChannelMojoTestBase {
   std::unique_ptr<QuitListener> listener_;
 };
 
-#if !defined(OS_WIN)
-  // TODO(jam): for some reason this is flaky on win buildbots.
 TEST_F(IPCChannelBadMessageTest, BadMessage) {
   sender()->Send(new TestMsg_SendBadMessage());
   SendQuitMessageAndWaitForIdle();
   EXPECT_TRUE(DidListenerGetBadMessage());
 }
-#endif
 
 DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ChannelProxyClient) {
   ChannelReflectorListener listener;
