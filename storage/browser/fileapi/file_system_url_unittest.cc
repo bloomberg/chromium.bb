@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -219,6 +221,31 @@ TEST(FileSystemURLTest, IsInSameFileSystem) {
   EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_foo_perm_a));
   EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_bar_temp_a));
   EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_bar_perm_a));
+}
+
+TEST(FileSystemURLTest, ValidAfterMoves) {
+  // Move constructor.
+  {
+    FileSystemURL original = FileSystemURL::CreateForTest(
+        GURL("http://foo"), kFileSystemTypeTemporary,
+        base::FilePath::FromUTF8Unsafe("a"));
+    EXPECT_TRUE(original.is_valid());
+    FileSystemURL new_url(std::move(original));
+    EXPECT_TRUE(new_url.is_valid());
+    EXPECT_TRUE(original.is_valid());
+  }
+
+  // Move operator.
+  {
+    FileSystemURL original = FileSystemURL::CreateForTest(
+        GURL("http://foo"), kFileSystemTypeTemporary,
+        base::FilePath::FromUTF8Unsafe("a"));
+    EXPECT_TRUE(original.is_valid());
+    FileSystemURL new_url;
+    new_url = std::move(std::move(original));
+    EXPECT_TRUE(new_url.is_valid());
+    EXPECT_TRUE(original.is_valid());
+  }
 }
 
 }  // namespace content
