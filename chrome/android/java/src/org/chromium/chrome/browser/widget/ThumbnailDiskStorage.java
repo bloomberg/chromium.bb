@@ -14,7 +14,7 @@ import android.support.v4.util.AtomicFile;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
-import com.google.protobuf.nano.MessageNano;
+import com.google.protobuf.ByteString;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -259,14 +259,13 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
         for (File file : cachedFiles) {
             AtomicFile atomicFile = new AtomicFile(file);
             try {
-                ThumbnailEntry entry =
-                        MessageNano.mergeFrom(new ThumbnailEntry(), atomicFile.readFully());
-                if (entry.contentId == null) continue;
+                ThumbnailEntry entry = ThumbnailEntry.parseFrom(atomicFile.readFully());
+                if (!entry.hasContentId()) continue;
 
-                String contentId = entry.contentId.id;
-                if (entry.sizePx == null) continue;
+                String contentId = entry.getContentId().getId();
+                if (!entry.hasSizePx()) continue;
 
-                int iconSizePx = entry.sizePx;
+                int iconSizePx = entry.getSizePx();
 
                 // Update internal cache state.
                 sDiskLruCache.add(Pair.create(contentId, iconSizePx));
@@ -312,17 +311,18 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
             byte[] compressedBitmapBytes = baos.toByteArray();
 
             // Construct proto.
-            ThumbnailEntry newEntry = new ThumbnailEntry();
-            newEntry.contentId = new ContentId();
-            newEntry.contentId.id = contentId;
-            newEntry.sizePx = iconSizePx;
-            newEntry.compressedPng = compressedBitmapBytes;
+            ThumbnailEntry newEntry =
+                    ThumbnailEntry.newBuilder()
+                            .setContentId(ContentId.newBuilder().setId(contentId))
+                            .setSizePx(iconSizePx)
+                            .setCompressedPng(ByteString.copyFrom(compressedBitmapBytes))
+                            .build();
 
             // Write proto to disk.
             File newFile = new File(getThumbnailFilePath(contentId, iconSizePx));
             atomicFile = new AtomicFile(newFile);
             fos = atomicFile.startWrite();
-            fos.write(MessageNano.toByteArray(newEntry));
+            fos.write(newEntry.toByteArray());
             atomicFile.finishWrite(fos);
 
             // Update internal cache state.
@@ -374,12 +374,11 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
 
             AtomicFile atomicFile = new AtomicFile(file);
             fis = atomicFile.openRead();
-            ThumbnailEntry entry =
-                    MessageNano.mergeFrom(new ThumbnailEntry(), atomicFile.readFully());
-            if (entry.compressedPng == null) return null;
+            ThumbnailEntry entry = ThumbnailEntry.parseFrom(atomicFile.readFully());
+            if (!entry.hasCompressedPng()) return null;
 
             bitmap = BitmapFactory.decodeByteArray(
-                    entry.compressedPng, 0, entry.compressedPng.length);
+                    entry.getCompressedPng().toByteArray(), 0, entry.getCompressedPng().size());
         } catch (IOException e) {
             Log.e(TAG, "Error while reading from disk.", e);
         } finally {

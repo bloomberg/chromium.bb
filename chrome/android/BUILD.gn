@@ -278,6 +278,7 @@ android_library("chrome_java") {
     "//third_party/gif_player:gif_player_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/leakcanary:leakcanary_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
     "//ui/android:ui_java",
     "//ui/base/mojo:mojo_bindings_java",
     "//ui/gfx/geometry/mojo:mojo_java",
@@ -413,6 +414,7 @@ proto_java_library("thumbnail_cache_entry_proto_java") {
   sources = [
     "$proto_path/thumbnail_cache_entry.proto",
   ]
+  generate_lite = true
 }
 
 java_cpp_template("resource_id_javagen") {

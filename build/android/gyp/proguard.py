@@ -13,6 +13,7 @@ from util import proguard_util
 
 
 _DANGEROUS_OPTIMIZATIONS = [
+    "class/unboxing/enum",
     # See crbug.com/625992
     "code/allocation/variable",
     # See crbug.com/625994
