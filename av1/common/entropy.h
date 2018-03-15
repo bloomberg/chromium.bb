@@ -70,6 +70,7 @@ typedef enum TX_CLASS {
 
 struct AV1Common;
 struct frame_contexts;
+void av1_reset_cdf_symbol_counters(struct frame_contexts *fc);
 void av1_default_coef_probs(struct AV1Common *cm);
 
 struct frame_contexts;
@@ -172,22 +173,6 @@ static INLINE TX_SIZE get_txsize_entropy_ctx(TX_SIZE txsize) {
                    1);
 }
 
-void av1_average_tile_coef_cdfs(struct frame_contexts *fc,
-                                struct frame_contexts *ec_ctxs[],
-                                aom_cdf_prob *cdf_ptrs[], int num_tiles);
-void av1_average_tile_mv_cdfs(struct frame_contexts *fc,
-                              struct frame_contexts *ec_ctxs[],
-                              aom_cdf_prob *cdf_ptrs[], int num_tiles);
-void av1_average_tile_intra_cdfs(struct frame_contexts *fc,
-                                 struct frame_contexts *ec_ctxs[],
-                                 aom_cdf_prob *cdf_ptrs[], int num_tiles);
-void av1_average_tile_inter_cdfs(struct AV1Common *cm,
-                                 struct frame_contexts *fc,
-                                 struct frame_contexts *ec_ctxs[],
-                                 aom_cdf_prob *cdf_ptrs[], int num_tiles);
-void av1_average_tile_loopfilter_cdfs(struct frame_contexts *fc,
-                                      struct frame_contexts *ec_ctxs[],
-                                      aom_cdf_prob *cdf_ptrs[], int num_tiles);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -3501,28 +3501,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      const int num_bwd_ctxs = 1;
-      FRAME_CONTEXT **tile_ctxs =
-          aom_malloc(num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx));
-      aom_cdf_prob **cdf_ptrs = aom_malloc(
-          num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
-      make_update_tile_list_dec(pbi, cm->largest_tile_id, num_bwd_ctxs,
-                                tile_ctxs);
-      av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                 num_bwd_ctxs);
-      av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                  num_bwd_ctxs);
-      av1_average_tile_loopfilter_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                       num_bwd_ctxs);
-
-      if (!frame_is_intra_only(cm)) {
-        av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
-                                    cdf_ptrs, num_bwd_ctxs);
-        av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                 num_bwd_ctxs);
-      }
-      aom_free(tile_ctxs);
-      aom_free(cdf_ptrs);
+      *cm->fc = pbi->tile_data[cm->largest_tile_id].tctx;
+      av1_reset_cdf_symbol_counters(cm->fc);
     } else {
       debug_check_frame_counts(cm);
     }

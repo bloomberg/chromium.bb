@@ -49,189 +49,98 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->eob_flag_cdf1024, av1_default_eob_multi1024_cdfs[index]);
 }
 
-static void average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
-                        int cdf_size, const int num_tiles) {
-  int i;
-  for (i = 0; i < cdf_size;) {
+static void reset_cdf_symbol_counter(aom_cdf_prob *cdf_ptr, int cdf_size) {
+  for (int i = 0; i < cdf_size;) {
     do {
-      int sum = 0;
-      int j;
       assert(i < cdf_size);
-      for (j = 0; j < num_tiles; ++j) sum += AOM_ICDF(cdf_ptr[j][i]);
-      fc_cdf_ptr[i] = AOM_ICDF(sum / num_tiles);
-    } while (fc_cdf_ptr[i++] != AOM_ICDF(CDF_PROB_TOP));
-    // Zero symbol counts for the next frame
+    } while (cdf_ptr[i++] != AOM_ICDF(CDF_PROB_TOP));
+    // Zero symbol counts.
     assert(i < cdf_size);
-    fc_cdf_ptr[i++] = 0;
+    cdf_ptr[i++] = 0;
     // Skip trailing zeros until the start of the next CDF.
-    for (; i < cdf_size && fc_cdf_ptr[i] == 0; ++i) {
+    for (; i < cdf_size && cdf_ptr[i] == 0; ++i) {
     }
   }
 }
 
-#define AVERAGE_TILE_CDFS(cname)                              \
+#define RESET_CDF_COUNTER(cname)                              \
   do {                                                        \
-    for (i = 0; i < num_tiles; ++i)                           \
-      cdf_ptr[i] = (aom_cdf_prob *)&ec_ctxs[i]->cname;        \
-    fc_cdf_ptr = (aom_cdf_prob *)&fc->cname;                  \
+    cdf_ptr = (aom_cdf_prob *)&fc->cname;                     \
     cdf_size = (int)sizeof(fc->cname) / sizeof(aom_cdf_prob); \
-    average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles);    \
+    reset_cdf_symbol_counter(cdf_ptr, cdf_size);              \
   } while (0);
 
-void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                                aom_cdf_prob *cdf_ptr[], int num_tiles) {
-  int i, cdf_size;
-  aom_cdf_prob *fc_cdf_ptr;
-  assert(num_tiles == 1);
-
-  AVERAGE_TILE_CDFS(txb_skip_cdf)
-  AVERAGE_TILE_CDFS(eob_extra_cdf)
-  AVERAGE_TILE_CDFS(dc_sign_cdf)
-  AVERAGE_TILE_CDFS(coeff_base_cdf)
-  AVERAGE_TILE_CDFS(eob_flag_cdf16)
-  AVERAGE_TILE_CDFS(eob_flag_cdf32)
-  AVERAGE_TILE_CDFS(eob_flag_cdf64)
-  AVERAGE_TILE_CDFS(eob_flag_cdf128)
-  AVERAGE_TILE_CDFS(eob_flag_cdf256)
-  AVERAGE_TILE_CDFS(eob_flag_cdf512)
-  AVERAGE_TILE_CDFS(eob_flag_cdf1024)
-  AVERAGE_TILE_CDFS(coeff_base_eob_cdf)
-  AVERAGE_TILE_CDFS(coeff_br_cdf)
-}
-
-void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                              aom_cdf_prob *cdf_ptr[], int num_tiles) {
-  int i, k, cdf_size;
-
-  aom_cdf_prob *fc_cdf_ptr;
-
-  assert(num_tiles == 1);
-
-  AVERAGE_TILE_CDFS(nmvc.joints_cdf)
-
-  for (k = 0; k < 2; ++k) {
-    AVERAGE_TILE_CDFS(nmvc.comps[k].classes_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].class0_fp_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].fp_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].sign_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].hp_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].class0_hp_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].class0_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].bits_cdf)
-  }
-}
-
-void av1_average_tile_loopfilter_cdfs(FRAME_CONTEXT *fc,
-                                      FRAME_CONTEXT *ec_ctxs[],
-                                      aom_cdf_prob *cdf_ptr[], int num_tiles) {
-  (void)fc;
-  (void)ec_ctxs;
-  (void)num_tiles;
-  (void)cdf_ptr;
-
-  assert(num_tiles == 1);
-
-  int i, cdf_size;
-  aom_cdf_prob *fc_cdf_ptr;
-  (void)i;
-  (void)cdf_size;
-  (void)fc_cdf_ptr;
-
-  AVERAGE_TILE_CDFS(switchable_restore_cdf)
-  AVERAGE_TILE_CDFS(wiener_restore_cdf)
-  AVERAGE_TILE_CDFS(sgrproj_restore_cdf)
-}
-
-void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                                 aom_cdf_prob *cdf_ptr[], int num_tiles) {
-  int i, cdf_size;
-
-  assert(num_tiles == 1);
-  aom_cdf_prob *fc_cdf_ptr;
-
-  AVERAGE_TILE_CDFS(tx_size_cdf)
-
-  AVERAGE_TILE_CDFS(intra_ext_tx_cdf)
-  AVERAGE_TILE_CDFS(inter_ext_tx_cdf)
-
-  AVERAGE_TILE_CDFS(seg.tree_cdf)
-  AVERAGE_TILE_CDFS(seg.pred_cdf)
-  AVERAGE_TILE_CDFS(uv_mode_cdf)
-
-  AVERAGE_TILE_CDFS(cfl_sign_cdf)
-  AVERAGE_TILE_CDFS(cfl_alpha_cdf)
-
-  AVERAGE_TILE_CDFS(partition_cdf)
-
-  AVERAGE_TILE_CDFS(delta_q_cdf)
-#if CONFIG_EXT_DELTA_Q
-  AVERAGE_TILE_CDFS(delta_lf_cdf)
-  AVERAGE_TILE_CDFS(delta_lf_multi_cdf)
-#endif
-
-  AVERAGE_TILE_CDFS(skip_cdfs)
-  AVERAGE_TILE_CDFS(txfm_partition_cdf)
-  AVERAGE_TILE_CDFS(palette_y_size_cdf)
-  AVERAGE_TILE_CDFS(palette_uv_size_cdf)
-  AVERAGE_TILE_CDFS(palette_y_color_index_cdf)
-  AVERAGE_TILE_CDFS(palette_uv_color_index_cdf)
-  AVERAGE_TILE_CDFS(filter_intra_cdfs)
-  AVERAGE_TILE_CDFS(filter_intra_mode_cdf)
-  AVERAGE_TILE_CDFS(palette_y_mode_cdf)
-  AVERAGE_TILE_CDFS(palette_uv_mode_cdf)
-  AVERAGE_TILE_CDFS(angle_delta_cdf)
-#if CONFIG_SPATIAL_SEGMENTATION
-  int j;
-  for (j = 0; j < SPATIAL_PREDICTION_PROBS; j++) {
-    AVERAGE_TILE_CDFS(seg.spatial_pred_seg_cdf[j]);
-  }
-#endif
-}
-
-void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
-                                 FRAME_CONTEXT *ec_ctxs[],
-                                 aom_cdf_prob *cdf_ptr[], int num_tiles) {
-  int i, cdf_size;
-
-  assert(num_tiles == 1);
-  aom_cdf_prob *fc_cdf_ptr;
-
-  AVERAGE_TILE_CDFS(comp_inter_cdf)
-  AVERAGE_TILE_CDFS(comp_ref_cdf)
-  AVERAGE_TILE_CDFS(comp_bwdref_cdf)
-
-  AVERAGE_TILE_CDFS(single_ref_cdf)
-
-  AVERAGE_TILE_CDFS(newmv_cdf)
-  AVERAGE_TILE_CDFS(zeromv_cdf)
-  AVERAGE_TILE_CDFS(refmv_cdf)
-  AVERAGE_TILE_CDFS(drl_cdf)
-  AVERAGE_TILE_CDFS(uni_comp_ref_cdf)
-  AVERAGE_TILE_CDFS(comp_ref_type_cdf)
-  AVERAGE_TILE_CDFS(inter_compound_mode_cdf)
-
-  AVERAGE_TILE_CDFS(compound_type_cdf)
-
+void av1_reset_cdf_symbol_counters(FRAME_CONTEXT *fc) {
+  aom_cdf_prob *cdf_ptr;
+  int cdf_size;
+  RESET_CDF_COUNTER(txb_skip_cdf);
+  RESET_CDF_COUNTER(eob_extra_cdf);
+  RESET_CDF_COUNTER(dc_sign_cdf);
+  RESET_CDF_COUNTER(eob_flag_cdf16);
+  RESET_CDF_COUNTER(eob_flag_cdf32);
+  RESET_CDF_COUNTER(eob_flag_cdf64);
+  RESET_CDF_COUNTER(eob_flag_cdf128);
+  RESET_CDF_COUNTER(eob_flag_cdf256);
+  RESET_CDF_COUNTER(eob_flag_cdf512);
+  RESET_CDF_COUNTER(eob_flag_cdf1024);
+  RESET_CDF_COUNTER(coeff_base_eob_cdf);
+  RESET_CDF_COUNTER(coeff_base_cdf);
+  RESET_CDF_COUNTER(coeff_br_cdf);
+  RESET_CDF_COUNTER(newmv_cdf);
+  RESET_CDF_COUNTER(zeromv_cdf);
+  RESET_CDF_COUNTER(refmv_cdf);
+  RESET_CDF_COUNTER(drl_cdf);
+  RESET_CDF_COUNTER(inter_compound_mode_cdf);
+  RESET_CDF_COUNTER(compound_type_cdf);
 #if WEDGE_IDX_ENTROPY_CODING
-  AVERAGE_TILE_CDFS(wedge_idx_cdf)
+  RESET_CDF_COUNTER(wedge_idx_cdf);
 #endif
-
-  AVERAGE_TILE_CDFS(interintra_cdf)
-  AVERAGE_TILE_CDFS(wedge_interintra_cdf)
-  AVERAGE_TILE_CDFS(interintra_mode_cdf)
-
-  /* NB: kf_y_cdf is discarded after use, so no need
-     for backwards update */
-  AVERAGE_TILE_CDFS(y_mode_cdf)
-
-  if (cm->interp_filter == SWITCHABLE) {
-    AVERAGE_TILE_CDFS(switchable_interp_cdf)
-  }
-  AVERAGE_TILE_CDFS(intra_inter_cdf)
-  AVERAGE_TILE_CDFS(motion_mode_cdf)
-  AVERAGE_TILE_CDFS(obmc_cdf)
-  AVERAGE_TILE_CDFS(compound_index_cdf);
-  AVERAGE_TILE_CDFS(comp_group_idx_cdf);
-
-  AVERAGE_TILE_CDFS(skip_mode_cdfs)
+  RESET_CDF_COUNTER(interintra_cdf);
+  RESET_CDF_COUNTER(wedge_interintra_cdf);
+  RESET_CDF_COUNTER(interintra_mode_cdf);
+  RESET_CDF_COUNTER(motion_mode_cdf);
+  RESET_CDF_COUNTER(obmc_cdf);
+  RESET_CDF_COUNTER(palette_y_size_cdf);
+  RESET_CDF_COUNTER(palette_uv_size_cdf);
+  RESET_CDF_COUNTER(palette_y_color_index_cdf);
+  RESET_CDF_COUNTER(palette_uv_color_index_cdf);
+  RESET_CDF_COUNTER(palette_y_mode_cdf);
+  RESET_CDF_COUNTER(palette_uv_mode_cdf);
+  RESET_CDF_COUNTER(comp_inter_cdf);
+  RESET_CDF_COUNTER(single_ref_cdf);
+  RESET_CDF_COUNTER(comp_ref_type_cdf);
+  RESET_CDF_COUNTER(uni_comp_ref_cdf);
+  RESET_CDF_COUNTER(comp_ref_cdf);
+  RESET_CDF_COUNTER(comp_bwdref_cdf);
+  RESET_CDF_COUNTER(txfm_partition_cdf);
+  RESET_CDF_COUNTER(compound_index_cdf);
+  RESET_CDF_COUNTER(comp_group_idx_cdf);
+  RESET_CDF_COUNTER(skip_mode_cdfs);
+  RESET_CDF_COUNTER(skip_cdfs);
+  RESET_CDF_COUNTER(intra_inter_cdf);
+  RESET_CDF_COUNTER(nmvc);
+  RESET_CDF_COUNTER(ndvc);
+  RESET_CDF_COUNTER(intrabc_cdf);
+  RESET_CDF_COUNTER(seg);
+  RESET_CDF_COUNTER(filter_intra_cdfs);
+  RESET_CDF_COUNTER(filter_intra_mode_cdf);
+  RESET_CDF_COUNTER(switchable_restore_cdf);
+  RESET_CDF_COUNTER(wiener_restore_cdf);
+  RESET_CDF_COUNTER(sgrproj_restore_cdf);
+  RESET_CDF_COUNTER(y_mode_cdf);
+  RESET_CDF_COUNTER(uv_mode_cdf);
+  RESET_CDF_COUNTER(partition_cdf);
+  RESET_CDF_COUNTER(switchable_interp_cdf);
+  RESET_CDF_COUNTER(kf_y_cdf);
+  RESET_CDF_COUNTER(angle_delta_cdf);
+  RESET_CDF_COUNTER(tx_size_cdf);
+  RESET_CDF_COUNTER(delta_q_cdf);
+#if CONFIG_EXT_DELTA_Q
+  RESET_CDF_COUNTER(delta_lf_multi_cdf);
+  RESET_CDF_COUNTER(delta_lf_cdf);
+#endif
+  RESET_CDF_COUNTER(intra_ext_tx_cdf);
+  RESET_CDF_COUNTER(inter_ext_tx_cdf);
+  RESET_CDF_COUNTER(cfl_sign_cdf);
+  RESET_CDF_COUNTER(cfl_alpha_cdf);
 }

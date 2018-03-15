@@ -4925,12 +4925,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
-  const int num_bwd_ctxs = 1;
 
-  FRAME_CONTEXT **tile_ctxs =
-      aom_malloc(num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx));
-  aom_cdf_prob **cdf_ptrs = aom_malloc(
-      num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
   set_ext_overrides(cpi);
   aom_clear_system_state();
 
@@ -5025,8 +5020,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     ++cm->current_video_frame;
 
-    aom_free(tile_ctxs);
-    aom_free(cdf_ptrs);
     return AOM_CODEC_OK;
   }
 
@@ -5071,8 +5064,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       cm->frame_type != KEY_FRAME) {
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
-      aom_free(tile_ctxs);
-      aom_free(cdf_ptrs);
       return AOM_CODEC_OK;
     }
   }
@@ -5199,11 +5190,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
 
-  if (skip_adapt) {
-    aom_free(tile_ctxs);
-    aom_free(cdf_ptrs);
-    return AOM_CODEC_OK;
-  }
+  if (skip_adapt) return AOM_CODEC_OK;
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int i;
@@ -5242,23 +5229,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #if CONFIG_ENTROPY_STATS
   av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
-  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    make_update_tile_list_enc(cpi, cm->largest_tile_id, 1, tile_ctxs);
-    av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                               num_bwd_ctxs);
-    av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                                num_bwd_ctxs);
-    av1_average_tile_loopfilter_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                                     num_bwd_ctxs);
-  }
 
-  if (!frame_is_intra_only(cm)) {
-    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
-                                  cdf_ptrs, num_bwd_ctxs);
-      av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                               num_bwd_ctxs);
-    }
+  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
+    *cm->fc = cpi->tile_data[cm->largest_tile_id].tctx;
+    av1_reset_cdf_symbol_counters(cm->fc);
   }
 
   if (cpi->refresh_golden_frame == 1)
@@ -5318,8 +5292,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cm->last_show_frame = cm->show_frame;
   }
 
-  aom_free(tile_ctxs);
-  aom_free(cdf_ptrs);
   return AOM_CODEC_OK;
 }
 
