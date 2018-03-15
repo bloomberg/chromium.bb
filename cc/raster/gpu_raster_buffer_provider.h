@@ -28,6 +28,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                           bool use_gpu_memory_buffer_resources,
                           int gpu_rasterization_msaa_sample_count,
                           viz::ResourceFormat preferred_tile_format,
+                          const gfx::Size& max_tile_size,
                           bool enable_oop_rasterization);
   ~GpuRasterBufferProvider() override;
 
@@ -39,6 +40,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   void Flush() override;
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
+  bool IsResourcePremultiplied(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
       const ResourcePool::InUsePoolResource& resource) const override;
@@ -116,6 +118,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const bool use_gpu_memory_buffer_resources_;
   const int msaa_sample_count_;
   const viz::ResourceFormat preferred_tile_format_;
+  const gfx::Size max_tile_size_;
   const bool enable_oop_rasterization_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);

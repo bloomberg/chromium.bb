@@ -24,6 +24,8 @@ enum RasterMode {
   FULL_ONE_COPY,
   PARTIAL_GPU,
   FULL_GPU,
+  PARTIAL_GPU_LOW_BIT_DEPTH,
+  FULL_GPU_LOW_BIT_DEPTH,
   PARTIAL_BITMAP,
   FULL_BITMAP,
 };
@@ -55,6 +57,16 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
         settings->gpu_rasterization_forced = true;
         settings->use_partial_raster = false;
         break;
+      case PARTIAL_GPU_LOW_BIT_DEPTH:
+        settings->gpu_rasterization_forced = true;
+        settings->use_partial_raster = true;
+        settings->preferred_tile_format = viz::RGBA_4444;
+        break;
+      case FULL_GPU_LOW_BIT_DEPTH:
+        settings->gpu_rasterization_forced = true;
+        settings->use_partial_raster = false;
+        settings->preferred_tile_format = viz::RGBA_4444;
+        break;
     }
   }
 
@@ -81,6 +93,8 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
       case FULL_ONE_COPY:
       case PARTIAL_GPU:
       case FULL_GPU:
+      case PARTIAL_GPU_LOW_BIT_DEPTH:
+      case FULL_GPU_LOW_BIT_DEPTH:
         test_type = PIXEL_TEST_GL;
         break;
       case PARTIAL_BITMAP:
@@ -120,9 +134,12 @@ class BlueYellowClient : public ContentLayerClient {
     PaintFlags flags;
     flags.setStyle(PaintFlags::kFill_Style);
 
-    flags.setColor(SK_ColorBLUE);
+    // Use custom colors with 0xF2 rather than the default blue/yellow (which
+    // use 0xFF), as the default won't show dither patterns as it exactly maps
+    // to a 16-bit color.
+    flags.setColor(SkColorSetRGB(0x00, 0x00, 0xF2));
     display_list->push<DrawRectOp>(gfx::RectToSkRect(blue_rect), flags);
-    flags.setColor(SK_ColorYELLOW);
+    flags.setColor(SkColorSetRGB(0xF2, 0xF2, 0x00));
     display_list->push<DrawRectOp>(gfx::RectToSkRect(yellow_rect), flags);
 
     display_list->EndPaintOfUnpaired(PaintableRegion());
@@ -245,6 +262,20 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
   RunRasterPixelTest(
       false, FULL_GPU, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       PartialRaster_SingleThread_GpuRaster_LowBitDepth) {
+  RunRasterPixelTest(false, PARTIAL_GPU_LOW_BIT_DEPTH, picture_layer_,
+                     base::FilePath(FILE_PATH_LITERAL(
+                         "blue_yellow_partial_flipped_dither.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       FullRaster_SingleThread_GpuRaster_LowBitDepth) {
+  RunRasterPixelTest(
+      false, FULL_GPU_LOW_BIT_DEPTH, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped_dither.png")));
 }
 
 }  // namespace

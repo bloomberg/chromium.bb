@@ -71,6 +71,9 @@ class CC_EXPORT LayerTreeSettings {
   double background_animation_rate = 1.0;
   gfx::Size default_tile_size;
   gfx::Size max_untiled_layer_size;
+  // If set, indicates the largest tile size we will use for GPU Raster. If not
+  // set, no limit is enforced.
+  gfx::Size max_gpu_raster_tile_size;
   gfx::Size minimum_occlusion_tracking_size;
   // 3000 pixels should give sufficient area for prepainting.
   // Note this value is specified with an ideal contents scale in mind. That

@@ -294,6 +294,9 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
 
     SkSurface* surface() const { return surface_.get(); }
 
+    static SkSurfaceProps ComputeSurfaceProps(bool use_distance_field_text,
+                                              bool can_use_lcd_text);
+
    private:
     sk_sp<SkSurface> surface_;
 

@@ -44,6 +44,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   void Flush() override;
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
+  bool IsResourcePremultiplied(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
       const ResourcePool::InUsePoolResource& resource) const override;

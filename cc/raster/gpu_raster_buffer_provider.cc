@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -37,6 +38,73 @@
 
 namespace cc {
 namespace {
+
+class ScopedSkSurfaceForUnpremultiplyAndDither {
+ public:
+  ScopedSkSurfaceForUnpremultiplyAndDither(
+      viz::RasterContextProvider* context_provider,
+      const gfx::Rect& playback_rect,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Size& max_tile_size,
+      GLuint texture_id,
+      const gfx::Size& texture_size,
+      bool use_distance_field_text,
+      bool can_use_lcd_text,
+      int msaa_sample_count)
+      : context_provider_(context_provider),
+        texture_id_(texture_id),
+        offset_(playback_rect.OffsetFromOrigin() -
+                raster_full_rect.OffsetFromOrigin()),
+        size_(playback_rect.size()) {
+    // Determine the |intermediate_size| to use for our 32-bit texture. If we
+    // know the max tile size, use that. This prevents GPU cache explosion due
+    // to using lots of different 32-bit texture sizes. Otherwise just use the
+    // exact size of the target texture.
+    gfx::Size intermediate_size;
+    if (!max_tile_size.IsEmpty()) {
+      DCHECK_GE(max_tile_size.width(), texture_size.width());
+      DCHECK_GE(max_tile_size.height(), texture_size.height());
+      intermediate_size = max_tile_size;
+    } else {
+      intermediate_size = texture_size;
+    }
+
+    // Allocate a 32-bit surface for raster. We will copy from that into our
+    // actual surface in destruction.
+    SkImageInfo n32Info = SkImageInfo::MakeN32Premul(
+        intermediate_size.width(), intermediate_size.height());
+    SkSurfaceProps surface_props =
+        LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
+            use_distance_field_text, can_use_lcd_text);
+    surface_ = SkSurface::MakeRenderTarget(
+        context_provider->GrContext(), SkBudgeted::kNo, n32Info,
+        msaa_sample_count, kTopLeft_GrSurfaceOrigin, &surface_props);
+  }
+
+  ~ScopedSkSurfaceForUnpremultiplyAndDither() {
+    // In lost-context cases, |surface_| may be null and there's nothing
+    // meaningful to do here.
+    if (!surface_)
+      return;
+
+    GrBackendObject handle =
+        surface_->getTextureHandle(SkSurface::kFlushRead_BackendHandleAccess);
+    const GrGLTextureInfo* info =
+        skia::GrBackendObjectToGrGLTextureInfo(handle);
+    context_provider_->ContextGL()->UnpremultiplyAndDitherCopyCHROMIUM(
+        info->fID, texture_id_, offset_.x(), offset_.y(), size_.width(),
+        size_.height());
+  }
+
+  SkSurface* surface() { return surface_.get(); }
+
+ private:
+  viz::RasterContextProvider* context_provider_;
+  GLuint texture_id_;
+  gfx::Vector2d offset_;
+  gfx::Size size_;
+  sk_sp<SkSurface> surface_;
+};
 
 static void RasterizeSourceOOP(
     const RasterSource* raster_source,
@@ -87,6 +155,9 @@ static void RasterizeSourceOOP(
                      raster_source->requires_clear());
   ri->EndRasterCHROMIUM();
 
+  // TODO(ericrk): Handle unpremultiply+dither for 4444 cases.
+  // https://crbug.com/789153
+
   ri->DeleteTextures(1, &texture_id);
 }
 
@@ -127,7 +198,9 @@ static void RasterizeSource(
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
     bool use_distance_field_text,
-    int msaa_sample_count) {
+    int msaa_sample_count,
+    bool unpremultiply_and_dither,
+    const gfx::Size& max_tile_size) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   GLuint texture_id = ri->CreateAndConsumeTexture(
       texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT, resource_format,
@@ -142,12 +215,23 @@ static void RasterizeSource(
 
   {
     ScopedGrContextAccess gr_context_access(context_provider);
-    LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
-        context_provider->GrContext(), texture_id, texture_target,
-        resource_size, resource_format, use_distance_field_text,
-        playback_settings.use_lcd_text, msaa_sample_count);
-
-    SkSurface* surface = scoped_surface.surface();
+    base::Optional<LayerTreeResourceProvider::ScopedSkSurface> scoped_surface;
+    base::Optional<ScopedSkSurfaceForUnpremultiplyAndDither>
+        scoped_dither_surface;
+    SkSurface* surface;
+    if (!unpremultiply_and_dither) {
+      scoped_surface.emplace(context_provider->GrContext(), texture_id,
+                             texture_target, resource_size, resource_format,
+                             use_distance_field_text,
+                             playback_settings.use_lcd_text, msaa_sample_count);
+      surface = scoped_surface->surface();
+    } else {
+      scoped_dither_surface.emplace(
+          context_provider, playback_rect, raster_full_rect, max_tile_size,
+          texture_id, resource_size, use_distance_field_text,
+          playback_settings.use_lcd_text, msaa_sample_count);
+      surface = scoped_dither_surface->surface();
+    }
 
     // Allocating an SkSurface will fail after a lost context.  Pretend we
     // rasterized, as the contents of the resource don't matter anymore.
@@ -169,6 +253,15 @@ static void RasterizeSource(
   }
 
   ri->DeleteTextures(1, &texture_id);
+}
+
+bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) {
+  switch (format) {
+    case viz::RGBA_4444:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace
@@ -266,6 +359,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     bool use_gpu_memory_buffer_resources,
     int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat preferred_tile_format,
+    const gfx::Size& max_tile_size,
     bool enable_oop_rasterization)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
@@ -274,6 +368,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       preferred_tile_format_(preferred_tile_format),
+      max_tile_size_(max_tile_size),
       enable_oop_rasterization_(enable_oop_rasterization) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
@@ -342,6 +437,12 @@ bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
   // This doesn't require a swizzle because we rasterize to the correct format.
   return false;
+}
+
+bool GpuRasterBufferProvider::IsResourcePremultiplied(
+    bool must_support_alpha) const {
+  return !ShouldUnpremultiplyAndDitherResource(
+      GetResourceFormat(must_support_alpha));
 }
 
 bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
@@ -448,12 +549,13 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
         transform, playback_settings, worker_context_provider_,
         use_distance_field_text_, msaa_sample_count_);
   } else {
-    RasterizeSource(raster_source, resource_has_previous_content, mailbox,
-                    texture_target, texture_is_overlay_candidate,
-                    texture_storage_allocated, resource_size, resource_format,
-                    color_space, raster_full_rect, playback_rect, transform,
-                    playback_settings, worker_context_provider_,
-                    use_distance_field_text_, msaa_sample_count_);
+    RasterizeSource(
+        raster_source, resource_has_previous_content, mailbox, texture_target,
+        texture_is_overlay_candidate, texture_storage_allocated, resource_size,
+        resource_format, color_space, raster_full_rect, playback_rect,
+        transform, playback_settings, worker_context_provider_,
+        use_distance_field_text_, msaa_sample_count_,
+        ShouldUnpremultiplyAndDitherResource(resource_format), max_tile_size_);
   }
 
   // Generate sync token for cross context synchronization.
