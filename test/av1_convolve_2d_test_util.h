@@ -31,10 +31,10 @@ typedef void (*convolve_2d_func)(const uint8_t *src, int src_stride,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params);
 
-typedef std::tr1::tuple<convolve_2d_func, int, int, int, int> Convolve2DParam;
+typedef std::tr1::tuple<convolve_2d_func, int, int, BLOCK_SIZE> Convolve2DParam;
 
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
-    convolve_2d_func filter, int subx_exist, int suby_exist, int is_compound);
+    convolve_2d_func filter, int subx_exist, int suby_exist);
 
 class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
@@ -86,12 +86,11 @@ typedef void (*highbd_convolve_2d_func)(
     InterpFilterParams *filter_params_y, const int subpel_x_q4,
     const int subpel_y_q4, ConvolveParams *conv_params, int bd);
 
-typedef std::tr1::tuple<int, highbd_convolve_2d_func, int, int, int, int>
+typedef std::tr1::tuple<int, highbd_convolve_2d_func, int, int, BLOCK_SIZE>
     HighbdConvolve2DParam;
 
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
-    highbd_convolve_2d_func filter, int subx_exist, int suby_exist,
-    int is_compound);
+    highbd_convolve_2d_func filter, int subx_exist, int suby_exist);
 
 class AV1HighbdConvolve2DTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {

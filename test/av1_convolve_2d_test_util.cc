@@ -25,13 +25,11 @@ const int kMaxSize = 128 + 32;  // padding
 namespace AV1Convolve2D {
 
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
-    convolve_2d_func filter, int has_subx, int has_suby, int is_compound) {
-  Convolve2DParam param_list[BLOCK_SIZES_ALL];
-  for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
-    param_list[block_idx] =
-        make_tuple(filter, has_subx, has_suby, is_compound, block_idx);
-  }
-  return ::testing::ValuesIn(param_list);
+    convolve_2d_func filter, int has_subx, int has_suby) {
+  return ::testing::Combine(::testing::Values(filter),
+                            ::testing::Values(has_subx),
+                            ::testing::Values(has_suby),
+                            ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
 
 AV1Convolve2DTest::~AV1Convolve2DTest() {}
@@ -43,14 +41,11 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
   const int has_suby = GET_PARAM(2);
-  const int is_compound = GET_PARAM(3);
-  const int block_idx = GET_PARAM(4);
+  const int block_idx = GET_PARAM(3);
   int hfilter, vfilter, subx, suby;
   uint8_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output2[MAX_SB_SQUARE]);
-
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
@@ -105,9 +100,7 @@ void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
   const int has_suby = GET_PARAM(2);
-  const int is_compound = GET_PARAM(3);
-  const int block_idx = GET_PARAM(4);
-  (void)is_compound;
+  const int block_idx = GET_PARAM(3);
 
   uint8_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
@@ -138,7 +131,7 @@ void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
 
   aom_usec_timer_mark(&timer);
   const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-  printf("%d,%d convolve %3dx%-3d: %7.2f ns\n", has_subx, has_suby, out_w,
+  printf("%d,%d convolve %3dx%-3d: %7.2f us\n", has_subx, has_suby, out_w,
          out_h, 1000.0 * elapsed_time / num_loops);
 }
 
@@ -153,14 +146,11 @@ void AV1Convolve2DSrTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
   const int has_suby = GET_PARAM(2);
-  const int is_compound = GET_PARAM(3);
-  const int block_idx = GET_PARAM(4);
+  const int block_idx = GET_PARAM(3);
   int hfilter, vfilter, subx, suby;
   uint8_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, uint8_t, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, uint8_t, output2[MAX_SB_SQUARE]);
-
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
@@ -225,9 +215,7 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
   const int has_suby = GET_PARAM(2);
-  const int is_compound = GET_PARAM(3);
-  const int block_idx = GET_PARAM(4);
-  (void)is_compound;
+  const int block_idx = GET_PARAM(3);
 
   uint8_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, uint8_t, output[MAX_SB_SQUARE]);
@@ -263,7 +251,7 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-    printf("%d,%d convolve %3dx%-3d: %7.2f ns\n", has_subx, has_suby, out_w,
+    printf("%d,%d convolve %3dx%-3d: %7.2f us\n", has_subx, has_suby, out_w,
            out_h, 1000.0 * elapsed_time / num_loops);
   }
 }
@@ -279,14 +267,11 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
   const int has_suby = GET_PARAM(2);
-  const int is_compound = GET_PARAM(3);
-  const int block_idx = GET_PARAM(4);
+  const int block_idx = GET_PARAM(3);
   int hfilter, vfilter, subx, suby;
   uint8_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output2[MAX_SB_SQUARE]);
-
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
@@ -386,17 +371,11 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
 namespace AV1HighbdConvolve2D {
 
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
-    highbd_convolve_2d_func filter, int has_subx, int has_suby,
-    int is_compound) {
-  const int bit_depths[3] = { 8, 10, 12 };
-  HighbdConvolve2DParam param_list[3 * BLOCK_SIZES_ALL];
-  for (int bd = 0; bd < 3; ++bd) {
-    for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
-      param_list[bd * BLOCK_SIZES_ALL + block_idx] = make_tuple(
-          bit_depths[bd], filter, has_subx, has_suby, is_compound, block_idx);
-    }
-  }
-  return ::testing::ValuesIn(param_list);
+    highbd_convolve_2d_func filter, int has_subx, int has_suby) {
+  return ::testing::Combine(
+      ::testing::Range(8, 12, 2), ::testing::Values(filter),
+      ::testing::Values(has_subx), ::testing::Values(has_suby),
+      ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
 
 AV1HighbdConvolve2DTest::~AV1HighbdConvolve2DTest() {}
@@ -412,13 +391,11 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
   const int bd = GET_PARAM(0);
   const int has_subx = GET_PARAM(2);
   const int has_suby = GET_PARAM(3);
-  const int is_compound = GET_PARAM(4);
-  const int block_idx = GET_PARAM(5);
+  const int block_idx = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output2[MAX_SB_SQUARE]);
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j)
@@ -484,12 +461,10 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
   const int bd = GET_PARAM(0);
   const int has_subx = GET_PARAM(2);
   const int has_suby = GET_PARAM(3);
-  const int is_compound = GET_PARAM(4);
-  const int block_idx = GET_PARAM(5);
+  const int block_idx = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, uint16_t, output[MAX_SB_SQUARE]);
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j)
@@ -531,7 +506,7 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
 
     aom_usec_timer_mark(&timer);
     const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-    printf("%d,%d convolve %3dx%-3d: %7.2f ns\n", has_subx, has_suby, out_w,
+    printf("%d,%d convolve %3dx%-3d: %7.2f us\n", has_subx, has_suby, out_w,
            out_h, 1000.0 * elapsed_time / num_loops);
   }
 }
@@ -542,13 +517,11 @@ void AV1HighbdConvolve2DSrTest::RunCheckOutput(
   const int bd = GET_PARAM(0);
   const int has_subx = GET_PARAM(2);
   const int has_suby = GET_PARAM(3);
-  const int is_compound = GET_PARAM(4);
-  const int block_idx = GET_PARAM(5);
+  const int block_idx = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, uint16_t, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, uint16_t, output2[MAX_SB_SQUARE]);
-  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j)
@@ -622,9 +595,7 @@ void AV1HighbdJntConvolve2DTest::RunSpeedTest(
     highbd_convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int bd = GET_PARAM(0);
-  // const int has_subx = GET_PARAM(2);
-  // const int has_suby = GET_PARAM(3);
-  const int block_idx = GET_PARAM(5);
+  const int block_idx = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
@@ -665,7 +636,7 @@ void AV1HighbdJntConvolve2DTest::RunSpeedTest(
 
   aom_usec_timer_mark(&timer);
   const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-  printf("convolve %3dx%-3d: %7.2f ns\n", out_w, out_h,
+  printf("convolve %3dx%-3d: %7.2f us\n", out_w, out_h,
          1000.0 * elapsed_time / num_loops);
 }
 
@@ -675,7 +646,7 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
   const int bd = GET_PARAM(0);
   const int has_subx = GET_PARAM(2);
   const int has_suby = GET_PARAM(3);
-  const int block_idx = GET_PARAM(5);
+  const int block_idx = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
