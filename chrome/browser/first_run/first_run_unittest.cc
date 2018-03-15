@@ -22,6 +22,11 @@ class FirstRunTest : public testing::Test {
   FirstRunTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
   ~FirstRunTest() override {}
 
+  void TearDown() override {
+    first_run::ResetCachedSentinelDataForTesting();
+    Test::TearDown();
+  }
+
  private:
   base::ScopedPathOverride user_data_dir_override_;
 
