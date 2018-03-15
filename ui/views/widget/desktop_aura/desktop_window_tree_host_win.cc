@@ -727,7 +727,8 @@ gfx::Size DesktopWindowTreeHostWin::DIPToScreenSize(
 }
 
 void DesktopWindowTreeHostWin::ResetWindowControls() {
-  GetWidget()->non_client_view()->ResetWindowControls();
+  if (GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->ResetWindowControls();
 }
 
 gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
@@ -845,7 +846,8 @@ void DesktopWindowTreeHostWin::HandleFrameChanged() {
   CheckForMonitorChange();
   SetWindowTransparency();
   // Replace the frame and layout the contents.
-  GetWidget()->non_client_view()->UpdateFrame();
+  if (GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->UpdateFrame();
 }
 
 void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
