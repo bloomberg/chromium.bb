@@ -96,6 +96,7 @@ WebRtcEventLogManager::WebRtcEventLogManager()
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (base::FeatureList::IsEnabled(::features::kWebRtcRemoteEventLog)) {
+    VLOG(1) << "WebRTC remote-bound event logging enabled.";
     remote_logs_manager_ = std::make_unique<WebRtcRemoteEventLogManager>(this);
   }
 
