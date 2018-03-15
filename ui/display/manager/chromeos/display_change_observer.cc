@@ -68,8 +68,10 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
                                  display_info.device_scale_factor());
   // When display zoom option is available, we cannot change the mode for
   // internal displays.
-  if (chromeos::switches::IsDisplayZoomSettingEnabled())
+  if (chromeos::switches::IsDisplayZoomSettingEnabled()) {
+    native_mode.set_is_default(true);
     return ManagedDisplayInfo::ManagedDisplayModeList{native_mode};
+  }
   return CreateInternalManagedDisplayModeList(native_mode);
 }
 
