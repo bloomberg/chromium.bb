@@ -20,6 +20,8 @@ source_set("headless") {
     "ozone_platform_headless.h",
   ]
 
+  defines = [ "OZONE_IMPLEMENTATION" ]
+
   deps = [
     "//base",
     "//skia",
