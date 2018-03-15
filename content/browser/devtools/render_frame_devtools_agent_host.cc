@@ -272,6 +272,7 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params->headers);
   for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    // TODO(caseq): consider chaining intercepting proxies from multiple agents.
     if (!network->enabled())
       continue;
     *report_raw_headers = true;
@@ -286,6 +287,24 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
   }
 
   begin_params->headers = headers.ToString();
+}
+
+// static
+bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+    FrameTreeNode* frame_tree_node,
+    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+  base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
+  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (!agent_host)
+    return false;
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    if (network->MaybeCreateProxyForInterception(frame_token,
+                                                 target_factory_request)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // static

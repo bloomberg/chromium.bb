@@ -1069,6 +1069,10 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
       sub_request_->Cancel();
       sub_request_.reset();
     }
+    if (response_headers_callback_) {
+      response_headers_callback_.Run(
+          mock_response_details_->response_headers());
+    }
     NotifyHeadersComplete();
     return;
   }

@@ -29,7 +29,7 @@
     session.evaluate(`
       window.xhr = new XMLHttpRequest();
       // This script will send headers then wait 10 seconds before sending body.
-      window.xhr.open('GET', '/devtools/network/resources/resource.php?send=10000', true);
+      window.xhr.open('GET', '/devtools/network/resources/resource.php?send=10000&nosniff=1', true);
       window.xhr.send();
     `);
   });

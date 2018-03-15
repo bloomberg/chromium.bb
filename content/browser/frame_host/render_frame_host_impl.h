@@ -708,6 +708,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the current size for this frame.
   const base::Optional<gfx::Size>& frame_size() const { return frame_size_; }
 
+  // Re-creates loader factories and pushes them to |RenderFrame|.
+  // Used in case we need to add or remove intercepting proxies to the
+  // running renderer, or in case of Network Service connection errors.
+  void UpdateSubresourceLoaderFactories();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -943,10 +948,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdatePermissionsForNavigation(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params);
-
-  // Handle Network Service connection errors. Will re-create broken Network
-  // Service-backed factories and send to |RenderFrame|.
-  void OnNetworkServiceConnectionError();
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger

@@ -9,6 +9,7 @@
     $chunked = $_GET["chunked"];
     $random = $_GET["random"];
     $cached = $_GET["cached"];
+    $nosniff = $_GET["nosniff"];
 
     # Wait before sending response
     if ($wait)
@@ -45,6 +46,9 @@
         header("Content-Type: image/png");
     else
         header("Content-Type: text/plain");
+
+    if ($nosniff)
+        header("x-content-type-options: nosniff");
 
     # Flush headers and sleep bofore sending response
     if ($send) {

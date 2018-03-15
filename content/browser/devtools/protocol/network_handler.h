@@ -11,11 +11,16 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+
+namespace base {
+class UnguessableToken;
+};
 
 namespace net {
 class HttpRequestHeaders;
@@ -120,6 +125,10 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback)
       override;
 
+  bool MaybeCreateProxyForInterception(
+      const base::UnguessableToken& frame_token,
+      network::mojom::URLLoaderFactoryRequest* target_factory_request);
+
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,
                       bool* disable_cache);
@@ -146,6 +155,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   Network::Frontend* frontend() const { return frontend_.get(); }
 
   static GURL ClearUrlRef(const GURL& url);
+  static std::unique_ptr<Network::Request> CreateRequestFromResourceRequest(
+      const network::ResourceRequest& request);
   static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
       const net::URLRequest* request);
 
@@ -169,6 +180,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   std::vector<std::pair<std::string, std::string>> extra_headers_;
   std::string host_id_;
   std::unique_ptr<InterceptionHandle> interception_handle_;
+  std::unique_ptr<DevToolsURLLoaderInterceptor> url_loader_interceptor_;
   bool bypass_service_worker_;
   bool cache_disabled_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;

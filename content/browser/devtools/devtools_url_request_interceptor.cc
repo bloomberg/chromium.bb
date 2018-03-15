@@ -42,20 +42,6 @@ DevToolsURLRequestInterceptor::~DevToolsURLRequestInterceptor() {
   // DevToolsURLRequestInterceptorUserData explicitly.
 }
 
-DevToolsURLRequestInterceptor::Pattern::Pattern() = default;
-
-DevToolsURLRequestInterceptor::Pattern::~Pattern() = default;
-
-DevToolsURLRequestInterceptor::Pattern::Pattern(const Pattern& other) = default;
-
-DevToolsURLRequestInterceptor::Pattern::Pattern(
-    const std::string& url_pattern,
-    base::flat_set<ResourceType> resource_types,
-    InterceptionStage interception_stage)
-    : url_pattern(url_pattern),
-      resource_types(std::move(resource_types)),
-      interception_stage(interception_stage) {}
-
 const DevToolsTargetRegistry::TargetInfo*
 DevToolsURLRequestInterceptor::TargetInfoForRequestInfo(
     const ResourceRequestInfo* request_info) const {
@@ -317,26 +303,5 @@ void DevToolsURLRequestInterceptor::JobFinished(
       base::BindOnce(&DevToolsInterceptorController::NavigationFinished,
                      controller_, interception_id));
 }
-
-DevToolsURLRequestInterceptor::Modifications::Modifications(
-    base::Optional<net::Error> error_reason,
-    base::Optional<std::string> raw_response,
-    protocol::Maybe<std::string> modified_url,
-    protocol::Maybe<std::string> modified_method,
-    protocol::Maybe<std::string> modified_post_data,
-    protocol::Maybe<protocol::Network::Headers> modified_headers,
-    protocol::Maybe<protocol::Network::AuthChallengeResponse>
-        auth_challenge_response,
-    bool mark_as_canceled)
-    : error_reason(std::move(error_reason)),
-      raw_response(std::move(raw_response)),
-      modified_url(std::move(modified_url)),
-      modified_method(std::move(modified_method)),
-      modified_post_data(std::move(modified_post_data)),
-      modified_headers(std::move(modified_headers)),
-      auth_challenge_response(std::move(auth_challenge_response)),
-      mark_as_canceled(mark_as_canceled) {}
-
-DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
 
 }  // namespace content
