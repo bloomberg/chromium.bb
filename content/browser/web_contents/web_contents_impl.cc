@@ -4945,11 +4945,6 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
     rwhv->SetMainFrameAXTreeID(GetMainFrame()->GetAXTreeID());
 
   notify_disconnection_ = true;
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_WEB_CONTENTS_CONNECTED,
-      Source<WebContents>(this),
-      NotificationService::NoDetails());
 
   bool was_crashed = IsCrashed();
   SetIsCrashed(base::TERMINATION_STATUS_STILL_RUNNING, 0);
