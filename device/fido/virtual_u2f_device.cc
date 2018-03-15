@@ -99,14 +99,7 @@ VirtualU2fDevice::RegistrationData& VirtualU2fDevice::RegistrationData::
 operator=(RegistrationData&& other) = default;
 VirtualU2fDevice::RegistrationData::~RegistrationData() = default;
 
-VirtualU2fDevice::VirtualU2fDevice()
-    : attestation_private_key_(
-          crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey())),
-      attestation_cert_(std::begin(kAttestationCert),
-                        std::end(kAttestationCert)),
-      weak_factory_(this) {
-  DCHECK(attestation_private_key_);
-}
+VirtualU2fDevice::VirtualU2fDevice() : weak_factory_(this) {}
 
 VirtualU2fDevice::~VirtualU2fDevice() = default;
 
@@ -203,20 +196,22 @@ void VirtualU2fDevice::DoRegister(uint8_t ins,
   // Note: Non-deterministic, you need to mock this out if you rely on
   // deterministic behavior.
   std::vector<uint8_t> sig;
+  std::unique_ptr<crypto::ECPrivateKey> attestation_private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey());
   auto signer =
-      crypto::ECSignatureCreator::Create(attestation_private_key_.get());
+      crypto::ECSignatureCreator::Create(attestation_private_key.get());
   status = signer->Sign(sign_buffer.data(), sign_buffer.size(), &sig);
   DCHECK(status);
 
   // U2F response data.
   std::vector<uint8_t> response;
   response.reserve(1 + public_key.size() + 1 + key_handle.size() +
-                   attestation_cert_.size() + sig.size());
+                   sizeof(kAttestationCert) + sig.size());
   response.push_back(kU2fRegistrationResponseHeader);
   AppendTo(&response, public_key);
   response.push_back(key_handle.size());
   AppendTo(&response, key_handle);
-  AppendTo(&response, attestation_cert_);
+  AppendTo(&response, kAttestationCert);
   AppendTo(&response, sig);
 
   // Store the registration.

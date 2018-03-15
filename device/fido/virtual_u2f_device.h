@@ -70,9 +70,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
               base::span<const uint8_t> data,
               DeviceCallback cb);
 
-  std::unique_ptr<crypto::ECPrivateKey> attestation_private_key_;
-  std::vector<uint8_t> attestation_cert_;
-
   // Keyed on appId/rpId hash (aka "applicationParam")
   std::map<std::vector<uint8_t>, RegistrationData> registrations_;
   base::WeakPtrFactory<U2fDevice> weak_factory_;
