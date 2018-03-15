@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_CONTENT_INPUT_DELEGATE_H_
 
 #include <memory>
+#include <queue>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -125,7 +126,8 @@ class ContentInputDelegate {
 
   EditedText last_keyboard_edit_;
   TextInputInfo pending_text_input_info_;
-  base::OnceCallback<void(const TextInputInfo&)> update_state_callback_;
+  std::queue<base::OnceCallback<void(const TextInputInfo&)>>
+      update_state_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentInputDelegate);
 };

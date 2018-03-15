@@ -201,15 +201,18 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
   pending_text_input_info_.selection_end = selection_end;
   pending_text_input_info_.composition_start = composition_start;
   pending_text_input_info_.composition_end = composition_end;
-  update_state_callback_ = std::move(callback);
+  update_state_callbacks_.emplace(std::move(callback));
   content_->RequestWebInputText(base::BindOnce(
       &ContentInputDelegate::OnWebInputTextChanged, base::Unretained(this)));
 }
 
 void ContentInputDelegate::OnWebInputTextChanged(const base::string16& text) {
   pending_text_input_info_.text = text;
-  DCHECK(!update_state_callback_.is_null());
-  base::ResetAndReturn(&update_state_callback_).Run(pending_text_input_info_);
+  DCHECK(!update_state_callbacks_.empty());
+
+  auto update_state_callback = std::move(update_state_callbacks_.front());
+  update_state_callbacks_.pop();
+  base::ResetAndReturn(&update_state_callback).Run(pending_text_input_info_);
 }
 
 std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(
