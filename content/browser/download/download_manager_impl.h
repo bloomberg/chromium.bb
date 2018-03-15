@@ -221,7 +221,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
-      uint32_t id) override;
+      uint32_t id,
+      StoragePartitionImpl* storage_partition) override;
   void OpenDownload(DownloadItemImpl* download) override;
   bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download) override;
   void ShowDownloadInShell(DownloadItemImpl* download) override;
@@ -233,7 +234,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-      uint32_t id);
+      uint32_t id,
+      StoragePartitionImpl* storage_partition);
 
   void InterceptNavigationOnChecksComplete(
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -253,6 +255,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       std::unique_ptr<network::ResourceRequest> resource_request,
       int render_process_id,
       int render_frame_id,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,

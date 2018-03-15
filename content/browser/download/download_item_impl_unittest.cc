@@ -90,7 +90,8 @@ class MockDelegate : public DownloadItemImplDelegate {
 
   void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
-      uint32_t id) override {
+      uint32_t id,
+      StoragePartitionImpl* storage_partition) override {
     MockResumeInterruptedDownload(params.get(), id);
   }
   MOCK_METHOD2(MockResumeInterruptedDownload,

@@ -85,6 +85,9 @@ ResourceDownloader::InterceptNavigationResponse(
     std::unique_ptr<network::ResourceRequest> resource_request,
     int render_process_id,
     int render_frame_id,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     const scoped_refptr<network::ResourceResponse>& response,
@@ -93,7 +96,8 @@ ResourceDownloader::InterceptNavigationResponse(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
-      GURL(), GURL(), GURL(), download::DownloadItem::kInvalidId, task_runner);
+      site_url, tab_url, tab_referrer_url, download::DownloadItem::kInvalidId,
+      task_runner);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));

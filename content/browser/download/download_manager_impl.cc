@@ -786,8 +786,9 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 // download.
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
-    uint32_t id) {
-  BeginDownloadInternal(std::move(params), nullptr, id);
+    uint32_t id,
+    StoragePartitionImpl* storage_partition) {
+  BeginDownloadInternal(std::move(params), nullptr, id, storage_partition);
 }
 
 
@@ -951,8 +952,11 @@ void DownloadManagerImpl::DownloadUrl(
   download::RecordDownloadCountWithSource(
       download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
       params->download_source());
+  StoragePartitionImpl* storage_partition =
+      GetStoragePartition(browser_context_, params->render_process_host_id(),
+                          params->render_frame_host_routing_id());
   BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
-                        download::DownloadItem::kInvalidId);
+                        download::DownloadItem::kInvalidId, storage_partition);
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -1146,21 +1150,28 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
 
   int render_process_id = -1;
   int render_frame_id = -1;
+  GURL site_url, tab_url, tab_referrer_url;
   WebContents* web_contents = web_contents_getter.Run();
   if (web_contents) {
     RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
     if (render_frame_host) {
       render_process_id = render_frame_host->GetProcess()->GetID();
       render_frame_id = render_frame_host->GetRoutingID();
+      site_url = render_frame_host->GetSiteInstance()->GetSiteURL();
+    }
+    NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+    if (entry) {
+      tab_url = entry->GetURL();
+      tab_referrer_url = entry->GetReferrer().url;
     }
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DownloadManagerImpl::CreateDownloadHandlerForNavigation,
                      weak_factory_.GetWeakPtr(), std::move(resource_request),
-                     render_process_id, render_frame_id, std::move(url_chain),
-                     suggested_filename, std::move(response),
-                     std::move(cert_status),
+                     render_process_id, render_frame_id, site_url, tab_url,
+                     tab_referrer_url, std::move(url_chain), suggested_filename,
+                     std::move(response), std::move(cert_status),
                      std::move(url_loader_client_endpoints),
                      base::MessageLoop::current()->task_runner()));
 }
@@ -1171,6 +1182,9 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     int render_process_id,
     int render_frame_id,
+    const GURL& site_url,
+    const GURL& tab_url,
+    const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
@@ -1182,9 +1196,10 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
   std::unique_ptr<ResourceDownloader> resource_downloader =
       ResourceDownloader::InterceptNavigationResponse(
           download_manager, std::move(resource_request), render_process_id,
-          render_frame_id, std::move(url_chain), suggested_filename,
-          std::move(response), std::move(cert_status),
-          std::move(url_loader_client_endpoints), task_runner);
+          render_frame_id, site_url, tab_url, tab_referrer_url,
+          std::move(url_chain), suggested_filename, std::move(response),
+          std::move(cert_status), std::move(url_loader_client_endpoints),
+          task_runner);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -1197,14 +1212,11 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    uint32_t id) {
+    uint32_t id,
+    StoragePartitionImpl* storage_partition) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
-    StoragePartitionImpl* storage_partition =
-        GetStoragePartition(browser_context_, params->render_process_host_id(),
-                            params->render_frame_host_routing_id());
-
     GURL site_url, tab_url, tab_referrer_url;
     auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                         params->render_frame_host_routing_id());

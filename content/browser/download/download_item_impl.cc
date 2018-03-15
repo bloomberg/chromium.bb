@@ -55,12 +55,12 @@
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
@@ -2355,9 +2355,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
     received_slices_.clear();
   }
 
-  StoragePartition* storage_partition =
+  StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartitionForSite(GetBrowserContext(),
-                                                 request_info_.site_url);
+                                                 request_info_.site_url));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("download_manager_resume", R"(
@@ -2429,7 +2429,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
         in_progress_entry->ukm_download_id, GetResumeMode(), time_since_start);
   }
 
-  delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());
+  delegate_->ResumeInterruptedDownload(std::move(download_params), GetId(),
+                                       storage_partition);
 
   if (job_)
     job_->Resume(false);
