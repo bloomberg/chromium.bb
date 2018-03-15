@@ -4840,6 +4840,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Stop any Find in Page searches and close the find bar when navigating to a
   // new page.
   [self closeFindInPage];
+
+  // Dismiss the language selector, if any; this is a no-op when there's no
+  // language selector presented.
+  [_languageSelectionCoordinator dismissLanguageSelector];
 }
 
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {

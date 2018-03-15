@@ -873,7 +873,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabChanged:tab];
+  [self notifyTabLoading:tab];
 
   web::NavigationItem* previousItem = nullptr;
   if (load_details.previous_item_index >= 0) {
