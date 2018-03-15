@@ -360,14 +360,6 @@ bool EasyUnlockServiceSignin::IsAllowedInternal() const {
 }
 
 bool EasyUnlockServiceSignin::IsEnabled() const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    // In EasyUnlock v1, we used the presence of the hardlock state as an
-    // indicator of whether EasyUnlock is enabled.
-    EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
-    return GetPersistedHardlockState(&hardlock_state);
-  }
-
   return pref_manager_->IsEasyUnlockEnabled();
 }
 
@@ -526,12 +518,6 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   if (account_id == account_id_)
     NotifyUserUpdated();
 
-  // The code below delegates EasyUnlock processing to the native
-  // implementation. Skip if the app is used instead.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery))
-    return;
-
   if (devices.empty())
     return;
 
@@ -596,9 +582,7 @@ void EasyUnlockServiceSignin::ShowInitialUserPodState() {
   if (!IsAllowed() || !IsEnabled())
     return;
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      !pref_manager_->IsChromeOSLoginEnabled()) {
+  if (!pref_manager_->IsChromeOSLoginEnabled()) {
     // Show a hardlock state if the user has not enabled the login flow.
     SetHardlockStateForUser(
         account_id_,

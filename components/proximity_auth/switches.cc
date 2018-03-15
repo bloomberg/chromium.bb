@@ -7,10 +7,6 @@
 namespace proximity_auth {
 namespace switches {
 
-// Disables discovery of the phone over Bluetooth Low Energy.
-const char kDisableBluetoothLowEnergyDiscovery[] =
-    "disable-proximity-auth-bluetooth-low-energy-discovery";
-
 // Enables forcing the user to reauth with their password after X hours (e.g.
 // 20) without password entry.
 const char kEnableForcePasswordReauth[] = "force-password-reauth";

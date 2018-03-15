@@ -259,10 +259,6 @@ class EasyUnlockPrivateGetPermitAccessFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  // Instead of returning the value set by easyUnlockPrivate.setPermitAccess,
-  // return the permit access used by the native CryptAuthEnrollmentManager.
-  ResponseAction GetPermitAccessForExperiment();
-
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetPermitAccessFunction);
 };
 
@@ -319,10 +315,6 @@ class EasyUnlockPrivateGetRemoteDevicesFunction
  private:
   // AsyncExtensionFunction:
   bool RunAsync() override;
-
-  // Returns devices managed by the native Chrome component if the
-  // kEnableBluetoothLowEnergyDiscovery flag is set.
-  void ReturnDevicesForExperiment();
 
   // Callback when the PSK of a device is derived.
   void OnPSKDerivedForDevice(const cryptauth::ExternalDeviceInfo& device,

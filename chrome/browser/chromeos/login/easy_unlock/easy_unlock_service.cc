@@ -438,11 +438,8 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id,
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are
   // attempted. However, we ideally should refactor the auth attempt logic to
   // the proximity_auth component.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      proximity_auth_system_) {
+  if (proximity_auth_system_)
     proximity_auth_system_->OnAuthAttempted(account_id);
-  }
 }
 
 void EasyUnlockService::FinalizeUnlock(bool success) {
@@ -730,10 +727,6 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
     const cryptauth::RemoteDeviceList& remote_devices) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery))
-    return;
-
   if (remote_devices.size() == 0) {
     proximity_auth_system_.reset();
     return;

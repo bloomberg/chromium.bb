@@ -249,13 +249,6 @@ const char kDriveSearchInChromeLauncherName[] =
 const char kDriveSearchInChromeLauncherDescription[] =
     "Files from Drive will show up when searching the Chrome App Launcher.";
 
-const char kEasyUnlockBluetoothLowEnergyDiscoveryName[] =
-    "Smart Lock Bluetooth Low Energy Discovery";
-const char kEasyUnlockBluetoothLowEnergyDiscoveryDescription[] =
-    "Disables a Smart Lock setting that allows Chromebook to discover phones "
-    "over Bluetooth Low Energy in order to unlock the Chromebook when the "
-    "phone is in its proximity.";
-
 const char kEasyUnlockPromotionsName[] = "Smart Lock Promotions";
 const char kEasyUnlockPromotionsDescription[] =
     "Enables Smart Lock promotions. Promotions will be periodically display "

@@ -257,22 +257,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenAuthTypeIsPassword) {
   EXPECT_EQ(TestLockHandler::STATE_UNLOCK_CANCELED, lock_handler_->state());
 }
 
-TEST_F(EasyUnlockAuthAttemptUnlockTest,
-       StartWhenDispatchingAuthAttemptEventFails) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
-  InitScreenLock();
-  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
-  ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
-
-  app_manager_->set_auth_attempt_should_fail(true);
-
-  EXPECT_FALSE(auth_attempt_->Start());
-
-  EXPECT_EQ(1u, app_manager_->auth_attempt_count());
-  EXPECT_EQ(TestLockHandler::STATE_UNLOCK_CANCELED, lock_handler_->state());
-}
-
 TEST_F(EasyUnlockAuthAttemptUnlockTest, ResetBeforeFinalizeUnlock) {
   InitScreenLock();
   ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
@@ -413,22 +397,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenAuthTypeIsPassword) {
   EXPECT_FALSE(auth_attempt_->Start());
 
   EXPECT_EQ(0u, app_manager_->auth_attempt_count());
-  EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
-}
-
-TEST_F(EasyUnlockAuthAttemptSigninTest,
-       StartWhenDispatchingAuthAttemptEventFails) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
-  InitScreenLock();
-  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
-  ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
-
-  app_manager_->set_auth_attempt_should_fail(true);
-
-  EXPECT_FALSE(auth_attempt_->Start());
-
-  EXPECT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
 
