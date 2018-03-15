@@ -18,6 +18,8 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 
+class SkBitmap;
+
 namespace content {
 
 class BackgroundFetchDelegate;
@@ -65,6 +67,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   void CreateDownloadJob(const std::string& job_unique_id,
                          const std::string& title,
                          const url::Origin& origin,
+                         const SkBitmap& icon,
                          base::WeakPtr<Controller> controller,
                          int completed_parts,
                          int total_parts,

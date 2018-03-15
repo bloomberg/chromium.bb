@@ -37,14 +37,16 @@ ContentId JNI_OfflineContentAggregatorBridge_CreateContentId(
                    ConvertJavaStringToUTF8(env, j_id));
 }
 
-void GetVisualsForItemHelperCallback(ScopedJavaGlobalRef<jobject> j_callback,
-                                     const ContentId& id,
-                                     const OfflineItemVisuals* visuals) {
+void GetVisualsForItemHelperCallback(
+    ScopedJavaGlobalRef<jobject> j_callback,
+    const ContentId& id,
+    std::unique_ptr<OfflineItemVisuals> visuals) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onVisualsAvailable(
       env, j_callback, ConvertUTF8ToJavaString(env, id.name_space),
       ConvertUTF8ToJavaString(env, id.id),
-      OfflineItemVisualsBridge::CreateOfflineItemVisuals(env, visuals));
+      OfflineItemVisualsBridge::CreateOfflineItemVisuals(env,
+                                                         std::move(visuals)));
 }
 
 void RunGetAllItemsCallback(const base::android::JavaRef<jobject>& j_callback,

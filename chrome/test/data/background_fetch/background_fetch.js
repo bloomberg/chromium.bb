@@ -15,7 +15,13 @@ function RegisterServiceWorker() {
 function StartSingleFileDownload() {
   navigator.serviceWorker.ready.then(swRegistration => {
     const options = {
-      // TODO(nator): Provide an icon here.
+      icons: [
+        {
+          src: '/notifications/icon.png',
+          sizes: '100x100',
+          type: 'image/png'
+        }
+      ],
       title: 'Single-file Background Fetch'
     };
 

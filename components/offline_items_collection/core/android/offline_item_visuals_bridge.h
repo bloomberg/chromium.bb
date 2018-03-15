@@ -23,7 +23,7 @@ class OfflineItemVisualsBridge {
   // Creates a Java OfflineItemVisuals from |visuals|.
   static base::android::ScopedJavaLocalRef<jobject> CreateOfflineItemVisuals(
       JNIEnv* env,
-      const OfflineItemVisuals* const visuals);
+      std::unique_ptr<OfflineItemVisuals> visuals);
 
  private:
   OfflineItemVisualsBridge();

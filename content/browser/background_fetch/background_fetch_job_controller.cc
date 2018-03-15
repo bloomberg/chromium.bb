@@ -16,6 +16,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDelegateProxy* delegate_proxy,
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     const BackgroundFetchRegistration& registration,
     BackgroundFetchRequestManager* request_manager,
     ProgressCallback progress_callback,
@@ -23,6 +24,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     : BackgroundFetchScheduler::Controller(registration_id,
                                            std::move(finished_callback)),
       options_(options),
+      icon_(icon),
       complete_requests_downloaded_bytes_cache_(registration.downloaded),
       request_manager_(request_manager),
       delegate_proxy_(delegate_proxy),
@@ -44,9 +46,10 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   completed_downloads_ = completed_downloads;
   total_downloads_ = total_downloads;
 
-  delegate_proxy_->CreateDownloadJob(
-      registration_id().unique_id(), options_.title, registration_id().origin(),
-      GetWeakPtr(), completed_downloads, total_downloads, outstanding_guids);
+  delegate_proxy_->CreateDownloadJob(registration_id().unique_id(),
+                                     options_.title, registration_id().origin(),
+                                     icon_, GetWeakPtr(), completed_downloads,
+                                     total_downloads, outstanding_guids);
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {

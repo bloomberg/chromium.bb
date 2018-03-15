@@ -103,19 +103,21 @@ void BackgroundFetchContext::StartFetch(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   data_manager_.CreateRegistration(
-      registration_id, requests, options,
+      registration_id, requests, options, icon,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
-                     weak_factory_.GetWeakPtr(), registration_id, options,
+                     weak_factory_.GetWeakPtr(), registration_id, options, icon,
                      std::move(callback)));
 }
 
 void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     blink::mojom::BackgroundFetchService::FetchCallback callback,
     blink::mojom::BackgroundFetchError error,
     std::unique_ptr<BackgroundFetchRegistration> registration) {
@@ -129,7 +131,7 @@ void BackgroundFetchContext::DidCreateRegistration(
 
   DCHECK(registration);
   // Create the BackgroundFetchJobController to do the actual fetching.
-  CreateController(registration_id, options, *registration.get());
+  CreateController(registration_id, options, icon, *registration.get());
   std::move(callback).Run(error, *registration.get());
 }
 
@@ -180,11 +182,12 @@ void BackgroundFetchContext::DidUpdateStoredUI(
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     const BackgroundFetchRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      &delegate_proxy_, registration_id, options, registration,
+      &delegate_proxy_, registration_id, options, icon, registration,
       scheduler_.get(),
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,

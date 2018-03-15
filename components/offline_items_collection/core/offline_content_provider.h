@@ -24,7 +24,8 @@ class OfflineContentProvider {
  public:
   using OfflineItemList = std::vector<OfflineItem>;
   using VisualsCallback =
-      base::Callback<void(const ContentId&, const OfflineItemVisuals*)>;
+      base::Callback<void(const ContentId&,
+                          std::unique_ptr<OfflineItemVisuals>)>;
   using MultipleItemCallback = base::OnceCallback<void(const OfflineItemList&)>;
   using SingleItemCallback =
       base::OnceCallback<void(const base::Optional<OfflineItem>&)>;

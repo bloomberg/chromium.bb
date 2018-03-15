@@ -19,6 +19,8 @@
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
     : download_service_(
@@ -45,10 +47,12 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
     const std::string& job_unique_id,
     const std::string& title,
     const url::Origin& origin,
+    const SkBitmap& icon,
     int completed_parts,
     int total_parts)
     : title(title),
       origin(origin),
+      icon(gfx::ImageSkia::CreateFrom1xBitmap(icon)),
       completed_parts(completed_parts),
       total_parts(total_parts),
       cancelled(false),
@@ -90,6 +94,7 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
     const std::string& job_unique_id,
     const std::string& title,
     const url::Origin& origin,
+    const SkBitmap& icon,
     int completed_parts,
     int total_parts,
     const std::vector<std::string>& current_guids) {
@@ -98,8 +103,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   DCHECK(!job_details_map_.count(job_unique_id));
 
   auto emplace_result = job_details_map_.emplace(
-      job_unique_id,
-      JobDetails(job_unique_id, title, origin, completed_parts, total_parts));
+      job_unique_id, JobDetails(job_unique_id, title, origin, icon,
+                                completed_parts, total_parts));
 
   const JobDetails& details = emplace_result.first->second;
 
@@ -419,9 +424,15 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
     const VisualsCallback& callback) {
   // GetVisualsForItem mustn't be called directly since offline_items_collection
   // is not re-entrant and it must be called even if there are no visuals.
-  // TODO(delphick): Call with an image when that becomes available.
+  auto visuals =
+      std::make_unique<offline_items_collection::OfflineItemVisuals>();
+  auto it = job_details_map_.find(id.id);
+  if (it != job_details_map_.end()) {
+    visuals->icon = it->second.icon;
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, id, nullptr));
+      FROM_HERE, base::BindOnce(callback, id, std::move(visuals)));
 }
 
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {

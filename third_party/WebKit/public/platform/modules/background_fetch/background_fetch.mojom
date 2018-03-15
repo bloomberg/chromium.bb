@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "skia/public/interfaces/bitmap.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 
 enum BackgroundFetchError {
@@ -59,13 +60,17 @@ interface BackgroundFetchRegistrationObserver {
              uint64 downloaded);
 };
 
+// Interface for Background Fetch tasks. Lives in the browser process.
+// Implements Background Fetch over Mojo IPC RFC.
 interface BackgroundFetchService {
   // Creates a new Background Fetch registration identified to the developer by
   // |developer_id|, with the given |options| for the sequence of |requests|.
+  // Also passed along the |icon| to display.
   Fetch(int64 service_worker_registration_id,
         string developer_id,
         array<FetchAPIRequest> requests,
-        BackgroundFetchOptions options)
+        BackgroundFetchOptions options,
+        skia.mojom.Bitmap? icon)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 

@@ -51,8 +51,9 @@ class BackgroundFetchDataManager::RegistrationData {
  public:
   RegistrationData(const BackgroundFetchRegistrationId& registration_id,
                    const std::vector<ServiceWorkerFetchRequest>& requests,
-                   const BackgroundFetchOptions& options)
-      : registration_id_(registration_id), options_(options) {
+                   const BackgroundFetchOptions& options,
+                   const SkBitmap& icon)
+      : registration_id_(registration_id), options_(options), icon_(icon) {
     int request_index = 0;
 
     // Convert the given |requests| to BackgroundFetchRequestInfo objects.
@@ -124,6 +125,7 @@ class BackgroundFetchDataManager::RegistrationData {
  private:
   BackgroundFetchRegistrationId registration_id_;
   BackgroundFetchOptions options_;
+  SkBitmap icon_;
   // Number of bytes downloaded as part of completed downloads. (In-progress
   // downloads are tracked elsewhere).
   uint64_t complete_requests_downloaded_bytes_ = 0;
@@ -178,6 +180,7 @@ void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -207,9 +210,9 @@ void BackgroundFetchDataManager::CreateRegistration(
                                           registration_id.unique_id());
 
   // Create the |RegistrationData|, and store it for easy access.
-  registrations_.emplace(
-      registration_id.unique_id(),
-      std::make_unique<RegistrationData>(registration_id, requests, options));
+  registrations_.emplace(registration_id.unique_id(),
+                         std::make_unique<RegistrationData>(
+                             registration_id, requests, options, icon));
 
   // Re-use GetRegistration to compile the BackgroundFetchRegistration object.
   // WARNING: GetRegistration doesn't use the |unique_id| when looking up the

@@ -73,6 +73,7 @@ void BackgroundFetchServiceImpl::Fetch(
     const std::string& developer_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
     FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateDeveloperId(developer_id)) {
@@ -96,7 +97,7 @@ void BackgroundFetchServiceImpl::Fetch(
                                                 base::GenerateGUID());
 
   background_fetch_context_->StartFetch(registration_id, requests, options,
-                                        std::move(callback));
+                                        icon, std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::UpdateUI(const std::string& unique_id,
