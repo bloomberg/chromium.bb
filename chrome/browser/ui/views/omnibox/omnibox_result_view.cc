@@ -127,6 +127,14 @@ int GetIconAlignmentOffset() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// OmniboxResultView:
+
+class OmniboxImageView : public views::ImageView {
+ public:
+  bool CanProcessEventsWithinSubtree() const override { return false; }
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
 OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
@@ -139,9 +147,9 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
           font_list.GetHeight(),
           font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())),
       animation_(new gfx::SlideAnimation(this)),
-      icon_view_(AddImageView()),
-      image_view_(AddImageView()),
-      keyword_icon_view_(AddImageView()),
+      icon_view_(AddOmniboxImageView()),
+      image_view_(AddOmniboxImageView()),
+      keyword_icon_view_(AddOmniboxImageView()),
       content_view_(AddOmniboxTextView(font_list)),
       description_view_(AddOmniboxTextView(font_list)),
       keyword_content_view_(AddOmniboxTextView(font_list)),
@@ -183,7 +191,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match.GetMatchWithContentsAndDescriptionPossiblySwapped();
   animation_->Reset();
   is_hovered_ = false;
-  icon_view_->SetImage(GetIcon().ToImageSkia());
   image_view_->SetVisible(false);  // Until SetAnswerImage is called.
 
   keyword_icon_view_->SetVisible(match_.associated_keyword.get());
@@ -390,8 +397,8 @@ void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, private:
 
-views::ImageView* OmniboxResultView::AddImageView() {
-  views::ImageView* view = new views::ImageView();
+OmniboxImageView* OmniboxResultView::AddOmniboxImageView() {
+  OmniboxImageView* view = new OmniboxImageView();
   AddChildView(view);
   return view;
 }
