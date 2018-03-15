@@ -93,13 +93,10 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 // Shall be removed when bitmask code is completely checkedin
 #define LOOP_FILTER_BITMASK 0
 
-// Bitstream profiles indicated by 2-3 bits in the uncompressed header.
-// 00: Profile 0.  8-bit 4:2:0 only.
-// 10: Profile 1.  8-bit 4:4:4, 4:2:2, and 4:4:0.
-// 01: Profile 2.  10-bit and 12-bit color only, with 4:2:0 sampling.
-// 110: Profile 3. 10-bit and 12-bit color only, with 4:2:2/4:4:4/4:4:0
-//                 sampling.
-// 111: Undefined profile.
+// Profile 0.  8-bit and 10-bit 4:2:0 and 4:0:0 only.
+// Profile 1.  8-bit and 10-bit 4:4:4
+// Profile 2.  8-bit and 10-bit 4:2:2
+//            12 bit  4:0:0, 4:2:2 and 4:4:4
 typedef enum BITSTREAM_PROFILE {
   PROFILE_0,
   PROFILE_1,
