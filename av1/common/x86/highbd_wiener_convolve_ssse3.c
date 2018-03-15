@@ -17,7 +17,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
 
-void av1_highbd_wiener_convolve_add_src_hip_ssse3(
+void av1_highbd_wiener_convolve_add_src_ssse3(
     const uint8_t *src8, ptrdiff_t src_stride, uint8_t *dst8,
     ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
     const int16_t *filter_y, int y_step_q4, int w, int h,

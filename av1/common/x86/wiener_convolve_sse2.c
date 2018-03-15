@@ -17,11 +17,12 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
 
-void av1_wiener_convolve_add_src_hip_sse2(
-    const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-    ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
-    const int16_t *filter_y, int y_step_q4, int w, int h,
-    const ConvolveParams *conv_params) {
+void av1_wiener_convolve_add_src_sse2(const uint8_t *src, ptrdiff_t src_stride,
+                                      uint8_t *dst, ptrdiff_t dst_stride,
+                                      const int16_t *filter_x, int x_step_q4,
+                                      const int16_t *filter_y, int y_step_q4,
+                                      int w, int h,
+                                      const ConvolveParams *conv_params) {
   const int bd = 8;
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));

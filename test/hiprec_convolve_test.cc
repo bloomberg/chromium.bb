@@ -28,12 +28,12 @@ TEST_P(AV1HiprecConvolveTest, DISABLED_SpeedTest) {
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, AV1HiprecConvolveTest,
                         libaom_test::AV1HiprecConvolve::BuildParams(
-                            av1_wiener_convolve_add_src_hip_sse2));
+                            av1_wiener_convolve_add_src_sse2));
 #endif
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HiprecConvolveTest,
                         libaom_test::AV1HiprecConvolve::BuildParams(
-                            av1_wiener_convolve_add_src_hip_avx2));
+                            av1_wiener_convolve_add_src_avx2));
 #endif
 #endif
 
@@ -47,12 +47,12 @@ TEST_P(AV1HighbdHiprecConvolveTest, DISABLED_SpeedTest) {
 #if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdHiprecConvolveTest,
                         libaom_test::AV1HighbdHiprecConvolve::BuildParams(
-                            av1_highbd_wiener_convolve_add_src_hip_ssse3));
+                            av1_highbd_wiener_convolve_add_src_ssse3));
 #endif
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdHiprecConvolveTest,
                         libaom_test::AV1HighbdHiprecConvolve::BuildParams(
-                            av1_highbd_wiener_convolve_add_src_hip_avx2));
+                            av1_highbd_wiener_convolve_add_src_avx2));
 #endif
 #endif
 

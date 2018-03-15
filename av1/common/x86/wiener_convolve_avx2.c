@@ -24,11 +24,12 @@
 // on the left.
 // A row of, say, 8-bit pixels with values p0, p1, p2, ..., p30, p31 will be
 // loaded and stored as [ p31 ... p17 p16 ][ p15 ... p1 p0 ].
-void av1_wiener_convolve_add_src_hip_avx2(
-    const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-    ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
-    const int16_t *filter_y, int y_step_q4, int w, int h,
-    const ConvolveParams *conv_params) {
+void av1_wiener_convolve_add_src_avx2(const uint8_t *src, ptrdiff_t src_stride,
+                                      uint8_t *dst, ptrdiff_t dst_stride,
+                                      const int16_t *filter_x, int x_step_q4,
+                                      const int16_t *filter_y, int y_step_q4,
+                                      int w, int h,
+                                      const ConvolveParams *conv_params) {
   const int bd = 8;
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));
