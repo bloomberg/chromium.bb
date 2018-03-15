@@ -523,7 +523,7 @@ public class OfflinePageBridge {
      * @param callback A callback that will be called once operation is completed.
      */
     public void deletePagesByClientIdAndOrigin(
-            List<ClientId> clientIds, String origin, Callback<Integer> callback) {
+            List<ClientId> clientIds, OfflinePageOrigin origin, Callback<Integer> callback) {
         String[] namespaces = new String[clientIds.size()];
         String[] ids = new String[clientIds.size()];
 
@@ -533,7 +533,7 @@ public class OfflinePageBridge {
         }
 
         nativeDeletePagesByClientIdAndOrigin(
-                mNativeOfflinePageBridge, namespaces, ids, origin, callback);
+                mNativeOfflinePageBridge, namespaces, ids, origin.encodeAsJsonString(), callback);
     }
 
     /**
