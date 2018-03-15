@@ -271,7 +271,7 @@ function createComment(commentString)
 function createText(value)
 {
     var text = createHTMLElement('span');
-    text.textContent = trim(value);
+    text.textContent = value;
     text.classList.add('text');
     return text;
 }
