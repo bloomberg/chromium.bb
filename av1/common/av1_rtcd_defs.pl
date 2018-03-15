@@ -91,18 +91,6 @@ specialize qw/av1_get_br_level_counts sse2/;
 add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 specialize qw/av1_iht4x4_16_add sse2/;
 
-add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-
-add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-
 # directional intra predictor functions
 add_proto qw/void av1_dr_prediction_z1/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int dx, int dy";
 add_proto qw/void av1_dr_prediction_z2/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int upsample_left, int dx, int dy";
@@ -135,14 +123,6 @@ specialize qw/av1_highbd_convolve8_vert/, "$sse2_x86_64";
 # dct
 #
 add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 #inv txfm
 add_proto qw/void av1_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
