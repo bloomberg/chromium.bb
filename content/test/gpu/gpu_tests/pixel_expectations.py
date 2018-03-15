@@ -105,12 +105,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
               ['android', 'nvidia'], bug=791733)
 
-    # Temporary supression to rebaseline Video tests on Windows with the
-    # passthrough command decoder
-    self.Fail('Pixel_Video_MP4', ['win', 'intel'], bug=602688)
-    self.Fail('Pixel_Video_VP9', ['win', 'intel'], bug=602688)
-    self.Fail('Pixel_DirectComposition_Video_VP9', ['win', 'intel'],
-        bug=602688)
+    # Temporary supression for rebaseline
+    self.Fail('Pixel_DirectComposition_Video_MP4', ['win'], bug=749748)
+    self.Fail('Pixel_DirectComposition_Video_VP9', ['win'], bug=749748)
 
     # TODO(zmo): temporarily suppress these two tests until new
     # reference images with new names are generated.

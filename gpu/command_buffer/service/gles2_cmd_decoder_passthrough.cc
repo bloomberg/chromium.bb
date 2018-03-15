@@ -1208,14 +1208,12 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
+  caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
+  caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
-
-  // TODO:
-  // caps.commit_overlay_planes
-  // caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
 
   return caps;
 }
@@ -2046,6 +2044,21 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
   }
 
   return false;
+}
+
+error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(
+    gfx::SwapResult result,
+    const char* function_name) {
+  if (result == gfx::SwapResult::SWAP_FAILED) {
+    LOG(ERROR) << "Context lost because " << function_name << " failed.";
+    if (!CheckResetStatus()) {
+      MarkContextLost(error::kUnknown);
+      group_->LoseContexts(error::kUnknown);
+      return error::kLostContext;
+    }
+  }
+
+  return error::kNoError;
 }
 
 // static

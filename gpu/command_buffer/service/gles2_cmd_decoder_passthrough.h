@@ -396,6 +396,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
 
+  error::Error CheckSwapBuffersResult(gfx::SwapResult result,
+                                      const char* function_name);
+
   DecoderClient* client_;
 
   int commands_to_process_;

@@ -3205,6 +3205,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
+  dc_layer_shared_state_.reset();
+
   if (offscreen_) {
     if (offscreen_single_buffer_) {
       return error::kNoError;
@@ -3254,17 +3256,8 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
     return error::kNoError;
   }
 
-  gfx::SwapResult result = surface_->SwapBuffers(base::DoNothing());
-  if (result == gfx::SwapResult::SWAP_FAILED) {
-    LOG(ERROR) << "Context lost because SwapBuffers failed.";
-    if (!CheckResetStatus()) {
-      MarkContextLost(error::kUnknown);
-      group_->LoseContexts(error::kUnknown);
-      return error::kLostContext;
-    }
-  }
-
-  return error::kNoError;
+  return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
+                                "SwapBuffers");
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetMaxValueInBufferCHROMIUM(
@@ -3837,18 +3830,17 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
     return error::kNoError;
   }
 
+  dc_layer_shared_state_.reset();
+
   std::vector<gfx::Rect> bounds(count);
   for (GLsizei i = 0; i < count; ++i) {
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
                           rects[i * 4 + 3]);
   }
-  gfx::SwapResult result =
-      surface_->SwapBuffersWithBounds(bounds, base::DoNothing());
-  if (result == gfx::SwapResult::SWAP_FAILED) {
-    LOG(ERROR) << "Context lost because SwapBuffersWithBounds failed.";
-  }
-  // TODO(geofflang): force the context loss?
-  return error::kNoError;
+
+  return CheckSwapBuffersResult(
+      surface_->SwapBuffersWithBounds(bounds, base::DoNothing()),
+      "SwapBuffersWithBounds");
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
@@ -3862,17 +3854,11 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     return error::kNoError;
   }
 
-  gfx::SwapResult result =
-      surface_->PostSubBuffer(x, y, width, height, base::DoNothing());
-  if (result == gfx::SwapResult::SWAP_FAILED) {
-    LOG(ERROR) << "Context lost because PostSubBuffer failed.";
-    if (!CheckResetStatus()) {
-      MarkContextLost(error::kUnknown);
-      group_->LoseContexts(error::kUnknown);
-      return error::kLostContext;
-    }
-  }
-  return error::kNoError;
+  dc_layer_shared_state_.reset();
+
+  return CheckSwapBuffersResult(
+      surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
+      "PostSubBuffer");
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
@@ -4198,11 +4184,11 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerSharedStateCHROMIUM(
   dc_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(
       gfx::RectF(clip_rect[0], clip_rect[1], clip_rect[2], clip_rect[3]));
   dc_layer_shared_state_->z_order = z_order;
-  dc_layer_shared_state_->transform = gfx::Transform(
-      transform[0], transform[1], transform[2], transform[3], transform[4],
-      transform[5], transform[6], transform[7], transform[8], transform[9],
-      transform[10], transform[11], transform[12], transform[13], transform[14],
-      transform[15]);
+  dc_layer_shared_state_->transform =
+      gfx::Transform(transform[0], transform[4], transform[8], transform[12],
+                     transform[1], transform[5], transform[9], transform[13],
+                     transform[2], transform[6], transform[10], transform[14],
+                     transform[3], transform[7], transform[11], transform[15]);
   return error::kNoError;
 }
 
@@ -4251,10 +4237,9 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
         return error::kNoError;
       }
       DCHECK(passthrough_texture != nullptr);
-      DCHECK(passthrough_texture->target() == GL_TEXTURE_2D);
 
       scoped_refptr<gl::GLImage> image =
-          passthrough_texture->GetLevelImage(GL_TEXTURE_2D, 0);
+          passthrough_texture->GetLevelImage(passthrough_texture->target(), 0);
       if (image == nullptr) {
         InsertError(GL_INVALID_VALUE, "unsupported texture format");
         return error::kNoError;
@@ -4278,7 +4263,37 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM() {
-  NOTIMPLEMENTED();
+  if (!surface_->SupportsCommitOverlayPlanes()) {
+    InsertError(GL_INVALID_OPERATION,
+                "glCommitOverlayPlanes not supported by surface.");
+    return error::kNoError;
+  }
+
+  dc_layer_shared_state_.reset();
+
+  return CheckSwapBuffersResult(
+      surface_->CommitOverlayPlanes(base::DoNothing()), "CommitOverlayPlanes");
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoSetColorSpaceMetadataCHROMIUM(
+    GLuint texture_id,
+    gfx::ColorSpace color_space) {
+  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
+  if (!resources_->texture_object_map.GetServiceID(texture_id,
+                                                   &passthrough_texture) ||
+      passthrough_texture == nullptr) {
+    InsertError(GL_INVALID_VALUE, "unknown texture.");
+    return error::kNoError;
+  }
+
+  scoped_refptr<gl::GLImage> image =
+      passthrough_texture->GetLevelImage(passthrough_texture->target(), 0);
+  if (image == nullptr) {
+    InsertError(GL_INVALID_VALUE, "no image associated with texture.");
+    return error::kNoError;
+  }
+
+  image->SetColorSpace(color_space);
   return error::kNoError;
 }
 
