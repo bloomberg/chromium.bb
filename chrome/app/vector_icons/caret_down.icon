@@ -10,4 +10,3 @@ R_LINE_TO, 7.5f, 8,
 R_LINE_TO, 7.5f, -8,
 // Hard clip at path points +- half the stroke.
 CLIP, 7, 11, 18, 11,
-END,

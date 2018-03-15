@@ -25,5 +25,4 @@ R_ARC_TO, 15.42f, 15.42f, 0, 0, 0, 1.37f, -1.69f,
 R_LINE_TO, 6.11f, -9.32f,
 LINE_TO, 76.8f, 38.41f,
 LINE_TO, 49.54f, 9.6f,
-CLOSE,
-END
+CLOSE

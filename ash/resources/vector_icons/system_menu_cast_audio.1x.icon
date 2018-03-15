@@ -30,5 +30,4 @@ R_CUBIC_TO, -1.11f, 0, -2, 0.89f, -2, 2,
 R_CUBIC_TO, 0, 1.11f, 0.89f, 2, 2, 2,
 R_CUBIC_TO, 1.11f, 0, 2, -0.89f, 2, -2,
 R_CUBIC_TO, 0, -1.11f, -0.89f, -2, -2, -2,
-CLOSE,
-END
+CLOSE

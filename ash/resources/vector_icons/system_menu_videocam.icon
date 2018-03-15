@@ -18,5 +18,4 @@ R_LINE_TO, 6, -6,
 R_V_LINE_TO, 18,
 R_LINE_TO, -6, -5,
 R_V_LINE_TO, -7,
-CLOSE,
-END
+CLOSE

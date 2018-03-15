@@ -28,5 +28,4 @@ R_ARC_TO, 1, 1, 0, 0, 1, 1.32f, -1.32f,
 LINE_TO, 6.5f, 5,
 LINE_TO, 12, 10.51f,
 LINE_TO, 17.51f, 5,
-CLOSE,
-END
+CLOSE

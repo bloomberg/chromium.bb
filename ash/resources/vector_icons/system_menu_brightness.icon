@@ -30,5 +30,4 @@ CLOSE,
 R_MOVE_TO, 0, -2,
 R_ARC_TO, 6, 6, 0, 1, 0, 0, -12,
 R_ARC_TO, 6, 6, 0, 0, 0, 0, 12,
-CLOSE,
-END
+CLOSE

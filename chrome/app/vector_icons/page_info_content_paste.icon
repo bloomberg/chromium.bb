@@ -28,5 +28,4 @@ R_ARC_TO, 1, 1, 0, 0, 1, -1, 1,
 H_LINE_TO, 7,
 R_ARC_TO, 1, 1, 0, 0, 1, -1, -1,
 R_V_LINE_TO, -1.5f,
-CLOSE,
-END
+CLOSE

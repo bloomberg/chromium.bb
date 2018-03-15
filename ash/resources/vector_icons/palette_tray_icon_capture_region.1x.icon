@@ -91,5 +91,4 @@ R_MOVE_TO, 0, 3,
 R_CUBIC_TO, 0.83f, 0, 1.5f, -0.67f, 1.5f, -1.5f,
 H_LINE_TO, 13,
 V_LINE_TO, 14,
-CLOSE,
-END
+CLOSE

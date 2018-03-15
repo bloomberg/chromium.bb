@@ -40,5 +40,4 @@ R_LINE_TO, 3, -3,
 R_LINE_TO, 3, 3,
 R_LINE_TO, -3, 3,
 R_LINE_TO, -3, -3,
-CLOSE,
-END
+CLOSE

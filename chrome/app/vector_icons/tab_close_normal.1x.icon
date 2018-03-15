@@ -9,5 +9,4 @@ STROKE, 1.415f,
 MOVE_TO, 4.75f, 4.75f,
 R_LINE_TO, 6.5f, 6.5f,
 MOVE_TO, 4.75f, 11.25f,
-R_LINE_TO, 6.5f, -6.5f,
-END
+R_LINE_TO, 6.5f, -6.5f

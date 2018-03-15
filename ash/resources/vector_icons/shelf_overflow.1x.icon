@@ -15,5 +15,4 @@ R_ARC_TO, 0.82f, 0.82f, 0, 0, 0, 0.59f, 0.25f,
 R_CUBIC_TO, 0.46f, 0, 0.83f, -0.38f, 0.83f, -0.86f,
 R_ARC_TO, 0.87f, 0.87f, 0, 0, 0, -0.24f, -0.61f,
 LINE_TO, 8.59f, 5.25f,
-CLOSE,
-END
+CLOSE

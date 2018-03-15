@@ -9,5 +9,4 @@ R_LINE_TO, 5.05f, -9,
 R_V_LINE_TO, 7,
 H_LINE_TO, 20,
 R_LINE_TO, -4.97f, 9,
-CLOSE,
-END
+CLOSE

@@ -31,5 +31,4 @@ R_V_LINE_TO, -8,
 R_H_LINE_TO, 3,
 R_CUBIC_TO, 2.76f, 0, 5, -2.24f, 5, -5,
 R_CUBIC_TO, 0, -2.76f, -2.24f, -5, -5, -5,
-CLOSE,
-END
+CLOSE

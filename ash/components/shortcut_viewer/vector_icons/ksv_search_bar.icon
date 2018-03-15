@@ -22,5 +22,4 @@ R_ARC_TO, 7.49f, 7.49f, 0, 0, 1, -7.5f, -7.5f,
 R_CUBIC_TO, 0, -4.15f, 3.35f, -7.5f, 7.5f, -7.5f,
 R_CUBIC_TO, 4.15f, 0, 7.5f, 3.35f, 7.5f, 7.5f,
 R_CUBIC_TO, 0, 4.15f, -3.35f, 7.5f, -7.5f, 7.5f,
-CLOSE,
-END
+CLOSE

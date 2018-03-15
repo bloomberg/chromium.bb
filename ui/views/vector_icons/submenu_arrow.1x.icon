@@ -8,5 +8,4 @@ MOVE_TO, 2, 8,
 R_LINE_TO, 5, -4,
 R_LINE_TO, -5, -4,
 R_V_LINE_TO, 8,
-CLOSE,
-END
+CLOSE

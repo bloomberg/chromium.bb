@@ -43,5 +43,4 @@ CUBIC_TO, 8.19f, 7.5f, 8.75f, 6.94f, 8.75f, 6.25f,
 CUBIC_TO, 8.75f, 5.56f, 8.19f, 5, 7.5f, 5,
 CUBIC_TO, 6.81f, 5, 6.25f, 5.56f, 6.25f, 6.25f,
 CUBIC_TO, 6.25f, 6.94f, 6.81f, 7.5f, 7.5f, 7.5f,
-CLOSE,
-END
+CLOSE
