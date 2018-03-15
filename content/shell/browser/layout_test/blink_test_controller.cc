@@ -53,6 +53,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/browser/layout_test/devtools_protocol_test_bindings.h"
+#include "content/shell/browser/layout_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
@@ -553,9 +554,17 @@ bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
 std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
+  // TODO(https://crbug.com/509038): Remove |bluetooth_chooser_factory_| once
+  // all of the Web Bluetooth tests are migrated to external/wpt/.
   if (bluetooth_chooser_factory_) {
     return bluetooth_chooser_factory_->RunBluetoothChooser(frame,
                                                            event_handler);
+  }
+  auto next_fake_bluetooth_chooser =
+      LayoutTestContentBrowserClient::Get()->GetNextFakeBluetoothChooser();
+  if (next_fake_bluetooth_chooser) {
+    next_fake_bluetooth_chooser->SetEventHandler(event_handler);
+    return next_fake_bluetooth_chooser;
   }
   return std::make_unique<LayoutTestFirstDeviceBluetoothChooser>(event_handler);
 }
