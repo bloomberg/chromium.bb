@@ -130,8 +130,8 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_voice_search_button_colors.background =
       normal_scheme.omnibox_background;
   normal_scheme.omnibox_voice_search_button_colors.background_hover =
-      0xFFFAFAFA;
-  normal_scheme.omnibox_voice_search_button_colors.background_down = 0xFFFAFAFA;
+      0x14000000;
+  normal_scheme.omnibox_voice_search_button_colors.background_down = 0x14000000;
 
   normal_scheme.snackbar_foreground = 0xFFEEEEEE;
   normal_scheme.snackbar_background = 0xDD212121;
