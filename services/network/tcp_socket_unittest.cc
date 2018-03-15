@@ -477,7 +477,8 @@ TEST_F(TCPSocketTest, CannotConnectToWrongInterface) {
   }
 }
 
-TEST_F(TCPSocketTest, ServerReceivesMultipleAccept) {
+// TODO(xunjieli): This test is flaky on MacOS crbug.com/821224.
+TEST_F(TCPSocketTest, DISABLED_ServerReceivesMultipleAccept) {
   uint32_t backlog = 10;
   TestServer server;
   server.Start(backlog);
