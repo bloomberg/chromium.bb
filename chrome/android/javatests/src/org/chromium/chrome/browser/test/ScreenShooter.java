@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import android.annotation.SuppressLint;
 import android.app.Instrumentation;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -94,7 +93,6 @@ import java.util.Map;
  * }
  * </pre>
  */
-@SuppressLint("SetWorldReadable")
 public class ScreenShooter extends TestWatcher {
     private static final String SCREENSHOT_DIR =
             "org.chromium.base.test.util.Screenshooter.ScreenshotDir";
@@ -206,9 +204,6 @@ public class ScreenShooter extends TestWatcher {
             File shotFile = File.createTempFile(shotName, IMAGE_SUFFIX, new File(mBaseDir));
             assertTrue("Screenshot " + shotName, mDevice.takeScreenshot(shotFile));
             writeImageDescription(shotFile, filters, tags, metadata);
-            // Set as world readable so that the test runner can read it from /data/local/tmp
-            // without having to run as root
-            shotFile.setReadable(true, false);
         } catch (IOException e) {
             fail("Cannot create shot files " + e.toString());
         }
@@ -236,12 +231,8 @@ public class ScreenShooter extends TestWatcher {
         String jsonFileName =
                 shotFileName.substring(0, shotFileName.length() - IMAGE_SUFFIX.length())
                 + JSON_SUFFIX;
-        File descriptionFile = new File(mBaseDir, jsonFileName);
-        try (FileWriter fileWriter = new FileWriter(descriptionFile)) {
+        try (FileWriter fileWriter = new FileWriter(new File(mBaseDir, jsonFileName));) {
             fileWriter.write(imageDescription.toString());
         }
-        // Set as world readable so that the test runner can read it from /data/local/tmp without
-        // having to run as root
-        descriptionFile.setReadable(true, false);
     }
 }
