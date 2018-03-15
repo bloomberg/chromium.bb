@@ -1191,6 +1191,28 @@ TEST_F(AppListViewFocusTest, ItemFocusedWhenContextMenuOpened) {
   EXPECT_TRUE(second_suggestion_app->HasFocus());
 }
 
+// Tests that the focus is reset onto the search box and the folder exits after
+// hitting enter on folder name.
+TEST_P(AppListViewFocusTest, FocusResetAfterHittingEnterOnFolderName) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(AppListViewState::FULLSCREEN_ALL_APPS);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+
+  // Set focus on the folder name.
+  views::View* folder_name_view =
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest();
+  folder_name_view->RequestFocus();
+
+  // Hit enter key.
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  search_box_view()->search_box()->RequestFocus();
+  EXPECT_FALSE(contents_view()->GetAppsContainerView()->IsInFolderView());
+}
+
 // Tests that opening the app list opens in peeking mode by default.
 TEST_F(AppListViewTest, ShowPeekingByDefault) {
   Initialize(0, false, false);
