@@ -15,7 +15,7 @@ import template_expander
 
 class CSSOMTypesWriter(json5_generator.Writer):
     """
-    Generates CSSOMTypes.cpp and CSSOMKeywords.cpp. These classes provide
+    Generates cssom_types.cc and cssom_keywords.cc. These classes provide
     utility methods for determining whether a given CSSStyleValue is valid
     for a given CSS property. The header files live in core/css/cssom.
     """
@@ -38,18 +38,18 @@ class CSSOMTypesWriter(json5_generator.Writer):
                 enum_for_css_keyword, property_['keywords'])
 
         self._outputs = {
-            'CSSOMTypes.cpp': self.generate_types,
-            'CSSOMKeywords.cpp': self.generate_keywords,
+            'cssom_types.cc': self.generate_types,
+            'cssom_keywords.cc': self.generate_keywords,
         }
 
-    @template_expander.use_jinja('core/css/templates/CSSOMTypes.cpp.tmpl')
+    @template_expander.use_jinja('core/css/templates/cssom_types.cc.tmpl')
     def generate_types(self):
         return {
             'input_files': self._input_files,
             'properties': self._properties,
         }
 
-    @template_expander.use_jinja('core/css/templates/CSSOMKeywords.cpp.tmpl')
+    @template_expander.use_jinja('core/css/templates/cssom_keywords.cc.tmpl')
     def generate_keywords(self):
         return {
             'input_files': self._input_files,
