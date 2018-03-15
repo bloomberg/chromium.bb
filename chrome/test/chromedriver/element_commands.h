@@ -161,6 +161,12 @@ Status ExecuteGetElementLocation(Session* session,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value);
 
+Status ExecuteGetElementRect(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value);
+
 // Returns the location of a given element in client coordinates, after
 // scrolling it into view.
 Status ExecuteGetElementLocationOnceScrolledIntoView(

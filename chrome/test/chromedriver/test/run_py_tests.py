@@ -1362,6 +1362,16 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.TouchUp(location['x'] + 1, location['y'] + 1)
     self.assertEquals('events: touchstart touchmove touchend', events.GetText())
 
+  def testGetElementRect(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/absolute_position_element.html'))
+    target = self._driver.FindElement('id', 'target')
+    rect = target.GetRect()
+    self.assertEquals(18, rect['x'])
+    self.assertEquals(10, rect['y'])
+    self.assertEquals(200, rect['height'])
+    self.assertEquals(210, rect['width'])
+
   def testTouchScrollElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))

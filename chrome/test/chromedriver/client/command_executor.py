@@ -62,6 +62,8 @@ class Command(object):
   HOVER_OVER_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/hover')
   GET_ELEMENT_LOCATION = (
       _Method.GET, '/session/:sessionId/element/:id/location')
+  GET_ELEMENT_RECT = (
+      _Method.GET, '/session/:sessionId/element/:id/rect')
   GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW = (
       _Method.GET, '/session/:sessionId/element/:id/location_in_view')
   GET_ELEMENT_SIZE = (_Method.GET, '/session/:sessionId/element/:id/size')

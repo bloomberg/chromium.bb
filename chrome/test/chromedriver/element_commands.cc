@@ -469,6 +469,58 @@ Status ExecuteGetElementLocation(Session* session,
       value);
 }
 
+Status ExecuteGetElementRect(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+
+  std::unique_ptr<base::Value> location;
+  Status status = web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      webdriver::atoms::asString(webdriver::atoms::GET_LOCATION), args,
+      &location);
+  if (status.IsError())
+    return status;
+
+  std::unique_ptr<base::Value> size;
+  web_view->CallFunction(session->GetCurrentFrameId(),
+                         webdriver::atoms::asString(webdriver::atoms::GET_SIZE),
+                         args, &size);
+
+  // do type conversions
+  base::DictionaryValue* size_dict;
+  if (!size->GetAsDictionary(&size_dict))
+    return Status(kUnknownError, "could not convert to DictionaryValue");
+  base::DictionaryValue* location_dict;
+  if (!location->GetAsDictionary(&location_dict))
+    return Status(kUnknownError, "could not convert to DictionaryValue");
+
+  // grab values
+  int x, y, width, height;
+  if (!location_dict->GetInteger("x", &x))
+    return Status(kUnknownError, "getting size failed to return x");
+
+  if (!location_dict->GetInteger("y", &y))
+    return Status(kUnknownError, "getting size failed to return y");
+
+  if (!size_dict->GetInteger("height", &height))
+    return Status(kUnknownError, "getting location failed to return height");
+
+  if (!size_dict->GetInteger("width", &width))
+    return Status(kUnknownError, "getting location failed to return width");
+
+  base::DictionaryValue ret;
+  ret.SetInteger("x", x);
+  ret.SetInteger("y", y);
+  ret.SetInteger("width", width);
+  ret.SetInteger("height", height);
+  value->reset(ret.DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteGetElementLocationOnceScrolledIntoView(
     Session* session,
     WebView* web_view,

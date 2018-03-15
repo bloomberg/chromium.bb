@@ -318,6 +318,9 @@ HttpHandler::HttpHandler(
                      WrapToCommand("GetElementLocation",
                                    base::Bind(&ExecuteGetElementLocation))),
       CommandMapping(
+          kGet, "session/:sessionId/element/:id/rect",
+          WrapToCommand("GetElementRect", base::Bind(&ExecuteGetElementRect))),
+      CommandMapping(
           kGet, "session/:sessionId/element/:id/location_in_view",
           WrapToCommand(
               "GetElementLocationInView",
