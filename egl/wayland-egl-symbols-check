@@ -8,17 +8,37 @@ if [ ! -f "$LIB" ]; then
 	exit 1
 fi
 
-FUNCS=$($NM -D --defined-only $LIB | grep -o "T .*" | cut -c 3- | while read func; do
-( grep -q "^$func$" || echo $func )  <<EOF
-wl_egl_window_resize
+AVAIL_FUNCS="$($NM -D --format=bsd --defined-only $LIB | awk '{print $3}')"
+
+# Platform specific symbols.
+PLAT_FUNCS="__bss_start
+_edata
+_end
+_fini
+_init
+"
+
+# Official ABI, taken from the header.
+REQ_FUNCS="wl_egl_window_resize
 wl_egl_window_create
 wl_egl_window_destroy
 wl_egl_window_get_attached_size
-_fini
-_init
-EOF
+"
+
+NEW_ABI=$(echo "$AVAIL_FUNCS" | while read func; do
+    echo "$REQ_FUNCS" | grep -q "^$func$" && continue
+    echo "$PLAT_FUNCS" | grep -q "^$func$" && continue
+
+    echo $func
 done)
 
-test ! -n "$FUNCS" || echo $FUNCS
-test ! -n "$FUNCS"
+test ! -n "$NEW_ABI" || echo "New ABI detected - If intentional, update the test."; echo "$NEW_ABI"
 
+REMOVED_ABI=$(echo "$REQ_FUNCS" | while read func; do
+    echo "$AVAIL_FUNCS" | grep -q "^$func$" && continue
+
+    echo $func
+done)
+
+test ! -n "$REMOVED_ABI" || echo "ABI break detected - Required symbol(s) no longer exported!"; echo "$REMOVED_ABI"
+test ! -n "$NEW_ABI" || test ! -n "$REMOVED_ABI"
