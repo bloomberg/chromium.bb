@@ -681,13 +681,13 @@ def DirectCompositionPages(base_name):
       'pixel_video_mp4.html',
       base_name + '_DirectComposition_Video_MP4',
       test_rect=[0, 0, 300, 300],
-      revision=6,
+      revision=7,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_video_vp9.html',
       base_name + '_DirectComposition_Video_VP9',
       test_rect=[0, 0, 300, 300],
-      revision=7,
+      revision=8,
       browser_args=browser_args),
   ]
