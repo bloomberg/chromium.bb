@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
     { false, true, false, true, false }
   };
 
-  for (int i = 1; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 5; j++) {
       // Activate the tab.
       browser()->tab_strip_model()->ActivateTabAt(j, true);
