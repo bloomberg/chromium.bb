@@ -294,7 +294,7 @@ def get_waterfall_config():
     swarming=[
       {
        'gpu': '8086:1616',
-       'os': 'Windows-10-16299.248',
+       'os': 'Windows-10',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build117-b1', 'build118-b1',
@@ -308,7 +308,7 @@ def get_waterfall_config():
     swarming=[
       {
        'gpu': '102b:0534',
-       'os': 'Windows-10-10240',
+       'os': 'Windows-10',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build132-m1', 'build133-m1',
