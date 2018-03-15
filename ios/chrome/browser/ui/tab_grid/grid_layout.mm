@@ -15,11 +15,13 @@ const CGFloat kInterTabSpacing = 20.0f;
 @interface GridLayout ()
 @property(nonatomic, assign) CGFloat startingTabWidth;
 @property(nonatomic, assign) CGFloat maxTabWidth;
+@property(nonatomic, strong) NSArray<NSIndexPath*>* indexPathsOfDeletingItems;
 @end
 
 @implementation GridLayout
 @synthesize startingTabWidth = _startingTabWidth;
 @synthesize maxTabWidth = _maxTabWidth;
+@synthesize indexPathsOfDeletingItems = _indexPathsOfDeletingItems;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -40,6 +42,44 @@ const CGFloat kInterTabSpacing = 20.0f;
   } else {
     [self updateLayoutGivenWidth:self.collectionView.bounds.size.width];
   }
+}
+
+- (void)prepareForCollectionViewUpdates:
+    (NSArray<UICollectionViewUpdateItem*>*)updateItems {
+  NSMutableArray<NSIndexPath*>* deletingItems =
+      [NSMutableArray arrayWithCapacity:updateItems.count];
+  for (UICollectionViewUpdateItem* item in updateItems) {
+    if (item.updateAction == UICollectionUpdateActionDelete) {
+      [deletingItems addObject:item.indexPathBeforeUpdate];
+    }
+  }
+  self.indexPathsOfDeletingItems = [deletingItems copy];
+}
+
+- (UICollectionViewLayoutAttributes*)
+finalLayoutAttributesForDisappearingItemAtIndexPath:
+    (NSIndexPath*)itemIndexPath {
+  UICollectionViewLayoutAttributes* attributes =
+      [super finalLayoutAttributesForDisappearingItemAtIndexPath:itemIndexPath];
+  // Disappearing items that aren't being deleted just use the default
+  // attributes.
+  if (![self.indexPathsOfDeletingItems containsObject:itemIndexPath]) {
+    return attributes;
+  }
+  // Cells being deleted fade out, are scaled down, and drop downwards slightly.
+  attributes.alpha = 0.0;
+  // Scaled down to 60%.
+  CGAffineTransform transform =
+      CGAffineTransformScale(attributes.transform, 0.6, 0.6);
+  // Translated down (positive-y direction) by 50% of the cell cell size.
+  transform =
+      CGAffineTransformTranslate(transform, 0, attributes.size.height * 0.5);
+  attributes.transform = transform;
+  return attributes;
+}
+
+- (void)finalizeCollectionViewUpdates {
+  self.indexPathsOfDeletingItems = @[];
 }
 
 #pragma mark - Private
