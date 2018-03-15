@@ -534,7 +534,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
               '--extra-cflags=--target=arm-linux-gnueabihf',
               '--extra-ldflags=--target=arm-linux-gnueabihf',
               '--sysroot=' + os.path.join(
-                  CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_arm-sysroot'),
+                  CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_arm-sysroot'),
               '--extra-cflags=-mtune=cortex-a8',
               # NOTE: we don't need softfp for this hardware.
               '--extra-cflags=-mfloat-abi=hard',
@@ -561,7 +561,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--extra-cflags=--target=aarch64-linux-gnu',
             '--extra-ldflags=--target=aarch64-linux-gnu',
             '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_arm64-sysroot'),
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_arm64-sysroot'),
         ])
       configure_flags['Common'].extend([
           '--arch=aarch64',
@@ -589,7 +589,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--enable-cross-compile',
             '--target-os=linux',
             '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_mips-sysroot'),
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_mips-sysroot'),
             '--extra-cflags=--target=mipsel-linux-gnu',
             '--extra-ldflags=--target=mipsel-linux-gnu',
         ])
@@ -616,7 +616,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--enable-cross-compile',
             '--target-os=linux',
             '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_mips64el-sysroot'),
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_mips64el-sysroot'),
             '--enable-mips64r2',
             '--disable-mips64r6',
             '--disable-msa',

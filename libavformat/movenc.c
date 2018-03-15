@@ -62,6 +62,7 @@ static const AVOption options[] = {
     { "moov_size", "maximum moov size so it can be placed at the begin", offsetof(MOVMuxContext, reserved_moov_size), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, 0 },
     { "empty_moov", "Make the initial moov atom empty", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_EMPTY_MOOV}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
     { "frag_keyframe", "Fragment at video keyframes", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_FRAG_KEYFRAME}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
+    { "frag_every_frame", "Fragment at every frame", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_FRAG_EVERY_FRAME}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
     { "separate_moof", "Write separate moof/mdat atoms for each track", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_SEPARATE_MOOF}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
     { "frag_custom", "Flush fragments on caller requests", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_FRAG_CUSTOM}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
     { "isml", "Create a live smooth streaming feed (for pushing to a publishing point)", 0, AV_OPT_TYPE_CONST, {.i64 = FF_MOV_FLAG_ISML}, INT_MIN, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM, "movflags" },
@@ -1556,9 +1557,9 @@ static int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
     else if (track->mode == MODE_ISM)
         tag = track->par->codec_tag;
     else if (track->mode == MODE_IPOD) {
-        if (!av_match_ext(s->filename, "m4a") &&
-            !av_match_ext(s->filename, "m4v") &&
-            !av_match_ext(s->filename, "m4b"))
+        if (!av_match_ext(s->url, "m4a") &&
+            !av_match_ext(s->url, "m4v") &&
+            !av_match_ext(s->url, "m4b"))
             av_log(s, AV_LOG_WARNING, "Warning, extension is not .m4a nor .m4v "
                    "Quicktime/Ipod might not play the file\n");
         tag = track->par->codec_tag;
@@ -5432,7 +5433,8 @@ static int mov_write_single_packet(AVFormatContext *s, AVPacket *pkt)
              (mov->max_fragment_size && mov->mdat_size + size >= mov->max_fragment_size) ||
              (mov->flags & FF_MOV_FLAG_FRAG_KEYFRAME &&
               par->codec_type == AVMEDIA_TYPE_VIDEO &&
-              trk->entry && pkt->flags & AV_PKT_FLAG_KEY)) {
+              trk->entry && pkt->flags & AV_PKT_FLAG_KEY) ||
+              (mov->flags & FF_MOV_FLAG_FRAG_EVERY_FRAME)) {
             if (frag_duration >= mov->min_fragment_duration) {
                 // Set the duration of this track to line up with the next
                 // sample in this track. This avoids relying on AVPacket
@@ -5874,7 +5876,8 @@ static int mov_init(AVFormatContext *s)
     if (mov->max_fragment_duration || mov->max_fragment_size ||
         mov->flags & (FF_MOV_FLAG_EMPTY_MOOV |
                       FF_MOV_FLAG_FRAG_KEYFRAME |
-                      FF_MOV_FLAG_FRAG_CUSTOM))
+                      FF_MOV_FLAG_FRAG_CUSTOM |
+                      FF_MOV_FLAG_FRAG_EVERY_FRAME))
         mov->flags |= FF_MOV_FLAG_FRAGMENT;
 
     /* Set other implicit flags immediately */
@@ -6079,6 +6082,11 @@ static int mov_init(AVFormatContext *s)
                     av_log(s, AV_LOG_ERROR, "VP9 only supported in MP4.\n");
                     return AVERROR(EINVAL);
                 }
+            } else if (track->par->codec_id == AV_CODEC_ID_VP8) {
+                /* altref frames handling is not defined in the spec as of version v1.0,
+                 * so just forbid muxing VP8 streams altogether until a new version does */
+                av_log(s, AV_LOG_ERROR, "VP8 muxing is currently not supported.\n");
+                return AVERROR_PATCHWELCOME;
             }
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             track->timescale = st->codecpar->sample_rate;
@@ -6233,7 +6241,8 @@ static int mov_write_header(AVFormatContext *s)
     if (mov->flags & FF_MOV_FLAG_FRAGMENT) {
         /* If no fragmentation options have been set, set a default. */
         if (!(mov->flags & (FF_MOV_FLAG_FRAG_KEYFRAME |
-                            FF_MOV_FLAG_FRAG_CUSTOM)) &&
+                            FF_MOV_FLAG_FRAG_CUSTOM |
+                            FF_MOV_FLAG_FRAG_EVERY_FRAME)) &&
             !mov->max_fragment_duration && !mov->max_fragment_size)
             mov->flags |= FF_MOV_FLAG_FRAG_KEYFRAME;
     } else {
@@ -6400,10 +6409,10 @@ static int shift_data(AVFormatContext *s)
      * writing, so we re-open the same output, but for reading. It also avoids
      * a read/seek/write/seek back and forth. */
     avio_flush(s->pb);
-    ret = s->io_open(s, &read_pb, s->filename, AVIO_FLAG_READ, NULL);
+    ret = s->io_open(s, &read_pb, s->url, AVIO_FLAG_READ, NULL);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Unable to re-open %s output file for "
-               "the second pass (faststart)\n", s->filename);
+               "the second pass (faststart)\n", s->url);
         goto end;
     }
 

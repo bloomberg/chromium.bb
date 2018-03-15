@@ -38,13 +38,13 @@
 #define SHARPNESS_DEFAULT      44
 
 typedef struct DenoiseVAAPIContext {
-    VAAPIVPPContext vpp_ctx; // must be the first fileld
+    VAAPIVPPContext vpp_ctx; // must be the first field
 
     int denoise;         // enable denoise algo.
 } DenoiseVAAPIContext;
 
 typedef struct SharpnessVAAPIContext {
-    VAAPIVPPContext vpp_ctx; // must be the first fileld
+    VAAPIVPPContext vpp_ctx; // must be the first field
 
     int sharpness;       // enable sharpness.
 } SharpnessVAAPIContext;
@@ -71,23 +71,21 @@ static int denoise_vaapi_build_filter_params(AVFilterContext *avctx)
 
     VAProcFilterParameterBuffer denoise;
 
-    if (ctx->denoise != DENOISE_DEFAULT) {
-        vas = vaQueryVideoProcFilterCaps(vpp_ctx->hwctx->display, vpp_ctx->va_context,
-                                         VAProcFilterNoiseReduction,
-                                         &caps, &num_caps);
-        if (vas != VA_STATUS_SUCCESS) {
-            av_log(avctx, AV_LOG_ERROR, "Failed to query denoise caps "
-                   "context: %d (%s).\n", vas, vaErrorStr(vas));
-            return AVERROR(EIO);
-        }
-
-        denoise.type  = VAProcFilterNoiseReduction;
-        denoise.value =  map(ctx->denoise, DENOISE_MIN, DENOISE_MAX,
-                             caps.range.min_value,
-                             caps.range.max_value);
-        ff_vaapi_vpp_make_param_buffers(avctx, VAProcFilterParameterBufferType,
-                                        &denoise, sizeof(denoise), 1);
+    vas = vaQueryVideoProcFilterCaps(vpp_ctx->hwctx->display, vpp_ctx->va_context,
+                                     VAProcFilterNoiseReduction,
+                                     &caps, &num_caps);
+    if (vas != VA_STATUS_SUCCESS) {
+        av_log(avctx, AV_LOG_ERROR, "Failed to query denoise caps "
+               "context: %d (%s).\n", vas, vaErrorStr(vas));
+        return AVERROR(EIO);
     }
+
+    denoise.type  = VAProcFilterNoiseReduction;
+    denoise.value =  map(ctx->denoise, DENOISE_MIN, DENOISE_MAX,
+                         caps.range.min_value,
+                         caps.range.max_value);
+    ff_vaapi_vpp_make_param_buffers(avctx, VAProcFilterParameterBufferType,
+                                    &denoise, sizeof(denoise), 1);
 
     return 0;
 }
@@ -104,25 +102,23 @@ static int sharpness_vaapi_build_filter_params(AVFilterContext *avctx)
 
     VAProcFilterParameterBuffer sharpness;
 
-    if (ctx->sharpness != SHARPNESS_DEFAULT) {
-        vas = vaQueryVideoProcFilterCaps(vpp_ctx->hwctx->display, vpp_ctx->va_context,
-                                         VAProcFilterSharpening,
-                                         &caps, &num_caps);
-        if (vas != VA_STATUS_SUCCESS) {
-            av_log(avctx, AV_LOG_ERROR, "Failed to query sharpness caps "
-                   "context: %d (%s).\n", vas, vaErrorStr(vas));
-            return AVERROR(EIO);
-        }
-
-        sharpness.type  = VAProcFilterSharpening;
-        sharpness.value = map(ctx->sharpness,
-                              SHARPNESS_MIN, SHARPNESS_MAX,
-                              caps.range.min_value,
-                              caps.range.max_value);
-        ff_vaapi_vpp_make_param_buffers(avctx,
-                                        VAProcFilterParameterBufferType,
-                                        &sharpness, sizeof(sharpness), 1);
+    vas = vaQueryVideoProcFilterCaps(vpp_ctx->hwctx->display, vpp_ctx->va_context,
+                                     VAProcFilterSharpening,
+                                     &caps, &num_caps);
+    if (vas != VA_STATUS_SUCCESS) {
+        av_log(avctx, AV_LOG_ERROR, "Failed to query sharpness caps "
+               "context: %d (%s).\n", vas, vaErrorStr(vas));
+        return AVERROR(EIO);
     }
+
+    sharpness.type  = VAProcFilterSharpening;
+    sharpness.value = map(ctx->sharpness,
+                          SHARPNESS_MIN, SHARPNESS_MAX,
+                          caps.range.min_value,
+                          caps.range.max_value);
+    ff_vaapi_vpp_make_param_buffers(avctx,
+                                    VAProcFilterParameterBufferType,
+                                    &sharpness, sizeof(sharpness), 1);
 
     return 0;
 }
@@ -230,7 +226,7 @@ static av_cold int sharpness_vaapi_init(AVFilterContext *avctx)
 }
 
 #define DOFFSET(x) offsetof(DenoiseVAAPIContext, x)
-#define FLAGS (AV_OPT_FLAG_VIDEO_PARAM)
+#define FLAGS (AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM)
 static const AVOption denoise_vaapi_options[] = {
     { "denoise", "denoise level",
       DOFFSET(denoise), AV_OPT_TYPE_INT, { .i64 = DENOISE_DEFAULT }, DENOISE_MIN, DENOISE_MAX, .flags = FLAGS },

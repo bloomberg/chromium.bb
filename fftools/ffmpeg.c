@@ -406,6 +406,9 @@ void term_init(void)
 #ifdef SIGXCPU
     signal(SIGXCPU, sigterm_handler);
 #endif
+#ifdef SIGPIPE
+    signal(SIGPIPE, SIG_IGN); /* Broken pipe (POSIX). */
+#endif
 #if HAVE_SETCONSOLECTRLHANDLER
     SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE);
 #endif
@@ -1560,7 +1563,7 @@ static void print_final_stats(int64_t total_size)
         uint64_t total_packets = 0, total_size = 0;
 
         av_log(NULL, AV_LOG_VERBOSE, "Input file #%d (%s):\n",
-               i, f->ctx->filename);
+               i, f->ctx->url);
 
         for (j = 0; j < f->nb_streams; j++) {
             InputStream *ist = input_streams[f->ist_index + j];
@@ -1594,7 +1597,7 @@ static void print_final_stats(int64_t total_size)
         uint64_t total_packets = 0, total_size = 0;
 
         av_log(NULL, AV_LOG_VERBOSE, "Output file #%d (%s):\n",
-               i, of->ctx->filename);
+               i, of->ctx->url);
 
         for (j = 0; j < of->ctx->nb_streams; j++) {
             OutputStream *ost = output_streams[of->ost_index + j];
@@ -1634,8 +1637,7 @@ static void print_final_stats(int64_t total_size)
 
 static void print_report(int is_last_report, int64_t timer_start, int64_t cur_time)
 {
-    char buf[1024];
-    AVBPrint buf_script;
+    AVBPrint buf, buf_script;
     OutputStream *ost;
     AVFormatContext *oc;
     int64_t total_size;
@@ -1647,6 +1649,7 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
     static int64_t last_time = -1;
     static int qp_histogram[52];
     int hours, mins, secs, us;
+    const char *hours_sign;
     int ret;
     float t;
 
@@ -1672,8 +1675,8 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
     if (total_size <= 0) // FIXME improve avio_size() so it works with non seekable output too
         total_size = avio_tell(oc->pb);
 
-    buf[0] = '\0';
     vid = 0;
+    av_bprint_init(&buf, 0, AV_BPRINT_SIZE_AUTOMATIC);
     av_bprint_init(&buf_script, 0, 1);
     for (i = 0; i < nb_output_streams; i++) {
         float q = -1;
@@ -1683,7 +1686,7 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
             q = ost->quality / (float) FF_QP2LAMBDA;
 
         if (vid && enc->codec_type == AVMEDIA_TYPE_VIDEO) {
-            snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "q=%2.1f ", q);
+            av_bprintf(&buf, "q=%2.1f ", q);
             av_bprintf(&buf_script, "stream_%d_%d_q=%.1f\n",
                        ost->file_index, ost->index, q);
         }
@@ -1692,21 +1695,21 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
 
             frame_number = ost->frame_number;
             fps = t > 1 ? frame_number / t : 0;
-            snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "frame=%5d fps=%3.*f q=%3.1f ",
+            av_bprintf(&buf, "frame=%5d fps=%3.*f q=%3.1f ",
                      frame_number, fps < 9.95, fps, q);
             av_bprintf(&buf_script, "frame=%d\n", frame_number);
             av_bprintf(&buf_script, "fps=%.1f\n", fps);
             av_bprintf(&buf_script, "stream_%d_%d_q=%.1f\n",
                        ost->file_index, ost->index, q);
             if (is_last_report)
-                snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "L");
+                av_bprintf(&buf, "L");
             if (qp_hist) {
                 int j;
                 int qp = lrintf(q);
                 if (qp >= 0 && qp < FF_ARRAY_ELEMS(qp_histogram))
                     qp_histogram[qp]++;
                 for (j = 0; j < 32; j++)
-                    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%X", av_log2(qp_histogram[j] + 1));
+                    av_bprintf(&buf, "%X", av_log2(qp_histogram[j] + 1));
             }
 
             if ((enc->flags & AV_CODEC_FLAG_PSNR) && (ost->pict_type != AV_PICTURE_TYPE_NONE || is_last_report)) {
@@ -1715,7 +1718,7 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
                 double scale, scale_sum = 0;
                 double p;
                 char type[3] = { 'Y','U','V' };
-                snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "PSNR=");
+                av_bprintf(&buf, "PSNR=");
                 for (j = 0; j < 3; j++) {
                     if (is_last_report) {
                         error = enc->error[j];
@@ -1729,12 +1732,12 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
                     error_sum += error;
                     scale_sum += scale;
                     p = psnr(error / scale);
-                    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%c:%2.2f ", type[j], p);
+                    av_bprintf(&buf, "%c:%2.2f ", type[j], p);
                     av_bprintf(&buf_script, "stream_%d_%d_psnr_%c=%2.2f\n",
                                ost->file_index, ost->index, type[j] | 32, p);
                 }
                 p = psnr(error_sum / scale_sum);
-                snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "*:%2.2f ", psnr(error_sum / scale_sum));
+                av_bprintf(&buf, "*:%2.2f ", psnr(error_sum / scale_sum));
                 av_bprintf(&buf_script, "stream_%d_%d_psnr_all=%2.2f\n",
                            ost->file_index, ost->index, p);
             }
@@ -1754,57 +1757,62 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
     secs %= 60;
     hours = mins / 60;
     mins %= 60;
+    hours_sign = (pts < 0) ? "-" : "";
 
     bitrate = pts && total_size >= 0 ? total_size * 8 / (pts / 1000.0) : -1;
     speed = t != 0.0 ? (double)pts / AV_TIME_BASE / t : -1;
 
-    if (total_size < 0) snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-                                 "size=N/A time=");
-    else                snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-                                 "size=%8.0fkB time=", total_size / 1024.0);
-    if (pts < 0)
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "-");
-    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-             "%02d:%02d:%02d.%02d ", hours, mins, secs,
-             (100 * us) / AV_TIME_BASE);
+    if (total_size < 0) av_bprintf(&buf, "size=N/A time=");
+    else                av_bprintf(&buf, "size=%8.0fkB time=", total_size / 1024.0);
+    if (pts == AV_NOPTS_VALUE) {
+        av_bprintf(&buf, "N/A ");
+    } else {
+        av_bprintf(&buf, "%s%02d:%02d:%02d.%02d ",
+                   hours_sign, hours, mins, secs, (100 * us) / AV_TIME_BASE);
+    }
 
     if (bitrate < 0) {
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),"bitrate=N/A");
+        av_bprintf(&buf, "bitrate=N/A");
         av_bprintf(&buf_script, "bitrate=N/A\n");
     }else{
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),"bitrate=%6.1fkbits/s", bitrate);
+        av_bprintf(&buf, "bitrate=%6.1fkbits/s", bitrate);
         av_bprintf(&buf_script, "bitrate=%6.1fkbits/s\n", bitrate);
     }
 
     if (total_size < 0) av_bprintf(&buf_script, "total_size=N/A\n");
     else                av_bprintf(&buf_script, "total_size=%"PRId64"\n", total_size);
-    av_bprintf(&buf_script, "out_time_ms=%"PRId64"\n", pts);
-    av_bprintf(&buf_script, "out_time=%02d:%02d:%02d.%06d\n",
-               hours, mins, secs, us);
+    if (pts == AV_NOPTS_VALUE) {
+        av_bprintf(&buf_script, "out_time_ms=N/A\n");
+        av_bprintf(&buf_script, "out_time=N/A\n");
+    } else {
+        av_bprintf(&buf_script, "out_time_ms=%"PRId64"\n", pts);
+        av_bprintf(&buf_script, "out_time=%s%02d:%02d:%02d.%06d\n",
+                   hours_sign, hours, mins, secs, us);
+    }
 
     if (nb_frames_dup || nb_frames_drop)
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), " dup=%d drop=%d",
-                nb_frames_dup, nb_frames_drop);
+        av_bprintf(&buf, " dup=%d drop=%d", nb_frames_dup, nb_frames_drop);
     av_bprintf(&buf_script, "dup_frames=%d\n", nb_frames_dup);
     av_bprintf(&buf_script, "drop_frames=%d\n", nb_frames_drop);
 
     if (speed < 0) {
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf)," speed=N/A");
+        av_bprintf(&buf, " speed=N/A");
         av_bprintf(&buf_script, "speed=N/A\n");
     } else {
-        snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf)," speed=%4.3gx", speed);
+        av_bprintf(&buf, " speed=%4.3gx", speed);
         av_bprintf(&buf_script, "speed=%4.3gx\n", speed);
     }
 
     if (print_stats || is_last_report) {
         const char end = is_last_report ? '\n' : '\r';
         if (print_stats==1 && AV_LOG_INFO > av_log_get_level()) {
-            fprintf(stderr, "%s    %c", buf, end);
+            fprintf(stderr, "%s    %c", buf.str, end);
         } else
-            av_log(NULL, AV_LOG_INFO, "%s    %c", buf, end);
+            av_log(NULL, AV_LOG_INFO, "%s    %c", buf.str, end);
 
     fflush(stderr);
     }
+    av_bprint_finalize(&buf, NULL);
 
     if (progress_avio) {
         av_bprintf(&buf_script, "progress=%s\n",
@@ -2102,7 +2110,7 @@ static void check_decode_result(InputStream *ist, int *got_output, int ret)
 
     if (exit_on_error && *got_output && ist) {
         if (ist->decoded_frame->decode_error_flags || (ist->decoded_frame->flags & AV_FRAME_FLAG_CORRUPT)) {
-            av_log(NULL, AV_LOG_FATAL, "%s: corrupt decoded frame in stream %d\n", input_files[ist->file_index]->ctx->filename, ist->st->index);
+            av_log(NULL, AV_LOG_FATAL, "%s: corrupt decoded frame in stream %d\n", input_files[ist->file_index]->ctx->url, ist->st->index);
             exit_program(1);
         }
     }
@@ -2172,10 +2180,7 @@ static int ifilter_send_frame(InputFilter *ifilter, AVFrame *frame)
 
         ret = reap_filters(1);
         if (ret < 0 && ret != AVERROR_EOF) {
-            char errbuf[128];
-            av_strerror(ret, errbuf, sizeof(errbuf));
-
-            av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", errbuf);
+            av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", av_err2str(ret));
             return ret;
         }
 
@@ -2986,7 +2991,7 @@ static int check_init_output_file(OutputFile *of, int file_index)
     //assert_avoptions(of->opts);
     of->header_written = 1;
 
-    av_dump_format(of->ctx, file_index, of->ctx->filename, 1);
+    av_dump_format(of->ctx, file_index, of->ctx->url, 1);
 
     if (sdp_filename || want_sdp)
         print_sdp();
@@ -3499,7 +3504,8 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
             av_buffersink_set_frame_size(ost->filter->filter,
                                             ost->enc_ctx->frame_size);
         assert_avoptions(ost->encoder_opts);
-        if (ost->enc_ctx->bit_rate && ost->enc_ctx->bit_rate < 1000)
+        if (ost->enc_ctx->bit_rate && ost->enc_ctx->bit_rate < 1000 &&
+            ost->enc_ctx->codec_id != AV_CODEC_ID_CODEC2 /* don't complain about 700 bit/s modes */)
             av_log(NULL, AV_LOG_WARNING, "The bitrate parameter is set too low."
                                          " It takes bits/s as argument, not kbits/s\n");
 
@@ -3589,6 +3595,7 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
             { "clean_effects"       , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CLEAN_EFFECTS     },    .unit = "flags" },
             { "captions"            , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CAPTIONS          },    .unit = "flags" },
             { "descriptions"        , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS      },    .unit = "flags" },
+            { "dependent"           , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DEPENDENT         },    .unit = "flags" },
             { "metadata"            , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_METADATA          },    .unit = "flags" },
             { NULL },
         };
@@ -4249,7 +4256,7 @@ static int process_input(int file_index)
     }
     if (ret < 0) {
         if (ret != AVERROR_EOF) {
-            print_error(is->filename, ret);
+            print_error(is->url, ret);
             if (exit_on_error)
                 exit_program(1);
         }
@@ -4298,7 +4305,7 @@ static int process_input(int file_index)
         goto discard_packet;
 
     if (exit_on_error && (pkt.flags & AV_PKT_FLAG_CORRUPT)) {
-        av_log(NULL, AV_LOG_FATAL, "%s: corrupt input packet in stream %d\n", is->filename, pkt.stream_index);
+        av_log(NULL, AV_LOG_FATAL, "%s: corrupt input packet in stream %d\n", is->url, pkt.stream_index);
         exit_program(1);
     }
 
@@ -4633,10 +4640,7 @@ static int transcode(void)
 
         ret = transcode_step();
         if (ret < 0 && ret != AVERROR_EOF) {
-            char errbuf[128];
-            av_strerror(ret, errbuf, sizeof(errbuf));
-
-            av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", errbuf);
+            av_log(NULL, AV_LOG_ERROR, "Error while filtering: %s\n", av_err2str(ret));
             break;
         }
 
@@ -4665,11 +4669,11 @@ static int transcode(void)
             av_log(NULL, AV_LOG_ERROR,
                    "Nothing was written into output file %d (%s), because "
                    "at least one of its streams received no packets.\n",
-                   i, os->filename);
+                   i, os->url);
             continue;
         }
         if ((ret = av_write_trailer(os)) < 0) {
-            av_log(NULL, AV_LOG_ERROR, "Error writing trailer of %s: %s\n", os->filename, av_err2str(ret));
+            av_log(NULL, AV_LOG_ERROR, "Error writing trailer of %s: %s\n", os->url, av_err2str(ret));
             if (exit_on_error)
                 exit_program(1);
         }
