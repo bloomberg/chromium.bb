@@ -41,6 +41,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,6 +77,9 @@ NSString* const kRecentlyClosedCollapsedKey = @"RecentlyClosedCollapsed";
 int const kNumberOfSectionsBeforeSessions = 2;
 // Estimated Table Row height.
 const CGFloat kEstimatedRowHeight = 56;
+// The UI displays relative time for up to this number of hours and then
+// switches to absolute values.
+const int kRelativeTimeMaxHours = 4;
 
 }  // namespace
 
@@ -271,6 +275,9 @@ const CGFloat kEstimatedRowHeight = 56;
         [[TableViewTextHeaderFooterItem alloc]
             initWithType:ItemTypeSessionHeader];
     header.text = base::SysUTF8ToNSString(session->name);
+    header.subtitleText = l10n_util::GetNSStringF(
+        IDS_IOS_OPEN_TABS_LAST_USED,
+        base::SysNSStringToUTF16([self lastSyncStringForSesssion:session]));
     [model setHeader:header forSectionWithIdentifier:sessionIdentifier];
     [self addItemsForSession:session];
   }
@@ -607,6 +614,43 @@ const CGFloat kEstimatedRowHeight = 56;
       [self sessionForTabAtIndexPath:indexPath];
   DCHECK_LT(indexOfDistantTab, session->tabs.size());
   return session->tabs[indexOfDistantTab].get();
+}
+
+- (NSString*)lastSyncStringForSesssion:
+    (synced_sessions::DistantSession const*)session {
+  base::Time time = session->modified_time;
+  NSDate* lastUsedDate = [NSDate dateWithTimeIntervalSince1970:time.ToTimeT()];
+  NSString* dateString =
+      [NSDateFormatter localizedStringFromDate:lastUsedDate
+                                     dateStyle:NSDateFormatterShortStyle
+                                     timeStyle:NSDateFormatterNoStyle];
+
+  NSString* timeString;
+  base::TimeDelta last_used_delta;
+  if (base::Time::Now() > time)
+    last_used_delta = base::Time::Now() - time;
+
+  if (last_used_delta.InMicroseconds() < base::Time::kMicrosecondsPerMinute) {
+    timeString = l10n_util::GetNSString(IDS_IOS_OPEN_TABS_RECENTLY_SYNCED);
+    // This will return something similar to "Seconds ago mm/dd/yy"
+    return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
+  }
+
+  if (last_used_delta.InHours() < kRelativeTimeMaxHours) {
+    timeString = base::SysUTF16ToNSString(
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                               ui::TimeFormat::LENGTH_SHORT, last_used_delta));
+    // This will return something similar to "1 min/hour ago mm/dd/yy"
+    return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
+  }
+
+  NSDate* date = [NSDate dateWithTimeIntervalSince1970:time.ToTimeT()];
+  timeString =
+      [NSDateFormatter localizedStringFromDate:date
+                                     dateStyle:NSDateFormatterNoStyle
+                                     timeStyle:NSDateFormatterShortStyle];
+  // This will return something similar to "H:MM mm/dd/yy"
+  return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
 }
 
 #pragma mark - Navigation helpers
