@@ -211,12 +211,16 @@ sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrContext* context,
 
   GrSurfaceOrigin origin;
   image->getTextureHandle(false /* flushPendingGrContextIO */, &origin);
+  SkColorType color_type = image->colorType();
+  if (color_type == kUnknown_SkColorType) {
+    return nullptr;
+  }
   sk_sp<SkColorSpace> color_space = image->refColorSpace();
   GrBackendTexture backend_texture;
   SkImage::BackendTextureReleaseProc release_proc;
   SkImage::MakeBackendTextureFromSkImage(context, std::move(image),
                                          &backend_texture, &release_proc);
-  return SkImage::MakeFromTexture(context, backend_texture, origin,
+  return SkImage::MakeFromTexture(context, backend_texture, origin, color_type,
                                   kPremul_SkAlphaType, std::move(color_space));
 }
 
