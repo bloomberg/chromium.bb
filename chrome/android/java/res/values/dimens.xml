@@ -489,7 +489,7 @@
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_start_icon_corner_radius">18dp</dimen>
     <dimen name="list_item_end_icon_width">56dp</dimen>
-    <dimen name="list_menu_width">140dp</dimen>
+    <dimen name="list_menu_width">180dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_layout_row_padding">16dp</dimen>
