@@ -110,6 +110,18 @@ class UserSessionManager
     SECONDARY_USER_SESSION_AFTER_CRASH,
   } StartSessionType;
 
+  // Parameters to use when initializing the RLZ library.  These fields need
+  // to be retrieved from a blocking task and this structure is used to pass
+  // the data.
+  struct RlzInitParams {
+    // Set to true if RLZ is disabled.
+    bool disabled;
+
+    // The elapsed time since the device went through the OOBE.  This can
+    // be a very long time.
+    base::TimeDelta time_since_oobe_completion;
+  };
+
   // Returns UserSessionManager instance.
   static UserSessionManager* GetInstance();
 
@@ -364,7 +376,7 @@ class UserSessionManager
   void RestoreAuthSessionImpl(Profile* profile, bool restore_from_auth_cookies);
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
-  void InitRlzImpl(Profile* profile, bool disabled);
+  void InitRlzImpl(Profile* profile, const RlzInitParams& params);
 
   // If |user| is not a kiosk app, sets session type as seen by extensions
   // feature system according to |user|'s type.

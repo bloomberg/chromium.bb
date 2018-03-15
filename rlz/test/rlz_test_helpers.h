@@ -26,6 +26,7 @@ class RlzLibTestNoMachineStateHelper {
  public:
   void SetUp();
   void TearDown();
+  void Reset();
 
 #if defined(OS_POSIX)
   base::ScopedTempDir temp_dir_;
@@ -47,8 +48,6 @@ class RlzLibTestNoMachineState : public ::testing::Test {
 class RlzLibTestBase : public RlzLibTestNoMachineState {
  protected:
   void SetUp() override;
-
-  RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
 };
 
 #endif  // RLZ_TEST_RLZ_TEST_HELPERS_H

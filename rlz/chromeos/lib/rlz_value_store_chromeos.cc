@@ -46,6 +46,9 @@ base::LazyInstance<base::FilePath>::Leaky g_testing_rlz_store_path =
     LAZY_INSTANCE_INITIALIZER;
 
 base::FilePath GetRlzStorePathCommon() {
+  // TODO(wzang): Replace base::DIR_HOME with something that is shared by all
+  // profiles on the device.  This location must be somewhere that is wiped
+  // when the device is factory reset or powerwashed.
   base::FilePath homedir;
   PathService::Get(base::DIR_HOME, &homedir);
   return g_testing_rlz_store_path.Get().empty()
@@ -107,6 +110,14 @@ bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
 
 bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if defined(OS_CHROMEOS)
+  // TODO(wzang): make sure time is correct (check that npupdate has updated
+  // successfully).
+  // TODO(wzang): if the current time is within 7 days of the
+  // factory_production_date value in the RW_VPD, then return the current time.
+#endif
+
   std::string ping_time;
   return rlz_store_->GetString(GetKeyName(kPingTimeKey, product), &ping_time) &&
       base::StringToInt64(ping_time, time);
@@ -120,6 +131,24 @@ bool RlzValueStoreChromeOS::ClearPingTime(Product product) {
 
 bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
                                                 const char* new_rlz) {
+#if defined(OS_CHROMEOS)
+  // If an access point already exists, don't overwrite it.  This is to prevent
+  // writing cohort data for first search which is not needed in Chrome OS.
+  //
+  // There are two possible cases: either the user performs a search before the
+  // first ping is sent on first run, or they do not.  If they do, then
+  // |new_rlz| contain cohorts for install and first search, but they will be
+  // the same.  If they don't, the first time WriteAccessPointRlz() is called
+  // |new_rlz| will contain only install cohort.  The second time it will
+  // contain both install and first search cohorts.  Ignoring the second
+  // means the first search cohort will never be stored.
+  char dummy[kMaxRlzLength + 1];
+  if (ReadAccessPointRlz(access_point, dummy, arraysize(dummy)) &&
+      dummy[0] != 0) {
+    return true;
+  }
+#endif
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(
       GetKeyName(kAccessPointKey, access_point), new_rlz);
@@ -187,6 +216,13 @@ bool RlzValueStoreChromeOS::ClearAllProductEvents(Product product) {
 bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if defined(OS_CHROMEOS)
+  if (strcmp(event_rlz, "CAF") == 0) {
+    // TODO(wzang): Set rlz_first_use_ping_not_sent to 0 in RW_VPD.
+  }
+#endif
+
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
                         std::make_unique<base::Value>(event_rlz));
 }
@@ -194,6 +230,20 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
                                             const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if defined(OS_CHROMEOS)
+  if (strcmp(event_rlz, "CAF") == 0) {
+    // TODO(wzang): If rlz_first_use_ping_not_sent exists in RW_VPD with
+    // value 0, then return true.
+    // TODO(wzang): if the current time is within 7 days of the
+    // factory_production_date value in the RW_VPD, then return true.
+    // TODO(wzang): if rlz_first_use_ping_not_sent exists in RW_VPD with
+    // value 1 but below the code finds |event_value| in the list, try to
+    // set rlz_first_use_ping_not_sent to zero in the RW_VPD.  This is to try
+    // and fix the RW_VPD if there was an error writing to it earlier.
+  }
+#endif
+
   base::Value event_value(event_rlz);
   base::ListValue* events_list = NULL;
   return rlz_store_->GetList(GetKeyName(kStatefulEventKey, product),

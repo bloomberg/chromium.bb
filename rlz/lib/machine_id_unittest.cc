@@ -18,3 +18,13 @@ TEST(MachineDealCodeTestMachineId, MachineId) {
   EXPECT_STREQ("A341BA986A7E86840688977FCF20C86E253F00919E068B50F8",
                id.c_str());
 }
+
+#if defined(OS_CHROMEOS)
+TEST(MachineDealCodeTestMachineId, MachineIdIsUnique) {
+  std::string id1;
+  std::string id2;
+  rlz_lib::GetMachineId(&id1);
+  rlz_lib::GetMachineId(&id2);
+  EXPECT_NE(id1, id2);
+}
+#endif

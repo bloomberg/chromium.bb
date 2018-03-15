@@ -356,6 +356,16 @@ bool IsRunningTest() {
              ::switches::kTestType);
 }
 
+#if BUILDFLAG(ENABLE_RLZ)
+UserSessionManager::RlzInitParams CollectRlzParams() {
+  UserSessionManager::RlzInitParams params;
+  params.disabled = base::PathExists(GetRlzDisabledFlagPath());
+  params.time_since_oobe_completion =
+      chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation();
+  return params;
+}
+#endif
+
 }  // namespace
 
 UserSessionManagerDelegate::~UserSessionManagerDelegate() {}
@@ -652,7 +662,7 @@ void UserSessionManager::InitRlz(Profile* profile) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
+      base::Bind(&CollectRlzParams),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
 }
@@ -1581,27 +1591,32 @@ void UserSessionManager::RestoreAuthSessionImpl(
                                 user_context_.GetAccessToken());
 }
 
-void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
+void UserSessionManager::InitRlzImpl(Profile* profile,
+                                     const RlzInitParams& params) {
 #if BUILDFLAG(ENABLE_RLZ)
   PrefService* local_state = g_browser_process->local_state();
-  if (disabled) {
+  if (params.disabled) {
     // Empty brand code means an organic install (no RLZ pings are sent).
     google_brand::chromeos::ClearBrandForCurrentSession();
   }
-  if (disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
+  if (params.disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
     // When switching to RLZ enabled/disabled state, clear all recorded events.
     rlz::RLZTracker::ClearRlzState();
-    local_state->SetBoolean(prefs::kRLZDisabled, disabled);
+    local_state->SetBoolean(prefs::kRLZDisabled, params.disabled);
   }
   // Init the RLZ library.
   int ping_delay = profile->GetPrefs()->GetInteger(prefs::kRlzPingDelaySeconds);
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
+  bool send_ping_immediately = ping_delay < 0;
+  base::TimeDelta delay =
+      base::TimeDelta::FromSeconds(abs(ping_delay)) -
+          params.time_since_oobe_completion;
   rlz::RLZTracker::SetRlzDelegate(
       base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(
-      user_manager::UserManager::Get()->IsCurrentUserNew(), ping_delay < 0,
-      base::TimeDelta::FromSeconds(abs(ping_delay)),
+      user_manager::UserManager::Get()->IsCurrentUserNew(),
+      send_ping_immediately, delay,
       ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile),
       ChromeRLZTrackerDelegate::IsGoogleHomepage(profile),
       ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile));
