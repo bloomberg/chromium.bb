@@ -273,7 +273,9 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
+// Flaky. See https://crbug.com/822276
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       DISABLED_DownloadService_Acceptance) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // that request to be scheduled with the Download Service.
 
