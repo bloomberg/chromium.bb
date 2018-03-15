@@ -2617,6 +2617,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kSamplingHeapProfiler,
     switches::kShowPaintRects,
     switches::kStatsCollectionController,
+    switches::kSkiaFontCacheLimitMb,
     switches::kTestType,
     switches::kTouchEventFeatureDetection,
     switches::kTouchTextSelectionStrategy,

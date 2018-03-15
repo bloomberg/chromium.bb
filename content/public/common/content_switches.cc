@@ -789,6 +789,10 @@ const char kStartFullscreen[] = "start-fullscreen";
 const char kStatsCollectionController[] =
     "enable-stats-collection-bindings";
 
+// Specifies the max number of bytes that should be used by the skia font cache.
+// If the cache needs to allocate more, skia will purge previous entries.
+const char kSkiaFontCacheLimitMb[] = "skia-font-cache-limit-mb";
+
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 
