@@ -27,6 +27,10 @@ extern const base::Feature kWebPaymentsMethodSectionOrderV2;
 // Used to control the support for Payment Details modifiers.
 extern const base::Feature kWebPaymentsModifiers;
 
+// Used to control whether the Payment Sheet can be skipped for Payment Requests
+// with a single URL based payment app and no other info requested.
+extern const base::Feature kWebPaymentsSingleAppUiSkip;
+
 }  // namespace features
 }  // namespace payments
 

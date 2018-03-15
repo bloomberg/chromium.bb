@@ -394,6 +394,9 @@ extern const char kEnableSharedArrayBufferDescription[];
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
+extern const char kEnableWebPaymentsSingleAppUiSkipName[];
+extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
+
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
@@ -1238,9 +1241,6 @@ extern const char kEnableWebNfcDescription[];
 
 extern const char kEnableWebPaymentsMethodSectionOrderV2Name[];
 extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
-
-extern const char kEnableWebPaymentsSingleAppUiSkipName[];
-extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];

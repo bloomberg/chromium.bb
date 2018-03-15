@@ -22,10 +22,9 @@ TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
       is_browser_window_active_(is_browser_window_active) {}
 
 void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
-  PaymentRequestDialogView* dialog_view =
-      new PaymentRequestDialogView(request, observer_);
-  dialog_view->ShowDialog();
-  dialog_ = dialog_view;
+  hidden_dialog_ =
+      std::make_unique<PaymentRequestDialogView>(request, observer_);
+  MaybeShowHiddenDialog(request);
 }
 
 bool TestChromePaymentRequestDelegate::IsIncognito() const {

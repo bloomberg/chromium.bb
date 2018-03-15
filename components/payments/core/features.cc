@@ -21,5 +21,13 @@ const base::Feature kWebPaymentsMethodSectionOrderV2{
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+const base::Feature kWebPaymentsSingleAppUiSkip{
+    "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+const base::Feature kWebPaymentsSingleAppUiSkip{
+    "WebPaymentsSingleAppUiSkip", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 }  // namespace payments

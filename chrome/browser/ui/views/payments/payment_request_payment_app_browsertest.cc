@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,9 +12,11 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -33,7 +36,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
         bobpay_(net::EmbeddedTestServer::TYPE_HTTPS),
         frankpay_(net::EmbeddedTestServer::TYPE_HTTPS) {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kServiceWorkerPaymentApps);
+        ::features::kServiceWorkerPaymentApps);
   }
 
   PermissionRequestManager* GetPermissionRequestManager() {
@@ -59,6 +62,26 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
   void InstallAlicePayForMethod(const std::string& method_name) {
     ui_test_utils::NavigateToURL(browser(),
                                  alicepay_.GetURL("alicepay.com", "/app1/"));
+
+    std::string contents;
+    std::string script = "install('" + method_name + "');";
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(), script,
+        &contents))
+        << "Script execution failed: " << script;
+    ASSERT_NE(std::string::npos,
+              contents.find("Payment app for \"" + method_name +
+                            "\" method installed."))
+        << method_name << " method install message not found in:\n"
+        << contents;
+  }
+
+  // Invokes the JavaScript function install(|method_name|) in
+  // components/test/data/payments/bobpay.com/app1/index.js, which responds
+  // back via domAutomationController.
+  void InstallBobPayForMethod(const std::string& method_name) {
+    ui_test_utils::NavigateToURL(browser(),
+                                 bobpay_.GetURL("bobpay.com", "/app1/"));
 
     std::string contents;
     std::string script = "install('" + method_name + "');";
@@ -363,6 +386,101 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
         {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"basic-card"});
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {
+          payments::features::kWebPaymentsSingleAppUiSkip,
+          ::features::kServiceWorkerPaymentApps,
+      },
+      {});
+  InstallBobPayForMethod("https://bobpay.com");
+
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_ui_skip_test.html");
+
+    // Since the skip UI flow is available, the request will complete without
+    // interaction besides hitting "pay" on the website.
+    ResetEventWaiterForSequence(
+        {DialogEvent::DIALOG_OPENED, DialogEvent::DIALOG_CLOSED});
+    content::WebContents* web_contents = GetActiveWebContents();
+    const std::string click_buy_button_js =
+        "(function() { document.getElementById('buy').click(); })();";
+    ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
+    WaitForObservedEvent();
+
+    ExpectBodyContains({"bobpay.com"});
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+                       SkipUIDisabledWithMultipleAcceptedMethods) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {
+          payments::features::kWebPaymentsSingleAppUiSkip,
+          ::features::kServiceWorkerPaymentApps,
+      },
+      {});
+  InstallBobPayForMethod("https://bobpay.com");
+
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_test.html");
+
+    // Since the skip UI flow is not available, the request will complete only
+    // after clicking on the Pay button in the dialog.
+    InvokePaymentRequestUI();
+
+    ResetEventWaiterForSequence(
+        {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+    ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+
+    ExpectBodyContains({"bobpay.com"});
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+                       SkipUIDisabledWithRequestedPayerEmail) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {
+          payments::features::kWebPaymentsSingleAppUiSkip,
+          ::features::kServiceWorkerPaymentApps,
+      },
+      {});
+  InstallBobPayForMethod("https://bobpay.com");
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_ui_skip_test.html");
+
+    // Since the skip UI flow is not available because the payer's email is
+    // requested, the request will complete only after clicking on the Pay
+    // button in the dialog.
+    ResetEventWaiter(DialogEvent::DIALOG_OPENED);
+    content::WebContents* web_contents = GetActiveWebContents();
+    const std::string click_buy_button_js =
+        "(function() { "
+        "document.getElementById('buyWithRequestedEmail').click(); })();";
+    ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
+    WaitForObservedEvent();
+    EXPECT_TRUE(IsPayButtonEnabled());
+
+    ResetEventWaiterForSequence(
+        {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+    ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+
+    ExpectBodyContains({"bobpay.com"});
   }
 }
 
