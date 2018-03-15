@@ -100,7 +100,7 @@ source_set("core") {
 
   public_deps = [
     "//base",
-    "//mojo/edk/system:system_impl",
+    "//mojo/edk/system",
     "//mojo/public/c/system:headers",
   ]
 
@@ -109,5 +109,5 @@ source_set("core") {
     deps += [ "//third_party/ashmem" ]
   }
 
-  allow_circular_includes_from = [ "//mojo/edk/system:system_impl" ]
+  allow_circular_includes_from = [ "//mojo/edk/system" ]
 }

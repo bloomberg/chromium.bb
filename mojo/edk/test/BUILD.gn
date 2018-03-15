@@ -27,7 +27,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/system",
     "//testing/gtest",
   ]
@@ -44,7 +44,7 @@ source_set("run_all_unittests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/c/test_support",
     "//testing/gtest",
   ]
@@ -60,7 +60,7 @@ source_set("run_all_perftests") {
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/edk/test:test_support",
     "//mojo/public/c/test_support",
   ]

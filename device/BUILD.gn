@@ -103,7 +103,7 @@ test("device_unittests") {
     "//device/gamepad/public/mojom:gamepad_mojom_traits_test",
     "//device/geolocation:unittests",
     "//mojo/common",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net",
     "//testing/gmock",

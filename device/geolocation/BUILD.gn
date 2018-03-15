@@ -59,7 +59,7 @@ component("geolocation") {
 
   deps = [
     "//base",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net",
     "//ui/gfx",

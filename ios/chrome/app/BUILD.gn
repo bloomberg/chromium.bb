@@ -226,7 +226,7 @@ source_set("app_internal") {
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ios/web/public/app",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//skia",
     "//ui/base",

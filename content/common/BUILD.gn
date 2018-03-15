@@ -360,7 +360,7 @@ source_set("common") {
     "//media/midi",
     "//media/midi:mojo",
     "//mojo/common:common_base",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//ppapi/features",
     "//sandbox",

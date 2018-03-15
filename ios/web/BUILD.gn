@@ -135,7 +135,7 @@ source_set("run_all_unittests") {
     "//base/test:test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
-    "//mojo/edk/system",
+    "//mojo/edk",
   ]
 }
 
@@ -554,7 +554,7 @@ test("ios_web_inttests") {
     "//ios/web/test:resources",
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net:test_support",
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp",

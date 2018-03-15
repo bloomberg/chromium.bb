@@ -18,7 +18,7 @@ source_set("common_initialization") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/catalog:lib",
     "//services/service_manager/background:lib",
   ]

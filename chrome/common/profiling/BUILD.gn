@@ -28,7 +28,7 @@ static_library("profiling") {
     "//base/allocator:buildflags",
     "//chrome/common:constants",
     "//content/public/common",
-    "//mojo/edk/system",
+    "//mojo/edk",
   ]
 }
 
@@ -51,7 +51,7 @@ source_set("unit_tests") {
   deps = [
     ":profiling",
     "//base",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//testing/gtest",
   ]
 }

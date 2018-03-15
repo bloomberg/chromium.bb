@@ -115,7 +115,7 @@ test("media_blink_unittests") {
     "//media:test_support",
     "//media/mojo/interfaces",
     "//media/mojo/services",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

@@ -61,7 +61,7 @@ test("mojo_perftests") {
     deps += [
       "//base",
       "//base/test:test_support",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//mojo/edk/system:test_utils",
       "//testing/gtest",
     ]

@@ -93,7 +93,7 @@ static_library("arc") {
     "//device/usb/mojo",
     "//device/usb/public/mojom",
     "//google_apis",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/device/public/mojom",
     "//skia",
     "//third_party/re2:re2",
@@ -164,7 +164,7 @@ static_library("arc_base") {
     "//components/prefs",
     "//components/signin/core/account_id",
     "//components/user_manager",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//ui/aura",
   ]
 
@@ -223,7 +223,7 @@ static_library("arc_test_support") {
     "//components/user_prefs",
     "//content/test:test_support",
     "//mojo/common:common_base",
-    "//mojo/edk/embedder:headers",
+    "//mojo/edk",
   ]
 }
 

@@ -66,7 +66,7 @@ static_library("service") {
     "//components/printing/common",
     "//google_apis",
     "//jingle:notifier",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//printing",
     "//skia",

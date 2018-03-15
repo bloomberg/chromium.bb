@@ -39,7 +39,7 @@ static_library("profiling") {
     "//base",
     "//chrome/common",
     "//content/public/child",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//third_party/zlib",
   ]

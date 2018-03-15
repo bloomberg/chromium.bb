@@ -440,7 +440,7 @@ test("gpu_unittests") {
     "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/common:test_interfaces",
     "//gpu/ipc/host",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//testing/gmock",

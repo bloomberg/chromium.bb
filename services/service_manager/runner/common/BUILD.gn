@@ -17,7 +17,7 @@ source_set("common") {
   ]
 
   public_deps = [
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/service_manager/public/mojom",
   ]
 }

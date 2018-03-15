@@ -18,7 +18,7 @@ source_set("app_shim") {
     "//chrome:strings",
     "//chrome/common",
     "//ipc",
-    "//mojo/edk/embedder:headers",
+    "//mojo/edk",
     "//ui/base",
   ]
 }
@@ -36,7 +36,9 @@ mac_app_bundle("app_mode_loader") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 
   info_plist_target = ":app_mode_loader_plist"
-  extra_substitutions = [ "APP_MODE_APP_BUNDLE_ID=$chrome_mac_bundle_id.app.@APP_MODE_SHORTCUT_ID@" ]
+  extra_substitutions = [
+    "APP_MODE_APP_BUNDLE_ID=$chrome_mac_bundle_id.app.@APP_MODE_SHORTCUT_ID@",
+  ]
 
   sources = [
     "app_mode_loader_mac.mm",

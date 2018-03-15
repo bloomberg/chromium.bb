@@ -206,7 +206,7 @@ test("app_list_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",

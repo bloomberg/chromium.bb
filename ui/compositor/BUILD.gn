@@ -208,7 +208,7 @@ test("compositor_unittests") {
     "//components/viz/common",
     "//components/viz/service",
     "//components/viz/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
