@@ -228,6 +228,7 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
             } else {
                 final int newStackIndex = getTabStackIndex() + stackIndexDeltaAt;
                 if (newStackIndex < 0 || newStackIndex >= mStacks.size()) return;
+                if (!mStacks.get(newStackIndex).isDisplayable()) return;
                 flingStacks(newStackIndex);
             }
             requestStackUpdate();
