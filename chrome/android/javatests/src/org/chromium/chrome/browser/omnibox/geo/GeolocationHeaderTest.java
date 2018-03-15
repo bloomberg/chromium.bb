@@ -11,8 +11,6 @@ import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
 import android.util.Base64;
 
-import com.google.protobuf.nano.MessageNano;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -247,22 +245,24 @@ public class GeolocationHeaderTest {
         int radius = (int) (LOCATION_ACCURACY * 1000);
 
         // Create a LatLng for the coordinates.
-        PartnerLocationDescriptor.LatLng latlng = new PartnerLocationDescriptor.LatLng();
-        latlng.latitudeE7 = latitudeE7;
-        latlng.longitudeE7 = longitudeE7;
+        PartnerLocationDescriptor.LatLng latlng = PartnerLocationDescriptor.LatLng.newBuilder()
+                                                          .setLatitudeE7(latitudeE7)
+                                                          .setLongitudeE7(longitudeE7)
+                                                          .build();
 
         // Populate a LocationDescriptor with the LatLng.
         PartnerLocationDescriptor.LocationDescriptor locationDescriptor =
-                new PartnerLocationDescriptor.LocationDescriptor();
-        locationDescriptor.latlng = latlng;
-        // Include role, producer, timestamp and radius.
-        locationDescriptor.role = PartnerLocationDescriptor.CURRENT_LOCATION;
-        locationDescriptor.producer = PartnerLocationDescriptor.DEVICE_LOCATION;
-        locationDescriptor.timestamp = timestamp;
-        locationDescriptor.radius = (float) radius;
+                PartnerLocationDescriptor.LocationDescriptor.newBuilder()
+                        .setLatlng(latlng)
+                        // Include role, producer, timestamp and radius.
+                        .setRole(PartnerLocationDescriptor.LocationRole.CURRENT_LOCATION)
+                        .setProducer(PartnerLocationDescriptor.LocationProducer.DEVICE_LOCATION)
+                        .setTimestamp(timestamp)
+                        .setRadius((float) radius)
+                        .build();
 
         String locationProto = Base64.encodeToString(
-                MessageNano.toByteArray(locationDescriptor), Base64.NO_WRAP | Base64.URL_SAFE);
+                locationDescriptor.toByteArray(), Base64.NO_WRAP | Base64.URL_SAFE);
         String expectedHeader = "X-Geo: w " + locationProto;
         Assert.assertEquals(expectedHeader, header);
     }

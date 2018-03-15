@@ -16,8 +16,6 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.util.Base64;
 
-import com.google.protobuf.nano.MessageNano;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
@@ -712,19 +710,21 @@ public class GeolocationHeader {
         int radius = (int) (location.getAccuracy() * 1000);
 
         // Create a LatLng for the coordinates.
-        PartnerLocationDescriptor.LatLng latlng = new PartnerLocationDescriptor.LatLng();
-        latlng.latitudeE7 = latitudeE7;
-        latlng.longitudeE7 = longitudeE7;
+        PartnerLocationDescriptor.LatLng latlng = PartnerLocationDescriptor.LatLng.newBuilder()
+                                                          .setLatitudeE7(latitudeE7)
+                                                          .setLongitudeE7(longitudeE7)
+                                                          .build();
 
         // Populate a LocationDescriptor with the LatLng.
         PartnerLocationDescriptor.LocationDescriptor locationDescriptor =
-                new PartnerLocationDescriptor.LocationDescriptor();
-        locationDescriptor.latlng = latlng;
-        // Include role, producer, timestamp and radius.
-        locationDescriptor.role = PartnerLocationDescriptor.CURRENT_LOCATION;
-        locationDescriptor.producer = PartnerLocationDescriptor.DEVICE_LOCATION;
-        locationDescriptor.timestamp = timestamp;
-        locationDescriptor.radius = (float) radius;
+                PartnerLocationDescriptor.LocationDescriptor.newBuilder()
+                        .setLatlng(latlng)
+                        // Include role, producer, timestamp and radius.
+                        .setRole(PartnerLocationDescriptor.LocationRole.CURRENT_LOCATION)
+                        .setProducer(PartnerLocationDescriptor.LocationProducer.DEVICE_LOCATION)
+                        .setTimestamp(timestamp)
+                        .setRadius((float) radius)
+                        .build();
         return encodeLocationDescriptor(locationDescriptor);
     }
 
@@ -734,7 +734,7 @@ public class GeolocationHeader {
     private static String encodeLocationDescriptor(
             PartnerLocationDescriptor.LocationDescriptor locationDescriptor) {
         return Base64.encodeToString(
-                MessageNano.toByteArray(locationDescriptor), Base64.NO_WRAP | Base64.URL_SAFE);
+                locationDescriptor.toByteArray(), Base64.NO_WRAP | Base64.URL_SAFE);
     }
 
     /**
@@ -753,41 +753,35 @@ public class GeolocationHeader {
         Set<VisibleWifi> visibleWifis = visibleNetworksToEncode.allVisibleWifis();
         Set<VisibleCell> visibleCells = visibleNetworksToEncode.allVisibleCells();
 
-        int numVisibleNetworks = (connectedWifi != null ? 1 : 0)
-                + (visibleWifis != null ? visibleWifis.size() : 0) + (connectedCell != null ? 1 : 0)
-                + (visibleCells != null ? visibleCells.size() : 0);
-        if (numVisibleNetworks == 0) {
+        if (connectedWifi == null && visibleWifis == null && visibleWifis.isEmpty()
+                && connectedCell == null && visibleCells == null && visibleCells.isEmpty()) {
             // No data to encode.
             return null;
         }
 
-        int i = 0;
-        PartnerLocationDescriptor.VisibleNetwork[] protoNetworks =
-                new PartnerLocationDescriptor.VisibleNetwork[numVisibleNetworks];
+        PartnerLocationDescriptor.LocationDescriptor.Builder locationDescriptorBuilder =
+                PartnerLocationDescriptor.LocationDescriptor.newBuilder()
+                        .setRole(PartnerLocationDescriptor.LocationRole.CURRENT_LOCATION)
+                        .setProducer(PartnerLocationDescriptor.LocationProducer.DEVICE_LOCATION);
+
         if (connectedWifi != null) {
-            protoNetworks[i++] = connectedWifi.toProto(true);
+            locationDescriptorBuilder.addVisibleNetwork(connectedWifi.toProto(true));
         }
         if (visibleWifis != null) {
             for (VisibleWifi visibleWifi : visibleWifis) {
-                protoNetworks[i++] = visibleWifi.toProto(false);
+                locationDescriptorBuilder.addVisibleNetwork(visibleWifi.toProto(false));
             }
         }
         if (connectedCell != null) {
-            protoNetworks[i++] = connectedCell.toProto(true);
+            locationDescriptorBuilder.addVisibleNetwork(connectedCell.toProto(true));
         }
         if (visibleCells != null) {
             for (VisibleCell visibleCell : visibleCells) {
-                protoNetworks[i++] = visibleCell.toProto(false);
+                locationDescriptorBuilder.addVisibleNetwork(visibleCell.toProto(false));
             }
         }
 
-        PartnerLocationDescriptor.LocationDescriptor locationDescriptor =
-                new PartnerLocationDescriptor.LocationDescriptor();
-        locationDescriptor.role = PartnerLocationDescriptor.CURRENT_LOCATION;
-        locationDescriptor.producer = PartnerLocationDescriptor.DEVICE_LOCATION;
-        locationDescriptor.visibleNetwork = protoNetworks;
-
-        return encodeLocationDescriptor(locationDescriptor);
+        return encodeLocationDescriptor(locationDescriptorBuilder.build());
     }
 
     @Nullable
