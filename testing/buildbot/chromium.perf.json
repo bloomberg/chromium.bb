@@ -44276,7 +44276,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44308,7 +44308,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44338,7 +44338,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44370,7 +44370,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44400,7 +44400,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44432,7 +44432,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44462,7 +44462,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44494,7 +44494,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44524,7 +44524,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44556,7 +44556,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44586,7 +44586,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44618,7 +44618,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44648,7 +44648,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44680,7 +44680,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44710,7 +44710,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44742,7 +44742,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44772,7 +44772,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44804,7 +44804,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44834,7 +44834,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44866,7 +44866,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44896,7 +44896,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44928,7 +44928,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44958,7 +44958,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -44990,7 +44990,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45020,7 +45020,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45052,7 +45052,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45082,7 +45082,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45114,7 +45114,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45144,7 +45144,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45176,7 +45176,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45206,7 +45206,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45238,7 +45238,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45268,7 +45268,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45300,7 +45300,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45330,7 +45330,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45362,7 +45362,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45392,7 +45392,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45422,7 +45422,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45454,7 +45454,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45484,7 +45484,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45516,7 +45516,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45546,7 +45546,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45578,7 +45578,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45608,7 +45608,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45640,7 +45640,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45670,7 +45670,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45702,7 +45702,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45732,7 +45732,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45764,7 +45764,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45794,7 +45794,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45824,7 +45824,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45856,7 +45856,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45886,7 +45886,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45918,7 +45918,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45948,7 +45948,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -45980,7 +45980,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46010,7 +46010,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46042,7 +46042,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46072,7 +46072,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46104,7 +46104,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46134,7 +46134,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46166,7 +46166,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46196,7 +46196,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46228,7 +46228,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46258,7 +46258,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46290,7 +46290,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46320,7 +46320,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46352,7 +46352,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46382,7 +46382,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46414,7 +46414,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46444,7 +46444,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46476,7 +46476,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46506,7 +46506,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46538,7 +46538,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46568,7 +46568,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46600,7 +46600,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46630,7 +46630,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46662,7 +46662,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46692,7 +46692,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46724,7 +46724,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46754,7 +46754,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46786,7 +46786,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46816,7 +46816,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46848,7 +46848,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46878,7 +46878,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46910,7 +46910,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46940,7 +46940,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -46972,7 +46972,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47002,7 +47002,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47034,7 +47034,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47064,7 +47064,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47096,7 +47096,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47126,7 +47126,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47158,7 +47158,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47188,7 +47188,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47218,7 +47218,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47250,7 +47250,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47282,7 +47282,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47312,7 +47312,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47342,7 +47342,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47374,7 +47374,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47406,7 +47406,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47436,7 +47436,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47468,7 +47468,7 @@
             {
               "gpu": "8086:1616",
               "id": "build180-b4",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47498,7 +47498,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47530,7 +47530,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47560,7 +47560,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47592,7 +47592,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47622,7 +47622,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47654,7 +47654,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47684,7 +47684,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47716,7 +47716,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47746,7 +47746,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47778,7 +47778,7 @@
             {
               "gpu": "8086:1616",
               "id": "build118-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47808,7 +47808,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47838,7 +47838,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47870,7 +47870,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47902,7 +47902,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47932,7 +47932,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47964,7 +47964,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -47994,7 +47994,7 @@
             {
               "gpu": "8086:1616",
               "id": "build117-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48024,7 +48024,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48056,7 +48056,7 @@
             {
               "gpu": "8086:1616",
               "id": "build119-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48086,7 +48086,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48118,7 +48118,7 @@
             {
               "gpu": "8086:1616",
               "id": "build120-b1",
-              "os": "Windows-10-16299.248",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48152,7 +48152,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48184,7 +48184,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48214,7 +48214,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48246,7 +48246,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48276,7 +48276,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48308,7 +48308,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48338,7 +48338,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48370,7 +48370,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48400,7 +48400,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48432,7 +48432,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48462,7 +48462,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48494,7 +48494,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48524,7 +48524,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48556,7 +48556,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48586,7 +48586,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48618,7 +48618,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48648,7 +48648,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48680,7 +48680,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48710,7 +48710,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48742,7 +48742,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48772,7 +48772,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48804,7 +48804,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48834,7 +48834,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48866,7 +48866,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48896,7 +48896,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48928,7 +48928,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48958,7 +48958,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -48990,7 +48990,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49020,7 +49020,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49052,7 +49052,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49082,7 +49082,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49114,7 +49114,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49144,7 +49144,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49176,7 +49176,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49206,7 +49206,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49238,7 +49238,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49268,7 +49268,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49298,7 +49298,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49330,7 +49330,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49351,7 +49351,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49381,7 +49381,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49413,7 +49413,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49443,7 +49443,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49475,7 +49475,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49505,7 +49505,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49537,7 +49537,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49567,7 +49567,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49599,7 +49599,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49629,7 +49629,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49661,7 +49661,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49691,7 +49691,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49721,7 +49721,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49753,7 +49753,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49783,7 +49783,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49815,7 +49815,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49845,7 +49845,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49877,7 +49877,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49907,7 +49907,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49939,7 +49939,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -49969,7 +49969,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50001,7 +50001,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50031,7 +50031,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50063,7 +50063,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50093,7 +50093,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50125,7 +50125,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50155,7 +50155,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50187,7 +50187,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50217,7 +50217,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50249,7 +50249,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50279,7 +50279,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50311,7 +50311,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50341,7 +50341,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50373,7 +50373,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50403,7 +50403,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50435,7 +50435,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50465,7 +50465,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50497,7 +50497,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50527,7 +50527,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50559,7 +50559,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50589,7 +50589,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50621,7 +50621,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50651,7 +50651,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50683,7 +50683,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50713,7 +50713,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50745,7 +50745,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50775,7 +50775,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50807,7 +50807,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50837,7 +50837,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50869,7 +50869,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50899,7 +50899,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50931,7 +50931,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50961,7 +50961,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -50993,7 +50993,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51023,7 +51023,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51055,7 +51055,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51085,7 +51085,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51115,7 +51115,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51147,7 +51147,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51179,7 +51179,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51209,7 +51209,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51239,7 +51239,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51271,7 +51271,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51303,7 +51303,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51333,7 +51333,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51365,7 +51365,7 @@
             {
               "gpu": "102b:0534",
               "id": "build136-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51395,7 +51395,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51427,7 +51427,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51457,7 +51457,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51489,7 +51489,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51519,7 +51519,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51551,7 +51551,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51581,7 +51581,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51613,7 +51613,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51643,7 +51643,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51675,7 +51675,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51705,7 +51705,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51735,7 +51735,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51767,7 +51767,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51799,7 +51799,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51829,7 +51829,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51861,7 +51861,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51891,7 +51891,7 @@
             {
               "gpu": "102b:0534",
               "id": "build132-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51912,7 +51912,7 @@
             {
               "gpu": "102b:0534",
               "id": "build135-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51942,7 +51942,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -51974,7 +51974,7 @@
             {
               "gpu": "102b:0534",
               "id": "build134-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -52004,7 +52004,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
@@ -52036,7 +52036,7 @@
             {
               "gpu": "102b:0534",
               "id": "build133-m1",
-              "os": "Windows-10-10240",
+              "os": "Windows-10",
               "pool": "Chrome-perf"
             }
           ],
