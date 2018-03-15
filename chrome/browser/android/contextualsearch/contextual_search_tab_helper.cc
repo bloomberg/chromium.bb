@@ -59,7 +59,9 @@ void ContextualSearchTabHelper::InstallUnhandledTapNotifierIfNeeded(
   content::WebContents* base_web_contents =
       content::WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  if (!unhandled_tap_web_contents_observer_) {
+  if (!unhandled_tap_web_contents_observer_ ||
+      base_web_contents !=
+          unhandled_tap_web_contents_observer_->web_contents()) {
     unhandled_tap_web_contents_observer_.reset(
         new contextual_search::UnhandledTapWebContentsObserver(
             base_web_contents, device_scale_factor,
