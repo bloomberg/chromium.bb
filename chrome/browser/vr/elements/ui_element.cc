@@ -692,9 +692,14 @@ void UiElement::DoLayOutChildren() {
     return;
   }
 
+  bool requires_relayout = false;
   gfx::RectF bounds;
   for (auto& child : children_) {
     gfx::SizeF size = child->ContributedSize();
+    if (child->x_anchoring() != NONE || child->y_anchoring() != NONE) {
+      DCHECK(!child->contributes_to_parent_bounds());
+      requires_relayout = true;
+    }
     if (!child->IsVisible() || size.IsEmpty() ||
         !child->contributes_to_parent_bounds()) {
       continue;
@@ -717,7 +722,13 @@ void UiElement::DoLayOutChildren() {
   bounds.Inset(-x_padding_, -y_padding_);
   bounds.set_origin(bounds.CenterPoint());
   local_origin_ = bounds.origin();
+  if (bounds.size() == GetTargetSize())
+    return;
+
   SetSize(bounds.width(), bounds.height());
+
+  if (requires_relayout)
+    LayOutChildren();
 }
 
 void UiElement::LayOutChildren() {
