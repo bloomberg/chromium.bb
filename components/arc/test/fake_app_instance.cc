@@ -345,8 +345,22 @@ void FakeAppInstance::GetIcingGlobalQueryResults(
     const std::string& query,
     int32_t max_results,
     GetIcingGlobalQueryResultsCallback callback) {
+  // Fake successful app data search results.
+  std::vector<arc::mojom::AppDataResultPtr> fake_app_data_results;
+  for (int i = 0; i < max_results; ++i) {
+    // Fake icon data.
+    std::string png_data_as_string;
+    GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
+    std::vector<uint8_t> fake_icon_png_data(png_data_as_string.begin(),
+                                            png_data_as_string.end());
+
+    fake_app_data_results.emplace_back(mojom::AppDataResult::New(
+        base::StringPrintf("LaunchIntentUri %d", i),
+        base::StringPrintf("Label %s %d", query.c_str(), i),
+        fake_icon_png_data));
+  }
   std::move(callback).Run(arc::mojom::AppDataRequestState::REQUEST_SUCCESS,
-                          std::vector<arc::mojom::AppDataResultPtr>());
+                          std::move(fake_app_data_results));
 }
 
 void FakeAppInstance::StartPaiFlow() {

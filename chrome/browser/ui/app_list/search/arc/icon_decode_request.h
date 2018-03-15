@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ICON_DECODE_REQUEST_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ICON_DECODE_REQUEST_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
@@ -21,6 +23,17 @@ class IconDecodeRequest : public ImageDecoder::ImageRequest {
 
   explicit IconDecodeRequest(SetIconCallback set_icon_callback);
   ~IconDecodeRequest() override;
+
+  // Disables async safe decoding requests when unit tests are executed.
+  // Icons are decoded at a separate process created by ImageDecoder. In unit
+  // tests these tasks may not finish before the test exits, which causes a
+  // failure in the base::MessageLoop::current()->IsIdleForTesting() check
+  // in test_browser_thread_bundle.cc.
+  static void DisableSafeDecodingForTesting();
+
+  // Starts image decoding. Safe asynchronous decoding is used unless
+  // DisableSafeDecodingForTesting() is called.
+  void StartWithOptions(const std::vector<uint8_t>& image_data);
 
   // ImageDecoder::ImageRequest:
   void OnImageDecoded(const SkBitmap& bitmap) override;
