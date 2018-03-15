@@ -1383,7 +1383,9 @@ void BluetoothAdapterBlueZ::AddDiscoverySession(
 
   // The adapter is already discovering.
   if (num_discovery_sessions_ > 0) {
-    DCHECK(IsDiscovering());
+    // DCHECK(IsDiscovering()) is removed due to BlueZ bug
+    // (https://crbug.com/822104).
+    // TODO(sonnysasaka): Put it back here when BlueZ bug is fixed.
     DCHECK(!discovery_request_pending_);
     num_discovery_sessions_++;
     SetDiscoveryFilter(BluetoothDiscoveryFilter::Merge(
