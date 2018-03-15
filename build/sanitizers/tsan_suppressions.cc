@@ -78,6 +78,9 @@ char kTSanDefaultSuppressions[] =
     "race:webrtc::RTPSender::ProcessBitrate\n"
     "race:webrtc::VideoCodingModuleImpl::Decode\n"
     "race:webrtc::RTPSender::SendOutgoingData\n"
+    "race:webrtc::LibvpxVp8Encoder::GetEncodedPartitions\n"
+    "race:webrtc::LibvpxVp8Encoder::Encode\n"
+    // TODO(sprang): Remove VP8EncoderImpl suppressions after fixing webrtc:9012
     "race:webrtc::VP8EncoderImpl::GetEncodedPartitions\n"
     "race:webrtc::VP8EncoderImpl::Encode\n"
     "race:webrtc::ViEEncoder::DeliverFrame\n"
