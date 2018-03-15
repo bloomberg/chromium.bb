@@ -112,7 +112,7 @@
     Press and hold <ph name="alt">$1<ex>Alt</ex></ph>, tap <ph name="tab">$2<ex>v</ex></ph> until you get to the window you want to open, then release.
   </message>
   <message name="IDS_KSV_DESCRIPTION_CYCLE_BACKWARD_MRU" desc="Description of the command in keyboard shortcut viewer.">
-    Open the window you used least recently
+    Open the window that has been unused for the longest time
   </message>
   <message name="IDS_KSV_SHORTCUT_CYCLE_BACKWARD_MRU" desc="Human readable version of the keyboard shortcut.">
     Press and hold <ph name="alt">$1<ex>Alt</ex></ph><ph name="separator">$2<ex>+</ex></ph><ph name="shift">$3<ex>Shift</ex></ph>, tap <ph name="tab">$4<ex>v</ex></ph> until you get to the window you want to open, then release.
