@@ -257,23 +257,6 @@ class NavigationSimulator : public WebContentsObserver {
   // callback.
   content::GlobalRequestID GetGlobalRequestID() const;
 
-  // Allows the user of the NavigationSimulator to specify a callback that will
-  // be called if the navigation is deferred by a NavigationThrottle. This is
-  // used for testing deferring NavigationThrottles.
-  //
-  // Example usage:
-  //   void CheckThrottleStateAndResume() {
-  //     // Do some testing here.
-  //     deferring_navigation_throttle->Resume();
-  //   }
-  //   unique_ptr<NavigationSimulator> simulator =
-  //       NavigationSimulator::CreateRendererInitiated(
-  //           original_url, render_frame_host);
-  //   simulator->SetOnDeferCallback(base::Bind(&CheckThrottleStateAndResume));
-  //   simulator->Start();
-  //   simulator->Commit();
-  void SetOnDeferCallback(const base::Closure& on_defer_callback);
-
  private:
   NavigationSimulator(const GURL& original_url,
                       bool browser_initiated,
@@ -380,10 +363,6 @@ class NavigationSimulator : public WebContentsObserver {
 
   // Closure that is set when WaitForThrottleChecksComplete is called.
   base::Closure throttle_checks_wait_closure_;
-
-  // Temporarily holds a closure that will be called on navigation deferral
-  // until the NavigationHandle for this navigation has been created.
-  base::Closure on_defer_callback_;
 
   base::WeakPtrFactory<NavigationSimulator> weak_factory_;
 };
