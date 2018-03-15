@@ -560,9 +560,14 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
         USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
   }
 
-  if (args->cpi->oxcf.aq_mode != NO_AQ && !*eob && plane == 0) {
+  if (*eob == 0 && plane == 0) {
     const int txk_type_idx =
         av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+    assert(args->cpi->oxcf.aq_mode != NO_AQ ||
+#if CONFIG_EXT_DELTA_Q
+           args->cpi->oxcf.deltaq_mode != NO_DELTA_Q ||
+#endif
+           xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
     xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
   }
 
