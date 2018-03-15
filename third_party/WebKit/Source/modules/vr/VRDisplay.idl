@@ -25,7 +25,7 @@ enum VREye {
 
     readonly attribute VRStageParameters stageParameters;
 
-    boolean getFrameData(VRFrameData frameData);
+    [MeasureAs=VRDisplayGetFrameData] boolean getFrameData(VRFrameData frameData);
 
     attribute double depthNear;
     attribute double depthFar;
