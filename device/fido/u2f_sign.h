@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "device/fido/sign_response_data.h"
 #include "device/fido/u2f_request.h"
+#include "device/fido/u2f_return_code.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
@@ -48,8 +49,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
   ~U2fSign() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(U2fSignTest, TestCreateSignApduCommand);
-
   // Enumerates the two types of |application_parameter| values used: the
   // "primary" value is the hash of the relying party ID[1] and is always
   // provided. The "alternative" value is the hash of a U2F AppID, specified in
@@ -66,8 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
   void TryDevice() override;
   void OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
                    ApplicationParameterType application_parameter_type,
-                   U2fReturnCode return_code,
-                   const std::vector<uint8_t>& response_data);
+                   base::Optional<std::vector<uint8_t>> response);
 
   base::Optional<std::vector<uint8_t>> alt_application_parameter_;
   SignResponseCallback completion_callback_;

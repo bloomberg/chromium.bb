@@ -11,9 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "components/apdu/apdu_command.h"
+#include "components/apdu/apdu_response.h"
 #include "device/fido/u2f_device.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -27,22 +30,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
                device::mojom::HidManager* hid_manager);
   ~U2fHidDevice() final;
 
-  // Send a U2f command to this device
+  // Send a command to this device.
   void DeviceTransact(std::vector<uint8_t> command,
                       DeviceCallback callback) final;
-  // Send a wink command if supported
+  // Send a wink command if supported.
   void TryWink(WinkCallback callback) final;
-  // Use a string identifier to compare to other devices
+  // Use a string identifier to compare to other devices.
   std::string GetId() const final;
-  // Get a string identifier for a given device info
+
+  // Get a string identifier for a given device info.
   static std::string GetIdForDevice(
       const device::mojom::HidDeviceInfo& device_info);
-  // Command line flag to enable tests on actual U2f HID hardware
+  // Command line flag to enable tests on actual HID hardware.
   static bool IsTestEnabled();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestConnectionFailure);
   FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestDeviceError);
+  FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestRetryChannelAllocation);
 
   static constexpr uint8_t kWinkCapability = 0x01;
   static constexpr uint8_t kLockCapability = 0x02;
@@ -55,12 +60,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
       base::OnceCallback<void(bool, std::unique_ptr<FidoHidMessage>)>;
   using ConnectCallback = device::mojom::HidManager::ConnectCallback;
 
-  // Open a connection to this device
+  // Open a connection to this device.
   void Connect(ConnectCallback callback);
   void OnConnect(std::vector<uint8_t> command,
                  DeviceCallback callback,
                  device::mojom::HidConnectionPtr connection);
-  // Ask device to allocate a unique channel id for this connection
+  // Ask device to allocate a unique channel id for this connection.
   void AllocateChannel(std::vector<uint8_t> command, DeviceCallback callback);
   void OnAllocateChannel(std::vector<uint8_t> nonce,
                          std::vector<uint8_t> command,
@@ -68,7 +73,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
                          bool success,
                          std::unique_ptr<FidoHidMessage> message);
   void Transition(std::vector<uint8_t> command, DeviceCallback callback);
-  // Write all message packets to device, and read response if expected
+  // Write all message packets to device, and read response if expected.
   void WriteMessage(std::unique_ptr<FidoHidMessage> message,
                     bool response_expected,
                     U2fHidMessageCallback callback);
@@ -76,7 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
                      bool response_expected,
                      U2fHidMessageCallback callback,
                      bool success);
-  // Read all response message packets from device
+  // Read all response message packets from device.
   void ReadMessage(U2fHidMessageCallback callback);
   void MessageReceived(DeviceCallback callback,
                        bool success,
@@ -95,8 +100,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
               std::unique_ptr<FidoHidMessage> response);
   void ArmTimeout(DeviceCallback callback);
   void OnTimeout(DeviceCallback callback);
-  void OnDeviceTransact(bool success,
-                        base::Optional<apdu::ApduResponse> response);
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
   uint32_t channel_id_ = kBroadcastChannel;

@@ -439,6 +439,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
 
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
 }
@@ -455,6 +456,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
 
   // We don't verify the response from the fake, but do a quick sanity check.
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(32ul, register_callback_receiver().value()->raw_id().size());
 }
 
@@ -476,6 +478,7 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
 
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
 }
@@ -506,6 +509,7 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
 
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
 }
@@ -544,6 +548,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
 
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
 }
@@ -596,6 +601,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
 
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
 }
@@ -637,7 +643,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
             register_callback_receiver().status());
-  EXPECT_EQ(base::nullopt, register_callback_receiver().value());
+  EXPECT_FALSE(register_callback_receiver().value());
 }
 
 // Tests a scenario where one (device1) of the two devices connected has created
@@ -689,7 +695,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
             register_callback_receiver().status());
-  EXPECT_EQ(base::nullopt, register_callback_receiver().value());
+  EXPECT_FALSE(register_callback_receiver().value());
 }
 
 // These test the parsing of the U2F raw bytes of the registration response.
@@ -825,6 +831,7 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
 
     cb.WaitForCallback();
     EXPECT_EQ(U2fReturnCode::SUCCESS, cb.status());
+    ASSERT_TRUE(cb.value());
     EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_id());
   }
 }

@@ -5,6 +5,8 @@
 #ifndef DEVICE_FIDO_U2F_REQUEST_H_
 #define DEVICE_FIDO_U2F_REQUEST_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <memory>
 #include <string>
@@ -28,6 +30,9 @@ namespace device {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
  public:
+  using VersionCallback =
+      base::OnceCallback<void(U2fDevice::ProtocolVersion version)>;
+
   // U2fRequest will create a discovery instance and register itself as an
   // observer for each passed in transport protocol.
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once U2F
@@ -68,6 +73,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
 
   void Transition();
 
+  // Starts sign, register, and version request transaction on
+  // |current_device_|.
+  void InitiateDeviceTransaction(base::Optional<std::vector<uint8_t>> cmd,
+                                 U2fDevice::DeviceCallback callback);
+  // Callback function to U2F version request. If non-legacy version request
+  // fails, retry with legacy version request.
+  void OnDeviceVersionRequest(VersionCallback callback,
+                              base::WeakPtr<U2fDevice> device,
+                              bool legacy,
+                              base::Optional<std::vector<uint8_t>> response);
+
   virtual void TryDevice() = 0;
 
   // Hold handles to the devices known to the system. Known devices are
@@ -94,6 +110,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveries);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestSlowDiscovery);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveriesWithFailures);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestLegacyVersionRequest);
 
   // U2fDiscovery::Observer
   void DiscoveryStarted(U2fDiscovery* discovery, bool success) override;
