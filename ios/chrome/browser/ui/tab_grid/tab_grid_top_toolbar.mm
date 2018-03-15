@@ -32,6 +32,9 @@ const CGFloat kSegmentedControlHeight = 30.0f;
 
     UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+    leadingButton.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
     leadingButton.tintColor = [UIColor whiteColor];
 
     UILabel* segmentedControl = [[UILabel alloc] init];
@@ -43,6 +46,9 @@ const CGFloat kSegmentedControlHeight = 30.0f;
 
     UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+    trailingButton.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    trailingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
     trailingButton.tintColor = [UIColor whiteColor];
 
     [toolbar.contentView addSubview:leadingButton];

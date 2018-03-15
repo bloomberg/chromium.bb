@@ -31,8 +31,16 @@ const CGFloat kToolbarHeight = 44.0f;
 
     UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+    leadingButton.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+    leadingButton.tintColor = [UIColor whiteColor];
     UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+    trailingButton.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    trailingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+    trailingButton.tintColor = [UIColor whiteColor];
     UIButton* centerButton = [UIButton buttonWithType:UIButtonTypeSystem];
     centerButton.translatesAutoresizingMaskIntoConstraints = NO;
 
