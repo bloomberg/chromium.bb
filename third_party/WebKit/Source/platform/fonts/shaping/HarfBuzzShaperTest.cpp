@@ -391,6 +391,47 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
 
+TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
+  // Test passes if no assertion is hit of the ones below, but also the newly
+  // introduced one in HarfBuzzShaper::ShapeSegment: DCHECK_GT(shape_end,
+  // shape_start) is not hit.
+  FontDescription font_description;
+  font_description.SetVariantCaps(FontDescription::kSmallCaps);
+  font_description.SetComputedSize(12.0);
+  Font font(font_description);
+  font.Update(nullptr);
+
+  // Shaping index 2 to 3 means that case splitting for small caps splits before
+  // character index 2 since the initial 'a' needs to be uppercased, but the
+  // space character does not need to be uppercased. This triggered
+  // crbug.com/817271.
+  String string(u"a aa");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&font, TextDirection::kLtr, 2, 3);
+  EXPECT_EQ(1u, result->NumCharacters());
+
+  string = u"aa a";
+  HarfBuzzShaper shaper_two(string.Characters16(), string.length());
+  result = shaper_two.Shape(&font, TextDirection::kLtr, 3, 4);
+  EXPECT_EQ(1u, result->NumCharacters());
+
+  string = u"a aa";
+  HarfBuzzShaper shaper_three(string.Characters16(), string.length());
+  result = shaper_three.Shape(&font, TextDirection::kLtr, 1, 2);
+  EXPECT_EQ(1u, result->NumCharacters());
+
+  string = u"aa aa aa aa aa aa aa aa aa aa";
+  HarfBuzzShaper shaper_four(string.Characters16(), string.length());
+  result = shaper_four.Shape(&font, TextDirection::kLtr, 21, 23);
+  EXPECT_EQ(2u, result->NumCharacters());
+
+  string = u"aa aa aa aa aa aa aa aa aa aa";
+  HarfBuzzShaper shaper_five(string.Characters16(), string.length());
+  result = shaper_five.Shape(&font, TextDirection::kLtr, 27, 29);
+  EXPECT_EQ(2u, result->NumCharacters());
+}
+
 TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   font_description.SetOrientation(FontOrientation::kVerticalMixed);
   font = Font(font_description);
