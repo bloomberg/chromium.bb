@@ -133,8 +133,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Dialog_Basic) {
   LOG(INFO) << "Closed dialog, end of test";
 }
 
+// TODO(crbug.com/822301): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       Dialog_RouteCreationTimedOut) {
+                       MANUAL_Dialog_RouteCreationTimedOut) {
   SetTestData(FILE_PATH_LITERAL("route_creation_timed_out.json"));
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
