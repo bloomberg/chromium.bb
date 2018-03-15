@@ -1755,15 +1755,14 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
             default_container()->children()[0]->bounds());
 
   // Snap the window to left. Test that the backdrop window is still visible
-  // and is the second child in the container. Its bounds should still be the
-  // same as the container bounds.
+  // and is the second child in the container. Its bounds should be the same
+  // as the snapped window's bounds.
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_EQ(2U, default_container()->children().size());
   for (auto* child : default_container()->children())
     EXPECT_TRUE(child->IsVisible());
   EXPECT_EQ(window1.get(), default_container()->children()[1]);
-  EXPECT_EQ(default_container()->bounds(),
-            default_container()->children()[0]->bounds());
+  EXPECT_EQ(window1->bounds(), default_container()->children()[0]->bounds());
 
   // Now snap another window to right. Test that the backdrop window is still
   // visible but is now the third window in the container. Its bounds should

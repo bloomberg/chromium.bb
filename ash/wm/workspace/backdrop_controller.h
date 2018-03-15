@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -41,7 +42,9 @@ class BackdropDelegate;
 // 1) Has a aura::client::kHasBackdrop property = true.
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
-class BackdropController : public ShellObserver, public AccessibilityObserver {
+class BackdropController : public ShellObserver,
+                           public AccessibilityObserver,
+                           public SplitViewController::Observer {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
@@ -64,10 +67,17 @@ class BackdropController : public ShellObserver, public AccessibilityObserver {
   void OnOverviewModeEnded() override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
+  void OnSplitViewModeStarting() override;
+  void OnSplitViewModeEnded() override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify) override;
+
+  // SplitViewController::Observer:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
+  void OnSplitViewDividerPositionChanged() override;
 
  private:
   friend class WorkspaceControllerTestApi;
@@ -92,6 +102,18 @@ class BackdropController : public ShellObserver, public AccessibilityObserver {
 
   // Decrement |force_hidden_counter_| and then update backdrop state.
   void RemoveForceHidden();
+
+  // Returns true if the backdrop window should be fullscreen. It should not be
+  // fullscreen only if 1) split view is active and 2) there is only one snapped
+  // window and 3) the snapped window is the topmost window which should have
+  // the backdrop.
+  bool BackdropShouldFullscreen();
+
+  // Gets the bounds for the backdrop window if it should not be fullscreen.
+  // It's the case for splitview mode, if there is only one snapped window, the
+  // backdrop should not cover the non-snapped side of the screen, thus the
+  // backdrop bounds should be the bounds of the snapped window.
+  gfx::Rect GetBackdropBounds();
 
   // The backdrop which covers the rest of the screen.
   views::Widget* backdrop_ = nullptr;

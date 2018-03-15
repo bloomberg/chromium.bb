@@ -350,6 +350,24 @@ gfx::Rect SplitViewController::GetDisplayWorkAreaBoundsInScreen(
   return bounds;
 }
 
+gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
+    aura::Window* window,
+    SnapPosition snap_position) {
+  const gfx::Rect work_area_bounds_in_screen =
+      GetDisplayWorkAreaBoundsInScreen(window);
+  if (snap_position == NONE)
+    return work_area_bounds_in_screen;
+
+  gfx::Rect left_or_top_rect, right_or_bottom_rect;
+  GetSnappedWindowBoundsInScreenInternal(window, &left_or_top_rect,
+                                         &right_or_bottom_rect);
+
+  if (IsCurrentScreenOrientationPrimary())
+    return (snap_position == LEFT) ? left_or_top_rect : right_or_bottom_rect;
+  else
+    return (snap_position == LEFT) ? right_or_bottom_rect : left_or_top_rect;
+}
+
 void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   DCHECK(IsSplitViewModeActive());
   is_resizing_ = true;
