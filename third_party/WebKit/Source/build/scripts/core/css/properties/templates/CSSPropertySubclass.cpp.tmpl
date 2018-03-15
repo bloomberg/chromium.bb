@@ -33,6 +33,14 @@ namespace CSSLonghand {
     if (!currChild)
       currChild = prevChild->EnsureNext();
     currChild->Set{{fill_type}}(currParent->{{property.custom_apply_args['fill_type_getter']}}());
+    {% if fill_type == "PositionX" %}
+    if (currParent->IsBackgroundXOriginSet())
+      currChild->SetBackgroundXOrigin(currParent->BackgroundXOrigin());
+    {% endif %}
+    {% if fill_type == "PositionY" %}
+    if (currParent->IsBackgroundYOriginSet())
+      currChild->SetBackgroundYOrigin(currParent->BackgroundYOrigin());
+    {% endif %}
     prevChild = currChild;
     currChild = prevChild->Next();
     currParent = currParent->Next();
