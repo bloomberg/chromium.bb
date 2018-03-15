@@ -333,6 +333,7 @@ void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
 
   AllowJavascript();
   cookies_tree_model_.reset();
+  filter_.clear();
   sorted_sites_.clear();
   EnsureCookiesTreeModelCreated();
 }
