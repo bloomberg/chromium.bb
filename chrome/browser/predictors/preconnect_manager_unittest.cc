@@ -14,6 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/proxy_resolution/mock_proxy_resolver.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -329,6 +332,48 @@ TEST_F(PreconnectManagerTest, TestHSTSRedirectRespectedForPreconnect) {
       *preconnect_manager_,
       PreconnectUrl(GURL("https://google.com"), GURL(), 1, allow_credentials));
   preconnect_manager_->StartPreconnectUrl(url, allow_credentials);
+  base::RunLoop().RunUntilIdle();
+}
+
+class MockProxyConfigService : public net::ProxyConfigService {
+ public:
+  explicit MockProxyConfigService(const net::ProxyConfig& config)
+      : config_(net::ProxyConfigWithAnnotation(config,
+                                               TRAFFIC_ANNOTATION_FOR_TESTS)) {}
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
+  ConfigAvailability GetLatestProxyConfig(
+      net::ProxyConfigWithAnnotation* results) override {
+    *results = config_;
+    return CONFIG_VALID;
+  }
+
+ private:
+  net::ProxyConfigWithAnnotation config_;
+};
+
+// Tests that the predictor doesn't preresolve in the presence of the proxy
+// server.
+TEST_F(PreconnectManagerTest, TestPreresolveSkippedIfProxyEnabled) {
+  net::ProxyConfig proxy_config;
+  proxy_config.proxy_rules().ParseFromString("foopy:8080");
+  proxy_config.set_auto_detect(false);
+  net::ProxyResolutionService proxy_service(
+      std::make_unique<MockProxyConfigService>(proxy_config),
+      std::make_unique<net::MockAsyncProxyResolverFactory>(false), nullptr);
+  context_getter_->GetURLRequestContext()->set_proxy_resolution_service(
+      &proxy_service);
+
+  GURL main_frame_url("http://google.com");
+  GURL url_to_preconnect("http://cdn.google.com");
+  GURL url_to_preresolve("http://images.google.com");
+
+  EXPECT_CALL(*preconnect_manager_,
+              PreconnectUrl(url_to_preconnect, main_frame_url, 1, true));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
+  preconnect_manager_->Start(main_frame_url,
+                             {PreconnectRequest(url_to_preconnect, 1),
+                              PreconnectRequest(url_to_preresolve, 0)});
   base::RunLoop().RunUntilIdle();
 }
 
