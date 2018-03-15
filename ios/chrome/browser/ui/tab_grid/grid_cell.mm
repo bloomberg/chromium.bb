@@ -27,7 +27,6 @@ const CGFloat kBorderWidth = 6.0f;
 @interface GridCell ()
 // Visual components of the cell.
 @property(nonatomic, weak) UIView* topBar;
-@property(nonatomic, weak) UIView* line;
 @property(nonatomic, weak) UIImageView* iconView;
 @property(nonatomic, weak) TopAlignedImageView* snapshotView;
 @property(nonatomic, weak) UILabel* titleLabel;
@@ -45,7 +44,6 @@ const CGFloat kBorderWidth = 6.0f;
 @synthesize title = _title;
 // Private properties.
 @synthesize topBar = _topBar;
-@synthesize line = _line;
 @synthesize iconView = _iconView;
 @synthesize snapshotView = _snapshotView;
 @synthesize titleLabel = _titleLabel;
@@ -62,15 +60,11 @@ const CGFloat kBorderWidth = 6.0f;
     contentView.layer.cornerRadius = 11.0f;
     contentView.layer.masksToBounds = YES;
     UIView* topBar = [self setupTopBar];
-    UIView* line = [[UIView alloc] init];
-    line.translatesAutoresizingMaskIntoConstraints = NO;
     TopAlignedImageView* snapshotView = [[TopAlignedImageView alloc] init];
     snapshotView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:topBar];
-    [contentView addSubview:line];
     [contentView addSubview:snapshotView];
     _topBar = topBar;
-    _line = line;
     _snapshotView = snapshotView;
     NSArray* constraints = @[
       [topBar.topAnchor constraintEqualToAnchor:contentView.topAnchor],
@@ -78,11 +72,7 @@ const CGFloat kBorderWidth = 6.0f;
       [topBar.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor],
       [topBar.heightAnchor constraintEqualToConstant:kTopBarHeight],
-      [line.topAnchor constraintEqualToAnchor:topBar.bottomAnchor],
-      [line.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-      [line.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-      [line.heightAnchor constraintEqualToConstant:0.5f],
-      [snapshotView.topAnchor constraintEqualToAnchor:line.bottomAnchor],
+      [snapshotView.topAnchor constraintEqualToAnchor:topBar.bottomAnchor],
       [snapshotView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor],
       [snapshotView.trailingAnchor
@@ -125,33 +115,27 @@ const CGFloat kBorderWidth = 6.0f;
 - (void)setTheme:(GridTheme)theme {
   if (_theme == theme)
     return;
+  self.iconView.backgroundColor = UIColorFromRGB(kGridCellIconBackgroundColor);
+  self.snapshotView.backgroundColor =
+      UIColorFromRGB(kGridCellSnapshotBackgroundColor);
   switch (theme) {
     case GridThemeLight:
-      self.topBar.backgroundColor = [UIColor whiteColor];
-      self.iconView.backgroundColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
-      self.titleLabel.textColor = [UIColor blackColor];
-      self.line.backgroundColor = [UIColor colorWithWhite:0.6f alpha:1.0f];
-      self.snapshotView.backgroundColor = [UIColor whiteColor];
+      self.topBar.backgroundColor =
+          UIColorFromRGB(kGridLightThemeCellHeaderColor);
+      self.titleLabel.textColor = UIColorFromRGB(kGridLightThemeCellTitleColor);
       self.closeButton.tintColor =
           UIColorFromRGB(kGridLightThemeCellCloseButtonTintColor);
-      self.tintColor =
-          [UIColor colorWithRed:0.0 green:122.0 / 255.0 blue:1.0 alpha:1.0];
-      self.border.layer.borderColor = self.tintColor.CGColor;
+      self.border.layer.borderColor =
+          UIColorFromRGB(kGridLightThemeCellSelectionColor).CGColor;
       break;
     case GridThemeDark:
-      self.topBar.backgroundColor = [UIColor colorWithWhite:0.2f alpha:1.0f];
-      self.iconView.backgroundColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
-      self.titleLabel.textColor = [UIColor whiteColor];
-      self.line.backgroundColor = [UIColor colorWithWhite:0.2f alpha:1.0f];
-      self.snapshotView.backgroundColor =
-          [UIColor colorWithWhite:0.4f alpha:1.0f];
+      self.topBar.backgroundColor =
+          UIColorFromRGB(kGridDarkThemeCellHeaderColor);
+      self.titleLabel.textColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
       self.closeButton.tintColor =
           UIColorFromRGB(kGridDarkThemeCellCloseButtonTintColor);
-      self.tintColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
-      self.border.layer.borderColor = self.tintColor.CGColor;
-      break;
-    default:
-      NOTREACHED() << "Invalid GridTheme.";
+      self.border.layer.borderColor =
+          UIColorFromRGB(kGridDarkThemeCellSelectionColor).CGColor;
       break;
   }
   _theme = theme;
