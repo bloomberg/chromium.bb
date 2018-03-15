@@ -18,9 +18,8 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Test;
-using TestMessageCallbackReceiver =
-    test::StatusAndValueCallbackReceiver<U2fReturnCode,
-                                         const std::vector<uint8_t>&>;
+using TestDeviceCallbackReceiver =
+    test::TestCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
 
 }  // namespace
 
@@ -73,12 +72,11 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Callback) {
       .WillOnce(Invoke(
           [this](const auto& data, auto* cb) { std::move(*cb).Run(false); }));
 
-  TestMessageCallbackReceiver callback_receiver;
+  TestDeviceCallbackReceiver callback_receiver;
   device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::FAILURE, callback_receiver.status());
-  EXPECT_EQ(std::vector<uint8_t>(), callback_receiver.value());
+  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
 }
 
 TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
@@ -89,12 +87,11 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
         scoped_task_environment_.FastForwardBy(U2fDevice::kDeviceTimeout);
       }));
 
-  TestMessageCallbackReceiver callback_receiver;
+  TestDeviceCallbackReceiver callback_receiver;
   device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::FAILURE, callback_receiver.status());
-  EXPECT_EQ(std::vector<uint8_t>(), callback_receiver.value());
+  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
 }
 
 TEST_F(U2fBleDeviceTest, SendPingTest) {
@@ -110,12 +107,13 @@ TEST_F(U2fBleDeviceTest, SendPingTest) {
         std::move(*cb).Run(true);
       }));
 
-  TestMessageCallbackReceiver callback_receiver;
+  TestDeviceCallbackReceiver callback_receiver;
   device()->SendPing(ping_data, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, callback_receiver.status());
-  EXPECT_EQ(ping_data, callback_receiver.value());
+  const auto& result = std::get<0>(*callback_receiver.result());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(ping_data, *result);
 }
 
 TEST_F(U2fBleDeviceTest, StaticGetIdTest) {

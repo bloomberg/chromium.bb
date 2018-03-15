@@ -33,11 +33,10 @@ class MockU2fDevice : public U2fDevice {
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.
   MOCK_METHOD2(DeviceTransactPtr,
-               void(std::vector<uint8_t> command, DeviceCallback& cb));
+               void(const std::vector<uint8_t>& command, DeviceCallback& cb));
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
+
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
-  static void TransactNoError(const std::vector<uint8_t>& command,
-                              DeviceCallback cb);
   static void NotSatisfied(const std::vector<uint8_t>& command,
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,
@@ -46,6 +45,8 @@ class MockU2fDevice : public U2fDevice {
                           DeviceCallback& cb);
   static void NoErrorRegister(const std::vector<uint8_t>& command,
                               DeviceCallback& cb);
+  static void NoErrorVersion(const std::vector<uint8_t>& command,
+                             DeviceCallback& cb);
   static void SignWithCorruptedResponse(const std::vector<uint8_t>& command,
                                         DeviceCallback& cb);
   static void WinkDoNothing(WinkCallback& cb);

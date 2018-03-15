@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/mock_u2f_device.h"
+#include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,9 @@ class FakeU2fRequest : public U2fRequest {
   }
 };
 
+using TestVersionCallback =
+    ::device::test::TestCallbackReceiver<U2fDevice::ProtocolVersion>;
+
 }  // namespace
 
 class U2fRequestTest : public ::testing::Test {
@@ -46,10 +50,15 @@ class U2fRequestTest : public ::testing::Test {
     return discovery_factory_;
   }
 
+  TestVersionCallback& version_callback_receiver() {
+    return version_callback_receiver_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeU2fDiscoveryFactory discovery_factory_;
+  TestVersionCallback version_callback_receiver_;
 };
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
@@ -334,6 +343,36 @@ TEST_F(U2fRequestTest, TestEncodeVersionRequest) {
       0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true),
               ::testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
+}
+
+// Test a scenario when version request is sent to legacy U2F token.
+// After non-legacy version requests fails, legacy version request should be
+// sent to device as a retry.
+TEST_F(U2fRequestTest, TestLegacyVersionRequest) {
+  auto* discovery = discovery_factory().ForgeNextHidDiscovery();
+  FakeU2fRequest request({U2fTransportProtocol::kUsbHumanInterfaceDevice});
+  request.Start();
+
+  auto device0 = std::make_unique<MockU2fDevice>();
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(::testing::Return("device0"));
+  EXPECT_CALL(*device0,
+              DeviceTransactPtr(U2fRequest::GetU2fVersionApduCommand(true), _))
+      // Success response for legacy version request after retry.
+      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorVersion));
+
+  auto* device_ptr = device0.get();
+  discovery->AddDevice(std::move(device0));
+
+  // Represents version callback received from legacy U2F token on initial
+  // version request. Device responses with invalid protocol version (in this
+  // case, empty byte array). Retry version request with legacy bit is expected
+  // to be issued afterwards.
+  request.OnDeviceVersionRequest(version_callback_receiver().callback(),
+                                 device_ptr->GetWeakPtr(), false /* legacy */,
+                                 std::vector<uint8_t>());
+
+  EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2,
+            std::get<0>(*version_callback_receiver().result()));
 }
 
 }  // namespace device

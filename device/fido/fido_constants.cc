@@ -43,4 +43,7 @@ const size_t kU2fParameterLength = 32;
 
 const std::array<uint8_t, 2> kLegacyVersionSuffix = {0x00, 0x00};
 
+const std::array<uint8_t, 6> kU2fVersionResponse = {'U', '2', 'F',
+                                                    '_', 'V', '2'};
+
 }  // namespace device

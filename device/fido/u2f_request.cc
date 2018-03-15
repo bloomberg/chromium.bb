@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/apdu/apdu_command.h"
+#include "components/apdu/apdu_response.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -119,7 +120,7 @@ void U2fRequest::Transition() {
     case State::IDLE:
       IterateDevice();
       if (!current_device_) {
-        // No devices available
+        // No devices available.
         state_ = State::OFF;
         break;
       }
@@ -133,6 +134,41 @@ void U2fRequest::Transition() {
       break;
     default:
       break;
+  }
+}
+
+void U2fRequest::InitiateDeviceTransaction(
+    base::Optional<std::vector<uint8_t>> cmd,
+    U2fDevice::DeviceCallback callback) {
+  if (!cmd) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  current_device_->DeviceTransact(std::move(*cmd), std::move(callback));
+}
+
+void U2fRequest::OnDeviceVersionRequest(
+    VersionCallback callback,
+    base::WeakPtr<U2fDevice> device,
+    bool legacy,
+    base::Optional<std::vector<uint8_t>> response) {
+  const auto apdu_response =
+      response ? apdu::ApduResponse::CreateFromMessage(std::move(*response))
+               : base::nullopt;
+  if (apdu_response &&
+      apdu_response->status() == apdu::ApduResponse::Status::SW_NO_ERROR &&
+      std::equal(apdu_response->data().cbegin(), apdu_response->data().cend(),
+                 kU2fVersionResponse.cbegin(), kU2fVersionResponse.cend())) {
+    std::move(callback).Run(U2fDevice::ProtocolVersion::U2F_V2);
+  } else if (!legacy) {
+    // Standard GetVersion failed, attempt legacy GetVersion command.
+    device->DeviceTransact(
+        GetU2fVersionApduCommand(true),
+        base::BindOnce(&U2fRequest::OnDeviceVersionRequest,
+                       weak_factory_.GetWeakPtr(), std::move(callback), device,
+                       true /* legacy */));
+  } else {
+    std::move(callback).Run(U2fDevice::ProtocolVersion::UNKNOWN);
   }
 }
 
@@ -215,7 +251,7 @@ void U2fRequest::IterateDevice() {
     devices_.pop_front();
   } else if (attempted_devices_.size() > 0) {
     devices_ = std::move(attempted_devices_);
-    // After trying every device, wait 200ms before trying again
+    // After trying every device, wait 200ms before trying again.
     delay_callback_.Reset(
         base::Bind(&U2fRequest::OnWaitComplete, weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

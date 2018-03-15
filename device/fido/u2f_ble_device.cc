@@ -36,14 +36,13 @@ void U2fBleDevice::Connect() {
 }
 
 void U2fBleDevice::SendPing(std::vector<uint8_t> data,
-                            MessageCallback callback) {
+                            DeviceCallback callback) {
   pending_frames_.emplace(
       U2fBleFrame(U2fCommandType::CMD_PING, std::move(data)),
       base::BindOnce(
-          [](MessageCallback callback, base::Optional<U2fBleFrame> frame) {
-            std::move(callback).Run(
-                frame ? U2fReturnCode::SUCCESS : U2fReturnCode::FAILURE,
-                frame ? frame->data() : std::vector<uint8_t>());
+          [](DeviceCallback callback, base::Optional<U2fBleFrame> frame) {
+            std::move(callback).Run(frame ? base::make_optional(frame->data())
+                                          : base::nullopt);
           },
           std::move(callback)));
   Transition();
@@ -80,10 +79,8 @@ void U2fBleDevice::DeviceTransact(std::vector<uint8_t> command,
       U2fBleFrame(U2fCommandType::CMD_MSG, std::move(command)),
       base::BindOnce(
           [](DeviceCallback callback, base::Optional<U2fBleFrame> frame) {
-            std::move(callback).Run(
-                frame.has_value(),
-                frame ? apdu::ApduResponse::CreateFromMessage(frame->data())
-                      : base::nullopt);
+            std::move(callback).Run(frame ? base::make_optional(frame->data())
+                                          : base::nullopt);
           },
           std::move(callback)));
   Transition();

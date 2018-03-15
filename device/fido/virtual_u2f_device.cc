@@ -145,9 +145,9 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
       break;
     default:
       std::move(cb).Run(
-          true,
           apdu::ApduResponse(std::vector<uint8_t>(),
-                             apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED));
+                             apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED)
+              .GetEncodedResponse());
   }
 }
 
@@ -162,8 +162,9 @@ void VirtualU2fDevice::DoRegister(uint8_t ins,
                                   DeviceCallback cb) {
   if (data.size() != 64) {
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_LENGTH));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_LENGTH)
+            .GetEncodedResponse());
     return;
   }
 
@@ -223,9 +224,9 @@ void VirtualU2fDevice::DoRegister(uint8_t ins,
                   std::vector<uint8_t>(app_id_hash.begin(), app_id_hash.end()),
                   1);
 
-  std::move(cb).Run(
-      true, apdu::ApduResponse(std::move(response),
-                               apdu::ApduResponse::Status::SW_NO_ERROR));
+  std::move(cb).Run(apdu::ApduResponse(std::move(response),
+                                       apdu::ApduResponse::Status::SW_NO_ERROR)
+                        .GetEncodedResponse());
 }
 
 void VirtualU2fDevice::DoSign(uint8_t ins,
@@ -237,8 +238,9 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
         p1 == kP1IndividualAttestation) ||
       p2 != 0) {
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_DATA));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_DATA)
+            .GetEncodedResponse());
     return;
   }
 
@@ -249,14 +251,16 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
     // Our own keyhandles are always 32 bytes long, if the request has something
     // else then we already know it is not ours.
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_DATA));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_DATA)
+            .GetEncodedResponse());
     return;
   }
   if (data.size() != 32 + 32 + 1 + key_handle_length) {
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_LENGTH));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_LENGTH)
+            .GetEncodedResponse());
     return;
   }
   auto key_handle = data.last(key_handle_length);
@@ -267,8 +271,9 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
 
   if (it == registrations_.end()) {
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_DATA));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_DATA)
+            .GetEncodedResponse());
     return;
   }
 
@@ -278,8 +283,9 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
     // It's important this error looks identical to the previous one, as
     // tokens should not reveal the existence of keyHandles to unrelated appIds.
     std::move(cb).Run(
-        true, apdu::ApduResponse(std::vector<uint8_t>(),
-                                 apdu::ApduResponse::Status::SW_WRONG_DATA));
+        apdu::ApduResponse(std::vector<uint8_t>(),
+                           apdu::ApduResponse::Status::SW_WRONG_DATA)
+            .GetEncodedResponse());
     return;
   }
 
@@ -311,9 +317,9 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
   // Add signature for full response.
   AppendTo(&response, sig);
 
-  std::move(cb).Run(
-      true, apdu::ApduResponse(std::move(response),
-                               apdu::ApduResponse::Status::SW_NO_ERROR));
+  std::move(cb).Run(apdu::ApduResponse(std::move(response),
+                                       apdu::ApduResponse::Status::SW_NO_ERROR)
+                        .GetEncodedResponse());
 }
 
 }  // namespace device

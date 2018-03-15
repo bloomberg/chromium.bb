@@ -33,7 +33,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
   ~U2fBleDevice() override;
 
   void Connect();
-  void SendPing(std::vector<uint8_t> data, MessageCallback callback);
+  void SendPing(std::vector<uint8_t> data, DeviceCallback callback);
   static std::string GetId(base::StringPiece address);
 
   // U2fDevice:

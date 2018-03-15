@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/u2f_request.h"
+#include "device/fido/u2f_return_code.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
@@ -50,20 +51,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegister : public U2fRequest {
   ~U2fRegister() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(U2fRegisterTest, TestCreateU2fRegisterCommand);
-
   void TryDevice() override;
   void OnTryDevice(bool is_duplicate_registration,
-                   U2fReturnCode return_code,
-                   const std::vector<uint8_t>& response_data);
+                   base::Optional<std::vector<uint8_t>> response);
 
   // Callback function called when non-empty exclude list was provided. This
   // function iterates through all key handles in |registered_keys_| for all
   // devices and checks for already registered keys.
   void OnTryCheckRegistration(
       std::vector<std::vector<uint8_t>>::const_iterator it,
-      U2fReturnCode return_code,
-      const std::vector<uint8_t>& response_data);
+      base::Optional<std::vector<uint8_t>> response);
   // Function handling registration flow after all devices were checked for
   // already registered keys.
   void CompleteNewDeviceRegistration();

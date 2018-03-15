@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "components/apdu/apdu_command.h"
+#include "components/apdu/apdu_response.h"
 #include "device/fido/register_response_data.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -51,12 +53,13 @@ void U2fRegister::TryDevice() {
   DCHECK(current_device_);
   if (!registered_keys_.empty() && !CheckedForDuplicateRegistration()) {
     auto it = registered_keys_.cbegin();
-    current_device_->Sign(GetU2fSignApduCommand(application_parameter_, *it,
-                                                true /* check_only */),
-                          base::BindOnce(&U2fRegister::OnTryCheckRegistration,
-                                         weak_factory_.GetWeakPtr(), it));
+    InitiateDeviceTransaction(
+        GetU2fSignApduCommand(application_parameter_, *it,
+                              true /* check_only */),
+        base::BindOnce(&U2fRegister::OnTryCheckRegistration,
+                       weak_factory_.GetWeakPtr(), it));
   } else {
-    current_device_->Register(
+    InitiateDeviceTransaction(
         GetU2fRegisterApduCommand(individual_attestation_ok_),
         base::BindOnce(&U2fRegister::OnTryDevice, weak_factory_.GetWeakPtr(),
                        false /* is_duplicate_registration */));
@@ -65,24 +68,30 @@ void U2fRegister::TryDevice() {
 
 void U2fRegister::OnTryCheckRegistration(
     std::vector<std::vector<uint8_t>>::const_iterator it,
-    U2fReturnCode return_code,
-    const std::vector<uint8_t>& response_data) {
+    base::Optional<std::vector<uint8_t>> response) {
+  const auto apdu_response =
+      response ? apdu::ApduResponse::CreateFromMessage(std::move(*response))
+               : base::nullopt;
+  auto return_code = apdu_response ? apdu_response->status()
+                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
+
   switch (return_code) {
-    case U2fReturnCode::SUCCESS:
-    case U2fReturnCode::CONDITIONS_NOT_SATISFIED:
+    case apdu::ApduResponse::Status::SW_NO_ERROR:
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED: {
       // Duplicate registration found. Call bogus registration to check for
       // user presence (touch) and terminate the registration process.
-      current_device_->Register(
+      InitiateDeviceTransaction(
           U2fRequest::GetBogusRegisterCommand(),
           base::BindOnce(&U2fRegister::OnTryDevice, weak_factory_.GetWeakPtr(),
                          true /* is_duplicate_registration */));
       break;
+    }
 
-    case U2fReturnCode::INVALID_PARAMS:
+    case apdu::ApduResponse::Status::SW_WRONG_DATA:
       // Continue to iterate through the provided key handles in the exclude
       // list and check for already registered keys.
       if (++it != registered_keys_.end()) {
-        current_device_->Sign(
+        InitiateDeviceTransaction(
             GetU2fSignApduCommand(application_parameter_, *it,
                                   true /* check_only */),
             base::BindOnce(&U2fRegister::OnTryCheckRegistration,
@@ -122,10 +131,14 @@ bool U2fRegister::CheckedForDuplicateRegistration() {
 }
 
 void U2fRegister::OnTryDevice(bool is_duplicate_registration,
-                              U2fReturnCode return_code,
-                              const std::vector<uint8_t>& response_data) {
+                              base::Optional<std::vector<uint8_t>> response) {
+  const auto apdu_response =
+      response ? apdu::ApduResponse::CreateFromMessage(std::move(*response))
+               : base::nullopt;
+  auto return_code = apdu_response ? apdu_response->status()
+                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
   switch (return_code) {
-    case U2fReturnCode::SUCCESS: {
+    case apdu::ApduResponse::Status::SW_NO_ERROR: {
       state_ = State::COMPLETE;
       if (is_duplicate_registration) {
         std::move(completion_callback_)
@@ -133,7 +146,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
         break;
       }
       auto response = RegisterResponseData::CreateFromU2fRegisterResponse(
-          application_parameter_, std::move(response_data));
+          application_parameter_, apdu_response->data());
       if (!response) {
         // The response data was corrupted / didn't parse properly.
         std::move(completion_callback_)
@@ -144,7 +157,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
           .Run(U2fReturnCode::SUCCESS, std::move(response));
       break;
     }
-    case U2fReturnCode::CONDITIONS_NOT_SATISFIED:
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
       // Waiting for user touch, move on and try this device later.
       state_ = State::IDLE;
       Transition();

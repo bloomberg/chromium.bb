@@ -60,7 +60,7 @@ void U2fHidDevice::Transition(std::vector<uint8_t> command,
     case State::IDLE: {
       state_ = State::BUSY;
       ArmTimeout(repeating_callback);
-      // Write message to the device
+      // Write message to the device.
       WriteMessage(
           FidoHidMessage::Create(channel_id_, CtapHidDeviceCommand::kCtapHidMsg,
                                  std::move(command)),
@@ -75,15 +75,14 @@ void U2fHidDevice::Transition(std::vector<uint8_t> command,
     case State::DEVICE_ERROR:
     default:
       base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
-      repeating_callback.Run(false, base::nullopt);
-
+      repeating_callback.Run(base::nullopt);
       // Executing callbacks may free |this|. Check |self| first.
       while (self && !pending_transactions_.empty()) {
-        // Respond to any pending requests
+        // Respond to any pending requests.
         DeviceCallback pending_cb =
             std::move(pending_transactions_.front().second);
         pending_transactions_.pop();
-        std::move(pending_cb).Run(false, base::nullopt);
+        std::move(pending_cb).Run(base::nullopt);
       }
       break;
   }
@@ -112,7 +111,7 @@ void U2fHidDevice::OnConnect(std::vector<uint8_t> command,
 
 void U2fHidDevice::AllocateChannel(std::vector<uint8_t> command,
                                    DeviceCallback callback) {
-  // Send random nonce to device to verify received message
+  // Send random nonce to device to verify received message.
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());
   WriteMessage(FidoHidMessage::Create(
@@ -228,7 +227,7 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
     return;
   }
 
-  // Received a message from a different channel, so try again
+  // Received a message from a different channel, so try again.
   if (channel_id_ != read_message->channel_id()) {
     connection_->Read(base::BindOnce(&U2fHidDevice::OnRead,
                                      weak_factory_.GetWeakPtr(),
@@ -241,7 +240,7 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
     return;
   }
 
-  // Continue reading additional packets
+  // Continue reading additional packets.
   connection_->Read(base::BindOnce(
       &U2fHidDevice::OnReadContinuation, weak_factory_.GetWeakPtr(),
       std::move(read_message), std::move(callback)));
@@ -281,18 +280,15 @@ void U2fHidDevice::MessageReceived(DeviceCallback callback,
     return;
   }
 
-  auto response =
-      message
-          ? apdu::ApduResponse::CreateFromMessage(message->GetMessagePayload())
-          : base::nullopt;
-
   state_ = State::IDLE;
   base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
-  std::move(callback).Run(success, std::move(response));
+  std::move(callback).Run(
+      (success && message) ? base::make_optional(message->GetMessagePayload())
+                           : base::nullopt);
 
   // Executing |callback| may have freed |this|. Check |self| first.
   if (self && !pending_transactions_.empty()) {
-    // If any transactions were queued, process the first one
+    // If any transactions were queued, process the first one.
     auto pending_cmd = std::move(pending_transactions_.front().first);
     auto pending_cb = std::move(pending_transactions_.front().second);
     pending_transactions_.pop();
@@ -301,7 +297,7 @@ void U2fHidDevice::MessageReceived(DeviceCallback callback,
 }
 
 void U2fHidDevice::TryWink(WinkCallback callback) {
-  // Only try to wink if device claims support
+  // Only try to wink if device claims support.
   if (!(capabilities_ & kWinkCapability) || state_ != State::IDLE) {
     std::move(callback).Run();
     return;
@@ -326,7 +322,7 @@ void U2fHidDevice::ArmTimeout(DeviceCallback callback) {
   timeout_callback_.Reset(base::BindOnce(&U2fHidDevice::OnTimeout,
                                          weak_factory_.GetWeakPtr(),
                                          std::move(callback)));
-  // Setup timeout task for 3 seconds
+  // Setup timeout task for 3 seconds.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_callback_.callback(), kDeviceTimeout);
 }
