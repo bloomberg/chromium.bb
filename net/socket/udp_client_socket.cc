@@ -119,6 +119,10 @@ int UDPClientSocket::SetDoNotFragment() {
   return socket_.SetDoNotFragment();
 }
 
+void UDPClientSocket::SetMsgConfirm(bool confirm) {
+  socket_.SetMsgConfirm(confirm);
+}
+
 const NetLogWithSource& UDPClientSocket::NetLog() const {
   return socket_.NetLog();
 }
