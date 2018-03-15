@@ -35,7 +35,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -46,7 +45,6 @@ import java.util.concurrent.TimeUnit;
  * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the
  * Android account manager.
  */
-@MainDex
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     private final AccountManager mAccountManager;
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
