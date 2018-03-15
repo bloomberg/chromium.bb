@@ -49,6 +49,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Base class for layouts that show one or more stacks of tabs.
@@ -96,7 +97,7 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
      */
     private static final float SWITCH_STACK_FLING_DT = 1.0f / 30.0f;
 
-    /** The array of potentially visible stacks. */
+    /** The list of potentially visible stacks. */
     protected final ArrayList<Stack> mStacks;
 
     /** Rectangles that defines the area where each stack need to be laid out. */
@@ -128,6 +129,10 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
     private float mLastOnDownX;
     private float mLastOnDownY;
     private long mLastOnDownTimeStamp;
+
+    private float mWidth;
+    private float mHeight;
+    private int mOrientation;
 
     // Pre-allocated temporary arrays that store id of visible tabs.
     // They can be used to call populatePriorityVisibilityList.
@@ -310,6 +315,28 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
         mSceneLayer = new TabListSceneLayer();
     }
 
+    /**
+     * Updates this layout to show one tab stack for each of the passed-in TabLists. Takes a
+     * reference to the lists param and expects it not to change.
+     * @param lists The list of TabLists to use.
+     */
+    protected void setTabLists(List<TabList> lists) {
+        if (mStacks.size() > lists.size()) {
+            mStacks.subList(lists.size(), lists.size()).clear();
+        }
+        while (mStacks.size() < lists.size()) {
+            Stack stack = new Stack(getContext(), this);
+            stack.notifySizeChanged(mWidth, mHeight, mOrientation);
+            mStacks.add(stack);
+        }
+
+        for (int i = 0; i < lists.size(); i++) {
+            mStacks.get(i).setTabList(lists.get(i));
+        }
+
+        // mStackRects will get updated in updateLayout()
+    }
+
     @Override
     public boolean forceShowBrowserControlsAndroidView() {
         return true;
@@ -351,8 +378,6 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
         super.setTabModelSelector(modelSelector, manager);
         resetScrollData();
     }
-
-    protected abstract TabList getTabList(int index);
 
     /**
      * Get the tab stack at the specified index.
@@ -728,6 +753,9 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
 
     @Override
     public void notifySizeChanged(float width, float height, int orientation) {
+        mWidth = width;
+        mHeight = height;
+        mOrientation = orientation;
         mCachedLandscapeViewport = null;
         mCachedPortraitViewport = null;
         for (Stack stack : mStacks) {
@@ -1089,7 +1117,8 @@ public abstract class StackLayoutBase extends Layout implements Animatable<Stack
             final float stackFocus = MathUtils.clamp(1 - scrollDistance, 0, 1);
 
             mStacks.get(i).setStackFocusInfo(stackFocus,
-                    mSortingComparator == mOrderComparator ? getTabList(i).index() : -1);
+                    mSortingComparator == mOrderComparator ? mStacks.get(i).getTabList().index()
+                                                           : -1);
         }
 
         // Compute position and visibility

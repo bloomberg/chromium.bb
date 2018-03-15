@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
-import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
+import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -231,7 +231,7 @@ public class Stack {
     private Animator mViewAnimations;
 
     // The parent Layout
-    private final StackLayout mLayout;
+    private final StackLayoutBase mLayout;
 
     // Border values
     private float mBorderTransparentTop;
@@ -257,7 +257,7 @@ public class Stack {
     /**
      * @param layout The parent layout.
      */
-    public Stack(Context context, StackLayout layout) {
+    public Stack(Context context, StackLayoutBase layout) {
         mLayout = layout;
         contextChanged(context);
     }
@@ -267,6 +267,13 @@ public class Stack {
      */
     public void setTabList(TabList tabList) {
         mTabList = tabList;
+    }
+
+    /**
+     * @return The TabList associated with this stack.
+     */
+    public TabList getTabList() {
+        return mTabList;
     }
 
     /**
@@ -2273,7 +2280,7 @@ public class Stack {
      */
     public float getMaxTabHeight() {
         if (FeatureUtilities.isChromeHomeEnabled() && mCurrentMode == Orientation.PORTRAIT) {
-            return mLayout.getHeightMinusBrowserControls() - StackLayout.MODERN_TOP_MARGIN_DP;
+            return mLayout.getHeightMinusBrowserControls() - StackLayoutBase.MODERN_TOP_MARGIN_DP;
         }
         return mLayout.getHeightMinusBrowserControls();
     }
