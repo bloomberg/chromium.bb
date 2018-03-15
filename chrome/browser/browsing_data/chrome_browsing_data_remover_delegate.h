@@ -75,6 +75,7 @@ class ChromeBrowsingDataRemoverDelegate
     DATA_TYPE_EXTERNAL_PROTOCOL_DATA = DATA_TYPE_EMBEDDER_BEGIN << 7,
     DATA_TYPE_HOSTED_APP_DATA_TEST_ONLY = DATA_TYPE_EMBEDDER_BEGIN << 8,
     DATA_TYPE_CONTENT_SETTINGS = DATA_TYPE_EMBEDDER_BEGIN << 9,
+    DATA_TYPE_BOOKMARKS = DATA_TYPE_EMBEDDER_BEGIN << 10,
 
     // Group datatypes.
 
@@ -97,10 +98,9 @@ class ChromeBrowsingDataRemoverDelegate
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
-    FILTERABLE_DATA_TYPES =
-        DATA_TYPE_SITE_DATA |
-        content::BrowsingDataRemover::DATA_TYPE_CACHE |
-        content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
+    FILTERABLE_DATA_TYPES = DATA_TYPE_SITE_DATA |
+                            content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                            content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
@@ -112,7 +112,8 @@ class ChromeBrowsingDataRemoverDelegate
                      DATA_TYPE_HISTORY |    //
                      DATA_TYPE_PASSWORDS |
                      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES |
-                     DATA_TYPE_CONTENT_SETTINGS,
+                     DATA_TYPE_CONTENT_SETTINGS |  //
+                     DATA_TYPE_BOOKMARKS,
 
     // Includes all available remove options. Meant to be used when the Profile
     // is scheduled to be deleted, and all possible data should be wiped from

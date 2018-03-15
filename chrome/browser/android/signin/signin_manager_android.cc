@@ -106,10 +106,6 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
     remover_->RemoveObserver(this);
 
     if (all_data_) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForBrowserContext(profile_);
-      model->RemoveAllUserBookmarks();
-
       // All the Profile data has been wiped. Clear the last signed in username
       // as well, so that the next signin doesn't trigger the account
       // change dialog.
