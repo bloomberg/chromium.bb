@@ -22,7 +22,6 @@
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
