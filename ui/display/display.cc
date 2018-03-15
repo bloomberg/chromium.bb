@@ -268,7 +268,7 @@ gfx::Size Display::GetSizeInPixel() const {
 
 std::string Display::ToString() const {
   return base::StringPrintf(
-      "Display[%lld] bounds=%s, workarea=%s, scale=%g, %s",
+      "Display[%lld] bounds=[%s], workarea=[%s], scale=%g, %s.",
       static_cast<long long int>(id_), bounds_.ToString().c_str(),
       work_area_.ToString().c_str(), device_scale_factor_,
       IsInternal() ? "internal" : "external");

@@ -308,6 +308,7 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                       current_mode,
                       native_mode,
                       product_id,
+                      2018 /*year_of_manufacture */,
                       maximum_cursor_size) {}
 
 FakeDisplaySnapshot::~FakeDisplaySnapshot() {}

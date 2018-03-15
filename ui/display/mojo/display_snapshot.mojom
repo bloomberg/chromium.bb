@@ -28,6 +28,8 @@ struct DisplaySnapshot {
   bool has_current_mode;
   uint64 native_mode_index;
   bool has_native_mode;
-  int64 product_id;
+  // |product_code| is a combination of the manufacturer id and the product id.
+  int64 product_code;
+  int32 year_of_manufacture;
   gfx.mojom.Size maximum_cursor_size;
 };

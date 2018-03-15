@@ -16,6 +16,9 @@ constexpr int64_t kInvalidDisplayId = -1;
 // Display ID for a virtual display assigned to a unified desktop.
 constexpr int64_t kUnifiedDisplayId = -10;
 
+// Invalid year of manufacture of the display.
+constexpr int32_t kInvalidYearOfManufacture = -1;
+
 // Used to describe the state of a multi-display configuration.
 enum MultipleDisplayState {
   MULTIPLE_DISPLAY_STATE_INVALID,

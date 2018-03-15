@@ -111,12 +111,30 @@ namespace system.display {
     long offset;
   };
 
+  // EDID extracted parameters. Field description refers to "VESA ENHANCED
+  // EXTENDED DISPLAY IDENTIFICATION DATA STANDARD (Defines EDID Structure
+  // Version 1, Revision 4)" Release A, Revision 2 September 25, 2006.
+  // https://www.vesa.org/vesa-standards
+  dictionary Edid {
+    // 3 character manufacturer code. See Sec. 3.4.1 page 21. Required in v1.4.
+    DOMString manufacturerId;
+
+    // 2 byte manufacturer-assigned code, Sec. 3.4.2 page 21. Required in v1.4.
+    DOMString productId;
+
+    // Year of manufacturer, Sec. 3.4.4 page 22. Required in v1.4.
+    long yearOfManufacture;
+  };
+
   dictionary DisplayUnitInfo {
     // The unique identifier of the display.
     DOMString id;
 
     // The user-friendly name (e.g. "HP LCD monitor").
     DOMString name;
+
+    // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    Edid? edid;
 
     // Chrome OS only. Identifier of the display that is being mirrored if
     // mirroring is enabled, otherwise empty. This will be set for all displays

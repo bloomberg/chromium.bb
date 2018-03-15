@@ -93,9 +93,14 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->native_mode() != nullptr;
   }
 
-  static int64_t product_id(
+  static int64_t product_code(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
-    return snapshot->product_id();
+    return snapshot->product_code();
+  }
+
+  static int32_t year_of_manufacture(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->year_of_manufacture();
   }
 
   static const gfx::Size& maximum_cursor_size(
