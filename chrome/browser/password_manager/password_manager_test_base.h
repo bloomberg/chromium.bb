@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -208,6 +209,7 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
   net::EmbeddedTestServer https_test_server_;
   // A tab with some hooks injected.
   content::WebContents* web_contents_;

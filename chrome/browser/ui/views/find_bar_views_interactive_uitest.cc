@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -86,6 +87,8 @@ class FindInPageTest : public InProcessBrowserTest {
   }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
   DISALLOW_COPY_AND_ASSIGN(FindInPageTest);
 };
 
