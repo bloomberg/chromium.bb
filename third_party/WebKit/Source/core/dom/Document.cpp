@@ -182,6 +182,7 @@
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/leak_detector/BlinkLeakDetector.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
@@ -690,6 +691,7 @@ Document::Document(const DocumentInit& initializer,
     fetcher_ = FrameFetchContext::CreateFetcherFromDocument(this);
   } else {
     fetcher_ = ResourceFetcher::Create(nullptr);
+    BlinkLeakDetector::Instance().RegisterResourceFetcher(fetcher_);
   }
   DCHECK(fetcher_);
 

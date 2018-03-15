@@ -49,6 +49,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/leak_detector/BlinkLeakDetector.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/IdlenessDetector.h"
@@ -252,6 +253,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context = new FrameFetchContext(loader, document);
   ResourceFetcher* fetcher = ResourceFetcher::Create(context);
+  BlinkLeakDetector::Instance().RegisterResourceFetcher(fetcher);
 
   if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
                     SavePreviousDocumentResources::kNever) {

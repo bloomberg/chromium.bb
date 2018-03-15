@@ -80,7 +80,6 @@ class CORE_EXPORT InspectorMemoryAgent final
   std::unique_ptr<protocol::Memory::SamplingProfile> GetSamplingProfileById(
       uint32_t id);
 
-  std::unique_ptr<BlinkLeakDetector> detector_;
   std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
   uint32_t profile_id_ = 0;
