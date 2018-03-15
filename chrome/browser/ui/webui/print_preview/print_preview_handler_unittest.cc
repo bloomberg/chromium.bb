@@ -6,11 +6,11 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
-#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -342,7 +342,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   void Initialize() {
     // Set locale since the delimeters we check in VerifyInitialSettings()
     // depend on it.
-    base::i18n::SetICUDefaultLocale("en");
+    base::test::ScopedRestoreICUDefaultLocale scoped_locale("en");
 
     // Sending this message will enable javascript, so it must always be called
     // before any other messages are sent.
@@ -394,14 +394,14 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_TRUE(settings->FindKeyOfType("isInAppKioskMode",
                                         base::Value::Type::BOOLEAN));
 
-    const base::Value* thousandsDelimeter = settings->FindKeyOfType(
+    const base::Value* thousands_delimeter = settings->FindKeyOfType(
         "thousandsDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(thousandsDelimeter);
-    EXPECT_EQ(",", thousandsDelimeter->GetString());
-    const base::Value* decimalDelimeter =
+    ASSERT_TRUE(thousands_delimeter);
+    EXPECT_EQ(",", thousands_delimeter->GetString());
+    const base::Value* decimal_delimeter =
         settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(decimalDelimeter);
-    EXPECT_EQ(".", decimalDelimeter->GetString());
+    ASSERT_TRUE(decimal_delimeter);
+    EXPECT_EQ(".", decimal_delimeter->GetString());
 
     ASSERT_TRUE(
         settings->FindKeyOfType("unitType", base::Value::Type::INTEGER));
