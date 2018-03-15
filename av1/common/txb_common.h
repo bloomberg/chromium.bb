@@ -193,18 +193,6 @@ static INLINE int get_level_count(const uint8_t *const levels, const int stride,
   return count;
 }
 
-static INLINE void get_level_mag_with_txclass(const uint8_t *const levels,
-                                              const int stride, const int row,
-                                              const int col, int *const mag,
-                                              const TX_CLASS tx_class) {
-  for (int idx = 0; idx < CONTEXT_MAG_POSITION_NUM; ++idx) {
-    const int ref_row = row + mag_ref_offset_with_txclass[tx_class][idx][0];
-    const int ref_col = col + mag_ref_offset_with_txclass[tx_class][idx][1];
-    const int pos = ref_row * stride + ref_col;
-    mag[idx] = levels[pos];
-  }
-}
-
 static INLINE void get_level_mag(const uint8_t *const levels, const int stride,
                                  const int row, const int col, int *const mag) {
   for (int idx = 0; idx < CONTEXT_MAG_POSITION_NUM; ++idx) {
@@ -380,27 +368,32 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
-  int mag = 0;
-  int nb_mag[3] = { 0 };
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
-  get_level_mag_with_txclass(levels, stride, row, col, nb_mag, tx_class);
-
-  mag = AOMMIN(nb_mag[0], MAX_BASE_BR_RANGE) +
-        AOMMIN(nb_mag[1], MAX_BASE_BR_RANGE) +
-        AOMMIN(nb_mag[2], MAX_BASE_BR_RANGE);
-  mag = AOMMIN((mag + 1) >> 1, 6);
-  if (c == 0) return mag;
-  if (tx_class == TX_CLASS_2D) {
-    if ((row < 2) && (col < 2)) return mag + 7;
-  } else {
-    if (tx_class == TX_CLASS_HORIZ) {
+  const int pos = row * stride + col;
+  int mag = levels[pos + 1];
+  mag += levels[pos + stride];
+  switch (tx_class) {
+    case TX_CLASS_2D:
+      mag += levels[pos + stride + 1];
+      mag = AOMMIN((mag + 1) >> 1, 6);
+      if (c == 0) return mag;
+      if ((row < 2) && (col < 2)) return mag + 7;
+      break;
+    case TX_CLASS_HORIZ:
+      mag += levels[pos + 2];
+      mag = AOMMIN((mag + 1) >> 1, 6);
+      if (c == 0) return mag;
       if (col == 0) return mag + 7;
-    } else {
-      if (tx_class == TX_CLASS_VERT) {
-        if (row == 0) return mag + 7;
-      }
-    }
+      break;
+    case TX_CLASS_VERT:
+      mag += levels[pos + (stride << 1)];
+      mag = AOMMIN((mag + 1) >> 1, 6);
+      if (c == 0) return mag;
+      if (row == 0) return mag + 7;
+      break;
+    default: break;
   }
+
   return mag + 14;
 }
 
