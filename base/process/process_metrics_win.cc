@@ -219,27 +219,6 @@ bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
   return true;
 }
 
-// This function calculates the proportional set size for a process.
-bool ProcessMetrics::GetProportionalSetSizeBytes(uint64_t* pss_bytes) const {
-  double ws_pss = 0.0;
-
-  WorkingSetInformationBuffer buffer;
-  if (!buffer.QueryPageEntries(process_.Get()))
-    return false;
-
-  size_t num_page_entries = buffer.GetPageEntryCount();
-  for (size_t i = 0; i < num_page_entries; i++) {
-    if (buffer->WorkingSetInfo[i].Shared &&
-        buffer->WorkingSetInfo[i].ShareCount > 0)
-      ws_pss += 1.0 / buffer->WorkingSetInfo[i].ShareCount;
-    else
-      ws_pss += 1.0;
-  }
-
-  *pss_bytes = static_cast<uint64_t>(ws_pss * GetPageSize());
-  return true;
-}
-
 static uint64_t FileTimeToUTC(const FILETIME& ftime) {
   LARGE_INTEGER li;
   li.LowPart = ftime.dwLowDateTime;
