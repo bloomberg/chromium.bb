@@ -106,7 +106,8 @@ gfx::Size ApplyDsfAdjustment(gfx::Size device_pixels_size, float dsf) {
 // don't need any settings. The current approach uses 4 tiles to cover the
 // viewport vertically.
 gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
-                               const gfx::Size& content_bounds) {
+                               const gfx::Size& content_bounds,
+                               const gfx::Size& max_tile_size) {
   int tile_width = base_tile_size.width();
 
   // Increase the height proportionally as the width decreases, and pad by our
@@ -129,6 +130,11 @@ gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
   tile_height = MathUtil::UncheckedRoundUp(tile_height, kGpuDefaultTileRoundUp);
 
   tile_height = std::max(tile_height, kMinHeightForGpuRasteredTile);
+
+  if (!max_tile_size.IsEmpty()) {
+    tile_width = std::min(tile_width, max_tile_size.width());
+    tile_height = std::min(tile_height, max_tile_size.height());
+  }
 
   return gfx::Size(tile_width, tile_height);
 }
@@ -470,7 +476,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
               offset_visible_geometry_rect, needs_blending,
               draw_info.resource_id_for_export(), texture_rect,
               draw_info.resource_size(), draw_info.contents_swizzled(),
-              nearest_neighbor_,
+              draw_info.is_premultiplied(), nearest_neighbor_,
               !layer_tree_impl()->settings().enable_edge_anti_aliasing);
           ValidateQuadResources(quad);
           has_draw_quad = true;
@@ -940,6 +946,9 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int default_tile_width = 0;
   int default_tile_height = 0;
   if (layer_tree_impl()->use_gpu_rasterization()) {
+    gfx::Size max_tile_size =
+        layer_tree_impl()->settings().max_gpu_raster_tile_size;
+
     // Calculate |base_tile_size based| on |gpu_raster_max_texture_size_|,
     // adjusting for ceil operations that may occur due to DSF.
     gfx::Size base_tile_size = ApplyDsfAdjustment(
@@ -948,14 +957,15 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     // Set our initial size assuming a |base_tile_size| equal to our
     // |viewport_size|.
     gfx::Size default_tile_size =
-        CalculateGpuTileSize(base_tile_size, content_bounds);
+        CalculateGpuTileSize(base_tile_size, content_bounds, max_tile_size);
 
     // Use half-width GPU tiles when the content_width is greater than our
     // calculated tile size.
     if (content_bounds.width() > default_tile_size.width()) {
       // Divide width by 2 and round up.
       base_tile_size.set_width((base_tile_size.width() + 1) / 2);
-      default_tile_size = CalculateGpuTileSize(base_tile_size, content_bounds);
+      default_tile_size =
+          CalculateGpuTileSize(base_tile_size, content_bounds, max_tile_size);
     }
 
     default_tile_width = default_tile_size.width();

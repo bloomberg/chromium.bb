@@ -136,6 +136,11 @@ bool BitmapRasterBufferProvider::IsResourceSwizzleRequired(
   return ResourceFormatRequiresSwizzle(viz::RGBA_8888);
 }
 
+bool BitmapRasterBufferProvider::IsResourcePremultiplied(
+    bool must_support_alpha) const {
+  return true;
+}
+
 bool BitmapRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   return true;
 }

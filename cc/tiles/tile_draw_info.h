@@ -73,6 +73,7 @@ class CC_EXPORT TileDrawInfo {
   }
 
   bool contents_swizzled() const { return contents_swizzled_; }
+  bool is_premultiplied() const { return is_premultiplied_; }
 
   bool requires_resource() const {
     return mode_ == RESOURCE_MODE || mode_ == OOM_MODE;
@@ -101,7 +102,8 @@ class CC_EXPORT TileDrawInfo {
 
   void SetResource(ResourcePool::InUsePoolResource resource,
                    bool resource_is_checker_imaged,
-                   bool contents_swizzled);
+                   bool contents_swizzled,
+                   bool is_premultiplied);
   ResourcePool::InUsePoolResource TakeResource();
 
   void set_resource_ready_for_draw() {
@@ -120,6 +122,7 @@ class CC_EXPORT TileDrawInfo {
   SkColor solid_color_ = SK_ColorWHITE;
   ResourcePool::InUsePoolResource resource_;
   bool contents_swizzled_ = false;
+  bool is_premultiplied_ = false;
   bool is_resource_ready_to_draw_ = false;
 
   // Set to true if |resource_| was rasterized with checker-imaged content. The

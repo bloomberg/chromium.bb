@@ -2640,7 +2640,8 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         settings_.resource_settings.use_gpu_memory_buffer_resources,
-        msaa_sample_count, settings_.preferred_tile_format, oop_raster_enabled);
+        msaa_sample_count, settings_.preferred_tile_format,
+        settings_.max_gpu_raster_tile_size, oop_raster_enabled);
   }
 
   bool use_zero_copy = settings_.use_zero_copy;

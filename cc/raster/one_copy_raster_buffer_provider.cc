@@ -225,6 +225,13 @@ bool OneCopyRasterBufferProvider::IsResourceSwizzleRequired(
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
 }
 
+bool OneCopyRasterBufferProvider::IsResourcePremultiplied(
+    bool must_support_alpha) const {
+  // TODO(ericrk): Handle unpremultiply/dither in one-copy case as well.
+  // https://crbug.com/789153
+  return true;
+}
+
 bool OneCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   // While OneCopyRasterBufferProvider has an internal partial raster
   // implementation, it cannot directly partial raster into the externally

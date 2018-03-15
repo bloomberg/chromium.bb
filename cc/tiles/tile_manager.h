@@ -205,7 +205,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
             gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
       }
       resource_pool_->PrepareForExport(resource);
-      draw_info.SetResource(std::move(resource), false, false);
+      draw_info.SetResource(std::move(resource), false, false, false);
       draw_info.set_resource_ready_for_draw();
     }
   }
