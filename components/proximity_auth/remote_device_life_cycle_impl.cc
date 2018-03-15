@@ -28,10 +28,6 @@ namespace proximity_auth {
 
 namespace {
 
-// The UUID of the Smart Lock classic Bluetooth service.
-const char kClassicBluetoothServiceUUID[] =
-    "704EE561-3782-405A-A14B-2D47A2DDCDDF";
-
 // The time to wait, in seconds, after authentication fails, before retrying
 // another connection.
 const int kAuthenticationRecoveryTimeSeconds = 10;
@@ -85,14 +81,7 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
 
 std::unique_ptr<cryptauth::ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    return std::make_unique<BluetoothLowEnergyConnectionFinder>(remote_device_);
-  } else {
-    return std::make_unique<BluetoothConnectionFinder>(
-        remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),
-        base::TimeDelta::FromSeconds(3));
-  }
+  return std::make_unique<BluetoothLowEnergyConnectionFinder>(remote_device_);
 }
 
 std::unique_ptr<cryptauth::Authenticator>

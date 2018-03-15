@@ -183,9 +183,7 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 }
 
 bool EasyUnlockServiceRegular::ShouldPromote() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) ||
-      !base::FeatureList::IsEnabled(features::kEasyUnlockPromotions)) {
+  if (!base::FeatureList::IsEnabled(features::kEasyUnlockPromotions)) {
     return false;
   }
 
@@ -482,9 +480,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
   // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
   // shutdown. Revisit this condition after migration is fully completed.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     // Note: There is no local state in tests.
     if (g_browser_process->local_state()) {
       pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
@@ -532,14 +528,6 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    // The feature is enabled iff there are any paired devices set by the
-    // component app.
-    const base::ListValue* devices = GetRemoteDevices();
-    return devices && !devices->empty();
-  }
-
   return pref_manager_ && pref_manager_->IsEasyUnlockEnabled();
 }
 
@@ -695,11 +683,6 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
   pref_manager_->SetIsEasyUnlockEnabled(false);
   ResetScreenlockState();
   registrar_.RemoveAll();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    ReloadAppAndLockScreen();
-  }
 }
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(

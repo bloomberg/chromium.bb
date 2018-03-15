@@ -556,43 +556,6 @@ EasyUnlockPrivateGetPermitAccessFunction::
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateGetPermitAccessFunction::Run() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    return GetPermitAccessForExperiment();
-  }
-
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  const base::DictionaryValue* permit_value =
-      chromeos::EasyUnlockService::Get(profile)->GetPermitAccess();
-
-  if (permit_value) {
-    std::unique_ptr<easy_unlock_private::PermitRecord> permit =
-        easy_unlock_private::PermitRecord::FromValue(*permit_value);
-    return RespondNow(ArgumentList(
-        easy_unlock_private::GetPermitAccess::Results::Create(*permit)));
-  }
-
-  return RespondNow(NoArguments());
-}
-
-void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
-    std::string* user_public_key,
-    std::string* user_private_key) {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
-      chromeos::EasyUnlockService::Get(profile)
-          ->proximity_auth_client()
-          ->GetCryptAuthEnrollmentManager();
-  base::Base64UrlEncode(enrollment_manager->GetUserPublicKey(),
-                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                        user_public_key);
-  base::Base64UrlEncode(enrollment_manager->GetUserPrivateKey(),
-                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                        user_private_key);
-}
-
-ExtensionFunction::ResponseAction
-EasyUnlockPrivateGetPermitAccessFunction::GetPermitAccessForExperiment() {
   // Check that we are inside a user session.
   Profile* profile = Profile::FromBrowserContext(browser_context());
   chromeos::EasyUnlockService* easy_unlock_service =
@@ -622,6 +585,22 @@ EasyUnlockPrivateGetPermitAccessFunction::GetPermitAccessForExperiment() {
                << "  id: " << b64_public_key;
 
   return RespondNow(OneArgument(std::move(permit_access)));
+}
+
+void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
+    std::string* user_public_key,
+    std::string* user_private_key) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
+      chromeos::EasyUnlockService::Get(profile)
+          ->proximity_auth_client()
+          ->GetCryptAuthEnrollmentManager();
+  base::Base64UrlEncode(enrollment_manager->GetUserPublicKey(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        user_public_key);
+  base::Base64UrlEncode(enrollment_manager->GetUserPrivateKey(),
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        user_private_key);
 }
 
 EasyUnlockPrivateClearPermitAccessFunction::
@@ -658,13 +637,7 @@ EasyUnlockPrivateSetRemoteDevicesFunction::Run() {
   for (const easy_unlock_private::Device& device : params->devices)
     devices.Append(device.ToValue());
 
-  // Store the BLE device if we are trying out the BLE experiment.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    chromeos::EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
-  } else {
-    chromeos::EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
-  }
+  chromeos::EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
 
   return RespondNow(NoArguments());
 }
@@ -678,18 +651,53 @@ EasyUnlockPrivateGetRemoteDevicesFunction::
 }
 
 bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
-  // Return the remote devices stored with the native CryptAuthDeviceManager if
-  // we are trying out the BLE experiment.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    ReturnDevicesForExperiment();
-  } else {
-    Profile* profile = Profile::FromBrowserContext(browser_context());
-    const base::ListValue* devices =
-        chromeos::EasyUnlockService::Get(profile)->GetRemoteDevices();
-    SetResult(devices ? devices->CreateDeepCopy()
-                      : std::make_unique<base::ListValue>());
+  // Check that we are inside a user profile.
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  chromeos::EasyUnlockService* easy_unlock_service =
+      chromeos::EasyUnlockService::Get(profile);
+  if (easy_unlock_service->GetType() !=
+      chromeos::EasyUnlockService::TYPE_REGULAR) {
+    SetError("This function must be called inside a user session.");
     SendResponse(true);
+    return true;
+  }
+
+  // Get the synced unlock key data.
+  proximity_auth::ProximityAuthClient* client =
+      easy_unlock_service->proximity_auth_client();
+
+  permit_id_ = "permit://google.com/easyunlock/v1/" + client->GetAccountId();
+  secure_message_delegate_ = client->CreateSecureMessageDelegate();
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys = GetUnlockKeys();
+  expected_devices_count_ = unlock_keys.size();
+
+  remote_devices_.reset(new base::ListValue());
+  if (expected_devices_count_ == 0) {
+    SetResult(std::move(remote_devices_));
+    SendResponse(true);
+    return true;
+  }
+
+  // If there is a BLE unlock key, then don't return anything, so the app does
+  // not try the classic Bluetooth protocol.
+  for (const auto& unlock_key : unlock_keys) {
+    if (unlock_key.bluetooth_address().empty()) {
+      SetResult(std::move(remote_devices_));
+      SendResponse(true);
+      return true;
+    }
+  }
+
+  // Derive the PSKs for the user's unlock keys.
+  PA_LOG(INFO) << "Deriving PSKs for "
+               << "chrome.easyUnlockPrivate.getRemoteDevices.\n"
+               << "Expecting " << expected_devices_count_ << " devices.";
+  for (const auto& unlock_key : unlock_keys) {
+    secure_message_delegate_->DeriveKey(
+        GetUserPrivateKey(), unlock_key.public_key(),
+        base::Bind(
+            &EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice,
+            this, unlock_key));
   }
 
   return true;
@@ -712,57 +720,6 @@ EasyUnlockPrivateGetRemoteDevicesFunction::GetUnlockKeys() {
   cryptauth::CryptAuthDeviceManager* device_manager =
       client->GetCryptAuthDeviceManager();
   return device_manager->GetUnlockKeys();
-}
-
-void EasyUnlockPrivateGetRemoteDevicesFunction::ReturnDevicesForExperiment() {
-  // Check that we are inside a user profile.
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  chromeos::EasyUnlockService* easy_unlock_service =
-      chromeos::EasyUnlockService::Get(profile);
-  if (easy_unlock_service->GetType() !=
-      chromeos::EasyUnlockService::TYPE_REGULAR) {
-    SetError("This function must be called inside a user session.");
-    SendResponse(true);
-    return;
-  }
-
-  // Get the synced unlock key data.
-  proximity_auth::ProximityAuthClient* client =
-      easy_unlock_service->proximity_auth_client();
-
-  permit_id_ = "permit://google.com/easyunlock/v1/" + client->GetAccountId();
-  secure_message_delegate_ = client->CreateSecureMessageDelegate();
-  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys = GetUnlockKeys();
-  expected_devices_count_ = unlock_keys.size();
-
-  remote_devices_.reset(new base::ListValue());
-  if (expected_devices_count_ == 0) {
-    SetResult(std::move(remote_devices_));
-    SendResponse(true);
-    return;
-  }
-
-  // If there is a BLE unlock key, then don't return anything, so the app does
-  // not try the classic Bluetooth protocol.
-  for (const auto& unlock_key : unlock_keys) {
-    if (unlock_key.bluetooth_address().empty()) {
-      SetResult(std::move(remote_devices_));
-      SendResponse(true);
-      return;
-    }
-  }
-
-  // Derive the PSKs for the user's unlock keys.
-  PA_LOG(INFO) << "Deriving PSKs for "
-               << "chrome.easyUnlockPrivate.getRemoteDevices.\n"
-               << "Expecting " << expected_devices_count_ << " devices.";
-  for (const auto& unlock_key : unlock_keys) {
-    secure_message_delegate_->DeriveKey(
-        GetUserPrivateKey(), unlock_key.public_key(),
-        base::Bind(
-            &EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice,
-            this, unlock_key));
-  }
 }
 
 void EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice(
@@ -887,9 +844,7 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
     user.device_user_id = cryptauth::CalculateDeviceUserId(
         chromeos::EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 
-    user.ble_discovery_enabled =
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
+    user.ble_discovery_enabled = true;
     users.push_back(std::move(user));
   }
   return RespondNow(

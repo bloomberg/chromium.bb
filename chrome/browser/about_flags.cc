@@ -1491,12 +1491,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
-    {"disable-easy-unlock-bluetooth-low-energy-detection",
-     flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryName,
-     flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryDescription,
-     kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(
-         proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)},
     {
         "disable-office-editing-component-app",
         flag_descriptions::kOfficeEditingComponentAppName,

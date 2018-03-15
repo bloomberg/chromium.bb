@@ -126,9 +126,6 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
 
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery);
-
     chromeos::DBusThreadManager::Initialize();
     if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL) {
       bluez::BluezDBusManager::Initialize(
@@ -513,38 +510,6 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
       extensions::api_test_utils::NONE));
   EXPECT_TRUE(result.success);
   EXPECT_TRUE(result.error.empty());
-}
-
-// Checks that the chrome.easyUnlockPrivate.getRemoteDevices API returns the
-// stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
-TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
-  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetRemoteDevicesFunction> function(
-      new TestableGetRemoteDevicesFunction());
-  std::unique_ptr<base::Value> value(
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile()));
-  ASSERT_TRUE(value.get());
-  ASSERT_EQ(base::Value::Type::LIST, value->type());
-
-  base::ListValue* list_value = static_cast<base::ListValue*>(value.get());
-  EXPECT_EQ(0u, list_value->GetSize());
-}
-
-// Checks that the chrome.easyUnlockPrivate.getPermitAccess API returns the
-// stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
-TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessNonExperimental) {
-  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  scoped_refptr<TestableGetPermitAccessFunction> function(
-      new TestableGetPermitAccessFunction());
-  std::unique_ptr<base::Value> value(
-      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), "[]", profile()));
-  EXPECT_FALSE(value);
 }
 
 }  // namespace
