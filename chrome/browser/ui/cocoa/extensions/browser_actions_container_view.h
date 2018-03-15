@@ -106,6 +106,9 @@ enum BrowserActionsContainerKeyAction {
 // Stops any animation in progress.
 - (void)stopAnimation;
 
+// Returns true if this view is currently resizable.
+- (BOOL)canBeResized;
+
 @property(nonatomic) CGFloat minWidth;
 @property(nonatomic) CGFloat maxWidth;
 @property(nonatomic) BOOL grippyPinned;

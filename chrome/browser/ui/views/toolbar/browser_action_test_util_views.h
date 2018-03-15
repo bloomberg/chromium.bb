@@ -32,6 +32,7 @@ class BrowserActionTestUtilViews : public BrowserActionTestUtil {
   std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar() override;
   gfx::Size GetMinPopupSize() override;
   gfx::Size GetMaxPopupSize() override;
+  bool CanBeResized() override;
 
  private:
   friend class BrowserActionTestUtil;

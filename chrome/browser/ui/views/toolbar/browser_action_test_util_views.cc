@@ -198,6 +198,19 @@ gfx::Size BrowserActionTestUtilViews::GetMaxPopupSize() {
   return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
 }
 
+bool BrowserActionTestUtilViews::CanBeResized() {
+  BrowserActionsContainer* container =
+      BrowserView::GetBrowserViewForBrowser(browser_)
+          ->toolbar()
+          ->browser_actions();
+
+  // The container can only be resized if we can start a drag for the view.
+  DCHECK_LE(1u, container->num_toolbar_actions());
+  ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);
+  gfx::Point point(action_view->x(), action_view->y());
+  return container->CanStartDragForView(action_view, point, point);
+}
+
 BrowserActionTestUtilViews::BrowserActionTestUtilViews(
     Browser* browser,
     BrowserActionTestUtilViews* main_bar)
