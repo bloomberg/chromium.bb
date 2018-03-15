@@ -1868,6 +1868,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int64_t best_rd = INT64_MAX;
   uint16_t best_eob = 0;
   TX_TYPE best_tx_type = DCT_DCT;
+  const int txk_type_idx =
+      av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   av1_invalid_rd_stats(best_rd_stats);
 
   TXB_RD_INFO *intra_txb_rd_info = NULL;
@@ -1903,7 +1905,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
           intra_txb_rd_info->txb_entropy_ctx;
       best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
       best_eob = intra_txb_rd_info->eob;
-      best_tx_type = intra_txb_rd_info->tx_type;
+      mbmi->txk_type[txk_type_idx] = intra_txb_rd_info->tx_type;
+      best_tx_type = av1_get_tx_type(get_plane_type(plane), xd, blk_row,
+                                     blk_col, tx_size, cm->reduced_tx_set_used);
       if (plane == 0) {
         update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
                          best_tx_type);
@@ -1914,8 +1918,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 
   int rate_cost = 0;
-  const int txk_type_idx =
-      av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   TX_TYPE txk_start = DCT_DCT;
   TX_TYPE txk_end = TX_TYPES - 1;
   if (!(!is_inter && x->use_default_intra_tx_type) &&
@@ -1960,7 +1962,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       if (is_inter && x->use_default_inter_tx_type &&
           tx_type != get_default_tx_type(0, xd, tx_size))
         allowed_tx_mask[tx_type] = 0;
-      if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
+      mbmi->txk_type[txk_type_idx] = tx_type;
     }
     const TX_TYPE ref_tx_type =
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
