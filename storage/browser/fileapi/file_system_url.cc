@@ -26,6 +26,12 @@ FileSystemURL::FileSystemURL()
 
 FileSystemURL::FileSystemURL(const FileSystemURL& other) = default;
 
+FileSystemURL::FileSystemURL(FileSystemURL&& other) noexcept = default;
+
+FileSystemURL& FileSystemURL::operator=(FileSystemURL&& rhs) = default;
+
+FileSystemURL& FileSystemURL::operator=(const FileSystemURL& rhs) = default;
+
 // static
 FileSystemURL FileSystemURL::CreateForTest(const GURL& url) {
   return FileSystemURL(url);
