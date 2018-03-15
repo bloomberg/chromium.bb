@@ -8012,9 +8012,10 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       memset(x->blk_skip[0], rd_stats.skip,
              sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
     }
-
-    super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-    av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
+    if (num_planes > 1) {
+      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+      av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
+    }
 #if CONFIG_RD_DEBUG
     mbmi->rd_stats = rd_stats;
 #endif
