@@ -16,7 +16,7 @@ class _ProguardOutputFilter(object):
 
   IGNORE_RE = re.compile(
       r'Pro.*version|Note:|Reading|Preparing|Printing|ProgramClass:|Searching|'
-      r'jar \[|\d+ class path entries checked|.*:.*(?:MANIFEST\.MF|\.empty)')
+      r'jar \[|\d+ class path entries checked')
 
   def __init__(self):
     self._last_line_ignored = False
@@ -128,8 +128,11 @@ class ProguardCmdBuilder(object):
     for optimization in self._disabled_optimizations:
       cmd += [ '-optimizations', '!' + optimization ]
 
+    # Filter out META-INF files to avoid warnings about multiple inputs having
+    # the same files.
     cmd += [
-      '-injars', ':'.join(self._injars)
+        '-injars',
+        ':'.join('{}(!META-INF/**,!.empty)'.format(x) for x in self._injars)
     ]
 
     for config_file in self._configs:
