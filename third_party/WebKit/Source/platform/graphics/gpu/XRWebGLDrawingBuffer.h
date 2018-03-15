@@ -84,6 +84,8 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
 
   bool Initialize(const IntSize&, bool use_multisampling, bool use_multiview);
 
+  IntSize AdjustSize(const IntSize&);
+
   scoped_refptr<ColorBuffer> CreateColorBuffer();
   scoped_refptr<ColorBuffer> CreateOrRecycleColorBuffer();
 
@@ -124,7 +126,9 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   AntialiasingMode anti_aliasing_mode_ = kNone;
 
   bool storage_texture_supported_ = false;
+  int max_texture_size_ = 0;
   int sample_count_ = 0;
+  bool framebuffer_incomplete_ = false;
 };
 
 }  // namespace blink

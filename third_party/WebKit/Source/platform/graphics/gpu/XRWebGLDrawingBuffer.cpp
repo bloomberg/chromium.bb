@@ -121,6 +121,8 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
   std::unique_ptr<Extensions3DUtil> extensions_util =
       Extensions3DUtil::Create(gl);
 
+  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
+
   // Check context capabilities
   int max_sample_count = 0;
   anti_aliasing_mode_ = kNone;
@@ -161,10 +163,27 @@ bool XRWebGLDrawingBuffer::ContextLost() {
   return drawing_buffer_->destroyed();
 }
 
-void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
+IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
   // Ensure we always have at least a 1x1 buffer
-  IntSize adjusted_size(std::max(1, new_size.Width()),
-                        std::max(1, new_size.Height()));
+  float width = std::max(1, new_size.Width());
+  float height = std::max(1, new_size.Height());
+
+  float adjusted_scale =
+      std::min(static_cast<float>(max_texture_size_) / width,
+               static_cast<float>(max_texture_size_) / height);
+
+  // Clamp if the desired size is greater than the maximum texture size for the
+  // device. Scale both dimensions proportionally so that we avoid stretching.
+  if (adjusted_scale < 1.0f) {
+    width *= adjusted_scale;
+    height *= adjusted_scale;
+  }
+
+  return IntSize(width, height);
+}
+
+void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
+  IntSize adjusted_size = AdjustSize(new_size);
 
   if (adjusted_size == size_)
     return;
@@ -176,6 +195,10 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   size_ = adjusted_size;
+
+  // Free all mailboxes, because they are now of the wrong size. Only the
+  // first call in this loop has any effect.
+  recycled_color_buffer_queue_.clear();
 
   gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
@@ -245,6 +268,9 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
 
   if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     DLOG(ERROR) << "Framebuffer incomplete";
+    framebuffer_incomplete_ = true;
+  } else {
+    framebuffer_incomplete_ = false;
   }
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
@@ -341,10 +367,17 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
                              GL_TEXTURE_2D, back_color_buffer_->texture_id, 0);
   }
 
-  if (discard_framebuffer_supported_) {
-    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
-                                    GL_STENCIL_ATTACHMENT};
-    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+  if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    DLOG(ERROR) << "Framebuffer incomplete";
+    framebuffer_incomplete_ = true;
+  } else {
+    framebuffer_incomplete_ = false;
+
+    if (discard_framebuffer_supported_) {
+      const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
+                                      GL_STENCIL_ATTACHMENT};
+      gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+    }
   }
 
   client->DrawingBufferClientRestoreFramebufferBinding();
@@ -357,8 +390,9 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
   scoped_refptr<ColorBuffer> buffer;
   bool success = false;
 
-  // Ensure the context isn't lost before continuing.
-  if (!ContextLost()) {
+  // Ensure the context isn't lost and the framebuffer is complete before
+  // continuing.
+  if (!ContextLost() && !framebuffer_incomplete_) {
     SwapColorBuffers();
 
     buffer = front_color_buffer_;
@@ -375,8 +409,9 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
   if (!success) {
     // If we can't get a mailbox, return an transparent black ImageBitmap.
     // The only situation in which this could happen is when two or more calls
-    // to transferToImageBitmap are made back-to-back, or when the context gets
-    // lost.
+    // to transferToImageBitmap are made back-to-back, if the framebuffer is
+    // incomplete (likely due to a failed buffer allocation), or when the
+    // context gets lost.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
     return StaticBitmapImage::Create(surface->makeImageSnapshot());
