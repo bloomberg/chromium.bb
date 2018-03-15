@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -180,13 +181,18 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
 }
 
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
-  if (!profile->IsSupervised()) {
-    return AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)
-               ? BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE
-               : BadgedProfilePhoto::BADGE_TYPE_NONE;
+  if (profile->IsSupervised()) {
+    return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
+                              : BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR;
   }
-  return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
-                            : BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR;
+  // |Profile::IsSyncAllowed| is needed to check whether sync is allowed by GPO
+  // policy.
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) &&
+      profile->IsSyncAllowed() &&
+      SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+    return BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE;
+  }
+  return BadgedProfilePhoto::BADGE_TYPE_NONE;
 }
 
 std::vector<gfx::Image> GetImagesForAccounts(
@@ -655,9 +661,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   } else if (sender == current_profile_card_) {
-    if (dice_enabled_) {
+    if (dice_enabled_ &&
+        SigninManagerFactory::GetForProfile(browser_->profile())
+            ->IsAuthenticated()) {
       chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
     } else {
+      // Open settings to edit profile name and image. The profile doesn't need
+      // to be authenticated to open this.
       avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
       PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
       PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
@@ -933,8 +943,10 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
 views::View* ProfileChooserView::CreateCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
-  if (!avatar_item.signed_in && dice_enabled_)
+  if (!avatar_item.signed_in && dice_enabled_ &&
+      SyncPromoUI::ShouldShowSyncPromo(browser_->profile())) {
     return CreateDiceSigninView();
+  }
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -959,8 +971,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   bool show_email =
       !is_guest && avatar_item.signed_in && !account_consistency_enabled;
   const base::string16 hover_button_title =
-      dice_enabled_ ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNCED_TO_TITLE)
-                    : profile_name;
+      dice_enabled_ && browser_->profile()->IsSyncAllowed()
+          ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNCED_TO_TITLE)
+          : profile_name;
   HoverButton* profile_card = new HoverButton(
       this, std::move(current_profile_photo), hover_button_title,
       show_email ? avatar_item.username : base::string16());
@@ -997,9 +1010,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
   }
 
-  SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
-      browser_->profile()->GetOriginalProfile());
-  if (signin_manager->IsSigninAllowed()) {
+  if (!dice_enabled_ && SigninManagerFactory::GetForProfile(browser_->profile())
+                            ->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
     extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
