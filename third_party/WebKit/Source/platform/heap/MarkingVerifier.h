@@ -12,17 +12,14 @@
 namespace blink {
 
 // Marking verifier that checks that a child is marked if its parent is marked.
-// TODO(mlippautz):
-// - Backing store pointers
-// - Weak handling
 class MarkingVerifier final : public Visitor {
  public:
-  explicit MarkingVerifier(ThreadState* state)
-      : Visitor(state), parent_(nullptr) {}
+  explicit MarkingVerifier(ThreadState* state) : Visitor(state) {}
   virtual ~MarkingVerifier() {}
 
   void VerifyObject(HeapObjectHeader* header) {
-    if (header->IsFree())
+    // Verify only non-free marked objects.
+    if (header->IsFree() || !header->IsMarked())
       return;
 
     const GCInfo* info = ThreadHeap::GcInfo(header->GcInfoIndex());
@@ -30,22 +27,21 @@ class MarkingVerifier final : public Visitor {
         !info->HasVTable() || blink::VTableInitialized(header->Payload());
     if (can_verify) {
       CHECK(header->IsValid());
-      parent_ = header;
       info->trace_(this, header->Payload());
     }
   }
 
-  void Visit(void* object, TraceDescriptor desc) {
-    if (parent_->IsMarked()) {
-      HeapObjectHeader* child_header =
-          HeapObjectHeader::FromPayload(desc.base_object_payload);
-      // This CHECKs ensure that any children reachable from marked parents are
-      // also marked. If you hit these CHECKs then marking is in an inconsistent
-      // state meaning that there are unmarked objects reachable from marked
-      // ones.
-      CHECK(child_header);
-      CHECK(child_header->IsMarked());
-    }
+  void Visit(void* object, TraceDescriptor desc) final {
+    CHECK(object);
+    VerifyChild(desc.base_object_payload);
+  }
+
+  void VisitWeak(void* object,
+                 void** object_slot,
+                 TraceDescriptor desc,
+                 WeakCallback callback) final {
+    CHECK(object);
+    VerifyChild(desc.base_object_payload);
   }
 
   // Unused overrides.
@@ -61,7 +57,17 @@ class MarkingVerifier final : public Visitor {
   void RegisterWeakCallback(void* closure, WeakCallback) final {}
 
  private:
-  HeapObjectHeader* parent_;
+  void VerifyChild(void* base_object_payload) {
+    CHECK(base_object_payload);
+    HeapObjectHeader* child_header =
+        HeapObjectHeader::FromPayload(base_object_payload);
+    // This CHECKs ensure that any children reachable from marked parents are
+    // also marked. If you hit these CHECKs then marking is in an inconsistent
+    // state meaning that there are unmarked objects reachable from marked
+    // ones.
+    CHECK(child_header);
+    CHECK(child_header->IsMarked());
+  }
 };
 
 }  // namespace blink
