@@ -127,8 +127,7 @@ void BackdropController::UpdateBackdrop() {
   if (window->GetRootWindow() != backdrop_window_->GetRootWindow())
     return;
 
-  if (!backdrop_->IsVisible())
-    Show();
+  Show();
 
   // Since the backdrop needs to be immediately behind the window and the
   // stacking functions only guarantee a "it's above or below", we need
@@ -157,8 +156,26 @@ void BackdropController::OnAppListVisibilityChanged(bool shown,
     RemoveForceHidden();
 }
 
+void BackdropController::OnSplitViewModeStarting() {
+  Shell::Get()->split_view_controller()->AddObserver(this);
+}
+
+void BackdropController::OnSplitViewModeEnded() {
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
+}
+
 void BackdropController::OnAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
+  UpdateBackdrop();
+}
+
+void BackdropController::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  UpdateBackdrop();
+}
+
+void BackdropController::OnSplitViewDividerPositionChanged() {
   UpdateBackdrop();
 }
 
@@ -236,8 +253,12 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
 }
 
 void BackdropController::Show() {
+  // Makes sure that the backdrop has the correct bounds if it should not be
+  // fullscreen size.
+  backdrop_->SetFullscreen(BackdropShouldFullscreen());
+  if (!BackdropShouldFullscreen())
+    backdrop_->SetBounds(GetBackdropBounds());
   backdrop_->Show();
-  backdrop_->SetFullscreen(true);
 }
 
 void BackdropController::Hide() {
@@ -266,6 +287,38 @@ void BackdropController::RemoveForceHidden() {
     Hide();
   else
     UpdateBackdrop();
+}
+
+bool BackdropController::BackdropShouldFullscreen() {
+  aura::Window* window = GetTopmostWindowWithBackdrop();
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  SplitViewController::State state = split_view_controller->state();
+  if ((state == SplitViewController::LEFT_SNAPPED &&
+       window == split_view_controller->left_window()) ||
+      (state == SplitViewController::RIGHT_SNAPPED &&
+       window == split_view_controller->right_window())) {
+    return false;
+  }
+
+  return true;
+}
+
+gfx::Rect BackdropController::GetBackdropBounds() {
+  DCHECK(!BackdropShouldFullscreen());
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  SplitViewController::State state = split_view_controller->state();
+  DCHECK(state == SplitViewController::LEFT_SNAPPED ||
+         state == SplitViewController::RIGHT_SNAPPED);
+  aura::Window* snapped_window =
+      split_view_controller->GetDefaultSnappedWindow();
+  SplitViewController::SnapPosition snap_position =
+      (state == SplitViewController::LEFT_SNAPPED) ? SplitViewController::LEFT
+                                                   : SplitViewController::RIGHT;
+  return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
+      snapped_window, snap_position);
 }
 
 }  // namespace ash

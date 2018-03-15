@@ -104,13 +104,21 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   aura::Window* GetDefaultSnappedWindow();
 
   // Gets the window bounds according to the snap state |snap_state| and the
-  // separator position |separator_position_|.
+  // divider position |divider_position_|. The returned snapped window bounds
+  // are adjusted to its minimum size if the desired bounds are smaller than
+  // its minumum bounds. Note: the snapped window bounds can't be pushed
+  // outside of the workspace area.
   gfx::Rect GetSnappedWindowBoundsInParent(aura::Window* window,
                                            SnapPosition snap_position);
   gfx::Rect GetSnappedWindowBoundsInScreen(aura::Window* window,
                                            SnapPosition snap_position);
   gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) const;
   gfx::Rect GetDisplayWorkAreaBoundsInScreen(aura::Window* window) const;
+
+  // Gets the desired snapped window bounds accoridng to the snap state
+  // |snap_state| and the divider pistion |divider_position_|.
+  gfx::Rect GetSnappedWindowBoundsInScreenUnadjusted(aura::Window* window,
+                                                     SnapPosition snap_postion);
 
   void StartResize(const gfx::Point& location_in_screen);
   void Resize(const gfx::Point& location_in_screen);
