@@ -1001,22 +1001,32 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     // Check if it is removable drive
-    var root = CommandUtil.getCommandEntry(event.target);
-    // |root| is null for unrecognized volumes. Do not enable rename command
-    // for such volumes because they need to be formatted prior to rename.
-    if (root != null) {
-      var location = root && fileManager.volumeManager.getLocationInfo(root);
-      var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
-      var writable = location && !location.isReadOnly;
-      var removable = location &&
-          location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
-      var canExecute = removable && writable && volumeInfo &&
-          CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
-              volumeInfo.diskFileSystemType) > -1;
-      event.canExecute = canExecute;
-      event.command.setHidden(!removable);
-      if (removable)
-        return;
+    if ((() => {
+          var root = CommandUtil.getCommandEntry(event.target);
+          // |root| is null for unrecognized volumes. Do not enable rename
+          // command for such volumes because they need to be formatted prior to
+          // rename.
+          if (!root ||
+              !CommandUtil.isRootEntry(fileManager.volumeManager, root)) {
+            return false;
+          }
+          var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
+          var location = fileManager.volumeManager.getLocationInfo(root);
+          if (!volumeInfo || !location) {
+            event.command.setHidden(true);
+            event.canExecute = false;
+            return true;
+          }
+          var writable = !location.isReadOnly;
+          var removable =
+              location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+          event.canExecute = removable && writable &&
+              CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
+                  volumeInfo.diskFileSystemType) > -1;
+          event.command.setHidden(!removable);
+          return removable;
+        })()) {
+      return;
     }
 
     // Check if it is file or folder
