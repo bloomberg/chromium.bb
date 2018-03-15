@@ -207,6 +207,7 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
       launcher_task_runner(
           android::LauncherThread::GetMessageLoop()->task_runner());
 #else   // defined(OS_ANDROID)
+  // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
   constexpr base::TaskTraits task_traits = {
       base::MayBlock(), base::WithBaseSyncPrimitives(),
       base::TaskPriority::USER_BLOCKING,

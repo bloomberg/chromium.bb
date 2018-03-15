@@ -478,8 +478,6 @@ Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
       return UNKNOWN_THREAD;
     case CallStackProfileParams::UI_THREAD:
       return UI_THREAD;
-    case CallStackProfileParams::PROCESS_LAUNCHER_THREAD:
-      return PROCESS_LAUNCHER_THREAD;
     case CallStackProfileParams::IO_THREAD:
       return IO_THREAD;
     case CallStackProfileParams::GPU_MAIN_THREAD:

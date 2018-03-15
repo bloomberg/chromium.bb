@@ -596,28 +596,6 @@ TEST(MyTest, MyTest) {
 }
 ```
 
-## Legacy Post Task APIs
-
-The Chrome browser process has a few legacy named threads (aka
-“BrowserThreads”). Each of these threads runs a specific type of task (e.g. the
-`FILE` thread handles low priority file operations, the `FILE_USER_BLOCKING`
-thread handles high priority file operations, the `CACHE` thread handles cache
-operations…). Usage of these named threads is now discouraged. New code should
-post tasks to task scheduler via
-[`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h)
-instead.
-
-If for some reason you absolutely need to post a task to a legacy named thread
-(e.g. because it needs mutual exclusion with a task running on one of these
-threads), this is how you do it:
-
-```cpp
-content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::[IDENTIFIER])
-    ->PostTask(FROM_HERE, base::BindOnce(&Task));
-```
-
-Where `IDENTIFIER` is one of: `DB`, `FILE`, `FILE_USER_BLOCKING`, `PROCESS_LAUNCHER`, `CACHE`.
-
 ## Using TaskScheduler in a New Process
 
 TaskScheduler needs to be initialized in a process before the functions in
