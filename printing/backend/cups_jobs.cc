@@ -450,9 +450,15 @@ bool GetPrinterInfo(const std::string& address,
     return false;
   }
 
+  // TODO(crbug.com/821497): Use a library to canonicalize the URL.
+  size_t first_non_slash = resource.find_first_not_of('/');
+  const std::string path = (first_non_slash == std::string::npos)
+                               ? ""
+                               : resource.substr(first_non_slash);
+
   std::string printer_uri =
       base::StringPrintf("%s://%s:%d/%s", encrypted ? kIppsScheme : kIppScheme,
-                         address.c_str(), port, resource.c_str());
+                         address.c_str(), port, path.c_str());
 
   ipp_status_t status;
   ScopedIppPtr response =
