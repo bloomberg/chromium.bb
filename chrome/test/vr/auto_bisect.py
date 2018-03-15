@@ -74,7 +74,8 @@ def ParseArgsAndAssertValid():
           'received %d' % len(split_arg))
     return {split_arg[0]: split_arg[1]}
   parser.add_argument('--checkout-override', action='append',
-                      type=comma_separated, dest='checkout_overrides',
+                      type=comma_separated, default=[],
+                      dest='checkout_overrides',
                       help='A comma-separated path/revision key/value pair. '
                            'Each git checkout at the specified path will be '
                            'synced to the specified revision after the normal '
@@ -396,6 +397,8 @@ def BisectRegression(args, unknown_args):
     unknown_args: The unknown args parsed by the argument parser
   """
   with TempDir() as output_dir:
+    # Ensure that we also sync any APKs we use
+    os.environ['DOWNLOAD_VR_TEST_APKS'] = '1'
     try:
       if args.good_value == None:
         args.good_value = GetValueAtRevision(args, unknown_args,
