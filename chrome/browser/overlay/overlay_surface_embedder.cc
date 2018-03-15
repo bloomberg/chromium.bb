@@ -31,5 +31,6 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
   // SurfaceInfo has information about the embedded surface.
   surface_layer_->SetShowPrimarySurface(
       surface_id, window_->GetBounds().size(), SK_ColorBLACK,
-      cc::DeadlinePolicy::UseDefaultDeadline());
+      cc::DeadlinePolicy::UseDefaultDeadline(),
+      true /* stretch_content_to_fill_bounds */);
 }

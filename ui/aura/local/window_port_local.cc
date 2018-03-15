@@ -163,7 +163,8 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
   DCHECK_EQ(surface_info.id().local_surface_id(), local_surface_id_);
   window_->layer()->SetShowPrimarySurface(
       surface_info.id(), window_->bounds().size(), SK_ColorWHITE,
-      cc::DeadlinePolicy::UseDefaultDeadline());
+      cc::DeadlinePolicy::UseDefaultDeadline(),
+      false /* stretch_content_to_fill_bounds */);
   window_->layer()->SetFallbackSurfaceId(surface_info.id());
 }
 

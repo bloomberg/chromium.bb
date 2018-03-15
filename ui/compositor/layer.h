@@ -307,7 +307,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetShowPrimarySurface(const viz::SurfaceId& surface_id,
                              const gfx::Size& frame_size_in_dip,
                              SkColor default_background_color,
-                             const cc::DeadlinePolicy& deadline_policy);
+                             const cc::DeadlinePolicy& deadline_policy,
+                             bool stretch_content_to_fill_bounds);
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.
@@ -437,6 +438,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // We keep this reference for the case that if the mask layer gets deleted
   // while attached to the main layer before the main layer is deleted.
   const Layer* layer_mask_back_link() const { return layer_mask_back_link_; }
+
+  // If |surface_layer_| exists, return whether the contents should stretch to
+  // fill the bounds of |this|. Defaults to false.
+  bool StretchContentToFillBounds() const;
 
  private:
   friend class LayerOwner;
