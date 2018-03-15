@@ -152,7 +152,15 @@ class PLATFORM_EXPORT Visitor {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
-    RegisterWeakCell(const_cast<WeakMember<T>&>(t).Cell());
+
+    if (!t.Get())
+      return;
+    VisitWeak(const_cast<void*>(reinterpret_cast<const void*>(t.Get())),
+              reinterpret_cast<void**>(
+                  const_cast<typename std::remove_const<T>::type**>(t.Cell())),
+              TraceTrait<T>::GetTraceDescriptor(
+                  const_cast<void*>(reinterpret_cast<const void*>(t.Get()))),
+              &HandleWeakCell<T>);
   }
 
   // Fallback trace method for part objects to allow individual trace methods
@@ -174,23 +182,7 @@ class PLATFORM_EXPORT Visitor {
     TraceTrait<T>::Trace(this, &const_cast<T&>(t));
   }
 
-  // For simple cases where you just want to zero out a cell when the thing
-  // it is pointing at is garbage, you can use this. This will register a
-  // callback for each cell that needs to be zeroed, so if you have a lot of
-  // weak cells in your object you should still consider using
-  // registerWeakMembers above.
-  //
-  // In contrast to registerWeakMembers, the weak cell callbacks are
-  // run on the thread performing garbage collection. Therefore, all
-  // threads are stopped during weak cell callbacks.
-  template <typename T>
-  void RegisterWeakCell(T** cell) {
-    RegisterWeakCallback(
-        reinterpret_cast<void**>(
-            const_cast<typename std::remove_const<T>::type**>(cell)),
-        &HandleWeakCell<T>);
-  }
-
+  // Registers a callback for custom weakness.
   template <typename T, void (T::*method)(Visitor*)>
   void RegisterWeakMembers(const T* obj) {
     RegisterWeakCallback(const_cast<T*>(obj),
@@ -201,6 +193,9 @@ class PLATFORM_EXPORT Visitor {
 
   // Visits an object through a strong reference.
   virtual void Visit(void*, TraceDescriptor) = 0;
+
+  // Visits an object through a weak reference.
+  virtual void VisitWeak(void*, void**, TraceDescriptor, WeakCallback) = 0;
 
   // Visitors for collection backing stores.
   virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;

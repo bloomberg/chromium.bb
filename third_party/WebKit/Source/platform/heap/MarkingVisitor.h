@@ -82,6 +82,13 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                desc.callback);
   }
 
+  void VisitWeak(void* object,
+                 void** object_slot,
+                 TraceDescriptor desc,
+                 WeakCallback callback) final {
+    RegisterWeakCallback(object_slot, callback);
+  }
+
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {
