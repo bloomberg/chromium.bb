@@ -20,14 +20,15 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
-// TODO(eladalon): Block remote-bound logging on mobile devices.
-// https://crbug.com/775415
+// TODO(crbug.com/775415): Block remote-bound logging on mobile devices.
 
 const size_t kMaxRemoteLogFileMetadataSizeBytes = 0xffffu;  // 65535
 static_assert(kMaxRemoteLogFileMetadataSizeBytes <= 0xFFFFFFu,
               "Only 24 bits available for encoding the metadata's length.");
 
-const size_t kMaxRemoteLogFileSizeBytes = (1u << 29);  // ~500MBs
+// TODO(crbug.com/775415): Change back to (1u << 29) after resolving the issue
+// where we read the entire file into memory.
+const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
 
 namespace {
 const base::FilePath::CharType kRemoteBoundLogSubDirectory[] =
@@ -95,9 +96,9 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
 
 WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(eladalon): Purge from disk files which were being uploaded  while
-  // destruction took place, thereby avoiding endless attempts to upload
-  // the same file. https://crbug.com/775415
+  // TODO(crbug.com/775415): Purge from disk files which were being uploaded
+  // while destruction took place, thereby avoiding endless attempts to upload
+  // the same file.
 }
 
 void WebRtcRemoteEventLogManager::EnableForBrowserContext(
@@ -119,7 +120,7 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   enabled_browser_contexts_.insert(browser_context_id);
 }
 
-// TODO(eladalon): Add unit tests. https://crbug.com/775415
+// TODO(crbug.com/775415): Add unit tests.
 void WebRtcRemoteEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
@@ -282,9 +283,6 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
       base::BindOnce(
           &WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal,
           base::Unretained(this)));
-
-  // TODO(eladalon): Send indication of success/failure back to JS.
-  // https://crbug.com/775415
 }
 
 void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
@@ -344,7 +342,7 @@ bool WebRtcRemoteEventLogManager::MaybeCreateLogsDirectory(
     return false;
   }
 
-  // TODO(eladalon): Test for appropriate permissions. https://crbug.com/775415
+  // TODO(crbug.com/775415): Test for appropriate permissions.
 
   return true;
 }
@@ -389,7 +387,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   // Randomize a new filename. In the highly unlikely event that this filename
   // is already taken, it will be treated the same way as any other failure
   // to start the log file.
-  // TODO(eladalon): Add a unit test for above comment. https://crbug.com/775415
+  // TODO(crbug.com/775415): Add a unit test for above comment.
   const std::string unique_filename =
       "event_log_" + std::to_string(base::RandUint64());
   const base::FilePath base_path = GetLogsDirectoryPath(browser_context_dir);
@@ -531,11 +529,13 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
 
   // The uploader takes ownership of the file; it's no longer considered to be
   // pending. (If the upload fails, the log will be deleted.)
-  // TODO(eladalon): Add more refined retry behavior, so that we would not
-  // delete the log permanently if the network is just down, on the one hand,
-  // but also would not be uploading unlimited data on endless retries on the
-  // other hand. https://crbug.com/775415
-  // TODO(eladalon): Delay the upload's start. https://crbug.com/814362
+  // TODO(crbug.com/775415): Add more refined retry behavior, so that we would
+  // not delete the log permanently if the network is just down, on the one
+  // hand, but also would not be uploading unlimited data on endless retries on
+  // the other hand.
+  // TODO(crbug.com/814362): Delay the upload's start.
+  // TODO(crbug.com/775415): Rename the file before uploading, so that we would
+  // not retry the upload after restarting Chrome, if the upload is interrupted.
   uploader_ = uploader_factory_->Create(pending_logs_.begin()->path, this);
   pending_logs_.erase(pending_logs_.begin());
 }
