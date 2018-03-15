@@ -132,6 +132,9 @@ class ASH_EXPORT SystemTrayItem {
   // the shelf is in the auto-hide state. Default is true.
   virtual bool ShouldShowShelf() const;
 
+  // Returns true if the bubble of UnifiedSystemTray is shown.
+  bool IsUnifiedBubbleShown();
+
   // Returns the system tray that this item belongs to.
   SystemTray* system_tray() const { return system_tray_; }
 
