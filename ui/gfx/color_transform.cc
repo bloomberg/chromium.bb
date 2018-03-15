@@ -473,14 +473,9 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
     if (std::abs(fn_.fE) > kEpsilon)
       nonlinear = nonlinear + " + " + Str(fn_.fE);
 
-    // Add both parts, skipping the if clause if possible.
-    if (fn_.fD > kEpsilon) {
-      *result << "  if (v < " << Str(fn_.fD) << ")" << endl;
-      *result << "    return " << linear << ";" << endl;
-      *result << "  return " << nonlinear << ";" << endl;
-    } else {
-      *result << "  return " << nonlinear << ";" << endl;
-    }
+    *result << "  if (v < " << Str(fn_.fD) << ")" << endl;
+    *result << "    return " << linear << ";" << endl;
+    *result << "  return " << nonlinear << ";" << endl;
   }
 
  private:
