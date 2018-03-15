@@ -173,6 +173,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
       VaapiWrapper::kDecode, profile, base::Bind(&ReportToUMA, VAAPI_ERROR));
 
+  UMA_HISTOGRAM_BOOLEAN("Media.VAVDA.VaapiWrapperCreationSuccess",
+                        vaapi_wrapper_.get());
   if (!vaapi_wrapper_.get()) {
     VLOGF(1) << "Failed initializing VAAPI for profile "
              << GetProfileName(profile);
@@ -181,13 +183,13 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_.get())));
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     decoder_.reset(new VP8Decoder(
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_.get())));
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_)));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
@@ -222,7 +224,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   }
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
-  TRACE_COUNTER1("media,gpu", "Textures at client", num_frames_at_client_);
+  TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
   VLOGF(4) << "Notifying output picture id " << output_id << " for input "
            << input_id
            << " is ready. visible rect: " << visible_rect.ToString();
@@ -284,7 +286,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     input_buffers_.push(std::move(input_buffer));
   }
 
-  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
+  TRACE_COUNTER1("media,gpu", "Vaapi input buffers", input_buffers_.size());
 
   switch (state_) {
     case kIdle:
@@ -609,7 +611,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   }
 
   --num_frames_at_client_;
-  TRACE_COUNTER1("media,gpu", "Textures at client", num_frames_at_client_);
+  TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
 
   output_buffers_.push(picture_buffer_id);
   TryOutputSurface();
@@ -709,7 +711,7 @@ void VaapiVideoDecodeAccelerator::Reset() {
   // Drop all remaining input buffers, if present.
   while (!input_buffers_.empty())
     input_buffers_.pop();
-  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
+  TRACE_COUNTER1("media,gpu", "Vaapi input buffers", input_buffers_.size());
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,

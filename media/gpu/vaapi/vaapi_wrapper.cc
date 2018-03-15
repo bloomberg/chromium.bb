@@ -18,6 +18,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
@@ -164,6 +165,9 @@ class VADisplayState {
   void SetDrmFd(base::PlatformFile fd) { drm_fd_.reset(HANDLE_EINTR(dup(fd))); }
 
  private:
+  // Implementation of Initialize() called only once.
+  bool InitializeOnce();
+
   // Protected by |va_lock_|.
   int refcount_;
 
@@ -208,12 +212,21 @@ bool VADisplayState::Initialize() {
 #if defined(USE_X11)
       !IsVa_x11Initialized() ||
 #endif
-      !IsVa_drmInitialized())
+      !IsVa_drmInitialized()) {
     return false;
+  }
 
+  // Manual refcounting to ensure the rest of the method is called only once.
   if (refcount_++ > 0)
     return true;
 
+  const bool success = InitializeOnce();
+  UMA_HISTOGRAM_BOOLEAN("Media.VaapiWrapper.VADisplayStateInitializeSuccess",
+                        success);
+  return success;
+}
+
+bool VADisplayState::InitializeOnce() {
   switch (gl::GetGLImplementation()) {
     case gl::kGLImplementationEGLGLES2:
       va_display_ = vaGetDisplayDRM(drm_fd_.get());

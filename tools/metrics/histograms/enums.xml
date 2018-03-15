@@ -44823,6 +44823,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VAVDAH264DecoderFailure">
+  <obsolete>
+    Deprecated as of 4/2015, partially replaced by VAVDADecoderFailure.
+  </obsolete>
   <int value="0" label="FRAME_MBS_ONLY_FLAG_NOT_ONE"/>
   <int value="1" label="GAPS_IN_FRAME_NUM"/>
   <int value="2" label="MID_STREAM_RESOLUTION_CHANGE"/>
