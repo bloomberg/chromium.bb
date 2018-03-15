@@ -8,10 +8,17 @@
 
 #include <memory>
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/zucchini/io_utils.h"
@@ -64,6 +71,66 @@ constexpr Command kCommands[] = {
     {"crc32", "-crc32 <file>", 1, &MainCrc32},
 };
 
+/******** GetPeakMemoryMetrics ********/
+
+#if defined(OS_LINUX)
+// Linux does not have an exact mapping to the values used on Windows so use a
+// close approximation:
+// peak_virtual_memory ~= peak_page_file_usage
+// resident_set_size_hwm (high water mark) ~= peak_working_set_size
+//
+// On failure the input values will be set to 0.
+void GetPeakMemoryMetrics(size_t* peak_virtual_memory,
+                          size_t* resident_set_size_hwm) {
+  *peak_virtual_memory = 0;
+  *resident_set_size_hwm = 0;
+  auto status_path =
+      base::FilePath("/proc")
+          .Append(base::IntToString(base::GetCurrentProcessHandle()))
+          .Append("status");
+  std::string contents_string;
+  base::ReadFileToString(status_path, &contents_string);
+  std::vector<base::StringPiece> lines = base::SplitStringPiece(
+      contents_string, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const auto& line : lines) {
+    // Tokens should generally be of the form "Metric: <val> kB"
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+        line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (tokens.size() < 2)
+      continue;
+
+    if (tokens[0] == "VmPeak:") {
+      if (base::StringToSizeT(tokens[1], peak_virtual_memory)) {
+        *peak_virtual_memory *= 1024;  // in kiB
+        if (*resident_set_size_hwm)
+          return;
+      }
+    } else if (tokens[0] == "VmHWM:") {
+      if (base::StringToSizeT(tokens[1], resident_set_size_hwm)) {
+        *resident_set_size_hwm *= 1024;  // in kiB
+        if (*peak_virtual_memory)
+          return;
+      }
+    }
+  }
+}
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_WIN)
+// On failure the input values will be set to 0.
+void GetPeakMemoryMetrics(size_t* peak_page_file_usage,
+                          size_t* peak_working_set_size) {
+  *peak_page_file_usage = 0;
+  *peak_working_set_size = 0;
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    *peak_page_file_usage = pmc.PeakPagefileUsage;
+    *peak_working_set_size = pmc.PeakWorkingSetSize;
+  }
+}
+#endif  // defined(OS_WIN)
+
 /******** ScopedResourceUsageTracker ********/
 
 // A class to track and log system resource usage.
@@ -73,27 +140,20 @@ class ScopedResourceUsageTracker {
   ScopedResourceUsageTracker() {
     start_time_ = base::TimeTicks::Now();
 
-#if defined(OS_WIN)
-    PROCESS_MEMORY_COUNTERS pmc;
-    if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
-      start_peak_page_file_usage_ = pmc.PeakPagefileUsage;
-      start_peak_working_set_size_ = pmc.PeakWorkingSetSize;
-    }
-#endif
+#if defined(OS_LINUX) || defined(OS_WIN)
+    GetPeakMemoryMetrics(&start_peak_page_file_usage_,
+                         &start_peak_working_set_size_);
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
   }
 
   // Computes and prints usage.
   ~ScopedResourceUsageTracker() {
     base::TimeTicks end_time = base::TimeTicks::Now();
 
-#if defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN)
     size_t cur_peak_page_file_usage = 0;
     size_t cur_peak_working_set_size = 0;
-    PROCESS_MEMORY_COUNTERS pmc;
-    if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
-      cur_peak_page_file_usage = pmc.PeakPagefileUsage;
-      cur_peak_working_set_size = pmc.PeakWorkingSetSize;
-    }
+    GetPeakMemoryMetrics(&cur_peak_page_file_usage, &cur_peak_working_set_size);
 
     LOG(INFO) << "Zucchini.PeakPagefileUsage "
               << cur_peak_page_file_usage / 1024 << " KiB";
@@ -106,7 +166,7 @@ class ScopedResourceUsageTracker {
               << (cur_peak_working_set_size - start_peak_working_set_size_) /
                      1024
               << " KiB";
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 
     LOG(INFO) << "Zucchini.TotalTime " << (end_time - start_time_).InSecondsF()
               << " s";
@@ -114,10 +174,10 @@ class ScopedResourceUsageTracker {
 
  private:
   base::TimeTicks start_time_;
-#if defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN)
   size_t start_peak_page_file_usage_ = 0;
   size_t start_peak_working_set_size_ = 0;
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 };
 
 /******** Helper functions ********/
