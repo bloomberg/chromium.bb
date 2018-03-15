@@ -1178,9 +1178,8 @@ bool SelectionController::HandlePasteGlobalSelection(
   Frame* focus_frame =
       frame_->GetPage()->GetFocusController().FocusedOrMainFrame();
   // Do not paste here if the focus was moved somewhere else.
-  if (frame_ == focus_frame &&
-      frame_->GetEditor().Behavior().SupportsGlobalSelection())
-    return frame_->GetEditor().CreateCommand("PasteGlobalSelection").Execute();
+  if (frame_ == focus_frame)
+    return frame_->GetEditor().ExecuteCommand("PasteGlobalSelection");
 
   return false;
 }
