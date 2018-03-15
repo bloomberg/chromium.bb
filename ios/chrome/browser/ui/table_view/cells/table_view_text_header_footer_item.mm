@@ -14,9 +14,13 @@
 namespace {
 // The inner insets of the View content.
 const CGFloat kMargin = 16;
+
+// The vertical spacing between text labels.
+const CGFloat kVerticalSpacing = 2.0;
 }
 
 @implementation TableViewTextHeaderFooterItem
+@synthesize subtitleText = _subtitleText;
 @synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -37,8 +41,7 @@ const CGFloat kMargin = 16;
   TableViewTextHeaderFooterView* header =
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   header.textLabel.text = self.text;
-  header.textLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  header.subtitleLabel.text = self.subtitleText;
 }
 
 @end
@@ -46,21 +49,33 @@ const CGFloat kMargin = 16;
 #pragma mark - TableViewTextHeaderFooter
 
 @implementation TableViewTextHeaderFooterView
+@synthesize subtitleLabel = _subtitleLabel;
 @synthesize textLabel = _textLabel;
 
 - (instancetype)initWithReuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithReuseIdentifier:reuseIdentifier];
   if (self) {
-    // Text Label, set font sizes using dynamic type.
+    // Labels, set font sizes using dynamic type.
     _textLabel = [[UILabel alloc] init];
-    _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    _subtitleLabel = [[UILabel alloc] init];
+    _subtitleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+
+    // Vertical StackView.
+    UIStackView* verticalStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ _textLabel, _subtitleLabel ]];
+    verticalStack.axis = UILayoutConstraintAxisVertical;
+    verticalStack.spacing = kVerticalSpacing;
+    verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Container View.
     UIView* containerView = [[UIView alloc] init];
     containerView.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Add subviews to View Hierarchy.
-    [containerView addSubview:_textLabel];
+    [containerView addSubview:verticalStack];
     [self.contentView addSubview:containerView];
 
     // Set and activate constraints.
@@ -80,12 +95,14 @@ const CGFloat kMargin = 16;
                                    constant:-kMargin],
       [containerView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
-      // Title Label Constraints.
-      [_textLabel.leadingAnchor
+      // Vertical StackView Constraints.
+      [verticalStack.leadingAnchor
           constraintEqualToAnchor:containerView.leadingAnchor],
-      [_textLabel.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-      [_textLabel.bottomAnchor
+      [verticalStack.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+      [verticalStack.bottomAnchor
           constraintEqualToAnchor:containerView.bottomAnchor],
+      [verticalStack.trailingAnchor
+          constraintEqualToAnchor:containerView.trailingAnchor],
     ]];
   }
   return self;

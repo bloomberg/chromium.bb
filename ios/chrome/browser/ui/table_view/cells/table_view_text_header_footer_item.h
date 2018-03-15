@@ -12,14 +12,13 @@
 // TableViewTextHeaderFooterItem contains the model data for a
 // UITableViewHeaderFooterView.
 @interface TableViewTextHeaderFooterItem : TableViewHeaderFooterItem
-
 @property(nonatomic, readwrite, strong) NSString* text;
-
+@property(nonatomic, readwrite, strong) NSString* subtitleText;
 @end
 
 // UITableViewHeaderFooterView that displays a text label.
 @interface TableViewTextHeaderFooterView : UITableViewHeaderFooterView
-
+@property(nonatomic, readwrite, strong) UILabel* subtitleLabel;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_TEXT_HEADER_FOOTER_ITEM_H_
