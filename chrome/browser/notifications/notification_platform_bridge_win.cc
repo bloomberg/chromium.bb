@@ -739,19 +739,18 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
 }
 
 // static
-bool NotificationPlatformBridgeWin::HandleActivation() {
+bool NotificationPlatformBridgeWin::HandleActivation(
+    const base::CommandLine& command_line) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string launch_id_str =
-      command_line->GetSwitchValueASCII(switches::kNotificationLaunchId);
-  NotificationLaunchId launch_id(launch_id_str);
+  NotificationLaunchId launch_id(
+      command_line.GetSwitchValueASCII(switches::kNotificationLaunchId));
   if (!launch_id.is_valid())
     return false;
 
   base::Optional<base::string16> reply;
   base::string16 inline_reply =
-      command_line->GetSwitchValueNative(switches::kNotificationInlineReply);
+      command_line.GetSwitchValueNative(switches::kNotificationInlineReply);
   if (!inline_reply.empty())
     reply = inline_reply;
 
