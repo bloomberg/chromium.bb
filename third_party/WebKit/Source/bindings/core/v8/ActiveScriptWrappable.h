@@ -17,9 +17,11 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
   WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
 
  public:
-  ActiveScriptWrappable() = default;
+  ~ActiveScriptWrappable() override = default;
 
  protected:
+  ActiveScriptWrappable() = default;
+
   bool IsContextDestroyed() const final {
     const auto* execution_context =
         static_cast<const T*>(this)->GetExecutionContext();
