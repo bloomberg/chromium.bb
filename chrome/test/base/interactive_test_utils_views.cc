@@ -5,13 +5,25 @@
 #include "chrome/test/base/interactive_test_utils.h"
 
 #include "base/message_loop/message_loop.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
+#include "ui/base/ui_features.h"
 #include "ui/views/focus/focus_manager.h"
+
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/test/base/interactive_test_utils_cocoa.h"
+#endif
 
 namespace ui_test_utils {
 
 bool IsViewFocused(const Browser* browser, ViewID vid) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return internal::IsViewFocusedCocoa(browser, vid);
+#endif
+
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
   gfx::NativeWindow window = browser_window->GetNativeWindow();
@@ -25,6 +37,11 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
 }
 
 void ClickOnView(const Browser* browser, ViewID vid) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return internal::ClickOnViewCocoa(browser, vid);
+#endif
+
   views::View* view =
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);
@@ -35,6 +52,11 @@ void ClickOnView(const Browser* browser, ViewID vid) {
 }
 
 void FocusView(const Browser* browser, ViewID vid) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return internal::FocusViewCocoa(browser, vid);
+#endif
+
   views::View* view =
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);

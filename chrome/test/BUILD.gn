@@ -4909,6 +4909,11 @@ if (!is_android) {
     }
 
     if (is_mac) {
+      sources += [
+        "base/interactive_test_utils_cocoa.h",
+        "base/interactive_test_utils_cocoa.mm",
+      ]
+
       data_deps += [
         "//chrome",
         "//chrome:chrome_framework",
@@ -4923,7 +4928,6 @@ if (!is_android) {
           "../browser/ui/cocoa/extensions/browser_action_button_interactive_uitest.mm",
           "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_interactive_uitest.mm",
           "../browser/ui/cocoa/translate/translate_bubble_test_utils_views_cocoa.mm",
-          "base/interactive_test_utils_cocoa.mm",
         ]
       }
     }
