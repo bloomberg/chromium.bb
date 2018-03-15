@@ -30,7 +30,6 @@ struct CallStackProfileParams {
 
     // Browser process threads, some of which occur in other processes as well.
     UI_THREAD,
-    PROCESS_LAUNCHER_THREAD,
     IO_THREAD,
 
     // GPU process thread.

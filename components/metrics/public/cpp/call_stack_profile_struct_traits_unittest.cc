@@ -306,8 +306,6 @@ TEST_F(CallStackProfileStructTraitsTest, Thread) {
   EXPECT_TRUE(proxy_->BounceThread(Thread::UI_THREAD, &out));
   EXPECT_EQ(Thread::UI_THREAD, out);
 
-  EXPECT_TRUE(proxy_->BounceThread(Thread::PROCESS_LAUNCHER_THREAD, &out));
-  EXPECT_EQ(Thread::PROCESS_LAUNCHER_THREAD, out);
 
   EXPECT_TRUE(proxy_->BounceThread(Thread::IO_THREAD, &out));
   EXPECT_EQ(Thread::IO_THREAD, out);

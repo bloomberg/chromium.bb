@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -117,8 +116,8 @@ struct BrowserThreadGlobals {
   base::Lock lock;
 
   // This array is filled either as the underlying threads start and invoke
-  // Init() or in RedirectThreadIDToTaskRunner() for threads that are being
-  // redirected. It is not emptied during shutdown in order to support
+  // Init() or in BrowserThreadImpl() when a MessageLoop* is provided at
+  // construction. It is not emptied during shutdown in order to support
   // RunsTasksInCurrentSequence() until the very end.
   scoped_refptr<base::SingleThreadTaskRunner>
       task_runners[BrowserThread::ID_COUNT];
@@ -361,69 +360,6 @@ bool BrowserThreadImpl::StartAndWaitForTesting() {
     return false;
   WaitUntilThreadStarted();
   return true;
-}
-
-// static
-void BrowserThreadImpl::RedirectThreadIDToTaskRunner(
-    BrowserThread::ID identifier,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(task_runner);
-
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-
-  DCHECK(!globals.task_runners[identifier]);
-  DCHECK_EQ(globals.states[identifier], BrowserThreadState::UNINITIALIZED);
-
-  globals.task_runners[identifier] = std::move(task_runner);
-  globals.states[identifier] = BrowserThreadState::RUNNING;
-}
-
-// static
-void BrowserThreadImpl::StopRedirectionOfThreadID(
-    BrowserThread::ID identifier) {
-  BrowserThreadGlobals& globals = g_globals.Get();
-  base::AutoLock auto_lock(globals.lock);
-
-  DCHECK(globals.task_runners[identifier]);
-
-  // Change the state to SHUTDOWN to stop accepting new tasks. Note: this is
-  // different from non-redirected threads which continue accepting tasks while
-  // being joined and only quit when idle. However, any tasks for which this
-  // difference matters was already racy as any thread posting a task after the
-  // Signal task below can't be synchronized with the joining thread. Therefore,
-  // that task could already come in before or after the join had completed in
-  // the non-redirection world. Entering SHUTDOWN early merely skews this race
-  // towards making it less likely such a task is accepted by the joined thread
-  // which is fine.
-  DCHECK_EQ(globals.states[identifier], BrowserThreadState::RUNNING);
-  globals.states[identifier] = BrowserThreadState::SHUTDOWN;
-
-  // Wait for all pending tasks to complete.
-  base::WaitableEvent flushed(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  globals.task_runners[identifier]->PostTask(
-      FROM_HERE,
-      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&flushed)));
-  {
-    base::AutoUnlock auto_unlock(globals.lock);
-    flushed.Wait();
-  }
-
-  // Only reset the task runner after running pending tasks so that
-  // BrowserThread::CurrentlyOn() works in their scope.
-  globals.task_runners[identifier] = nullptr;
-
-  // Note: it's still possible for tasks to be posted to that task runner after
-  // this point (e.g. through a previously obtained ThreadTaskRunnerHandle or by
-  // one of the last tasks re-posting to its ThreadTaskRunnerHandle) but the
-  // BrowserThread API itself won't accept tasks. Such tasks are ultimately
-  // guaranteed to run before TaskScheduler::Shutdown() returns but may break
-  // the assumption in PostTaskHelper that BrowserThread::ID A > B will always
-  // succeed to post to B. This is pretty much the only observable difference
-  // between a redirected thread and a real one and is one we're willing to live
-  // with for this experiment. TODO(gab): fix this before enabling the
-  // experiment by default on trunk, http://crbug.com/653916.
 }
 
 // static

@@ -336,17 +336,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
   // Members initialized in |CreateThreads()| ----------------------------------
-  // Only the IO thread is a real thread by default, other BrowserThreads are
-  // redirected to TaskScheduler under the hood.
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
-#if defined(OS_WIN)
-  // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
-  // the only user and this use case is going away in
-  // https://codereview.chromium.org/2216583003/.
-  // TODO(gavinp): Remove this (and thus enable redirection of the CACHE thread
-  // on Windows) once that CL lands.
-  std::unique_ptr<BrowserProcessSubThread> cache_thread_;
-#endif
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<ServiceManagerContext> service_manager_context_;

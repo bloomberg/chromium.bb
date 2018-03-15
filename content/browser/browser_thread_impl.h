@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -47,16 +46,6 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // BrowserThreadDelegate after the thread is created. See
   // https://crbug.com/729596.
   void InitIOThreadDelegate();
-
-  // Redirects tasks posted to |identifier| to |task_runner|.
-  static void RedirectThreadIDToTaskRunner(
-      BrowserThread::ID identifier,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  // Makes this |identifier| no longer accept tasks and synchronously flushes
-  // any tasks previously posted to it.
-  // Can only be called after a matching RedirectThreadIDToTaskRunner call.
-  static void StopRedirectionOfThreadID(BrowserThread::ID identifier);
 
   // Resets globals for |identifier|. Used in tests to clear global state that
   // would otherwise leak to the next test. Globals are not otherwise fully
