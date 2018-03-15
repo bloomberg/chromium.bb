@@ -162,7 +162,14 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackWithNullTrack) {
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackCanFail) {
+// This test is flaky on Android and Linux.
+// See crbug.com/800465 for detail.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_ReplaceTrackCanFail DISABLED_ReplaceTrackCanFail
+#else
+#define MAYBE_ReplaceTrackCanFail ReplaceTrackCanFail
+#endif
+TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackCanFail) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   ASSERT_FALSE(sender_->Track().IsNull());
@@ -177,7 +184,16 @@ TEST_F(RTCRtpSenderTest, ReplaceTrackCanFail) {
   EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
 }
 
-TEST_F(RTCRtpSenderTest, ReplaceTrackIsNotSetSynchronously) {
+// This test is flaky on Android and Linux.
+// See crbug.com/800465 for detail.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_ReplaceTrackIsNotSetSynchronously \
+  DISABLED_ReplaceTrackIsNotSetSynchronously
+#else
+#define MAYBE_ReplaceTrackIsNotSetSynchronously \
+  ReplaceTrackIsNotSetSynchronously
+#endif
+TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackIsNotSetSynchronously) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
