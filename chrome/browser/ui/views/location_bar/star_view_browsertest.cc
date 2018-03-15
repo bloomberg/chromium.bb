@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -16,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -30,7 +32,16 @@
 
 namespace {
 
-typedef InProcessBrowserTest StarViewTest;
+class StarViewTest : public InProcessBrowserTest {
+ public:
+  StarViewTest() = default;
+  ~StarViewTest() override = default;
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(StarViewTest);
+};
 
 // Verify that clicking the bookmark star a second time hides the bookmark
 // bubble.
