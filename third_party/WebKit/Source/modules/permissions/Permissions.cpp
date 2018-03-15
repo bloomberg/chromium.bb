@@ -127,11 +127,6 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::ACCESSIBILITY_EVENTS);
   }
   if (name == "clipboard-read" || name == "clipboard-write") {
-    if (!RuntimeEnabledFeatures::AsyncClipboardEnabled()) {
-      exception_state.ThrowTypeError("Async Clipboard flag is not enabled.");
-      return nullptr;
-    }
-
     PermissionName permission_name = PermissionName::CLIPBOARD_READ;
     if (name == "clipboard-write")
       permission_name = PermissionName::CLIPBOARD_WRITE;
