@@ -1,7 +1,7 @@
 #include <fontconfig/fontconfig.h>
 #include <stdio.h>
 
-int
+static int
 test (const FcChar8 *query, const FcPattern *expect)
 {
     FcPattern *pat;
@@ -26,7 +26,7 @@ bail:
 int
 main (void)
 {
-    FcPattern *pat, *expect;
+    FcPattern *expect;
     int c = 0, ret;
 
     BEGIN (expect) {
