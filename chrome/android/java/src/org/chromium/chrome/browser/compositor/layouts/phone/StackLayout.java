@@ -9,12 +9,13 @@ import android.content.Context;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+
+import java.util.ArrayList;
 
 /**
  * Layout that displays all normal tabs in one stack and all incognito tabs in a second.
@@ -36,22 +37,15 @@ public class StackLayout extends StackLayoutBase {
      */
     public StackLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
         super(context, updateHost, renderHost);
-
-        for (int i = 0; i < NUM_STACKS; i++) {
-            mStacks.add(new Stack(context, this));
-        }
     }
 
     @Override
     public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
         super.setTabModelSelector(modelSelector, manager);
-        mStacks.get(NORMAL_STACK_INDEX).setTabList(modelSelector.getModel(false));
-        mStacks.get(INCOGNITO_STACK_INDEX).setTabList(modelSelector.getModel(true));
-    }
-
-    @Override
-    protected TabList getTabList(int index) {
-        return mTabModelSelector.getModel(index == INCOGNITO_STACK_INDEX);
+        ArrayList<TabList> tabLists = new ArrayList<TabList>();
+        tabLists.add(modelSelector.getModel(false));
+        tabLists.add(modelSelector.getModel(true));
+        setTabLists(tabLists);
     }
 
     @Override
