@@ -25,6 +25,12 @@
     "systemPrivate"
   ],
 
+  "app": {
+    "background": {
+      "scripts": ["easy_unlock_background.js"]
+    }
+  },
+
   "bluetooth": {
     "socket" : true,
     "low_energy" : true,
