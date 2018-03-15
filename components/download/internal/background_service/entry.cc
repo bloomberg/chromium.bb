@@ -12,7 +12,8 @@ Entry::Entry()
     : bytes_downloaded(0u),
       attempt_count(0),
       resumption_count(0),
-      cleanup_attempt_count(0) {}
+      cleanup_attempt_count(0),
+      has_upload_data(false) {}
 Entry::Entry(const Entry& other) = default;
 
 Entry::Entry(const DownloadParams& params)
@@ -25,6 +26,7 @@ Entry::Entry(const DownloadParams& params)
       attempt_count(0),
       resumption_count(0),
       cleanup_attempt_count(0),
+      has_upload_data(false),
       traffic_annotation(params.traffic_annotation) {}
 
 Entry::~Entry() = default;
@@ -49,6 +51,7 @@ bool Entry::operator==(const Entry& other) const {
          attempt_count == other.attempt_count &&
          resumption_count == other.resumption_count &&
          cleanup_attempt_count == other.cleanup_attempt_count &&
+         has_upload_data == other.has_upload_data &&
          traffic_annotation == other.traffic_annotation;
 }
 

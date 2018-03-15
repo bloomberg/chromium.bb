@@ -43,5 +43,6 @@ source_set("test_support") {
 
   deps = [
     "//components/download/internal/background_service:internal",
+    "//services/network/public/cpp",
   ]
 }

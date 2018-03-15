@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace offline_pages {
 
@@ -97,6 +99,13 @@ bool OfflinePrefetchDownloadClient::CanServiceRemoveDownloadedFile(
     const std::string& guid,
     bool force_delete) {
   return true;
+}
+
+void OfflinePrefetchDownloadClient::GetUploadData(
+    const std::string& guid,
+    download::GetUploadDataCallback callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), nullptr));
 }
 
 PrefetchDownloader* OfflinePrefetchDownloadClient::GetPrefetchDownloader()

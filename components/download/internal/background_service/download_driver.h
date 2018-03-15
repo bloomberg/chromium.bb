@@ -17,6 +17,10 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace network {
+class ResourceRequestBody;
+}  // namespace network
+
 namespace download {
 
 struct RequestParams;
@@ -84,6 +88,7 @@ class DownloadDriver : public MemoryTracker {
       const RequestParams& request_params,
       const std::string& guid,
       const base::FilePath& file_path,
+      scoped_refptr<network::ResourceRequestBody> post_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Cancels an existing download, all data associated with this download should

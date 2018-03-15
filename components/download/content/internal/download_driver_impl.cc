@@ -138,6 +138,7 @@ void DownloadDriverImpl::Start(
     const RequestParams& request_params,
     const std::string& guid,
     const base::FilePath& file_path,
+    scoped_refptr<network::ResourceRequestBody> post_body,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!request_params.url.is_empty());
   DCHECK(!guid.empty());
@@ -168,6 +169,7 @@ void DownloadDriverImpl::Start(
     download_url_params->set_fetch_error_body(true);
   download_url_params->set_download_source(
       download::DownloadSource::INTERNAL_API);
+  download_url_params->set_post_body(post_body);
 
   download_manager_->DownloadUrl(std::move(download_url_params), nullptr);
 }

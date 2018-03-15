@@ -8,6 +8,7 @@
 
 #include "components/download/internal/background_service/test/mock_download_driver_client.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,7 +112,7 @@ class InMemoryDownloadDriverTest : public testing::Test {
   void Start(const std::string& guid) {
     RequestParams params;
     base::FilePath path;
-    driver()->Start(params, guid, path, TRAFFIC_ANNOTATION_FOR_TESTS);
+    driver()->Start(params, guid, path, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
  private:

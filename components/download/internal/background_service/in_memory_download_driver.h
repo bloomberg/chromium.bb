@@ -61,6 +61,7 @@ class InMemoryDownloadDriver : public DownloadDriver,
       const RequestParams& request_params,
       const std::string& guid,
       const base::FilePath& file_path,
+      scoped_refptr<network::ResourceRequestBody> post_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   void Remove(const std::string& guid) override;
   void Pause(const std::string& guid) override;
