@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<org.chromium.chrome.browser.signin.SigninView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <org.chromium.chrome.browser.signin.SigninScrollView
+        android:id="@+id/signin_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fadingEdgeLength="48dp"
+        android:layout_weight="1"
+        android:requiresFadingEdge="vertical"
+        android:scrollbars="none">
+        <!-- TODO(https://crbug.com/819142): Add the rest of the layout. -->
+    </org.chromium.chrome.browser.signin.SigninScrollView>
+    <LinearLayout
+        android:id="@+id/button_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+        <!-- TODO(https://crbug.com/819142): Use textAppearance instead of text* attributes. -->
+        <Button
+            android:id="@+id/negative_button"
+            style="@style/ButtonCompatBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:paddingEnd="@dimen/fre_button_padding"
+            android:paddingStart="@dimen/fre_button_padding"
+            android:textAllCaps="true"
+            android:textColor="@color/light_active_color"
+            android:textSize="14sp"
+            tools:text="@string/no_thanks"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="invisible"/>
+        <!-- TODO(https://crbug.com/819142): Specify WhiteBody as textAppearance. -->
+        <org.chromium.ui.widget.ButtonCompat
+            android:id="@+id/positive_button"
+            style="@style/WhiteBody"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:paddingEnd="@dimen/fre_button_padding"
+            android:paddingStart="@dimen/fre_button_padding"
+            android:textAllCaps="true"
+            chrome:buttonColor="@color/light_active_color"
+            chrome:buttonRaised="false"
+            tools:text="@string/signin_accept_button"/>
+        <!-- TODO(https://crbug.com/819142): Use textAppearance instead of text* attributes. -->
+        <Button
+            android:id="@+id/more_button"
+            style="@style/ButtonCompatBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:drawableEnd="@drawable/down_arrow"
+            android:drawablePadding="8dp"
+            android:textAllCaps="true"
+            android:textColor="@color/light_active_color"
+            android:textSize="@dimen/text_size_medium"
+            android:visibility="gone"
+            tools:text="@string/more"/>
+        <View
+            android:id="@+id/positive_button_end_padding"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone"/>
+    </LinearLayout>
+</org.chromium.chrome.browser.signin.SigninView>

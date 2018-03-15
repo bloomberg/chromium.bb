@@ -8,7 +8,11 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 
 /**
@@ -22,6 +26,8 @@ public abstract class SigninFragmentBase extends Fragment {
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
 
     private @SigninAccessPoint int mSigninAccessPoint;
+
+    private SigninView mView;
     private @StringRes int mCancelButtonTextId = R.string.cancel;
 
     /**
@@ -80,5 +86,39 @@ public abstract class SigninFragmentBase extends Fragment {
                 || accessPoint == SigninAccessPoint.SIGNIN_PROMO) {
             mCancelButtonTextId = R.string.no_thanks;
         }
+    }
+
+    @Override
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mView = (SigninView) inflater.inflate(R.layout.signin_view, container, false);
+        mView.getAcceptButton().setVisibility(View.GONE);
+        mView.getMoreButton().setVisibility(View.VISIBLE);
+        mView.getMoreButton().setOnClickListener(view -> {
+            mView.getScrollView().smoothScrollBy(0, mView.getScrollView().getHeight());
+            // TODO(https://crbug.com/821127): Revise this user action.
+            RecordUserAction.record("Signin_MoreButton_Shown");
+        });
+        mView.getScrollView().setScrolledToBottomObserver(this::showAcceptButton);
+
+        mView.getRefuseButton().setOnClickListener(view -> {
+            setButtonsEnabled(false);
+            onSigninRefused();
+        });
+
+        // TODO(https://crbug.com/814728): Set texts for UI elements
+
+        return mView;
+    }
+
+    private void showAcceptButton() {
+        mView.getAcceptButton().setVisibility(View.VISIBLE);
+        mView.getMoreButton().setVisibility(View.GONE);
+        mView.getScrollView().setScrolledToBottomObserver(null);
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        mView.getAcceptButton().setEnabled(enabled);
+        mView.getRefuseButton().setEnabled(enabled);
     }
 }
