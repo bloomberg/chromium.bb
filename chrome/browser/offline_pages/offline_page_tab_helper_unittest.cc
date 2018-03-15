@@ -170,7 +170,9 @@ TEST_F(OfflinePageTabHelperTest, MetricsOfflineNavigation) {
   // Simulate offline interceptor loading an offline page instead.
   OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
   OfflinePageHeader offlineHeader;
-  tab_helper()->SetOfflinePage(offlinePage, offlineHeader, true, false);
+  tab_helper()->SetOfflinePage(
+      offlinePage, offlineHeader,
+      OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR, false);
 
   navigation_simulator()->Commit();
 
@@ -181,18 +183,43 @@ TEST_F(OfflinePageTabHelperTest, MetricsOfflineNavigation) {
   EXPECT_EQ(0, metrics()->report_stats_count_);
 }
 
-TEST_F(OfflinePageTabHelperTest, TrustedOfflinePage) {
+TEST_F(OfflinePageTabHelperTest, TrustedInternalOfflinePage) {
   CreateNavigationSimulator(kTestPageUrl);
   navigation_simulator()->Start();
 
   OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
   OfflinePageHeader offlineHeader(kTestHeader);
-  tab_helper()->SetOfflinePage(offlinePage, offlineHeader, true, false);
+  tab_helper()->SetOfflinePage(
+      offlinePage, offlineHeader,
+      OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR, false);
 
   navigation_simulator()->Commit();
 
   ASSERT_NE(nullptr, tab_helper()->offline_page());
   EXPECT_EQ(kTestPageUrl, tab_helper()->offline_page()->url);
+  EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR,
+            tab_helper()->trusted_state());
+  EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
+  EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD,
+            tab_helper()->offline_header().reason);
+}
+
+TEST_F(OfflinePageTabHelperTest, TrustedPublicOfflinePage) {
+  CreateNavigationSimulator(kTestPageUrl);
+  navigation_simulator()->Start();
+
+  OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
+  OfflinePageHeader offlineHeader(kTestHeader);
+  tab_helper()->SetOfflinePage(
+      offlinePage, offlineHeader,
+      OfflinePageTrustedState::TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR, false);
+
+  navigation_simulator()->Commit();
+
+  ASSERT_NE(nullptr, tab_helper()->offline_page());
+  EXPECT_EQ(kTestPageUrl, tab_helper()->offline_page()->url);
+  EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR,
+            tab_helper()->trusted_state());
   EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
   EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD,
             tab_helper()->offline_header().reason);
@@ -205,6 +232,7 @@ TEST_F(OfflinePageTabHelperTest, UntrustedOfflinePageForFileUrl) {
   navigation_simulator()->Commit();
 
   ASSERT_NE(nullptr, tab_helper()->offline_page());
+  EXPECT_EQ(OfflinePageTrustedState::UNTRUSTED, tab_helper()->trusted_state());
   EXPECT_FALSE(tab_helper()->IsShowingTrustedOfflinePage());
   EXPECT_EQ(OfflinePageHeader::Reason::NONE,
             tab_helper()->offline_header().reason);
@@ -218,6 +246,7 @@ TEST_F(OfflinePageTabHelperTest, UntrustedOfflinePageForContentUrl) {
   navigation_simulator()->Commit();
 
   ASSERT_NE(nullptr, tab_helper()->offline_page());
+  EXPECT_EQ(OfflinePageTrustedState::UNTRUSTED, tab_helper()->trusted_state());
   EXPECT_FALSE(tab_helper()->IsShowingTrustedOfflinePage());
   EXPECT_EQ(OfflinePageHeader::Reason::NONE,
             tab_helper()->offline_header().reason);

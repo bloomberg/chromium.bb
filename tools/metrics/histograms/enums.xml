@@ -32540,6 +32540,12 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OfflinePageTrustedState">
+  <int value="0" label="Trusted: in internal directory"/>
+  <int value="1" label="Trusted: in public directory and unmodified"/>
+  <int value="2" label="Untrusted"/>
+</enum>
+
 <enum name="OfflinePrefetchArchiveActualSizeVsExpected">
   <summary>
     Percentage ranges for the ratios of actual downloaded size of a prefetched

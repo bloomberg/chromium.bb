@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_request_job.h"
@@ -45,14 +46,15 @@ bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
 }  // namespace
 
 OfflinePageTabHelper::LoadedOfflinePageInfo::LoadedOfflinePageInfo()
-    : is_trusted(false), is_showing_offline_preview(false) {}
+    : trusted_state(OfflinePageTrustedState::UNTRUSTED),
+      is_showing_offline_preview(false) {}
 
 OfflinePageTabHelper::LoadedOfflinePageInfo::~LoadedOfflinePageInfo() {}
 
 void OfflinePageTabHelper::LoadedOfflinePageInfo::Clear() {
   offline_page.reset();
   offline_header.Clear();
-  is_trusted = false;
+  trusted_state = OfflinePageTrustedState::UNTRUSTED;
   is_showing_offline_preview = false;
 }
 
@@ -108,6 +110,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
   FinalizeOfflineInfo(navigation_handle);
   provisional_offline_info_.Clear();
 
+  ReportOfflinePageMetrics();
   ReportPrefetchMetrics(navigation_handle);
 
   TryLoadingOfflinePageOnNetError(navigation_handle);
@@ -129,7 +132,7 @@ void OfflinePageTabHelper::FinalizeOfflineInfo(
       web_contents->GetContentsMimeType() == "multipart/related") {
     offline_info_.offline_page = std::make_unique<OfflinePageItem>();
     offline_info_.offline_page->offline_id = store_utils::GenerateOfflineId();
-    offline_info_.is_trusted = false;
+    offline_info_.trusted_state = OfflinePageTrustedState::UNTRUSTED;
     // TODO(jianli): Extract the url where the MHTML acrhive claims from the
     // MHTML headers and set it in OfflinePageItem::original_url.
 
@@ -174,9 +177,17 @@ void OfflinePageTabHelper::FinalizeOfflineInfo(
   offline_info_.offline_page =
       std::move(provisional_offline_info_.offline_page);
   offline_info_.offline_header = provisional_offline_info_.offline_header;
-  offline_info_.is_trusted = provisional_offline_info_.is_trusted;
+  offline_info_.trusted_state = provisional_offline_info_.trusted_state;
   offline_info_.is_showing_offline_preview =
       provisional_offline_info_.is_showing_offline_preview;
+}
+
+void OfflinePageTabHelper::ReportOfflinePageMetrics() {
+  if (!offline_page())
+    return;
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.TrustStateOnOpen",
+                            offline_info_.trusted_state,
+                            OfflinePageTrustedState::TRUSTED_STATE_MAX);
 }
 
 void OfflinePageTabHelper::ReportPrefetchMetrics(
@@ -288,7 +299,8 @@ void OfflinePageTabHelper::GetPageByOfflineIdDone(
   // the one retrieved from the metadata database. Do this only when the stored
   // offline info is not changed since last time the asynchronous query is
   // issued.
-  if (offline_info_.offline_page && !offline_info_.is_trusted &&
+  if (offline_info_.offline_page &&
+      offline_info_.trusted_state == OfflinePageTrustedState::UNTRUSTED &&
       offline_info_.offline_page->offline_id == offline_page->offline_id) {
     offline_info_.offline_page =
         std::make_unique<OfflinePageItem>(*offline_page);
@@ -300,12 +312,12 @@ void OfflinePageTabHelper::GetPageByOfflineIdDone(
 void OfflinePageTabHelper::SetOfflinePage(
     const OfflinePageItem& offline_page,
     const OfflinePageHeader& offline_header,
-    bool is_trusted,
+    OfflinePageTrustedState trusted_state,
     bool is_offline_preview) {
   provisional_offline_info_.offline_page =
       std::make_unique<OfflinePageItem>(offline_page);
   provisional_offline_info_.offline_header = offline_header;
-  provisional_offline_info_.is_trusted = is_trusted;
+  provisional_offline_info_.trusted_state = trusted_state;
   provisional_offline_info_.is_showing_offline_preview = is_offline_preview;
 }
 
@@ -315,11 +327,16 @@ void OfflinePageTabHelper::ClearOfflinePage() {
 }
 
 bool OfflinePageTabHelper::IsShowingTrustedOfflinePage() const {
-  return offline_info_.offline_page && offline_info_.is_trusted;
+  return offline_info_.offline_page &&
+         (offline_info_.trusted_state != OfflinePageTrustedState::UNTRUSTED);
 }
 
 const OfflinePageItem* OfflinePageTabHelper::GetOfflinePageForTest() const {
   return provisional_offline_info_.offline_page.get();
+}
+
+OfflinePageTrustedState OfflinePageTabHelper::GetTrustedStateForTest() const {
+  return provisional_offline_info_.trusted_state;
 }
 
 const OfflinePageItem* OfflinePageTabHelper::GetOfflinePreviewItem() const {
