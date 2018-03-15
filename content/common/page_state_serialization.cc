@@ -706,8 +706,10 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
       case network::DataElement::TYPE_BLOB:
         data_element->set_blob_uuid(element.blob_uuid());
         break;
-      case network::DataElement::TYPE_RAW_FILE:
       case network::DataElement::TYPE_DATA_PIPE:
+        NOTIMPLEMENTED();
+        break;
+      case network::DataElement::TYPE_RAW_FILE:
       case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
