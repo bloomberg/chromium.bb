@@ -628,6 +628,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return NO;
   }
 
+  if ([self isPreEditing]) {
+    // Allow cut/copy/paste in preedit.
+    if ((action == @selector(copy:)) || (action == @selector(cut:))) {
+      return YES;
+    }
+  }
+
   return [super canPerformAction:action withSender:sender];
 }
 
@@ -649,6 +656,17 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [super copy:sender];
 }
 
+- (void)cut:(id)sender {
+  if ([self isPreEditing]) {
+    [self copy:sender];
+    [self exitPreEditState];
+    NSAttributedString* emptyString = [[NSAttributedString alloc] init];
+    [self setText:emptyString userTextLength:0];
+  } else {
+    [super cut:sender];
+  }
+}
+
 // Overridden to notify the delegate that a paste is in progress.
 - (void)paste:(id)sender {
   id delegate = [self delegate];
@@ -668,7 +686,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 #pragma mark Key Commands
 
-- (NSArray<UIKeyCommand*>*)keyCommands {
+- (NSArray<UIKeyCommand*>*)upDownCommands {
   // These up/down arrow key commands override the standard UITextInput handling
   // of up/down arrow key. The standard behavior is to go to the beginning/end
   // of the text. Instead, the omnibox popup needs to highlight suggestions.
@@ -684,12 +702,55 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return @[ commandUp, commandDown ];
 }
 
+- (NSArray<UIKeyCommand*>*)keyCommands {
+  NSMutableArray<UIKeyCommand*>* commands = [[self upDownCommands] mutableCopy];
+  if ([self isPreEditing]) {
+    [commands addObjectsFromArray:[self leftRightCommands]];
+  }
+
+  return commands;
+}
+
 - (void)keyCommandUp {
   [self.suggestionCommandsEndpoint highlightNextSuggestion];
 }
 
 - (void)keyCommandDown {
   [self.suggestionCommandsEndpoint highlightPreviousSuggestion];
+}
+
+#pragma mark preedit-only key commands
+
+// React to left and right keys when in preedit state to exit preedit and put
+// cursor to the beginning/end of the textfield.
+- (NSArray<UIKeyCommand*>*)leftRightCommands {
+  UIKeyCommand* commandLeft =
+      [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow
+                          modifierFlags:0
+                                 action:@selector(keyCommandLeft)];
+  UIKeyCommand* commandRight =
+      [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow
+                          modifierFlags:0
+                                 action:@selector(keyCommandRight)];
+
+  return @[ commandLeft, commandRight ];
+}
+
+- (void)keyCommandLeft {
+  [self exitPreEditState];
+  UITextPosition* beginning = self.beginningOfDocument;
+  UITextRange* textRange =
+      [self textRangeFromPosition:beginning toPosition:beginning];
+
+  self.selectedTextRange = textRange;
+}
+
+- (void)keyCommandRight {
+  [self exitPreEditState];
+  UITextPosition* end = self.endOfDocument;
+  UITextRange* textRange = [self textRangeFromPosition:end toPosition:end];
+
+  self.selectedTextRange = textRange;
 }
 
 #pragma mark - helpers
