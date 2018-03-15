@@ -153,8 +153,8 @@ cr.define('settings_sync_account_control', function() {
           .then(email => {
             assertEquals(email, 'foo@foo.com');
 
-            assertVisible(testElement.$$('#dropdown-arrow'), true);
-            assertFalse(testElement.$$('#sync-logo-container')
+            assertVisible(testElement.$$('paper-icon-button-light'), true);
+            assertFalse(testElement.$$('#sync-icon-container')
                             .hasAttribute('signed-in'));
 
             testElement.$$('#dropdown-arrow').click();
@@ -205,10 +205,10 @@ cr.define('settings_sync_account_control', function() {
       ]);
 
       assertVisible(testElement.$$('#avatar-row'), true);
-      assertVisible(testElement.$$('#dropdown-arrow'), false);
+      assertVisible(testElement.$$('paper-icon-button-light'), false);
       assertVisible(testElement.$$('#promo-headers'), false);
       assertTrue(
-          testElement.$$('#sync-logo-container').hasAttribute('signed-in'));
+          testElement.$$('#sync-icon-container').hasAttribute('signed-in'));
 
       assertFalse(!!testElement.$$('#menu'));
 
@@ -229,7 +229,7 @@ cr.define('settings_sync_account_control', function() {
       sync_test_util.simulateSyncStatus(
           {signedIn: true, signedInUsername: 'bar@bar.com', hasError: true});
       assertTrue(
-          testElement.$$('#sync-logo-container').hasAttribute('has-error'));
+          testElement.$$('#sync-icon-container').hasAttribute('has-error'));
       assertFalse(userInfo.textContent.includes('barName'));
       assertFalse(userInfo.textContent.includes('fooName'));
       assertTrue(userInfo.textContent.includes('Sync isn\'t working'));
