@@ -350,6 +350,16 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
         base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, GetWeakPtr(),
                        ip_endpoint, cast_sink_it->second, nullptr,
                        SinkSource::kConnectionRetry));
+    // We erase the sink here so that OpenChannel would not find an existing
+    // sink.
+    // Note: a better longer term solution is to introduce a state field to the
+    // sink. We would set it to ERROR here. In OpenChannel(), we would check
+    // create a socket only if the state is not already CONNECTED.
+    if (observer_)
+      observer_->OnSinkRemoved(cast_sink_it->second);
+
+    current_sinks_map_.erase(cast_sink_it);
+    MediaSinkServiceBase::RestartTimer();
     return;
   }
 
@@ -382,6 +392,9 @@ void CastMediaSinkServiceImpl::OnNetworksChanged(
     }
     sink_cache_[last_network_id] = std::move(current_sinks);
   }
+
+  // TODO(imcheng): Maybe this should clear |current_sinks_map_| and call
+  // |RestartTimer()| so it is more responsive?
   if (IsNetworkIdUnknownOrDisconnected(network_id))
     return;
 
@@ -511,7 +524,7 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
              << ip_endpoint.ToString() << " [error_state]: "
              << cast_channel::ChannelErrorToString(error_state);
 
-    OnChannelOpenFailed(ip_endpoint);
+    OnChannelOpenFailed(ip_endpoint, cast_sink);
     CastAnalytics::RecordCastChannelConnectResult(
         MediaRouterChannelConnectResults::FAILURE);
     return;
@@ -572,6 +585,18 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
     sink_it->second = cast_sink;
   }
 
+  // If the sink was under a different IP address previously, remove it from
+  // |current_sinks_map_|.
+  auto old_sink_it = std::find_if(
+      current_sinks_map_.begin(), current_sinks_map_.end(),
+      [&cast_sink, &ip_endpoint](
+          const std::pair<net::IPEndPoint, MediaSinkInternal>& entry) {
+        return !(entry.first == ip_endpoint) &&
+               entry.second.sink().id() == cast_sink.sink().id();
+      });
+  if (old_sink_it != current_sinks_map_.end())
+    current_sinks_map_.erase(old_sink_it);
+
   if (observer_)
     observer_->OnSinkAddedOrUpdated(cast_sink, socket);
 
@@ -580,9 +605,14 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
 }
 
 void CastMediaSinkServiceImpl::OnChannelOpenFailed(
-    const net::IPEndPoint& ip_endpoint) {
+    const net::IPEndPoint& ip_endpoint,
+    const MediaSinkInternal& sink) {
+  // It is possible that the old sink in |current_sinks_map_| is replaced with
+  // a new sink if a network change happened. Check the sink ID to make sure
+  // this is the sink we want to erase.
   auto it = current_sinks_map_.find(ip_endpoint);
-  if (it == current_sinks_map_.end())
+  if (it == current_sinks_map_.end() ||
+      it->second.sink().id() != sink.sink().id())
     return;
 
   if (observer_)

@@ -169,6 +169,10 @@ class CastMediaSinkServiceImpl
                            TestInitRetryParametersWithDefaultValue);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestOnDialSinkAddedSkipsIfNonCastDevice);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestOnChannelErrorRetry);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           OpenChannelNewIPSameSink);
 
   // Holds Finch field trial parameters controlling Cast channel retry strategy.
   struct RetryParams {
@@ -276,7 +280,7 @@ class CastMediaSinkServiceImpl
                               cast_channel::ChannelError error_state,
                               SinkSource sink_source);
 
-  // Invoked when opening cast channel on IO thread succeeds.
+  // Invoked when opening cast channel succeeds.
   // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
   // |socket|: raw pointer of newly created cast channel. Does not take
   // ownership of |socket|.
@@ -284,11 +288,12 @@ class CastMediaSinkServiceImpl
                               cast_channel::CastSocket* socket,
                               SinkSource sink_source);
 
-  // Invoked when opening cast channel on IO thread fails after all retry
+  // Invoked when opening cast channel fails after all retry
   // attempts.
   // |ip_endpoint|: ip endpoint of cast channel failing to connect to.
-  // |sink_source|: Method of sink discovery.
-  void OnChannelOpenFailed(const net::IPEndPoint& ip_endpoint);
+  // |sink|: The sink for which channel open failed.
+  void OnChannelOpenFailed(const net::IPEndPoint& ip_endpoint,
+                           const MediaSinkInternal& sink);
 
   // Returns whether the given DIAL-discovered |sink| is probably a non-Cast
   // device. This is heuristically determined by two things: |sink| has been
