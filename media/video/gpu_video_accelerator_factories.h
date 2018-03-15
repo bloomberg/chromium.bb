@@ -53,17 +53,6 @@ class VideoDecodeAccelerator;
 //   loop.
 class MEDIA_EXPORT GpuVideoAcceleratorFactories {
  public:
-  class ScopedGLContextLock {
-   public:
-    ScopedGLContextLock() = default;
-    virtual ~ScopedGLContextLock() = default;
-
-    virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedGLContextLock);
-  };
-
   enum class OutputFormat {
     UNDEFINED = 0,    // Unset state
     I420,             // 3 x R8 GMBs
@@ -121,7 +110,11 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // video frames are enabled.
   virtual OutputFormat VideoFrameOutputFormat(size_t bit_depth) = 0;
 
-  virtual std::unique_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
+  // Returns a GL Context that can be used on the task runner associated with
+  // the same instance of GpuVideoAcceleratorFactories.
+  // nullptr will be returned in cases where a context couldn't be created or
+  // the context was lost.
+  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
 
   // Allocate & return a shared memory segment.
   virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(

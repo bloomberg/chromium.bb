@@ -21,16 +21,15 @@ class VideoOverlayFactory::Texture {
     DCHECK(gpu_factories_);
     DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
 
-    std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-        gpu_factories_->GetGLContextLock());
-    if (lock) {
-      gpu::gles2::GLES2Interface* gl = lock->ContextGL();
-      gpu_memory_buffer_ = gpu_factories_->CreateGpuMemoryBuffer(
-          gfx::Size(1, 1), gfx::BufferFormat::RGBA_8888,
-          gfx::BufferUsage::SCANOUT);
-      if (gpu_memory_buffer_) {
-        image_id_ = gl->CreateImageCHROMIUM(
-            gpu_memory_buffer_->AsClientBuffer(), 1, 1, GL_RGBA);
+    gpu::gles2::GLES2Interface* gl = gpu_factories_->ContextGL();
+    if (!gl)
+      return;
+    gpu_memory_buffer_ = gpu_factories_->CreateGpuMemoryBuffer(
+        gfx::Size(1, 1), gfx::BufferFormat::RGBA_8888,
+        gfx::BufferUsage::SCANOUT);
+    if (gpu_memory_buffer_) {
+      image_id_ = gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
+                                          1, 1, GL_RGBA);
       }
       if (image_id_) {
         gl->GenTextures(1, &texture_id_);
@@ -42,22 +41,19 @@ class VideoOverlayFactory::Texture {
 
         gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
       }
-    }
   }
 
   ~Texture() {
     DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
 
     if (image_id_) {
-      std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-          gpu_factories_->GetGLContextLock());
-      if (lock) {
-        gpu::gles2::GLES2Interface* gl = lock->ContextGL();
-        gl->BindTexture(GL_TEXTURE_2D, texture_id_);
-        gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
-        gl->DeleteTextures(1, &texture_id_);
-        gl->DestroyImageCHROMIUM(image_id_);
-      }
+      gpu::gles2::GLES2Interface* gl = gpu_factories_->ContextGL();
+      if (!gl)
+        return;
+      gl->BindTexture(GL_TEXTURE_2D, texture_id_);
+      gl->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
+      gl->DeleteTextures(1, &texture_id_);
+      gl->DestroyImageCHROMIUM(image_id_);
     }
   }
 
