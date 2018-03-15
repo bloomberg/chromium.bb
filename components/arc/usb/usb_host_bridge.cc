@@ -120,14 +120,14 @@ void ArcUsbHostBridge::RequestPermission(const std::string& guid,
                                          RequestPermissionCallback callback) {
   VLOG(2) << "USB RequestPermission " << guid << " package " << package;
   // Permission already requested.
-  if (HasPermissionForDevice(guid)) {
+  if (HasPermissionForDevice(guid, package)) {
     std::move(callback).Run(true);
     return;
   }
 
   // The other side was just checking, fail without asking the user.
   if (!interactive) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(HasPermissionForDevice(guid, package));
     return;
   }
 
@@ -136,8 +136,9 @@ void ArcUsbHostBridge::RequestPermission(const std::string& guid,
 }
 
 void ArcUsbHostBridge::OpenDevice(const std::string& guid,
+                                  const base::Optional<std::string>& package,
                                   OpenDeviceCallback callback) {
-  if (!usb_service_) {
+  if (!usb_service_ || !package) {
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
@@ -150,7 +151,7 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
   }
 
   // The RequestPermission was never done, abort.
-  if (!HasPermissionForDevice(guid)) {
+  if (!HasPermissionForDevice(guid, package.value())) {
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
@@ -297,10 +298,23 @@ void ArcUsbHostBridge::DoRequestUserAuthorization(
       std::move(callback));
 }
 
-bool ArcUsbHostBridge::HasPermissionForDevice(const std::string& guid) {
-  // TODO(lgcheng): implement permission settings
-  // fail close for now
-  return false;
+bool ArcUsbHostBridge::HasPermissionForDevice(const std::string& guid,
+                                              const std::string& package) {
+  if (!ui_delegate_)
+    return false;
+
+  if (!usb_service_)
+    return false;
+
+  scoped_refptr<device::UsbDevice> device = usb_service_->GetDevice(guid);
+  if (!device.get()) {
+    LOG(WARNING) << "Unknown USB device " << guid;
+    return false;
+  }
+
+  return ui_delegate_->HasUsbAccessPermission(
+      package, guid, device->serial_number(), device->vendor_id(),
+      device->product_id());
 }
 
 }  // namespace arc
