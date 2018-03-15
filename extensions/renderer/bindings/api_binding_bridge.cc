@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/object_template_builder.h"
@@ -61,6 +62,9 @@ void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
   // The object and arguments here are meant to match those passed to the hook
   // functions in binding.js.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  if (!binding::IsContextValidOrThrowError(context))
+    return;  // Context has been invalidated.
+
   v8::Local<v8::Object> hook_object = v8::Object::New(isolate);
   v8::Local<v8::Object> wrapper;
   if (!GetWrapper(isolate).ToLocal(&wrapper))
