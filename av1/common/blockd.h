@@ -805,11 +805,12 @@ static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
   TX_SIZE txs = max_txsize_rect_lookup[bsize];
   for (int level = 0; level < MAX_VARTX_DEPTH; ++level)
     txs = sub_tx_size_map[1][txs];
-  const int tx_w = tx_size_wide_unit[txs];
-  const int tx_h = tx_size_high_unit[txs];
-  const int bw_uint = mi_size_wide[bsize];
-  const int stride = bw_uint / tx_w;
-  const int index = (blk_row / tx_h) * stride + (blk_col / tx_w);
+  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+  const int bw_uint_log2 = b_width_log2_lookup[bsize];
+  const int stride_log2 = bw_uint_log2 - tx_w_log2;
+  const int index =
+      ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);
   assert(index < TXK_TYPE_BUF_LEN);
   return index;
 }
