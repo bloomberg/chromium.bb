@@ -140,7 +140,7 @@ const CGFloat kGrippyWidth = 3.0;
   if (highlight || highlight_) {
     highlight_ = std::move(highlight);
     // We don't allow resizing when the container is highlighting.
-    resizable_ = highlight.get() == nullptr;
+    resizable_ = highlight_.get() == nullptr;
     [self setNeedsDisplay:YES];
   }
 }
@@ -300,6 +300,10 @@ const CGFloat kGrippyWidth = 3.0;
 - (void)stopAnimation {
   if ([resizeAnimation_ isAnimating])
     [resizeAnimation_ stopAnimation];
+}
+
+- (BOOL)canBeResized {
+  return resizable_;
 }
 
 #pragma mark -

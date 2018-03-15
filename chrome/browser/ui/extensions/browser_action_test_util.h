@@ -104,6 +104,9 @@ class BrowserActionTestUtil {
   // Returns the maximum allowed size of an extension popup.
   virtual gfx::Size GetMaxPopupSize() = 0;
 
+  // Returns whether the browser action container can currently be resized.
+  virtual bool CanBeResized() = 0;
+
  protected:
   BrowserActionTestUtil() {}
 

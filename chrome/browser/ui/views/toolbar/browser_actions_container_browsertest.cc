@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -27,6 +28,8 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
+namespace {
+
 // TODO(devlin): Continue moving any tests that should be platform independent
 // from this file to the crossplatform tests in
 // chrome/browser/ui/toolbar/browser_actions_bar_browsertest.cc.
@@ -34,7 +37,16 @@
 // Test that dragging browser actions works, and that dragging a browser action
 // from the overflow menu results in it "popping" out (growing the container
 // size by 1), rather than just reordering the extensions.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
+
+// The two drag & drop tests are currently restricted to Views browsers in the
+// absence of a good way to abstract drag & drop actions.
+class BrowserActionsBarViewsBrowserTest : public BrowserActionsBarBrowserTest {
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+};
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, DragBrowserActions) {
   LoadExtensions();
 
   // Sanity check: All extensions showing; order is A B C.
@@ -147,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
 
 // Test that changes performed in one container affect containers in other
 // windows so that it is consistent.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, MultipleWindows) {
   LoadExtensions();
   BrowserActionsContainer* first =
       BrowserView::GetBrowserViewForBrowser(browser())->toolbar()->
@@ -214,16 +226,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
 
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-
-  BrowserActionsContainer* container =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar()->browser_actions();
-
-  // Currently, dragging should be enabled.
-  ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);
-  ASSERT_TRUE(action_view);
-  gfx::Point point(action_view->x(), action_view->y());
-  EXPECT_TRUE(container->CanStartDragForView(action_view, point, point));
+  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
 
   std::vector<std::string> action_ids;
   action_ids.push_back(extension_a()->id());
@@ -236,15 +239,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
 
   // We shouldn't be able to drag in highlight mode.
-  action_view = container->GetToolbarActionViewAt(0);
-  EXPECT_FALSE(container->CanStartDragForView(action_view, point, point));
+  EXPECT_FALSE(browser_actions_bar()->CanBeResized());
 
   // We should go back to normal after leaving highlight mode.
   toolbar_model()->StopHighlighting();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  action_view = container->GetToolbarActionViewAt(0);
-  EXPECT_TRUE(container->CanStartDragForView(action_view, point, point));
+  EXPECT_TRUE(browser_actions_bar()->CanBeResized());
 }
 
 // Test the behavior of the overflow container for Extension Actions.
