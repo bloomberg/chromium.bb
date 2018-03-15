@@ -406,7 +406,7 @@
         "args": [
           "-v",
           "--xvfb",
-          "--browser=release_x64"
+          "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -430,14 +430,16 @@
           "expiration": 36000,
           "hard_timeout": 36000,
           "ignore_task_failure": false,
-          "io_timeout": 3600,
+          "io_timeout": 1800,
           "shards": 26,
           "upload_test_results": true
         },
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"build195-a9\"}, {\"id\": \"build196-a9\"}, {\"id\": \"build197-a9\"}, {\"id\": \"build198-a9\"}, {\"id\": \"build199-a9\"}, {\"id\": \"build200-a9\"}, {\"id\": \"build201-a9\"}, {\"id\": \"build202-a9\"}, {\"id\": \"build203-a9\"}, {\"id\": \"build204-a9\"}, {\"id\": \"build205-a9\"}, {\"id\": \"build206-a9\"}, {\"id\": \"build207-a9\"}, {\"id\": \"build208-a9\"}, {\"id\": \"build209-a9\"}, {\"id\": \"build210-a9\"}, {\"id\": \"build211-a9\"}, {\"id\": \"build212-a9\"}, {\"id\": \"build213-a9\"}, {\"id\": \"build214-a9\"}, {\"id\": \"build215-a9\"}, {\"id\": \"build216-a9\"}, {\"id\": \"build217-a9\"}, {\"id\": \"build218-a9\"}, {\"id\": \"build219-a9\"}, {\"id\": \"build220-a9\"}]"
+            "[{\"id\": \"build195-a9\"}, {\"id\": \"build196-a9\"}, {\"id\": \"build197-a9\"}, {\"id\": \"build198-a9\"}, {\"id\": \"build199-a9\"}, {\"id\": \"build200-a9\"}, {\"id\": \"build201-a9\"}, {\"id\": \"build202-a9\"}, {\"id\": \"build203-a9\"}, {\"id\": \"build204-a9\"}, {\"id\": \"build205-a9\"}, {\"id\": \"build206-a9\"}, {\"id\": \"build207-a9\"}, {\"id\": \"build208-a9\"}, {\"id\": \"build209-a9\"}, {\"id\": \"build210-a9\"}, {\"id\": \"build211-a9\"}, {\"id\": \"build212-a9\"}, {\"id\": \"build213-a9\"}, {\"id\": \"build214-a9\"}, {\"id\": \"build215-a9\"}, {\"id\": \"build216-a9\"}, {\"id\": \"build217-a9\"}, {\"id\": \"build218-a9\"}, {\"id\": \"build219-a9\"}, {\"id\": \"build220-a9\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -489,8 +491,6 @@
         "isolate_name": "telemetry_perf_tests_experimental",
         "merge": {
           "args": [
-            "--configuration-name",
-            "buildbot-test",
             "--service-account-file",
             "/creds/service_accounts/service-account-chromium-perf-histograms.json"
           ],
@@ -510,14 +510,16 @@
           "expiration": 36000,
           "hard_timeout": 36000,
           "ignore_task_failure": false,
-          "io_timeout": 3600,
-          "shards": 2,
+          "io_timeout": 1800,
+          "shards": 3,
           "upload_test_results": true
         },
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"swarm846-c4\"}, {\"id\": \"swarm847-c4\"}]"
+            "[{\"id\": \"swarm823-c4\"}, {\"id\": \"swarm846-c4\"}, {\"id\": \"swarm847-c4\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
