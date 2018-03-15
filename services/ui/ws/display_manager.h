@@ -34,7 +34,7 @@ class WindowServer;
 // those that do.
 class DisplayManager : public display::ScreenManagerDelegate {
  public:
-  explicit DisplayManager(WindowServer* window_server);
+  DisplayManager(WindowServer* window_server, bool is_hosting_viz);
   ~DisplayManager() override;
 
   // Called once WindowServer::display_creation_config() has been determined.

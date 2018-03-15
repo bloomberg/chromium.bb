@@ -135,7 +135,7 @@ struct WindowServer::CurrentDragLoopState {
 WindowServer::WindowServer(WindowServerDelegate* delegate, bool should_host_viz)
     : delegate_(delegate),
       next_client_id_(kWindowServerClientId + 1),
-      display_manager_(std::make_unique<DisplayManager>(this)),
+      display_manager_(std::make_unique<DisplayManager>(this, should_host_viz)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),

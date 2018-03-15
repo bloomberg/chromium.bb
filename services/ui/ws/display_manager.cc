@@ -37,11 +37,11 @@
 namespace ui {
 namespace ws {
 
-DisplayManager::DisplayManager(WindowServer* window_server)
+DisplayManager::DisplayManager(WindowServer* window_server, bool is_hosting_viz)
     : window_server_(window_server),
       cursor_location_manager_(std::make_unique<CursorLocationManager>()) {
 #if defined(OS_CHROMEOS)
-  if (window_server->is_hosting_viz()) {
+  if (is_hosting_viz) {
     // TODO: http://crbug.com/701468 fix function key preferences and sticky
     // keys.
     ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
