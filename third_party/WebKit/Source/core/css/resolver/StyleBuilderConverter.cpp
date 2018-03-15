@@ -1396,6 +1396,38 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       value, Color(), for_visited_link);
 }
 
+SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
+                                                const CSSValue& value) {
+  const CSSValue* local_value = &value;
+  SVGPaint paint;
+  if (value.IsValueList()) {
+    const CSSValueList& list = ToCSSValueList(value);
+    DCHECK_EQ(list.length(), 2u);
+    paint.url = ToCSSURIValue(list.Item(0)).Value();
+    local_value = &list.Item(1);
+  }
+
+  if (local_value->IsURIValue()) {
+    paint.type = SVG_PAINTTYPE_URI;
+    paint.url = ToCSSURIValue(local_value)->Value();
+  } else if (local_value->IsIdentifierValue() &&
+             ToCSSIdentifierValue(local_value)->GetValueID() == CSSValueNone) {
+    paint.type =
+        paint.url.IsEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
+  } else if (local_value->IsIdentifierValue() &&
+             ToCSSIdentifierValue(local_value)->GetValueID() ==
+                 CSSValueCurrentcolor) {
+    paint.color = state.Style()->GetColor();
+    paint.type = paint.url.IsEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR
+                                     : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+  } else {
+    paint.color = ConvertColor(state, *local_value);
+    paint.type = paint.url.IsEmpty() ? SVG_PAINTTYPE_RGBCOLOR
+                                     : SVG_PAINTTYPE_URI_RGBCOLOR;
+  }
+  return paint;
+}
+
 TextEmphasisPosition StyleBuilderConverter::ConvertTextTextEmphasisPosition(
     StyleResolverState& state,
     const CSSValue& value) {
@@ -1414,6 +1446,7 @@ TextEmphasisPosition StyleBuilderConverter::ConvertTextTextEmphasisPosition(
     return TextEmphasisPosition::kUnderLeft;
   return TextEmphasisPosition::kOverRight;
 }
+
 float StyleBuilderConverter::ConvertTextStrokeWidth(StyleResolverState& state,
                                                     const CSSValue& value) {
   if (value.IsIdentifierValue() && ToCSSIdentifierValue(value).GetValueID()) {

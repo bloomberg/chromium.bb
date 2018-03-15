@@ -119,6 +119,41 @@ enum EPaintOrder {
   kPaintOrderMarkersStrokeFill = 6
 };
 
+struct SVGPaint {
+  SVGPaint() : type(SVG_PAINTTYPE_NONE) {}
+  SVGPaint(Color color) : type(SVG_PAINTTYPE_RGBCOLOR), color(color) {}
+
+  CORE_EXPORT bool operator==(const SVGPaint&) const;
+  bool operator!=(const SVGPaint& other) const { return !(*this == other); }
+
+  bool IsNone() const { return type == SVG_PAINTTYPE_NONE; }
+  bool IsColor() const {
+    return type == SVG_PAINTTYPE_RGBCOLOR || type == SVG_PAINTTYPE_CURRENTCOLOR;
+  }
+  // Used by CSSPropertyEquality::PropertiesEqual.
+  bool EqualTypeOrColor(const SVGPaint& other) const {
+    return type == other.type &&
+           (type != SVG_PAINTTYPE_RGBCOLOR || color == other.color);
+  }
+  bool HasFallbackColor() const {
+    return type == SVG_PAINTTYPE_URI_CURRENTCOLOR ||
+           type == SVG_PAINTTYPE_URI_RGBCOLOR;
+  }
+  bool HasColor() const { return IsColor() || HasFallbackColor(); }
+  bool HasUrl() const { return type >= SVG_PAINTTYPE_URI_NONE; }
+  bool HasCurrentColor() const {
+    return type == SVG_PAINTTYPE_CURRENTCOLOR ||
+           type == SVG_PAINTTYPE_URI_CURRENTCOLOR;
+  }
+
+  const Color& GetColor() const { return color; }
+  const String& GetUrl() const { return url; }
+
+  SVGPaintType type;
+  Color color;
+  String url;
+};
+
 // Inherited/Non-Inherited Style Datastructures
 class StyleFillData : public RefCounted<StyleFillData> {
  public:
@@ -135,12 +170,8 @@ class StyleFillData : public RefCounted<StyleFillData> {
   }
 
   float opacity;
-  SVGPaintType paint_type;
-  Color paint_color;
-  String paint_uri;
-  SVGPaintType visited_link_paint_type;
-  Color visited_link_paint_color;
-  String visited_link_paint_uri;
+  SVGPaint paint;
+  SVGPaint visited_link_paint;
 
  private:
   StyleFillData();
@@ -190,12 +221,8 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
   Length dash_offset;
   scoped_refptr<SVGDashArray> dash_array;
 
-  SVGPaintType paint_type;
-  Color paint_color;
-  String paint_uri;
-  SVGPaintType visited_link_paint_type;
-  Color visited_link_paint_color;
-  String visited_link_paint_uri;
+  SVGPaint paint;
+  SVGPaint visited_link_paint;
 
  private:
   StyleStrokeData();

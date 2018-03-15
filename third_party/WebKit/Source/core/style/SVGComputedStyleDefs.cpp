@@ -32,31 +32,24 @@
 
 namespace blink {
 
+bool SVGPaint::operator==(const SVGPaint& other) const {
+  return type == other.type && color == other.color && url == other.url;
+}
+
 StyleFillData::StyleFillData()
     : opacity(SVGComputedStyle::InitialFillOpacity()),
-      paint_type(SVGComputedStyle::InitialFillPaintType()),
-      paint_color(SVGComputedStyle::InitialFillPaintColor()),
-      paint_uri(SVGComputedStyle::InitialFillPaintUri()),
-      visited_link_paint_type(SVGComputedStyle::InitialFillPaintType()),
-      visited_link_paint_color(SVGComputedStyle::InitialFillPaintColor()),
-      visited_link_paint_uri(SVGComputedStyle::InitialFillPaintUri()) {}
+      paint(SVGComputedStyle::InitialFillPaint()),
+      visited_link_paint(SVGComputedStyle::InitialFillPaint()) {}
 
 StyleFillData::StyleFillData(const StyleFillData& other)
     : RefCounted<StyleFillData>(),
       opacity(other.opacity),
-      paint_type(other.paint_type),
-      paint_color(other.paint_color),
-      paint_uri(other.paint_uri),
-      visited_link_paint_type(other.visited_link_paint_type),
-      visited_link_paint_color(other.visited_link_paint_color),
-      visited_link_paint_uri(other.visited_link_paint_uri) {}
+      paint(other.paint),
+      visited_link_paint(other.visited_link_paint) {}
 
 bool StyleFillData::operator==(const StyleFillData& other) const {
-  return opacity == other.opacity && paint_type == other.paint_type &&
-         paint_color == other.paint_color && paint_uri == other.paint_uri &&
-         visited_link_paint_type == other.visited_link_paint_type &&
-         visited_link_paint_color == other.visited_link_paint_color &&
-         visited_link_paint_uri == other.visited_link_paint_uri;
+  return opacity == other.opacity && paint == other.paint &&
+         visited_link_paint == other.visited_link_paint;
 }
 
 StyleStrokeData::StyleStrokeData()
@@ -65,12 +58,8 @@ StyleStrokeData::StyleStrokeData()
       width(SVGComputedStyle::InitialStrokeWidth()),
       dash_offset(SVGComputedStyle::InitialStrokeDashOffset()),
       dash_array(SVGComputedStyle::InitialStrokeDashArray()),
-      paint_type(SVGComputedStyle::InitialStrokePaintType()),
-      paint_color(SVGComputedStyle::InitialStrokePaintColor()),
-      paint_uri(SVGComputedStyle::InitialStrokePaintUri()),
-      visited_link_paint_type(SVGComputedStyle::InitialStrokePaintType()),
-      visited_link_paint_color(SVGComputedStyle::InitialStrokePaintColor()),
-      visited_link_paint_uri(SVGComputedStyle::InitialStrokePaintUri()) {}
+      paint(SVGComputedStyle::InitialStrokePaint()),
+      visited_link_paint(SVGComputedStyle::InitialStrokePaint()) {}
 
 StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
     : RefCounted<StyleStrokeData>(),
@@ -79,21 +68,14 @@ StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
       width(other.width),
       dash_offset(other.dash_offset),
       dash_array(other.dash_array),
-      paint_type(other.paint_type),
-      paint_color(other.paint_color),
-      paint_uri(other.paint_uri),
-      visited_link_paint_type(other.visited_link_paint_type),
-      visited_link_paint_color(other.visited_link_paint_color),
-      visited_link_paint_uri(other.visited_link_paint_uri) {}
+      paint(other.paint),
+      visited_link_paint(other.visited_link_paint) {}
 
 bool StyleStrokeData::operator==(const StyleStrokeData& other) const {
   return width == other.width && opacity == other.opacity &&
          miter_limit == other.miter_limit && dash_offset == other.dash_offset &&
-         *dash_array == *other.dash_array && paint_type == other.paint_type &&
-         paint_color == other.paint_color && paint_uri == other.paint_uri &&
-         visited_link_paint_type == other.visited_link_paint_type &&
-         visited_link_paint_color == other.visited_link_paint_color &&
-         visited_link_paint_uri == other.visited_link_paint_uri;
+         *dash_array == *other.dash_array && paint == other.paint &&
+         visited_link_paint == other.visited_link_paint;
 }
 
 StyleStopData::StyleStopData()

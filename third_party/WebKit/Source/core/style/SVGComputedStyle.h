@@ -78,13 +78,9 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static EShapeRendering InitialShapeRendering() { return SR_AUTO; }
   static ETextAnchor InitialTextAnchor() { return TA_START; }
   static float InitialFillOpacity() { return 1; }
-  static SVGPaintType InitialFillPaintType() { return SVG_PAINTTYPE_RGBCOLOR; }
-  static Color InitialFillPaintColor() { return Color::kBlack; }
-  static String InitialFillPaintUri() { return String(); }
+  static SVGPaint InitialFillPaint() { return SVGPaint(Color::kBlack); }
   static float InitialStrokeOpacity() { return 1; }
-  static SVGPaintType InitialStrokePaintType() { return SVG_PAINTTYPE_NONE; }
-  static Color InitialStrokePaintColor() { return Color(); }
-  static String InitialStrokePaintUri() { return String(); }
+  static SVGPaint InitialStrokePaint() { return SVGPaint(); }
   static scoped_refptr<SVGDashArray> InitialStrokeDashArray();
   static Length InitialStrokeDashOffset() { return Length(kFixed); }
   static float InitialStrokeMiterLimit() { return 4; }
@@ -187,27 +183,14 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
       fill.Access()->opacity = obj;
   }
 
-  void SetFillPaint(SVGPaintType type,
-                    const Color& color,
-                    const String& uri,
-                    bool apply_to_regular_style = true,
-                    bool apply_to_visited_link_style = false) {
-    if (apply_to_regular_style) {
-      if (!(fill->paint_type == type))
-        fill.Access()->paint_type = type;
-      if (!(fill->paint_color == color))
-        fill.Access()->paint_color = color;
-      if (!(fill->paint_uri == uri))
-        fill.Access()->paint_uri = uri;
-    }
-    if (apply_to_visited_link_style) {
-      if (!(fill->visited_link_paint_type == type))
-        fill.Access()->visited_link_paint_type = type;
-      if (!(fill->visited_link_paint_color == color))
-        fill.Access()->visited_link_paint_color = color;
-      if (!(fill->visited_link_paint_uri == uri))
-        fill.Access()->visited_link_paint_uri = uri;
-    }
+  void SetFillPaint(const SVGPaint& paint) {
+    if (!(fill->paint == paint))
+      fill.Access()->paint = paint;
+  }
+
+  void SetVisitedLinkFillPaint(const SVGPaint& paint) {
+    if (!(fill->visited_link_paint == paint))
+      fill.Access()->visited_link_paint = paint;
   }
 
   void SetStrokeOpacity(float obj) {
@@ -215,27 +198,14 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
       stroke.Access()->opacity = obj;
   }
 
-  void SetStrokePaint(SVGPaintType type,
-                      const Color& color,
-                      const String& uri,
-                      bool apply_to_regular_style = true,
-                      bool apply_to_visited_link_style = false) {
-    if (apply_to_regular_style) {
-      if (!(stroke->paint_type == type))
-        stroke.Access()->paint_type = type;
-      if (!(stroke->paint_color == color))
-        stroke.Access()->paint_color = color;
-      if (!(stroke->paint_uri == uri))
-        stroke.Access()->paint_uri = uri;
-    }
-    if (apply_to_visited_link_style) {
-      if (!(stroke->visited_link_paint_type == type))
-        stroke.Access()->visited_link_paint_type = type;
-      if (!(stroke->visited_link_paint_color == color))
-        stroke.Access()->visited_link_paint_color = color;
-      if (!(stroke->visited_link_paint_uri == uri))
-        stroke.Access()->visited_link_paint_uri = uri;
-    }
+  void SetStrokePaint(const SVGPaint& paint) {
+    if (!(stroke->paint == paint))
+      stroke.Access()->paint = paint;
+  }
+
+  void SetVisitedLinkStrokePaint(const SVGPaint& paint) {
+    if (!(stroke->visited_link_paint == paint))
+      stroke.Access()->visited_link_paint = paint;
   }
 
   void SetStrokeDashArray(scoped_refptr<SVGDashArray> dash_array) {
@@ -348,13 +318,9 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
     return (ETextAnchor)svg_inherited_flags.text_anchor;
   }
   float FillOpacity() const { return fill->opacity; }
-  const SVGPaintType& FillPaintType() const { return fill->paint_type; }
-  const Color& FillPaintColor() const { return fill->paint_color; }
-  const String& FillPaintUri() const { return fill->paint_uri; }
+  const SVGPaint& FillPaint() const { return fill->paint; }
   float StrokeOpacity() const { return stroke->opacity; }
-  const SVGPaintType& StrokePaintType() const { return stroke->paint_type; }
-  const Color& StrokePaintColor() const { return stroke->paint_color; }
-  const String& StrokePaintUri() const { return stroke->paint_uri; }
+  const SVGPaint& StrokePaint() const { return stroke->paint; }
   SVGDashArray* StrokeDashArray() const { return stroke->dash_array.get(); }
   float StrokeMiterLimit() const { return stroke->miter_limit; }
   const UnzoomedLength& StrokeWidth() const { return stroke->width; }
@@ -393,37 +359,21 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
   EPaintOrderType PaintOrderType(unsigned index) const;
 
-  const SVGPaintType& VisitedLinkFillPaintType() const {
-    return fill->visited_link_paint_type;
+  const SVGPaint& VisitedLinkFillPaint() const {
+    return fill->visited_link_paint;
   }
-  const Color& VisitedLinkFillPaintColor() const {
-    return fill->visited_link_paint_color;
-  }
-  const String& VisitedLinkFillPaintUri() const {
-    return fill->visited_link_paint_uri;
-  }
-  const SVGPaintType& VisitedLinkStrokePaintType() const {
-    return stroke->visited_link_paint_type;
-  }
-  const Color& VisitedLinkStrokePaintColor() const {
-    return stroke->visited_link_paint_color;
-  }
-  const String& VisitedLinkStrokePaintUri() const {
-    return stroke->visited_link_paint_uri;
+  const SVGPaint& VisitedLinkStrokePaint() const {
+    return stroke->visited_link_paint;
   }
 
   bool IsFillColorCurrentColor() const {
-    return FillPaintType() == SVG_PAINTTYPE_CURRENTCOLOR ||
-           VisitedLinkFillPaintType() == SVG_PAINTTYPE_CURRENTCOLOR ||
-           FillPaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR ||
-           VisitedLinkFillPaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    return FillPaint().HasCurrentColor() ||
+           VisitedLinkFillPaint().HasCurrentColor();
   }
 
   bool IsStrokeColorCurrentColor() const {
-    return StrokePaintType() == SVG_PAINTTYPE_CURRENTCOLOR ||
-           VisitedLinkStrokePaintType() == SVG_PAINTTYPE_CURRENTCOLOR ||
-           StrokePaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR ||
-           VisitedLinkStrokePaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    return StrokePaint().HasCurrentColor() ||
+           VisitedLinkStrokePaint().HasCurrentColor();
   }
 
   // convenience
@@ -432,11 +382,11 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
     return !MarkerStartResource().IsEmpty() || !MarkerMidResource().IsEmpty() ||
            !MarkerEndResource().IsEmpty();
   }
-  bool HasStroke() const { return StrokePaintType() != SVG_PAINTTYPE_NONE; }
+  bool HasStroke() const { return !StrokePaint().IsNone(); }
   bool HasVisibleStroke() const {
     return HasStroke() && !StrokeWidth().IsZero();
   }
-  bool HasFill() const { return FillPaintType() != SVG_PAINTTYPE_NONE; }
+  bool HasFill() const { return !FillPaint().IsNone(); }
 
  protected:
   // inherit

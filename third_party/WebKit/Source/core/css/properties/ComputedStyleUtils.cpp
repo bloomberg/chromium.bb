@@ -1866,27 +1866,25 @@ CSSValue* ComputedStyleUtils::PaintOrderToCSSValueList(
 }
 
 CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
-    SVGPaintType paint_type,
-    const String& url,
-    const Color& color,
+    const SVGPaint& paint,
     const Color& current_color) {
-  if (paint_type >= SVG_PAINTTYPE_URI_NONE) {
+  if (paint.type >= SVG_PAINTTYPE_URI_NONE) {
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-    values->Append(*CSSURIValue::Create(AtomicString(url)));
-    if (paint_type == SVG_PAINTTYPE_URI_NONE)
+    values->Append(*CSSURIValue::Create(AtomicString(paint.GetUrl())));
+    if (paint.type == SVG_PAINTTYPE_URI_NONE)
       values->Append(*CSSIdentifierValue::Create(CSSValueNone));
-    else if (paint_type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
+    else if (paint.type == SVG_PAINTTYPE_URI_CURRENTCOLOR)
       values->Append(*CSSColorValue::Create(current_color.Rgb()));
-    else if (paint_type == SVG_PAINTTYPE_URI_RGBCOLOR)
-      values->Append(*CSSColorValue::Create(color.Rgb()));
+    else if (paint.type == SVG_PAINTTYPE_URI_RGBCOLOR)
+      values->Append(*CSSColorValue::Create(paint.GetColor().Rgb()));
     return values;
   }
-  if (paint_type == SVG_PAINTTYPE_NONE)
+  if (paint.type == SVG_PAINTTYPE_NONE)
     return CSSIdentifierValue::Create(CSSValueNone);
-  if (paint_type == SVG_PAINTTYPE_CURRENTCOLOR)
+  if (paint.type == SVG_PAINTTYPE_CURRENTCOLOR)
     return CSSColorValue::Create(current_color.Rgb());
 
-  return CSSColorValue::Create(color.Rgb());
+  return CSSColorValue::Create(paint.GetColor().Rgb());
 }
 
 CSSValue* ComputedStyleUtils::ValueForShadowData(const ShadowData& shadow,

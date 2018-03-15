@@ -66,57 +66,33 @@ void SVGPaintServer::PrependTransform(const AffineTransform& transform) {
 static SVGPaintDescription RequestPaint(const LayoutObject& object,
                                         const ComputedStyle& style,
                                         LayoutSVGResourceMode mode) {
-  // If we have no style at all, ignore it.
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-
-  // If we have no fill/stroke, return 0.
-  if (mode == kApplyToFillMode) {
-    if (!svg_style.HasFill())
-      return SVGPaintDescription();
-  } else {
-    if (!svg_style.HasStroke())
-      return SVGPaintDescription();
-  }
-
   bool apply_to_fill = mode == kApplyToFillMode;
-  SVGPaintType paint_type =
-      apply_to_fill ? svg_style.FillPaintType() : svg_style.StrokePaintType();
-  DCHECK_NE(paint_type, SVG_PAINTTYPE_NONE);
 
-  Color color;
-  bool has_color = false;
-  switch (paint_type) {
-    case SVG_PAINTTYPE_CURRENTCOLOR:
-    case SVG_PAINTTYPE_URI_CURRENTCOLOR:
-      // The keyword `currentcolor` takes its value from the value of the
-      // `color` property on the same element.
-      color = style.VisitedDependentColor(GetCSSPropertyColor());
-      has_color = true;
-      break;
-    case SVG_PAINTTYPE_RGBCOLOR:
-    case SVG_PAINTTYPE_URI_RGBCOLOR:
-      color = apply_to_fill ? svg_style.FillPaintColor()
-                            : svg_style.StrokePaintColor();
-      has_color = true;
-      break;
-    default:
-      break;
-  }
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  const SVGPaint& paint =
+      apply_to_fill ? svg_style.FillPaint() : svg_style.StrokePaint();
+  const SVGPaint& visited_paint = apply_to_fill
+                                      ? svg_style.VisitedLinkFillPaint()
+                                      : svg_style.VisitedLinkStrokePaint();
+
+  // If we have no, ignore it.
+  if (paint.IsNone())
+    return SVGPaintDescription();
+
+  Color color = paint.GetColor();
+  bool has_color = paint.HasColor();
+
+  if (paint.HasCurrentColor())
+    color = style.VisitedDependentColor(GetCSSPropertyColor());
 
   if (style.InsideLink() == EInsideLink::kInsideVisitedLink) {
     // FIXME: This code doesn't support the uri component of the visited link
     // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
-    SVGPaintType visited_paint_type =
-        apply_to_fill ? svg_style.VisitedLinkFillPaintType()
-                      : svg_style.VisitedLinkStrokePaintType();
 
-    // For SVG_PAINTTYPE_CURRENTCOLOR, 'color' already contains the
-    // 'visitedColor'.
-    if (visited_paint_type < SVG_PAINTTYPE_URI_NONE &&
-        visited_paint_type != SVG_PAINTTYPE_CURRENTCOLOR) {
-      const Color& visited_color =
-          apply_to_fill ? svg_style.VisitedLinkFillPaintColor()
-                        : svg_style.VisitedLinkStrokePaintColor();
+    // If the color (primary or fallback) is 'currentcolor', then |color|
+    // already contains the 'visited color'.
+    if (!visited_paint.HasUrl() && !visited_paint.HasCurrentColor()) {
+      const Color& visited_color = visited_paint.GetColor();
       color = Color(visited_color.Red(), visited_color.Green(),
                     visited_color.Blue(), color.Alpha());
       has_color = true;
@@ -124,8 +100,8 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
   }
 
   // If the primary resource is just a color, return immediately.
-  if (paint_type < SVG_PAINTTYPE_URI_NONE) {
-    // |paintType| will be either <current-color> or <rgb-color> here - both of
+  if (!paint.HasUrl()) {
+    // |paint.type| will be either <current-color> or <rgb-color> here - both of
     // which will have a color.
     DCHECK(has_color);
     return SVGPaintDescription(color);
@@ -141,7 +117,7 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
   if (!uri_resource) {
     // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is
     // specified.)
-    if (paint_type == SVG_PAINTTYPE_URI_NONE || !has_color)
+    if (!paint.HasFallbackColor() || !has_color)
       return SVGPaintDescription();
 
     return SVGPaintDescription(color);

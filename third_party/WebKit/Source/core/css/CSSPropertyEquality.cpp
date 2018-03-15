@@ -134,14 +134,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyFill: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
-      return a_svg.FillPaintType() == b_svg.FillPaintType() &&
-             (a_svg.FillPaintType() != SVG_PAINTTYPE_RGBCOLOR ||
-              a_svg.FillPaintColor() == b_svg.FillPaintColor()) &&
-             a_svg.VisitedLinkFillPaintType() ==
-                 b_svg.VisitedLinkFillPaintType() &&
-             (a_svg.VisitedLinkFillPaintType() != SVG_PAINTTYPE_RGBCOLOR ||
-              a_svg.VisitedLinkFillPaintColor() ==
-                  b_svg.VisitedLinkFillPaintColor());
+      return a_svg.FillPaint().EqualTypeOrColor(b_svg.FillPaint()) &&
+             a_svg.VisitedLinkFillPaint().EqualTypeOrColor(
+                 b_svg.VisitedLinkFillPaint());
     }
     case CSSPropertyFillOpacity:
       return a.FillOpacity() == b.FillOpacity();
@@ -248,14 +243,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyStroke: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
-      return a_svg.StrokePaintType() == b_svg.StrokePaintType() &&
-             (a_svg.StrokePaintType() != SVG_PAINTTYPE_RGBCOLOR ||
-              a_svg.StrokePaintColor() == b_svg.StrokePaintColor()) &&
-             a_svg.VisitedLinkStrokePaintType() ==
-                 b_svg.VisitedLinkStrokePaintType() &&
-             (a_svg.VisitedLinkStrokePaintType() != SVG_PAINTTYPE_RGBCOLOR ||
-              a_svg.VisitedLinkStrokePaintColor() ==
-                  b_svg.VisitedLinkStrokePaintColor());
+      return a_svg.StrokePaint().EqualTypeOrColor(b_svg.StrokePaint()) &&
+             a_svg.VisitedLinkStrokePaint().EqualTypeOrColor(
+                 b_svg.VisitedLinkStrokePaint());
     }
     case CSSPropertyStrokeDasharray:
       return a.StrokeDashArray() == b.StrokeDashArray();
