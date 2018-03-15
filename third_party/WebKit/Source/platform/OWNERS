@@ -21,8 +21,10 @@ tkent@chromium.org
 vollick@chromium.org
 wangxianzhu@chromium.org
 
-# In addition to the above, API_OWNERS are also adequate reviewers
-# for adding / changing the status of a feature.
+# Any API or core owner can also approve changes to runtime-enabled features.
+# Please make sure to get a review from someone with expertise on the feature
+# you are changing.
 per-file runtime_enabled_features.json5=file://third_party/WebKit/API_OWNERS
+per-file runtime_enabled_features.json5=file://third_party/WebKit/Source/core/OWNERS
 
 # COMPONENT: Platform
