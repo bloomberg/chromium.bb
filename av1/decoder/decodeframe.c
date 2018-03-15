@@ -2685,8 +2685,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->seq_params.frame_id_numbers_present_flag) {
       int frame_id_length = cm->seq_params.frame_id_length;
       int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
-      // Read and discard one byte
-      aom_rb_read_literal(rb, 8);
       /* Compare display_frame_id with ref_frame_id and check valid for
        * referencing */
       if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||

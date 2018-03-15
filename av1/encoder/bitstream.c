@@ -2976,10 +2976,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       int frame_id_len = cm->seq_params.frame_id_length;
       int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
       aom_wb_write_literal(wb, display_frame_id, frame_id_len);
-      /* Add a zero byte to prevent emulation of superframe marker */
-      /* Same logic as when when terminating the entropy coder */
-      /* Consider to have this logic only one place */
-      aom_wb_write_literal(wb, 0, 8);
     }
 
 #if CONFIG_FILM_GRAIN && !CONFIG_FILM_GRAIN_SHOWEX
