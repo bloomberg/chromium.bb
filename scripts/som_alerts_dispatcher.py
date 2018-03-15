@@ -417,11 +417,10 @@ def GenerateBuildAlert(build, stages, exceptions, messages, annotations,
                '%s/%s' % message if message[0] else '')
 
   # Create links for details on the build.
-  dashboard_url = tree_status.ConstructDashboardURL(build['waterfall'],
-                                                    build['builder_name'],
-                                                    build['build_number'])
-  annotator_url = tree_status.ConstructAnnotatorURL(build.get('master_build_id',
-                                                              build['id']))
+  dashboard_url = tree_status.ConstructLegolandBuildURL(
+      build['buildbucket_id'])
+  annotator_url = tree_status.ConstructAnnotatorURL(
+      build.get('master_build_id', build['id']))
   links = [
       som.Link('build_details', dashboard_url),
       som.Link('goldeneye',
