@@ -212,7 +212,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
       // Clear the focus highlight.
-      AccessibilityFocusRingController::GetInstance()->SetFocusRing(
+      Shell::Get()->accessibility_focus_ring_controller()->SetFocusRing(
           std::vector<gfx::Rect>(),
           mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
     } else {

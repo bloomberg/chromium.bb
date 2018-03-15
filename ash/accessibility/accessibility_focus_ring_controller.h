@@ -8,14 +8,12 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_cursor_ring_layer.h"
-#include "ash/accessibility/accessibility_focus_ring_layer.h"
-#include "ash/accessibility/accessibility_highlight_layer.h"
+#include "ash/accessibility/accessibility_focus_ring.h"
+#include "ash/accessibility/accessibility_layer.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,14 +22,18 @@
 
 namespace ash {
 
+class AccessibilityCursorRingLayer;
+class AccessibilityFocusRingLayer;
+class AccessibilityHighlightLayer;
+
 // AccessibilityFocusRingController handles drawing custom rings around
 // the focused object, cursor, and/or caret for accessibility.
 class ASH_EXPORT AccessibilityFocusRingController
     : public AccessibilityLayerDelegate,
       public mojom::AccessibilityFocusRingController {
  public:
-  // Get the single instance of this class.
-  static AccessibilityFocusRingController* GetInstance();
+  AccessibilityFocusRingController();
+  ~AccessibilityFocusRingController() override;
 
   // Binds the mojom::AccessibilityFocusRingController interface to this object.
   void BindRequest(mojom::AccessibilityFocusRingControllerRequest request);
@@ -68,14 +70,8 @@ class ASH_EXPORT AccessibilityFocusRingController
   focus_ring_layers_for_testing() {
     return focus_layers_;
   }
-  AccessibilityHighlightLayer* highlight_layer_for_testing() {
-    return highlight_layer_.get();
-  }
 
  protected:
-  AccessibilityFocusRingController();
-  ~AccessibilityFocusRingController() override;
-
   // Given an unordered vector of bounding rectangles that cover everything
   // that currently has focus, populate a vector of one or more
   // AccessibilityFocusRings that surround the rectangles. Adjacent or
@@ -150,8 +146,6 @@ class ASH_EXPORT AccessibilityFocusRingController
   std::unique_ptr<AccessibilityHighlightLayer> highlight_layer_;
   SkColor highlight_color_ = SK_ColorBLACK;
   float highlight_opacity_ = 0.f;
-
-  friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };

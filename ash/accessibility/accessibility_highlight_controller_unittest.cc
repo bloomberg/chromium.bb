@@ -5,6 +5,7 @@
 #include "ash/accessibility/accessibility_highlight_controller.h"
 
 #include <cmath>
+#include <memory>
 
 #include "ash/accessibility/accessibility_cursor_ring_layer.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
@@ -72,7 +73,7 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnablePixelOutputInTests);
     AshTestBase::SetUp();
-    AccessibilityFocusRingController::GetInstance()->SetNoFadeForTesting();
+    Shell::Get()->accessibility_focus_ring_controller()->SetNoFadeForTesting();
   }
 
   void CaptureBeforeImage(const gfx::Rect& bounds) {
@@ -226,7 +227,8 @@ TEST_F(AccessibilityHighlightControllerTest, CursorWorksOnMultipleDisplays) {
   event_mod.set_target(root_windows[0]);
   highlight_controller.OnMouseEvent(&event0);
 
-  auto* focus_ring_controller = AccessibilityFocusRingController::GetInstance();
+  AccessibilityFocusRingController* focus_ring_controller =
+      Shell::Get()->accessibility_focus_ring_controller();
   auto* cursor_layer = focus_ring_controller->cursor_layer_for_testing();
   EXPECT_EQ(root_windows[0], cursor_layer->root_window());
   EXPECT_LT(
@@ -267,7 +269,8 @@ TEST_F(AccessibilityHighlightControllerTest, CaretRingDrawnOnlyWithinBounds) {
   text_input_client.SetCaretBounds(caret_bounds);
   highlight_controller.OnCaretBoundsChanged(&text_input_client);
 
-  auto* focus_ring_controller = AccessibilityFocusRingController::GetInstance();
+  AccessibilityFocusRingController* focus_ring_controller =
+      Shell::Get()->accessibility_focus_ring_controller();
   auto* caret_layer = focus_ring_controller->caret_layer_for_testing();
   EXPECT_EQ(
       std::abs(caret_layer->layer()->GetTargetBounds().x() - caret_bounds.x()),

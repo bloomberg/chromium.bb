@@ -60,7 +60,7 @@ void BindAccessibilityControllerRequestOnMainThread(
 
 void BindAccessibilityFocusRingControllerRequestOnMainThread(
     mojom::AccessibilityFocusRingControllerRequest request) {
-  AccessibilityFocusRingController::GetInstance()->BindRequest(
+  Shell::Get()->accessibility_focus_ring_controller()->BindRequest(
       std::move(request));
 }
 

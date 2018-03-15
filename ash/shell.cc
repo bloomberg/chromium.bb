@@ -16,6 +16,7 @@
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -808,6 +809,7 @@ Shell::~Shell() {
   wallpaper_controller_.reset();
   accessibility_controller_.reset();
   accessibility_delegate_.reset();
+  accessibility_focus_ring_controller_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
@@ -914,6 +916,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   // Some delegates access ShellPort during their construction. Create them here
   // instead of the ShellPort constructor.
+  accessibility_focus_ring_controller_ =
+      std::make_unique<AccessibilityFocusRingController>();
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityController>(
       shell_delegate_->GetShellConnector());

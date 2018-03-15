@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/accessibility_cursor_ring_layer.h"
+#include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/accessibility/focus_ring_layer.h"
 #include "base/logging.h"
@@ -23,31 +25,31 @@ namespace {
 // The number of pixels the focus ring is outset from the object it outlines,
 // which also determines the border radius of the rounded corners.
 // TODO(dmazzoni): take display resolution into account.
-const int kAccessibilityFocusRingMargin = 7;
+constexpr int kAccessibilityFocusRingMargin = 7;
 
 // Time to transition between one location and the next.
-const int kTransitionTimeMilliseconds = 300;
+constexpr int kTransitionTimeMilliseconds = 300;
 
 // Focus constants.
-const int kFocusFadeInTimeMilliseconds = 100;
-const int kFocusFadeOutTimeMilliseconds = 1600;
+constexpr int kFocusFadeInTimeMilliseconds = 100;
+constexpr int kFocusFadeOutTimeMilliseconds = 1600;
 
 // Cursor constants.
-const int kCursorFadeInTimeMilliseconds = 400;
-const int kCursorFadeOutTimeMilliseconds = 1200;
-const int kCursorRingColorRed = 255;
-const int kCursorRingColorGreen = 51;
-const int kCursorRingColorBlue = 51;
+constexpr int kCursorFadeInTimeMilliseconds = 400;
+constexpr int kCursorFadeOutTimeMilliseconds = 1200;
+constexpr int kCursorRingColorRed = 255;
+constexpr int kCursorRingColorGreen = 51;
+constexpr int kCursorRingColorBlue = 51;
 
 // Caret constants.
-const int kCaretFadeInTimeMilliseconds = 100;
-const int kCaretFadeOutTimeMilliseconds = 1600;
-const int kCaretRingColorRed = 51;
-const int kCaretRingColorGreen = 51;
-const int kCaretRingColorBlue = 255;
+constexpr int kCaretFadeInTimeMilliseconds = 100;
+constexpr int kCaretFadeOutTimeMilliseconds = 1600;
+constexpr int kCaretRingColorRed = 51;
+constexpr int kCaretRingColorGreen = 51;
+constexpr int kCaretRingColorBlue = 255;
 
 // Highlight constants.
-const float kHighlightOpacity = 0.3f;
+constexpr float kHighlightOpacity = 0.3f;
 
 // A Region is an unordered collection of Rects that maintains its
 // bounding box. Used in the middle of an algorithm that groups
@@ -62,12 +64,6 @@ struct Region {
 };
 
 }  // namespace
-
-// static
-AccessibilityFocusRingController*
-AccessibilityFocusRingController::GetInstance() {
-  return base::Singleton<AccessibilityFocusRingController>::get();
-}
 
 AccessibilityFocusRingController::AccessibilityFocusRingController()
     : binding_(this) {
