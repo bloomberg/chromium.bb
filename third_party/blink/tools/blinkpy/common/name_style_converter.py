@@ -20,6 +20,7 @@ SPECIAL_TOKENS = [
     'Uint32',
     'WebGL2',
     'ASCII',
+    'CSSOM',
     'CType',
     'DList',
     'Int16',
