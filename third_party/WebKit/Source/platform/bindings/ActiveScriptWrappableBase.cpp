@@ -12,13 +12,6 @@
 
 namespace blink {
 
-ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
-  DCHECK(ThreadState::Current());
-  v8::Isolate* isolate = ThreadState::Current()->GetIsolate();
-  V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
-  isolate_data->AddActiveScriptWrappable(this);
-}
-
 void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     v8::Isolate* isolate,
     ScriptWrappableVisitor* visitor) {
@@ -55,6 +48,13 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     // TraceWrapperMember<T> and have to use TraceWrappersFromGeneratedCode.
     visitor->TraceWrappersFromGeneratedCode(script_wrappable);
   }
+}
+
+ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
+  DCHECK(ThreadState::Current());
+  v8::Isolate* isolate = ThreadState::Current()->GetIsolate();
+  V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
+  isolate_data->AddActiveScriptWrappable(this);
 }
 
 }  // namespace blink

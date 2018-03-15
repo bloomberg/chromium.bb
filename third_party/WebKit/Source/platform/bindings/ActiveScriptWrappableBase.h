@@ -8,10 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-
-namespace v8 {
-class Isolate;
-}
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -27,12 +24,14 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(ActiveScriptWrappableBase);
 
  public:
-  ActiveScriptWrappableBase();
-
   static void TraceActiveScriptWrappables(v8::Isolate*,
                                           ScriptWrappableVisitor*);
 
+  virtual ~ActiveScriptWrappableBase() = default;
+
  protected:
+  ActiveScriptWrappableBase();
+
   virtual bool IsContextDestroyed() const = 0;
   virtual bool DispatchHasPendingActivity() const = 0;
   virtual ScriptWrappable* ToScriptWrappable() = 0;
