@@ -282,6 +282,7 @@ typedef struct AV1EncoderConfig {
   uint32_t num_ticks_per_picture;
 #if CONFIG_FILM_GRAIN
   int film_grain_test_vector;
+  const char *film_grain_table_filename;
 #endif
 
 #if CONFIG_CDF_UPDATE_MODE

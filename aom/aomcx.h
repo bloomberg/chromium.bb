@@ -796,6 +796,10 @@ enum aome_enc_control_id {
    * 1..16 = different test vectors for grain
    */
   AV1E_SET_FILM_GRAIN_TEST_VECTOR,
+
+  /*!\brief Codec control function to set the path to the film grain parameters
+   */
+  AV1E_SET_FILM_GRAIN_TABLE,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1084,6 +1088,9 @@ AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FILM_GRAIN_TEST_VECTOR, unsigned int)
 #define AOM_CTRL_AV1E_SET_FILM_GRAIN_TEST_VECTOR
+
+AOM_CTRL_USE_TYPE(AV1E_SET_FILM_GRAIN_TABLE, const char *)
+#define AOM_CTRL_AV1E_SET_FILM_GRAIN_TABLE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_CDF_UPDATE_MODE, int)
 #define AOM_CTRL_AV1E_SET_CDF_UPDATE_MODE

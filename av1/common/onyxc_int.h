@@ -33,6 +33,7 @@
 #endif
 #if CONFIG_FILM_GRAIN
 #include "aom_dsp/grain_synthesis.h"
+#include "aom_dsp/grain_table.h"
 #endif
 #ifdef __cplusplus
 extern "C" {
@@ -518,6 +519,7 @@ typedef struct AV1Common {
   int above_context_alloc_cols;
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
 #if CONFIG_FILM_GRAIN
+  aom_film_grain_table_t *film_grain_table;
   int film_grain_params_present;
   aom_film_grain_t film_grain_params;
 #endif

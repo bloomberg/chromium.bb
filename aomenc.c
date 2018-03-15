@@ -473,6 +473,9 @@ static const arg_def_t film_grain_test =
     ARG_DEF(NULL, "film-grain-test", 1,
             "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
             "... 16: test-16)");
+static const arg_def_t film_grain_table =
+    ARG_DEF(NULL, "film-grain-table", 1,
+            "Path to file containing film grain parameters");
 #endif
 static const arg_def_t disable_tempmv = ARG_DEF(
     NULL, "disable-tempmv", 1, "Disable temporal mv prediction (default is 0)");
@@ -663,6 +666,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &timing_info,
 #if CONFIG_FILM_GRAIN
                                        &film_grain_test,
+                                       &film_grain_table,
 #endif
                                        &disable_tempmv,
                                        &bitdeptharg,
@@ -717,6 +721,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TIMING_INFO,
 #if CONFIG_FILM_GRAIN
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
+                                        AV1E_SET_FILM_GRAIN_TABLE,
 #endif
                                         AV1E_SET_DISABLE_TEMPMV,
                                         AV1E_SET_ENABLE_DF,
@@ -796,6 +801,7 @@ struct stream_config {
   int arg_ctrls[ARG_CTRL_CNT_MAX][2];
   int arg_ctrl_cnt;
   int write_webm;
+  const char *film_grain_filename;
 #if CONFIG_OBU_NO_IVF
   int write_ivf;
 #endif
@@ -1071,6 +1077,11 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
 static void set_config_arg_ctrls(struct stream_config *config, int key,
                                  const struct arg *arg) {
   int j;
+  if (key == AV1E_SET_FILM_GRAIN_TABLE) {
+    config->film_grain_filename = arg->val;
+    return;
+  }
+
   /* Point either to the next free element or the first instance of this
    * control.
    */
@@ -1558,6 +1569,10 @@ static void initialize_encoder(struct stream_state *stream,
       fprintf(stderr, "Error: Tried to set control %d = %d\n", ctrl, value);
 
     ctx_exit_on_error(&stream->encoder, "Failed to control codec");
+  }
+  if (stream->config.film_grain_filename) {
+    aom_codec_control_(&stream->encoder, AV1E_SET_FILM_GRAIN_TABLE,
+                       stream->config.film_grain_filename);
   }
 
 #if CONFIG_AV1_DECODER
