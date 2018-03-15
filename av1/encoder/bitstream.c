@@ -3178,12 +3178,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
 
 #if CONFIG_FRAME_REFS_SIGNALING
-      // TODO(zoeliu@google.com): To complete the encoder-side implementation
-      // for the scenario cm->frame_refs_short_signaling == 1.
       assert(cm->frame_refs_short_signaling == 0);
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
       //       automatically.
-      if (!cm->error_resilient_mode && cm->seq_params.enable_order_hint)
+      if (cm->seq_params.enable_order_hint)
         aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
       else
         assert(cm->frame_refs_short_signaling == 0);
