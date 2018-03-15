@@ -276,10 +276,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Runs the specified PendingTask.
   void RunTask(PendingTask* pending_task);
 
-  // Disallow task observers. After this is called, calling
-  // Add/RemoveTaskObserver() on this MessageLoop will crash.
-  void DisallowTaskObservers() { allow_task_observers_ = false; }
-
   //----------------------------------------------------------------------------
  protected:
   std::unique_ptr<MessagePump> pump_;
@@ -398,9 +394,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Id of the thread this message loop is bound to. Initialized once when the
   // MessageLoop is bound to its thread and constant forever after.
   PlatformThreadId thread_id_ = kInvalidThreadId;
-
-  // Whether task observers are allowed.
-  bool allow_task_observers_ = true;
 
   // Holds data stored through the SequenceLocalStorageSlot API.
   internal::SequenceLocalStorageMap sequence_local_storage_map_;
