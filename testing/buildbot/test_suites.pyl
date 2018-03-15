@@ -404,6 +404,7 @@
         'shards': 2,
       },
     },
+    'components_perftests': {},
     'content_browsertests': {
       'android_swarming': {
         'hard_timeout': 1500,

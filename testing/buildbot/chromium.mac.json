@@ -109,6 +109,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -569,6 +575,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -1000,6 +1012,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_perftests"
       },
       {
         "swarming": {
@@ -1466,6 +1484,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -1910,6 +1934,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_perftests"
       },
       {
         "swarming": {

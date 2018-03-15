@@ -385,6 +385,10 @@
     "label": "//components:components_unittests",
     "type": "windowed_test_launcher",
   },
+  "components_perftests": {
+    "label": "//components:components_perftests",
+    "type": "windowed_test_launcher",
+  },
   "components_variations_junit_tests": {
     "label": "//components/variations/android:components_variations_junit_tests",
     "type": "junit_test",
