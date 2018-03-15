@@ -63,10 +63,10 @@ message KeyProviderData {
 // Cryptographic signature algorithm type for challenge requests. Used with
 // challenge-response cryptohome keys.
 enum ChallengeSignatureAlgorithm {
-  RSASSA_PKCS1_V1_5_SHA1 = 1;
-  RSASSA_PKCS1_V1_5_SHA256 = 2;
-  RSASSA_PKCS1_V1_5_SHA384 = 3;
-  RSASSA_PKCS1_V1_5_SHA512 = 4;
+  CHALLENGE_RSASSA_PKCS1_V1_5_SHA1 = 1;
+  CHALLENGE_RSASSA_PKCS1_V1_5_SHA256 = 2;
+  CHALLENGE_RSASSA_PKCS1_V1_5_SHA384 = 3;
+  CHALLENGE_RSASSA_PKCS1_V1_5_SHA512 = 4;
 }
 
 // Description of a public key of an asymmetric cryptographic key. Used with
