@@ -70,7 +70,11 @@ void DisplayScheduler::SetVisible(bool visible) {
 void DisplayScheduler::SetRootSurfaceResourcesLocked(bool locked) {
   TRACE_EVENT1("viz", "DisplayScheduler::SetRootSurfaceResourcesLocked",
                "locked", locked);
+  if (root_surface_resources_locked_ == locked)
+    return;
+
   root_surface_resources_locked_ = locked;
+  MaybeStartObservingBeginFrames();
   ScheduleBeginFrameDeadline();
 }
 
@@ -292,7 +296,8 @@ void DisplayScheduler::StopObservingBeginFrames() {
 bool DisplayScheduler::ShouldDraw() {
   // Note: When any of these cases becomes true, MaybeStartObservingBeginFrames
   // must be called to ensure the draw will happen.
-  return needs_draw_ && !output_surface_lost_ && visible_;
+  return needs_draw_ && !output_surface_lost_ && visible_ &&
+         !root_surface_resources_locked_;
 }
 
 void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
@@ -478,7 +483,7 @@ bool DisplayScheduler::AttemptDrawAndSwap() {
   begin_frame_deadline_task_time_ = base::TimeTicks();
 
   if (ShouldDraw()) {
-    if (pending_swaps_ < max_pending_swaps_ && !root_surface_resources_locked_)
+    if (pending_swaps_ < max_pending_swaps_)
       return DrawAndSwap();
   } else {
     // We are going idle, so reset expectations.
