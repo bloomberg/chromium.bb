@@ -198,7 +198,7 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) && !presenter_->Back() &&
       !app_list::switches::ShouldNotDismissOnBlur()) {
-    presenter_->Dismiss();
+    presenter_->Dismiss(event->time_stamp());
   }
 }
 
@@ -222,7 +222,7 @@ void AppListPresenterDelegate::OnGestureEvent(ui::GestureEvent* event) {
 // AppListPresenterDelegate, ShellObserver implementation:
 void AppListPresenterDelegate::OnOverviewModeStarting() {
   if (is_visible_)
-    presenter_->Dismiss();
+    presenter_->Dismiss(base::TimeTicks());
 }
 
 void AppListPresenterDelegate::OnTabletModeStarted() {

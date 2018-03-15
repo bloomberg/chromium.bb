@@ -101,13 +101,16 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   // Methods used in ash:
   bool GetTargetVisibility() const;
   bool IsVisible() const;
-  void Show(int64_t display_id, app_list::AppListShowSource show_source);
+  void Show(int64_t display_id,
+            app_list::AppListShowSource show_source,
+            base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
   void EndDragFromShelf(app_list::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   void ToggleAppList(int64_t display_id,
-                     app_list::AppListShowSource show_source);
+                     app_list::AppListShowSource show_source,
+                     base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
 
   // Methods of |client_|:

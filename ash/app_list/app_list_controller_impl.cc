@@ -250,7 +250,7 @@ void AppListControllerImpl::ResolveOemFolderPosition(
 }
 
 void AppListControllerImpl::DismissAppList() {
-  presenter_.Dismiss();
+  presenter_.Dismiss(base::TimeTicks());
 }
 
 void AppListControllerImpl::GetAppInfoDialogBounds(
@@ -270,7 +270,7 @@ void AppListControllerImpl::ShowAppListAndSwitchToState(
     // TODO(calamity): This may cause the app list to show briefly before the
     // state change. If this becomes an issue, add the ability to ash::Shell to
     // load the app list without showing it.
-    presenter_.Show(GetDisplayIdToShowAppListOn());
+    presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
     app_list_was_open = false;
     app_list_view = presenter_.GetView();
     DCHECK(app_list_view);
@@ -285,7 +285,7 @@ void AppListControllerImpl::ShowAppListAndSwitchToState(
 }
 
 void AppListControllerImpl::ShowAppList() {
-  presenter_.Show(GetDisplayIdToShowAppListOn());
+  presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,10 +318,11 @@ bool AppListControllerImpl::IsVisible() const {
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
-                                 app_list::AppListShowSource show_source) {
+                                 app_list::AppListShowSource show_source,
+                                 base::TimeTicks event_time_stamp) {
   UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                             show_source, app_list::kMaxAppListToggleMethod);
-  presenter_.Show(display_id);
+  presenter_.Show(display_id, event_time_stamp);
 }
 
 void AppListControllerImpl::UpdateYPositionAndOpacity(
@@ -343,12 +344,13 @@ void AppListControllerImpl::ProcessMouseWheelEvent(
 
 void AppListControllerImpl::ToggleAppList(
     int64_t display_id,
-    app_list::AppListShowSource show_source) {
+    app_list::AppListShowSource show_source,
+    base::TimeTicks event_time_stamp) {
   if (!IsVisible()) {
     UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                               show_source, app_list::kMaxAppListToggleMethod);
   }
-  presenter_.ToggleAppList(display_id);
+  presenter_.ToggleAppList(display_id, event_time_stamp);
 }
 
 app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {

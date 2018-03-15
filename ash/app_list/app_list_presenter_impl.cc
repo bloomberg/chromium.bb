@@ -13,6 +13,7 @@
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
@@ -48,6 +49,25 @@ class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
 
+// Callback from the compositor when it presented a valid frame. Used to
+// record UMA of input latency.
+void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
+                               bool is_showing,
+                               base::TimeTicks present_time,
+                               base::TimeDelta refresh,
+                               uint32_t flags) {
+  if (present_time.is_null() || event_time_stamp.is_null() ||
+      present_time < event_time_stamp) {
+    return;
+  }
+  const base::TimeDelta input_latency = present_time - event_time_stamp;
+  if (is_showing) {
+    UMA_HISTOGRAM_TIMES(kAppListShowInputLatencyHistogram, input_latency);
+  } else {
+    UMA_HISTOGRAM_TIMES(kAppListHideInputLatencyHistogram, input_latency);
+  }
+}
+
 }  // namespace
 
 AppListPresenterImpl::AppListPresenterImpl(
@@ -61,7 +81,7 @@ AppListPresenterImpl::AppListPresenterImpl(
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
-  Dismiss();
+  Dismiss(base::TimeTicks());
   presenter_delegate_.reset();
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
@@ -76,14 +96,16 @@ aura::Window* AppListPresenterImpl::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : nullptr;
 }
 
-void AppListPresenterImpl::Show(int64_t display_id) {
+void AppListPresenterImpl::Show(int64_t display_id,
+                                base::TimeTicks event_time_stamp) {
   if (is_visible_) {
     if (display_id != GetDisplayId())
-      Dismiss();
+      Dismiss(event_time_stamp);
     return;
   }
 
   is_visible_ = true;
+  RequestPresentationTime(display_id, event_time_stamp);
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 
@@ -103,7 +125,7 @@ void AppListPresenterImpl::Show(int64_t display_id) {
   view_delegate_->ViewShown(display_id);
 }
 
-void AppListPresenterImpl::Dismiss() {
+void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   if (!is_visible_)
     return;
 
@@ -111,8 +133,10 @@ void AppListPresenterImpl::Dismiss() {
   DCHECK(view_);
 
   is_visible_ = false;
+  const int64_t display_id = GetDisplayId();
+  RequestPresentationTime(display_id, event_time_stamp);
   NotifyTargetVisibilityChanged(GetTargetVisibility());
-  NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
+  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
@@ -138,12 +162,13 @@ bool AppListPresenterImpl::Back() {
   return view_->app_list_main_view()->contents_view()->Back();
 }
 
-void AppListPresenterImpl::ToggleAppList(int64_t display_id) {
+void AppListPresenterImpl::ToggleAppList(int64_t display_id,
+                                         base::TimeTicks event_time_stamp) {
   if (IsVisible()) {
-    Dismiss();
+    Dismiss(event_time_stamp);
     return;
   }
-  Show(display_id);
+  Show(display_id, event_time_stamp);
 }
 
 bool AppListPresenterImpl::IsVisible() const {
@@ -290,7 +315,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus)) &&
         !switches::ShouldNotDismissOnBlur()) {
-      Dismiss();
+      Dismiss(base::TimeTicks());
     }
   }
 }
@@ -311,7 +336,7 @@ void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
 void AppListPresenterImpl::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(view_->GetWidget(), widget);
   if (is_visible_)
-    Dismiss();
+    Dismiss(base::TimeTicks());
   ResetView();
 }
 
@@ -336,5 +361,21 @@ void AppListPresenterImpl::TransitionStarted() {}
 void AppListPresenterImpl::TransitionChanged() {}
 
 void AppListPresenterImpl::TransitionEnded() {}
+
+void AppListPresenterImpl::RequestPresentationTime(
+    int64_t display_id,
+    base::TimeTicks event_time_stamp) {
+  if (event_time_stamp.is_null())
+    return;
+  aura::Window* root_window =
+      ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return;
+  ui::Compositor* compositor = root_window->layer()->GetCompositor();
+  if (!compositor)
+    return;
+  compositor->RequestPresentationTimeForNextFrame(base::BindOnce(
+      &DidPresentCompositorFrame, event_time_stamp, is_visible_));
+}
 
 }  // namespace app_list
