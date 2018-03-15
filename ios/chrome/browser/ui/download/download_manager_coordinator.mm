@@ -7,10 +7,14 @@
 #include <memory>
 
 #import "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/google_drive_app_util.h"
+#import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
@@ -44,6 +48,10 @@
 @synthesize presenter = _presenter;
 @synthesize animatesPresentation = _animatesPresentation;
 @synthesize downloadTask = _downloadTask;
+
+- (void)dealloc {
+  [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
+}
 
 - (void)start {
   DCHECK(self.presenter);
@@ -171,6 +179,11 @@
   }
   [_storeKitCoordinator start];
   [controller setInstallDriveButtonVisible:NO animated:YES];
+
+  [[InstallationNotifier sharedInstance]
+      registerForInstallationNotifications:self
+                              withSelector:@selector(didInstallGoogleDriveApp)
+                                 forScheme:kGoogleDriveAppURLScheme];
 }
 
 - (void)downloadManagerViewControllerDidStartDownload:
@@ -234,6 +247,12 @@
   [self.baseViewController presentViewController:_confirmationDialog
                                         animated:YES
                                       completion:nil];
+}
+
+// Called when Google Drive app is installed after starting StoreKitCoordinator.
+- (void)didInstallGoogleDriveApp {
+  base::RecordAction(
+      base::UserMetricsAction(kDownloadManagerGoogleDriveInstalled));
 }
 
 @end
