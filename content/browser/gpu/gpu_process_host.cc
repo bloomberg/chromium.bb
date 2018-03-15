@@ -148,6 +148,7 @@ static const char* const kSwitchNames[] = {
     switches::kEnableLowEndDeviceMode,
     switches::kDisableLowEndDeviceMode,
     switches::kNoSandbox,
+    switches::kRunAllCompositorStagesBeforeDraw,
     switches::kTestGLLib,
     switches::kTraceConfigFile,
     switches::kTraceStartup,

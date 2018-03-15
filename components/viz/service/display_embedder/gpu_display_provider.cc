@@ -65,7 +65,9 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    gpu::GpuChannelManager* gpu_channel_manager)
+    gpu::GpuChannelManager* gpu_channel_manager,
+    bool headless,
+    bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_(std::move(gpu_service)),
       gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
@@ -73,7 +75,10 @@ GpuDisplayProvider::GpuDisplayProvider(
           std::make_unique<InProcessGpuMemoryBufferManager>(
               gpu_channel_manager)),
       image_factory_(GetImageFactory(gpu_channel_manager)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      headless_(headless),
+      wait_for_all_pipeline_stages_before_draw_(
+          wait_for_all_pipeline_stages_before_draw) {
   DCHECK_NE(restart_id_, BeginFrameSource::kNotRestartableId);
 }
 
@@ -153,7 +158,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   DCHECK_GT(max_frames_pending, 0);
 
   auto scheduler = std::make_unique<DisplayScheduler>(
-      display_begin_frame_source, task_runner_.get(), max_frames_pending);
+      display_begin_frame_source, task_runner_.get(), max_frames_pending,
+      wait_for_all_pipeline_stages_before_draw_);
 
   // The ownership of the BeginFrameSource is transferred to the caller.
   *out_begin_frame_source = std::move(synthetic_begin_frame_source);
@@ -166,6 +172,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 std::unique_ptr<SoftwareOutputDevice>
 GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
     gpu::SurfaceHandle surface_handle) {
+  if (headless_)
+    return std::make_unique<SoftwareOutputDevice>();
+
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   gfx::AcceleratedWidget widget = surface_handle;
 #endif

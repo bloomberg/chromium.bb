@@ -36,7 +36,9 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
   GpuDisplayProvider(
       uint32_t restart_id,
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-      gpu::GpuChannelManager* gpu_channel_manager);
+      gpu::GpuChannelManager* gpu_channel_manager,
+      bool headless,
+      bool wait_for_all_pipeline_stages_before_draw);
   ~GpuDisplayProvider() override;
 
   // DisplayProvider implementation.
@@ -65,6 +67,9 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  const bool headless_;
+  const bool wait_for_all_pipeline_stages_before_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDisplayProvider);
 };
