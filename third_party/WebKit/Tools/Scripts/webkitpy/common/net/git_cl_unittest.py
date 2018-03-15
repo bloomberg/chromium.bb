@@ -288,19 +288,51 @@ class GitCLTest(unittest.TestCase):
                 'url': None,
             },
             {
+                'builder_name': 'cq-b',
+                'experimental': False,
+                'result': None,
+                'status': 'SCHEDULED',
+                'tags': ['cq_experimental:false', 'user_agent:cq'],
+                'url': None,
+            },
+            {
+                'builder_name': 'cq-c',
+                'experimental': True,
+                'result': None,
+                'status': 'SCHEDULED',
+                'tags': ['cq_experimental:false', 'user_agent:cq'],
+                'url': None,
+            },
+            {
                 'builder_name': 'cq-a-experimental',
                 'experimental': True,
                 'result': None,
                 'status': 'SCHEDULED',
-                'tags': ['user_agent:cq'],
+                'tags': ['cq_experimental:true', 'user_agent:cq'],
                 'url': None,
             },
             {
-                'builder_name': 'other',
+                'builder_name': 'cq-b-experimental',
+                'experimental': False,
+                'result': None,
+                'status': 'SCHEDULED',
+                'tags': ['cq_experimental:true', 'user_agent:cq'],
+                'url': None,
+            },
+            {
+                'builder_name': 'other-a',
                 'experimental': False,
                 'status': 'SCHEDULED',
                 'result': None,
                 'tags': ['user_agent:git_cl_try'],
+                'url': None,
+            },
+            {
+                'builder_name': 'other-b',
+                'experimental': False,
+                'status': 'SCHEDULED',
+                'result': None,
+                'tags': ['is_experimental:false', 'user_agent:git_cl_try'],
                 'url': None,
             },
         ]
@@ -308,6 +340,8 @@ class GitCLTest(unittest.TestCase):
             git_cl.latest_try_jobs(cq_only=True),
             {
                 Build('cq-a'): TryJobStatus('SCHEDULED'),
+                Build('cq-b'): TryJobStatus('SCHEDULED'),
+                Build('cq-c'): TryJobStatus('SCHEDULED'),
             })
 
     def test_latest_try_jobs(self):
