@@ -25,9 +25,7 @@ namespace media {
 
 class FFmpegCommonTest : public testing::Test {
  public:
-  FFmpegCommonTest() {
-    FFmpegGlue::InitializeFFmpeg();
-  }
+  FFmpegCommonTest() {}
   ~FFmpegCommonTest() override = default;
 };
 

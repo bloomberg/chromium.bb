@@ -29,7 +29,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/ffmpeg_glue.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -63,8 +62,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
       : decoder_(new FFmpegVideoDecoder(&media_log_)),
         decode_cb_(base::Bind(&FFmpegVideoDecoderTest::DecodeDone,
                               base::Unretained(this))) {
-    FFmpegGlue::InitializeFFmpeg();
-
     // Initialize various test buffers.
     frame_buffer_.reset(new uint8_t[kCodedSize.GetArea()]);
     end_of_stream_buffer_ = DecoderBuffer::CreateEOSBuffer();
