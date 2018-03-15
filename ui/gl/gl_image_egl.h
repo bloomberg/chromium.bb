@@ -5,9 +5,10 @@
 #ifndef UI_GL_GL_IMAGE_EGL_H_
 #define UI_GL_GL_IMAGE_EGL_H_
 
+#include <EGL/eglplatform.h>
+
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
@@ -35,12 +36,12 @@ class GL_EXPORT GLImageEGL : public GLImage {
   // it is required to pass EGL_NO_CONTEXT. This allows to create an EGLImage
   // from an external resource. Then this EGLImage can be converted to a GL
   // texture.
-  bool Initialize(EGLContext context,
-                  EGLenum target,
-                  EGLClientBuffer buffer,
+  bool Initialize(void* context /* EGLContext */,
+                  unsigned target /* EGLenum */,
+                  void* buffer /* EGLClientBuffer */,
                   const EGLint* attrs);
 
-  EGLImageKHR egl_image_;
+  void* egl_image_ /* EGLImageKHR */;
   const gfx::Size size_;
   base::ThreadChecker thread_checker_;
 

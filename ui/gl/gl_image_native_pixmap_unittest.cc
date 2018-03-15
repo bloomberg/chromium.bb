@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_image_native_pixmap.h"
 
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/test/gl_image_test_template.h"
 
 namespace gl {

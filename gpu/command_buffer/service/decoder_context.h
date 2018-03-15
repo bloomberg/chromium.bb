@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/async_api_interface.h"
 #include "gpu/gpu_gles2_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gl {
 class GLContext;
@@ -149,6 +150,15 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   // Gets the texture object associated with the client ID.  null is returned on
   // failure or if the texture has not been bound yet.
   virtual TextureBase* GetTextureBase(uint32_t client_id) = 0;
+  virtual void SetLevelInfo(uint32_t client_id,
+                            int level,
+                            unsigned internal_format,
+                            unsigned width,
+                            unsigned height,
+                            unsigned depth,
+                            unsigned format,
+                            unsigned type,
+                            const gfx::Rect& cleared_rect) = 0;
   virtual void BindImage(uint32_t client_texture_id,
                          uint32_t texture_target,
                          gl::GLImage* image,
