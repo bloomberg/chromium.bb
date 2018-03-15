@@ -100,7 +100,7 @@ test("snapshot_unittests") {
     ":snapshot",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//skia",
     "//testing/gtest",
     "//ui/base",

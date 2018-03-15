@@ -32,7 +32,7 @@ template("implement_content_app") {
     "//services/service_manager/embedder",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//ppapi/features",
     "//ui/base",
     "//ui/gfx",

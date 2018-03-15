@@ -218,7 +218,7 @@ if (!is_ios) {
     deps = [
       "//base",
       "//base/test:test_support",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//mojo/edk/test:test_support",
     ]
   }
@@ -262,7 +262,7 @@ if (!is_ios) {
       "//base:i18n",
       "//base/test:test_support",
       "//crypto",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//mojo/edk/test:test_support",
       "//testing/gtest",
     ]
@@ -301,7 +301,7 @@ if (!is_ios) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//mojo/edk/test:test_support",
       "//mojo/edk/test:test_support_impl",
       "//testing/gtest",

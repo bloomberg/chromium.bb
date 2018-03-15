@@ -104,7 +104,7 @@ if (is_chromeos) {
       "//cc",
       "//cc:test_support",
       "//components/viz/service",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//services/catalog:lib",
       "//ui/aura",
       "//ui/base",

@@ -1763,7 +1763,7 @@ jumbo_split_static_library("browser") {
     "//media/mojo/interfaces:remoting",
     "//media/mojo/services",
     "//mojo/common",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net:extras",
     "//net:net_browser_services",

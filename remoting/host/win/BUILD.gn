@@ -394,7 +394,7 @@ shared_library("remoting_core") {
     "//base/third_party/dynamic_annotations",
     "//build/win:default_exe_manifest",
     "//ipc",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//remoting/base",
     "//remoting/base:breakpad",

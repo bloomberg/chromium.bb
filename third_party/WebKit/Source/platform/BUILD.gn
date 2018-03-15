@@ -1742,7 +1742,7 @@ jumbo_static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//third_party/WebKit/Source/platform/blob:test_support",
     "//third_party/WebKit/Source/platform/loader:test_support",
     "//third_party/WebKit/Source/platform/network:test_support",
@@ -1966,7 +1966,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//cc/blink",
     "//device/base/synchronization",
     "//mojo/common:test_common_custom_types_blink",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings/tests:for_blink_tests",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_blink",
@@ -2009,7 +2009,7 @@ executable("image_decode_bench") {
   deps = [
     ":platform",
     "//build/config:exe_and_shlib_deps",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//third_party/WebKit/Source/platform/wtf",
   ]
 

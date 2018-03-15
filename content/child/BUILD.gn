@@ -107,7 +107,7 @@ target(link_target_type, "child") {
     "//media",
     "//media/blink",
     "//mojo/common",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",

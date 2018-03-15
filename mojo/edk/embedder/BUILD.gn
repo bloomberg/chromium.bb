@@ -20,17 +20,9 @@ source_set("embedder_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:test_support",
     "//testing/gtest",
-  ]
-}
-
-# Temporary alias until dependents can be updated. This will be imminently
-# deleted. There is no compelling reason to have a headers target for the EDK.
-group("headers") {
-  public_deps = [
-    "//mojo/edk",
   ]
 }

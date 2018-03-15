@@ -25,7 +25,7 @@ fuzzer_test("mojo_parse_message_fuzzer") {
   ]
   deps = [
     ":fuzz_mojom",
-    "//mojo/edk/system",
+    "//mojo/edk",
   ]
   seed_corpus = "//mojo/public/tools/fuzzers/message_corpus"
 }
@@ -41,7 +41,7 @@ if (!is_win) {
       ":fuzz_mojom",
       "//base",
       "//build/config:exe_and_shlib_deps",
-      "//mojo/edk/system",
+      "//mojo/edk",
     ]
   }
 }

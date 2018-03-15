@@ -262,7 +262,7 @@ static_library("common") {
     "//gpu/config",
     "//ipc",
     "//media",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//pdf:features",
     "//ppapi/features",

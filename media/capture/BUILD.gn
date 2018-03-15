@@ -238,7 +238,7 @@ component("capture_lib") {
     deps += [
       "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:arc_camera3",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//third_party/libsync",
     ]
   }
@@ -292,7 +292,7 @@ test("capture_unittests") {
     "//media:test_support",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
@@ -340,7 +340,7 @@ test("capture_unittests") {
     deps += [
       "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:arc_camera3",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//third_party/libdrm",
       "//third_party/libsync",
       "//third_party/minigbm",

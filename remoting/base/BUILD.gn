@@ -20,8 +20,6 @@ source_set("base") {
     "compound_buffer.h",
     "constants.cc",
     "constants.h",
-    "weighted_samples.cc",
-    "weighted_samples.h",
     "leaky_bucket.cc",
     "leaky_bucket.h",
     "name_value_map.h",
@@ -50,6 +48,8 @@ source_set("base") {
     "util.h",
     "vlog_net_log.cc",
     "vlog_net_log.h",
+    "weighted_samples.cc",
+    "weighted_samples.h",
   ]
 
   configs += [
@@ -163,7 +163,6 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
-    "weighted_samples_unittest.cc",
     "oauth_helper_unittest.cc",
     "rate_counter_unittest.cc",
     "rsa_key_pair_unittest.cc",
@@ -173,11 +172,12 @@ source_set("unit_tests") {
     "telemetry_log_writer_unittest.cc",
     "typed_buffer_unittest.cc",
     "util_unittest.cc",
+    "weighted_samples_unittest.cc",
   ]
 
   deps = [
     ":test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//net:test_support",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",

@@ -390,7 +390,7 @@ source_set("vr_test_support") {
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
     "//content/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility:ax_enums_mojo",

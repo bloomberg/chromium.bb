@@ -5589,7 +5589,7 @@ test("net_unittests") {
     deps += [
       ":net_browser_services",
       ":net_utility_services",
-      "//mojo/edk/system",
+      "//mojo/edk",
     ]
   } else {
     sources -= [

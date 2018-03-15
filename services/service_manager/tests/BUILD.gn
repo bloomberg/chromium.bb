@@ -26,7 +26,7 @@ service_test("service_manager_unittests") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/catalog:lib",
@@ -62,7 +62,7 @@ source_set("util") {
   deps = [
     "//base",
     "//base:base_static",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",

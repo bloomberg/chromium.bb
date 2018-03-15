@@ -10,15 +10,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# Temporary alias to avoid having to update the world with a new target
-# structure just yet. This will be imminently deleted.
-group("system") {
-  public_deps = [
-    "//mojo/edk",
-  ]
-}
-
-source_set("system_impl") {
+source_set("system") {
   # All sources in this target should really just be private sources in
   # "//mojo/edk:core". Make sure that's the only target than can see this one.
   visibility = [ "//mojo/edk:core" ]
@@ -174,8 +166,8 @@ source_set("test_sources") {
     ":test_utils",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk",
     "//mojo/edk/embedder:embedder_unittests",
-    "//mojo/edk/system",
     "//mojo/edk/system/ports:tests",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",

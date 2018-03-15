@@ -95,7 +95,7 @@ source_set("tests") {
     "//device/base/synchronization",
     "//device/geolocation",
     "//device/geolocation/public/cpp",
-    "//mojo/edk/embedder:headers",
+    "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",

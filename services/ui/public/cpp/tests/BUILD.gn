@@ -17,7 +17,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//mojo/common:common_base",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",

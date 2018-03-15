@@ -4667,7 +4667,7 @@ if (!is_android) {
       "//crypto:test_support",
       "//extensions/buildflags",
       "//google_apis:test_support",
-      "//mojo/edk/system",
+      "//mojo/edk",
       "//net",
       "//net:net_resources",
       "//net:test_support",
@@ -4835,7 +4835,7 @@ if (!is_android) {
         "//ash/resources",
         "//chrome/browser/media/router:test_support",
         "//chromeos",
-        "//mojo/edk/system",
+        "//mojo/edk",
       ]
 
       data += [

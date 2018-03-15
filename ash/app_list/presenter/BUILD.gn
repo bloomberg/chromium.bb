@@ -72,7 +72,7 @@ test("app_list_presenter_unittests") {
     "//ash:ash",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//testing/gtest",
     "//ui/app_list:test_support",
     "//ui/aura:aura",

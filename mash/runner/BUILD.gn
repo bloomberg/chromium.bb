@@ -14,7 +14,7 @@ executable("runner") {
     "//base:i18n",
     "//base/test:test_support",
     "//build/config:exe_and_shlib_deps",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//services/service_manager",
     "//services/service_manager/runner:init",
     "//services/service_manager/standalone",

@@ -40,7 +40,7 @@ static_library("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//content/public/common:zygote_buildflags",
-    "//mojo/edk/system",
+    "//mojo/edk",
     "//native_client/src/trusted/service_runtime:sel_main_chrome",
     "//net",
     "//ppapi/host",
