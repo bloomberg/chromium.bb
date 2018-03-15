@@ -357,7 +357,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+// Flaky test: crbug/822470.
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
+                       DISABLED_DownloadDangerousFile) {
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
