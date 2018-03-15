@@ -248,8 +248,21 @@ Position RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
       PrevLeafChild()->CaretRightmostOffset());
 }
 
+// Note: If the layout object has a scrolling contents layer, the selection
+// will be relative to that.
+static GraphicsLayer* GetGraphicsLayerBacking(
+    const LayoutObject& layout_object) {
+  const LayoutBoxModelObject& paint_invalidation_container =
+      layout_object.ContainerForPaintInvalidation();
+  DCHECK(paint_invalidation_container.Layer());
+  if (paint_invalidation_container.Layer()->GetCompositingState() ==
+      kNotComposited)
+    return nullptr;
+  return paint_invalidation_container.Layer()->GraphicsLayerBacking(
+      &layout_object);
+}
+
 // Convert a local point into the coordinate system of backing coordinates.
-// Also returns the backing layer if needed.
 static FloatPoint LocalToInvalidationBackingPoint(
     const LayoutPoint& local_point,
     const LayoutObject& layout_object) {
@@ -270,26 +283,18 @@ static FloatPoint LocalToInvalidationBackingPoint(
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       paint_invalidation_container, container_point);
 
-  // Must not use the scrolling contents layer, so pass
-  // |paintInvalidationContainer|.
-  if (GraphicsLayer* graphics_layer =
-          paint_invalidation_container.Layer()->GraphicsLayerBacking(
-              &paint_invalidation_container))
+  if (GraphicsLayer* graphics_layer = GetGraphicsLayerBacking(layout_object))
     container_point.Move(-graphics_layer->OffsetFromLayoutObject());
 
-  return container_point;
-}
+  // Ensure the coordinates are in the scrolling contents space, if the object
+  // is a scroller.
+  if (paint_invalidation_container.UsesCompositedScrolling()) {
+    container_point.Move(paint_invalidation_container.Layer()
+                             ->GetScrollableArea()
+                             ->GetScrollOffset());
+  }
 
-static GraphicsLayer* GetGraphicsLayerBacking(
-    const LayoutObject& layout_object) {
-  const LayoutBoxModelObject& paint_invalidation_container =
-      layout_object.ContainerForPaintInvalidation();
-  DCHECK(paint_invalidation_container.Layer());
-  if (paint_invalidation_container.Layer()->GetCompositingState() ==
-      kNotComposited)
-    return nullptr;
-  return paint_invalidation_container.Layer()->GraphicsLayerBacking(
-      &paint_invalidation_container);
+  return container_point;
 }
 
 std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionStartpoints(
