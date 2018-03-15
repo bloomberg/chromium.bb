@@ -30,6 +30,10 @@
 #include "ui/base/ime/input_method_initializer.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"  // nogncheck
+#endif
+
 namespace content {
 
 ContentBrowserTest::ContentBrowserTest() {
@@ -79,6 +83,13 @@ void ContentBrowserTest::SetUp() {
       "Frameworks/Content Shell Helper.app/Contents/MacOS/Content Shell Helper");
   command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
                                  subprocess_path);
+#endif
+
+#if defined(USE_AURA)
+  // https://crbug.com/695054: Ignore window activation/deactivation to make
+  // the Chrome-internal focus unaffected by OS events caused by running tests
+  // in parallel.
+  views::DesktopNativeWidgetAura::DisableActivationChangeHandlingForTests();
 #endif
 
   // LinuxInputMethodContextFactory has to be initialized.
