@@ -583,6 +583,21 @@ static INLINE int get_lower_levels_ctx(const uint8_t *levels, int coeff_idx,
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
 }
 
+static INLINE int get_lower_levels_ctx_general(int is_last, int scan_idx,
+                                               int bwl, int height,
+                                               const uint8_t *levels,
+                                               int coeff_idx, TX_SIZE tx_size,
+                                               TX_TYPE tx_type) {
+  if (is_last) {
+    if (scan_idx == 0) return 0;
+    if (scan_idx <= (height << bwl) >> 3) return 1;
+    if (scan_idx <= (height << bwl) >> 2) return 2;
+    return 3;
+  } else {
+    return get_lower_levels_ctx(levels, coeff_idx, bwl, tx_size, tx_type);
+  }
+}
+
 static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {
   if (v < 0)
     *cul_level |= 1 << COEFF_CONTEXT_BITS;

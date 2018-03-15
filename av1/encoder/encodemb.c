@@ -112,8 +112,9 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
     return eob;
   }
 
-  return av1_optimize_txb(cpi, mb, plane, blk_row, blk_col, block, tx_size,
-                          &txb_ctx, fast_mode, rate_cost);
+  (void)fast_mode;
+  return av1_optimize_txb_new(cpi, mb, plane, blk_row, blk_col, block, tx_size,
+                              &txb_ctx, rate_cost);
 }
 
 typedef enum QUANT_FUNC {
