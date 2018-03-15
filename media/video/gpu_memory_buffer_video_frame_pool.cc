@@ -797,15 +797,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     BindAndCreateMailboxesHardwareFrameResources(
         const scoped_refptr<VideoFrame>& video_frame,
         FrameResources* frame_resources) {
-  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-      gpu_factories_->GetGLContextLock());
-  if (!lock) {
+  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->ContextGL();
+  if (!gles2) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
     std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
     frame_copy_requests_.pop_front();
     return;
   }
-  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
 
   const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
@@ -898,7 +896,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
                                 true);
 
-  lock.reset();  // Release the lock to avoid deadlocks.
   DCHECK(!frame_copy_requests_.empty());
   std::move(frame_copy_requests_.front().frame_ready_cb).Run(frame);
   frame_copy_requests_.pop_front();
@@ -963,12 +960,10 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
   }
 
   // Create the resources.
-  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-      gpu_factories_->GetGLContextLock());
-  if (!lock)
+  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->ContextGL();
+  if (!gles2)
     return nullptr;
 
-  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
   gles2->ActiveTexture(GL_TEXTURE0);
   FrameResources* frame_resources = new FrameResources(size);
   resources_pool_.push_back(frame_resources);
@@ -1007,11 +1002,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
   // make sure that we won't execute this callback (use a weak pointer to
   // the old context).
 
-  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
-      gpu_factories->GetGLContextLock());
-  if (!lock)
+  gpu::gles2::GLES2Interface* gles2 = gpu_factories->ContextGL();
+  if (!gles2)
     return;
-  gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
 
   for (PlaneResource& plane_resource : frame_resources->plane_resources) {
     if (plane_resource.image_id)

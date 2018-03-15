@@ -130,25 +130,4 @@ unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget(
   return GL_TEXTURE_2D;
 }
 
-namespace {
-class ScopedGLContextLockImpl
-    : public GpuVideoAcceleratorFactories::ScopedGLContextLock {
- public:
-  ScopedGLContextLockImpl(MockGpuVideoAcceleratorFactories* gpu_factories)
-      : gpu_factories_(gpu_factories) {}
-  gpu::gles2::GLES2Interface* ContextGL() override {
-    return gpu_factories_->GetGLES2Interface();
-  }
-
- private:
-  MockGpuVideoAcceleratorFactories* gpu_factories_;
-};
-}  // namespace
-
-std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock>
-MockGpuVideoAcceleratorFactories::GetGLContextLock() {
-  DCHECK(gles2_);
-  return std::make_unique<ScopedGLContextLockImpl>(this);
-}
-
 }  // namespace media

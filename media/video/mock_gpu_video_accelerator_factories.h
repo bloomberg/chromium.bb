@@ -68,7 +68,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     return video_frame_output_format_;
   };
 
-  std::unique_ptr<ScopedGLContextLock> GetGLContextLock() override;
+  gpu::gles2::GLES2Interface* ContextGL() override { return gles2_; }
 
   void SetVideoFrameOutputFormat(const OutputFormat video_frame_output_format) {
     video_frame_output_format_ = video_frame_output_format;

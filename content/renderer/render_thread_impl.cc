@@ -1549,23 +1549,14 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   if (!gpu_factories_.empty()) {
-    scoped_refptr<ui::ContextProviderCommandBuffer> shared_context_provider =
-        gpu_factories_.back()->ContextProviderMainThread();
-    if (shared_context_provider) {
-      viz::ContextProvider::ScopedContextLock lock(
-          shared_context_provider.get());
-      if (lock.ContextGL()->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
-        return gpu_factories_.back().get();
+    if (gpu_factories_.back()->ContextProviderMainThread())
+      return gpu_factories_.back().get();
 
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
-          GetMediaThreadTaskRunner();
-      media_task_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              base::IgnoreResult(
-                  &GpuVideoAcceleratorFactoriesImpl::CheckContextLost),
-              base::Unretained(gpu_factories_.back().get())));
-    }
+    GetMediaThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(
+                           &GpuVideoAcceleratorFactoriesImpl::CheckContextLost),
+                       base::Unretained(gpu_factories_.back().get())));
   }
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -1577,7 +1568,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   // This context is only used to create textures and mailbox them, so
   // use lower limits than the default.
   gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
-  bool support_locking = true;
+  bool support_locking = false;
   bool support_gles2_interface = true;
   bool support_raster_interface = false;
   bool support_oop_rasterization = false;
@@ -1587,12 +1578,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
           support_locking, support_gles2_interface, support_raster_interface,
           support_oop_rasterization, ui::command_buffer_metrics::MEDIA_CONTEXT,
           kGpuStreamIdMedia, kGpuStreamPriorityMedia);
-  auto result = media_context_provider->BindToCurrentThread();
-  if (result != gpu::ContextResult::kSuccess)
-    return nullptr;
 
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
-      GetMediaThreadTaskRunner();
   const bool enable_video_accelerator =
       !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
       (gpu_channel_host->gpu_feature_info()
@@ -1615,7 +1601,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
   gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
-      media_task_runner, std::move(media_context_provider),
+      GetMediaThreadTaskRunner(), std::move(media_context_provider),
       enable_gpu_memory_buffer_video_frames, enable_video_accelerator,
       vea_provider.PassInterface()));
   gpu_factories_.back()->SetRenderingColorSpace(rendering_color_space_);

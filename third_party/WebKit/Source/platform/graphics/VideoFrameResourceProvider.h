@@ -27,6 +27,9 @@ namespace blink {
 // Placeholder class, to be implemented in full in later CL.
 // VideoFrameResourceProvider obtains required GPU resources for the video
 // frame.
+// VideoFrameResourceProvider methods are currently called on the media thread.
+// TODO(lethalantidote): Move the usage of this class off media thread
+// https://crbug.com/753605
 class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
   explicit VideoFrameResourceProvider(WebContextProviderCallback,

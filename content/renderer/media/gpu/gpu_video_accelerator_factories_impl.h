@@ -46,6 +46,8 @@ namespace content {
 // The GpuVideoAcceleratorFactoriesImpl can be constructed on any thread,
 // but subsequent calls to all public methods of the class must be called from
 // the |task_runner_|, as provided during construction.
+// |context_provider| should not support locking and will be bound to
+// |task_runner_| where all the operations on the context should also happen.
 class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
     : public media::GpuVideoAcceleratorFactories {
  public:
@@ -89,8 +91,9 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   OutputFormat VideoFrameOutputFormat(size_t bit_depth) override;
-  std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
-  GetGLContextLock() override;
+
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  void BindContextToTaskRunner();
   bool CheckContextLost();
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
