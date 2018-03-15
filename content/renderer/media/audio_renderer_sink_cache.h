@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_SINK_CACHE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_SINK_CACHE_H_
 
+#include <memory>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 #include "media/base/output_device_info.h"
 
