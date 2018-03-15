@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -133,6 +134,15 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 }
 
 #pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  if (scrollView.dragging) {
+    CGFloat offsetWidth =
+        self.scrollView.contentSize.width - self.scrollView.frame.size.width;
+    CGFloat offset = scrollView.contentOffset.x / offsetWidth;
+    self.topToolbar.pageControl.sliderPosition = offset;
+  }
+}
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
   // Bookkeeping for the current page.
@@ -526,6 +536,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
     self.doneButton = self.topToolbar.trailingButton;
     self.closeAllButton = self.topToolbar.leadingButton;
   }
+
   // TODO(crbug.com/818699) : Localize strings.
   [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
   [self.closeAllButton setTitle:@"Close All" forState:UIControlStateNormal];
@@ -539,10 +550,17 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self.newTabButton addTarget:self
                         action:@selector(newTabButtonTapped:)
               forControlEvents:UIControlEventTouchUpInside];
+  [self.topToolbar.pageControl addTarget:self
+                                  action:@selector(pageControlChanged:)
+                        forControlEvents:UIControlEventValueChanged];
+  // TODO(crbug.com/804501): Use the actual live tab counts.
+  self.topToolbar.pageControl.regularText = @"5";
+  self.topToolbar.pageControl.incognitoText = @"0";
   [self configureButtonsForCurrentPage];
 }
 
 - (void)configureButtonsForCurrentPage {
+  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
@@ -671,7 +689,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self configureButtonsForCurrentPage];
 }
 
-#pragma mark - Button actions
+#pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
   [self.tabPresentationDelegate showActiveTab];
@@ -705,6 +723,10 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       // No-op. It is invalid to call insert new tab on remote tabs.
       break;
   }
+}
+
+- (void)pageControlChanged:(id)sender {
+  self.currentPage = self.topToolbar.pageControl.selectedPage;
 }
 
 @end

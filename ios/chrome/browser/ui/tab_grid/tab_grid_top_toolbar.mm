@@ -4,22 +4,21 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
 // Height of the toolbar.
-const CGFloat kToolbarHeight = 44.0f;
-// Height of the segmented control. The segmented control should have an
-// intrinsic width.
-const CGFloat kSegmentedControlHeight = 30.0f;
+const CGFloat kToolbarHeight = 52.0f;
 }  // namespace
 
 @implementation TabGridTopToolbar
 @synthesize leadingButton = _leadingButton;
 @synthesize trailingButton = _trailingButton;
-@synthesize segmentedControl = _segmentedControl;
+@synthesize pageControl = _pageControl;
 
 - (instancetype)init {
   if (self = [super initWithFrame:CGRectZero]) {
@@ -37,12 +36,9 @@ const CGFloat kSegmentedControlHeight = 30.0f;
     leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
     leadingButton.tintColor = [UIColor whiteColor];
 
-    UILabel* segmentedControl = [[UILabel alloc] init];
-    segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
-    segmentedControl.backgroundColor = [UIColor whiteColor];
-    segmentedControl.text = @"Segmented Control";
-    segmentedControl.layer.cornerRadius = 11.0f;
-    segmentedControl.layer.masksToBounds = YES;
+    // The segmented control has an intrinsic size.
+    TabGridPageControl* pageControl = [[TabGridPageControl alloc] init];
+    pageControl.translatesAutoresizingMaskIntoConstraints = NO;
 
     UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
     trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -53,10 +49,10 @@ const CGFloat kSegmentedControlHeight = 30.0f;
 
     [toolbar.contentView addSubview:leadingButton];
     [toolbar.contentView addSubview:trailingButton];
-    [toolbar.contentView addSubview:segmentedControl];
+    [toolbar.contentView addSubview:pageControl];
     _leadingButton = leadingButton;
     _trailingButton = trailingButton;
-    _segmentedControl = segmentedControl;
+    _pageControl = pageControl;
 
     NSArray* constraints = @[
       [toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -67,13 +63,9 @@ const CGFloat kSegmentedControlHeight = 30.0f;
       [leadingButton.leadingAnchor
           constraintEqualToAnchor:toolbar.layoutMarginsGuide.leadingAnchor],
       [leadingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
-      [segmentedControl.heightAnchor
-          constraintEqualToConstant:kSegmentedControlHeight],
-      [segmentedControl.centerXAnchor
-          constraintEqualToAnchor:toolbar.centerXAnchor],
-      [segmentedControl.bottomAnchor
-          constraintEqualToAnchor:toolbar.bottomAnchor
-                         constant:-7.0f],
+      [pageControl.centerXAnchor constraintEqualToAnchor:toolbar.centerXAnchor],
+      [pageControl.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor
+                                               constant:-7.0f],
       [trailingButton.heightAnchor constraintEqualToConstant:kToolbarHeight],
       [trailingButton.trailingAnchor
           constraintEqualToAnchor:toolbar.layoutMarginsGuide.trailingAnchor],

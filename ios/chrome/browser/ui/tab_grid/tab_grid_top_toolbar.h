@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class TabGridPageControl;
+
 // Toolbar view with two text buttons and a segmented control. The contents have
 // a fixed height and are pinned to the bottom of this view, therefore it is
 // intended to be used as a top toolbar.
@@ -15,7 +17,7 @@
 // contents, visibility and actions.
 @property(nonatomic, weak, readonly) UIButton* leadingButton;
 @property(nonatomic, weak, readonly) UIButton* trailingButton;
-@property(nonatomic, weak, readonly) UIView* segmentedControl;
+@property(nonatomic, weak, readonly) TabGridPageControl* pageControl;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
