@@ -443,19 +443,26 @@ static void generate_chroma_grain_blocks(
   if (params->num_y_points > 0) ++num_pos_chroma;
   int rounding_offset = (1 << (params->ar_coeff_shift - 1));
 
-  for (int i = 0; i < chroma_block_size_y; i++)
-    for (int j = 0; j < chroma_block_size_x; j++) {
-      if (params->num_cb_points)
+  if (params->num_cb_points) {
+    init_random_generator(7 << 5, params->random_seed);
+
+    for (int i = 0; i < chroma_block_size_y; i++)
+      for (int j = 0; j < chroma_block_size_x; j++)
         cb_grain_block[i * chroma_grain_stride + j] =
             (gaussian_sequence[get_random_number(gauss_bits)] +
              ((1 << gauss_sec_shift) >> 1)) >>
             gauss_sec_shift;
-      if (params->num_cr_points)
+  }
+  if (params->num_cr_points) {
+    init_random_generator(11 << 5, params->random_seed);
+
+    for (int i = 0; i < chroma_block_size_y; i++)
+      for (int j = 0; j < chroma_block_size_x; j++)
         cr_grain_block[i * chroma_grain_stride + j] =
             (gaussian_sequence[get_random_number(gauss_bits)] +
              ((1 << gauss_sec_shift) >> 1)) >>
             gauss_sec_shift;
-    }
+  }
 
   for (int i = top_pad; i < chroma_block_size_y - bottom_pad; i++)
     for (int j = left_pad; j < chroma_block_size_x - right_pad; j++) {
