@@ -68,9 +68,6 @@ typedef struct {
 } SCAN_ORDER;
 
 typedef struct frame_contexts {
-  coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
-  coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
-
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                             [CDF_SIZE(2)];

@@ -24,37 +24,7 @@
 extern "C" {
 #endif
 
-#define DIFF_UPDATE_PROB 252
-#define GROUP_DIFF_UPDATE_PROB 252
-
 #define TOKEN_CDF_Q_CTXS 4
-
-// Coefficient token alphabet
-#define ZERO_TOKEN 0        // 0     Extra Bits 0+0
-#define ONE_TOKEN 1         // 1     Extra Bits 0+1
-#define TWO_TOKEN 2         // 2     Extra Bits 0+1
-#define THREE_TOKEN 3       // 3     Extra Bits 0+1
-#define FOUR_TOKEN 4        // 4     Extra Bits 0+1
-#define CATEGORY1_TOKEN 5   // 5-6   Extra Bits 1+1
-#define CATEGORY2_TOKEN 6   // 7-10  Extra Bits 2+1
-#define CATEGORY3_TOKEN 7   // 11-18 Extra Bits 3+1
-#define CATEGORY4_TOKEN 8   // 19-34 Extra Bits 4+1
-#define CATEGORY5_TOKEN 9   // 35-66 Extra Bits 5+1
-#define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
-#define EOB_TOKEN 11        // EOB   Extra Bits 0+0
-#define NO_EOB 0            // Not an end-of-block
-#define EARLY_EOB 1         // End of block before the last position
-#define LAST_EOB 2          // End of block in the last position (implicit)
-#define BLOCK_Z_TOKEN 255   // block zero
-#define HEAD_TOKENS 5
-#define TAIL_TOKENS 9
-#define ONE_TOKEN_EOB 1
-#define ONE_TOKEN_NEOB 2
-#define TWO_TOKEN_PLUS_EOB 3
-#define TWO_TOKEN_PLUS_NEOB 4
-#define ENTROPY_TOKENS 12
-
-#define ENTROPY_NODES 11
 
 #define TXB_SKIP_CONTEXTS 13
 
@@ -90,48 +60,6 @@ typedef enum TX_CLASS {
   TX_CLASSES = 3,
 } TX_CLASS;
 
-DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);
-
-#define CAT1_MIN_VAL 5
-#define CAT2_MIN_VAL 7
-#define CAT3_MIN_VAL 11
-#define CAT4_MIN_VAL 19
-#define CAT5_MIN_VAL 35
-#define CAT6_MIN_VAL 67
-
-#define CAT6_BIT_SIZE 18
-// Extra bit probabilities.
-extern const aom_cdf_prob *av1_cat1_cdf[];
-extern const aom_cdf_prob *av1_cat2_cdf[];
-extern const aom_cdf_prob *av1_cat3_cdf[];
-extern const aom_cdf_prob *av1_cat4_cdf[];
-extern const aom_cdf_prob *av1_cat5_cdf[];
-extern const aom_cdf_prob *av1_cat6_cdf[];
-
-#define EOB_MODEL_TOKEN 3
-
-typedef struct {
-  const aom_cdf_prob **cdf;
-  int len;
-  int base_val;
-  const int16_t *cost;
-} av1_extra_bit;
-
-// indexed by token value
-extern const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS];
-
-static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
-                                              aom_bit_depth_t bit_depth) {
-  tx_size = txsize_sqr_up_map[tx_size];
-  // TODO(debargha): Does TX_64X64 require an additional extrabit?
-  if (tx_size > TX_32X32) tx_size = TX_32X32;
-  int tx_offset = (int)(tx_size - TX_4X4);
-  int bits = (int)bit_depth + 3 + tx_offset;
-  // Round up
-  bits = AOMMIN(CAT6_BIT_SIZE, ((bits + 3) & ~3));
-  return bits;
-}
-
 #define DCT_MAX_VALUE 16384
 #define DCT_MAX_VALUE_HIGH10 65536
 #define DCT_MAX_VALUE_HIGH12 262144
@@ -140,76 +68,11 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
  * REF_TYPES, COEF_BANDS and COEF_CONTEXTS. */
 #define REF_TYPES 2  // intra=0, inter=1
 
-/* Middle dimension reflects the coefficient position within the transform. */
-#define COEF_BANDS 6
-
-/* Inside dimension is measure of nearby complexity, that reflects the energy
-   of nearby coefficients are nonzero.  For the first coefficient (DC, unless
-   block type is 0), we look at the (already encoded) blocks above and to the
-   left of the current block.  The context index is then the number (0,1,or 2)
-   of these blocks having nonzero coefficients.
-   After decoding a coefficient, the measure is determined by the size of the
-   most recently decoded coefficient.
-   Note that the intuitive meaning of this measure changes as coefficients
-   are decoded, e.g., prior to the first token, a zero means that my neighbors
-   are empty while, after the first token, because of the use of end-of-block,
-   a zero means we just decoded a zero and hence guarantees that a non-zero
-   coefficient will appear later in this block.  However, this shift
-   in meaning is perfectly OK because our context depends also on the
-   coefficient band (and since zigzag positions 0, 1, and 2 are in
-   distinct bands). */
-#define COEFF_CONTEXTS 6
-#define COEFF_CONTEXTS0 3  // for band 0
-#define BAND_COEFF_CONTEXTS(band) \
-  ((band) == 0 ? COEFF_CONTEXTS0 : COEFF_CONTEXTS)
-
-#define SUBEXP_PARAM 4   /* Subexponential code parameter */
-#define MODULUS_PARAM 13 /* Modulus parameter */
-
 struct AV1Common;
 struct frame_contexts;
 void av1_default_coef_probs(struct AV1Common *cm);
-void av1_adapt_coef_probs(struct AV1Common *cm);
 
-// This is the index in the scan order beyond which all coefficients for
-// 8x8 transform and above are in the top band.
-// This macro is currently unused but may be used by certain implementations
-#define MAXBAND_INDEX 21
-
-DECLARE_ALIGNED(16, extern const uint8_t,
-                av1_coefband_trans_8x8plus[MAX_TX_SQUARE]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x8_8x4[32]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x4[16]);
-
-static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
-  switch (tx_size) {
-    case TX_4X4: return av1_coefband_trans_4x4;
-    case TX_8X4:
-    case TX_4X8: return av1_coefband_trans_4x8_8x4;
-    default: return av1_coefband_trans_8x8plus;
-  }
-}
-
-// 128 lists of probabilities are stored for the following ONE node probs:
-// 1, 3, 5, 7, ..., 253, 255
-// In between probabilities are interpolated linearly
-#define COEFF_PROB_MODELS 255
-
-#define UNCONSTRAINED_NODES 3
-
-#define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
-#define TAIL_NODES (MODEL_NODES + 1)
-
-typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
-                                    [CDF_SIZE(ENTROPY_TOKENS)];
-extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
-                                                 [ENTROPY_TOKENS - 2];
-extern const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS]
-                                                [ENTROPY_TOKENS - 3];
 struct frame_contexts;
-
-void av1_coef_head_cdfs(struct frame_contexts *fc);
-void av1_coef_pareto_cdfs(struct frame_contexts *fc);
 
 typedef char ENTROPY_CONTEXT;
 
@@ -303,11 +166,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
   }
   return combine_entropy_contexts(above_ec, left_ec);
 }
-
-#define COEF_COUNT_SAT 24
-#define COEF_MAX_UPDATE_FACTOR 112
-#define COEF_COUNT_SAT_AFTER_KEY 24
-#define COEF_MAX_UPDATE_FACTOR_AFTER_KEY 128
 
 static INLINE TX_SIZE get_txsize_entropy_ctx(TX_SIZE txsize) {
   return (TX_SIZE)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >>

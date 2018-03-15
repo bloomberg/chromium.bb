@@ -51,9 +51,6 @@ typedef struct macroblock_plane {
   const int16_t *dequant_QTX;
 } MACROBLOCK_PLANE;
 
-typedef int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
-                          [TAIL_TOKENS];
-
 typedef struct {
   int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
   int base_eob_cost[SIG_COEF_CONTEXTS_EOB][3];
@@ -245,9 +242,6 @@ struct macroblock {
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];
   uint16_t cb_offset;
-
-  av1_coeff_cost token_head_costs[TX_SIZES];
-  av1_coeff_cost token_tail_costs[TX_SIZES];
 
   // mode costs
   int intra_inter_cost[INTRA_INTER_CONTEXTS][2];

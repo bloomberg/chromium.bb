@@ -526,22 +526,6 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
   }
 }
 
-void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
-                                   coeff_cdf_model (*cdf)[PLANE_TYPES]) {
-  for (int tx = 0; tx < TX_SIZES; ++tx) {
-    for (int pt = 0; pt < PLANE_TYPES; ++pt) {
-      for (int rt = 0; rt < REF_TYPES; ++rt) {
-        for (int band = 0; band < COEF_BANDS; ++band) {
-          for (int ctx = 0; ctx < BAND_COEFF_CONTEXTS(band); ++ctx) {
-            av1_cost_tokens_from_cdf(cost[tx][pt][rt][band][ctx],
-                                     cdf[tx][pt][rt][band][ctx], NULL);
-          }
-        }
-      }
-    }
-  }
-}
-
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
