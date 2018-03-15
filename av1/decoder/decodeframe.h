@@ -20,8 +20,7 @@ struct AV1Decoder;
 struct aom_read_bit_buffer;
 
 /* Placeholder for now */
-void read_sequence_header(SequenceHeader *seq_params,
-                          struct aom_read_bit_buffer *rb);
+void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb);
 
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
                          int num_bits_height, int *width, int *height);

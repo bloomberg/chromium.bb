@@ -147,7 +147,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   }
 #endif
 
-  read_sequence_header(&cm->seq_params, rb);
+  read_sequence_header(cm, rb);
 
   av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 
