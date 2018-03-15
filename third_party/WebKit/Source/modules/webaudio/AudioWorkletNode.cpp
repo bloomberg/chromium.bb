@@ -81,12 +81,16 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
 
   // Render and update the node state when the processor is ready with no error.
   if (processor_ && !processor_->hasErrorOccured()) {
-    Vector<AudioBus*> inputBuses;
-    Vector<AudioBus*> outputBuses;
-    for (unsigned i = 0; i < NumberOfInputs(); ++i)
-      inputBuses.push_back(Input(i).Bus());
+    Vector<AudioBus*> input_buses;
+    Vector<AudioBus*> output_buses;
+    for (unsigned i = 0; i < NumberOfInputs(); ++i) {
+      // If the input is not connected, inform the processor of that
+      // fact by setting the bus to null.
+      AudioBus* bus = Input(i).IsConnected() ? Input(i).Bus() : nullptr;
+      input_buses.push_back(bus);
+    }
     for (unsigned i = 0; i < NumberOfOutputs(); ++i)
-      outputBuses.push_back(Output(i).Bus());
+      output_buses.push_back(Output(i).Bus());
 
     for (const auto& param_name : param_value_map_.Keys()) {
       const auto param_handler = param_handler_map_.at(param_name);
@@ -103,7 +107,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
 
     // Run the render code and check the state of processor. Finish the
     // processor if needed.
-    if (!processor_->Process(&inputBuses, &outputBuses, &param_value_map_) ||
+    if (!processor_->Process(&input_buses, &output_buses, &param_value_map_) ||
         processor_->hasErrorOccured()) {
       FinishProcessorOnRenderThread();
     }

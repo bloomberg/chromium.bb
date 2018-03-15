@@ -215,21 +215,26 @@ bool AudioWorkletGlobalScope::Process(
   // 1st arg of JS callback: inputs
   v8::Local<v8::Array> inputs = v8::Array::New(isolate, input_buses->size());
   uint32_t input_bus_index = 0;
-  for (const auto& input_bus : *input_buses) {
-    v8::Local<v8::Array> channels =
-        v8::Array::New(isolate, input_bus->NumberOfChannels());
+  for (const auto input_bus : *input_buses) {
+    // If |input_bus| is null, then the input is not connected, and
+    // the array for that input should have one channel and a length
+    // of 0.
+    unsigned number_of_channels = input_bus ? input_bus->NumberOfChannels() : 1;
+    size_t bus_length = input_bus ? input_bus->length() : 0;
+
+    v8::Local<v8::Array> channels = v8::Array::New(isolate, number_of_channels);
     bool success;
     if (!inputs
              ->CreateDataProperty(current_context, input_bus_index++, channels)
              .To(&success)) {
       return false;
     }
-    for (uint32_t channel_index = 0;
-         channel_index < input_bus->NumberOfChannels(); ++channel_index) {
+    for (uint32_t channel_index = 0; channel_index < number_of_channels;
+         ++channel_index) {
       v8::Local<v8::ArrayBuffer> array_buffer =
-          v8::ArrayBuffer::New(isolate, input_bus->length() * sizeof(float));
+          v8::ArrayBuffer::New(isolate, bus_length * sizeof(float));
       v8::Local<v8::Float32Array> float32_array =
-          v8::Float32Array::New(array_buffer, 0, input_bus->length());
+          v8::Float32Array::New(array_buffer, 0, bus_length);
       if (!channels
                ->CreateDataProperty(current_context, channel_index,
                                     float32_array)
@@ -237,8 +242,10 @@ bool AudioWorkletGlobalScope::Process(
         return false;
       }
       const v8::ArrayBuffer::Contents& contents = array_buffer->GetContents();
-      memcpy(contents.Data(), input_bus->Channel(channel_index)->Data(),
-             input_bus->length() * sizeof(float));
+      if (input_bus) {
+        memcpy(contents.Data(), input_bus->Channel(channel_index)->Data(),
+               bus_length * sizeof(float));
+      }
     }
   }
 
