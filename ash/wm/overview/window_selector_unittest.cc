@@ -2591,8 +2591,9 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
 }
 
+// http://crbug.com/822049
 // Tests that overview widgets are stacked in the correct order.
-TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
+TEST_F(WindowSelectorTest, DISABLED_OverviewWidgetStackingOrder) {
   // Helper function to get the index of |child|, give its parent window
   // |parent|. Given the same |parent|, the children with higher index will be
   // stacked above (but not neccessarily directly) the children with lower
