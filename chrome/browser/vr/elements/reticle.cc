@@ -5,10 +5,14 @@
 #include "chrome/browser/vr/elements/reticle.h"
 
 #include "base/numerics/math_constants.h"
+#include "chrome/browser/vr/databinding/binding.h"
+#include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/elements/vector_icon.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
+#include "chrome/browser/vr/vector_icons/vector_icons.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 
 namespace vr {
@@ -64,13 +68,13 @@ static constexpr char const* kFragmentShader = SHADER(
 );
 // clang-format on
 
-static constexpr float kRingDiameter = 1.0f;
-static constexpr float kInnerHole = 0.0f;
-static constexpr float kInnerRingEnd = 0.177f;
-static constexpr float kInnerRingThickness = 0.14f;
-static constexpr float kMidRingEnd = 0.177f;
-static constexpr float kMidRingOpacity = 0.22f;
-static constexpr float kReticleColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+constexpr float kRingDiameter = 1.0f;
+constexpr float kInnerHole = 0.0f;
+constexpr float kInnerRingEnd = 0.177f;
+constexpr float kInnerRingThickness = 0.14f;
+constexpr float kMidRingEnd = 0.177f;
+constexpr float kMidRingOpacity = 0.22f;
+constexpr float kReticleColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 }  // namespace
 
@@ -87,34 +91,10 @@ UiElement* Reticle::TargetElement() const {
 
 void Reticle::Render(UiElementRenderer* renderer,
                      const CameraModel& model) const {
-  // Scale the reticle to have a fixed FOV size at any distance.
-  const float eye_to_target =
-      std::sqrt(model_->reticle.target_point.SquaredDistanceTo(kOrigin));
-
-  gfx::Transform mat;
-  mat.Scale3d(kReticleWidth * eye_to_target, kReticleHeight * eye_to_target, 1);
-
-  gfx::Quaternion rotation;
-
-  UiElement* target = TargetElement();
-  if (target) {
-    // Make the reticle planar to the element it's hitting.
-    rotation = gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                               -target->GetNormal());
-  } else {
-    // Rotate the reticle to directly face the eyes.
-    rotation = gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                               model_->reticle.target_point - kOrigin);
-  }
-  gfx::Transform rotation_mat(rotation);
-  mat = rotation_mat * mat;
-
-  mat.matrix().postTranslate(model_->reticle.target_point.x(),
-                             model_->reticle.target_point.y(),
-                             model_->reticle.target_point.z());
-  gfx::Transform transform =
-      model.view_proj_matrix * world_space_transform() * mat;
-  renderer->DrawReticle(computed_opacity(), transform);
+  if (model_->reticle.cursor_type != kCursorDefault)
+    return;
+  renderer->DrawReticle(computed_opacity(),
+                        model.view_proj_matrix * world_space_transform());
 }
 
 Reticle::Renderer::Renderer()
@@ -160,6 +140,35 @@ void Reticle::Renderer::Draw(float opacity,
 
 const char* Reticle::Renderer::VertexShader() {
   return kVertexShader;
+}
+
+gfx::Transform Reticle::LocalTransform() const {
+  // Scale the reticle to have a fixed FOV size at any distance.
+  const float eye_to_target =
+      std::sqrt(model_->reticle.target_point.SquaredDistanceTo(kOrigin));
+
+  if (eye_to_target == 0.0f)
+    return gfx::Transform();
+
+  gfx::Transform mat;
+  mat.Scale3d(kReticleWidth * eye_to_target, kReticleHeight * eye_to_target, 1);
+
+  // This will make the reticle planar to the target element (if there is one),
+  // and directly face the user, otherwise.
+  UiElement* target = TargetElement();
+  gfx::Transform rotation_mat(gfx::Quaternion(
+      gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+      target ? -target->GetNormal() : model_->reticle.target_point - kOrigin));
+  mat = rotation_mat * mat;
+
+  mat.matrix().postTranslate(model_->reticle.target_point.x(),
+                             model_->reticle.target_point.y(),
+                             model_->reticle.target_point.z());
+  return mat;
+}
+
+gfx::Transform Reticle::GetTargetLocalTransform() const {
+  return LocalTransform();
 }
 
 }  // namespace vr

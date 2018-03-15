@@ -32,6 +32,11 @@ class Repositioner : public UiElement {
   void SetEnabled(bool enabled);
   void Reset();
 
+  // This method returns true if the user has repositioned far enough that we
+  // should consider it an intentional drag (and the UI may want to respond
+  // different if this has happened).
+  bool HasMovedBeyondThreshold() const { return has_moved_beyond_threshold_; }
+
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;
@@ -43,6 +48,7 @@ class Repositioner : public UiElement {
 #endif
 
   bool enabled_ = false;
+  bool has_moved_beyond_threshold_ = false;
   gfx::Transform transform_;
   gfx::Vector3dF laser_direction_;
 

@@ -152,6 +152,10 @@ void InitializeColorSchemes() {
   normal_scheme.incognito_factor = 0.0f;
   normal_scheme.fullscreen_factor = 0.0f;
 
+  normal_scheme.cursor_background_center = 0x24000000;
+  normal_scheme.cursor_background_edge = SK_ColorTRANSPARENT;
+  normal_scheme.cursor_foreground = SK_ColorWHITE;
+
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();
   fullscreen_scheme.world_background = 0xFF000714;

@@ -167,6 +167,7 @@ UiElement* UiScene::GetUiElementByName(UiElementName name) const {
 UiScene::Elements UiScene::GetVisibleElementsToDraw() const {
   return GetVisibleElements(GetUiElementByName(kRoot), [](UiElement* element) {
     return element->draw_phase() == kPhaseForeground ||
+           element->draw_phase() == kPhaseBackplanes ||
            element->draw_phase() == kPhaseBackground;
   });
 }

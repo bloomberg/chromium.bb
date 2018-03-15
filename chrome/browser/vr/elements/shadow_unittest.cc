@@ -26,17 +26,17 @@ TEST(Shadow, ShadowPaddingGrows) {
   scene.AddUiElement(kRoot, std::move(shadow));
 
   scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
-  float old_x_padding = shadow_ptr->x_padding();
-  float old_y_padding = shadow_ptr->y_padding();
-  EXPECT_LE(0.0f, old_x_padding);
-  EXPECT_LE(0.0f, old_y_padding);
+  float old_left_padding = shadow_ptr->left_padding();
+  float old_top_padding = shadow_ptr->top_padding();
+  EXPECT_LE(0.0f, old_left_padding);
+  EXPECT_LE(0.0f, old_top_padding);
 
   rect_ptr->SetTranslate(0, 0, 0.15);
   scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
-  float new_x_padding = shadow_ptr->x_padding();
-  float new_y_padding = shadow_ptr->y_padding();
-  EXPECT_LE(old_x_padding, new_x_padding);
-  EXPECT_LE(old_y_padding, new_y_padding);
+  float new_left_padding = shadow_ptr->left_padding();
+  float new_top_padding = shadow_ptr->top_padding();
+  EXPECT_LE(old_left_padding, new_left_padding);
+  EXPECT_LE(old_top_padding, new_top_padding);
 }
 
 }  // namespace vr
