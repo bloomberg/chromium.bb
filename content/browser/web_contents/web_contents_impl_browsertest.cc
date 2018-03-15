@@ -523,6 +523,40 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
 }
 
+// Observer class to track subresource loads.
+class SubresourceLoadObserver : public WebContentsObserver {
+ public:
+  explicit SubresourceLoadObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()) {}
+
+  void SubresourceResponseStarted(
+      const mojom::SubresourceLoadInfo& subresource_load_info) override {
+    last_subresource_load_info_ = subresource_load_info.Clone();
+  }
+
+  mojom::SubresourceLoadInfo* last_subresource_load_info() const {
+    return last_subresource_load_info_.get();
+  }
+
+ private:
+  mojom::SubresourceLoadInfoPtr last_subresource_load_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceLoadObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SubresourceLoadInfoReportsWasCached) {
+  SubresourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(
+      embedded_test_server()->GetURL("/page_with_cached_subresource.html"));
+  NavigateToURL(shell(), url);
+  EXPECT_FALSE(observer.last_subresource_load_info()->was_cached);
+
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(observer.last_subresource_load_info()->was_cached);
+}
+
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
                                          public WebContentsObserver {
   explicit LoadProgressDelegateAndObserver(Shell* shell)

@@ -64,6 +64,7 @@ void PopulateResourceResponse(
   response->head.headers = request->response_headers();
   request->GetCharset(&response->head.charset);
   response->head.content_length = request->GetExpectedContentSize();
+  response->head.was_cached = request->was_cached();
   request->GetMimeType(&response->head.mime_type);
   net::HttpResponseInfo response_info = request->response_info();
   response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;

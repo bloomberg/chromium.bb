@@ -29,4 +29,7 @@ struct SubresourceLoadInfo {
   // Bitmask of status info of the SSL certificate.
   // See net/cert/cert_status_flags.h
   uint32 cert_status;
+
+  // True if the response was fetched from the network cache.
+  bool was_cached;
 };

@@ -327,10 +327,6 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
 
   network::URLLoaderCompletionStatus status(error_code);
   if (!error_code) {
-    const net::HttpResponseInfo* http_info =
-        is_range_request() ? range_response_info_.get()
-                           : (info_ ? info_->http_response_info() : nullptr);
-    status.exists_in_cache = http_info->was_cached;
     status.completion_time = base::TimeTicks::Now();
     status.encoded_body_length =
         is_range_request() ? range_response_info_->headers->GetContentLength()

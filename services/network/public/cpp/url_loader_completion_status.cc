@@ -26,7 +26,6 @@ URLLoaderCompletionStatus::~URLLoaderCompletionStatus() = default;
 bool URLLoaderCompletionStatus::operator==(
     const URLLoaderCompletionStatus& rhs) const {
   return error_code == rhs.error_code &&
-         exists_in_cache == rhs.exists_in_cache &&
          completion_time == rhs.completion_time &&
          encoded_data_length == rhs.encoded_data_length &&
          encoded_body_length == rhs.encoded_body_length &&

@@ -462,6 +462,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
+  bool response_was_cached_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
@@ -541,6 +542,7 @@ WebURLLoaderImpl::Context::Context(
               : nullptr),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
+      response_was_cached_(false),
       url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK(url_loader_factory_ || !resource_dispatcher);
 }
@@ -877,6 +879,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     // TODO(yhirano): Support ftp listening and multipart
     return;
   }
+  response_was_cached_ = info.was_cached;
 
   client_->DidReceiveResponse(response);
 
@@ -963,8 +966,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
     if (status.error_code != net::OK) {
       const WebURLError::HasCopyInCache has_copy_in_cache =
-          status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
-                                 : WebURLError::HasCopyInCache::kFalse;
+          response_was_cached_ ? WebURLError::HasCopyInCache::kTrue
+                               : WebURLError::HasCopyInCache::kFalse;
       client_->DidFail(
           status.cors_error_status
               ? WebURLError(*status.cors_error_status, has_copy_in_cache, url_)

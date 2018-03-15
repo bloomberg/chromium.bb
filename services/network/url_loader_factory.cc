@@ -89,7 +89,6 @@ void URLLoaderFactory::CreateLoaderAndStart(
       if (client) {
         URLLoaderCompletionStatus status;
         status.error_code = net::ERR_INSUFFICIENT_RESOURCES;
-        status.exists_in_cache = false;
         status.completion_time = base::TimeTicks::Now();
         client->OnComplete(status);
       }
