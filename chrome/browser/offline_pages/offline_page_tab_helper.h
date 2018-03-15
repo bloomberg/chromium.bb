@@ -23,6 +23,24 @@ namespace offline_pages {
 struct OfflinePageItem;
 class PrefetchService;
 
+// This enum is used for UMA reporting. It contains all possible trusted states
+// of the offline page.
+// NOTE: because this is used for UMA reporting, these values should not be
+// changed or reused; new values should be ended immediately before the MAX
+// value. Make sure to update the histogram enum (OfflinePageTrustedState in
+// enums.xml) accordingly.
+enum class OfflinePageTrustedState {
+  // Trusted because the archive file is in internal directory.
+  TRUSTED_AS_IN_INTERNAL_DIR,
+  // Trusted because the archive file is in public directory without
+  // modification.
+  TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR,
+  // No trusted because the archive file is in public directory and it is
+  // modified.
+  UNTRUSTED,
+  TRUSTED_STATE_MAX
+};
+
 // Per-tab class that monitors the navigations and stores the necessary info
 // to facilitate the synchronous access to offline information.
 class OfflinePageTabHelper :
@@ -33,7 +51,7 @@ class OfflinePageTabHelper :
 
   void SetOfflinePage(const OfflinePageItem& offline_page,
                       const OfflinePageHeader& offline_header,
-                      bool is_trusted,
+                      OfflinePageTrustedState trusted_state,
                       bool is_offline_preview);
 
   void ClearOfflinePage();
@@ -46,6 +64,10 @@ class OfflinePageTabHelper :
     return offline_info_.offline_header;
   }
 
+  OfflinePageTrustedState trusted_state() const {
+    return offline_info_.trusted_state;
+  }
+
   // Returns whether a trusted offline page is being displayed.
   bool IsShowingTrustedOfflinePage() const;
 
@@ -56,6 +78,9 @@ class OfflinePageTabHelper :
   // Returns provisional offline page since actual navigation does not happen
   // during unit tests.
   const OfflinePageItem* GetOfflinePageForTest() const;
+
+  // Returns trusted state of provisional offline page.
+  OfflinePageTrustedState GetTrustedStateForTest() const;
 
   // Helper function which normally should only be called by
   // OfflinePageUtils::ScheduleDownload to do the work. This is because we need
@@ -84,8 +109,8 @@ class OfflinePageTabHelper :
     // The offline header that is provided when offline page is loaded.
     OfflinePageHeader offline_header;
 
-    // Whether the page is deemed trusted or not.
-    bool is_trusted;
+    // The trusted state of the page.
+    OfflinePageTrustedState trusted_state;
 
     // Whether the page is an offline preview. Offline page previews are shown
     // when a user's effective connection type is prohibitively slow.
@@ -104,6 +129,8 @@ class OfflinePageTabHelper :
 
   // Finalize the offline info when the navigation is done.
   void FinalizeOfflineInfo(content::NavigationHandle* navigation_handle);
+
+  void ReportOfflinePageMetrics();
 
   // Report the metrics essential to PrefetchService.
   void ReportPrefetchMetrics(content::NavigationHandle* navigation_handle);

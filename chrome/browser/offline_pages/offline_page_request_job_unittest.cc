@@ -832,6 +832,13 @@ void OfflinePageRequestJobTest::ExpectOfflinePageServed(
   ASSERT_TRUE(offline_page_tab_helper()->GetOfflinePageForTest());
   EXPECT_EQ(expected_offline_id,
             offline_page_tab_helper()->GetOfflinePageForTest()->offline_id);
+  OfflinePageTrustedState expected_trusted_state =
+      private_archives_dir_.IsParent(
+          offline_page_tab_helper()->GetOfflinePageForTest()->file_path)
+          ? OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR
+          : OfflinePageTrustedState::TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR;
+  EXPECT_EQ(expected_trusted_state,
+            offline_page_tab_helper()->GetTrustedStateForTest());
   if (expected_request_result !=
       OfflinePageRequestJob::AggregatedRequestResult::
           AGGREGATED_REQUEST_RESULT_MAX) {

@@ -510,7 +510,8 @@ void VisitTrustedOfflinePageOnUI(
     const OfflinePageHeader& offline_header,
     OfflinePageRequestJob::NetworkState network_state,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const OfflinePageItem& offline_page) {
+    const OfflinePageItem& offline_page,
+    bool archive_is_in_internal_dir) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |web_contents_getter| is passed from IO thread. We need to check if
@@ -534,7 +535,10 @@ void VisitTrustedOfflinePageOnUI(
       OfflinePageTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetOfflinePage(
-      offline_page, offline_header, true /*is_trusted*/,
+      offline_page, offline_header,
+      archive_is_in_internal_dir
+          ? OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR
+          : OfflinePageTrustedState::TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR,
       network_state ==
           OfflinePageRequestJob::NetworkState::PROHIBITIVELY_SLOW_NETWORK);
 }
@@ -787,7 +791,8 @@ void OfflinePageRequestJob::VisitTrustedOfflinePage() {
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&VisitTrustedOfflinePageOnUI, offline_header_,
                      network_state_, delegate_->GetWebContentsGetter(request()),
-                     GetCurrentOfflinePage()));
+                     GetCurrentOfflinePage(),
+                     candidates_[candidate_index_].archive_is_in_internal_dir));
 }
 
 void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
