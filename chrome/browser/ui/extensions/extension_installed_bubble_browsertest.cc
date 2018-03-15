@@ -157,9 +157,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
   }
 }
 
+// http://crbug.com/822022
+#if defined(OS_CHROMEOS)
+#define MAYBE_CloseBubbleUI DISABLED_CloseBubbleUI
+#else
+#define MAYBE_CloseBubbleUI CloseBubbleUI
+#endif
 // Tests if the BubbleController gets removed from the BubbleManager when
 // the BubbleUi is closed.
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, CloseBubbleUi) {
+IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
+                       MAYBE_CloseBubbleUI) {
   base::test::ScopedFeatureList scoped_feature_list;
 #if defined(OS_MACOSX)
   scoped_feature_list.InitWithFeatures(
