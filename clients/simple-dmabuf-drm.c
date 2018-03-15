@@ -203,8 +203,8 @@ intel_unmap_bo(struct buffer *my_buf)
 #ifdef HAVE_LIBDRM_FREEDRENO
 #define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
 
-static
-int fd_alloc_bo(struct buffer *buf)
+static int
+fd_alloc_bo(struct buffer *buf)
 {
 	int flags = DRM_FREEDRENO_GEM_CACHE_WCOMBINE;
 	int size = buf->width * buf->height * buf->bpp / 8;
@@ -218,14 +218,14 @@ int fd_alloc_bo(struct buffer *buf)
 	return 1;
 }
 
-static
-void fd_free_bo(struct buffer *buf)
+static void
+fd_free_bo(struct buffer *buf)
 {
 	fd_bo_del(buf->fd_bo);
 }
 
-static
-int fd_bo_export_to_prime(struct buffer *buf)
+static int
+fd_bo_export_to_prime(struct buffer *buf)
 {
 	buf->dmabuf_fd = fd_bo_dmabuf(buf->fd_bo);
 	if (buf->dmabuf_fd > 0)
@@ -234,8 +234,8 @@ int fd_bo_export_to_prime(struct buffer *buf)
 	return 1;
 }
 
-static
-int fd_map_bo(struct buffer *buf)
+static int
+fd_map_bo(struct buffer *buf)
 {
 	buf->mmap = fd_bo_map(buf->fd_bo);
 
@@ -245,8 +245,8 @@ int fd_map_bo(struct buffer *buf)
 	return 0;
 }
 
-static
-void fd_unmap_bo(struct buffer *buf)
+static void
+fd_unmap_bo(struct buffer *buf)
 {
 }
 #endif /* HAVE_LIBDRM_FREEDRENO */
