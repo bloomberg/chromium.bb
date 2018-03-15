@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_VR_INPUT_CONNECTION_H_
 
 #include <jni.h>
+#include <queue>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
@@ -36,7 +37,7 @@ class VrInputConnection {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
-  vr::TextStateUpdateCallback text_state_update_callback_;
+  std::queue<vr::TextStateUpdateCallback> text_state_update_callbacks_;
 
   base::WeakPtrFactory<VrInputConnection> weak_ptr_factory_;
 

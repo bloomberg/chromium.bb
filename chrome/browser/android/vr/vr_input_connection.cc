@@ -53,7 +53,7 @@ void VrInputConnection::SubmitInput() {
 }
 
 void VrInputConnection::RequestTextState(TextStateUpdateCallback callback) {
-  text_state_update_callback_ = std::move(callback);
+  text_state_update_callbacks_.emplace(std::move(callback));
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_VrInputConnection_requestTextState(env, j_object_);
 }
@@ -62,10 +62,13 @@ void VrInputConnection::UpdateTextState(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jstring jtext) {
-  DCHECK(!text_state_update_callback_.is_null());
+  DCHECK(!text_state_update_callbacks_.empty());
   std::string text;
   base::android::ConvertJavaStringToUTF8(env, jtext, &text);
-  base::ResetAndReturn(&text_state_update_callback_)
+  auto text_state_update_callback =
+      std::move(text_state_update_callbacks_.front());
+  text_state_update_callbacks_.pop();
+  base::ResetAndReturn(&text_state_update_callback)
       .Run(base::UTF8ToUTF16(text));
 }
 
