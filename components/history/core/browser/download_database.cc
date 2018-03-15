@@ -453,8 +453,6 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     info->total_bytes = statement_main.ColumnInt64(column++);
     int state = statement_main.ColumnInt(column++);
     info->state = IntToDownloadState(state);
-    if (info->state == DownloadState::INVALID)
-      UMA_HISTOGRAM_COUNTS("Download.DatabaseInvalidState", state);
     info->danger_type =
         IntToDownloadDangerType(statement_main.ColumnInt(column++));
     info->interrupt_reason =
