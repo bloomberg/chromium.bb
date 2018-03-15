@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../assert_selection.js"></script>
+<script>
+function testMoveRightCharacter(input_list, description) {
+  for (i = 0; i < input_list.length - 1; i++) {
+    selection_test(
+      input_list[i],
+      selection => {
+        selection.modify('move', 'right', 'character');
+      },
+      input_list[i + 1],
+      `${description} step ${i}`);
+  }
+}
+testMoveRightCharacter([
+`  <div>|abc</div>`,
+`  <div>a|bc</div>`,
+`  <div>ab|c</div>`,
+`  <div>abc|</div>`,
+], 'case 0');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}|</div>`,
+], 'case 1');
+
+testMoveRightCharacter([
+`  <div>|<br>abc</div>`,
+`  <div><br>|abc</div>`,
+`  <div><br>a|bc</div>`,
+`  <div><br>ab|c</div>`,
+`  <div><br>abc|</div>`,
+], 'case 2');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|<br>${RTLs[0]}${RTLs[1]}${RTLs[2]}</div>`,
+`  <div><br>|${RTLs[0]}${RTLs[1]}${RTLs[2]}</div>`,
+`  <div><br>${RTLs[0]}${RTLs[1]}|${RTLs[2]}</div>`,
+`  <div><br>${RTLs[0]}|${RTLs[1]}${RTLs[2]}</div>`,
+`  <div><br>${RTLs[0]}${RTLs[1]}${RTLs[2]}|</div>`,
+], 'case 3');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|abc${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div>a|bc${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div>ab|c${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div>abc|${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}|${RTLs[2]}def</div>`,
+`  <div>abc${RTLs[0]}|${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}|def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}d|ef</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}de|f</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}def|</div>`,
+], 'case 4');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", "\u05d3", "\u05d4", "\u05d5", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}|abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}a|bc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}ab|c${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abc|${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abc${RTLs[3]}${RTLs[4]}|${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abc${RTLs[3]}|${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abc${RTLs[3]}${RTLs[4]}${RTLs[5]}|</div>`,
+], 'case 5');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", "\u05d3", "\u05d4", "\u05d5", ];
+testMoveRightCharacter([
+`  <div>|abc${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>a|bc${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>ab|c${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc|${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}|${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}|${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}|</div>`,
+], 'case 6');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}abcdef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}abcdef</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}abcdef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}|abcdef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}a|bcdef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}ab|cdef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abc|def</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abcd|ef</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abcde|f</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}abcdef|</div>`,
+], 'case 7');
+
+var RTLs = ["\u0661", "\u0662", "\u0663", "\u0627", "\u0628", "\u0629", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}|${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}|${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}|</div>`,
+], 'case 8');
+
+var RTLs = ["\u0627", "\u0628", "\u0629", "\u0661", "\u0662", "\u0663", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}|${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}|${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}${RTLs[4]}${RTLs[5]}|</div>`,
+], 'case 9');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|<span>abc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div><span>a|bc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div><span>ab|c</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div><span>abc|</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div><span>abc</span>${RTLs[0]}${RTLs[1]}|${RTLs[2]}def</div>`,
+`  <div><span>abc</span>${RTLs[0]}|${RTLs[1]}${RTLs[2]}def</div>`,
+`  <div><span>abc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}|def</div>`,
+`  <div><span>abc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}d|ef</div>`,
+`  <div><span>abc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}de|f</div>`,
+`  <div><span>abc</span>${RTLs[0]}${RTLs[1]}${RTLs[2]}def|</div>`,
+], 'case 10');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", "\u05d3", "\u05d4", "\u05d5", ];
+testMoveRightCharacter([
+`  <div>|<span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}|${RTLs[2]}</span>abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}|${RTLs[1]}${RTLs[2]}</span>abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}|</span>abc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>a|bc${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>ab|c${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>abc|${RTLs[3]}${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>abc${RTLs[3]}${RTLs[4]}|${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>abc${RTLs[3]}|${RTLs[4]}${RTLs[5]}</div>`,
+`  <div><span>${RTLs[0]}${RTLs[1]}${RTLs[2]}</span>abc${RTLs[3]}${RTLs[4]}${RTLs[5]}|</div>`,
+], 'case 11');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", "\u05d3", "\u05d4", "\u05d5", ];
+testMoveRightCharacter([
+`  <div>|abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>a|bc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>ab|c${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc|${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}|${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}|${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}|123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}1|23${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}12|3${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123|${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}|${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}|${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}|def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}d|ef</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}de|f</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}def|</div>`,
+], 'case 12');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123</div>`,
+`  <div>a|bc${RTLs[0]}${RTLs[1]}${RTLs[2]}123</div>`,
+`  <div>ab|c${RTLs[0]}${RTLs[1]}${RTLs[2]}123</div>`,
+`  <div>abc|${RTLs[0]}${RTLs[1]}${RTLs[2]}123</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}1|23</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}12|3</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}|${RTLs[2]}123</div>`,
+`  <div>abc${RTLs[0]}|${RTLs[1]}${RTLs[2]}123</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123|</div>`,
+], 'case 13');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", ];
+testMoveRightCharacter([
+`  <div>|abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123def</div>`,
+`  <div>a|bc${RTLs[0]}${RTLs[1]}${RTLs[2]}123def</div>`,
+`  <div>ab|c${RTLs[0]}${RTLs[1]}${RTLs[2]}123def</div>`,
+`  <div>abc|${RTLs[0]}${RTLs[1]}${RTLs[2]}123def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}1|23def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}12|3def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}|${RTLs[2]}123def</div>`,
+`  <div>abc${RTLs[0]}|${RTLs[1]}${RTLs[2]}123def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123|def</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123d|ef</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123de|f</div>`,
+`  <div>abc${RTLs[0]}${RTLs[1]}${RTLs[2]}123def|</div>`,
+], 'case 14');
+
+var RTLs = ["\u05d0", "\u05d1", "\u05d2", "\u05d3", "\u05d4", "\u05d5", "\u05d6", "\u05d7", "\u05d8",
+"\u05d9", "\u05db", "\u05dc", ];
+testMoveRightCharacter([
+`  <div>|${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}|${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}|${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}|123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}1|23${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}12|3${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123|${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}|${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}|${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}|abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}a|bc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}ab|c${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc|${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}|${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}|${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}|456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}4|56${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}45|6${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456|${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}|${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}|${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}</div>`,
+`  <div>${RTLs[0]}${RTLs[1]}${RTLs[2]}123${RTLs[3]}${RTLs[4]}${RTLs[5]}abc${RTLs[6]}${RTLs[7]}${RTLs[8]}456${RTLs[9]}${RTLs[10]}${RTLs[11]}|</div>`,
+], 'case 15');
+
+var RTLs = ["\u05d0", "\u05d7", "\u05e8", "\u05d9", "\u05e0", "\u05e6", "\u05e7", "\u05dc", "\u05d5",
+"\u05e4", "\u05d3", "\u05d4", ];
+testMoveRightCharacter([
+`  <div style="width: 120px;">|before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">b|efore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">be|fore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">bef|ore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">befo|re    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">befor|e    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before|    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before |   ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}| ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}|${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}|${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}|${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}|${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}|${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}|${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}|${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}|${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}|${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}|${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}|</div>`,
+], 'case 16');
+
+var RTLs = ["\u05dc", "\u05e4", "\u05e0", "\u05d9", ];
+testMoveRightCharacter([
+`  <div style="width: 120px;">|${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]}    after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}|    after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |   after encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    a|fter encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    af|ter encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    aft|er encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    afte|r encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after| encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after |encyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after e|ncyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after en|cyclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after enc|yclopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after ency|clopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyc|lopedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encycl|opedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclo|pedia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclop|edia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclope|dia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encycloped|ia</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedi|a</div>`,
+`  <div style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia|</div>`,
+], 'case 17');
+
+var RTLs = ["\u05d0", "\u05d7", "\u05e8", "\u05d9", "\u05e0", "\u05e6", "\u05e7", "\u05dc", "\u05d5",
+"\u05e4", "\u05d3", "\u05d4", ];
+testMoveRightCharacter([
+`  <div contenteditable style="width: 120px;">|before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">b|efore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">be|fore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">bef|ore    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">befo|re    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">befor|e    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before|    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before |   ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}| ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}|${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}|${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}|${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}|${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}|${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}|${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}|${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}|${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}|${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}|${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}</div>`,
+`  <div contenteditable style="width: 120px;">before    ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[0]}${RTLs[4]}${RTLs[5]}${RTLs[3]}${RTLs[6]}${RTLs[7]}${RTLs[8]}${RTLs[9]}${RTLs[10]}${RTLs[3]}${RTLs[11]}|</div>`,
+], 'case 18');
+
+var RTLs = ["\u05dc", "\u05e4", "\u05e0", "\u05d9", ];
+testMoveRightCharacter([
+`  <div contenteditable style="width: 120px;">|${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]}    after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}|    after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |   after encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    a|fter encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    af|ter encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    aft|er encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    afte|r encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after| encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after |encyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after e|ncyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after en|cyclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after enc|yclopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after ency|clopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyc|lopedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encycl|opedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclo|pedia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclop|edia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclope|dia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encycloped|ia</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedi|a</div>`,
+`  <div contenteditable style="width: 120px;">${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}    after encyclopedia|</div>`,
+], 'case 19');
+
+var RTLs = ["\u05d9", "\u05d5", "\u05ea", "\u05e8", "\u05e6", "\u05de", ];
+testMoveRightCharacter([
+`  <div style="width: 100px;">|This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">T|his is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">Th|is is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">Thi|s is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This| is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This |is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This i|s ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is| ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is |${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}|${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}| ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]}| ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} |${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}|${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}|${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}|${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]}| the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} |the boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} t|he boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} th|e boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the| boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the |boxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the b|oxes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the bo|xes.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the box|es.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxe|s.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes|.</div>`,
+`  <div style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.|</div>`,
+], 'case 20');
+
+var RTLs = ["\u05d9", "\u05d5", "\u05ea", "\u05e8", "\u05e6", "\u05de", ];
+testMoveRightCharacter([
+`  <div contenteditable style="width: 100px;">|This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">T|his is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">Th|is is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">Thi|s is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This| is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This |is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This i|s ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is| ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is |${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}|${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} |${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]}| ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}|${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}|${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}|${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]}| ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} |${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}|${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}|${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}|${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]}| the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} |the boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} t|he boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} th|e boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the| boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the |boxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the b|oxes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the bo|xes.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the box|es.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxe|s.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes|.</div>`,
+`  <div contenteditable style="width: 100px;">This is ${RTLs[0]}${RTLs[1]}${RTLs[2]}${RTLs[3]} ${RTLs[4]}${RTLs[3]} ${RTLs[5]}${RTLs[0]}${RTLs[2]}${RTLs[3]} the boxes.|</div>`,
+], 'case 21');
+</script>
