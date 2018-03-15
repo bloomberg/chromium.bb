@@ -3424,14 +3424,10 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
 
   aom_wb_write_literal(&wb, 0, 1);  // forbidden bit.
   aom_wb_write_literal(&wb, (int)obu_type, 4);
-#if CONFIG_OBU_SIZE_AFTER_HEADER
   aom_wb_write_literal(&wb, obu_extension ? 1 : 0, 1);
   aom_wb_write_literal(&wb, 1, 1);  // obu_has_payload_length_field
   aom_wb_write_literal(&wb, 0, 1);  // reserved
-#else
-  aom_wb_write_literal(&wb, 0, 2);
-  aom_wb_write_literal(&wb, obu_extension ? 1 : 0, 1);
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
+
   if (obu_extension) {
     aom_wb_write_literal(&wb, obu_extension & 0xFF, 8);
   }
@@ -3440,26 +3436,10 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
   return size;
 }
 
-size_t get_uleb_obu_size_in_bytes(uint32_t obu_header_size,
-                                  uint32_t obu_payload_size) {
-#if CONFIG_OBU_SIZE_AFTER_HEADER
-  const uint32_t obu_size = obu_payload_size;
-  (void)obu_header_size;
-#else
-  const uint32_t obu_size = obu_header_size + obu_payload_size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
-  return aom_uleb_size_in_bytes(obu_size);
-}
-
 int write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
                         uint8_t *dest) {
-#if CONFIG_OBU_SIZE_AFTER_HEADER
   const uint32_t obu_size = obu_payload_size;
   const uint32_t offset = obu_header_size;
-#else
-  const uint32_t obu_size = obu_header_size + obu_payload_size;
-  const uint32_t offset = 0;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
   size_t coded_obu_size = 0;
 
   if (aom_uleb_encode(obu_size, sizeof(obu_size), dest + offset,
@@ -3472,18 +3452,11 @@ int write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
 
 static size_t obu_memmove(uint32_t obu_header_size, uint32_t obu_payload_size,
                           uint8_t *data) {
-  const size_t length_field_size =
-      get_uleb_obu_size_in_bytes(obu_header_size, obu_payload_size);
-  uint32_t move_dst_offset = (uint32_t)length_field_size;
-#if CONFIG_OBU_SIZE_AFTER_HEADER
-  // In this case, header shouldn't be moved.
-  move_dst_offset += obu_header_size;
+  const size_t length_field_size = aom_uleb_size_in_bytes(obu_payload_size);
+  const uint32_t move_dst_offset =
+      (uint32_t)length_field_size + obu_header_size;
   const uint32_t move_src_offset = obu_header_size;
   const uint32_t move_size = obu_payload_size;
-#else
-  const uint32_t move_src_offset = 0;
-  const uint32_t move_size = obu_header_size + obu_payload_size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
   memmove(data + move_dst_offset, data + move_src_offset, move_size);
   return length_field_size;
 }
@@ -3982,11 +3955,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     }
 
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     fh_info.obu_header_byte_offset = 0;
-#else
-    fh_info.obu_header_byte_offset = length_field_size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
 
     fh_info.total_length =

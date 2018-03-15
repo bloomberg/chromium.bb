@@ -60,11 +60,11 @@ encode_test_file() {
   fi
 }
 
-dump_obu() {
+DISABLED_dump_obu() {
   encode_test_file
   eval $(aom_tool_path dump_obu) "${dump_obu_test_file}" ${devnull}
 }
 
-dump_obu_tests="dump_obu"
+dump_obu_tests="DISABLED_dump_obu"
 
 run_tests dump_obu_verify_environment "${dump_obu_tests}"

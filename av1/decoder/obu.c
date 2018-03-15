@@ -105,17 +105,13 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
 
   if (!valid_obu_type(header->type)) return AOM_CODEC_CORRUPT_FRAME;
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
   header->has_extension = aom_rb_read_bit(rb);
   if (!aom_rb_read_bit(rb)) {  // obu_has_payload_length_field
     // libaom does not support streams with this bit set to 0.
     return AOM_CODEC_UNSUP_BITSTREAM;
   }
+
   aom_rb_read_bit(rb);  // reserved
-#else
-  aom_rb_read_literal(rb, 2);  // reserved
-  header->has_extension = aom_rb_read_bit(rb);
-#endif
 
   if (header->has_extension) {
     header->size += 1;
@@ -382,18 +378,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     size_t length_field_size = 0;
-#else
-    size_t length_field_size;
-    size_t obu_size;
-    if (read_obu_size(data, bytes_available, &obu_size, &length_field_size) !=
-        AOM_CODEC_OK) {
-      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-      return;
-    }
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
-
     if (data_end < data + length_field_size) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
@@ -406,7 +391,6 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     if (read_obu_size(data + obu_header.size, bytes_available - obu_header.size,
                       &payload_size, &length_field_size) != AOM_CODEC_OK) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -414,9 +398,6 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
     av1_init_read_bit_buffer(
         pbi, &rb, data + length_field_size + obu_header.size, data_end);
-#else
-    payload_size = obu_size - obu_header.size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
     data += length_field_size + obu_header.size;
     if (data_end < data) {

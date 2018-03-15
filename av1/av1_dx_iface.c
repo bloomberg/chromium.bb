@@ -189,24 +189,15 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   intra_only_flag = 1;
   si->is_kf = 1;
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
   struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
-#else
-  const size_t length_field_size = get_obu_length_field_size(data, data_sz);
-  struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
-                                    NULL, NULL };
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
-
   const uint8_t obu_header = (uint8_t)aom_rb_read_literal(&rb, 8);
   OBU_TYPE obu_type;
 
   if (get_obu_type(obu_header, &obu_type) != 0)
     return AOM_CODEC_UNSUP_BITSTREAM;
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
   // One byte has been consumed by the OBU header.
-  rb.bit_offset += get_obu_length_field_size(data + 1, data_sz - 1);
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
+  rb.bit_buffer += get_obu_length_field_size(data + 1, data_sz - 1) * 8;
 
   // This check is disabled because existing behavior is depended upon by
   // decoder tests (see decode_test_driver.cc), scalability_decoder (see

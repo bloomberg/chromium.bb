@@ -1259,18 +1259,14 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         uint32_t obu_header_size = 1;
         const uint32_t obu_payload_size = 0;
         const size_t length_field_size =
-            get_uleb_obu_size_in_bytes(obu_header_size, obu_payload_size);
+            aom_uleb_size_in_bytes(obu_payload_size);
 
         if (ctx->pending_cx_data) {
           const size_t move_offset = length_field_size + 1;
           memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
                   ctx->pending_cx_data_sz);
         }
-#if CONFIG_OBU_SIZE_AFTER_HEADER
         const uint32_t obu_header_offset = 0;
-#else
-        const uint32_t obu_header_offset = (uint32_t)length_field_size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
         obu_header_size = write_obu_header(
             OBU_TEMPORAL_DELIMITER, 0,
             (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
