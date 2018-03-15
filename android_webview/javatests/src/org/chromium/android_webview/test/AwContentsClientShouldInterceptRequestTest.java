@@ -21,7 +21,6 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
@@ -971,7 +970,6 @@ public class AwContentsClientShouldInterceptRequestTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest // Enable when renderer-side navigation is removed. crbug.com/769126
     public void testLoadDataWithBaseUrlTriggersShouldInterceptRequest() throws Throwable {
         String data = "foo";
         String mimeType = "text/plain";
@@ -984,7 +982,7 @@ public class AwContentsClientShouldInterceptRequestTest {
                 mContentsClient.getOnPageFinishedHelper(), data, mimeType, isBase64Encoded, baseUrl,
                 historyUrl);
         Assert.assertEquals(callCount + 1, mShouldInterceptRequestHelper.getCallCount());
-        // Not checking the URL yet. It's the empty data URL which should be fixed in
+        // TODO(boliu): Not checking the URL yet. It's the empty data URL which should be fixed in
         // crbug.com/669885.
     }
 
