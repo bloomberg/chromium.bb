@@ -72,10 +72,21 @@ TEST(UiElement, BoundsContainChildren) {
   grand_parent->set_padding(0.1, 0.2);
   grand_parent->AddChild(std::move(parent));
 
+  auto anchored = std::make_unique<UiElement>();
+  anchored->set_y_anchoring(BOTTOM);
+  anchored->set_contributes_to_parent_bounds(false);
+
+  auto* anchored_ptr = anchored.get();
+  grand_parent->AddChild(std::move(anchored));
+
   grand_parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(
       gfx::RectF(-0.5f, 0.5f, 9.4f, 7.8f),
       gfx::RectF(grand_parent->local_origin(), grand_parent->size()), kEpsilon);
+
+  gfx::Point3F p;
+  anchored_ptr->LocalTransform().TransformPoint(&p);
+  EXPECT_FLOAT_EQ(-3.9, p.y());
 }
 
 TEST(UiElement, BoundsContainScaledChildren) {
