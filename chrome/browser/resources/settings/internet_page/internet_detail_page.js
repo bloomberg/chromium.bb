@@ -718,25 +718,36 @@ Polymer({
 
   /**
    * Event triggered for elements associated with network properties.
-   * @param {!{detail: !{field: string, value: (string|!Object)}}} event
+   * @param {!{detail: !{field: string, value: !CrOnc.NetworkPropertyType}}} e
    * @private
    */
-  onNetworkPropertyChange_: function(event) {
+  onNetworkPropertyChange_: function(e) {
     if (!this.networkProperties)
       return;
-    const field = event.detail.field;
-    const value = event.detail.value;
+    const field = e.detail.field;
+    const value = e.detail.value;
     const onc = this.getEmptyNetworkProperties_();
     if (field == 'APN') {
       CrOnc.setTypeProperty(onc, 'APN', value);
     } else if (field == 'SIMLockStatus') {
       CrOnc.setTypeProperty(onc, 'SIMLockStatus', value);
-    } else if (field == 'VPN.Host') {
-      // TODO(stevenjb): Generalize this section if we add more editable fields.
-      CrOnc.setProperty(onc, field, value);
     } else {
-      console.error('Unexpected property change event: ' + field);
-      return;
+      const valueType = typeof value;
+      if (valueType == 'string' || valueType == 'number' ||
+          valueType == 'boolean' || Array.isArray(value)) {
+        CrOnc.setProperty(onc, field, value);
+        // Ensure any required configuration properties are also set.
+        if (field.match(/^VPN/)) {
+          const vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
+          assert(vpnType);
+          CrOnc.setProperty(onc, 'VPN.Type', vpnType);
+        }
+      } else {
+        console.error(
+            'Unexpected property change event, Key: ' + field +
+            ' Value: ' + JSON.stringify(value));
+        return;
+      }
     }
     this.setNetworkProperties_(onc);
   },
@@ -917,7 +928,8 @@ Polymer({
    * @private
    */
   hasInfoFields_: function() {
-    return this.hasVisibleFields_(this.getInfoFields_());
+    return this.getInfoEditFieldTypes_().length > 0 ||
+        this.hasVisibleFields_(this.getInfoFields_());
   },
 
   /**
@@ -937,16 +949,21 @@ Polymer({
           'Tether.Carrier');
     } else if (type == CrOnc.Type.VPN && !!this.networkProperties.VPN) {
       const vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
-      if (vpnType == 'ThirdPartyVPN') {
-        fields.push('VPN.ThirdPartyVPN.ProviderName');
-      } else if (vpnType == 'ARCVPN') {
-        fields.push('VPN.Type');
-      } else {
-        fields.push('VPN.Host', 'VPN.Type');
-        if (vpnType == 'OpenVPN')
-          fields.push('VPN.OpenVPN.Username');
-        else if (vpnType == 'L2TP-IPsec')
-          fields.push('VPN.L2TP.Username');
+      switch (vpnType) {
+        case CrOnc.VPNType.THIRD_PARTY_VPN:
+          fields.push('VPN.ThirdPartyVPN.ProviderName');
+          break;
+        case CrOnc.VPNType.ARCVPN:
+          fields.push('VPN.Type');
+          break;
+        case CrOnc.VPNType.OPEN_VPN:
+          fields.push(
+              'VPN.Type', 'VPN.Host', 'VPN.OpenVPN.Username',
+              'VPN.OpenVPN.ExtraHosts');
+          break;
+        case CrOnc.VPNType.L2TP_IPSEC:
+          fields.push('VPN.Type', 'VPN.Host', 'VPN.L2TP.Username');
+          break;
       }
     } else if (type == CrOnc.Type.WI_FI) {
       fields.push('RestrictedConnectivity');
@@ -965,8 +982,12 @@ Polymer({
     const type = this.networkProperties.Type;
     if (type == CrOnc.Type.VPN && !!this.networkProperties.VPN) {
       const vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
-      if (vpnType != 'ThirdPartyVPN')
+      if (vpnType != CrOnc.VPNType.THIRD_PARTY_VPN)
         editFields['VPN.Host'] = 'String';
+      if (vpnType == CrOnc.VPNType.OPEN_VPN) {
+        editFields['VPN.OpenVPN.Username'] = 'String';
+        editFields['VPN.OpenVPN.ExtraHosts'] = 'StringArray';
+      }
     }
     return editFields;
   },
