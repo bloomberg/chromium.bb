@@ -272,8 +272,7 @@ if (CONFIG_AV1_ENCODER)
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/av1_fht16x8_test.cc"
         "${AOM_ROOT}/test/av1_fht4x4_test.cc"
-        "${AOM_ROOT}/test/av1_fht8x16_test.cc"
-        "${AOM_ROOT}/test/av1_fht8x4_test.cc")
+        "${AOM_ROOT}/test/av1_fht8x16_test.cc")
 
     set(AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
         ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
