@@ -266,13 +266,6 @@ ScopedJavaLocalRef<jobject> ContentViewCore::GetJavaObject() {
   return java_ref_.get(env);
 }
 
-jint ContentViewCore::GetBackgroundColor(JNIEnv* env, jobject obj) {
-  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-  if (!rwhva)
-    return SK_ColorWHITE;
-  return rwhva->GetCachedBackgroundColor();
-}
-
 void ContentViewCore::SendScreenRectsAndResizeWidget() {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view) {
@@ -419,15 +412,6 @@ jboolean ContentViewCore::UsingSynchronousCompositing(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return content::GetContentClient()->UsingSynchronousCompositing();
-}
-
-void ContentViewCore::HidePopupsAndPreserveSelection() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_ContentViewCoreImpl_hidePopupsAndPreserveSelection(env, obj);
 }
 
 void ContentViewCore::WebContentsDestroyed() {

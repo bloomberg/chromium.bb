@@ -46,6 +46,7 @@ class SelectionPopupController : public RenderWidgetHostConnector {
   void OnSelectWordAroundCaretAck(bool did_select,
                                   int start_adjust,
                                   int end_adjust);
+  void HidePopupsAndPreserveSelection();
   std::unique_ptr<ui::TouchHandleDrawable> CreateTouchHandleDrawable();
   void MoveRangeSelectionExtent(const gfx::PointF& extent);
 

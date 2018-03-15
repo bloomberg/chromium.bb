@@ -75,14 +75,6 @@ class ContentViewCore : public WebContentsObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint orientation);
-  jboolean SendMouseWheelEvent(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               jlong time_ms,
-                               jfloat x,
-                               jfloat y,
-                               jfloat ticks_x,
-                               jfloat ticks_y,
-                               jfloat pixels_per_tick);
 
   void ResetGestureDetection(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
@@ -103,8 +95,6 @@ class ContentViewCore : public WebContentsObserver {
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dipScale);
 
-  jint GetBackgroundColor(JNIEnv* env, jobject obj);
-
   void SetTextTrackSettings(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -117,29 +107,14 @@ class ContentViewCore : public WebContentsObserver {
       const base::android::JavaParamRef<jstring>& textTrackTextShadow,
       const base::android::JavaParamRef<jstring>& textTrackTextSize);
 
-  void SetBackgroundOpaque(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& jobj,
-                           jboolean opaque);
-
   jboolean UsingSynchronousCompositing(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
   // --------------------------------------------------------------------------
-  // Public methods that call to Java via JNI
-  // --------------------------------------------------------------------------
-
-  void HidePopupsAndPreserveSelection();
-
-  // Returns the context with which the ContentViewCore was created, typically
-  // the Activity context.
-  base::android::ScopedJavaLocalRef<jobject> GetContext() const;
-
-  // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  void UpdateCursor(const content::CursorInfo& info);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
 
   ui::ViewAndroid* GetViewAndroid() const;
