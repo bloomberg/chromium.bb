@@ -287,7 +287,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void extraCallback(String callbackName, Bundle args) {
-            assert "NavigationMetrics".equals(callbackName);
+            if (!"NavigationMetrics".equals(callbackName)) {
+                Log.w(TAG, "Unknown extra callback skipped: " + callbackName);
+                return;
+            }
             long firstPaintMs = args.getLong("firstContentfulPaint", NONE);
             long navigationStartMs = args.getLong("navigationStart", NONE);
             if (firstPaintMs == NONE || navigationStartMs == NONE) return;
