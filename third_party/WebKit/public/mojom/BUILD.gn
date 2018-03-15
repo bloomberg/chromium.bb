@@ -24,7 +24,6 @@ mojom("mojom_platform") {
     "quota/quota_dispatcher_host.mojom",
     "quota/quota_types.mojom",
     "service_worker/navigation_preload_state.mojom",
-    "service_worker/service_worker.mojom",
     "service_worker/service_worker_client.mojom",
     "service_worker/service_worker_error_type.mojom",
     "service_worker/service_worker_event_status.mojom",
@@ -56,15 +55,17 @@ mojom("mojom_platform") {
 # This target can include mojom interfaces which do use types that are
 # typemapped to a type in Source/core. This also means these interfaces are not
 # available from Source/platform.
-# Note that service_worker_registration.mojom depends on
-# service_worker_object.mojom which depends on message_port.mojom, so we put
-# these two service worker mojom files here rather than mojom_platform target.
+# Note that service_worker_object.mojom and service_worker.mojom depend
+# on message_port.mojom, and service_worker_registration.mojom depends
+# on service_worker_object.mojom, so we put these three service worker
+# mojom files here rather than mojom_platform target.
 # In future we may have a separate mojom target for the things that may have
 # modules dependencies if it looks necessary, at that time we can put all of
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
   sources = [
     "message_port/message_port.mojom",
+    "service_worker/service_worker.mojom",
     "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_registration.mojom",
   ]

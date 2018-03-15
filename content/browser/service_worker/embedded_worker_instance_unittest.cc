@@ -142,8 +142,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     RecordEvent(DETACHED, old_status);
   }
 
-  bool OnMessageReceived(const IPC::Message&) override { return false; }
-
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
   }

@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -123,15 +122,7 @@ void ServiceWorkerDispatcherHost::OnDestruct() const {
 
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
-  ServiceWorkerContextCore* context = GetContext();
-  if (!context)
-    return false;
-  if (!context->embedded_worker_registry()->OnMessageReceived(
-          message, render_process_id_)) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_NOT_HANDLED);
-    return false;
-  }
-  return true;
+  return false;
 }
 
 bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {

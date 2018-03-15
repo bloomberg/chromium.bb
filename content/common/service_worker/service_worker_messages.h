@@ -19,8 +19,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -77,16 +75,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(is_null)
 IPC_STRUCT_TRAITS_END()
-
-//---------------------------------------------------------------------------
-// Messages sent from the child process to the browser.
-
-// Sends MessageEvent to a client (renderer->browser).
-IPC_MESSAGE_ROUTED2(
-    ServiceWorkerHostMsg_PostMessageToClient,
-    std::string /* uuid */,
-    scoped_refptr<
-        base::RefCountedData<blink::TransferableMessage>> /* message */)
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.

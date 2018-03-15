@@ -18,7 +18,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -763,14 +762,12 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
-    scoped_refptr<ThreadSafeSender> sender,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
-      sender_(sender),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       io_thread_task_runner_(io_thread_task_runner),
       proxy_(nullptr),
@@ -785,7 +782,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
   pending_network_provider_ = ServiceWorkerNetworkProvider::CreateForController(
-      std::move(provider_info), sender_);
+      std::move(provider_info));
   provider_context_ = pending_network_provider_->context();
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
@@ -895,7 +892,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   context_.reset(new WorkerContextData(this));
   // Create ServiceWorkerDispatcher first for this worker thread to be used
   // later by TakeRegistrationForServiceWorkerGlobalScope() etc.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get())
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance()
       ->SetIOThreadTaskRunner(io_thread_task_runner_);
 
   DCHECK(pending_dispatcher_request_.is_pending());
@@ -1281,7 +1278,6 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  // Blink is responsible for deleting the returned object.
   return std::make_unique<WebServiceWorkerNetworkProviderImpl>(
       std::move(pending_network_provider_));
 }
@@ -1295,7 +1291,6 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
           ->blink_platform_impl()
           ->CreateDefaultURLLoaderFactoryBundle();
   DCHECK(url_loader_factory_bundle);
-  // Blink is responsible for deleting the returned object.
   return std::make_unique<ServiceWorkerFetchContextImpl>(
       script_url_, url_loader_factory_bundle->Clone(),
       provider_context_->provider_id(),
@@ -1308,18 +1303,15 @@ ServiceWorkerContextClient::CreateServiceWorkerProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(provider_context_);
 
-  // Blink is responsible for deleting the returned object.
   return std::make_unique<WebServiceWorkerProviderImpl>(
-      sender_.get(), provider_context_.get());
+      provider_context_.get());
 }
 
 void ServiceWorkerContextClient::PostMessageToClient(
     const blink::WebString& uuid,
     blink::TransferableMessage message) {
-  Send(new ServiceWorkerHostMsg_PostMessageToClient(
-      GetRoutingID(), uuid.Utf8(),
-      new base::RefCountedData<blink::TransferableMessage>(
-          std::move(message))));
+  (*context_->service_worker_host)
+      ->PostMessageToClient(uuid.Utf8(), std::move(message));
 }
 
 void ServiceWorkerContextClient::Focus(
@@ -1442,10 +1434,6 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
   blink::WebPaymentRequestEventData webEventData =
       mojo::ConvertTo<blink::WebPaymentRequestEventData>(std::move(eventData));
   proxy_->DispatchPaymentRequestEvent(event_id, webEventData);
-}
-
-void ServiceWorkerContextClient::Send(IPC::Message* message) {
-  sender_->Send(message);
 }
 
 void ServiceWorkerContextClient::SendWorkerStarted() {

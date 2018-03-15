@@ -19,8 +19,6 @@
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/worker_thread_registry.h"
-#include "ipc/ipc_sync_message_filter.h"
-#include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -56,21 +54,6 @@ struct ContextClientPipes {
       embedded_worker_host_request;
   blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
       registration_host_request;
-};
-
-class TestSender : public ThreadSafeSender {
- public:
-  explicit TestSender(IPC::TestSink* ipc_sink)
-      : ThreadSafeSender(nullptr, nullptr), ipc_sink_(ipc_sink) {}
-
-  bool Send(IPC::Message* message) override { return ipc_sink_->Send(message); }
-
- private:
-  ~TestSender() override = default;
-
-  IPC::TestSink* ipc_sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSender);
 };
 
 class MockWebServiceWorkerContextProxy
@@ -210,14 +193,13 @@ class ServiceWorkerContextClientTest : public testing::Test {
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     message_loop_.SetTaskRunner(task_runner_);
-    sender_ = base::MakeRefCounted<TestSender>(&ipc_sink_);
     // Use this thread as the worker thread.
     WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
   }
 
   void TearDown() override {
     ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting();
-    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_)
+    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance()
         ->AllowReinstantiationForTesting();
     // Unregister this thread from worker threads.
     WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
@@ -257,7 +239,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr embedded_worker_host_ptr;
     out_pipes->embedded_worker_host_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&embedded_worker_host_ptr);
-    EXPECT_TRUE(sender_);
     return std::make_unique<ServiceWorkerContextClient>(
         1 /* embeded_worker_id */, 1 /* service_worker_version_id */,
         GURL("https://example.com") /* scope */,
@@ -267,7 +248,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
         embedded_worker_host_ptr.PassInterface(),
         CreateProviderInfo(&out_pipes->registration_host_request,
                            &out_pipes->registration),
-        nullptr /* embedded_worker_client */, sender_,
+        nullptr /* embedded_worker_client */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         io_task_runner());
   }
@@ -285,8 +266,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::test::ScopedFeatureList feature_list_;
-  IPC::TestSink ipc_sink_;
-  scoped_refptr<TestSender> sender_;
 };
 
 TEST_F(ServiceWorkerContextClientTest, Ping) {

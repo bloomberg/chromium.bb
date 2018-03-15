@@ -27,15 +27,13 @@ namespace content {
 
 class ServiceWorkerDispatcher;
 class ServiceWorkerProviderContext;
-class ThreadSafeSender;
 
 // This class corresponds to one ServiceWorkerContainer interface in
 // JS context (i.e. navigator.serviceWorker).
 class CONTENT_EXPORT WebServiceWorkerProviderImpl
     : public blink::WebServiceWorkerProvider {
  public:
-  WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
-                               ServiceWorkerProviderContext* context);
+  explicit WebServiceWorkerProviderImpl(ServiceWorkerProviderContext* context);
   ~WebServiceWorkerProviderImpl() override;
 
   void SetClient(blink::WebServiceWorkerProviderClient* client) override;
@@ -100,7 +98,6 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
           callbacks,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration);
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
 
   // |provider_client_| is implemented by blink::SWContainer and this pointer's

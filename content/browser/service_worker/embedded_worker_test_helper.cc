@@ -779,11 +779,6 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStopped(int embedded_worker_id) {
   }
 }
 
-void EmbeddedWorkerTestHelper::SimulateSend(IPC::Message* message) {
-  registry()->OnMessageReceived(*message, mock_render_process_id_);
-  delete message;
-}
-
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
     mojom::EmbeddedWorkerStartParamsPtr params) {
   EmbeddedWorkerInstance* worker =

@@ -44,20 +44,17 @@ FORWARD_DECLARE_TEST(BackgroundSyncManagerTest,
 // ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
 // messages for service workers. There is a 1:1 correspondence between
 // renderer processes and ServiceWorkerDispatcherHosts. Currently
-// ServiceWorkerDispatcherHost handles both legacy IPC messages (to and from
-// its corresponding ServiceWorkerDispatcher on the renderer) and Mojo IPC
-// messages (from any ServiceWorkerNetworkProvider on the renderer).
-//
-// Most messages are "from" a "service worker provider" on the renderer (a
-// ServiceWorkerNetworkProvider or a blink::WebServiceWorkerProvider), hence
-// they include a provider_id which must match to a ServiceWorkerProviderHost.
+// ServiceWorkerDispatcherHost sends the legacy IPC message
+// ServiceWorkerMsg_ServiceWorkerStateChanged to its corresponding
+// ServiceWorkerDispatcher on the renderer and receives Mojo IPC messages from
+// any ServiceWorkerNetworkProvider on the renderer.
 //
 // ServiceWorkerDispatcherHost is created on the UI thread in
-// RenderProcessHostImpl::Init() via CreateMessageFilters(). But initialization
-// and destruction occur on the IO thread, as does most (or all?) message
-// handling.  It lives as long as the renderer process lives. Therefore much
-// tracking of renderer processes in browser-side service worker code is built
-// on ServiceWorkerDispatcherHost lifetime.
+// RenderProcessHostImpl::Init() via CreateMessageFilters(), but initialization,
+// destruction, and IPC message handling occur on the IO thread. It lives as
+// long as the renderer process lives. Therefore much tracking of renderer
+// processes in browser-side service worker code is built on
+// ServiceWorkerDispatcherHost lifetime.
 //
 // This class is bound with mojom::ServiceWorkerDispatcherHost. All
 // InterfacePtrs on the same render process are bound to the same
