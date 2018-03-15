@@ -6,6 +6,7 @@
         "renderer": [
           "content::mojom::LayoutTestBluetoothFakeAdapterSetter",
           "content::mojom::MojoLayoutTestHelper",
+          "content::mojom::FakeBluetoothChooser",
           "bluetooth::mojom::FakeBluetooth"
         ]
       },

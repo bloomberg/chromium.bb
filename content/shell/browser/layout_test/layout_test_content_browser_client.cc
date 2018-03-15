@@ -14,6 +14,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
+#include "content/shell/browser/layout_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
@@ -65,6 +66,11 @@ void LayoutTestContentBrowserClient::SetPopupBlockingEnabled(
   block_popups_ = block_popups;
 }
 
+std::unique_ptr<FakeBluetoothChooser>
+LayoutTestContentBrowserClient::GetNextFakeBluetoothChooser() {
+  return std::move(next_fake_bluetooth_chooser_);
+}
+
 LayoutTestNotificationManager*
 LayoutTestContentBrowserClient::GetLayoutTestNotificationManager() {
   return layout_test_notification_manager_.get();
@@ -93,12 +99,21 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI);
   registry->AddInterface(
-      base::Bind(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
+      base::BindRepeating(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);
 
-  registry->AddInterface(base::Bind(&bluetooth::FakeBluetooth::Create),
+  registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),
                          ui_task_runner);
-  registry->AddInterface(base::Bind(&MojoLayoutTestHelper::Create));
+  // This class outlives |render_process_host|, which owns |registry|. Since
+  // CreateFakeBluetoothChooser will not be called after |registry| is deleted
+  // and |registry| is outlived by this class, it is safe to use
+  // base::Unretained.
+  registry->AddInterface(
+      base::BindRepeating(
+          &LayoutTestContentBrowserClient::CreateFakeBluetoothChooser,
+          base::Unretained(this)),
+      ui_task_runner);
+  registry->AddInterface(base::BindRepeating(&MojoLayoutTestHelper::Create));
 }
 
 void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
@@ -199,6 +214,14 @@ LayoutTestContentBrowserClient::CreateLoginDelegate(
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
         auth_required_callback) {
   return nullptr;
+}
+
+// private
+void LayoutTestContentBrowserClient::CreateFakeBluetoothChooser(
+    mojom::FakeBluetoothChooserRequest request) {
+  DCHECK(!next_fake_bluetooth_chooser_);
+  next_fake_bluetooth_chooser_ =
+      FakeBluetoothChooser::Create(std::move(request));
 }
 
 }  // namespace content
