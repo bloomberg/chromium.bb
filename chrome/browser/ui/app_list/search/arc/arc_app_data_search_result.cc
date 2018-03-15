@@ -88,10 +88,7 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   icon_decode_request_ = std::make_unique<IconDecodeRequest>(
       base::BindOnce(&ArcAppDataSearchResult::SetIconToAvatarIcon,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  ImageDecoder::StartWithOptions(icon_decode_request_.get(), icon_png_data(),
-                                 ImageDecoder::DEFAULT_CODEC, true,
-                                 gfx::Size());
+  icon_decode_request_->StartWithOptions(icon_png_data());
 }
 
 ArcAppDataSearchResult::~ArcAppDataSearchResult() = default;

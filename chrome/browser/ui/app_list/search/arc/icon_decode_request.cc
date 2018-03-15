@@ -4,10 +4,15 @@
 
 #include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
 
-#include "ash/app_list/model/search/search_result.h"
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "chrome/grit/component_extension_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -17,6 +22,8 @@ using content::BrowserThread;
 namespace app_list {
 
 namespace {
+
+bool disable_safe_decoding_for_testing = false;
 
 class IconSource : public gfx::ImageSkiaSource {
  public:
@@ -67,10 +74,36 @@ gfx::ImageSkiaRep IconSource::GetImageForScale(float scale) {
 
 }  // namespace
 
+// static
+void IconDecodeRequest::DisableSafeDecodingForTesting() {
+  disable_safe_decoding_for_testing = true;
+}
+
 IconDecodeRequest::IconDecodeRequest(SetIconCallback set_icon_callback)
     : set_icon_callback_(std::move(set_icon_callback)) {}
 
 IconDecodeRequest::~IconDecodeRequest() = default;
+
+void IconDecodeRequest::StartWithOptions(
+    const std::vector<uint8_t>& image_data) {
+  if (disable_safe_decoding_for_testing) {
+    if (image_data.empty()) {
+      OnDecodeImageFailed();
+      return;
+    }
+    SkBitmap bitmap;
+    if (!gfx::PNGCodec::Decode(
+            reinterpret_cast<const unsigned char*>(image_data.data()),
+            image_data.size(), &bitmap)) {
+      OnDecodeImageFailed();
+      return;
+    }
+    OnImageDecoded(bitmap);
+    return;
+  }
+  ImageDecoder::StartWithOptions(this, image_data, ImageDecoder::DEFAULT_CODEC,
+                                 true, gfx::Size());
+}
 
 void IconDecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

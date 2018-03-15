@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_result.h"
+#include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension_builder.h"
@@ -74,7 +75,7 @@ TEST_F(ArcPlayStoreSearchProviderTest, Basic) {
   std::unique_ptr<ArcPlayStoreSearchProvider> provider =
       CreateSearch(kMaxResults);
   EXPECT_TRUE(provider->results().empty());
-  ArcPlayStoreSearchResult::DisableSafeDecodingForTesting();
+  IconDecodeRequest::DisableSafeDecodingForTesting();
 
   AddExtension(CreateExtension(extension_misc::kGmailAppId).get());
 
