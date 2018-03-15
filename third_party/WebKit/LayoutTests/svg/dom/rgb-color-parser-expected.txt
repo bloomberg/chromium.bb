@@ -86,7 +86,7 @@ Failed to parse: rgb((
 Failed to parse: rgb(88
 Failed to parse: rgb(9.43,(6.87 -
 Failed to parse: rgb(e)e. 5997
-Failed to parse: rgb(5 9-557
+Parsed as rgb(5, 9, 0): rgb(5 9-557
 Failed to parse: rgb((65-%-0,e217
 Failed to parse: rgb( 2
 Failed to parse: rgb((e
@@ -185,7 +185,7 @@ Failed to parse: rgb((
 Failed to parse: rgb(88
 Failed to parse: rgb(9.43,(6.87 -
 Failed to parse: rgb(e)e. 5997
-Failed to parse: rgb(5 9-557
+Parsed as rgb(5, 9, 0): rgb(5 9-557
 Failed to parse: rgb((65-%-0,e217
 Failed to parse: rgb( 2
 Failed to parse: rgb((e
