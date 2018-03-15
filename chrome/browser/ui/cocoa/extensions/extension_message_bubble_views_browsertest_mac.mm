@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "build/buildflag.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -12,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/base/ui_features.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
@@ -49,7 +51,8 @@ class ToolbarActionsBarBubbleViewsPresenterTestApi {
 
 // static
 ToolbarActionsBarBubbleViews*
-ExtensionMessageBubbleBrowserTest::GetViewsBubbleForBrowser(Browser* browser) {
+ExtensionMessageBubbleBrowserTest::GetViewsBubbleForCocoaBrowser(
+    Browser* browser) {
   ToolbarController* toolbarController = ToolbarControllerForBrowser(browser);
   BrowserActionsController* actionsController =
       [toolbarController browserActionsController];
@@ -57,8 +60,17 @@ ExtensionMessageBubbleBrowserTest::GetViewsBubbleForBrowser(Browser* browser) {
       [actionsController presenter]);
 }
 
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
-gfx::Rect ExtensionMessageBubbleBrowserTest::GetAnchorReferenceBoundsForBrowser(
+ToolbarActionsBarBubbleViews*
+ExtensionMessageBubbleBrowserTest::GetViewsBubbleForBrowser(Browser* browser) {
+  return GetViewsBubbleForCocoaBrowser(browser);
+}
+#endif
+
+// static
+gfx::Rect
+ExtensionMessageBubbleBrowserTest::GetAnchorReferenceBoundsForCocoaBrowser(
     Browser* browser,
     AnchorPosition anchor) {
   ToolbarController* toolbarController = ToolbarControllerForBrowser(browser);
@@ -87,3 +99,12 @@ gfx::Rect ExtensionMessageBubbleBrowserTest::GetAnchorReferenceBoundsForBrowser(
 
   return gfx::ScreenRectFromNSRect(reference_bounds_in_screen);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+// static
+gfx::Rect ExtensionMessageBubbleBrowserTest::GetAnchorReferenceBoundsForBrowser(
+    Browser* browser,
+    AnchorPosition anchor) {
+  return GetAnchorReferenceBoundsForCocoaBrowser(browser, anchor);
+}
+#endif

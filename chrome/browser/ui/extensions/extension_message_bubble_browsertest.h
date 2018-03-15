@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 
 namespace extensions {
@@ -32,10 +33,20 @@ class ExtensionMessageBubbleBrowserTest
   static ToolbarActionsBarBubbleViews* GetViewsBubbleForBrowser(
       Browser* browser);
 
+#if defined(OS_MACOSX)
+  static ToolbarActionsBarBubbleViews* GetViewsBubbleForCocoaBrowser(
+      Browser* browser);
+#endif
+
   // Returns the expected test anchor bounds on |browser| which may be a Cocoa
   // browser or a Views browser. Implemented in platform files.
   static gfx::Rect GetAnchorReferenceBoundsForBrowser(Browser* browser,
                                                       AnchorPosition anchor);
+#if defined(OS_MACOSX)
+  static gfx::Rect GetAnchorReferenceBoundsForCocoaBrowser(
+      Browser* browser,
+      AnchorPosition anchor);
+#endif
 
   // BrowserActionsBarBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
