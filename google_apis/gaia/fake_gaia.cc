@@ -149,6 +149,7 @@ void FakeGaia::MergeSessionParams::Update(const MergeSessionParams& update) {
   maybe_update_field(&MergeSessionParams::auth_code);
   maybe_update_field(&MergeSessionParams::refresh_token);
   maybe_update_field(&MergeSessionParams::access_token);
+  maybe_update_field(&MergeSessionParams::id_token);
   maybe_update_field(&MergeSessionParams::gaia_uber_token);
   maybe_update_field(&MergeSessionParams::session_sid_cookie);
   maybe_update_field(&MergeSessionParams::session_lsid_cookie);
@@ -709,6 +710,8 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
           device_id;
     response_dict.SetString("access_token",
                             merge_session_params_.access_token);
+    if (!merge_session_params_.id_token.empty())
+      response_dict.SetString("id_token", merge_session_params_.id_token);
     response_dict.SetInteger("expires_in", 3600);
     FormatJSONResponse(response_dict, http_response);
     return;

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -30,7 +31,12 @@
 namespace {
 // The Gaia ID supplied by FakeGaia for our mocked-out signin.
 const char kTestGaiaId[] = "12345";
-const char kConsumerAccount[] = "test_user@gmail.com";
+
+const char kIdTokenChildAccount[] =
+    "dummy-header."
+    // base64 encoded: { "services": ["uca"] }
+    "eyAic2VydmljZXMiOiBbInVjYSJdIH0="
+    ".dummy-signature";
 
 // Helper class that counts the number of notifications of the specified
 // type that have been received.
@@ -209,16 +215,44 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, MigrateForExistingUser) {
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, NoPolicyForConsumer) {
+class UserCloudPolicyManagerNonEnterpriseTest
+    : public UserCloudPolicyManagerTest {
+ protected:
+  UserCloudPolicyManagerNonEnterpriseTest() = default;
+  ~UserCloudPolicyManagerNonEnterpriseTest() override = default;
+
+  // UserCloudPolicyManagerTest:
+  void SetUp() override {
+    // Recognize example.com as non-enterprise account. We don't use any
+    // available public domain such as gmail.com in order to prevent possible
+    // leak of verification keys/signatures.
+    policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
+        "example.com");
+    UserCloudPolicyManagerTest::SetUp();
+  }
+
+  void TearDown() override {
+    UserCloudPolicyManagerTest::TearDown();
+    policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerNonEnterpriseTest);
+};
+
+IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerNonEnterpriseTest,
+                       NoPolicyForConsumer) {
+  EXPECT_TRUE(
+      policy::BrowserPolicyConnector::IsNonEnterpriseUser(GetAccount()));
   // If a user signs in with a known non-enterprise account there should be no
   // policy.
   AccountId account_id =
-      AccountId::FromUserEmailGaiaId(kConsumerAccount, kTestGaiaId);
+      AccountId::FromUserEmailGaiaId(GetAccount(), kTestGaiaId);
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 
   SkipToLoginScreen();
-  LogIn(kConsumerAccount, kAccountPassword);
+  LogIn(GetAccount(), kAccountPassword);
 
   // User should be marked as having a valid OAuth token.
   const user_manager::UserManager* const user_manager =
@@ -230,6 +264,45 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, NoPolicyForConsumer) {
 
   // User should be marked as not requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired,
+            user_manager::known_user::GetProfileRequiresPolicy(account_id));
+}
+
+class UserCloudPolicyManagerChildTest
+    : public UserCloudPolicyManagerNonEnterpriseTest {
+ protected:
+  UserCloudPolicyManagerChildTest() = default;
+  ~UserCloudPolicyManagerChildTest() override = default;
+
+  // LoginPolicyTestBase:
+  std::string GetIdToken() const override { return kIdTokenChildAccount; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChildTest);
+};
+
+IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
+  EXPECT_TRUE(
+      policy::BrowserPolicyConnector::IsNonEnterpriseUser(GetAccount()));
+  // If a user signs in with a known non-enterprise account there should be no
+  // policy in case user type is child.
+  AccountId account_id =
+      AccountId::FromUserEmailGaiaId(GetAccount(), kTestGaiaId);
+  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+            user_manager::known_user::GetProfileRequiresPolicy(account_id));
+
+  SkipToLoginScreen();
+  LogIn(GetAccount(), kAccountPassword);
+
+  // User should be marked as having a valid OAuth token.
+  const user_manager::UserManager* const user_manager =
+      user_manager::UserManager::Get();
+  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
+            user_manager->GetActiveUser()->oauth_token_status());
+
+  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
+
+  // User of CHILD type should be marked as requiring policy.
+  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 

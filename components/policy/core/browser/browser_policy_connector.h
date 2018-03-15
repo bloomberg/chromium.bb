@@ -54,6 +54,11 @@ class POLICY_EXPORT BrowserPolicyConnector : public BrowserPolicyConnectorBase {
   // false if the username is empty.
   static bool IsNonEnterpriseUser(const std::string& username);
 
+  // Allows to register domain for tests that is recognized as non-enterprise.
+  // Note that |domain| basically needs to live until this method is invoked
+  // with a nullptr.
+  static void SetNonEnterpriseDomainForTesting(const char* domain);
+
   // Returns the URL for the device management service endpoint.
   static std::string GetDeviceManagementUrl();
 
