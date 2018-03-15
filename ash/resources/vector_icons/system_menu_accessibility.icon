@@ -21,5 +21,4 @@ CLOSE,
 R_MOVE_TO, 0, -2,
 R_ARC_TO, 3.5f, 3.5f, 0, 1, 0, 0, -7,
 R_ARC_TO, 3.5f, 3.5f, 0, 0, 0, 0, 7,
-CLOSE,
-END
+CLOSE

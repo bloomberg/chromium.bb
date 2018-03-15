@@ -22,5 +22,4 @@ R_LINE_TO, 6.21f, 6.21f,
 R_LINE_TO, 1.57f, -1.57f,
 R_LINE_TO, -6.21f, -6.2f,
 R_LINE_TO, 6.21f, -6.21f,
-CLOSE,
-END
+CLOSE

@@ -42,11 +42,13 @@ struct CompareIconDescription {
 // Helper that simplifies iterating over a sequence of PathElements.
 class PathParser {
  public:
-  PathParser(const PathElement* path_elements)
-      : path_elements_(path_elements) {}
+  PathParser(const PathElement* path_elements, size_t path_size)
+      : path_elements_(path_elements), path_size_(path_size) {}
   ~PathParser() {}
 
   void Advance() { command_index_ += GetArgumentCount() + 1; }
+
+  bool HasCommandsRemaining() const { return command_index_ < path_size_; }
 
   CommandType CurrentCommand() const {
     return path_elements_[command_index_].command;
@@ -103,7 +105,6 @@ class PathParser {
       case FLIPS_IN_RTL:
       case TRANSITION_FROM:
       case TRANSITION_TO:
-      case END:
         return 0;
     }
 
@@ -112,7 +113,8 @@ class PathParser {
   }
 
   const PathElement* path_elements_;
-  int command_index_ = 0;
+  size_t path_size_;
+  size_t command_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PathParser);
 };
@@ -149,7 +151,6 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CLIP);
   RETURN_IF_IS(DISABLE_AA);
   RETURN_IF_IS(FLIPS_IN_RTL);
-  RETURN_IF_IS(END);
 #undef RETURN_IF_IS
 
   NOTREACHED() << "Unrecognized command: " << source;
@@ -175,6 +176,7 @@ std::vector<PathElement> PathFromSource(const std::string& source) {
 
 void PaintPath(Canvas* canvas,
                const PathElement* path_elements,
+               size_t path_size,
                int dip_size,
                SkColor color,
                const base::TimeDelta& elapsed_time) {
@@ -188,8 +190,8 @@ void PaintPath(Canvas* canvas,
   bool flips_in_rtl = false;
   CommandType previous_command_type = NEW_PATH;
 
-  for (PathParser parser(path_elements); parser.CurrentCommand() != END;
-       parser.Advance()) {
+  for (PathParser parser(path_elements, path_size);
+       parser.HasCommandsRemaining(); parser.Advance()) {
     auto arg = [&parser](int i) { return parser.GetArgument(i); };
     const CommandType command_type = parser.CurrentCommand();
     auto start_new_path = [&paths]() {
@@ -430,10 +432,6 @@ void PaintPath(Canvas* canvas,
         flags_array.pop_back();
         break;
       }
-
-      case END:
-        NOTREACHED();
-        break;
     }
 
     previous_command_type = command_type;
@@ -481,7 +479,7 @@ class VectorIconSource : public CanvasImageSource {
       if (!data_.badge_icon.is_empty())
         PaintVectorIcon(canvas, data_.badge_icon, size_.width(), data_.color);
     } else {
-      PaintPath(canvas, path_.data(), size_.width(), data_.color,
+      PaintPath(canvas, path_.data(), path_.size(), size_.width(), data_.color,
                 base::TimeDelta());
     }
   }
@@ -562,20 +560,13 @@ void PaintVectorIcon(Canvas* canvas,
                      SkColor color,
                      const base::TimeDelta& elapsed_time) {
   DCHECK(!icon.is_empty());
-  if (icon.rep) {
+  if (icon.rep)
     DCHECK(icon.rep->path_size > 0);
-    DCHECK_EQ(END, icon.rep->path[icon.rep->path_size - 1].command)
-        << icon.name;
-  }
-  if (icon.rep_1x) {
+  if (icon.rep_1x)
     DCHECK(icon.rep_1x->path_size > 0);
-    DCHECK_EQ(END, icon.rep_1x->path[icon.rep_1x->path_size - 1].command)
-        << icon.name;
-  }
-  const PathElement* path = (canvas->image_scale() == 1.f && icon.rep_1x)
-                                ? icon.rep_1x->path
-                                : icon.rep->path;
-  PaintPath(canvas, path, dip_size, color, elapsed_time);
+  const VectorIconRep* rep =
+      (canvas->image_scale() == 1.f && icon.rep_1x) ? icon.rep_1x : icon.rep;
+  PaintPath(canvas, rep->path, rep->path_size, dip_size, color, elapsed_time);
 }
 
 ImageSkia CreateVectorIcon(const IconDescription& params) {
@@ -620,8 +611,8 @@ int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
 
 base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon) {
   base::TimeDelta last_motion;
-  for (PathParser parser(icon.rep->path); parser.CurrentCommand() != END;
-       parser.Advance()) {
+  for (PathParser parser(icon.rep->path, icon.rep->path_size);
+       parser.HasCommandsRemaining(); parser.Advance()) {
     if (parser.CurrentCommand() != TRANSITION_END)
       continue;
 

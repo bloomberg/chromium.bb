@@ -18,5 +18,4 @@ LINE_TO, 8.69f, 5,
 CUBIC_TO, 8.86f, 5, 9, 5.14f, 9, 5.31f,
 CUBIC_TO, 9, 5.38f, 8.98f, 5.44f, 8.94f, 5.49f,
 LINE_TO, 5.36f, 11,
-CLOSE,
-END
+CLOSE

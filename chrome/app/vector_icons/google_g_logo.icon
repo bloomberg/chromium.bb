@@ -45,5 +45,4 @@ CUBIC_TO, 24.33f, 1.6f, 20.63f, 0, 16.23f, 0,
 CUBIC_TO, 9.96f, 0, 4.46f, 3.6f, 1.78f, 8.8f,
 R_LINE_TO, 5.43f, 4.16f,
 R_CUBIC_TO, 1.27f, -3.78f, 4.85f, -6.6f, 9.1f, -6.6f,
-CLOSE,
-END
+CLOSE

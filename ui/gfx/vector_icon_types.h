@@ -63,9 +63,6 @@ enum CommandType {
   // Parameters are delay (ms), duration (ms), and tween type
   // (gfx::Tween::Type).
   TRANSITION_END,
-  // Marks the end of the list of commands. TODO(estade): remove this sentinel
-  // value and rely on VectorIcon::path_size.
-  END
 };
 
 // A POD that describes either a path command or an argument for it.

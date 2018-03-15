@@ -28,5 +28,4 @@ LINE_TO, 7.92f, 5,
 LINE_TO, 7.92f, 7,
 CUBIC_TO, 5.14f, 7, 4.38f, 9, 4, 11,
 CUBIC_TO, 4.93f, 9.6f, 5.88f, 8.96f, 7.92f, 9,
-CLOSE,
-END
+CLOSE

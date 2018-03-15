@@ -50,5 +50,4 @@ CUBIC_TO, 4.5f, 5.17f, 5.17f, 4.5f, 6, 4.5f,
 CUBIC_TO, 6.83f, 4.5f, 7.5f, 5.17f, 7.5f, 6,
 CUBIC_TO, 7.5f, 6.83f, 6.83f, 7.5f, 6, 7.5f,
 LINE_TO, 6, 7.5f,
-CLOSE,
-END
+CLOSE

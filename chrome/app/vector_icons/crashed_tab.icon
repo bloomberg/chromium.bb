@@ -48,5 +48,4 @@ R_LINE_TO, 0, 0,
 R_MOVE_TO, 0, -4,
 R_LINE_TO, 0, 0,
 R_MOVE_TO, -2, 2,
-R_LINE_TO, 0, 0,
-END
+R_LINE_TO, 0, 0

@@ -22,5 +22,4 @@ LINE_TO, 12.4f, 12.32f,
 LINE_TO, 8.2f, 9.8f,
 LINE_TO, 8.2f, 5,
 LINE_TO, 9.4f, 5,
-CLOSE,
-END
+CLOSE

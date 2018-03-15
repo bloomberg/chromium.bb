@@ -20,5 +20,4 @@ R_ARC_TO, 3.6f, 3.6f, 0, 0, 1, -3.6f, -3.6f,
 R_ARC_TO, 3.6f, 3.6f, 0, 0, 1, 3.6f, -3.6f,
 R_ARC_TO, 3.6f, 3.6f, 0, 0, 1, 3.6f, 3.6f,
 R_ARC_TO, 3.6f, 3.6f, 0, 0, 1, -3.6f, 3.6f,
-CLOSE,
-END
+CLOSE

@@ -31,5 +31,4 @@ R_MOVE_TO, 7.31f, 7.5f,
 R_LINE_TO, 1.53f, 1.57f,
 R_LINE_TO, -1.53f, 1.57f,
 R_V_LINE_TO, -3.13f,
-CLOSE,
-END
+CLOSE

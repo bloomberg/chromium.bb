@@ -13,5 +13,4 @@ R_MOVE_TO, 0, -14.12f,
 R_CUBIC_TO, 3.38f, 0, 6.12f, 2.74f, 6.12f, 6.12f,
 R_CUBIC_TO, 0, 3.38f, -2.74f, 6.12f, -6.12f, 6.12f,
 V_LINE_TO, 3.88f,
-CLOSE,
-END
+CLOSE
