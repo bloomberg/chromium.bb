@@ -7,6 +7,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 
 #if defined(USE_OZONE)

@@ -100,6 +100,15 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   bool HasPollingWork() const override;
   void PerformPollingWork() override;
   TextureBase* GetTextureBase(uint32_t client_id) override;
+  void SetLevelInfo(uint32_t client_id,
+                    int level,
+                    unsigned internal_format,
+                    unsigned width,
+                    unsigned height,
+                    unsigned depth,
+                    unsigned format,
+                    unsigned type,
+                    const gfx::Rect& cleared_rect) override;
   bool WasContextLost() const override;
   bool WasContextLostByRobustnessExtension() const override;
   void MarkContextLost(error::ContextLostReason reason) override;
@@ -402,6 +411,16 @@ TextureBase* RasterDecoder::GetTextureBase(uint32_t client_id) {
   return nullptr;
 }
 
+void RasterDecoder::SetLevelInfo(uint32_t client_id,
+                                 int level,
+                                 unsigned internal_format,
+                                 unsigned width,
+                                 unsigned height,
+                                 unsigned depth,
+                                 unsigned format,
+                                 unsigned type,
+                                 const gfx::Rect& cleared_rect) {}
+
 void RasterDecoder::BeginDecoding() {}
 
 void RasterDecoder::EndDecoding() {}
@@ -641,6 +660,18 @@ void RasterDecoderImpl::PerformPollingWork() {
 TextureBase* RasterDecoderImpl::GetTextureBase(uint32_t client_id) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void RasterDecoderImpl::SetLevelInfo(uint32_t client_id,
+                                     int level,
+                                     unsigned internal_format,
+                                     unsigned width,
+                                     unsigned height,
+                                     unsigned depth,
+                                     unsigned format,
+                                     unsigned type,
+                                     const gfx::Rect& cleared_rect) {
+  NOTIMPLEMENTED();
 }
 
 bool RasterDecoderImpl::WasContextLost() const {

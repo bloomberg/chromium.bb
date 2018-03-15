@@ -546,6 +546,16 @@ TextureBase* GLES2Decoder::GetTextureBase(uint32_t client_id) {
   return nullptr;
 }
 
+void GLES2Decoder::SetLevelInfo(uint32_t client_id,
+                                int level,
+                                unsigned internal_format,
+                                unsigned width,
+                                unsigned height,
+                                unsigned depth,
+                                unsigned format,
+                                unsigned type,
+                                const gfx::Rect& cleared_rect) {}
+
 void GLES2Decoder::BeginDecoding() {}
 
 void GLES2Decoder::EndDecoding() {}
@@ -681,6 +691,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool GetServiceTextureId(uint32_t client_texture_id,
                            uint32_t* service_texture_id) override;
   TextureBase* GetTextureBase(uint32_t client_id) override;
+  void SetLevelInfo(uint32_t client_id,
+                    int level,
+                    unsigned internal_format,
+                    unsigned width,
+                    unsigned height,
+                    unsigned depth,
+                    unsigned format,
+                    unsigned type,
+                    const gfx::Rect& cleared_rect) override;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -4968,6 +4987,21 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32_t client_texture_id,
 TextureBase* GLES2DecoderImpl::GetTextureBase(uint32_t client_id) {
   TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
   return texture_ref ? texture_ref->texture() : nullptr;
+}
+
+void GLES2DecoderImpl::SetLevelInfo(uint32_t client_id,
+                                    int level,
+                                    unsigned internal_format,
+                                    unsigned width,
+                                    unsigned height,
+                                    unsigned depth,
+                                    unsigned format,
+                                    unsigned type,
+                                    const gfx::Rect& cleared_rect) {
+  TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
+  texture_manager()->SetLevelInfo(texture_ref, texture_ref->texture()->target(),
+                                  level, internal_format, width, height, depth,
+                                  0 /* border */, format, type, cleared_rect);
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {

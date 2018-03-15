@@ -461,6 +461,7 @@ void GLManager::Destroy() {
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
+  context_ = nullptr;
 }
 
 const GpuDriverBugWorkarounds& GLManager::workarounds() const {

@@ -37,6 +37,15 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   // DecoderContext implementation.
   bool initialized() const override;
   TextureBase* GetTextureBase(uint32_t client_id) override;
+  void SetLevelInfo(uint32_t client_id,
+                    int level,
+                    unsigned internal_format,
+                    unsigned width,
+                    unsigned height,
+                    unsigned depth,
+                    unsigned format,
+                    unsigned type,
+                    const gfx::Rect& cleared_rect) override;
   void BeginDecoding() override;
   void EndDecoding() override;
   base::StringPiece GetLogPrefix() override;

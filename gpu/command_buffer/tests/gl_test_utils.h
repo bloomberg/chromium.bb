@@ -12,9 +12,22 @@
 
 #include <vector>
 
+#include "build/build_config.h"
+#include "gpu/command_buffer/tests/gl_manager.h"
+#include "ui/gl/gl_implementation.h"
+
+namespace gl {
+class GLImageNativePixmap;
+}
+
+namespace gpu {
+
 class GLTestHelper {
  public:
   static const uint8_t kCheckClearValue = 123u;
+
+  static bool InitializeGL(gl::GLImplementation gl_impl);
+  static bool InitializeGLDefault();
 
   static bool HasExtension(const char* extension);
   static bool CheckGLError(const char* msg, int line);
@@ -75,5 +88,46 @@ class GLTestHelper {
                               const char* sampler_name,
                               const char* face_name);
 };
+
+class GpuCommandBufferTestEGL {
+ public:
+  GpuCommandBufferTestEGL();
+  ~GpuCommandBufferTestEGL();
+
+  // Reinitialize GL to the EGLGLES2 implementation if it is available and not
+  // the current initialized GL implementation. Return true on sucess, false
+  // otherwise.
+  bool InitializeEGLGLES2(int width, int height);
+
+  // Restore the default GL implementation.
+  void RestoreGLDefault();
+
+  // Returns whether the current context supports the named EGL extension.
+  bool HasEGLExtension(const base::StringPiece& extension) {
+    return gl::HasExtension(egl_extensions_, extension);
+  }
+
+  // Returns whether the current context supports the named GL extension.
+  bool HasGLExtension(const base::StringPiece& extension) {
+    return gl::HasExtension(gl_extensions_, extension);
+  }
+
+#if defined(OS_LINUX)
+  // Create GLImageNativePixmap filled in with the given pixels.
+  scoped_refptr<gl::GLImageNativePixmap> CreateGLImageNativePixmap(
+      gfx::BufferFormat format,
+      gfx::Size size,
+      uint8_t* pixels) const;
+#endif
+
+ protected:
+  bool gl_reinitialized_;
+  GLManager gl_;
+  gl::GLWindowSystemBindingInfo window_system_binding_info_;
+  gl::ExtensionSet egl_extensions_;
+  gl::ExtensionSet gl_extensions_;
+};
+
+}  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_TESTS_GL_TEST_UTILS_H_
