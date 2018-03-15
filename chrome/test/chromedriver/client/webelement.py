@@ -61,5 +61,8 @@ class WebElement(object):
   def GetLocation(self):
     return self._Execute(Command.GET_ELEMENT_LOCATION)
 
+  def GetRect(self):
+    return self._Execute(Command.GET_ELEMENT_RECT)
+
   def IsDisplayed(self):
     return self._Execute(Command.IS_ELEMENT_DISPLAYED)
