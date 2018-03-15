@@ -272,7 +272,6 @@ if (CONFIG_AV1_ENCODER)
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/av1_fht16x8_test.cc"
         "${AOM_ROOT}/test/av1_fht4x4_test.cc"
-        "${AOM_ROOT}/test/av1_fht4x8_test.cc"
         "${AOM_ROOT}/test/av1_fht8x16_test.cc"
         "${AOM_ROOT}/test/av1_fht8x4_test.cc")
 

@@ -91,9 +91,6 @@ specialize qw/av1_get_br_level_counts sse2/;
 add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 specialize qw/av1_iht4x4_16_add sse2/;
 
-add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-specialize qw/av1_iht4x8_32_add sse2/;
-
 add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 specialize qw/av1_iht8x4_32_add sse2/;
 
@@ -153,8 +150,6 @@ specialize qw/av1_highbd_convolve8_vert/, "$sse2_x86_64";
 # dct
 #
 add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 add_proto qw/void av1_highbd_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
