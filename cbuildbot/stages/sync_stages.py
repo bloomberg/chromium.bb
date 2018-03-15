@@ -11,6 +11,7 @@ import collections
 import contextlib
 import datetime
 import itertools
+import json
 import os
 import pprint
 import re
@@ -1406,27 +1407,14 @@ class PreCQLauncherStage(SyncStage):
     return cq_config_parser.CanSubmitChangeInPreCQ()
 
   def GetConfigBuildbucketIdMap(self, output):
-    """Get a config:buildbucket_id map.
+    """Convert tryjob json output into a config:buildbucket_id map.
 
     Config is the config-name of a pre-cq triggered by the pre-cq-launcher.
     buildbucket_id is the request id of the pre-cq build.
     """
-    config_buildbucket_id_map = {}
-    for line in output.splitlines():
-      config = None
-      buildbucket_id = None
-      match_config = re.search(r'\[config:(\S*)\]', line)
-      if match_config:
-        config = match_config.group(1)
-
-      match_id = re.search(r'\[buildbucket_id:(\S*)\]', line)
-      if match_id:
-        buildbucket_id = match_id.group(1)
-
-      if config is not None and buildbucket_id is not None:
-        config_buildbucket_id_map[config] = buildbucket_id
-
-    return config_buildbucket_id_map
+    # List of dicts containing 'build_config', 'buildbucket_id', 'url'
+    tryjob_output = json.loads(output)
+    return {t['build_config']: t['buildbucket_id'] for t in tryjob_output}
 
   def _LaunchTrybots(self, pool, configs, plan=None,
                      sanity_check_build=False, swarming=True):
@@ -1458,7 +1446,7 @@ class PreCQLauncherStage(SyncStage):
 
         return {}
 
-    cmd = ['cros', 'tryjob', '--yes',
+    cmd = ['cros', 'tryjob', '--yes', '--json',
            '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
 
     if sanity_check_build:

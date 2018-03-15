@@ -10,6 +10,7 @@ from __future__ import print_function
 import cPickle
 import datetime
 import itertools
+import json
 import mock
 import os
 import time
@@ -46,7 +47,6 @@ from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
-from chromite.lib import remote_try
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
@@ -1301,28 +1301,36 @@ pre-cq-configs: link-pre-cq
 
   def testGetConfigBuildbucketIdMap(self):
     """Test testGetConfigBuildbucketIdMap"""
-    output = (
-        "Verifying patches...\n"
-        "Submitting tryjob...\n"
-        "Successfully sent PUT request to "
-        "[buildbucket_bucket:master.chromiumos.tryserver] with "
-        "[config:binhost-pre-cq] [buildbucket_id:9005858128833098368].\n"
-        "Successfully sent PUT request to "
-        "[buildbucket_bucket:master.chromiumos.tryserver] with "
-        "[config:storm-pre-cq] [buildbucket_id:9005858128487381632].\n"
-        "Tryjob submitted!"
-        "Go to https://uberchromegw.corp.google.com/i/chromiumos.tryserver/"
-        "waterfall?committer=nxia@chromium.org&builder=pre-cq "
-        "to view the status of your job.")
+    output = json.dumps([])
+    result = self.sync_stage.GetConfigBuildbucketIdMap(output)
+    self.assertEqual(result, {})
 
-    map_1 = self.sync_stage.GetConfigBuildbucketIdMap(output)
-    self.assertEqual(map_1, {'binhost-pre-cq': '9005858128833098368',
-                             'storm-pre-cq': '9005858128487381632'})
+    output = json.dumps([
+        {
+            'build_config': 'config_a',
+            'buildbucket_id': 'bb_a',
+            'url': 'lego_a',
+        },
+    ])
+    result = self.sync_stage.GetConfigBuildbucketIdMap(output)
+    self.assertEqual(result, {'config_a': 'bb_a'})
 
-    test_output = remote_try.RemoteTryJob.BUILDBUCKET_PUT_RESP_FORMAT % (
-        'test-bucket', 'test-config', 'test-id')
-    map_2 = self.sync_stage.GetConfigBuildbucketIdMap(test_output)
-    self.assertEqual(map_2, {'test-config': 'test-id'})
+
+    output = json.dumps([
+        {
+            'build_config': 'config_a',
+            'buildbucket_id': 'bb_a',
+            'url': 'lego_a',
+        },
+        {
+            'build_config': 'config_b',
+            'buildbucket_id': 'bb_b',
+            'url': 'lego_b',
+        },
+    ])
+    result = self.sync_stage.GetConfigBuildbucketIdMap(output)
+    self.assertEqual(result, {'config_a': 'bb_a', 'config_b': 'bb_b'})
+
 
   def testCancelPreCQIfNeededSkipsCancellation(self):
     """Test _CancelPreCQIfNeeded which skips cancellation."""
