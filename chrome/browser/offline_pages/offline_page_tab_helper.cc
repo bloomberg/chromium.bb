@@ -5,6 +5,7 @@
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -40,10 +41,6 @@ bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
     return true;
 #endif
   return url.SchemeIsFile();
-}
-
-void SavePageLaterCallback(AddRequestResult result) {
-  // do nothing.
 }
 }  // namespace
 
@@ -388,8 +385,7 @@ void OfflinePageTabHelper::DoDownloadPageLater(
   params.url = url;
   params.client_id = offline_pages::ClientId(name_space, base::GenerateGUID());
   params.request_origin = request_origin;
-  request_coordinator->SavePageLater(params,
-                                     base::Bind(&SavePageLaterCallback));
+  request_coordinator->SavePageLater(params, base::DoNothing());
 
   if (static_cast<int>(ui_action) &
       static_cast<int>(OfflinePageUtils::DownloadUIActionFlags::
