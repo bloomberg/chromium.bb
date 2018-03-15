@@ -196,7 +196,7 @@ class GitCL(object):
             if is_swarming_task and not include_swarming_tasks:
                 continue
             is_cq = 'user_agent:cq' in result.get('tags', [])
-            is_experimental = result.get('experimental')
+            is_experimental = 'cq_experimental:true' in result.get('tags', [])
             if cq_only and not (is_cq and not is_experimental):
                 continue
             build_to_status[self._build(result)] = self._try_job_status(result)
