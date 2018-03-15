@@ -57,13 +57,13 @@ void Surface::Reset(base::WeakPtr<SurfaceClient> client) {
   active_frame_data_.reset();
 }
 
-bool Surface::InheritActivationDeadlineFrom(Surface* surface) {
+void Surface::InheritActivationDeadlineFrom(Surface* surface) {
   TRACE_EVENT1("viz", "Surface::InheritActivationDeadlineFrom", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
   if (!deadline_ || !surface->deadline_)
-    return false;
+    return;
 
-  return deadline_->InheritFrom(*surface->deadline_);
+  deadline_->InheritFrom(*surface->deadline_);
 }
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
