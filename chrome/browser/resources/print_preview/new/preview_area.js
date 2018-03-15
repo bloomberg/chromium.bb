@@ -85,7 +85,7 @@ Polymer({
         'settings.layout.value, settings.margins.value, ' +
         'settings.mediaSize.value, settings.ranges.value,' +
         'settings.selectionOnly.value, settings.scaling.value, ' +
-        'destination.id, destination.capabilities)',
+        'settings.rasterize.value, destination.id, destination.capabilities)',
   ],
 
   /** @private {print_preview.NativeLayer} */
@@ -456,7 +456,7 @@ Polymer({
       printWithCloudPrint: !this.destination.isLocal,
       printWithPrivet: this.destination.isPrivet,
       printWithExtension: this.destination.isExtension,
-      rasterizePDF: false,
+      rasterizePDF: this.getSettingValue('rasterize'),
     };
 
     // Set 'cloudPrintID' only if the this.destination is not local.
