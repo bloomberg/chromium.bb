@@ -96,6 +96,9 @@ struct Entry {
   // Stores the number of times the service tried to delete the download file.
   uint32_t cleanup_attempt_count;
 
+  // Stores whether this request also has some data to be uploaded.
+  bool has_upload_data;
+
   // Traffic annotation for the network request.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation;
 };

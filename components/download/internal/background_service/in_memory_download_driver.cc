@@ -5,6 +5,7 @@
 #include "components/download/internal/background_service/in_memory_download_driver.h"
 
 #include "components/download/internal/background_service/in_memory_download.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace download {
 
@@ -97,6 +98,7 @@ void InMemoryDownloadDriver::Start(
     const RequestParams& request_params,
     const std::string& guid,
     const base::FilePath& file_path,
+    scoped_refptr<network::ResourceRequestBody> post_body,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   std::unique_ptr<InMemoryDownload> download =
       download_factory_->Create(guid, request_params, traffic_annotation, this);

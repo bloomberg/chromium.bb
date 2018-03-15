@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "components/download/public/background_service/download_params.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace download {
 namespace test {
@@ -71,6 +72,7 @@ void TestDownloadDriver::Start(
     const RequestParams& params,
     const std::string& guid,
     const base::FilePath& file_path,
+    scoped_refptr<network::ResourceRequestBody> post_body,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DriverEntry entry;
   entry.guid = guid;

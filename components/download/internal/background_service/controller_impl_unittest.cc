@@ -31,6 +31,7 @@
 #include "components/download/public/background_service/test/empty_client.h"
 #include "components/download/public/background_service/test/mock_client.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1129,7 +1130,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
   EXPECT_CALL(*client_,
               OnDownloadFailed(entry2.guid, Client::FailureReason::ABORTED))
       .Times(1);
-  driver_->Start(RequestParams(), entry2.guid, entry2.target_file_path,
+  driver_->Start(RequestParams(), entry2.guid, entry2.target_file_path, nullptr,
                  TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Test FailureReason::NETWORK.
@@ -1346,6 +1347,7 @@ TEST_F(DownloadServiceControllerImplTest, ExistingExternalDownload) {
 
   // Simulate a successful external download.
   driver_->NotifyDownloadSucceeded(dentry2);
+  task_runner_->RunUntilIdle();
 
   EXPECT_TRUE(driver_->Find(entry1.guid).has_value());
   EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
@@ -1391,7 +1393,7 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
 
   // Simulate a newly created external download.
   driver_->Start(RequestParams(), dentry2.guid, dentry2.current_file_path,
-                 TRAFFIC_ANNOTATION_FOR_TESTS);
+                 nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
   EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
@@ -1420,7 +1422,7 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
   // Rebuild the download so we can simulate more.
   dentry2.state = DriverEntry::State::IN_PROGRESS;
   driver_->Start(RequestParams(), dentry2.guid, dentry2.current_file_path,
-                 TRAFFIC_ANNOTATION_FOR_TESTS);
+                 nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
   EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);

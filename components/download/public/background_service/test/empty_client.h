@@ -33,6 +33,8 @@ class EmptyClient : public Client {
                            const CompletionInfo& completion_info) override;
   bool CanServiceRemoveDownloadedFile(const std::string& guid,
                                       bool force_delete) override;
+  void GetUploadData(const std::string& guid,
+                     GetUploadDataCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyClient);

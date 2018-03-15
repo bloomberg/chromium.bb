@@ -4,6 +4,9 @@
 
 #include "components/download/public/background_service/test/empty_client.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "services/network/public/cpp/resource_request_body.h"
+
 namespace download {
 namespace test {
 
@@ -31,6 +34,12 @@ void EmptyClient::OnDownloadSucceeded(const std::string& guid,
 bool EmptyClient::CanServiceRemoveDownloadedFile(const std::string& guid,
                                                  bool force_delete) {
   return true;
+}
+
+void EmptyClient::GetUploadData(const std::string& guid,
+                                GetUploadDataCallback callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), nullptr));
 }
 
 }  // namespace test

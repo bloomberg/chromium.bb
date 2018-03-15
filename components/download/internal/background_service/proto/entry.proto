@@ -66,4 +66,5 @@ message Entry {
   optional uint32 cleanup_attempt_count = 13;
 
   optional uint32 resumption_count = 14;
+  optional bool has_upload_data = 15;
 }

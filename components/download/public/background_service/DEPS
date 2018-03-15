@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service",
   "+net/http",
   "+net/traffic_annotation",
+  "+services/network/public/cpp",
   "+storage/browser",
   "+url",
 ]

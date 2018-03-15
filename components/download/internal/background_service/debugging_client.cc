@@ -4,6 +4,9 @@
 
 #include "components/download/internal/background_service/debugging_client.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "services/network/public/cpp/resource_request_body.h"
+
 namespace download {
 
 void DebuggingClient::OnServiceInitialized(
@@ -35,6 +38,12 @@ void DebuggingClient::OnDownloadSucceeded(
 bool DebuggingClient::CanServiceRemoveDownloadedFile(const std::string& guid,
                                                      bool force_delete) {
   return true;
+}
+
+void DebuggingClient::GetUploadData(const std::string& guid,
+                                    GetUploadDataCallback callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), nullptr));
 }
 
 }  // namespace download

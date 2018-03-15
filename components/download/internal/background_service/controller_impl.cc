@@ -32,6 +32,7 @@
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/navigation_monitor.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace download {
 namespace {
@@ -962,7 +963,7 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     } else {
       stats::LogEntryEvent(stats::DownloadEvent::START);
       driver_->Start(
-          entry->request_params, entry->guid, entry->target_file_path,
+          entry->request_params, entry->guid, entry->target_file_path, nullptr,
           net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
     }
   }
