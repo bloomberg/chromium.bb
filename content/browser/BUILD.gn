@@ -1672,8 +1672,6 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_header.h",
     "web_package/signed_exchange_header_parser.cc",
     "web_package/signed_exchange_header_parser.h",
-    "web_package/signed_exchange_parser.cc",
-    "web_package/signed_exchange_parser.h",
     "web_package/signed_exchange_signature_verifier.cc",
     "web_package/signed_exchange_signature_verifier.h",
     "web_package/signed_exchange_url_loader_factory_for_non_network_service.cc",
