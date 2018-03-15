@@ -1378,12 +1378,15 @@
       field_template: "<length>",
       default_value: "Length(kAuto)",
       converter: "ConvertLengthOrAuto",
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      keywords: ["auto"]
     },
     {
       name: "flex-direction",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
+      typedom_types: ["Keyword"],
       keywords: ["row", "row-reverse", "column", "column-reverse"],
       default_value: "row",
     },
@@ -1395,6 +1398,7 @@
       field_template: "primitive",
       default_value: "0.0f",
       type_name: "float",
+      typedom_types: ["Number"],
     },
     {
       name: "flex-shrink",
@@ -1404,12 +1408,14 @@
       field_template: "primitive",
       default_value: "1.0f",
       type_name: "float",
+      typedom_types: ["Number"],
     },
     {
       name: "flex-wrap",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
+      typedom_types: ["Keyword"],
       keywords: ["nowrap", "wrap", "wrap-reverse"],
       default_value: "nowrap",
     },
