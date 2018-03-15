@@ -26,7 +26,7 @@ function MockFileSystem(volumeId, opt_rootURL) {
 
   /** @type {!Object<!Entry>} */
   this.entries = {};
-  this.entries['/'] = new MockDirectoryEntry(this, '/');
+  this.entries['/'] = new MockDirectoryEntry(this, '');
 
   /** @type {string} */
   this.rootURL = opt_rootURL || 'filesystem:' + volumeId;
@@ -37,24 +37,34 @@ MockFileSystem.prototype = {
 };
 
 /**
- * Creates file and directory entries for all the given paths.  Paths ending in
- * slashes are interpreted as directories.  All intermediate directories leading
- * up to the files/directories to be created, are also created.
- * @param {!Array<string>} paths An array of file paths to populate in this file
- *     system.
+ * Creates file and directory entries for all the given entries.  Entries can
+ * be either string paths or objects containing properties 'fullPath',
+ * 'metadata', 'content'.  Paths ending in slashes are interpreted as
+ * directories.  All intermediate directories leading up to the
+ * files/directories to be created, are also created.
+ * @param {!Array<string|Object>} entries An array of either string file paths,
+ *     or objects containing 'fullPath' and 'metadata' to populate in this
+ *     file system.
+ * @param {boolean=} opt_clear Optional, if true clears all entries before
+ *     populating.
  */
-MockFileSystem.prototype.populate = function(paths) {
-  paths.forEach(function(path) {
+MockFileSystem.prototype.populate = function(entries, opt_clear) {
+  if (opt_clear)
+    this.entries = {'/': new MockDirectoryEntry(this, '')};
+  entries.forEach(function(entry) {
+    var path = entry.fullPath || entry;
+    var metadata = entry.metadata || {size: 0};
+    var content = entry.content;
     var pathElements = path.split('/');
     pathElements.forEach(function(_, i) {
       var subpath = pathElements.slice(0, i).join('/');
       if (subpath && !(subpath in this.entries))
-        this.entries[subpath] = new MockDirectoryEntry(this, subpath);
+        this.entries[subpath] = new MockDirectoryEntry(this, subpath, metadata);
     }.bind(this));
 
     // If the path doesn't end in a slash, create a file.
     if (!/\/$/.test(path))
-      this.entries[path] = new MockFileEntry(this, path, {size: 0});
+      this.entries[path] = new MockFileEntry(this, path, metadata, content);
   }.bind(this));
 };
 
@@ -85,12 +95,14 @@ MockFileSystem.prototype.findChildren_ = function(directory) {
  *
  * @param {MockFileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path of the entry.
+ * @param {Object} metadata Metadata.
  * @constructor
  */
-function MockEntry(filesystem, fullPath) {
+function MockEntry(filesystem, fullPath, metadata) {
   filesystem.entries[fullPath] = this;
   this.filesystem = filesystem;
   this.fullPath = fullPath;
+  this.metadata = metadata;
   this.removed_ = false;
 }
 
@@ -101,6 +113,22 @@ MockEntry.prototype = {
   get name() {
     return this.fullPath.replace(/^.*\//, '');
   }
+};
+
+/**
+ * Obtains metadata of the entry.
+ *
+ * @param {function(!Metadata)} onSuccess Function to take the metadata.
+ * @param {function(Error)} onError
+ */
+MockEntry.prototype.getMetadata = function(onSuccess, onError) {
+  new Promise(function(fulfill, reject) {
+    if (this.filesystem && !this.filesystem.entries[this.fullPath])
+      reject(new DOMError('NotFoundError'));
+    else
+      onSuccess(this.metadata);
+  }.bind(this))
+      .then(onSuccess, onError);
 };
 
 /**
@@ -191,7 +219,7 @@ MockEntry.prototype.assertRemoved = function() {
  * Clones the entry with the new fullpath.
  *
  * @param {string} fullpath New fullpath.
- * @param {FileSystem} opt_filesystem New file system
+ * @param {FileSystem=} opt_filesystem New file system
  * @return {MockEntry} Cloned entry.
  */
 MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
@@ -204,12 +232,13 @@ MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
  * @param {Object} metadata Metadata.
+ * @param {Blob=} opt_content Optional content.
  * @extends {MockEntry}
  * @constructor
  */
-function MockFileEntry(filesystem, fullPath, metadata) {
-  MockEntry.call(this, filesystem, fullPath);
-  this.metadata = metadata;
+function MockFileEntry(filesystem, fullPath, metadata, opt_content) {
+  MockEntry.call(this, filesystem, fullPath, metadata);
+  this.content = opt_content || new Blob([]);
   this.isFile = true;
   this.isDirectory = false;
 }
@@ -219,28 +248,13 @@ MockFileEntry.prototype = {
 };
 
 /**
- * Obtains metadata of the entry.
- *
- * @param {function(!Metadata)} onSuccess Function to take the metadata.
- * @param {function(Error)} onError
- */
-MockFileEntry.prototype.getMetadata = function(onSuccess, onError) {
-  new Promise(function(fulfill, reject) {
-    if (this.filesystem && !this.filesystem.entries[this.fullPath])
-      reject(new DOMError('NotFoundError'));
-    else
-      onSuccess(this.metadata);
-  }.bind(this)).then(onSuccess, onError);
-};
-
-/**
  * Returns a File that this represents.
  *
  * @param {function(!File)} onSuccess Function to take the file.
  * @param {function(Error)} onError
  */
 MockFileEntry.prototype.file = function(onSuccess, onError) {
-  onSuccess(new File([''], this.fullPath));
+  onSuccess(new File([this.content], this.toURL()));
 };
 
 /**
@@ -248,7 +262,7 @@ MockFileEntry.prototype.file = function(onSuccess, onError) {
  */
 MockFileEntry.prototype.clone = function(path, opt_filesystem) {
   return new MockFileEntry(
-      opt_filesystem || this.filesystem, path, this.metadata);
+      opt_filesystem || this.filesystem, path, this.metadata, this.content);
 };
 
 /**
@@ -256,11 +270,12 @@ MockFileEntry.prototype.clone = function(path, opt_filesystem) {
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
+ * @param {Object} metadata Metadata.
  * @extends {MockEntry}
  * @constructor
  */
-function MockDirectoryEntry(filesystem, fullPath) {
-  MockEntry.call(this, filesystem, fullPath);
+function MockDirectoryEntry(filesystem, fullPath, metadata) {
+  MockEntry.call(this, filesystem, fullPath, metadata);
   this.isFile = false;
   this.isDirectory = true;
 }
