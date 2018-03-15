@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -91,6 +92,8 @@ SignedExchangeCertFetcher::CreateAndStart(
     url::Origin request_initiator,
     bool force_fetch,
     CertificateCallback callback) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
       new SignedExchangeCertFetcher(
           std::move(shared_url_loader_factory), std::move(throttles), cert_url,
@@ -192,6 +195,8 @@ void SignedExchangeCertFetcher::Start() {
 }
 
 void SignedExchangeCertFetcher::Abort() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertFetcher::Abort");
   DCHECK(callback_);
   url_loader_ = nullptr;
   body_.reset();
@@ -201,6 +206,8 @@ void SignedExchangeCertFetcher::Abort() {
 }
 
 void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeCertFetcher::OnHandleReady");
   const void* buffer = nullptr;
   uint32_t num_bytes = 0;
   MojoResult rv =
@@ -209,6 +216,9 @@ void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
     if (body_string_.size() + num_bytes > g_max_cert_size_for_signed_exchange) {
       body_->EndReadData(num_bytes);
       Abort();
+      TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                       "SignedExchangeCertFetcher::OnHandleReady", "error",
+                       "The response body size exceeds the limit.");
       return;
     }
     body_string_.append(static_cast<const char*>(buffer), num_bytes);
@@ -218,9 +228,13 @@ void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
   } else {
     DCHECK_EQ(MOJO_RESULT_SHOULD_WAIT, rv);
   }
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "SignedExchangeCertFetcher::OnHandleReady");
 }
 
 void SignedExchangeCertFetcher::OnDataComplete() {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeCertFetcher::OnDataComplete");
   DCHECK(callback_);
   url_loader_ = nullptr;
   body_.reset();
@@ -230,12 +244,17 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   if (!der_certs) {
     body_string_.clear();
     std::move(callback_).Run(scoped_refptr<net::X509Certificate>());
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeCertFetcher::OnDataComplete", "error",
+                     "Failed to get certificate chain from message.");
     return;
   }
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromDERCertChain(*der_certs);
   body_string_.clear();
   std::move(callback_).Run(std::move(cert));
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "SignedExchangeCertFetcher::OnDataComplete");
 }
 
 // network::mojom::URLLoaderClient
@@ -243,23 +262,37 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
     const network::ResourceResponseHead& head,
     const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeCertFetcher::OnReceiveResponse");
   if (head.headers->response_code() != net::HTTP_OK) {
     Abort();
+    TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeCertFetcher::OnReceiveResponse", "error",
+                     "Invalid reponse code.", "code",
+                     head.headers->response_code());
     return;
   }
   if (head.content_length > 0) {
     if (base::checked_cast<size_t>(head.content_length) >
         g_max_cert_size_for_signed_exchange) {
       Abort();
+      TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"),
+                       "SignedExchangeCertFetcher::OnReceiveResponse", "error",
+                       "Invalid content length.", "content_length",
+                       head.content_length);
       return;
     }
     body_string_.reserve(head.content_length);
   }
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "SignedExchangeCertFetcher::OnReceiveResponse");
 }
 
 void SignedExchangeCertFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertFetcher::OnReceiveRedirect");
   // Currently the cert fetcher doesn't allow any redirects.
   Abort();
 }
@@ -291,6 +324,8 @@ void SignedExchangeCertFetcher::OnTransferSizeUpdated(
 
 void SignedExchangeCertFetcher::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertFetcher::OnStartLoadingResponseBody");
   body_ = std::move(body);
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
@@ -302,6 +337,8 @@ void SignedExchangeCertFetcher::OnStartLoadingResponseBody(
 
 void SignedExchangeCertFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertFetcher::OnComplete");
   if (!handle_watcher_)
     Abort();
 }

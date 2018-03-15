@@ -5,11 +5,13 @@
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
 #include "base/containers/span.h"
+#include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/cbor/cbor_values.h"
+#include "base/trace_event/trace_event.h"
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
@@ -138,11 +140,13 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
 bool VerifySignature(base::span<const uint8_t> sig,
                      base::span<const uint8_t> msg,
                      scoped_refptr<net::X509Certificate> cert) {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
           &spki)) {
-    DVLOG(1) << "Failed to extract SPKI.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
+                     "error", "Failed to extract SPKI.");
     return false;
   }
 
@@ -153,7 +157,8 @@ bool VerifySignature(base::span<const uint8_t> sig,
   if (type != net::X509Certificate::kPublicKeyTypeRSA) {
     // TODO(crbug.com/803774): Add support for ecdsa_secp256r1_sha256 and
     // ecdsa_secp384r1_sha384.
-    DVLOG(1) << "Unsupported public key type: " << type;
+    TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
+                     "error", "Unsupported public key type.", "type", type);
     return false;
   }
 
@@ -163,11 +168,18 @@ bool VerifySignature(base::span<const uint8_t> sig,
   if (!verifier.VerifyInit(
           crypto::SignatureVerifier::RSA_PSS_SHA256, sig.data(), sig.size(),
           reinterpret_cast<const uint8_t*>(spki.data()), spki.size())) {
-    DVLOG(1) << "VerifyInit failed.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
+                     "error", "VerifyInit failed.");
     return false;
   }
   verifier.VerifyUpdate(msg.data(), msg.size());
-  return verifier.VerifyFinal();
+  if (!verifier.VerifyFinal()) {
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
+                     "error", "VerifyFinal failed.");
+    return false;
+  }
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
+  return true;
 }
 
 base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
@@ -226,18 +238,33 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     const SignedExchangeHeader& header,
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time) {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify");
+
   if (!VerifyTimestamps(header, verification_time)) {
-    DVLOG(1) << "Invalid timestamp";
+    TRACE_EVENT_END2(
+        TRACE_DISABLED_BY_DEFAULT("loading"),
+        "SignedExchangeSignatureVerifier::Verify", "error",
+        "Invalid timestamp.", "info",
+        base::StringPrintf(
+            "creation_time: %" PRIu64 ", expires_time: %" PRIu64
+            ", verification_time: %" PRIu64,
+            header.signature().date, header.signature().expires,
+            (verification_time - base::Time::UnixEpoch()).InSeconds()));
     return Result::kErrInvalidTimestamp;
   }
 
   if (!certificate) {
-    DVLOG(1) << "No certificate set.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify", "error",
+                     "No certificate set.");
     return Result::kErrNoCertificate;
   }
 
   if (!header.signature().cert_sha256.has_value()) {
-    DVLOG(1) << "No certSha256 set.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify", "error",
+                     "No certSha256 set.");
     return Result::kErrNoCertificateSHA256;
   }
 
@@ -245,13 +272,17 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (*header.signature().cert_sha256 !=
       net::X509Certificate::CalculateFingerprint256(
           certificate->cert_buffer())) {
-    DVLOG(1) << "certSha256 mismatch.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify", "error",
+                     "certSha256 mismatch.");
     return Result::kErrCertificateSHA256Mismatch;
   }
 
   auto message = GenerateSignedMessage(header);
   if (!message) {
-    DVLOG(1) << "Failed to reconstruct signed message.";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify", "error",
+                     "Failed to reconstruct signed message.");
     return Result::kErrInvalidSignatureFormat;
   }
 
@@ -260,16 +291,22 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
           base::make_span(reinterpret_cast<const uint8_t*>(sig.data()),
                           sig.size()),
           *message, certificate)) {
-    DVLOG(1) << "Failed to verify signature \"sig\".";
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeSignatureVerifier::Verify", "error",
+                     "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
   }
 
   if (!base::EqualsCaseInsensitiveASCII(header.signature().integrity, "mi")) {
-    DVLOG(1)
-        << "The current implemention only supports \"mi\" integrity scheme.";
+    TRACE_EVENT_END1(
+        TRACE_DISABLED_BY_DEFAULT("loading"),
+        "SignedExchangeSignatureVerifier::Verify", "error",
+        "The current implemention only supports \"mi\" integrity scheme.");
     return Result::kErrInvalidSignatureIntegrity;
   }
 
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "SignedExchangeSignatureVerifier::Verify");
   return Result::kSuccess;
 }
 
