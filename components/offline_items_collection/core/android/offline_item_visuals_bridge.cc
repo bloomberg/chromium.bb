@@ -17,7 +17,7 @@ namespace android {
 // static
 ScopedJavaLocalRef<jobject> OfflineItemVisualsBridge::CreateOfflineItemVisuals(
     JNIEnv* env,
-    const OfflineItemVisuals* const visuals) {
+    std::unique_ptr<OfflineItemVisuals> const visuals) {
   if (!visuals)
     return nullptr;
 

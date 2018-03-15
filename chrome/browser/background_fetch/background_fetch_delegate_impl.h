@@ -18,9 +18,11 @@
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_delegate.h"
+#include "ui/gfx/image/image.h"
 #include "url/origin.h"
 
 class Profile;
+class SkBitmap;
 
 namespace download {
 class DownloadService;
@@ -50,6 +52,7 @@ class BackgroundFetchDelegateImpl
       const std::string& job_unique_id,
       const std::string& title,
       const url::Origin& origin,
+      const SkBitmap& icon,
       int completed_parts,
       int total_parts,
       const std::vector<std::string>& current_guids) override;
@@ -98,6 +101,7 @@ class BackgroundFetchDelegateImpl
     JobDetails(const std::string& job_unique_id,
                const std::string& title,
                const url::Origin& origin,
+               const SkBitmap& icon,
                int completed_parts,
                int total_parts);
     ~JobDetails();
@@ -106,6 +110,7 @@ class BackgroundFetchDelegateImpl
 
     std::string title;
     const url::Origin origin;
+    gfx::Image icon;
     int completed_parts;
     const int total_parts;
     bool cancelled;

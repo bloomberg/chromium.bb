@@ -156,7 +156,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     auto controller = std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
-        registration, &request_manager_,
+        SkBitmap(), registration, &request_manager_,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),

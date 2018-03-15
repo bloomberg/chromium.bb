@@ -53,6 +53,7 @@ class BackgroundFetchBridge final
   void Fetch(const String& developer_id,
              Vector<WebServiceWorkerRequest> requests,
              const BackgroundFetchOptions&,
+             const SkBitmap& icon,
              RegistrationCallback);
 
   // Updates the user interface for the Background Fetch identified by

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +33,7 @@ using offline_items_collection::OfflineContentProvider;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemFilter;
 using offline_items_collection::OfflineItemProgressUnit;
+using offline_items_collection::OfflineItemVisuals;
 
 namespace {
 
@@ -190,6 +192,21 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
   }
 
+  void GetVisualsForOfflineItemSync(
+      const ContentId& offline_item_id,
+      std::unique_ptr<OfflineItemVisuals>* out_visuals) {
+    base::RunLoop run_loop;
+    BackgroundFetchDelegateImpl* delegate =
+        static_cast<BackgroundFetchDelegateImpl*>(
+            browser()->profile()->GetBackgroundFetchDelegate());
+    DCHECK(delegate);
+    delegate->GetVisualsForItem(
+        offline_item_id, base::Bind(&BackgroundFetchBrowserTest::DidGetVisuals,
+                                    base::Unretained(this),
+                                    run_loop.QuitClosure(), out_visuals));
+    run_loop.Run();
+  }
+
   // ---------------------------------------------------------------------------
   // Helper functions.
 
@@ -240,6 +257,14 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
                    std::vector<OfflineItem>* out_items,
                    const std::vector<OfflineItem>& items) {
     *out_items = items;
+    std::move(quit_closure).Run();
+  }
+
+  void DidGetVisuals(base::OnceClosure quit_closure,
+                     std::unique_ptr<OfflineItemVisuals>* out_visuals,
+                     const ContentId& offline_item_id,
+                     std::unique_ptr<OfflineItemVisuals> visuals) {
+    *out_visuals = std::move(visuals);
     std::move(quit_closure).Run();
   }
 
@@ -294,6 +319,44 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(offline_item.description.empty());
   EXPECT_TRUE(offline_item.page_url.is_empty());
   EXPECT_FALSE(offline_item.is_resumable);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       OfflineItemCollection_VerifyIconReceived) {
+  // Starts a Background Fetch for a single to-be-downloaded file and waits for
+  // the fetch to be registered with the offline items collection. We then
+  // verify that the expected icon is associated with the newly added offline
+  // item.
+
+  std::vector<OfflineItem> items;
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartSingleFileDownload()", &items));
+  ASSERT_EQ(items.size(), 1u);
+
+  const OfflineItem& offline_item = items[0];
+
+  // Verify that the appropriate data is being set.
+  EXPECT_EQ(offline_item.title, GetExpectedTitle(kSingleFileDownloadTitle));
+  EXPECT_EQ(offline_item.filter, OfflineItemFilter::FILTER_OTHER);
+  EXPECT_TRUE(offline_item.is_transient);
+  EXPECT_FALSE(offline_item.is_suggested);
+  EXPECT_FALSE(offline_item.is_off_the_record);
+
+  EXPECT_EQ(offline_item.progress.value, 0);
+  EXPECT_EQ(offline_item.progress.max, 1);
+  EXPECT_EQ(offline_item.progress.unit, OfflineItemProgressUnit::PERCENTAGE);
+
+  // Change-detector tests for values we might want to provide or change.
+  EXPECT_TRUE(offline_item.description.empty());
+  EXPECT_TRUE(offline_item.page_url.is_empty());
+  EXPECT_FALSE(offline_item.is_resumable);
+
+  // Get visuals associated with the newly added offline item.
+  std::unique_ptr<OfflineItemVisuals> out_visuals;
+  GetVisualsForOfflineItemSync(offline_item.id, &out_visuals);
+  EXPECT_FALSE(out_visuals->icon.IsEmpty());
+  EXPECT_EQ(out_visuals->icon.Size().width(), 100);
+  EXPECT_EQ(out_visuals->icon.Size().height(), 100);
 }
 
 }  // namespace

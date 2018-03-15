@@ -40,6 +40,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              const std::string& developer_id,
              const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
+             const SkBitmap& icon,
              FetchCallback callback) override;
   void UpdateUI(const std::string& unique_id,
                 const std::string& title,

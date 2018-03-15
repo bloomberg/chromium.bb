@@ -14,6 +14,8 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/download_manager.h"
 
+class SkBitmap;
+
 namespace content {
 
 // Internal functionality of the BackgroundFetchDelegateProxy that lives on the
@@ -42,13 +44,14 @@ class BackgroundFetchDelegateProxy::Core
   void CreateDownloadJob(const std::string& job_unique_id,
                          const std::string& title,
                          const url::Origin& origin,
+                         const SkBitmap& icon,
                          int completed_parts,
                          int total_parts,
                          const std::vector<std::string>& current_guids) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (delegate_) {
-      delegate_->CreateDownloadJob(job_unique_id, title, origin,
+      delegate_->CreateDownloadJob(job_unique_id, title, origin, icon,
                                    completed_parts, total_parts, current_guids);
     }
   }
@@ -231,6 +234,7 @@ void BackgroundFetchDelegateProxy::CreateDownloadJob(
     const std::string& job_unique_id,
     const std::string& title,
     const url::Origin& origin,
+    const SkBitmap& icon,
     base::WeakPtr<Controller> controller,
     int completed_parts,
     int total_parts,
@@ -243,7 +247,7 @@ void BackgroundFetchDelegateProxy::CreateDownloadJob(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_, job_unique_id,
-                     title, origin, completed_parts, total_parts,
+                     title, origin, icon, completed_parts, total_parts,
                      current_guids));
 }
 

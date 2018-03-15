@@ -275,8 +275,8 @@ void BackgroundFetchManager::DidLoadIcons(
     Vector<WebServiceWorkerRequest> web_requests,
     const BackgroundFetchOptions& options,
     ScriptPromiseResolver* resolver,
-    const SkBitmap& bitmap) {
-  bridge_->Fetch(id, std::move(web_requests), options,
+    const SkBitmap& icon) {
+  bridge_->Fetch(id, std::move(web_requests), options, icon,
                  WTF::Bind(&BackgroundFetchManager::DidFetch,
                            WrapPersistent(this), WrapPersistent(resolver)));
 }

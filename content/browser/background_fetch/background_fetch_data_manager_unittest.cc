@@ -116,7 +116,7 @@ class BackgroundFetchDataManagerTest
 
     base::RunLoop run_loop;
     background_fetch_data_manager_->CreateRegistration(
-        registration_id, requests, options,
+        registration_id, requests, options, SkBitmap(),
         base::BindOnce(&DidCreateRegistration, run_loop.QuitClosure(),
                        out_error));
     run_loop.Run();
@@ -545,7 +545,7 @@ TEST_P(BackgroundFetchDataManagerTest, CreateInParallel) {
         base::GenerateGUID());
 
     background_fetch_data_manager_->CreateRegistration(
-        registration_id, requests, options,
+        registration_id, requests, options, SkBitmap(),
         base::BindOnce(&DidCreateRegistration, quit_once_all_finished_closure,
                        &errors[i]));
   }

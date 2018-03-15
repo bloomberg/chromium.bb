@@ -30,6 +30,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
       const std::string& job_unique_id,
       const std::string& title,
       const url::Origin& origin,
+      const SkBitmap& icon,
       int completed_parts,
       int total_parts,
       const std::vector<std::string>& current_guids) override {}
@@ -140,9 +141,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
 
-  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
-                                    controller.weak_ptr_factory_.GetWeakPtr(),
-                                    0, 1, {});
+  delegate_proxy_.CreateDownloadJob(
+      kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
+      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
@@ -160,9 +161,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   EXPECT_FALSE(controller.request_completed_);
 
   delegate_.set_complete_downloads(false);
-  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
-                                    controller.weak_ptr_factory_.GetWeakPtr(),
-                                    0, 1, {});
+  delegate_proxy_.CreateDownloadJob(
+      kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
+      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   base::RunLoop().RunUntilIdle();
@@ -184,13 +185,13 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   EXPECT_FALSE(controller2.request_started_);
   EXPECT_FALSE(controller2.request_completed_);
 
-  delegate_proxy_.CreateDownloadJob(kExampleUniqueId, "Job 1", url::Origin(),
-                                    controller.weak_ptr_factory_.GetWeakPtr(),
-                                    0, 1, {});
+  delegate_proxy_.CreateDownloadJob(
+      kExampleUniqueId, "Job 1", url::Origin(), SkBitmap(),
+      controller.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
 
-  delegate_proxy_.CreateDownloadJob(kExampleUniqueId2, "Job 2", url::Origin(),
-                                    controller2.weak_ptr_factory_.GetWeakPtr(),
-                                    0, 1, {});
+  delegate_proxy_.CreateDownloadJob(
+      kExampleUniqueId2, "Job 2", url::Origin(), SkBitmap(),
+      controller2.weak_ptr_factory_.GetWeakPtr(), 0, 1, {});
 
   delegate_proxy_.StartRequest(kExampleUniqueId, url::Origin(), request);
   delegate_proxy_.StartRequest(kExampleUniqueId2, url::Origin(), request2);

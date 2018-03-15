@@ -20,6 +20,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 
@@ -49,6 +50,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       BackgroundFetchDelegateProxy* delegate_proxy,
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
+      const SkBitmap& icon,
       const BackgroundFetchRegistration& registration,
       BackgroundFetchRequestManager* request_manager,
       ProgressCallback progress_callback,
@@ -101,6 +103,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
 
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
+
+  // Icon for the represented background fetch registration.
+  SkBitmap icon_;
 
   // Map from in-progress |download_guid|s to number of bytes downloaded.
   base::flat_map<std::string, uint64_t> active_request_download_bytes_;
