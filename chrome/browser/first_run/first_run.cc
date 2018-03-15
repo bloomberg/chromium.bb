@@ -84,6 +84,10 @@ bool g_should_do_autofill_personal_data_manager_first_run = false;
 first_run::internal::FirstRunState g_first_run =
     first_run::internal::FIRST_RUN_UNKNOWN;
 
+// Cached first run sentinel creation time.
+// Used to avoid excess file operations.
+base::Time g_cached_sentinel_creation_time;
+
 // This class acts as an observer for the ImporterProgressObserver::ImportEnded
 // callback. When the import process is started, certain errors may cause
 // ImportEnded() to be called synchronously, but the typical case is that
@@ -449,8 +453,14 @@ void CreateSentinelIfNeeded() {
 }
 
 base::Time GetFirstRunSentinelCreationTime() {
-  static const base::Time cached_time = ReadFirstRunSentinelCreationTime();
-  return cached_time;
+  if (g_cached_sentinel_creation_time.is_null())
+    g_cached_sentinel_creation_time = ReadFirstRunSentinelCreationTime();
+  return g_cached_sentinel_creation_time;
+}
+
+void ResetCachedSentinelDataForTesting() {
+  g_cached_sentinel_creation_time = base::Time();
+  g_first_run = first_run::internal::FIRST_RUN_UNKNOWN;
 }
 
 void SetShouldShowWelcomePage() {

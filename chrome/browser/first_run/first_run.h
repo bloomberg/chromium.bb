@@ -104,6 +104,10 @@ void CreateSentinelIfNeeded();
 // permission on the sequence it is first called on.
 base::Time GetFirstRunSentinelCreationTime();
 
+// Resets the first run status and cached first run sentinel creation time.
+// This is needed for unit tests which are runned in the same process.
+void ResetCachedSentinelDataForTesting();
+
 // Sets a flag that will cause ShouldShowWelcomePage to return true
 // exactly once, so that the browser loads the welcome tab once the
 // message loop gets going.
