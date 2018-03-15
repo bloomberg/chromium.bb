@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -45,6 +46,8 @@ class TableViewTestHelper {
   void SetSelectionModel(const ui::ListSelectionModel& new_selection) {
     table_->SetSelectionModel(new_selection);
   }
+
+  const gfx::FontList& font_list() { return table_->font_list_; }
 
  private:
   TableView* table_;
@@ -197,7 +200,7 @@ std::string GetRowsInViewOrderAsString(TableView* table) {
     // Format row |i| like this: "[value1, value2, value3]"
     result += "[";
     for (size_t j = 0; j < table->visible_columns().size(); ++j) {
-      const ui::TableColumn& column = table->visible_columns()[j].column;
+      const ui::TableColumn& column = table->GetVisibleColumn(j).column;
       if (j != 0)
         result += ", ";  // Comma between each value in the row.
 
@@ -207,6 +210,27 @@ std::string GetRowsInViewOrderAsString(TableView* table) {
     result += "]";
   }
   return result;
+}
+
+bool PressLeftMouseAt(views::View* target, const gfx::Point& point) {
+  const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+  return target->OnMousePressed(pressed);
+}
+
+void ReleaseLeftMouseAt(views::View* target, const gfx::Point& point) {
+  const ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+  target->OnMouseReleased(release);
+}
+
+bool DragLeftMouseTo(views::View* target, const gfx::Point& point) {
+  const ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, point, point,
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               0);
+  return target->OnMouseDragged(dragged);
 }
 
 }  // namespace
@@ -324,7 +348,7 @@ TEST_F(TableViewTest, ColumnVisibility) {
   // Hide the first column.
   table_->SetColumnVisibility(0, false);
   ASSERT_EQ(1u, helper_->visible_col_count());
-  EXPECT_EQ(1, table_->visible_columns()[0].column.id);
+  EXPECT_EQ(1, table_->GetVisibleColumn(0).column.id);
   EXPECT_EQ("rows=0 4 cols=0 1", helper_->GetPaintRegion(table_->bounds()));
 
   // Hide the second column.
@@ -334,40 +358,33 @@ TEST_F(TableViewTest, ColumnVisibility) {
   // Show the second column.
   table_->SetColumnVisibility(1, true);
   ASSERT_EQ(1u, helper_->visible_col_count());
-  EXPECT_EQ(1, table_->visible_columns()[0].column.id);
+  EXPECT_EQ(1, table_->GetVisibleColumn(0).column.id);
   EXPECT_EQ("rows=0 4 cols=0 1", helper_->GetPaintRegion(table_->bounds()));
 
   // Show the first column.
   table_->SetColumnVisibility(0, true);
   ASSERT_EQ(2u, helper_->visible_col_count());
-  EXPECT_EQ(1, table_->visible_columns()[0].column.id);
-  EXPECT_EQ(0, table_->visible_columns()[1].column.id);
+  EXPECT_EQ(1, table_->GetVisibleColumn(0).column.id);
+  EXPECT_EQ(0, table_->GetVisibleColumn(1).column.id);
   EXPECT_EQ("rows=0 4 cols=0 2", helper_->GetPaintRegion(table_->bounds()));
 }
 
 // Verifies resizing a column works.
 TEST_F(TableViewTest, Resize) {
-  const int x = table_->visible_columns()[0].width;
+  const int x = table_->GetVisibleColumn(0).width;
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
-  const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EventTimeForNow(),
-                               ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
-  helper_->header()->OnMousePressed(pressed);
-  const ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, gfx::Point(x - 1, 0),
-                               gfx::Point(x - 1, 0), ui::EventTimeForNow(),
-                               ui::EF_LEFT_MOUSE_BUTTON, 0);
-  helper_->header()->OnMouseDragged(dragged);
+  PressLeftMouseAt(helper_->header(), gfx::Point(x, 0));
+  DragLeftMouseTo(helper_->header(), gfx::Point(x - 1, 0));
 
   // This should shrink the first column and pull the second column in.
-  EXPECT_EQ(x - 1, table_->visible_columns()[0].width);
-  EXPECT_EQ(x - 1, table_->visible_columns()[1].x);
+  EXPECT_EQ(x - 1, table_->GetVisibleColumn(0).width);
+  EXPECT_EQ(x - 1, table_->GetVisibleColumn(1).x);
 }
 
 // Verifies resizing a column works with a gesture.
 TEST_F(TableViewTest, ResizeViaGesture) {
-  const int x = table_->visible_columns()[0].width;
+  const int x = table_->GetVisibleColumn(0).width;
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
   ui::GestureEvent scroll_begin(
@@ -380,8 +397,27 @@ TEST_F(TableViewTest, ResizeViaGesture) {
   helper_->header()->OnGestureEvent(&scroll_update);
 
   // This should shrink the first column and pull the second column in.
-  EXPECT_EQ(x - 1, table_->visible_columns()[0].width);
-  EXPECT_EQ(x - 1, table_->visible_columns()[1].x);
+  EXPECT_EQ(x - 1, table_->GetVisibleColumn(0).width);
+  EXPECT_EQ(x - 1, table_->GetVisibleColumn(1).x);
+}
+
+// Verifies resizing a column won't reduce the column width below the width of
+// the column's title text.
+TEST_F(TableViewTest, ResizeHonorsMinimum) {
+  TableViewTestHelper helper(table_);
+  const int x = table_->GetVisibleColumn(0).width;
+  EXPECT_NE(0, x);
+
+  PressLeftMouseAt(helper_->header(), gfx::Point(x, 0));
+  DragLeftMouseTo(helper_->header(), gfx::Point(20, 0));
+
+  int title_width = gfx::GetStringWidth(
+      table_->GetVisibleColumn(0).column.title, helper.font_list());
+  EXPECT_LT(title_width, table_->GetVisibleColumn(0).width);
+
+  int old_width = table_->GetVisibleColumn(0).width;
+  DragLeftMouseTo(helper_->header(), gfx::Point(old_width + 10, 0));
+  EXPECT_EQ(old_width + 10, table_->GetVisibleColumn(0).width);
 }
 
 // Assertions for table sorting.
@@ -519,20 +555,12 @@ TEST_F(TableViewTest, Sort) {
 TEST_F(TableViewTest, SortOnMouse) {
   EXPECT_TRUE(table_->sort_descriptors().empty());
 
-  const int x = table_->visible_columns()[0].width / 2;
+  const int x = table_->GetVisibleColumn(0).width / 2;
   EXPECT_NE(0, x);
   // Press and release the mouse.
-  const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EventTimeForNow(),
-                               ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
   // The header must return true, else it won't normally get the release.
-  EXPECT_TRUE(helper_->header()->OnMousePressed(pressed));
-  const ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EventTimeForNow(),
-                               ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
-  helper_->header()->OnMouseReleased(release);
+  EXPECT_TRUE(PressLeftMouseAt(helper_->header(), gfx::Point(x, 0)));
+  ReleaseLeftMouseAt(helper_->header(), gfx::Point(x, 0));
 
   ASSERT_EQ(1u, table_->sort_descriptors().size());
   EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);

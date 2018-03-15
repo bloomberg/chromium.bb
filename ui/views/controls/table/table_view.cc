@@ -287,6 +287,11 @@ bool TableView::HasColumn(int id) const {
   return false;
 }
 
+const TableView::VisibleColumn& TableView::GetVisibleColumn(int index) {
+  DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
+  return visible_columns_[index];
+}
+
 void TableView::SetVisibleColumnWidth(int index, int width) {
   DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
   if (visible_columns_[index].width == width)
