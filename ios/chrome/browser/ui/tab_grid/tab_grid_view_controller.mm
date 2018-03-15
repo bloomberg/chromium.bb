@@ -383,21 +383,29 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   topLabel.translatesAutoresizingMaskIntoConstraints = NO;
   topLabel.text = topText;
   topLabel.textColor = [UIColor whiteColor];
-  topLabel.font = [UIFont boldSystemFontOfSize:20.0f];
+  topLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+  topLabel.adjustsFontForContentSizeCategory = YES;
+  topLabel.numberOfLines = 0;
+  topLabel.textAlignment = NSTextAlignmentCenter;
   [view addSubview:topLabel];
   UILabel* bottomLabel = [[UILabel alloc] init];
   bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
   bottomLabel.text = bottomText;
   bottomLabel.textColor = [UIColor whiteColor];
-  bottomLabel.font = [UIFont systemFontOfSize:18.0f];
+  bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  bottomLabel.adjustsFontForContentSizeCategory = YES;
+  bottomLabel.numberOfLines = 0;
+  bottomLabel.textAlignment = NSTextAlignmentCenter;
   [view addSubview:bottomLabel];
   NSArray* constraints = @[
-    [topLabel.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
-    [bottomLabel.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
-    [topLabel.centerYAnchor constraintEqualToAnchor:view.centerYAnchor
-                                           constant:-10.0f],
-    [bottomLabel.centerYAnchor constraintEqualToAnchor:view.centerYAnchor
-                                              constant:10.0f],
+    [topLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+    [topLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
+    [topLabel.bottomAnchor constraintEqualToAnchor:view.centerYAnchor
+                                          constant:-10.0f],
+    [bottomLabel.topAnchor constraintEqualToAnchor:view.centerYAnchor
+                                          constant:10.0f],
+    [bottomLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+    [bottomLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
   return view;

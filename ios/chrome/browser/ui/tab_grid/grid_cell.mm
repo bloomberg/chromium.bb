@@ -198,7 +198,8 @@ const CGFloat kBorderWidth = 6.0f;
 
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  titleLabel.font = [UIFont boldSystemFontOfSize:12.0f];
+  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  titleLabel.adjustsFontForContentSizeCategory = YES;
 
   UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -233,9 +234,13 @@ const CGFloat kBorderWidth = 6.0f;
                                                constant:-6.0f],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
+  [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow
+                                forAxis:UILayoutConstraintAxisHorizontal];
   [titleLabel
       setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                       forAxis:UILayoutConstraintAxisHorizontal];
+  [closeButton setContentHuggingPriority:UILayoutPriorityRequired
+                                 forAxis:UILayoutConstraintAxisHorizontal];
   return topBar;
 }
 
