@@ -1879,6 +1879,7 @@ enum WebFeature {
   kCSSSelectorPseudoFocus = 2387,
   kCSSSelectorPseudoFocusVisible = 2388,
   kDistrustedLegacySymantecSubresource = 2389,
+  kVRDisplayGetFrameData = 2390,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
