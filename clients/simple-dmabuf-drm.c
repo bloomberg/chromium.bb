@@ -83,6 +83,7 @@ struct drm_device {
 	int (*export_bo_to_prime)(struct buffer *buf);
 	int (*map_bo)(struct buffer *buf);
 	void (*unmap_bo)(struct buffer *buf);
+	void (*device_destroy)(struct buffer *buf);
 };
 
 struct buffer {
@@ -199,6 +200,13 @@ intel_unmap_bo(struct buffer *my_buf)
 {
 	drm_intel_gem_bo_unmap_gtt(my_buf->intel_bo);
 }
+
+static void
+intel_device_destroy(struct buffer *my_buf)
+{
+	drm_intel_bufmgr_destroy(my_buf->bufmgr);
+}
+
 #endif /* HAVE_LIBDRM_INTEL */
 #ifdef HAVE_LIBDRM_FREEDRENO
 #define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
@@ -249,6 +257,12 @@ static void
 fd_unmap_bo(struct buffer *buf)
 {
 }
+
+static void
+fd_device_destroy(struct buffer *buf)
+{
+	fd_device_del(buf->fd_dev);
+}
 #endif /* HAVE_LIBDRM_FREEDRENO */
 
 static void
@@ -279,13 +293,7 @@ fill_content(struct buffer *my_buf)
 static void
 drm_device_destroy(struct buffer *buf)
 {
-#ifdef HAVE_LIBDRM_INTEL
-	drm_intel_bufmgr_destroy(buf->bufmgr);
-#endif
-#ifdef HAVE_LIBDRM_FREEDRENO
-	fd_device_del(buf->fd_dev);
-#endif
-
+	buf->dev->device_destroy(buf);
 	close(buf->drm_fd);
 }
 
@@ -311,6 +319,7 @@ drm_device_init(struct buffer *buf)
 		dev->export_bo_to_prime = intel_bo_export_to_prime;
 		dev->map_bo = intel_map_bo;
 		dev->unmap_bo = intel_unmap_bo;
+		dev->device_destroy = intel_device_destroy;
 	}
 #endif
 #ifdef HAVE_LIBDRM_FREEDRENO
@@ -320,6 +329,7 @@ drm_device_init(struct buffer *buf)
 		dev->export_bo_to_prime = fd_bo_export_to_prime;
 		dev->map_bo = fd_map_bo;
 		dev->unmap_bo = fd_unmap_bo;
+		dev->device_destroy = fd_device_destroy;
 	}
 #endif
 	else {
