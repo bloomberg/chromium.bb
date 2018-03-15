@@ -190,15 +190,11 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
 #if CONFIG_OBU_SIZE_AFTER_HEADER
   struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
-#elif CONFIG_OBU_SIZING
+#else
   const size_t length_field_size = get_obu_length_field_size(data);
   struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
                                     NULL, NULL };
-#else
-  struct aom_read_bit_buffer rb = { data + PRE_OBU_SIZE_BYTES, data + data_sz,
-                                    0, NULL, NULL };
-  mem_get_le32(data);
-#endif
+#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
   const uint8_t obu_header = (uint8_t)aom_rb_read_literal(&rb, 8);
   OBU_TYPE obu_type;
@@ -209,7 +205,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 #if CONFIG_OBU_SIZE_AFTER_HEADER
   // One byte has been consumed by the OBU header.
   rb.bit_offset += get_obu_length_field_size(data + 1);
-#endif
+#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
   // This check is disabled because existing behavior is depended upon by
   // decoder tests (see decode_test_driver.cc), scalability_decoder (see

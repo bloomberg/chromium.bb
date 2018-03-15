@@ -174,15 +174,11 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     size_t length_field_size = 0;
     int current_obu_length = 0;
     int obu_header_size = 0;
-#elif CONFIG_OBU_SIZING
+#else
     uint64_t obu_size = 0;
     size_t length_field_size;
     aom_uleb_decode(data + consumed, remaining, &obu_size, &length_field_size);
     const int current_obu_length = static_cast<int>(obu_size);
-#else
-    const int current_obu_length = mem_get_le32(data + consumed);
-    const int kObuLengthFieldSizeBytes = 4;
-    const size_t length_field_size = kObuLengthFieldSizeBytes;
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
     obu_overhead += (int)length_field_size;

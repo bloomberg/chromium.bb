@@ -22,17 +22,11 @@
 #define OBU_HEADER_SIZE_BYTES 1
 #define OBU_HEADER_EXTENSION_SIZE_BYTES 1
 
-#if CONFIG_OBU_SIZING
 // Unsigned LEB128 OBU length field has maximum size of 8 bytes.
 #define OBU_MAX_LENGTH_FIELD_SIZE 8
 #define OBU_MAX_HEADER_SIZE                                  \
   (OBU_HEADER_SIZE_BYTES + OBU_HEADER_EXTENSION_SIZE_BYTES + \
    OBU_MAX_LENGTH_FIELD_SIZE)
-#else
-#define OBU_MAX_LENGTH_FIELD_SIZE PRE_OBU_SIZE_BYTES
-#define OBU_MAX_HEADER_SIZE \
-  (OBU_HEADER_SIZE_BYTES + OBU_HEADER_EXTENSION_SIZE_BYTES + PRE_OBU_SIZE_BYTES)
-#endif
 
 #if CONFIG_OBU_NO_IVF
 
@@ -54,15 +48,10 @@ int read_obu_size(FILE *infile, uint64_t *obu_size, size_t *length_field_size) {
   const int seek_pos = (int)bytes_read;
   if (seek_pos != 0 && fseek(infile, -seek_pos, SEEK_CUR) != 0) return 1;
 
-#if CONFIG_OBU_SIZING
   if (aom_uleb_decode(read_buffer, bytes_read, obu_size, length_field_size) !=
       0) {
     return 1;
   }
-#else
-  if (length_field_size) *length_field_size = PRE_OBU_SIZE_BYTES;
-  *obu_size = mem_get_le32(read_buffer);
-#endif
 
   return 0;
 }
@@ -166,16 +155,12 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
     return 0;
   }
 
-#if CONFIG_OBU_SIZING
   if (aom_uleb_decode(obutd, OBU_MAX_HEADER_SIZE, &size, NULL) != 0) {
     warn("OBU size parse failed.\n");
     return 0;
   }
+
   const size_t obu_header_offset = aom_uleb_size_in_bytes(size);
-#else
-  const size_t obu_header_offset = PRE_OBU_SIZE_BYTES;
-  size = mem_get_le32(obutd);
-#endif  // CONFIG_OBU_SIZING
 
   fseek(input_ctx->file, obu_header_offset + OBU_HEADER_SIZE_BYTES, SEEK_SET);
 

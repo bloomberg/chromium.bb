@@ -1342,16 +1342,12 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       write_temporal_delimiter = !cpi->common.enhancement_layer_id;
 #endif  // CONFIG_SCALABILITY
       if (write_temporal_delimiter) {
-        // move data PRE_OBU_SIZE_BYTES + 1 bytes and insert OBU_TD preceded by
-        // optional 4 byte size
+        // move data and insert OBU_TD preceded by optional 4 byte size
         uint32_t obu_header_size = 1;
         const uint32_t obu_payload_size = 0;
-#if CONFIG_OBU_SIZING
         const size_t length_field_size =
             get_uleb_obu_size_in_bytes(obu_header_size, obu_payload_size);
-#else
-        const size_t length_field_size = PRE_OBU_SIZE_BYTES;
-#endif
+
         if (ctx->pending_cx_data) {
           const size_t move_offset = length_field_size + 1;
           memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
@@ -1366,15 +1362,12 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
             OBU_TEMPORAL_DELIMITER, 0,
             (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
 
-#if CONFIG_OBU_SIZING
         // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
         if (write_uleb_obu_size(obu_header_size, obu_payload_size,
                                 ctx->pending_cx_data) != AOM_CODEC_OK) {
           return AOM_CODEC_ERROR;
         }
-#else
-        mem_put_le32(ctx->pending_cx_data, obu_header_size + obu_payload_size);
-#endif  // CONFIG_OBU_SIZING
+
         pkt.data.frame.sz +=
             obu_header_size + obu_payload_size + length_field_size;
       }
