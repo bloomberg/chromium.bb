@@ -14,6 +14,10 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
+namespace base {
+class CommandLine;
+}
+
 class NotificationPlatformBridgeWinImpl;
 class NotificationTemplateBuilder;
 
@@ -38,9 +42,11 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       const GetDisplayedNotificationsCallback& callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
-  // Handles notification activation from the notification_helper process.
-  // Returns false if the launch id, passed via the command line, is invalid.
-  static bool HandleActivation();
+  // Handles notification activation encoded in |command_line| from the
+  // notification_helper process.
+  // Returns false if |command_line| does not contain a valid
+  // notification-launch-id switch.
+  static bool HandleActivation(const base::CommandLine& command_line);
 
   // Extracts the profile ID from |launch_id_str|.
   static std::string GetProfileIdFromLaunchId(const std::string& launch_id_str);

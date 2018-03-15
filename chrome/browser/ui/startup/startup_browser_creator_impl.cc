@@ -399,7 +399,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // Launch() call is from notification_helper.exe to process toast activation.
   // Delegate to the notification system; do not open a browser window here.
   if (command_line_.HasSwitch(switches::kNotificationLaunchId)) {
-    if (NotificationPlatformBridgeWin::HandleActivation()) {
+    if (NotificationPlatformBridgeWin::HandleActivation(command_line_)) {
       RecordLaunchModeHistogram(LM_WIN_PLATFORM_NOTIFICATION);
       return true;
     }
