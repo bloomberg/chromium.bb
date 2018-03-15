@@ -14,7 +14,7 @@ var request;
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['visa']}],
+        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.show().catch(function(error) {
       print(error);

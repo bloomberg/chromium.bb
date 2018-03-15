@@ -11,17 +11,22 @@
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest([{supportedMethods: ['visa', 'mastercard']}], {
-      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-      displayItems: [
+    new PaymentRequest(
+        [{
+          supportedMethods: 'basic-card',
+          data: {supportedNetworks: ['visa', 'mastercard']},
+        }],
         {
-          label: 'Subtotal',
-          amount: {currency: 'USD', value: '4.50'},
-          pending: true,
-        },
-        {label: 'Taxes', amount: {currency: 'USD', value: '0.50'}},
-      ],
-    })
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+          displayItems: [
+            {
+              label: 'Subtotal',
+              amount: {currency: 'USD', value: '4.50'},
+              pending: true,
+            },
+            {label: 'Taxes', amount: {currency: 'USD', value: '0.50'}},
+          ],
+        })
         .show()
         .then(function(resp) {
           resp.complete('success')

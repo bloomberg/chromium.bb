@@ -23,16 +23,19 @@ function buy() {  // eslint-disable-line no-unused-vars
     };
     var request = new PaymentRequest(
         [{
-          supportedMethods: [
-            'visa',
-            'unionpay',
-            'mir',
-            'mastercard',
-            'jcb',
-            'discover',
-            'diners',
-            'amex',
-          ],
+          supportedMethods: 'basic-card',
+          data: {
+            supportedNetworks: [
+              'visa',
+              'unionpay',
+              'mir',
+              'mastercard',
+              'jcb',
+              'discover',
+              'diners',
+              'amex',
+            ],
+          },
         }],
         details, {requestShipping: true});
     request.addEventListener('shippingaddresschange', function(e) {
