@@ -17,16 +17,22 @@
 #include "platform/Timer.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-BlinkLeakDetector::BlinkLeakDetector(BlinkLeakDetectorClient* client)
+BlinkLeakDetector& BlinkLeakDetector::Instance() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(BlinkLeakDetector, blink_leak_detector, ());
+  return blink_leak_detector;
+}
+
+BlinkLeakDetector::BlinkLeakDetector()
     : delayed_gc_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
                         this,
                         &BlinkLeakDetector::TimerFiredGC),
       number_of_gc_needed_(0),
-      client_(client) {}
+      client_(nullptr) {}
 
 BlinkLeakDetector::~BlinkLeakDetector() = default;
 
@@ -64,6 +70,10 @@ void BlinkLeakDetector::PrepareForLeakDetection(WebFrame* frame) {
 
   // Clear lazily loaded style sheets.
   CSSDefaultStyleSheets::Instance().PrepareForLeakDetection();
+
+  // Stop keepalive loaders that may persist after page navigation.
+  for (auto resource_fetcher : resource_fetchers_)
+    resource_fetcher->PrepareForLeakDetection();
 }
 
 void BlinkLeakDetector::CollectGarbage() {
@@ -109,6 +119,15 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
       V8PerIsolateData::MainThreadIsolate());
   CoreInitializer::GetInstance().CollectAllGarbageForAnimationWorklet();
   // Note: Oilpan precise GC is scheduled at the end of the event loop.
+}
+
+void BlinkLeakDetector::SetClient(BlinkLeakDetectorClient* client) {
+  client_ = client;
+}
+
+void BlinkLeakDetector::RegisterResourceFetcher(ResourceFetcher* fetcher) {
+  DCHECK(IsMainThread());
+  resource_fetchers_.insert(fetcher);
 }
 
 }  // namespace blink

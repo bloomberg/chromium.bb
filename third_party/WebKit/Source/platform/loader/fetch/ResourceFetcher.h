@@ -171,6 +171,11 @@ class PLATFORM_EXPORT ResourceFetcher
                                       WebURLRequest::RequestContext,
                                       const AtomicString& initiator_name);
 
+  // This is called from leak detectors (Real-world leak detector & layout test
+  // leak detector) to clean up loaders after page navigation before instance
+  // counting.
+  void PrepareForLeakDetection();
+
  private:
   friend class ResourceCacheValidationSuppressor;
   enum class StopFetchingTarget {
