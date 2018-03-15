@@ -28,8 +28,8 @@ ScopedMessagePipeHandle OutgoingBrokerClientInvitation::AttachMessagePipe(
     const std::string& name) {
   DCHECK(!sent_);
   ports::PortRef port;
-  ScopedMessagePipeHandle pipe =
-      internal::g_core->CreatePartialMessagePipe(&port);
+  ScopedMessagePipeHandle pipe = ScopedMessagePipeHandle(
+      MessagePipeHandle(internal::g_core->CreatePartialMessagePipe(&port)));
   attached_ports_.emplace_back(name, port);
   return pipe;
 }
@@ -42,8 +42,8 @@ OutgoingBrokerClientInvitation::ExtractInProcessMessagePipe(
   // a single entry.
   for (auto it = attached_ports_.begin(); it != attached_ports_.end(); ++it) {
     if (it->first == name) {
-      ScopedMessagePipeHandle pipe =
-          internal::g_core->CreatePartialMessagePipe(it->second);
+      ScopedMessagePipeHandle pipe = ScopedMessagePipeHandle(MessagePipeHandle(
+          internal::g_core->CreatePartialMessagePipe(it->second)));
       attached_ports_.erase(it);
       return pipe;
     }

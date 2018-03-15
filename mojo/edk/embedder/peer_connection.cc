@@ -22,7 +22,8 @@ ScopedMessagePipeHandle PeerConnection::Connect(ConnectionParams params) {
   is_connected_ = true;
 
   ports::PortRef peer_port;
-  auto pipe = internal::g_core->CreatePartialMessagePipe(&peer_port);
+  auto pipe = ScopedMessagePipeHandle(MessagePipeHandle(
+      internal::g_core->CreatePartialMessagePipe(&peer_port)));
   connection_id_ =
       internal::g_core->ConnectToPeer(std::move(params), peer_port);
   return pipe;

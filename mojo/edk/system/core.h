@@ -28,7 +28,6 @@
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class PortProvider;
@@ -61,11 +60,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   //
   // The value returned in |*peer| may be passed along with a broker client
   // invitation. See SendBrokerClientInvitation() below.
-  ScopedMessagePipeHandle CreatePartialMessagePipe(ports::PortRef* peer);
+  MojoHandle CreatePartialMessagePipe(ports::PortRef* peer);
 
   // Like above but exchanges an existing ports::PortRef for a message pipe
   // handle which wraps it.
-  ScopedMessagePipeHandle CreatePartialMessagePipe(const ports::PortRef& port);
+  MojoHandle CreatePartialMessagePipe(const ports::PortRef& port);
 
   // Sends a broker client invitation to |target_process| over the connection
   // medium in |connection_params|. The other end of the connection medium in
@@ -90,8 +89,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Extracts a named message pipe endpoint from the broker client invitation
   // accepted by this process. Must only be called after
   // AcceptBrokerClientInvitation.
-  ScopedMessagePipeHandle ExtractMessagePipeFromInvitation(
-      const std::string& name);
+  MojoHandle ExtractMessagePipeFromInvitation(const std::string& name);
 
   // Called to connect to a peer process. This should be called only if there
   // is no common ancestor for the processes involved within this mojo system.

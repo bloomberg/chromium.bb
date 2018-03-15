@@ -28,6 +28,7 @@
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
+#include "mojo/edk/system/system_impl_export.h"
 
 namespace base {
 class PortProvider;
@@ -42,8 +43,8 @@ class MachPortRelay;
 
 // The owner of ports::Node which facilitates core EDK implementation. All
 // public interface methods are safe to call from any thread.
-class NodeController : public ports::NodeDelegate,
-                       public NodeChannel::Delegate {
+class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
+                                               public NodeChannel::Delegate {
  public:
   class PortObserver : public ports::UserData {
    public:

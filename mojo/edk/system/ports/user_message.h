@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_PORTS_USER_MESSAGE_H_
 #define MOJO_EDK_SYSTEM_PORTS_USER_MESSAGE_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace mojo {
@@ -21,7 +22,7 @@ namespace ports {
 // |kUserMessageTypeInfo| and pass its address down to the UserMessage
 // constructor. The type of a UserMessage can then be dynamically inspected by
 // comparing |type_info()| to any subclass's |&kUserMessageTypeInfo|.
-class UserMessage {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) UserMessage {
  public:
   struct TypeInfo {};
 

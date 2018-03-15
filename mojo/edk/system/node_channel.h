@@ -17,7 +17,7 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/connection_params.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/name.h"

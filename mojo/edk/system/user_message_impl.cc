@@ -18,7 +18,7 @@
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/message_filter.h"
 #include "mojo/edk/system/ports/node.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {
@@ -273,7 +273,7 @@ UserMessageImpl::~UserMessageImpl() {
     if (result == MOJO_RESULT_OK) {
       for (auto handle : handles) {
         if (handle != MOJO_HANDLE_INVALID)
-          MojoClose(handle);
+          internal::g_core->Close(handle);
       }
     }
 
@@ -281,7 +281,7 @@ UserMessageImpl::~UserMessageImpl() {
       internal::g_core->ReleaseDispatchersForTransit(
           pending_handle_attachments_, false);
       for (const auto& dispatcher : pending_handle_attachments_)
-        MojoClose(dispatcher.local_handle);
+        internal::g_core->Close(dispatcher.local_handle);
     }
   }
 }

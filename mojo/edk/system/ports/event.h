@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/edk/system/ports/name.h"
@@ -24,7 +25,7 @@ using ScopedEvent = std::unique_ptr<Event>;
 
 // A Event is the fundamental unit of operation and communication within and
 // between Nodes.
-class Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) Event {
  public:
   enum Type : uint32_t {
     // A user message event contains arbitrary user-specified payload data
@@ -102,7 +103,7 @@ class Event {
   DISALLOW_COPY_AND_ASSIGN(Event);
 };
 
-class UserMessageEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) UserMessageEvent : public Event {
  public:
   explicit UserMessageEvent(size_t num_ports);
   ~UserMessageEvent() override;
@@ -152,7 +153,7 @@ class UserMessageEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(UserMessageEvent);
 };
 
-class PortAcceptedEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) PortAcceptedEvent : public Event {
  public:
   explicit PortAcceptedEvent(const PortName& port_name);
   ~PortAcceptedEvent() override;
@@ -168,7 +169,7 @@ class PortAcceptedEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(PortAcceptedEvent);
 };
 
-class ObserveProxyEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) ObserveProxyEvent : public Event {
  public:
   ObserveProxyEvent(const PortName& port_name,
                     const NodeName& proxy_node_name,
@@ -203,7 +204,7 @@ class ObserveProxyEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(ObserveProxyEvent);
 };
 
-class ObserveProxyAckEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) ObserveProxyAckEvent : public Event {
  public:
   ObserveProxyAckEvent(const PortName& port_name, uint64_t last_sequence_num);
   ~ObserveProxyAckEvent() override;
@@ -224,7 +225,7 @@ class ObserveProxyAckEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(ObserveProxyAckEvent);
 };
 
-class ObserveClosureEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) ObserveClosureEvent : public Event {
  public:
   ObserveClosureEvent(const PortName& port_name, uint64_t last_sequence_num);
   ~ObserveClosureEvent() override;
@@ -248,7 +249,7 @@ class ObserveClosureEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(ObserveClosureEvent);
 };
 
-class MergePortEvent : public Event {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) MergePortEvent : public Event {
  public:
   MergePortEvent(const PortName& port_name,
                  const PortName& new_port_name,

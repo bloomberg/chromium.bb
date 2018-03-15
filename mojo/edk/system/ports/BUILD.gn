@@ -4,7 +4,9 @@
 
 import("//testing/test.gni")
 
-source_set("ports") {
+component("ports") {
+  output_name = "mojo_edk_ports"
+
   sources = [
     "event.cc",
     "event.h",
@@ -26,6 +28,8 @@ source_set("ports") {
     "user_message.cc",
     "user_message.h",
   ]
+
+  defines = [ "IS_MOJO_EDK_PORTS_IMPL" ]
 
   public_deps = [
     "//base",

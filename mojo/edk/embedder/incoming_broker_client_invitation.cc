@@ -38,7 +38,8 @@ IncomingBrokerClientInvitation::AcceptFromCommandLine(
 
 ScopedMessagePipeHandle IncomingBrokerClientInvitation::ExtractMessagePipe(
     const std::string& name) {
-  return internal::g_core->ExtractMessagePipeFromInvitation(name);
+  return ScopedMessagePipeHandle(MessagePipeHandle(
+      internal::g_core->ExtractMessagePipeFromInvitation(name)));
 }
 
 IncomingBrokerClientInvitation::IncomingBrokerClientInvitation(

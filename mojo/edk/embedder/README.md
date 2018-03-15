@@ -8,10 +8,9 @@ This document is a subset of the [Mojo documentation](/mojo).
 The Mojo EDK is a (binary-unstable) API which enables a process to use Mojo both
 internally and for IPC to other Mojo-embedding processes.
 
-Using any of the API surface in `//mojo/edk/embedder` requires (somewhat
-confusingly) a direct dependency on the GN `//mojo/edk/system` target. Despite
-this fact, you should never reference any of the headers in `mojo/edk/system`
-directly, as everything there is considered to be an internal detail of the EDK.
+Using any of the API surface in `//mojo/edk/embedder` requires a direct
+dependency on the GN `//mojo/edk` target. Headers in `mojo/edk/system` are
+reserved for internal use by the EDK only.
 
 **NOTE:** Unless you are introducing a new binary entry point into the system
 (*e.g.,* a new executable with a new `main()` definition), you probably don't

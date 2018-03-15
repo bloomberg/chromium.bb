@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_PORTS_PORT_REF_H_
 #define MOJO_EDK_SYSTEM_PORTS_PORT_REF_H_
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/ports/name.h"
@@ -16,7 +17,7 @@ namespace ports {
 class Port;
 class PortLocker;
 
-class PortRef {
+class COMPONENT_EXPORT(MOJO_EDK_PORTS) PortRef {
  public:
   ~PortRef();
   PortRef();
