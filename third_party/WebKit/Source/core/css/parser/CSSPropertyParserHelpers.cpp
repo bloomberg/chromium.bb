@@ -566,8 +566,7 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
       if (i != 1 && !requires_commas)
         return false;
       requires_commas = true;
-    } else if (requires_commas || args.AtEnd() ||
-               (&args.Peek() - 1)->GetType() != kWhitespaceToken) {
+    } else if (requires_commas || args.AtEnd()) {
       return false;
     }
     color_parameter = is_percent ? ConsumePercent(args, kValueRangeAll)
@@ -624,8 +623,7 @@ static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
       if (i != 1 && !requires_commas)
         return false;
       requires_commas = true;
-    } else if (requires_commas || args.AtEnd() ||
-               (&args.Peek() - 1)->GetType() != kWhitespaceToken) {
+    } else if (requires_commas || args.AtEnd()) {
       return false;
     }
     hsl_value = ConsumePercent(args, kValueRangeAll);
