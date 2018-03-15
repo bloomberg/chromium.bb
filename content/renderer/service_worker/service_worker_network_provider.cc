@@ -5,7 +5,6 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
@@ -220,10 +219,8 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker() {
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForController(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
-    scoped_refptr<ThreadSafeSender> sender) {
-  return base::WrapUnique(
-      new ServiceWorkerNetworkProvider(std::move(info), std::move(sender)));
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+  return base::WrapUnique(new ServiceWorkerNetworkProvider(std::move(info)));
 }
 
 // static
@@ -287,8 +284,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {
-    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-        ChildThreadImpl::current()->thread_safe_sender());
+    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
@@ -306,11 +302,10 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
 // Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
-    scoped_refptr<ThreadSafeSender> sender) {
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
   // Initialize the provider context with info for
   // ServiceWorkerGlobalScope#registration.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender);
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));

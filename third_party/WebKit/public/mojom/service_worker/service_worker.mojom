@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/public/mojom/message_port/message_port.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom";
 import "url/mojom/url.mojom";
@@ -53,8 +54,9 @@ interface ServiceWorkerHost {
   OpenPaymentHandlerWindow(url.mojom.Url url)
     => (bool success, ServiceWorkerClientInfo? client, string? error_msg);
 
-  // TODO(leonhsl): Impl all methods.
-  // PostMessageToClient();
+  // Corresponds to Client#postMessage(). Requests the browser to post |message|
+  // to the client with |client_uuid|.
+  PostMessageToClient(string client_uuid, TransferableMessage message);
 
   // Corresponds to WindowClient#focus(). Requests the browser to focus the
   // client with |client_uuid|.

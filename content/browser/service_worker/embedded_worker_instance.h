@@ -33,10 +33,6 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
 class EmbeddedWorkerRegistry;
@@ -117,8 +113,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
-    // Returns false if the message is not handled by this listener.
-    CONTENT_EXPORT virtual bool OnMessageReceived(const IPC::Message& message);
   };
 
   ~EmbeddedWorkerInstance() override;
@@ -275,11 +269,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-
-  // Called back from Registry when the worker instance sends message
-  // to the browser (i.e. EmbeddedWorker observers).
-  // Returns false if the message is not handled.
-  bool OnMessageReceived(const IPC::Message& message);
 
   // Resets all running state. After this function is called, |status_| is
   // STOPPED.

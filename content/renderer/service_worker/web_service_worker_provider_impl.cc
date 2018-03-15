@@ -9,7 +9,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -33,12 +32,8 @@ const char kLostConnectionErrorMessage[] =
 }  // anonymous namespace
 
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
-    ThreadSafeSender* thread_safe_sender,
     ServiceWorkerProviderContext* context)
-    : thread_safe_sender_(thread_safe_sender),
-      context_(context),
-      provider_client_(nullptr),
-      weak_factory_(this) {
+    : context_(context), provider_client_(nullptr), weak_factory_(this) {
   DCHECK(context_);
   switch (context_->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:

@@ -3651,8 +3651,7 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
     // The context can be null when the frame is sandboxed.
     return nullptr;
   }
-  return std::make_unique<WebServiceWorkerProviderImpl>(
-      ChildThreadImpl::current()->thread_safe_sender(), provider->context());
+  return std::make_unique<WebServiceWorkerProviderImpl>(provider->context());
 }
 
 service_manager::InterfaceProvider* RenderFrameImpl::GetInterfaceProvider() {

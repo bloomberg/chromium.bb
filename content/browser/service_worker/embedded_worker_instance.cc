@@ -459,11 +459,6 @@ class EmbeddedWorkerInstance::StartTask {
   DISALLOW_COPY_AND_ASSIGN(StartTask);
 };
 
-bool EmbeddedWorkerInstance::Listener::OnMessageReceived(
-    const IPC::Message& message) {
-  return false;
-}
-
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(status_ == EmbeddedWorkerStatus::STOPPING ||
@@ -843,14 +838,6 @@ void EmbeddedWorkerInstance::Detach() {
 
 base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
-  for (auto& listener : listener_list_) {
-    if (listener.OnMessageReceived(message))
-      return true;
-  }
-  return false;
 }
 
 void EmbeddedWorkerInstance::OnReportException(

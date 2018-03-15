@@ -510,7 +510,6 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
     ASSERT_EQ(messages_.size(), expected_message_count);
   }
 
-  bool OnMessageReceived(const IPC::Message& message) override { return false; }
   const std::vector<base::string16>& messages() const { return messages_; }
 
  private:
@@ -1188,7 +1187,6 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
   }
-  bool OnMessageReceived(const IPC::Message& message) override { return false; }
 
  private:
   base::Closure quit_;

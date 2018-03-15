@@ -1031,16 +1031,6 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
   }
 }
 
-bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToClient,
-                        OnPostMessageToClient)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
@@ -1154,6 +1144,26 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
                      weak_factory_.GetWeakPtr(), url,
                      WindowOpenDisposition::NEW_POPUP),
       std::move(callback));
+}
+
+void ServiceWorkerVersion::PostMessageToClient(
+    const std::string& client_uuid,
+    blink::TransferableMessage message) {
+  if (!context_)
+    return;
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host) {
+    // The client may already have been closed, just ignore.
+    return;
+  }
+  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    mojo::ReportBadMessage(
+        "Received Client#postMessage() request for a cross-origin client.");
+    binding_.Close();
+    return;
+  }
+  provider_host->PostMessageToClient(this, std::move(message));
 }
 
 void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
@@ -1383,29 +1393,6 @@ bool ServiceWorkerVersion::IsInstalled(ServiceWorkerVersion::Status status) {
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
-}
-
-void ServiceWorkerVersion::OnPostMessageToClient(
-    const std::string& client_uuid,
-    const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
-        message) {
-  if (!context_)
-    return;
-  TRACE_EVENT1("ServiceWorker", "ServiceWorkerVersion::OnPostMessageToClient",
-               "Client id", client_uuid);
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host) {
-    // The client may already have been closed, just ignore.
-    return;
-  }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
-    mojo::ReportBadMessage(
-        "Received Client#postMessage() request for a cross-origin client.");
-    binding_.Close();
-    return;
-  }
-  provider_host->PostMessageToClient(this, std::move(message->data));
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {

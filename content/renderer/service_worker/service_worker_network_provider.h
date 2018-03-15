@@ -37,7 +37,6 @@ class URLLoaderFactory;
 
 struct RequestNavigationParams;
 class ServiceWorkerProviderContext;
-class ThreadSafeSender;
 
 // ServiceWorkerNetworkProvider enables the browser process to recognize
 // resource requests from Blink that should be handled by service worker
@@ -85,8 +84,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
   // a service worker execution context).
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForController(
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
-      scoped_refptr<ThreadSafeSender> sender);
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   // Valid only for WebServiceWorkerNetworkProvider created by
   // CreateForNavigation.
@@ -127,8 +125,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
 
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
-      scoped_refptr<ThreadSafeSender> sender);
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;

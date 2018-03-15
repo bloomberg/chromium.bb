@@ -34,23 +34,6 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
 
-// IPC messages for testing ---------------------------------------------------
-
-#undef IPC_IPC_MESSAGE_MACROS_H_
-#undef IPC_MESSAGE_EXTRA
-#define IPC_MESSAGE_IMPL
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_templates_impl.h"
-
-#define IPC_MESSAGE_START TestMsgStart
-
-IPC_MESSAGE_CONTROL0(TestMsg_Message)
-IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int)
-
-IPC_MESSAGE_ROUTED2(TestMsg_TestEventResult, int, std::string)
-
-// ---------------------------------------------------------------------------
-
 namespace content {
 namespace service_worker_version_unittest {
 
@@ -58,17 +41,6 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
  public:
   MessageReceiver() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~MessageReceiver() override {}
-
-  void SimulateSendValueToBrowser(int embedded_worker_id, int value) {
-    SimulateSend(new TestMsg_MessageFromWorker(embedded_worker_id, value));
-  }
-
-  void SimulateSendEventResult(int embedded_worker_id,
-                               int request_id,
-                               const std::string& reply) {
-    SimulateSend(
-        new TestMsg_TestEventResult(embedded_worker_id, request_id, reply));
-  }
 
   void SimulateSetCachedMetadata(int embedded_worker_id,
                                  const GURL& url,
@@ -107,10 +79,6 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
   }
 
  private:
-  void OnMessage() {
-    // Do nothing.
-  }
-
   std::map<
       int /* embedded_worker_id */,
       blink::mojom::ServiceWorkerHostAssociatedPtr /* service_worker_host */>
@@ -129,35 +97,6 @@ void ObserveStatusChanges(ServiceWorkerVersion* version,
   version->RegisterStatusChangeCallback(base::BindOnce(
       &ObserveStatusChanges, base::Unretained(version), statuses));
 }
-
-// A specialized listener class to receive test messages from a worker.
-class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
- public:
-  explicit MessageReceiverFromWorker(EmbeddedWorkerInstance* instance)
-      : instance_(instance) {
-    instance_->AddListener(this);
-  }
-  ~MessageReceiverFromWorker() override { instance_->RemoveListener(this); }
-
-  void OnStarted() override { NOTREACHED(); }
-  void OnStopped(EmbeddedWorkerStatus old_status) override { NOTREACHED(); }
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(MessageReceiverFromWorker, message)
-      IPC_MESSAGE_HANDLER(TestMsg_MessageFromWorker, OnMessageFromWorker)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnMessageFromWorker(int value) { received_values_.push_back(value); }
-  const std::vector<int>& received_values() const { return received_values_; }
-
- private:
-  EmbeddedWorkerInstance* instance_;
-  std::vector<int> received_values_;
-  DISALLOW_COPY_AND_ASSIGN(MessageReceiverFromWorker);
-};
 
 base::Time GetYesterday() {
   return base::Time::Now() - base::TimeDelta::FromDays(1) -
@@ -573,24 +512,6 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
 
   // The worker should be now started again.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-}
-
-TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
-  // Start worker.
-  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
-
-  MessageReceiverFromWorker receiver(version_->embedded_worker());
-
-  // Simulate sending some dummy values from the worker.
-  helper_->SimulateSendValueToBrowser(
-      version_->embedded_worker()->embedded_worker_id(), 555);
-  helper_->SimulateSendValueToBrowser(
-      version_->embedded_worker()->embedded_worker_id(), 777);
-
-  // Verify the receiver received the values.
-  ASSERT_EQ(2U, receiver.received_values().size());
-  EXPECT_EQ(555, receiver.received_values()[0]);
-  EXPECT_EQ(777, receiver.received_values()[1]);
 }
 
 TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {

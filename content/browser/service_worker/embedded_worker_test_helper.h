@@ -275,7 +275,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void SimulateWorkerStarted(int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
-  void SimulateSend(IPC::Message* message);
 
   EmbeddedWorkerRegistry* registry();
 

@@ -64,7 +64,6 @@ class EmbeddedWorkerInstanceClientImpl;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
-class ThreadSafeSender;
 class WebWorkerFetchContext;
 
 // ServiceWorkerContextClient is a "client" of a service worker execution
@@ -98,7 +97,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
-      scoped_refptr<ThreadSafeSender> sender,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~ServiceWorkerContextClient() override;
@@ -395,7 +393,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   const GURL service_worker_scope_;
   const GURL script_url_;
 
-  scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

@@ -620,7 +620,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
 
@@ -637,6 +636,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OpenPaymentHandlerWindow(
       const GURL& url,
       OpenPaymentHandlerWindowCallback callback) override;
+  void PostMessageToClient(const std::string& client_uuid,
+                           blink::TransferableMessage message) override;
   void FocusClient(const std::string& client_uuid,
                    FocusClientCallback callback) override;
   void NavigateClient(const std::string& client_uuid,
@@ -651,13 +652,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OpenWindow(GURL url,
                   WindowOpenDisposition disposition,
                   OpenNewTabCallback callback);
-
-  // Message handlers.
-
-  void OnPostMessageToClient(
-      const std::string& client_uuid,
-      const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
-          message);
 
   void OnPongFromWorker();
 

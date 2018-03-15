@@ -22,8 +22,6 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
-#include "ipc/ipc_sync_message_filter.h"
-#include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
@@ -186,21 +184,6 @@ class MockWebServiceWorkerProviderClientImpl
   std::set<blink::mojom::WebFeature> used_features_;
 };
 
-class ServiceWorkerTestSender : public ThreadSafeSender {
- public:
-  explicit ServiceWorkerTestSender(IPC::TestSink* ipc_sink)
-      : ThreadSafeSender(nullptr, nullptr), ipc_sink_(ipc_sink) {}
-
-  bool Send(IPC::Message* message) override { return ipc_sink_->Send(message); }
-
- private:
-  ~ServiceWorkerTestSender() override {}
-
-  IPC::TestSink* ipc_sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTestSender);
-};
-
 // S13nServiceWorker: a fake URLLoaderFactory implementation that basically
 // does nothing but records the requests.
 class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
@@ -281,8 +264,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   ServiceWorkerProviderContextTest() = default;
 
   void SetUp() override {
-    sender_ = new ServiceWorkerTestSender(&ipc_sink_);
-    dispatcher_ = std::make_unique<ServiceWorkerDispatcher>(sender_.get());
+    dispatcher_ = std::make_unique<ServiceWorkerDispatcher>();
   }
 
   void EnableS13nServiceWorker() {
@@ -315,14 +297,9 @@ class ServiceWorkerProviderContextTest : public testing::Test {
         registration_id);
   }
 
-  ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
-  IPC::TestSink* ipc_sink() { return &ipc_sink_; }
-
  protected:
   base::MessageLoop message_loop_;
-  IPC::TestSink ipc_sink_;
   std::unique_ptr<ServiceWorkerDispatcher> dispatcher_;
-  scoped_refptr<ServiceWorkerTestSender> sender_;
 
   // S13nServiceWorker:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -366,7 +343,6 @@ TEST_F(ServiceWorkerProviderContextTest,
   // The passed references should be adopted and owned by the provider context.
   provider_context->SetRegistrationForServiceWorkerGlobalScope(
       std::move(registration_info));
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Destruction of the provider context should release references to the
   // associated registration and its versions.
@@ -403,13 +379,11 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         std::move(container_request), nullptr /* host_ptr_info */,
         nullptr /* controller_info */, nullptr /* loader_factory*/);
 
-    ipc_sink()->ClearMessages();
     auto info = mojom::ControllerServiceWorkerInfo::New();
     info->object_info = std::move(object_info);
     container_ptr->SetController(std::move(info),
                                  std::vector<blink::mojom::WebFeature>(), true);
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(0UL, ipc_sink()->message_count());
 
     // Destruction of the provider context should release references to the
     // the controller.
@@ -417,7 +391,6 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     base::RunLoop().RunUntilIdle();
     // ServiceWorkerObjectHost Mojo connection got broken.
     EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
-    ipc_sink()->ClearMessages();
   }
 
   {
@@ -445,13 +418,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), std::move(host_ptr_info),
         nullptr /* controller_info */, nullptr /* loader_factory*/);
-    auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
-        thread_safe_sender(), provider_context.get());
+    auto provider_impl =
+        std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
     auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
     provider_impl->SetClient(client.get());
     ASSERT_FALSE(client->was_set_controller_called());
 
-    ipc_sink()->ClearMessages();
     auto info = mojom::ControllerServiceWorkerInfo::New();
     info->object_info = std::move(object_info);
     container_ptr->SetController(std::move(info),
@@ -480,8 +452,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
-  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
-      thread_safe_sender(), provider_context.get());
+  auto provider_impl =
+      std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
 
@@ -520,9 +492,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), nullptr /* host_ptr_info */,
       std::move(controller_info1), loader_factory_);
-  ipc_sink()->ClearMessages();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Subresource loader factory must be available.
   auto* subresource_loader_factory1 =
@@ -554,9 +524,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // The controller is reset. References to the old controller must be
   // released.
-  ipc_sink()->ClearMessages();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
   EXPECT_EQ(0, object_host1->GetBindingCount());
 
   // Subresource loader factory must be available, and should be the same
@@ -580,9 +548,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // The controller is reset. References to the old controller must be
   // released.
-  ipc_sink()->ClearMessages();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
   EXPECT_EQ(0, object_host2->GetBindingCount());
 
   // Subresource loader factory must not be available.
@@ -616,9 +582,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   controller_info4->endpoint = controller_ptr4.PassInterface();
   container_ptr->SetController(std::move(controller_info4),
                                std::vector<blink::mojom::WebFeature>(), true);
-  ipc_sink()->ClearMessages();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Subresource loader factory must be available.
   auto* subresource_loader_factory4 =
@@ -660,13 +624,12 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
-  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
-      thread_safe_sender(), provider_context.get());
+  auto provider_impl =
+      std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
   ASSERT_FALSE(client->was_dispatch_message_event_called());
 
-  ipc_sink()->ClearMessages();
   container_ptr->PostMessageToClient(std::move(object_info),
                                      blink::TransferableMessage());
   base::RunLoop().RunUntilIdle();
@@ -691,8 +654,8 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
-  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
-      thread_safe_sender(), provider_context.get());
+  auto provider_impl =
+      std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
 
   container_ptr->CountFeature(blink::mojom::WebFeature::kWorkerStart);
@@ -746,7 +709,6 @@ TEST_F(ServiceWorkerProviderContextTest,
 
   provider_context->SetRegistrationForServiceWorkerGlobalScope(
       std::move(registration_info));
-  EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Should return a newly created registration object which adopts all
   // references to the remote instances of ServiceWorkerRegistrationObjectHost
@@ -757,12 +719,9 @@ TEST_F(ServiceWorkerProviderContextTest,
   EXPECT_TRUE(registration);
   EXPECT_EQ(registration_id, registration->RegistrationId());
   EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
-  ASSERT_EQ(0UL, ipc_sink()->message_count());
 
-  ipc_sink()->ClearMessages();
   // The registration dtor decrements the refcounts.
   registration = nullptr;
-  ASSERT_EQ(0UL, ipc_sink()->message_count());
   base::RunLoop().RunUntilIdle();
   // ServiceWorkerRegistrationObjectHost Mojo connection got broken.
   EXPECT_EQ(0, mock_registration_object_host->GetBindingCount());
@@ -817,10 +776,7 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     EXPECT_TRUE(ContainsRegistration(provider_context.get(), registration_id));
     EXPECT_EQ(registration_id, registration1->RegistrationId());
     EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
-    EXPECT_EQ(0UL, ipc_sink()->message_count());
   }
-
-  ipc_sink()->ClearMessages();
 
   {
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
@@ -841,7 +797,6 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     EXPECT_TRUE(registration2);
     EXPECT_EQ(registration1, registration2);
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(0UL, ipc_sink()->message_count());
     // The 2nd ServiceWorkerRegistrationObjectHost Mojo connection has been
     // dropped.
     EXPECT_EQ(1, mock_registration_object_host->GetBindingCount());
@@ -852,14 +807,11 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     EXPECT_EQ(1, installing_host->GetBindingCount());
   }
 
-  ipc_sink()->ClearMessages();
-
   // The registration dtor decrements the refcounts.
   registration1 = nullptr;
   registration2 = nullptr;
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ContainsRegistration(provider_context.get(), registration_id));
-  ASSERT_EQ(0UL, ipc_sink()->message_count());
   // The 1st ServiceWorkerRegistrationObjectHost Mojo connection got broken.
   EXPECT_EQ(0, mock_registration_object_host->GetBindingCount());
   // The corresponding ServiceWorkerObjectHost Mojo connections got broken.

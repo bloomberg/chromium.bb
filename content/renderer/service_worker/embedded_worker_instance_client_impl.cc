@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_child_process_reference.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
@@ -67,7 +66,6 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->controller_request),
       std::move(params->service_worker_host), std::move(params->instance_host),
       std::move(params->provider_info), std::move(temporal_self_),
-      ChildThreadImpl::current()->thread_safe_sender(),
       RenderThreadImpl::current()->GetRendererScheduler()->DefaultTaskRunner(),
       io_thread_runner_);
   client->set_blink_initialized_time(blink_initialized_time_);
