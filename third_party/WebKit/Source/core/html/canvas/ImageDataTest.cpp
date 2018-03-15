@@ -45,9 +45,6 @@ TEST_F(ImageDataTest, MAYBE_CreateImageDataTooBig) {
 // format. This function is used in BaseRenderingContext2D::getImageData.
 TEST_F(ImageDataTest,
        TestConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat) {
-  // Enable experimental canvas features for this test.
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
-
   // Source pixels in RGBA32
   unsigned char rgba32_pixels[] = {255, 0,   0,   255,  // Red
                                    0,   0,   0,   0,    // Transparent
@@ -132,9 +129,6 @@ TEST_F(ImageDataTest,
 // to convert image data from image data storage format to canvas pixel format.
 // This function is used in BaseRenderingContext2D::putImageData.
 TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
-  // Enable experimental canvas features for this test.
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
-
   unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
       kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
@@ -264,9 +258,6 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
 
 // This test examines ImageData::Create(StaticBitmapImage)
 TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
-  // Enable experimental canvas features for this test.
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
-
   const unsigned kNumColorComponents = 16;
   const unsigned kNumPixels = kNumColorComponents / 4;
   const unsigned kWidth = 2;
@@ -395,9 +386,6 @@ TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
 
 // This test examines ImageData::CropRect()
 TEST_F(ImageDataTest, TestCropRect) {
-  // Enable experimental canvas features for this test.
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
-
   const int num_image_data_storage_formats = 3;
   ImageDataStorageFormat image_data_storage_formats[] = {
       kUint8ClampedArrayStorageFormat, kUint16ArrayStorageFormat,

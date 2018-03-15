@@ -120,10 +120,6 @@ void WebRuntimeFeatures::EnableDecodeToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeToYUVEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableExperimentalCanvasFeatures(bool enable) {
-  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableFastMobileScrolling(bool enable) {
   RuntimeEnabledFeatures::SetFastMobileScrollingEnabled(enable);
 }

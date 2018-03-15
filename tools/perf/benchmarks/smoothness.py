@@ -76,8 +76,9 @@ class SmoothnessToughCanvasCases(_Smoothness):
   """
   page_set = page_sets.ToughCanvasCasesPageSet
 
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-experimental-canvas-features')
+  """To add a new smoothness test on an experimental canvas feature, one should
+  append extra browser arg of
+  '--enable-blink-features=ComaSeparatedList,OfIndividualFeatures' here"""
 
   @classmethod
   def Name(cls):

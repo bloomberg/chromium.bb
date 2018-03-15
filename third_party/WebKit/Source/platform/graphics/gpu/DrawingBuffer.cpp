@@ -1209,7 +1209,7 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
   CheckedNumeric<int> data_size = 4;
   data_size *= width;
   data_size *= height;
-  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
       use_half_float_storage_) {
     data_size *= 2;
   }
@@ -1217,7 +1217,7 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
     return nullptr;
 
   unsigned byte_length = width * height * 4;
-  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
       use_half_float_storage_) {
     byte_length *= 2;
   }
@@ -1274,7 +1274,7 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
   }
 
   GLenum data_type = GL_UNSIGNED_BYTE;
-  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
       use_half_float_storage_) {
     if (webgl_version_ > kWebGL1)
       data_type = GL_HALF_FLOAT;
@@ -1316,7 +1316,7 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
                                    int width,
                                    int height) {
   unsigned row_bytes = width * 4;
-  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
       use_half_float_storage_) {
     row_bytes *= 2;
   }

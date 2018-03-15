@@ -37,10 +37,10 @@ typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
     Exposed=(Window,Worker),
     RaisesException=Constructor
 ] interface ImageData {
-    [RuntimeEnabled=ExperimentalCanvasFeatures] ImageDataColorSettings getColorSettings();
+    [RuntimeEnabled=CanvasColorManagement] ImageDataColorSettings getColorSettings();
 
     readonly attribute unsigned long width;
     readonly attribute unsigned long height;
     readonly attribute Uint8ClampedArray data;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute ImageDataArray dataUnion;
+    [RuntimeEnabled=CanvasColorManagement] readonly attribute ImageDataArray dataUnion;
 };

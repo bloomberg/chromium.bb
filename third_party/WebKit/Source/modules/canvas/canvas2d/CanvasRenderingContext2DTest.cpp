@@ -833,8 +833,6 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
-
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
   CanvasContextCreationAttributesCore attributes;

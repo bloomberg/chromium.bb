@@ -13,7 +13,7 @@
     void restore(); // pop state stack and restore state
 
     // transformations (default transform is the identity matrix)
-    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute SVGMatrix currentTransform;
+    [RuntimeEnabled=CanvasTransformations] attribute SVGMatrix currentTransform;
     void scale(unrestricted double x, unrestricted double y);
     void rotate(unrestricted double angle);
     void translate(unrestricted double x, unrestricted double y);
@@ -28,7 +28,7 @@
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)
-    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+    [RuntimeEnabled=CanvasImageSmoothing] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles (see also the CanvasDrawingStyles interface)
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

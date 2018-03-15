@@ -26,8 +26,8 @@
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.9
 
 interface WebGLTexture {
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute unsigned long lastUploadedVideoWidth;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute unsigned long lastUploadedVideoHeight;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double lastUploadedVideoTimestamp;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute boolean lastUploadedVideoFrameWasSkipped;
+    [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute unsigned long lastUploadedVideoWidth;
+    [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute unsigned long lastUploadedVideoHeight;
+    [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute double lastUploadedVideoTimestamp;
+    [RuntimeEnabled=ExtraWebGLVideoTextureMetadata] readonly attribute boolean lastUploadedVideoFrameWasSkipped;
 };

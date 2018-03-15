@@ -986,9 +986,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
-  // enable experimental canvas features and color canvas extensions for this
-  // test
-  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
   V8TestingScope scope;
   // Make a 10x7 red ImageBitmap in P3 color space.
   SkImageInfo info = SkImageInfo::Make(

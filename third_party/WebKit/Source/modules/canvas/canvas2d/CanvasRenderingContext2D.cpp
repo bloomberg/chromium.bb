@@ -78,7 +78,7 @@ static const TimeDelta kTryRestoreContextInterval =
 static const unsigned kMaxTryRestoreContextAttempts = 4;
 
 static bool ContextLostRestoredEventsEnabled() {
-  return RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
+  return RuntimeEnabledFeatures::Canvas2dContextLostRestoredEnabled();
 }
 
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case

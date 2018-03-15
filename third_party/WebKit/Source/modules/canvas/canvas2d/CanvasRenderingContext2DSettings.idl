@@ -7,7 +7,7 @@
 [PermissiveDictionaryConversion]
 dictionary CanvasRenderingContext2DSettings {
     boolean alpha = true;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "srgb";
-    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasPixelFormat pixelFormat = "8-8-8-8";
+    [RuntimeEnabled=CanvasColorManagement] CanvasColorSpace colorSpace = "srgb";
+    [RuntimeEnabled=CanvasColorManagement] CanvasPixelFormat pixelFormat = "8-8-8-8";
 };
 

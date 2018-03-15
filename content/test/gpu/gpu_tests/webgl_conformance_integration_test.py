@@ -193,6 +193,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_compressed_texture_s3tc_srgb',
         'WEBGL_debug_renderer_info',
         'WEBGL_debug_shaders',
+        'WEBGL_get_buffer_sub_data_async',
         'WEBGL_lose_context',
       ]
 
@@ -264,7 +265,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--disable-domain-blocking-for-3d-apis',
       '--disable-gpu-process-crash-limit',
       '--test-type=gpu',
-      '--enable-experimental-canvas-features',
+      '--enable-experimental-web-platform-features',
       # Try disabling the GPU watchdog to see if this affects the
       # intermittent GPU process hangs that have been seen on the
       # waterfall. crbug.com/596622 crbug.com/609252
