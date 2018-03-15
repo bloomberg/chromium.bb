@@ -70,7 +70,7 @@ public class AccountSigninActivity extends AppCompatActivity
 
         final Intent intent;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            intent = SigninActivity.createIntent(context, accessPoint, false);
+            intent = SigninActivity.createIntent(context, accessPoint);
         } else {
             intent = createIntentForDefaultSigninFlow(context, accessPoint, false);
         }

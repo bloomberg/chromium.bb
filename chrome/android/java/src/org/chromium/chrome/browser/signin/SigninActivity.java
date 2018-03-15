@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,14 +26,11 @@ public class SigninActivity extends AppCompatActivity {
     /**
      * Creates an {@link Intent} which can be used to start the signin flow.
      * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
-     * @param isFromPersonalizedPromo Whether the signin activity is started from a personalized
-     *         promo.
      */
-    public static Intent createIntent(Context context,
-            @AccountSigninActivity.AccessPoint int accessPoint, boolean isFromPersonalizedPromo) {
+    public static Intent createIntent(
+            Context context, @AccountSigninActivity.AccessPoint int accessPoint) {
         Intent intent = new Intent(context, SigninActivity.class);
-        // TODO(https://crbug.com/814728): Call SigninFragment.createArguments.
-        Bundle fragmentArguments = new Bundle();
+        Bundle fragmentArguments = SigninFragment.createArguments(accessPoint);
         intent.putExtras(fragmentArguments);
         return intent;
     }
@@ -52,6 +51,12 @@ public class SigninActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signin_activity);
 
-        // TODO(https://crbug.com/814728): Add SigninFragment.
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_container);
+        if (fragment == null) {
+            fragment = new SigninFragment();
+            fragment.setArguments(getIntent().getExtras());
+            fragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit();
+        }
     }
 }
