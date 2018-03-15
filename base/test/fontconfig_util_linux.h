@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
-#define UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
+#ifndef BASE_TEST_FONTCONFIG_UTIL_LINUX_H_
+#define BASE_TEST_FONTCONFIG_UTIL_LINUX_H_
 
 #include <stddef.h>
 
@@ -11,19 +11,8 @@
 
 namespace base {
 class FilePath;
-}
 
-namespace gfx {
-
-// Array of paths to font files that are expected to exist on machines where
-// tests are run.
-extern const char* const kSystemFontsForFontconfig[];
-extern const size_t kNumSystemFontsForFontconfig;
-
-extern const char* const kCloudStorageSyncedFonts[];
-extern const size_t kNumCloudStorageSyncedFonts;
-
-// Initializes Fontconfig and creates and swaps in a new, empty config.
+// Initializes Fontconfig with a custom configuration suitable for tests.
 void SetUpFontconfig();
 
 // Deinitializes Fontconfig.
@@ -31,25 +20,15 @@ void TearDownFontconfig();
 
 // Loads the font file at |path| into the current config, returning true on
 // success.
-bool LoadFontIntoFontconfig(const base::FilePath& path);
-
-// Loads the first system font in kSystemFontsForFontconfig with a base filename
-// of |basename|. Case is ignored. FcFontMatch() requires there to be at least
-// one font present.
-bool LoadSystemFontIntoFontconfig(const std::string& basename);
-
-// Loads a font named by |fontfilename|, taken from kCloudStorageSyncedFonts
-// into the current config. Returns true on success, false if the font cannot be
-// found from the set of cloud synced fonts.
-bool LoadCloudStorageSyncedFontIntoFontConfig(const std::string& fontfilename);
+bool LoadFontIntoFontconfig(const FilePath& path);
 
 // Instructs Fontconfig to load |path|, an XML configuration file, into the
 // current config, returning true on success.
-bool LoadConfigFileIntoFontconfig(const base::FilePath& path);
+bool LoadConfigFileIntoFontconfig(const FilePath& path);
 
 // Writes |data| to a file in |temp_dir| and passes it to
 // LoadConfigFileIntoFontconfig().
-bool LoadConfigDataIntoFontconfig(const base::FilePath& temp_dir,
+bool LoadConfigDataIntoFontconfig(const FilePath& temp_dir,
                                   const std::string& data);
 
 // Returns a Fontconfig <edit> stanza.
@@ -67,6 +46,6 @@ std::string CreateFontconfigTestStanza(const std::string& name,
 std::string CreateFontconfigAliasStanza(const std::string& original_family,
                                         const std::string& preferred_family);
 
-}  // namespace gfx
+}  // namespace base
 
-#endif  // UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
+#endif  // BASE_TEST_FONTCONFIG_UTIL_LINUX_H_

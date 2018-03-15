@@ -483,7 +483,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
   // Because all characters are at 0, the glyph bounds must be the char_width.
   // Allow being larger because accurate width requires re-measuring each glyph.
   EXPECT_GE(result->Bounds().MaxX(), char_width);
-  EXPECT_LE(result->Bounds().MaxX(), char_width * 1.1);
+  EXPECT_LE(result->Bounds().MaxX(), char_width * 1.2);
 }
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {

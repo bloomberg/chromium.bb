@@ -276,6 +276,13 @@
    "nodeValue": "\n"
 }
 {
+   "attributes": [ {
+      "name": "style",
+      "value": "font-family: \"SlightHintedTimesNewRoman\", \"Times New Roman\""
+   }, {
+      "name": ";\"",
+      "value": ""
+   } ],
    "backendNodeId": 26,
    "boundingBox": {
       "height": 37.0,

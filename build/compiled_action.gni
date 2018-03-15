@@ -83,6 +83,7 @@ template("compiled_action") {
   action(target_name) {
     forward_variables_from(invoker,
                            [
+                             "data_deps",
                              "deps",
                              "inputs",
                              "outputs",

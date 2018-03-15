@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/compiled_action.gni")
 import("//build/config/ui.gni")
 import("//build/config/nacl/config.gni")
 
@@ -184,6 +185,17 @@ static_library("test_support") {
     ]
   }
 
+  if (is_linux) {
+    public_deps += [ ":fontconfig_util_linux" ]
+    data_deps = [
+      "//third_party/test_fonts",
+    ]
+    if (current_toolchain == host_toolchain) {
+      data_deps += [ ":do_generate_fontconfig_caches" ]
+      data += [ "$root_out_dir/fontconfig_caches/" ]
+    }
+  }
+
   if (is_ios) {
     set_sources_assignment_filter([])
     sources += [ "test_file_util_mac.cc" ]
@@ -317,6 +329,43 @@ static_library("run_all_base_unittests") {
 }
 
 if (is_linux) {
+  source_set("fontconfig_util_linux") {
+    sources = [
+      "fontconfig_util_linux.cc",
+      "fontconfig_util_linux.h",
+    ]
+    deps = [
+      "//base",
+      "//third_party/fontconfig",
+    ]
+  }
+
+  if (current_toolchain == host_toolchain) {
+    executable("generate_fontconfig_caches") {
+      testonly = true
+      sources = [
+        "generate_fontconfig_caches.cc",
+      ]
+      deps = [
+        ":fontconfig_util_linux",
+        "//base",
+        "//build/config:exe_and_shlib_deps",
+      ]
+    }
+
+    compiled_action("do_generate_fontconfig_caches") {
+      testonly = true
+      tool = ":generate_fontconfig_caches"
+      data_deps = [
+        "//third_party/test_fonts",
+      ]
+      args = []
+      outputs = [
+        "$root_out_dir/fontconfig_caches/STAMP",
+      ]
+    }
+  }
+
   shared_library("malloc_wrapper") {
     testonly = true
     sources = [

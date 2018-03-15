@@ -13,7 +13,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/linux_font_delegate.h"
-#include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace gfx {
 
@@ -62,7 +61,6 @@ class TestFontDelegate : public LinuxFontDelegate {
 class PlatformFontLinuxTest : public testing::Test {
  public:
   PlatformFontLinuxTest() {
-    SetUpFontconfig();
     original_font_delegate_ = LinuxFontDelegate::instance();
     LinuxFontDelegate::SetInstance(&test_font_delegate_);
   }
@@ -71,7 +69,6 @@ class PlatformFontLinuxTest : public testing::Test {
     LinuxFontDelegate::SetInstance(
         const_cast<LinuxFontDelegate*>(original_font_delegate_));
     PlatformFontLinux::ReloadDefaultFont();
-    TearDownFontconfig();
   }
 
  protected:
@@ -87,9 +84,6 @@ class PlatformFontLinuxTest : public testing::Test {
 // Test that PlatformFontLinux's default constructor initializes the instance
 // with the correct parameters.
 TEST_F(PlatformFontLinuxTest, DefaultFont) {
-  ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
-  ASSERT_TRUE(LoadSystemFontIntoFontconfig("times_new_roman.ttf"));
-
 #if defined(OS_CHROMEOS)
   PlatformFontLinux::SetDefaultFontDescription("Arial,Times New Roman,13px");
 #else

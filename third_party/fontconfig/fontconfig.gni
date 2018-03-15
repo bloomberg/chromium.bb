@@ -7,5 +7,5 @@ import("//build/config/features.gni")
 assert(is_linux)
 
 declare_args() {
-  use_bundled_fontconfig = is_chromecast || is_desktop_linux
+  use_bundled_fontconfig = is_linux
 }
