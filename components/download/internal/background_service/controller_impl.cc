@@ -1048,6 +1048,8 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     entry->bytes_downloaded = driver_entry->bytes_downloaded;
     CompletionInfo completion_info(driver_entry->current_file_path,
                                    driver_entry->bytes_downloaded);
+    completion_info.blob_handle = driver_entry->blob_handle;
+
     entry->last_cleanup_check_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadSucceeded,

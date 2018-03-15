@@ -17,7 +17,10 @@
 namespace download {
 
 InMemoryDownload::InMemoryDownload(const std::string& guid)
-    : guid_(guid), state_(State::INITIAL), bytes_downloaded_(0u) {}
+    : guid_(guid),
+      state_(State::INITIAL),
+      paused_(false),
+      bytes_downloaded_(0u) {}
 
 InMemoryDownload::~InMemoryDownload() = default;
 
@@ -37,7 +40,6 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
           BlobTaskProxy::Create(blob_context_getter, io_task_runner)),
       io_task_runner_(io_task_runner),
       delegate_(delegate),
-      paused_(false),
       completion_notified_(false),
       weak_ptr_factory_(this) {
   DCHECK(!guid_.empty());
@@ -82,10 +84,10 @@ void InMemoryDownloadImpl::Resume() {
   }
 }
 
-std::unique_ptr<storage::BlobDataHandle> InMemoryDownloadImpl::ResultAsBlob() {
+std::unique_ptr<storage::BlobDataHandle> InMemoryDownloadImpl::ResultAsBlob()
+    const {
   DCHECK(state_ == State::COMPLETE || state_ == State::FAILED);
-  // Return a copy, we keep one reference of the underlying data to avoid
-  // unexpected deletion.
+  // Return a copy.
   return std::make_unique<storage::BlobDataHandle>(*blob_data_handle_);
 }
 

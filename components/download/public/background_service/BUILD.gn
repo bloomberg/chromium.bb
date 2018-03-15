@@ -29,6 +29,12 @@ source_set("public") {
     "//components/keyed_service/core",
   ]
 
+  # TODO(xingliu): Create blob target that doesn't need to depend on blink.
+  # Currently gn header check will fail even if the code is not built into any targets.
+  if (!is_ios) {
+    deps += [ "//storage/browser" ]
+  }
+
   public_deps = [
     "//base",
     "//net",

@@ -92,7 +92,7 @@ class InMemoryDownload {
   virtual void Resume() = 0;
 
   // Get a copy of blob data handle.
-  virtual std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() = 0;
+  virtual std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() const = 0;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   virtual size_t EstimateMemoryUsage() const = 0;
@@ -100,6 +100,7 @@ class InMemoryDownload {
   const std::string& guid() const { return guid_; }
   uint64_t bytes_downloaded() const { return bytes_downloaded_; }
   State state() const { return state_; }
+  bool paused() const { return paused_; }
   const base::Time& completion_time() const { return completion_time_; }
   scoped_refptr<const net::HttpResponseHeaders> response_headers() const {
     return response_headers_;
@@ -112,6 +113,9 @@ class InMemoryDownload {
   const std::string guid_;
 
   State state_;
+
+  // If the download is paused.
+  bool paused_;
 
   // Completion time of download when data is saved as blob.
   base::Time completion_time_;
@@ -153,7 +157,7 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   void Pause() override;
   void Resume() override;
 
-  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override;
+  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() const override;
   size_t EstimateMemoryUsage() const override;
 
   // network::SimpleURLLoaderStreamConsumer implementation.
@@ -201,8 +205,6 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   Delegate* delegate_;
-
-  bool paused_;
 
   // Data downloaded from network, should be moved to avoid extra copy.
   std::string data_;
