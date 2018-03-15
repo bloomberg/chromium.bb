@@ -11,6 +11,7 @@
           "app_list::mojom::AppList",
           "ash::mojom::AcceleratorController",
           "ash::mojom::AccessibilityController",
+          "ash::mojom::AccessibilityFocusRingController",
           "ash::mojom::AppListController",
           "ash::mojom::AshMessageCenterController",
           "ash::mojom::CastConfig",

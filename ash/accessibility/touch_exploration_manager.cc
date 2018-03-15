@@ -12,6 +12,7 @@
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -213,7 +214,7 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
       // Clear the focus highlight.
       AccessibilityFocusRingController::GetInstance()->SetFocusRing(
           std::vector<gfx::Rect>(),
-          AccessibilityFocusRingController::PERSIST_FOCUS_RING);
+          mojom::FocusRingBehavior::PERSIST_FOCUS_RING);
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }

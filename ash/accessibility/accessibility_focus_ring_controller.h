@@ -12,11 +12,13 @@
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -24,25 +26,25 @@ namespace ash {
 
 // AccessibilityFocusRingController handles drawing custom rings around
 // the focused object, cursor, and/or caret for accessibility.
-// TODO(mash): Provide mojo API for access from chrome.
 class ASH_EXPORT AccessibilityFocusRingController
-    : public AccessibilityLayerDelegate {
+    : public AccessibilityLayerDelegate,
+      public mojom::AccessibilityFocusRingController {
  public:
   // Get the single instance of this class.
   static AccessibilityFocusRingController* GetInstance();
 
-  enum FocusRingBehavior { FADE_OUT_FOCUS_RING, PERSIST_FOCUS_RING };
+  // Binds the mojom::AccessibilityFocusRingController interface to this object.
+  void BindRequest(mojom::AccessibilityFocusRingControllerRequest request);
 
-  // Set the focus ring color, or reset it back to the default.
-  void SetFocusRingColor(SkColor color);
-  void ResetFocusRingColor();
-
-  // Draw a focus ring around the given set of rects, in global screen
-  // coordinates. Use |focus_ring_behavior| to specify whether the focus
-  // ring should persist or fade out.
+  // mojom::AccessibilityFocusRingController overrides:
+  void SetFocusRingColor(SkColor color) override;
+  void ResetFocusRingColor() override;
   void SetFocusRing(const std::vector<gfx::Rect>& rects,
-                    FocusRingBehavior focus_ring_behavior);
-  void HideFocusRing();
+                    mojom::FocusRingBehavior focus_ring_behavior) override;
+  void HideFocusRing() override;
+  void SetHighlights(const std::vector<gfx::Rect>& rects,
+                     SkColor color) override;
+  void HideHighlights() override;
 
   // Draw a ring around the mouse cursor. It fades out automatically.
   void SetCursorRing(const gfx::Point& location);
@@ -51,13 +53,6 @@ class ASH_EXPORT AccessibilityFocusRingController
   // Draw a ring around the text caret. It fades out automatically.
   void SetCaretRing(const gfx::Point& location);
   void HideCaretRing();
-
-  // Draw a highlight at the given rects, in global screen coordinates.
-  // Rects may be overlapping and will be merged into one layer.
-  // This looks similar to selecting a region with the cursor, except
-  // it is drawn in the foreground rather than behind a text layer.
-  void SetHighlights(const std::vector<gfx::Rect>& rects, SkColor color);
-  void HideHighlights();
 
   // Don't fade in / out, for testing.
   void SetNoFadeForTesting();
@@ -75,12 +70,6 @@ class ASH_EXPORT AccessibilityFocusRingController
   }
   AccessibilityHighlightLayer* highlight_layer_for_testing() {
     return highlight_layer_.get();
-  }
-
-  // Sets an observer of focus ring layer changes.
-  void set_focus_ring_observer_for_testing(
-      base::RepeatingCallback<void()> observer) {
-    focus_ring_observer_for_testing_ = observer;
   }
 
  protected:
@@ -137,12 +126,16 @@ class ASH_EXPORT AccessibilityFocusRingController
   void ComputeOpacity(LayerAnimationInfo* animation_info,
                       base::TimeTicks timestamp);
 
+  // Binding for mojom::AccessibilityFocusRingController interface.
+  mojo::Binding<mojom::AccessibilityFocusRingController> binding_;
+
   LayerAnimationInfo focus_animation_info_;
   std::vector<gfx::Rect> focus_rects_;
   std::vector<AccessibilityFocusRing> previous_focus_rings_;
   std::vector<AccessibilityFocusRing> focus_rings_;
   std::vector<std::unique_ptr<AccessibilityFocusRingLayer>> focus_layers_;
-  FocusRingBehavior focus_ring_behavior_ = FADE_OUT_FOCUS_RING;
+  mojom::FocusRingBehavior focus_ring_behavior_ =
+      mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
   base::Optional<SkColor> focus_ring_color_;
 
   LayerAnimationInfo cursor_animation_info_;
@@ -159,8 +152,6 @@ class ASH_EXPORT AccessibilityFocusRingController
   float highlight_opacity_ = 0.f;
 
   friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
-
-  base::RepeatingCallback<void()> focus_ring_observer_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };
