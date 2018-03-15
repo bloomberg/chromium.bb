@@ -10,6 +10,7 @@
 
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -45,7 +46,10 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   bool SetSearchResult(SearchResult* search_result) {
     views::View* const old_result_view = child_count() ? child_at(0) : nullptr;
     views::View* const new_result_view =
-        search_result ? search_result->view() : nullptr;
+        search_result && AnswerCardContentsRegistry::Get()
+            ? AnswerCardContentsRegistry::Get()->GetView(
+                  search_result->answer_card_contents_token())
+            : nullptr;
 
     if (old_result_view != new_result_view) {
       if (old_result_view != nullptr)

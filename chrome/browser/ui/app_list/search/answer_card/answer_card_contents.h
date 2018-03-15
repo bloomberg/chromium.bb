@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_CARD_ANSWER_CARD_CONTENTS_H_
 
 #include <string>
+
 #include "base/observer_list.h"
+#include "base/unguessable_token.h"
 
 class GURL;
 
 namespace app_list {
 class AnswerCardResult;
-}
-
-namespace views {
-class View;
 }
 
 namespace app_list {
@@ -49,8 +47,8 @@ class AnswerCardContents {
 
   // Loads contents from |url|.
   virtual void LoadURL(const GURL& url) = 0;
-  // Returns the view associated with the contents.
-  virtual views::View* GetView() = 0;
+  // Returns the token associated with the contents.
+  virtual const base::UnguessableToken& GetToken() const = 0;
 
   // Sets the delegate to process contents-related events.
   void SetDelegate(Delegate* delegate);

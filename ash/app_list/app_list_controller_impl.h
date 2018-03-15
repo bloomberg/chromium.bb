@@ -26,6 +26,10 @@ namespace ui {
 class MouseWheelEvent;
 }  // namespace ui
 
+namespace app_list {
+class AnswerCardContentsRegistry;
+}  // namespace app_list
+
 namespace ash {
 
 // Ash's AppListController owns the AppListModel and implements interface
@@ -144,6 +148,10 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   mojo::BindingSet<mojom::AppListController> bindings_;
 
   mojom::AppListClientPtr client_;
+
+  // Token to view map for classic/mus ash (i.e. non-mash).
+  std::unique_ptr<app_list::AnswerCardContentsRegistry>
+      answer_card_contents_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 
+#include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
@@ -24,7 +25,8 @@ AnswerCardResult::AnswerCardResult(Profile* profile,
   set_id(result_url);
   set_comparable_id(stripped_result_url);
   set_relevance(1);
-  set_view(contents ? contents->GetView() : nullptr);
+  set_answer_card_contents_token(contents ? contents->GetToken()
+                                          : base::UnguessableToken());
   set_title(result_title);
 
   if (contents)

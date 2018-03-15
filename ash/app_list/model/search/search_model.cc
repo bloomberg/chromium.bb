@@ -70,7 +70,8 @@ void SearchModel::PublishResults(
   for (auto&& new_result : new_results) {
     auto ui_result_it = results_map.find(new_result->id());
     if (ui_result_it != results_map.end() &&
-        new_result->view() == ui_result_it->second->view()) {
+        new_result->answer_card_contents_token() ==
+            ui_result_it->second->answer_card_contents_token()) {
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
       UpdateResult(new_result.get(), ui_result.get());
