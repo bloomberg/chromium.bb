@@ -72,8 +72,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(DesktopNativeWidgetAura*,
 
 namespace {
 
-bool g_disable_activation_change_handling_ = false;
-
 // This class provides functionality to create a top level widget to host a
 // child window.
 class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
@@ -238,11 +236,6 @@ DesktopNativeCursorManager* DesktopNativeWidgetAura::native_cursor_manager_ =
     NULL;
 wm::CursorManager* DesktopNativeWidgetAura::cursor_manager_ = NULL;
 
-// static
-void DesktopNativeWidgetAura::DisableActivationChangeHandlingForTests() {
-  g_disable_activation_change_handling_ = true;
-}
-
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : desktop_window_tree_host_(NULL),
@@ -355,9 +348,6 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
-  if (g_disable_activation_change_handling_)
-    return;
-
   native_widget_delegate_->OnNativeWidgetActivationChanged(active);
   wm::ActivationClient* activation_client =
       wm::GetActivationClient(host_->window());
