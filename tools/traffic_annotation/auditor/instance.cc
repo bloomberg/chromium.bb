@@ -164,7 +164,8 @@ AuditorResult AnnotationInstance::Deserialize(
   if (unique_id_hash_code == TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code ||
       unique_id_hash_code ==
           PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code) {
-    return AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+    return AuditorResult(AuditorResult::Type::ERROR_TEST_ANNOTATION, "",
+                         file_path, line_number);
   }
 
   // Process undefined tags.

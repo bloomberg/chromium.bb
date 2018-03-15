@@ -43,7 +43,8 @@ class AuditorResult {
     ERROR_DIRECT_ASSIGNMENT,       // A value is directly assigned to a mutable
                                    // annotation or annotation instialized with
                                    // list expresssion.
-    ERROR_ANNOTATIONS_XML_UPDATE   // Annotations XML requires update.
+    ERROR_ANNOTATIONS_XML_UPDATE,  // Annotations XML requires update.
+    ERROR_TEST_ANNOTATION,         // Annotation for tests is used.
   };
 
   static const int kNoCodeLineSpecified;

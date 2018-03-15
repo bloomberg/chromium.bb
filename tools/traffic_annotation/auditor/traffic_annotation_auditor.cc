@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_id_checker.h"
 
@@ -307,8 +308,8 @@ bool TrafficAnnotationAuditor::IsSafeListed(
   const std::vector<std::string>& safe_list =
       safe_list_[static_cast<int>(exception_type)];
 
-  for (const std::string& ignore_path : safe_list) {
-    if (!strncmp(file_path.c_str(), ignore_path.c_str(), ignore_path.length()))
+  for (const std::string& ignore_pattern : safe_list) {
+    if (re2::RE2::FullMatch(file_path, ignore_pattern))
       return true;
   }
 
@@ -365,12 +366,24 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     if (block_type == "ANNOTATION") {
       AnnotationInstance new_annotation;
       result = new_annotation.Deserialize(lines, current, end_line);
-      if (result.IsOK()) {
-        extracted_annotations_.push_back(new_annotation);
-      } else if (result.type() == AuditorResult::Type::ERROR_MISSING_TAG_USED &&
-                 IsSafeListed(result.file_path(),
-                              AuditorException::ExceptionType::MISSING)) {
-        result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+      switch (result.type()) {
+        case AuditorResult::Type::RESULT_OK:
+          extracted_annotations_.push_back(new_annotation);
+          break;
+        case AuditorResult::Type::ERROR_MISSING_TAG_USED:
+          if (IsSafeListed(result.file_path(),
+                           AuditorException::ExceptionType::MISSING)) {
+            result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+          }
+          break;
+        case AuditorResult::Type::ERROR_TEST_ANNOTATION:
+          if (IsSafeListed(result.file_path(),
+                           AuditorException::ExceptionType::TEST_ANNOTATION)) {
+            result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+          }
+          break;
+        default:
+          break;
       }
     } else if (block_type == "CALL") {
       CallInstance new_call;
@@ -418,37 +431,56 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
 bool TrafficAnnotationAuditor::LoadSafeList() {
   base::FilePath safe_list_file =
       base::MakeAbsoluteFilePath(source_path_.Append(kSafeListPath));
-  std::string file_content;
-  if (base::ReadFileToString(safe_list_file, &file_content)) {
-    base::RemoveChars(file_content, "\r", &file_content);
-    std::vector<std::string> lines = base::SplitString(
-        file_content, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    for (const std::string& line : lines) {
-      // Ignore comments and empty lines.
-      if (!line.length() || line[0] == '#')
-        continue;
-      size_t comma = line.find(',');
-      if (comma == std::string::npos) {
-        LOG(ERROR) << "Unexpected syntax in safe_list.txt, line: " << line;
-        return false;
-      }
 
-      AuditorException::ExceptionType exception_type;
-      if (AuditorException::TypeFromString(line.substr(0, comma),
-                                           &exception_type)) {
-        safe_list_[static_cast<int>(exception_type)].push_back(
-            line.substr(comma + 1, line.length() - comma - 1));
-      } else {
-        LOG(ERROR) << "Unexpected type in safe_list.txt line: " << line;
-        return false;
-      }
-    }
-    safe_list_loaded_ = true;
-    return true;
+  std::string file_content;
+  if (!base::ReadFileToString(safe_list_file, &file_content)) {
+    LOG(ERROR) << "Could not read " << kSafeListPath.MaybeAsASCII();
+    return false;
   }
 
-  LOG(ERROR) << "Could not read " << kSafeListPath.MaybeAsASCII();
-  return false;
+  base::RemoveChars(file_content, "\r", &file_content);
+  std::vector<std::string> lines = base::SplitString(
+      file_content, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  for (const std::string& line : lines) {
+    // Ignore comments and empty lines.
+    if (!line.length() || line[0] == '#')
+      continue;
+
+    std::vector<std::string> tokens = base::SplitString(
+        line, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    // Expect a type and at least one value in each line.
+    if (tokens.size() < 2) {
+      LOG(ERROR) << "Unexpected syntax in safe_list.txt, line: " << line;
+      return false;
+    }
+
+    AuditorException::ExceptionType exception_type;
+    if (!AuditorException::TypeFromString(tokens[0], &exception_type)) {
+      LOG(ERROR) << "Unexpected type in safe_list.txt line: " << line;
+      return false;
+    }
+    for (unsigned i = 1; i < tokens.size(); i++) {
+      // Convert the rest of the line into re2 patterns, making dots as fixed
+      // characters and asterisks as wildcards.
+      // Note that all file paths are converted to Linux style before checking.
+      if (!base::ContainsOnlyChars(
+              base::ToLowerASCII(tokens[i]),
+              "0123456789_abcdefghijklmnopqrstuvwxyz.*/:@")) {
+        LOG(ERROR) << "Unexpected character in safe_list.txt token: "
+                   << tokens[i];
+        return false;
+      }
+      std::string pattern;
+      base::ReplaceChars(tokens[i], ".", "[.]", &pattern);
+      base::ReplaceChars(pattern, "*", ".*", &pattern);
+      safe_list_[static_cast<int>(exception_type)].push_back(pattern);
+    }
+  }
+
+  safe_list_loaded_ = true;
+  return true;
 }
 
 // static

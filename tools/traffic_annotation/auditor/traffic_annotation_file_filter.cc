@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 
@@ -142,9 +143,8 @@ void TrafficAnnotationFileFilter::GetRelevantFiles(
   for (const std::string& file_path : git_files_) {
     if (!strncmp(file_path.c_str(), directory_name.c_str(), name_length)) {
       bool ignore = false;
-      for (const std::string& ignore_path : ignore_list) {
-        if (!strncmp(file_path.c_str(), ignore_path.c_str(),
-                     ignore_path.length())) {
+      for (const std::string& ignore_pattern : ignore_list) {
+        if (re2::RE2::FullMatch(file_path.c_str(), ignore_pattern)) {
           ignore = true;
           break;
         }
