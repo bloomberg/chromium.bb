@@ -1,14 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -75,15 +75,15 @@
         right: initial;
       }
 
-      #sync-logo-container[signed-in] {
+      #sync-icon-container[signed-in] {
         background: green;
       }
 
-      #sync-logo-container[signed-in][has-error] {
+      #sync-icon-container[signed-in][has-error] {
         background: var(--settings-error-color);
       }
 
-      #sync-logo-container iron-icon {
+      #sync-icon-container iron-icon {
         fill: white;
         height: 12px;
         margin: auto;
@@ -151,7 +151,7 @@
         <div id="avatar-container">
           <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
-          <div id="sync-logo-container" signed-in$="[[syncStatus.signedIn]]"
+          <div id="sync-icon-container" signed-in$="[[syncStatus.signedIn]]"
               has-error$="[[syncStatus.hasError]]">
             <iron-icon icon="[[getSyncIcon_(syncStatus.hasError)]]"></iron-icon>
           </div>
@@ -166,10 +166,12 @@
             <div class="secondary">[[shownAccount_.email]]</div>
           </div>
         </div>
-        <button is="paper-icon-button-light" id="dropdown-arrow"
-            on-click="onMenuButtonTap_" title="$i18n{useAnotherAccount}"
-            class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
-        </button>
+        <paper-icon-button-light class="icon-arrow-dropdown"
+            hidden="[[syncStatus.signedIn]]">
+          <button on-click="onMenuButtonTap_" id="dropdown-arrow"
+              aria-label="$i18n{useAnotherAccount}">
+          </button>
+        </paper-icon-button-light>
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
         <paper-button class="action-button" on-click="onSyncButtonTap_"
             hidden="[[syncStatus.signedIn]]"
