@@ -16,7 +16,6 @@
     "256": "common/images/icon256.png"
   },
   "permissions": [
-    // Comment out chrome:// permissions to debug on a desktop browser.
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
