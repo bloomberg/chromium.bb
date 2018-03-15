@@ -674,20 +674,6 @@ content::GlobalRequestID NavigationSimulator::GetGlobalRequestID() const {
   return request_id_;
 }
 
-void NavigationSimulator::SetOnDeferCallback(
-    const base::Closure& on_defer_callback) {
-  CHECK_LT(state_, FINISHED)
-      << "The callback should not be set after the navigation has finished";
-  if (handle_) {
-    handle_->SetOnDeferCallbackForTesting(on_defer_callback);
-    return;
-  }
-
-  // If there is no NavigationHandle for the navigation yet, store the callback
-  // until one has been created.
-  on_defer_callback_ = on_defer_callback;
-}
-
 void NavigationSimulator::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Check if this navigation is the one we're simulating.
@@ -716,12 +702,6 @@ void NavigationSimulator::DidStartNavigation(
                      weak_factory_.GetWeakPtr()),
           base::Bind(&NavigationSimulator::OnWillProcessResponse,
                      weak_factory_.GetWeakPtr())));
-
-  // Pass the |on_defer_callback_| if it was registered.
-  if (!on_defer_callback_.is_null()) {
-    handle->SetOnDeferCallbackForTesting(on_defer_callback_);
-    on_defer_callback_.Reset();
-  }
 
   PrepareCompleteCallbackOnHandle();
 }
