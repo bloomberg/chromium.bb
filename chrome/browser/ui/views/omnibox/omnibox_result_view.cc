@@ -192,7 +192,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   animation_->Reset();
   is_hovered_ = false;
   image_view_->SetVisible(false);  // Until SetAnswerImage is called.
-
   keyword_icon_view_->SetVisible(match_.associated_keyword.get());
   if (tab_switch_button_) {
     if (match.type == AutocompleteMatchType::TAB_SEARCH &&
@@ -226,6 +225,16 @@ void OmniboxResultView::Invalidate() {
                                     GetThemeState());
     SetBackground(CreateBackgroundWithColor(color));
   }
+
+  // Recreate the icons in case the color needs to change.
+  // Note: if this is an extension icon or favicon then this can be done in
+  //       SetMatch() once (rather than repeatedly, as happens here). There may
+  //       be an optimization opportunity here.
+  // TODO(dschuyler): determine whether to optimize the color changes.
+  icon_view_->SetImage(GetIcon().ToImageSkia());
+  keyword_icon_view_->SetImage(gfx::CreateVectorIcon(
+      omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetVectorIconColor()));
 
   if (match_.answer) {
     content_view_->SetText(match_.answer->first_line());
