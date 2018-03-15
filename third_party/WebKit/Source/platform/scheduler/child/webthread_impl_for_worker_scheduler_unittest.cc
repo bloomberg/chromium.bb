@@ -74,7 +74,8 @@ class WebThreadImplForWorkerSchedulerTest : public ::testing::Test {
   ~WebThreadImplForWorkerSchedulerTest() override = default;
 
   void SetUp() override {
-    thread_.reset(new WebThreadImplForWorkerScheduler("test thread"));
+    thread_.reset(new WebThreadImplForWorkerScheduler(
+        WebThreadCreationParams(WebThreadType::kTestThread)));
     thread_->Init();
   }
 

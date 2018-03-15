@@ -13,19 +13,19 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
+#include "platform/scheduler/child/worker_scheduler_proxy.h"
 
 namespace blink {
 namespace scheduler {
 
 WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
-    const char* name)
-    : WebThreadImplForWorkerScheduler(name, base::Thread::Options()) {}
-
-WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
-    const char* name,
-    base::Thread::Options options)
-    : thread_(new base::Thread(name ? name : std::string())) {
-  bool started = thread_->StartWithOptions(options);
+    const WebThreadCreationParams& params)
+    : thread_(new base::Thread(params.name ? params.name : std::string())),
+      worker_scheduler_proxy_(
+          params.frame_scheduler
+              ? std::make_unique<WorkerSchedulerProxy>(params.frame_scheduler)
+              : nullptr) {
+  bool started = thread_->StartWithOptions(params.thread_options);
   CHECK(started);
   thread_task_runner_ = thread_->task_runner();
 }
@@ -86,7 +86,7 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
 
 std::unique_ptr<WorkerScheduler>
 WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
-  return WorkerScheduler::Create();
+  return WorkerScheduler::Create(worker_scheduler_proxy_.get());
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {

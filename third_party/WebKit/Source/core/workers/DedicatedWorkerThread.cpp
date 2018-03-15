@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
@@ -35,12 +34,29 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
 
 namespace blink {
+
+namespace {
+
+WebFrameScheduler* GetFrameScheduler(
+    ThreadableLoadingContext* loading_context) {
+  // |loading_context| can be null in unittests.
+  if (!loading_context)
+    return nullptr;
+  return ToDocument(loading_context->GetExecutionContext())
+      ->GetFrame()
+      ->FrameScheduler();
+}
+
+}  // namespace
 
 std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::Create(
     ThreadableLoadingContext* loading_context,
@@ -54,7 +70,8 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     DedicatedWorkerObjectProxy& worker_object_proxy)
     : WorkerThread(loading_context, worker_object_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
-          WebThreadCreationParams(GetThreadType()))),
+          WebThreadCreationParams(GetThreadType())
+              .SetFrameScheduler(GetFrameScheduler(loading_context)))),
       worker_object_proxy_(worker_object_proxy) {}
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;

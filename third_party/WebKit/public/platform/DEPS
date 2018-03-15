@@ -12,6 +12,7 @@ include_rules = [
     "+base/optional.h",
     "+base/single_thread_task_runner.h",
     "+base/strings",
+    "+base/threading/thread.h",
     "+base/time",
     "+base/trace_event",
     "-bindings",

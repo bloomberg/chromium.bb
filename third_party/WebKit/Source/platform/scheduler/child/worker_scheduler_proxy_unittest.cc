@@ -44,16 +44,16 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
 class WebThreadImplForWorkerSchedulerForTest
     : public WebThreadImplForWorkerScheduler {
  public:
-  explicit WebThreadImplForWorkerSchedulerForTest(
-      WorkerSchedulerProxy* proxy,
-      WaitableEvent* throtting_state_changed)
-      : WebThreadImplForWorkerScheduler("Test Worker", base::Thread::Options()),
-        proxy_(proxy),
+  WebThreadImplForWorkerSchedulerForTest(WebFrameScheduler* frame_scheduler,
+                                         WaitableEvent* throtting_state_changed)
+      : WebThreadImplForWorkerScheduler(
+            WebThreadCreationParams(WebThreadType::kTestThread)
+                .SetFrameScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
 
-  std::unique_ptr<WorkerScheduler> CreateWorkerScheduler() override {
+  std::unique_ptr<WorkerScheduler> CreateWorkerScheduler() {
     auto scheduler = std::make_unique<WorkerSchedulerImplForTest>(
-        TaskQueueManager::TakeOverCurrentThread(), proxy_,
+        TaskQueueManager::TakeOverCurrentThread(), worker_scheduler_proxy(),
         throtting_state_changed_);
     scheduler_ = scheduler.get();
     return scheduler;
@@ -62,17 +62,16 @@ class WebThreadImplForWorkerSchedulerForTest
   WorkerSchedulerImplForTest* GetWorkerScheduler() { return scheduler_; }
 
  private:
-  WorkerSchedulerProxy* proxy_;                      // NOW OWNED
   WaitableEvent* throtting_state_changed_;           // NOT OWNED
   WorkerSchedulerImplForTest* scheduler_ = nullptr;  // NOT OWNED
 };
 
 std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> CreateWorkerThread(
-    WorkerSchedulerProxy* proxy,
+    WebFrameScheduler* frame_scheduler,
     WaitableEvent* throtting_state_changed) {
   std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> thread =
       std::make_unique<WebThreadImplForWorkerSchedulerForTest>(
-          proxy, throtting_state_changed);
+          frame_scheduler, throtting_state_changed);
   thread->Init();
   return thread;
 }
@@ -115,11 +114,8 @@ class WorkerSchedulerProxyTest : public ::testing::Test {
 TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
   WaitableEvent throtting_state_changed;
 
-  std::unique_ptr<WorkerSchedulerProxy> proxy =
-      std::make_unique<WorkerSchedulerProxy>(frame_scheduler_.get());
-
   auto worker_thread =
-      CreateWorkerThread(proxy.get(), &throtting_state_changed);
+      CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
@@ -142,11 +138,8 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
 TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
   WaitableEvent throtting_state_changed;
 
-  std::unique_ptr<WorkerSchedulerProxy> proxy =
-      std::make_unique<WorkerSchedulerProxy>(frame_scheduler_.get());
-
   auto worker_thread =
-      CreateWorkerThread(proxy.get(), &throtting_state_changed);
+      CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
@@ -160,18 +153,14 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
   mock_main_thread_task_runner_->RunUntilIdle();
 
   worker_thread.reset();
-  proxy.reset();
   mock_main_thread_task_runner_->RunUntilIdle();
 }
 
 TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   WaitableEvent throtting_state_changed;
 
-  std::unique_ptr<WorkerSchedulerProxy> proxy =
-      std::make_unique<WorkerSchedulerProxy>(frame_scheduler_.get());
-
   auto worker_thread =
-      CreateWorkerThread(proxy.get(), &throtting_state_changed);
+      CreateWorkerThread(frame_scheduler_.get(), &throtting_state_changed);
 
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
@@ -182,7 +171,6 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
          WebFrameScheduler::ThrottlingState::kThrottled);
 
   worker_thread.reset();
-  proxy.reset();
   mock_main_thread_task_runner_->RunUntilIdle();
 
   page_scheduler_->SetPageVisible(true);

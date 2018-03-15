@@ -1293,12 +1293,13 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::InitializeCompositorThread() {
-  base::Thread::Options options;
+  blink::WebThreadCreationParams params(
+      blink::WebThreadType::kCompositorThread);
 #if defined(OS_ANDROID)
-  options.priority = base::ThreadPriority::DISPLAY;
+  params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   compositor_thread_ =
-      blink::scheduler::WebThreadBase::CreateCompositorThread(options);
+      blink::scheduler::WebThreadBase::CreateCompositorThread(params);
   blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
   compositor_task_runner_ = compositor_thread_->GetTaskRunner();
   compositor_task_runner_->PostTask(
