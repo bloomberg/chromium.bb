@@ -199,7 +199,8 @@ TEST_F(NetworkErrorLoggingEndToEndTest, ReportNetworkError) {
 
 // Make sure an upload that is in progress at shutdown does not crash.
 // This verifies that https://crbug.com/792978 is fixed.
-TEST_F(NetworkErrorLoggingEndToEndTest, UploadAtShutdown) {
+// Disabled due to frequent timeouts - see https://crbug.com/820950 .
+TEST_F(NetworkErrorLoggingEndToEndTest, DISABLED_UploadAtShutdown) {
   upload_should_hang_ = true;
 
   TestDelegate configure_delegate;
