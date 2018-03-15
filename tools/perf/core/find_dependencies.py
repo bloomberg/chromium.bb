@@ -211,7 +211,7 @@ def ZipDependencies(target_paths, dependencies, options):
 
       relative_path = os.path.relpath(target_path, base_dir)
       link_script = (
-          '#!/usr/bin/env python\n\n'
+          '#!/usr/bin/env vpython\n\n'
           'import os\n'
           'import sys\n\n\n'
           'script = os.path.join(os.path.dirname(__file__), \'%s\')\n'

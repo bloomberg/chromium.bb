@@ -64,8 +64,9 @@ def _RunArgs(args, input_api):
 def _CheckExpectations(input_api, output_api):
   results = []
   perf_dir = input_api.PresubmitLocalPath()
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
   out, return_code = _RunArgs([
-      input_api.python_executable,
+      vpython,
       input_api.os_path.join(perf_dir, 'validate_story_expectation_data')],
       input_api)
   if return_code:
@@ -77,8 +78,9 @@ def _CheckExpectations(input_api, output_api):
 def _CheckPerfData(input_api, output_api, block_on_failure):
   results = []
   perf_dir = input_api.PresubmitLocalPath()
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
   out, return_code = _RunArgs([
-      input_api.python_executable,
+      vpython,
       input_api.os_path.join(perf_dir, 'generate_perf_data'),
       '--validate-only'], input_api)
   if return_code:
@@ -103,8 +105,9 @@ def _CheckWprShaFiles(input_api, output_api):
       continue
     wpr_archive_shas.append(filename)
 
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
   out, return_code = _RunArgs([
-      input_api.python_executable,
+      vpython,
       input_api.os_path.join(perf_dir, 'validate_wpr_archives')] +
       wpr_archive_shas,
       input_api)
