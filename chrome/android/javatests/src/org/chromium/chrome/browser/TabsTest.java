@@ -311,7 +311,6 @@ public class TabsTest {
      * Verify that opening a new tab, switching to an existing tab and closing current tab hide
      * keyboard.
      */
-    @DisabledTest(message = "crbug.com/821750")
     @Test
     @LargeTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
