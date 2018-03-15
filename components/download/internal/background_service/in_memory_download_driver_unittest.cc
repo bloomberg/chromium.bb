@@ -46,7 +46,7 @@ class TestInMemoryDownload : public InMemoryDownload {
   void Start() override {}
   void Pause() override {}
   void Resume() override {}
-  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override {
+  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() const override {
     return nullptr;
   }
   size_t EstimateMemoryUsage() const override { return 0u; }

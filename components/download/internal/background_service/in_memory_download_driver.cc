@@ -4,6 +4,8 @@
 
 #include "components/download/internal/background_service/in_memory_download_driver.h"
 
+#include "components/download/internal/background_service/in_memory_download.h"
+
 namespace download {
 
 namespace {
@@ -28,19 +30,22 @@ DriverEntry CreateDriverEntry(const InMemoryDownload& download) {
   DriverEntry entry;
   entry.guid = download.guid();
   entry.state = ToDriverEntryState(download.state());
-  // TODO(xingliu): Support pause. See https://crbug.com/809674.
-  entry.paused = false;
-  entry.done = entry.state == DriverEntry::State::INTERRUPTED ||
-               entry.state == DriverEntry::State::COMPLETE ||
+  entry.paused = download.paused();
+  entry.done = entry.state == DriverEntry::State::COMPLETE ||
                entry.state == DriverEntry::State::CANCELLED;
   entry.bytes_downloaded = download.bytes_downloaded();
   entry.response_headers = download.response_headers();
   if (entry.response_headers) {
     entry.expected_total_size = entry.response_headers->GetContentLength();
   }
-  // TODO(xingliu): Support resumption. UrlFetcher doesn't expose url chain.
-  // Figure out if empty url chain is OK and how url chain is used.
+  // Currently incognito mode network backend can't resume in the middle.
   entry.can_resume = false;
+
+  if (download.state() == InMemoryDownload::State::COMPLETE) {
+    auto blob_handle = download.ResultAsBlob();
+    if (blob_handle)
+      entry.blob_handle = base::Optional<storage::BlobDataHandle>(*blob_handle);
+  }
   return entry;
 }
 

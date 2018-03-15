@@ -15,6 +15,7 @@ CompletionInfo::CompletionInfo(const CompletionInfo& other) = default;
 CompletionInfo::~CompletionInfo() = default;
 
 bool CompletionInfo::operator==(const CompletionInfo& other) const {
+  // The blob data handle is not compared here.
   return path == other.path && bytes_downloaded == other.bytes_downloaded;
 }
 
