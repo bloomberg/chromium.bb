@@ -42,18 +42,20 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
+// TODO(crbug.com/822231): Flaky in Chromium waterfall.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
+// TODO(crbug.com/822216): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       SendAndOnMessage) {
+                       MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
 // TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       DISABLED_ReceiverCloseConnection) {
+                       MANUAL_ReceiverCloseConnection) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
@@ -66,13 +68,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
 
 // TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       DISABLED_ReconnectSession) {
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
 // TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       DISABLED_ReconnectSessionSameTab) {
+                       MANUAL_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
@@ -85,14 +87,15 @@ class MediaRouterIntegrationOneUANoReceiverBrowserTest
   }
 };
 
+// TODO(crbug.com/822179,822337): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       Basic) {
+                       MANUAL_Basic) {
   RunBasicTest();
 }
 
 // TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       DISABLED_Fail_SendMessage) {
+                       MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 

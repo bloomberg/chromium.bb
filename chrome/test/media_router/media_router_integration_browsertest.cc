@@ -706,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
 // Tests that creating a route with a local file opens the file in a new tab.
 // TODO(crbug.com/818767): Fails when run with Chromium component.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileInCurrentTab) {
+                       MANUAL_OpenLocalMediaFileInCurrentTab) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -755,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 // Tests that creating a route with a local file opens in fullscreen.
 // TODO(crbug.com/822029): Fails on msan; fix and re-enable.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_OpenLocalMediaFileFullscreen) {
+                       MANUAL_OpenLocalMediaFileFullscreen) {
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -887,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest, Basic) {
   RunBasicTest();
 }
 
-// TODO(crbug.com/822300): Flaky test.
+// TODO(crbug.com/822300): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest,
                        MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
