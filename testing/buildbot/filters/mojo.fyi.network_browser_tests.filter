@@ -60,8 +60,6 @@
 -WebViewTests/WebViewTest.ClearPersistentCookies/1
 -WebViewTests/WebViewTest.ClearSessionCookies/0
 -WebViewTests/WebViewTest.ClearSessionCookies/1
--WebViewTests/WebViewTest.DownloadCookieIsolation/0
--WebViewTests/WebViewTest.DownloadCookieIsolation/1
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/0
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
 -WebViewTests/WebViewTest.StoragePersistence/0
