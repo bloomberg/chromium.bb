@@ -8,6 +8,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
@@ -38,6 +39,9 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
   unified_view_ = new UnifiedSystemTrayView(this);
   InitFeaturePods();
+
+  volume_slider_controller_ = std::make_unique<UnifiedVolumeSliderController>();
+  unified_view_->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
       std::make_unique<UnifiedBrightnessSliderController>();

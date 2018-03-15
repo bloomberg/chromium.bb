@@ -7,17 +7,14 @@
 #include <algorithm>
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/brightness_control_delegate.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
@@ -270,14 +267,6 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   else
     ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
-}
-
-bool TrayBrightness::IsUnifiedBubbleShown() const {
-  return features::IsSystemTrayUnifiedEnabled() && system_tray()
-                                                       ->shelf()
-                                                       ->GetStatusAreaWidget()
-                                                       ->unified_system_tray()
-                                                       ->IsBubbleShown();
 }
 
 }  // namespace ash

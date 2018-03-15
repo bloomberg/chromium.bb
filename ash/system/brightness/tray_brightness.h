@@ -57,9 +57,6 @@ class ASH_EXPORT TrayBrightness
 
   void HandleBrightnessChanged(double percent, bool user_initiated);
 
-  // Returns true if the bubble of UnifiedSystemTray is shown.
-  bool IsUnifiedBubbleShown() const;
-
   tray::BrightnessView* brightness_view_;
 
   // Brightness level in the range [0.0, 100.0] that we've heard about most

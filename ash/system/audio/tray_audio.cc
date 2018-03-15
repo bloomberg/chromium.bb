@@ -104,6 +104,11 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
     return;
   }
+
+  // Show popup only when UnifiedSystemTray bubble is not shown.
+  if (IsUnifiedBubbleShown())
+    return;
+
   pop_up_volume_view_ = true;
   ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
@@ -116,6 +121,10 @@ void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
     volume_view_->Update();
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   } else if (!system_adjust) {
+    // Show popup only when UnifiedSystemTray bubble is not shown.
+    if (IsUnifiedBubbleShown())
+      return;
+
     pop_up_volume_view_ = true;
     ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
   }
