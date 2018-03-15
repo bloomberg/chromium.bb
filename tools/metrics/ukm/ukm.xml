@@ -1461,9 +1461,20 @@ be describing additional metrics about the same event.
       Measure of memory consumed by Discardable memory service.
     </summary>
   </metric>
+  <metric name="DownloadService">
+    <summary>
+      Measure of memory used by download service.
+    </summary>
+  </metric>
   <metric name="Extensions.ValueStore">
     <summary>
       Measure of memory consumed by Key Value Store databases of extensions.
+    </summary>
+  </metric>
+  <metric name="FontCaches">
+    <summary>
+      Measure of memory used by font platform and shape caches in renderer
+      process.
     </summary>
   </metric>
   <metric name="History">
@@ -1534,6 +1545,11 @@ be describing additional metrics about the same event.
       The number of nodes that the associated renderer owns.
     </summary>
   </metric>
+  <metric name="OmniboxSuggestions">
+    <summary>
+      Measure of memory used due to URL indexing and autocomplete suggestions.
+    </summary>
+  </metric>
   <metric name="PartitionAlloc">
     <summary>
       Measure of memory allocated by PartitionAlloc allocator.
@@ -1595,6 +1611,11 @@ be describing additional metrics about the same event.
   <metric name="SiteStorage">
     <summary>
       Measure of memory used due to web storage APIs in browser process.
+    </summary>
+  </metric>
+  <metric name="SiteStorage.BlobStorage">
+    <summary>
+      Measure of memory used by in-memory blob file API in browser process.
     </summary>
   </metric>
   <metric name="SiteStorage.IndexDB">
