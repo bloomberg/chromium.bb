@@ -3598,6 +3598,9 @@ void RenderFrameHostImpl::CommitNavigation(
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           this, false /* is_navigation */, &factory_request);
+      // Keep DevTools proxy lasy, i.e. closest to the network.
+      RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+          frame_tree_node_, &factory_request);
       factory.second->Clone(std::move(factory_request));
       subresource_loader_factories->factories_info().emplace(
           factory.first, std::move(factory_proxy_info));
@@ -4128,10 +4131,10 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     GrantFileAccessFromResourceRequestBody(*common_params.post_data);
 }
 
-void RenderFrameHostImpl::OnNetworkServiceConnectionError() {
+void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(network_service_connection_error_handler_holder_.is_bound() &&
-         network_service_connection_error_handler_holder_.encountered_error());
+  DCHECK(network_service_connection_error_handler_holder_.is_bound());
+
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
   CreateNetworkServiceDefaultFactoryAndObserve(
       mojo::MakeRequest(&default_factory_info));
@@ -4149,6 +4152,9 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
   auto* context = GetSiteInstance()->GetBrowserContext();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       this, false /* is_navigation */, &default_factory_request);
+  // Keep DevTools proxy lasy, i.e. closest to the network.
+  RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+      frame_tree_node_, &default_factory_request);
   StoragePartitionImpl* storage_partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(context, GetSiteInstance()));
   if (g_create_network_factory_callback_for_test.Get().is_null()) {
@@ -4171,7 +4177,7 @@ void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
         GetProcess()->GetID());
     network_service_connection_error_handler_holder_
         .set_connection_error_handler(base::BindOnce(
-            &RenderFrameHostImpl::OnNetworkServiceConnectionError,
+            &RenderFrameHostImpl::UpdateSubresourceLoaderFactories,
             weak_ptr_factory_.GetWeakPtr()));
   }
 }

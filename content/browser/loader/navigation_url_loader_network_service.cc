@@ -16,6 +16,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -1047,9 +1048,14 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     // connected if the request type supports proxying.
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     auto factory_request = mojo::MakeRequest(&factory_info);
-    if (GetContentClient()->browser()->WillCreateURLLoaderFactory(
-            frame_tree_node->current_frame_host(), true /* is_navigation */,
-            &factory_request)) {
+    bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        frame_tree_node->current_frame_host(), true /* is_navigation */,
+        &factory_request);
+    if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+            frame_tree_node, &factory_request)) {
+      use_proxy = true;
+    }
+    if (use_proxy) {
       proxied_factory_request = std::move(factory_request);
       proxied_factory_info = std::move(factory_info);
     }

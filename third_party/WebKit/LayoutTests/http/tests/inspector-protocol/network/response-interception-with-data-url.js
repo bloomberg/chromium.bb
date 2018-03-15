@@ -21,7 +21,7 @@
   await session.protocol.Network.setCacheDisabled({cacheDisabled: true});
   session.protocol.Network.enable();
   testRunner.log('Network agent enabled');
-  await session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "*", interceptionStage: 'HeadersReceived'}]});
+  await session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "http://*", interceptionStage: 'HeadersReceived'}]});
 
   var requestId = '';
   session.protocol.Network.onRequestWillBeSent(event => {
@@ -36,7 +36,7 @@
     session.evaluate(`
       iframe = document.createElement('iframe');
       // Script wait sends headers then waits 10 seconds to send body.
-      iframe.src = '/devtools/network/resources/resource.php?send=10000&chunked=1&size=1000';
+      iframe.src = '/devtools/network/resources/resource.php?send=10000&chunked=1&size=1000&nosniff=1';
       document.body.appendChild(iframe);
     `);
   });

@@ -35,6 +35,8 @@ struct InterceptedRequestInfo {
 
 class DevToolsNetworkInterceptor {
  public:
+  virtual ~DevToolsNetworkInterceptor() = default;
+
   using RequestInterceptedCallback =
       base::RepeatingCallback<void(std::unique_ptr<InterceptedRequestInfo>)>;
   using ContinueInterceptedRequestCallback =
@@ -43,6 +45,7 @@ class DevToolsNetworkInterceptor {
       protocol::Network::Backend::GetResponseBodyForInterceptionCallback;
 
   struct Modifications {
+    Modifications();
     Modifications(base::Optional<net::Error> error_reason,
                   base::Optional<std::string> raw_response,
                   protocol::Maybe<std::string> modified_url,
@@ -73,25 +76,27 @@ class DevToolsNetworkInterceptor {
   };
 
   enum InterceptionStage {
-    REQUEST,
-    RESPONSE,
+    DONT_INTERCEPT = 0,
+    REQUEST = (1 << 0),
+    RESPONSE = (1 << 1),
     // Note: Both is not sent from front-end. It is used if both Request
     // and HeadersReceived was found it upgrades it to Both.
-    BOTH,
-    DONT_INTERCEPT
+    BOTH = (REQUEST | RESPONSE),
   };
 
   struct Pattern {
    public:
-    Pattern();
     ~Pattern();
     Pattern(const Pattern& other);
     Pattern(const std::string& url_pattern,
             base::flat_set<ResourceType> resource_types,
             InterceptionStage interception_stage);
+
+    bool Matches(const std::string& url, ResourceType resource_type) const;
+
     const std::string url_pattern;
     const base::flat_set<ResourceType> resource_types;
-    InterceptionStage interception_stage;
+    const InterceptionStage interception_stage;
   };
 
   struct FilterEntry {
@@ -120,6 +125,13 @@ class DevToolsNetworkInterceptor {
       std::unique_ptr<Modifications> modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback) = 0;
 };
+
+inline DevToolsNetworkInterceptor::InterceptionStage& operator|=(
+    DevToolsNetworkInterceptor::InterceptionStage& a,
+    const DevToolsNetworkInterceptor::InterceptionStage& b) {
+  a = static_cast<DevToolsNetworkInterceptor::InterceptionStage>(a | b);
+  return a;
+}
 
 }  // namespace content
 

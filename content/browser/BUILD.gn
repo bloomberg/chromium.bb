@@ -598,6 +598,8 @@ jumbo_source_set("browser") {
     "devtools/devtools_traceable_screenshot.h",
     "devtools/devtools_url_interceptor_request_job.cc",
     "devtools/devtools_url_interceptor_request_job.h",
+    "devtools/devtools_url_loader_interceptor.cc",
+    "devtools/devtools_url_loader_interceptor.h",
     "devtools/devtools_url_request_interceptor.cc",
     "devtools/devtools_url_request_interceptor.h",
     "devtools/forwarding_agent_host.cc",

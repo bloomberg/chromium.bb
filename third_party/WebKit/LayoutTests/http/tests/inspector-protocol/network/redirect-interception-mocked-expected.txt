@@ -15,7 +15,7 @@ Network.requestIntercepted ID 2 302 redirect redirect2.pl -> redirect3.pl
 allowRequest ID 2
 Network.requestIntercepted ID 2 301 redirect redirect3.pl -> final.js
 mockResponse ID 2
-Network.responseReceived redirect3.pl 301 application/javascript
+Network.responseReceived redirect3.pl 200 application/javascript
 Page.frameStoppedLoading
 Hello from the mock resource
 
