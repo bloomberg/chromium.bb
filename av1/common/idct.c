@@ -653,57 +653,6 @@ void av1_iht16x32_512_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-void av1_iht32x16_512_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                            const TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  static const transform_2d IHT_32x16[] = {
-    { aom_idct16_c, aom_idct32_c },     // DCT_DCT
-    { aom_iadst16_c, aom_idct32_c },    // ADST_DCT
-    { aom_idct16_c, ihalfright32_c },   // DCT_ADST
-    { aom_iadst16_c, ihalfright32_c },  // ADST_ADST
-    { aom_iadst16_c, aom_idct32_c },    // FLIPADST_DCT
-    { aom_idct16_c, ihalfright32_c },   // DCT_FLIPADST
-    { aom_iadst16_c, ihalfright32_c },  // FLIPADST_FLIPADST
-    { aom_iadst16_c, ihalfright32_c },  // ADST_FLIPADST
-    { aom_iadst16_c, ihalfright32_c },  // FLIPADST_ADST
-    { iidtx16_c, iidtx32_c },           // IDTX
-    { aom_idct16_c, iidtx32_c },        // V_DCT
-    { iidtx16_c, aom_idct32_c },        // H_DCT
-    { aom_iadst16_c, iidtx32_c },       // V_ADST
-    { iidtx16_c, ihalfright32_c },      // H_ADST
-    { aom_iadst16_c, iidtx32_c },       // V_FLIPADST
-    { iidtx16_c, ihalfright32_c },      // H_FLIPADST
-  };
-  const int n = 16;
-  const int n2 = 32;
-
-  tran_low_t out[32][16], tmp[32][16], outtmp[32];
-  tran_low_t *outp = &out[0][0];
-  int outstride = n;
-
-  // inverse transform row vectors and transpose
-  for (int i = 0; i < n; ++i) {
-    IHT_32x16[tx_type].rows(input, outtmp);
-    for (int j = 0; j < n2; ++j)
-      tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
-    input += n2;
-  }
-
-  // inverse transform column vectors
-  for (int i = 0; i < n2; ++i) IHT_32x16[tx_type].cols(tmp[i], out[i]);
-
-  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n2);
-
-  // Sum with the destination
-  for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < n2; ++j) {
-      int d = i * stride + j;
-      int s = j * outstride + i;
-      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
-    }
-  }
-}
-
 void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;

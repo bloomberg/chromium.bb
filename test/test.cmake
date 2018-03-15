@@ -206,7 +206,6 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/arf_freq_test.cc"
         "${AOM_ROOT}/test/av1_dct_test.cc"
         "${AOM_ROOT}/test/av1_fht16x16_test.cc"
-        "${AOM_ROOT}/test/av1_fht32x32_test.cc"
         "${AOM_ROOT}/test/av1_fht8x8_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
@@ -273,7 +272,6 @@ if (CONFIG_AV1_ENCODER)
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/av1_fht16x32_test.cc"
         "${AOM_ROOT}/test/av1_fht16x8_test.cc"
-        "${AOM_ROOT}/test/av1_fht32x16_test.cc"
         "${AOM_ROOT}/test/av1_fht4x4_test.cc"
         "${AOM_ROOT}/test/av1_fht4x8_test.cc"
         "${AOM_ROOT}/test/av1_fht8x16_test.cc"

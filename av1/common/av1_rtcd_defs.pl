@@ -106,9 +106,6 @@ specialize qw/av1_iht16x8_128_add sse2/;
 add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 specialize qw/av1_iht16x32_512_add sse2/;
 
-add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-specialize qw/av1_iht32x16_512_add sse2/;
-
 add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
@@ -169,8 +166,6 @@ add_proto qw/void av1_highbd_iht8x16_128_add/, "const tran_low_t *input, uint8_t
 add_proto qw/void av1_highbd_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 add_proto qw/void av1_highbd_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-
-add_proto qw/void av1_highbd_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 add_proto qw/void av1_highbd_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
@@ -272,9 +267,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/void av1_fht16x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
   specialize qw/av1_fht16x32 sse2/;
-
-  add_proto qw/void av1_fht32x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-  specialize qw/av1_fht32x16 sse2/;
 
   add_proto qw/void av1_fht4x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
 
