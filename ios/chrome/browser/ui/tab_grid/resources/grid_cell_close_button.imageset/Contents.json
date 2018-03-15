@@ -3,17 +3,17 @@
         {
             "idiom": "universal",
             "scale": "1x",
-            "filename": "grid_close_cell.png"
+            "filename": "grid_cell_close_button.png"
         },
         {
             "idiom": "universal",
             "scale": "2x",
-            "filename": "grid_close_cell@2x.png"
+            "filename": "grid_cell_close_button@2x.png"
         },
         {
             "idiom": "universal",
             "scale": "3x",
-            "filename": "grid_close_cell@3x.png"
+            "filename": "grid_cell_close_button@3x.png"
         }
     ],
     "info": {
