@@ -52,13 +52,15 @@ class WebViewTranslateClient
   }
 
   // Performs translation from |source_lang| to |target_lang|.
-  // |trigged_from_menu| indicates if a direct result of user interaction.
-  void TranslatePage(const std::string& source_lang,
-                     const std::string& target_lang,
-                     bool triggered_from_menu);
+  // |trigged_from_menu| indicates if a direct result of user.
+  // Marked virtual to allow for testing.
+  virtual void TranslatePage(const std::string& source_lang,
+                             const std::string& target_lang,
+                             bool triggered_from_menu);
 
   // Reverts previous translations back to original language.
-  void RevertTranslation();
+  // Marked virtual to allow for testing.
+  virtual void RevertTranslation();
 
   // TranslateClient implementation.
   translate::IOSTranslateDriver* GetTranslateDriver() override;
@@ -80,11 +82,12 @@ class WebViewTranslateClient
   bool IsTranslatableURL(const GURL& url) override;
   void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
 
- private:
-  friend class web::WebStateUserData<WebViewTranslateClient>;
-
+ protected:
   // The lifetime of WebViewTranslateClient is managed by WebStateUserData.
   explicit WebViewTranslateClient(web::WebState* web_state);
+
+ private:
+  friend class web::WebStateUserData<WebViewTranslateClient>;
 
   // web::WebStateObserver implementation.
   void WebStateDestroyed(web::WebState* web_state) override;
