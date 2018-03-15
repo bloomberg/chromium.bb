@@ -1128,12 +1128,14 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
                                              transform_window_.window());
   }
 
-  // Create an image view for and scale down the windows window icon, if it
-  // exists.
+  // Create an image view the header icon. Tries to use the app icon, as it is
+  // higher resolution. If it does not exist, use the window icon. If neither
+  // exist, display nothing.
   views::ImageView* image_view = nullptr;
   if (IsNewOverviewUi()) {
-    gfx::ImageSkia* icon =
-        transform_window_.window()->GetProperty(aura::client::kWindowIconKey);
+    gfx::ImageSkia* icon = GetWindow()->GetProperty(aura::client::kAppIconKey);
+    if (!icon || icon->size().IsEmpty())
+      icon = GetWindow()->GetProperty(aura::client::kWindowIconKey);
     if (icon && !icon->size().IsEmpty()) {
       image_view = new views::ImageView();
       image_view->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
