@@ -65,7 +65,8 @@ String IdentifiersFactory::SubresourceRequestId(unsigned long identifier) {
 
 // static
 String IdentifiersFactory::FrameId(Frame* frame) {
-  return frame ? IdFromToken(frame->GetDevToolsFrameToken()) : g_empty_string;
+  // Note: this should be equal to ToTraceValue(frame).
+  return String(ToTraceValue(frame).data());
 }
 
 // static

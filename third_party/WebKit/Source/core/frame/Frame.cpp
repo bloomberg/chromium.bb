@@ -256,6 +256,13 @@ void Frame::UpdateInertIfPossible() {
   }
 }
 
+const CString& Frame::ToTraceValue() {
+  // token's ToString() is latin1.
+  if (!trace_value_)
+    trace_value_ = CString(devtools_frame_token_.ToString().c_str());
+  return trace_value_.value();
+}
+
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,

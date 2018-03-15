@@ -5,6 +5,7 @@
 #include "core/dom/DocumentTiming.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/InteractiveDetector.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -29,14 +30,16 @@ void DocumentTiming::NotifyDocumentTimingChanged() {
 void DocumentTiming::MarkDomLoading() {
   dom_loading_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domLoading",
-                                   dom_loading_, "frame", GetFrame());
+                                   dom_loading_, "frame",
+                                   ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkDomInteractive() {
   dom_interactive_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domInteractive",
-                                   dom_interactive_, "frame", GetFrame());
+                                   dom_interactive_, "frame",
+                                   ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }
 
@@ -44,7 +47,7 @@ void DocumentTiming::MarkDomContentLoadedEventStart() {
   dom_content_loaded_event_start_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "domContentLoadedEventStart",
-      dom_content_loaded_event_start_, "frame", GetFrame());
+      dom_content_loaded_event_start_, "frame", ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }
 
@@ -52,7 +55,7 @@ void DocumentTiming::MarkDomContentLoadedEventEnd() {
   dom_content_loaded_event_end_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "domContentLoadedEventEnd",
-      dom_content_loaded_event_end_, "frame", GetFrame());
+      dom_content_loaded_event_end_, "frame", ToTraceValue(GetFrame()));
   InteractiveDetector* interactive_detector(
       InteractiveDetector::From(*document_));
   if (interactive_detector) {
@@ -64,14 +67,16 @@ void DocumentTiming::MarkDomContentLoadedEventEnd() {
 void DocumentTiming::MarkDomComplete() {
   dom_complete_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domComplete",
-                                   dom_complete_, "frame", GetFrame());
+                                   dom_complete_, "frame",
+                                   ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkFirstLayout() {
   first_layout_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstLayout",
-                                   first_layout_, "frame", GetFrame());
+                                   first_layout_, "frame",
+                                   ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }
 

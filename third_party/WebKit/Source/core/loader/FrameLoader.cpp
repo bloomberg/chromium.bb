@@ -60,6 +60,7 @@
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormSubmission.h"
@@ -1802,10 +1803,7 @@ void FrameLoader::RecordLatestRequiredCSP() {
 std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
   std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
   traced_value->BeginDictionary("frame");
-  traced_value->SetString(
-      "id_ref", String::Format("0x%" PRIx64,
-                               static_cast<uint64_t>(
-                                   reinterpret_cast<uintptr_t>(frame_.Get()))));
+  traced_value->SetString("id_ref", IdentifiersFactory::FrameId(frame_.Get()));
   traced_value->EndDictionary();
   traced_value->SetBoolean("isLoadingMainFrame", IsLoadingMainFrame());
   traced_value->SetString("stateMachine", state_machine_.ToString());
