@@ -5,6 +5,7 @@
 #include "core/loader/InteractiveDetector.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -458,8 +459,8 @@ void InteractiveDetector::OnTimeToInteractiveDetected() {
   // with whether that happened.
   TRACE_EVENT_MARK_WITH_TIMESTAMP2(
       "loading,rail", "InteractiveTime", interactive_time_, "frame",
-      GetSupplementable()->GetFrame(), "had_user_input_before_interactive",
-      had_user_input_before_interactive);
+      ToTraceValue(GetSupplementable()->GetFrame()),
+      "had_user_input_before_interactive", had_user_input_before_interactive);
 
   // We only send TTI to Performance Timing Observers if FMP was not invalidated
   // by input.

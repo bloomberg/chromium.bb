@@ -40,6 +40,7 @@
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 #include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 
 namespace blink {
@@ -199,6 +200,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
   }
+  const CString& ToTraceValue();
 
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
@@ -236,6 +238,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
+  WTF::Optional<CString> trace_value_;
 };
 
 inline FrameClient* Frame::Client() const {
@@ -253,6 +256,14 @@ inline FrameTree& Frame::Tree() const {
 // Allow equality comparisons of Frames by reference or pointer,
 // interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
+
+// This method should be used instead of Frame* pointer
+// in a TRACE_EVENT_XXX macro. Example:
+//
+// TRACE_EVENT1("category", "event_name", "frame", ToTraceValue(GetFrame()));
+static inline CString ToTraceValue(Frame* frame) {
+  return frame ? frame->ToTraceValue() : CString();
+}
 
 }  // namespace blink
 

@@ -105,9 +105,9 @@ void PaintTiming::SetFirstMeaningfulPaint(
   DCHECK(!stamp.is_null());
   DCHECK(!swap_stamp.is_null());
 
-  TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading,rail,devtools.timeline",
-                                   "firstMeaningfulPaint", swap_stamp, "frame",
-                                   GetFrame(), "afterUserInput", had_input);
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+      "loading,rail,devtools.timeline", "firstMeaningfulPaint", swap_stamp,
+      "frame", ToTraceValue(GetFrame()), "afterUserInput", had_input);
 
   InteractiveDetector* interactive_detector(
       InteractiveDetector::From(*GetSupplementable()));
