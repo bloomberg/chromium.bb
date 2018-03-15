@@ -2824,6 +2824,45 @@
       "features": [
         "disable_d3d11"
       ]
+    },
+    {
+      "id": 262,
+      "description": "Program fails in PowerVR*GX6250 drivers if gl_Position is not set",
+      "cr_bugs": [286468, 416670],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR.*GX6250",
+      "features": [
+        "init_gl_position_in_vertex_shader"
+      ]
+    },
+    {
+      "id": 263,
+      "description": "Program fails in PowerVR SGX54x drivers if gl_Position is not set",
+      "cr_bugs": [286468, 416670],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX54.",
+      "features": [
+        "init_gl_position_in_vertex_shader"
+      ]
+    },
+    {
+      "id": 264,
+      "description": "Program fails in PowerVR G6200 drivers if gl_Position is not set",
+      "cr_bugs": [286468, 416670],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR G6200",
+      "features": [
+        "init_gl_position_in_vertex_shader"
+      ]
     }
   ]
 }
