@@ -294,10 +294,14 @@ class BuildStartStage(generic_stages.BuilderStage):
         master_build_id = d['master_build_id']
         if master_build_id is not None:
           master_build_status = db.GetBuildStatus(master_build_id)
-          master_url = tree_status.ConstructDashboardURL(
-              master_build_status['waterfall'],
-              master_build_status['builder_name'],
-              master_build_status['build_number'])
+          if master_build_status['buildbucket_id']:
+            master_url = tree_status.ConstructLegolandBuildURL(
+                master_build_status['buildbucket_id'])
+          else:
+            master_url = tree_status.ConstructDashboardURL(
+                master_build_status['waterfall'],
+                master_build_status['builder_name'],
+                master_build_status['build_number'])
           logging.PrintBuildbotLink('Link to master build', master_url)
 
     # Write the tag metadata last so that a build_id is available.
