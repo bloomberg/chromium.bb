@@ -12,6 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
@@ -29,10 +30,6 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#endif  // defined(OS_CHROMEOS)
 
 using testing::AtLeast;
 using testing::Invoke;
@@ -183,9 +180,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     life_cycle_.set_messenger(&messenger_);
     ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
 
-#if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Initialize();
-#endif
   }
 
   ~ProximityAuthUnlockManagerImplTest() override {
@@ -201,9 +196,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     // destructor references the DBusThreadManager.
     unlock_manager_.reset();
 
-#if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Shutdown();
-#endif
 
     ScreenlockBridge::Get()->SetLockHandler(nullptr);
   }

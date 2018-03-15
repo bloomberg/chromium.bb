@@ -120,8 +120,6 @@
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks_ui.h"
 #else
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
@@ -134,6 +132,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
