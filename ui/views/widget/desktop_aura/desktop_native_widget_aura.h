@@ -100,10 +100,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from internal::NativeWidgetPrivate:
   gfx::NativeWindow GetNativeWindow() const override;
 
-  // Forces HandleActivationChanged to do nothing, making Chrome-internal notion
-  // of focused and active windows independent from the OS.
-  static void DisableActivationChangeHandlingForTests();
-
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
