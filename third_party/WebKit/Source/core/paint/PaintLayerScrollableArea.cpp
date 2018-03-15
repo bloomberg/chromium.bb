@@ -452,8 +452,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   DisableCompositingQueryAsserts disabler;
 
   // Update the positions of our child layers (if needed as only fixed layers
-  // should be impacted by a scroll).  We don't update compositing layers,
-  // because we need to do a deep update from the compositing ancestor.
+  // should be impacted by a scroll).
   if (!frame_view->IsInPerformLayout()) {
     // If we're in the middle of layout, we'll just update layers once layout
     // has finished.
@@ -468,8 +467,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
       frame_view->SetRootLayerDidScroll();
     else
       frame_view->SetNeedsUpdateGeometries();
-    UpdateCompositingLayersAfterScroll();
   }
+  UpdateCompositingLayersAfterScroll();
 
   GetLayoutBox()->DispatchFakeMouseMoveEventSoon(frame->GetEventHandler());
 
