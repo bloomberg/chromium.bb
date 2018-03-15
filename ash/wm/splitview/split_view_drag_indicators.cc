@@ -374,10 +374,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
-    const gfx::Size size(
-        left_rotated_view_->GetPreferredSize().width(),
-        std::max(kSplitviewLabelPreferredHeightDp,
-                 left_rotated_view_->GetPreferredSize().height()));
+    const gfx::Size size(left_rotated_view_->GetPreferredSize().width(),
+                         kSplitviewLabelPreferredHeightDp);
     gfx::Rect left_rotated_bounds(highlight_width / 2 - size.width() / 2,
                                   highlight_height / 2 - size.height() / 2,
                                   size.width(), size.height());
