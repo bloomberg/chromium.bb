@@ -7327,6 +7327,7 @@ void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   // node_lists_ are traced in their corresponding NodeListsNodeData, keeping
   // them only alive for live nodes. Otherwise we would keep lists of dead
   // nodes alive that have not yet been invalidated.
+  visitor->TraceWrappers(dom_window_);
   visitor->TraceWrappers(imports_controller_);
   visitor->TraceWrappers(parser_);
   visitor->TraceWrappers(implementation_);

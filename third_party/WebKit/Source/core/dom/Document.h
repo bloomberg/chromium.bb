@@ -1566,7 +1566,7 @@ class CORE_EXPORT Document : public ContainerNode,
   PendingSheetLayout pending_sheet_layout_;
 
   Member<LocalFrame> frame_;
-  Member<LocalDOMWindow> dom_window_;
+  TraceWrapperMember<LocalDOMWindow> dom_window_;
   TraceWrapperMember<HTMLImportsController> imports_controller_;
 
   // The document of creator browsing context for frame-less documents such as
