@@ -1344,6 +1344,17 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs that features or outcomes are available to record to Ranker.
+     * This data can be used to correlate with #logRecordedToRanker to validate that everything that
+     * should be recorded is actually being recorded.
+     * @param areOutcomes Whether the features available are outcomes.
+     */
+    static void logRankerFeaturesAvailable(boolean areOutcomes) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.Ranker.eaturesAvailable", areOutcomes);
+    }
+
+    /**
      * Gets the state-change code for the given parameters by doing a lookup in the given map.
      * @param state The panel state.
      * @param reason The reason the state changed.
