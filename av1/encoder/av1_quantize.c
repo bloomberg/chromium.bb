@@ -43,12 +43,47 @@ static void quantize_fp_helper_c(
   // quantization process is completed.
   (void)zbin_ptr;
   (void)quant_shift_ptr;
-  (void)iscan;
 
   memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
   memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
 
-  if (!skip_block) {
+  if (!skip_block && qm_ptr == NULL && iqm_ptr == NULL) {
+    const int rounding0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
+    const int32_t thresh0 = (int32_t)(dequant_ptr[0]) >> (1 + log_scale);
+    {  // rc == 0
+      const int coeff = coeff_ptr[0];
+      const int coeff_sign = (coeff >> 31);
+      int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+      if (abs_coeff >= thresh0) {
+        abs_coeff = clamp64(abs_coeff + rounding0, INT16_MIN, INT16_MAX);
+        const int tmp32 = (int)((abs_coeff * quant_ptr[0]) >> (16 - log_scale));
+        if (tmp32) {
+          qcoeff_ptr[0] = (tmp32 ^ coeff_sign) - coeff_sign;
+          const tran_low_t abs_dqcoeff = (tmp32 * dequant_ptr[0]) >> log_scale;
+          dqcoeff_ptr[0] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
+          eob = 0;
+        }
+      }
+    }
+
+    const int rounding1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
+    const int32_t thresh1 = (int32_t)(dequant_ptr[1]) >> (1 + log_scale);
+    for (i = 1; i < n_coeffs; i++) {
+      const int coeff = coeff_ptr[i];
+      const int coeff_sign = (coeff >> 31);
+      int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+      if (abs_coeff >= thresh1) {
+        abs_coeff = clamp64(abs_coeff + rounding1, INT16_MIN, INT16_MAX);
+        const int tmp32 = (int)((abs_coeff * quant_ptr[1]) >> (16 - log_scale));
+        if (tmp32) {
+          qcoeff_ptr[i] = (tmp32 ^ coeff_sign) - coeff_sign;
+          const tran_low_t abs_dqcoeff = (tmp32 * dequant_ptr[1]) >> log_scale;
+          dqcoeff_ptr[i] = (abs_dqcoeff ^ coeff_sign) - coeff_sign;
+          eob = AOMMAX(iscan[i], eob);
+        }
+      }
+    }
+  } else if (!skip_block) {
     // Quantization pass: All coefficients with index >= zero_flag are
     // skippable. Note: zero_flag can be zero.
     for (i = 0; i < n_coeffs; i++) {
