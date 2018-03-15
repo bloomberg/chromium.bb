@@ -162,6 +162,7 @@ void ResourceDispatcher::OnReceivedResponse(
       }
     }
     subresource_load_info->cert_status = response_head.cert_status;
+    subresource_load_info->was_cached = response_head.was_cached;
     NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
                              std::move(subresource_load_info));

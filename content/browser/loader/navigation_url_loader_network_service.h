@@ -78,6 +78,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   std::unique_ptr<URLLoaderRequestController> request_controller_;
 
   bool allow_download_;
+  bool response_was_cached_;
 
   // Factories to handle navigation requests for non-network resources.
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap

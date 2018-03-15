@@ -972,6 +972,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers)
     : delegate_(delegate),
       allow_download_(request_info->common_params.allow_download),
+      response_was_cached_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int frame_tree_node_id = request_info->frame_tree_node_id;
@@ -1118,6 +1119,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
   net::SSLInfo ssl_info;
   if (maybe_ssl_info.has_value())
     ssl_info = maybe_ssl_info.value();
+  response_was_cached_ = response->head.was_cached;
 
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints), nullptr,
@@ -1142,7 +1144,7 @@ void NavigationURLLoaderNetworkService::OnComplete(
                          "&NavigationURLLoaderNetworkService", this, "success",
                          false);
 
-  delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
+  delegate_->OnRequestFailed(response_was_cached_, status.error_code,
                              status.ssl_info);
 }
 

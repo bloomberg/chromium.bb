@@ -168,7 +168,6 @@ void AbortRequestBeforeItStarts(
   // Tell the renderer that this request was disallowed.
   network::URLLoaderCompletionStatus status;
   status.error_code = net::ERR_ABORTED;
-  status.exists_in_cache = false;
   // No security info needed, connection not established.
   status.completion_time = base::TimeTicks();
   status.encoded_data_length = 0;

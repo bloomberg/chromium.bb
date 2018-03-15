@@ -486,7 +486,6 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
 
   network::URLLoaderCompletionStatus loader_status;
   loader_status.error_code = error_code;
-  loader_status.exists_in_cache = request()->response_info().was_cached;
   loader_status.completion_time = base::TimeTicks::Now();
   loader_status.encoded_data_length = request()->GetTotalReceivedBytes();
   loader_status.encoded_body_length = request()->GetRawBodyBytes();
