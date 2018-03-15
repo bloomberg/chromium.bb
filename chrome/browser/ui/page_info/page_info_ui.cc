@@ -341,7 +341,6 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
                                                              url, url);
     switch (permission_result.source) {
       case PermissionStatusSource::MULTIPLE_DISMISSALS:
-      case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
       default:

@@ -34,19 +34,9 @@ enum class PermissionSourceUI {
 };
 
 // Any new values should be inserted immediately prior to NUM.
-enum class SafeBrowsingResponse {
-  NOT_BLACKLISTED = 0,
-  TIMEOUT = 1,
-  BLACKLISTED = 2,
-
-  // Always keep this at the end.
-  NUM,
-};
-
-// Any new values should be inserted immediately prior to NUM.
 enum class PermissionEmbargoStatus {
   NOT_EMBARGOED = 0,
-  PERMISSIONS_BLACKLISTING = 1,
+  // Removed: PERMISSIONS_BLACKLISTING = 1,
   REPEATED_DISMISSALS = 2,
   REPEATED_IGNORES = 3,
 
@@ -81,9 +71,6 @@ class PermissionUmaUtil {
       PermissionStatusSource source);
 
   static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
-
-  static void RecordSafeBrowsingResponse(base::TimeDelta response_time,
-                                         SafeBrowsingResponse response);
 
   // UMA specifically for when permission prompts are shown. This should be
   // roughly equivalent to the metrics above, however it is

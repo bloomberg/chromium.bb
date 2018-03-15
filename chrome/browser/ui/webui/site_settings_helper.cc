@@ -182,8 +182,7 @@ SiteSettingSource CalculateSiteSettingSource(
 
   DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
   if (info.source == content_settings::SETTING_SOURCE_USER) {
-    if (result.source == PermissionStatusSource::SAFE_BROWSING_BLACKLIST ||
-        result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
+    if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
         result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
       return SiteSettingSource::kEmbargo;  // Source #8.
     }

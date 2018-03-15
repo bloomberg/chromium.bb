@@ -852,11 +852,10 @@ void PageInfo::PresentSitePermissions() {
 
       // If under embargo, update |permission_info| to reflect that.
       if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
-          (permission_result.source ==
-               PermissionStatusSource::MULTIPLE_DISMISSALS ||
-           permission_result.source ==
-               PermissionStatusSource::SAFE_BROWSING_BLACKLIST))
+          permission_result.source ==
+              PermissionStatusSource::MULTIPLE_DISMISSALS) {
         permission_info.setting = permission_result.content_setting;
+      }
     }
 
     if (ShouldShowPermission(permission_info, site_url_, content_settings_,

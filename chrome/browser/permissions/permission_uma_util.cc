@@ -202,10 +202,6 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_IGNORES);
       break;
-    case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
-      PermissionUmaUtil::RecordEmbargoPromptSuppression(
-          PermissionEmbargoStatus::PERMISSIONS_BLACKLISTING);
-      break;
     case PermissionStatusSource::UNSPECIFIED:
     case PermissionStatusSource::KILL_SWITCH:
     case PermissionStatusSource::INSECURE_ORIGIN:
@@ -220,15 +216,6 @@ void PermissionUmaUtil::RecordEmbargoStatus(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoStatus",
                             embargo_status, PermissionEmbargoStatus::NUM);
-}
-
-void PermissionUmaUtil::RecordSafeBrowsingResponse(
-    base::TimeDelta response_time,
-    SafeBrowsingResponse response) {
-  UMA_HISTOGRAM_TIMES("Permissions.AutoBlocker.SafeBrowsingResponseTime",
-                      response_time);
-  UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.SafeBrowsingResponse",
-                            response, SafeBrowsingResponse::NUM);
 }
 
 void PermissionUmaUtil::PermissionPromptShown(
