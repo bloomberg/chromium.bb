@@ -241,6 +241,8 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_EQ("HP ZR30w", human_readable_name);
   EXPECT_EQ("2560x1600", pixel.ToString());
   EXPECT_EQ("641x400", size.ToString());
+  EXPECT_EQ(ManufacturerIdToString(manufacturer_id), "HWP");
+  EXPECT_EQ(ProductIdToString(product_code), "286C");
 
   manufacturer_id = 0;
   product_code = 0;
@@ -255,6 +257,8 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_EQ("", human_readable_name);
   EXPECT_EQ("1280x800", pixel.ToString());
   EXPECT_EQ("261x163", size.ToString());
+  EXPECT_EQ(ManufacturerIdToString(manufacturer_id), "SEC");
+  EXPECT_EQ(ProductIdToString(product_code), "3142");
 
   // Internal display doesn't have name.
   EXPECT_TRUE(ParseOutputDeviceData(edid, nullptr, nullptr,
@@ -273,6 +277,38 @@ TEST(EDIDParserTest, ParseEDID) {
   EXPECT_EQ("SAMSUNG", human_readable_name);
   EXPECT_EQ("1920x1080", pixel.ToString());
   EXPECT_EQ("160x90", size.ToString());
+  EXPECT_EQ(ManufacturerIdToString(manufacturer_id), "SAM");
+  EXPECT_EQ(ProductIdToString(product_code), "08FE");
+
+  manufacturer_id = 0;
+  product_code = 0;
+  human_readable_name.clear();
+  Reset(&pixel, &size);
+  edid.assign(kSamus, kSamus + charsize(kSamus));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
+                                    nullptr, &pixel, &size));
+  EXPECT_EQ(0x30E4u, manufacturer_id);
+  EXPECT_EQ(0x2E04u, product_code);
+  EXPECT_EQ("", human_readable_name);
+  EXPECT_EQ("2560x1700", pixel.ToString());
+  EXPECT_EQ("272x181", size.ToString());
+  EXPECT_EQ(ManufacturerIdToString(manufacturer_id), "LGD");
+  EXPECT_EQ(ProductIdToString(product_code), "042E");
+
+  manufacturer_id = 0;
+  product_code = 0;
+  human_readable_name.clear();
+  Reset(&pixel, &size);
+  edid.assign(kEve, kEve + charsize(kEve));
+  EXPECT_TRUE(ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
+                                    nullptr, &pixel, &size));
+  EXPECT_EQ(0x4D10u, manufacturer_id);
+  EXPECT_EQ(0x8A14u, product_code);
+  EXPECT_EQ("", human_readable_name);
+  EXPECT_EQ("2400x1600", pixel.ToString());
+  EXPECT_EQ("259x173", size.ToString());
+  EXPECT_EQ(ManufacturerIdToString(manufacturer_id), "SHP");
+  EXPECT_EQ(ProductIdToString(product_code), "148A");
 }
 
 TEST(EDIDParserTest, ParseBrokenEDID) {
@@ -396,6 +432,37 @@ TEST(EDIDParserTest, ParseChromaticityCoordinates) {
       0.6396f, 0.3291f, 0.2998f, 0.5996f, 0.1494f, 0.0595f, 0.3144f, 0.3281f};
   EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_eve,
                       kEvePrimaries);
+}
+
+TEST(EDIDParserTest, ParseYearOfManufacture) {
+  const std::vector<uint8_t> edid_normal_display(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
+  int32_t edid_normal_display_year = 0;
+  EXPECT_TRUE(
+      ParseYearOfManufacture(edid_normal_display, &edid_normal_display_year));
+  EXPECT_EQ(2012, edid_normal_display_year);
+
+  const std::vector<uint8_t> edid_internal_display(
+      kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  int32_t edid_internal_display_year = 0;
+  EXPECT_TRUE(ParseYearOfManufacture(edid_internal_display,
+                                     &edid_internal_display_year));
+  EXPECT_EQ(2011, edid_internal_display_year);
+
+  const std::vector<uint8_t> edid_hpz32x(kHPz32x, kHPz32x + charsize(kHPz32x));
+  int32_t edid_hpz32x_year = 0;
+  EXPECT_TRUE(ParseYearOfManufacture(edid_hpz32x, &edid_hpz32x_year));
+  EXPECT_EQ(2017, edid_hpz32x_year);
+
+  const std::vector<uint8_t> edid_samus(kSamus, kSamus + charsize(kSamus));
+  int32_t edid_samus_year = 0;
+  EXPECT_TRUE(ParseYearOfManufacture(edid_samus, &edid_samus_year));
+  EXPECT_EQ(2014, edid_samus_year);
+
+  const std::vector<uint8_t> edid_eve(kEve, kEve + charsize(kEve));
+  int32_t edid_eve_year = 0;
+  EXPECT_TRUE(ParseYearOfManufacture(edid_eve, &edid_eve_year));
+  EXPECT_EQ(2017, edid_eve_year);
 }
 
 TEST(EDIDParserTest, ParseGammaValue) {

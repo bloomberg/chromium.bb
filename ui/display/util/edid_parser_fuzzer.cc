@@ -27,11 +27,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string human_readable_name;
   gfx::Size active_pixel_size, physical_display_size;
   bool overscan;
+  int32_t year_of_manufacture;
 
   display::ParseOutputDeviceData(edid, &manufacturer_id, &product_code,
                                  &human_readable_name, &active_pixel_size,
                                  &physical_display_size);
 
   display::ParseOutputOverscanFlag(edid, &overscan);
+  display::ParseYearOfManufacture(edid, &year_of_manufacture);
   return 0;
 }

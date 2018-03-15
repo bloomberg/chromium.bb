@@ -43,7 +43,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   const std::vector<uint8_t>& edid,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode,
-                  int64_t product_id,
+                  int64_t product_code,
+                  int32_t year_of_manufacture,
                   const gfx::Size& maximum_cursor_size);
   virtual ~DisplaySnapshot();
 
@@ -67,7 +68,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   const DisplayMode* current_mode() const { return current_mode_; }
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
   const DisplayMode* native_mode() const { return native_mode_; }
-  int64_t product_id() const { return product_id_; }
+  int64_t product_code() const { return product_code_; }
+  int32_t year_of_manufacture() const { return year_of_manufacture_; }
   const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }
 
   void add_mode(const DisplayMode* mode) { modes_.push_back(mode->Clone()); }
@@ -78,8 +80,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   // Returns a textual representation of this display state.
   std::string ToString() const;
 
-  // Used when no product id known.
-  static const int64_t kInvalidProductID = -1;
+  // Used when no |product_code_| known.
+  static const int64_t kInvalidProductCode = -1;
 
   // Returns the buffer format to be used for the primary plane buffer.
   static gfx::BufferFormat PrimaryFormat();
@@ -120,8 +122,10 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   // "Best" mode supported by the output.
   const DisplayMode* const native_mode_;
 
-  // Combination of manufacturer and product code.
-  const int64_t product_id_;
+  // Combination of manufacturer id and product id.
+  const int64_t product_code_;
+
+  const int32_t year_of_manufacture_;
 
   // Maximum supported cursor size on this display.
   const gfx::Size maximum_cursor_size_;

@@ -25,15 +25,15 @@ struct SkColorSpacePrimaries;
 namespace display {
 
 // Generates the display id and product id for the pair of |edid| and |index|,
-// and store in |display_id_out| and |product_id_out|. Returns true if the
+// and store in |display_id_out| and |product_code_out|. Returns true if the
 // display id is successfully generated, or false otherwise.
 DISPLAY_UTIL_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                                               uint8_t index,
                                               int64_t* display_id_out,
-                                              int64_t* product_id_out);
+                                              int64_t* product_code_out);
 
 // Parses |edid| as EDID data and stores extracted data into |manufacturer_id|,
-// |product_code|, |human_readable_name|, |active_pixel_out| and
+// |product_id|, |human_readable_name|, |active_pixel_out| and
 // |physical_display_size_out|, then returns true. nullptr can be passed for
 // unwanted output parameters.  Some devices (especially internal displays) may
 // not have the field for |human_readable_name|, and it will return true in
@@ -41,14 +41,32 @@ DISPLAY_UTIL_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
 DISPLAY_UTIL_EXPORT bool ParseOutputDeviceData(
     const std::vector<uint8_t>& edid,
     uint16_t* manufacturer_id,
-    uint16_t* product_code,
+    uint16_t* product_id,
     std::string* human_readable_name,
     gfx::Size* active_pixel_out,
     gfx::Size* physical_display_size_out);
 
+// Splits the |product_code| (as returned by GetDisplayIdFromEDID()) into its
+// constituents |manufacturer_id| and |product_id|.
+DISPLAY_UTIL_EXPORT void SplitProductCodeInManufacturerIdAndProductId(
+    int64_t product_code,
+    uint16_t* manufacturer_id,
+    uint16_t* product_id);
+
+// Extracts the three letter Manufacturer ID out of |manufacturer_id|.
+DISPLAY_UTIL_EXPORT std::string ManufacturerIdToString(
+    uint16_t manufacturer_id);
+
+// Extracts the 2 Byte Product ID as hex out of |product_id|.
+DISPLAY_UTIL_EXPORT std::string ProductIdToString(uint16_t product_id);
+
 DISPLAY_UTIL_EXPORT bool ParseOutputOverscanFlag(
     const std::vector<uint8_t>& edid,
     bool* flag);
+
+DISPLAY_UTIL_EXPORT bool ParseYearOfManufacture(
+    const std::vector<uint8_t>& edid,
+    int32_t* year);
 
 // Extracts from |edid| the |primaries| chromaticity coordinates (CIE xy
 // coordinates for Red, Green and Blue channels and for the White Point).

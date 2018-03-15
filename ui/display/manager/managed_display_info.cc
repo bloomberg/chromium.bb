@@ -260,6 +260,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
 
 ManagedDisplayInfo::ManagedDisplayInfo()
     : id_(kInvalidDisplayId),
+      year_of_manufacture_(kInvalidYearOfManufacture),
       has_overscan_(false),
       active_rotation_source_(Display::RotationSource::UNKNOWN),
       touch_support_(Display::TouchSupport::UNKNOWN),
@@ -276,6 +277,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        bool has_overscan)
     : id_(id),
       name_(name),
+      year_of_manufacture_(kInvalidYearOfManufacture),
       has_overscan_(has_overscan),
       active_rotation_source_(Display::RotationSource::UNKNOWN),
       touch_support_(Display::TouchSupport::UNKNOWN),
@@ -312,6 +314,9 @@ Display::Rotation ManagedDisplayInfo::GetRotation(
 
 void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   DCHECK(id_ == native_info.id_);
+  manufacturer_id_ = native_info.manufacturer_id_;
+  product_id_ = native_info.product_id_;
+  year_of_manufacture_ = native_info.year_of_manufacture_;
   name_ = native_info.name_;
   has_overscan_ = native_info.has_overscan_;
 

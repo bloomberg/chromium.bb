@@ -15,6 +15,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/edid_parser.h"
 
@@ -393,7 +394,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   std::vector<uint8_t> edid;
   std::string display_name;
-  int64_t product_id = display::DisplaySnapshot::kInvalidProductID;
+  int64_t product_code = display::DisplaySnapshot::kInvalidProductCode;
+  int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   bool has_overscan = false;
   gfx::ColorSpace display_color_space;
 
@@ -407,10 +409,13 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     edid.assign(static_cast<uint8_t*>(edid_blob->data),
                 static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    display::GetDisplayIdFromEDID(edid, display_id, &display_id, &product_id);
-
+    // TODO(mcasas): GetDisplayIdFromEDID() calls ParseOutputDeviceData(), clean
+    // up the code and add UMA for EDID errors, https://crbug.com/821393. Also
+    // handle correctly the parsing failures of the following functions.
+    display::GetDisplayIdFromEDID(edid, display_id, &display_id, &product_code);
     display::ParseOutputDeviceData(edid, nullptr, nullptr, &display_name,
                                    &active_pixel_size, nullptr);
+    display::ParseYearOfManufacture(edid, &year_of_manufacture);
     display::ParseOutputOverscanFlag(edid, &has_overscan);
 
     display_color_space = GetColorSpaceFromEdid(edid);
@@ -428,7 +433,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_color_space,
       display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_id, maximum_cursor_size);
+      product_code, year_of_manufacture, maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -464,7 +469,8 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     if (d->native_mode())
       p.native_mode = GetDisplayModeParams(*d->native_mode());
 
-    p.product_id = d->product_id();
+    p.product_code = d->product_code();
+    p.year_of_manufacture = d->year_of_manufacture();
     p.maximum_cursor_size = d->maximum_cursor_size();
 
     params.push_back(p);
@@ -490,7 +496,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       params.is_aspect_preserving_scaling, params.has_overscan,
       params.has_color_correction_matrix, params.color_space,
       params.display_name, params.sys_path, std::move(modes), params.edid,
-      current_mode, native_mode, params.product_id, params.maximum_cursor_size);
+      current_mode, native_mode, params.product_code,
+      params.year_of_manufacture, params.maximum_cursor_size);
 }
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {

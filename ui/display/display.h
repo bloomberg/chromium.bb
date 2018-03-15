@@ -220,9 +220,7 @@ class DISPLAY_EXPORT Display final {
   // True if this is a monochrome display (e.g, for accessiblity). Used by media
   // query APIs.
   bool is_monochrome() const { return is_monochrome_; }
-  void set_is_monochrome(bool is_monochrome) {
-    is_monochrome_ = is_monochrome;
-  }
+  void set_is_monochrome(bool is_monochrome) { is_monochrome_ = is_monochrome; }
 
   bool operator==(const Display& rhs) const;
   bool operator!=(const Display& rhs) const { return !(*this == rhs); }

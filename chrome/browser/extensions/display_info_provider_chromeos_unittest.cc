@@ -1948,5 +1948,28 @@ TEST_F(DisplayInfoProviderChromeosTest, SetMIXEDMode) {
   }
 }
 
+TEST_F(DisplayInfoProviderChromeosTest, GetEdid) {
+  UpdateDisplay("500x600, 400x200");
+  const char* kManufacturerId = "GOO";
+  const char* kProductId = "GL";
+  constexpr int32_t kYearOfManufacture = 2018;
+
+  display::ManagedDisplayInfo info(
+      GetDisplayManager()->active_display_list()[0].id(), "",
+      false /* has_overscan */);
+  info.SetBounds(gfx::Rect(0, 0, 500, 600));
+  info.set_manufacturer_id(kManufacturerId);
+  info.set_product_id(kProductId);
+  info.set_year_of_manufacture(kYearOfManufacture);
+  GetDisplayManager()->OnNativeDisplaysChanged({info});
+
+  DisplayUnitInfoList result = GetAllDisplaysInfo();
+  ASSERT_EQ(1u, result.size());
+  ASSERT_TRUE(result[0].edid);
+  EXPECT_EQ(kManufacturerId, result[0].edid->manufacturer_id);
+  EXPECT_EQ(kProductId, result[0].edid->product_id);
+  EXPECT_EQ(kYearOfManufacture, result[0].edid->year_of_manufacture);
+}
+
 }  // namespace
 }  // namespace extensions

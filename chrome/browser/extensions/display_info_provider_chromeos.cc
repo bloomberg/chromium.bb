@@ -782,6 +782,23 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     }
   }
 
+  const display::ManagedDisplayInfo& display_info =
+      display_manager->GetDisplayInfo(display.id());
+  if (!display_info.manufacturer_id().empty() ||
+      !display_info.product_id().empty() ||
+      (display_info.year_of_manufacture() !=
+       display::kInvalidYearOfManufacture)) {
+    unit->edid = std::make_unique<system_display::Edid>();
+    if (!display_info.manufacturer_id().empty())
+      unit->edid->manufacturer_id = display_info.manufacturer_id();
+    if (!display_info.product_id().empty())
+      unit->edid->product_id = display_info.product_id();
+    if (display_info.year_of_manufacture() !=
+        display::kInvalidYearOfManufacture) {
+      unit->edid->year_of_manufacture = display_info.year_of_manufacture();
+    }
+  }
+
   unit->display_zoom_factor =
       display_manager->GetZoomFactorForDisplay(display.id());
   display::ManagedDisplayMode active_mode;
@@ -793,8 +810,6 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
         display_manager->GetZoomFactorForDisplay(display.id()));
   }
 
-  const display::ManagedDisplayInfo& display_info =
-      display_manager->GetDisplayInfo(display.id());
   const float device_dpi = display_info.device_dpi();
   unit->dpi_x = device_dpi * display.size().width() /
                 display_info.bounds_in_native().width();

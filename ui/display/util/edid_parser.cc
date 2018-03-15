@@ -10,6 +10,7 @@
 
 #include "base/hash.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/display/util/display_util.h"
@@ -20,10 +21,10 @@ namespace display {
 namespace {
 
 // Returns a 32-bit identifier for this model of display, using
-// |manufacturer_id| and |product_code|.
-uint32_t GetProductID(uint16_t manufacturer_id, uint16_t product_code) {
+// |manufacturer_id| and |product_id|.
+uint32_t GetProductCode(uint16_t manufacturer_id, uint16_t product_id) {
   return ((static_cast<uint32_t>(manufacturer_id) << 16) |
-          (static_cast<uint32_t>(product_code)));
+          (static_cast<uint32_t>(product_id)));
 }
 
 }  // namespace
@@ -31,13 +32,13 @@ uint32_t GetProductID(uint16_t manufacturer_id, uint16_t product_code) {
 bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
                           uint8_t output_index,
                           int64_t* display_id_out,
-                          int64_t* product_id_out) {
+                          int64_t* product_code_out) {
   uint16_t manufacturer_id = 0;
-  uint16_t product_code = 0;
+  uint16_t product_id = 0;
   std::string product_name;
 
   // ParseOutputDeviceData fails if it doesn't have product_name.
-  ParseOutputDeviceData(edid, &manufacturer_id, &product_code, &product_name,
+  ParseOutputDeviceData(edid, &manufacturer_id, &product_id, &product_name,
                         nullptr, nullptr);
 
   if (manufacturer_id == 0)
@@ -50,16 +51,16 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
   // An ID based on display's index will be assigned later if this call fails.
   *display_id_out =
       GenerateDisplayID(manufacturer_id, product_code_hash, output_index);
-  // |product_id_out| is 64-bit signed so it can store -1 as kInvalidProductID
+  // |product_code_out| is 64-bit signed so it can store -1 as kInvalidProductID
   // and not match a valid product id which will all be in the lowest 32-bits.
-  if (product_id_out)
-    *product_id_out = GetProductID(manufacturer_id, product_code);
+  if (product_code_out)
+    *product_code_out = GetProductCode(manufacturer_id, product_id);
   return true;
 }
 
 bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
                            uint16_t* manufacturer_id,
-                           uint16_t* product_code,
+                           uint16_t* product_id,
                            std::string* human_readable_name,
                            gfx::Size* active_pixel_out,
                            gfx::Size* physical_display_size_out) {
@@ -71,8 +72,8 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
   //     the display name.
   constexpr size_t kManufacturerOffset = 8;
   constexpr size_t kManufacturerLength = 2;
-  constexpr size_t kProductCodeOffset = 10;
-  constexpr size_t kProductCodeLength = 2;
+  constexpr size_t kProductIdOffset = 10;
+  constexpr size_t kProductIdLength = 2;
   constexpr size_t kDescriptorOffset = 54;
   constexpr size_t kNumDescriptors = 4;
   constexpr size_t kDescriptorLength = 18;
@@ -91,14 +92,13 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
         (edid[kManufacturerOffset] << 8) + edid[kManufacturerOffset + 1];
   }
 
-  if (product_code) {
-    if (edid.size() < kProductCodeOffset + kProductCodeLength) {
-      LOG(ERROR) << "Too short EDID data: manufacturer product code";
+  if (product_id) {
+    if (edid.size() < kProductIdOffset + kProductIdLength) {
+      LOG(ERROR) << "Too short EDID data: product id";
       return false;
     }
 
-    *product_code =
-        (edid[kProductCodeOffset] << 8) + edid[kProductCodeOffset + 1];
+    *product_id = (edid[kProductIdOffset] << 8) + edid[kProductIdOffset + 1];
   }
 
   if (human_readable_name)
@@ -186,6 +186,44 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
   return true;
 }
 
+void SplitProductCodeInManufacturerIdAndProductId(int64_t product_code,
+                                                  uint16_t* manufacturer_id,
+                                                  uint16_t* product_id) {
+  DCHECK(manufacturer_id);
+  DCHECK(product_id);
+  // Undo GetProductCode() packing.
+  *product_id = product_code & 0xFFFF;
+  *manufacturer_id = (product_code >> 16) & 0xFFFF;
+}
+
+std::string ManufacturerIdToString(uint16_t manufacturer_id) {
+  // Constants are taken from "VESA Enhanced EDID Standard" Release A, Revision
+  // 2, Sep 2006, Sec 3.4.1 "ID Manufacturer Name: 2 Bytes". Essentially these
+  // are 3 5-bit ASCII characters packed in 2 bytes, where 1 means 'A', etc.
+  constexpr uint8_t kFiveBitAsciiMask = 0x1F;
+  constexpr char kFiveBitToAsciiOffset = 'A' - 1;
+  constexpr size_t kSecondLetterOffset = 5;
+  constexpr size_t kFirstLetterOffset = 10;
+
+  char out[4] = {};
+  out[2] = (manufacturer_id & kFiveBitAsciiMask) + kFiveBitToAsciiOffset;
+  out[1] = ((manufacturer_id >> kSecondLetterOffset) & kFiveBitAsciiMask) +
+           kFiveBitToAsciiOffset;
+  out[0] = ((manufacturer_id >> kFirstLetterOffset) & kFiveBitAsciiMask) +
+           kFiveBitToAsciiOffset;
+  return out;
+}
+
+std::string ProductIdToString(uint16_t product_id) {
+  // From "VESA Enhanced EDID Standard" Release A, Revision 2, Sep 2006, Sec
+  // 3.4.2 "ID Product Code: 2 Bytes": "The ID product code field, [...]
+  // contains a 2-byte manufacturer assigned product code. [...] The 2 byte
+  // number is stored in hex with the least significant byte listed first."
+  uint8_t lower_char = (product_id >> 8) & 0xFF;
+  uint8_t upper_char = product_id & 0xFF;
+  return base::StringPrintf("%02X%02X", upper_char, lower_char);
+}
+
 bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid, bool* flag) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the extension format of EDID.  Also see EIA/CEA-861 spec for
@@ -252,6 +290,28 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid, bool* flag) {
   }
 
   return false;
+}
+
+DISPLAY_UTIL_EXPORT bool ParseYearOfManufacture(
+    const std::vector<uint8_t>& edid,
+    int32_t* year) {
+  // Constants are taken from "VESA Enhanced EDID Standard" Release A, Revision
+  // 2, Sep 2006, Sec 3.4.4 "Week and Year of Manufacture or Model Year: 2
+  // Bytes".
+  constexpr size_t kYearOfManufactureOffset = 17;
+  constexpr uint32_t kValidValueLowerBound = 0x10;
+  constexpr int32_t kYearOffset = 1990;
+
+  if (edid.size() < kYearOfManufactureOffset + 1) {
+    LOG(ERROR) << "Too short EDID data: year of manufacture";
+    return false;
+  }
+  const uint8_t byte_data = edid[kYearOfManufactureOffset];
+  if (byte_data < kValidValueLowerBound)
+    return false;
+  DCHECK(year);
+  *year = byte_data + kYearOffset;
+  return true;
 }
 
 bool ParseChromaticityCoordinates(const std::vector<uint8_t>& edid,

@@ -53,7 +53,8 @@ struct DisplaySnapshot_Params {
   DisplayMode_Params current_mode;
   bool has_native_mode = false;
   DisplayMode_Params native_mode;
-  int64_t product_id = 0;
+  int64_t product_code = 0;
+  int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   gfx::Size maximum_cursor_size;
 };
 

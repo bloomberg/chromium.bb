@@ -114,7 +114,8 @@ bool operator==(const ui::DisplaySnapshot_Params& a,
          a.has_current_mode == b.has_current_mode &&
          a.current_mode == b.current_mode &&
          a.has_native_mode == b.has_native_mode &&
-         a.native_mode == b.native_mode && a.product_id == b.product_id &&
+         a.native_mode == b.native_mode && a.product_code == b.product_code &&
+         a.year_of_manufacture == b.year_of_manufacture &&
          a.maximum_cursor_size == b.maximum_cursor_size;
 }
 
@@ -146,7 +147,8 @@ void DetailedCompare(const ui::DisplaySnapshot_Params& a,
   EXPECT_EQ(a.current_mode, b.current_mode);
   EXPECT_EQ(a.has_native_mode, b.has_native_mode);
   EXPECT_EQ(a.native_mode, b.native_mode);
-  EXPECT_EQ(a.product_id, b.product_id);
+  EXPECT_EQ(a.product_code, b.product_code);
+  EXPECT_EQ(a.year_of_manufacture, b.year_of_manufacture);
   EXPECT_EQ(a.maximum_cursor_size, b.maximum_cursor_size);
 }
 
@@ -187,7 +189,8 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   fp.current_mode = MakeDisplay(1.2);
   fp.has_native_mode = true;
   fp.native_mode = MakeDisplay(1.1);
-  fp.product_id = 7;
+  fp.product_code = 7;
+  fp.year_of_manufacture = 1776;
   fp.maximum_cursor_size = gfx::Size(103, 44);
 
   sp.display_id = 1002;
@@ -206,7 +209,8 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   sp.has_current_mode = false;
   sp.has_native_mode = true;
   sp.native_mode = MakeDisplay(500.2);
-  sp.product_id = 8;
+  sp.product_code = 8;
+  sp.year_of_manufacture = 2018;
   sp.maximum_cursor_size = gfx::Size(500, 44);
 
   ep.display_id = 2002;
@@ -225,7 +229,8 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   ep.has_current_mode = true;
   ep.current_mode = MakeDisplay(1000.2);
   ep.has_native_mode = false;
-  ep.product_id = 9;
+  ep.product_code = 9;
+  ep.year_of_manufacture = 2000;
   ep.maximum_cursor_size = gfx::Size(1000, 44);
 
   orig_params.push_back(fp);

@@ -64,7 +64,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   void UpdateInternalDisplay(
       const DisplayConfigurator::DisplayStateList& display_states);
 
-  ManagedDisplayInfo CreateManagedDisplayInfo(const DisplaySnapshot* state,
+  ManagedDisplayInfo CreateManagedDisplayInfo(const DisplaySnapshot* snapshot,
                                               const DisplayMode* mode_info);
 
   // Both |display_configurator_| and |display_manager_| are not owned and must

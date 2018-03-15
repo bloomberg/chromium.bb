@@ -74,7 +74,8 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  const std::vector<uint8_t>& edid,
                                  const DisplayMode* current_mode,
                                  const DisplayMode* native_mode,
-                                 int64_t product_id,
+                                 int64_t product_code,
+                                 int32_t year_of_manufacture,
                                  const gfx::Size& maximum_cursor_size)
     : display_id_(display_id),
       origin_(origin),
@@ -90,7 +91,8 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       edid_(edid),
       current_mode_(current_mode),
       native_mode_(native_mode),
-      product_id_(product_id),
+      product_code_(product_code),
+      year_of_manufacture_(year_of_manufacture),
       maximum_cursor_size_(maximum_cursor_size) {
   // We must explicitly clear out the bytes that represent the serial number.
   const size_t end =
@@ -122,20 +124,21 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
       is_aspect_preserving_scaling_, has_overscan_,
       has_color_correction_matrix_, color_space_, display_name_, sys_path_,
       std::move(clone_modes), edid_, cloned_current_mode, cloned_native_mode,
-      product_id_, maximum_cursor_size_);
+      product_code_, year_of_manufacture_, maximum_cursor_size_);
 }
 
 std::string DisplaySnapshot::ToString() const {
   return base::StringPrintf(
       "id=%" PRId64
       " current_mode=%s native_mode=%s origin=%s"
-      " physical_size=%s, type=%s name=\"%s\" modes=(%s)",
+      " physical_size=%s, type=%s name=\"%s\" (year:%d) "
+      "modes=(%s)",
       display_id_,
       current_mode_ ? current_mode_->ToString().c_str() : "nullptr",
       native_mode_ ? native_mode_->ToString().c_str() : "nullptr",
       origin_.ToString().c_str(), physical_size_.ToString().c_str(),
       DisplayConnectionTypeString(type_).c_str(), display_name_.c_str(),
-      ModeListString(modes_).c_str());
+      year_of_manufacture_, ModeListString(modes_).c_str());
 }
 
 // static

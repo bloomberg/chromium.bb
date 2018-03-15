@@ -85,7 +85,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     bool has_overscan_ = false;
     bool has_color_correction_matrix_ = false;
     std::string name_;
-    int64_t product_id_ = DisplaySnapshot::kInvalidProductID;
+    int64_t product_id_ = DisplaySnapshot::kInvalidProductCode;
     gfx::Size maximum_cursor_size_ = gfx::Size(64, 64);
     DisplayModeList modes_;
     const DisplayMode* current_mode_ = nullptr;

@@ -253,6 +253,15 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
     maximum_cursor_size_ = size;
   }
 
+  const std::string& manufacturer_id() const { return manufacturer_id_; }
+  void set_manufacturer_id(const std::string& id) { manufacturer_id_ = id; }
+
+  const std::string& product_id() const { return product_id_; }
+  void set_product_id(const std::string& id) { product_id_ = id; }
+
+  int32_t year_of_manufacture() const { return year_of_manufacture_; }
+  void set_year_of_manufacture(int32_t year) { year_of_manufacture_ = year; }
+
   // Returns a string representation of the ManagedDisplayInfo, excluding
   // display modes.
   std::string ToString() const;
@@ -264,6 +273,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
  private:
   int64_t id_;
   std::string name_;
+  std::string manufacturer_id_;
+  std::string product_id_;
+  int32_t year_of_manufacture_;
   base::FilePath sys_path_;
   bool has_overscan_;
   std::map<Display::RotationSource, Display::Rotation> rotations_;

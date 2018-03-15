@@ -35,6 +35,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateTestDisplaySnapshot(
       display::DisplaySnapshot::DisplayModeList() /* modes */,
       std::vector<uint8_t>() /* edid */, nullptr /* current_mode */,
       nullptr /* native_mode */, 0 /* product_id */,
+      display::kInvalidYearOfManufacture,
       gfx::Size() /* maximum_cursor_size */);
 }
 

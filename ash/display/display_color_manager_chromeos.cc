@@ -186,14 +186,16 @@ void DisplayColorManager::OnDisplayModeChanged(
 
     UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.HasColorCorrectionMatrix",
                           state->has_color_correction_matrix());
-    if (calibration_map_[state->product_id()]) {
-      ApplyDisplayColorCalibration(state->display_id(), state->product_id());
+    if (calibration_map_[state->product_code()]) {
+      ApplyDisplayColorCalibration(state->display_id(), state->product_code());
     } else {
-      const bool valid_product_id =
-          state->product_id() != display::DisplaySnapshot::kInvalidProductID;
+      const bool valid_product_code =
+          state->product_code() !=
+          display::DisplaySnapshot::kInvalidProductCode;
+      // TODO(mcasas): correct UMA s/Id/Code/, https://crbug.com/821393.
       UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidProductId",
-                            valid_product_id);
-      if (valid_product_id)
+                            valid_product_code);
+      if (valid_product_code)
         LoadCalibrationForDisplay(state);
     }
   }
@@ -225,11 +227,11 @@ void DisplayColorManager::LoadCalibrationForDisplay(
     return;
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(
-      display->product_id(), display->display_name(),
+      display->product_code(), display->display_name(),
       base::Bind(&DisplayColorManager::FinishLoadCalibrationForDisplay,
                  weak_ptr_factory_.GetWeakPtr(), display->display_id(),
-                 display->product_id(), display->has_color_correction_matrix(),
-                 display->type()));
+                 display->product_code(),
+                 display->has_color_correction_matrix(), display->type()));
 }
 
 void DisplayColorManager::FinishLoadCalibrationForDisplay(
