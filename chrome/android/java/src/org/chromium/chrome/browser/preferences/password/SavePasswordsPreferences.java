@@ -759,6 +759,9 @@ public class SavePasswordsPreferences
             if (mSearchQuery == null) {
                 // If not searching, the category needs to be removed again.
                 getPreferenceScreen().removePreference(passwordParent);
+            } else {
+                getView().announceForAccessibility(
+                        getResources().getText(R.string.accessible_find_in_page_no_results));
             }
         }
     }
