@@ -134,6 +134,31 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
   EXPECT_FALSE(widget.IsVisible());
 }
 
+TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowShowFrameless) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+
+  // Make sure that changing frame type doesn't crash when there's no non-client
+  // view.
+  ASSERT_EQ(nullptr, widget.non_client_view());
+  widget.DebugToggleFrameType();
+  widget.Show();
+
+#if defined(OS_WIN)
+  // On Windows also make sure that handling WM_SYSCOMMAND doesn't crash with
+  // custom frame. Frame type needs to be toggled again if Aero Glass is
+  // disabled.
+  if (widget.ShouldUseNativeFrame())
+    widget.DebugToggleFrameType();
+  SendMessage(widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
+              WM_SYSCOMMAND, SC_RESTORE, 0);
+#endif  // OS_WIN
+}
+
 // Verify that the cursor state is shared between two native widgets.
 TEST_F(DesktopNativeWidgetAuraTest, GlobalCursorState) {
   // Create two native widgets, each owning different root windows.
