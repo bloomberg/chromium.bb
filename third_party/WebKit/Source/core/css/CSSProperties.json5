@@ -643,6 +643,7 @@
       field_template: "keyword",
       include_paths: ["platform/text/WritingMode.h"],
       keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
+      typedom_types: ["Keyword"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
       custom_apply_functions_value: true,
@@ -1144,6 +1145,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["top", "bottom"],
+      typedom_types: ["Keyword"],
       default_value: "top",
     },
     {
@@ -1586,6 +1588,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["auto", "isolate"],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
@@ -2908,6 +2911,7 @@
         "normal", "embed", "bidi-override", "isolate", "plaintext",
         "isolate-override"
       ],
+      typedom_types: ["Keyword"],
       default_value: "normal",
       type_name: "UnicodeBidi",
     },
