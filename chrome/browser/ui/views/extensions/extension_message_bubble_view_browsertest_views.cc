@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/buildflag.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace {
@@ -22,6 +25,10 @@ ToolbarView* GetToolbarViewForBrowser(Browser* browser) {
 // static
 ToolbarActionsBarBubbleViews*
 ExtensionMessageBubbleBrowserTest::GetViewsBubbleForBrowser(Browser* browser) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return GetViewsBubbleForCocoaBrowser(browser);
+#endif
   return static_cast<ToolbarActionsBarBubbleViews*>(
       GetToolbarViewForBrowser(browser)->browser_actions()->active_bubble());
 }
@@ -30,6 +37,10 @@ ExtensionMessageBubbleBrowserTest::GetViewsBubbleForBrowser(Browser* browser) {
 gfx::Rect ExtensionMessageBubbleBrowserTest::GetAnchorReferenceBoundsForBrowser(
     Browser* browser,
     AnchorPosition anchor) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return GetAnchorReferenceBoundsForCocoaBrowser(browser, anchor);
+#endif
   ToolbarView* toolbar_view = GetToolbarViewForBrowser(browser);
   BrowserActionsContainer* container = toolbar_view->browser_actions();
   views::View* anchor_view = nullptr;
