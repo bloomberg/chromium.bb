@@ -208,12 +208,13 @@ void FreeData(unsigned int format, HANDLE data) {
 }
 
 template <typename StringType>
-void TrimTrailingNulls(StringType* result) {
-  // Text copied to the clipboard may explicitly contain trailing null
-  // characters that should be ignored, depending on the application that does
-  // the copying.
-  while (!result->empty() && result->back() == 0)
-    result->pop_back();
+void TrimAfterNull(StringType* result) {
+  // Text copied to the clipboard may explicitly contain null characters that
+  // should be ignored, depending on the application that does the copying.
+  constexpr typename StringType::value_type kNull = 0;
+  size_t pos = result->find_first_of(kNull);
+  if (pos != StringType::npos)
+    result->resize(pos);
 }
 
 }  // namespace
@@ -505,7 +506,7 @@ void ClipboardWin::ReadText(ClipboardType type, base::string16* result) const {
   result->assign(static_cast<const base::char16*>(::GlobalLock(data)),
                  ::GlobalSize(data) / sizeof(base::char16));
   ::GlobalUnlock(data);
-  TrimTrailingNulls(result);
+  TrimAfterNull(result);
 }
 
 void ClipboardWin::ReadAsciiText(ClipboardType type,
@@ -530,7 +531,7 @@ void ClipboardWin::ReadAsciiText(ClipboardType type,
   result->assign(static_cast<const char*>(::GlobalLock(data)),
                  ::GlobalSize(data));
   ::GlobalUnlock(data);
-  TrimTrailingNulls(result);
+  TrimAfterNull(result);
 }
 
 void ClipboardWin::ReadHTML(ClipboardType type,
@@ -560,7 +561,7 @@ void ClipboardWin::ReadHTML(ClipboardType type,
   std::string cf_html(static_cast<const char*>(::GlobalLock(data)),
                       ::GlobalSize(data));
   ::GlobalUnlock(data);
-  TrimTrailingNulls(&cf_html);
+  TrimAfterNull(&cf_html);
 
   size_t html_start = std::string::npos;
   size_t start_index = std::string::npos;
@@ -593,7 +594,7 @@ void ClipboardWin::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   ReadData(GetRtfFormatType(), result);
-  TrimTrailingNulls(result);
+  TrimAfterNull(result);
 }
 
 SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
@@ -716,7 +717,7 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
   base::string16 bookmark(static_cast<const base::char16*>(::GlobalLock(data)),
                           ::GlobalSize(data) / sizeof(base::char16));
   ::GlobalUnlock(data);
-  TrimTrailingNulls(&bookmark);
+  TrimAfterNull(&bookmark);
 
   ParseBookmarkClipboardFormat(bookmark, title, url);
 }
