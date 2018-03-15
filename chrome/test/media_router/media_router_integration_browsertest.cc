@@ -887,8 +887,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest, Basic) {
   RunBasicTest();
 }
 
+// TODO(crbug.com/822300): Flaky test.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationIncognitoBrowserTest,
-                       ReconnectSession) {
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
