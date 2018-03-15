@@ -1586,6 +1586,7 @@ public class ContextualSearchManager
                 // Set up the next batch of Ranker logging.
                 mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
                 mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
+                ContextualSearchUma.logRankerFeaturesAvailable(false);
                 mInternalStateController.notifyFinishedWorkOn(InternalState.TAP_GESTURE_COMMIT);
             }
 
@@ -1674,6 +1675,7 @@ public class ContextualSearchManager
             public void showContextualSearchTapUi() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_FULL_TAP_UI);
                 showContextualSearch(StateChangeReason.TEXT_SELECT_TAP);
+                ContextualSearchUma.logRankerFeaturesAvailable(true);
                 mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_FULL_TAP_UI);
             }
 
