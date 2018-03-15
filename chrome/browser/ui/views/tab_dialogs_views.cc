@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 #endif
 
+#if !defined(OS_MACOSX)
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
@@ -24,6 +26,7 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
                           std::make_unique<TabDialogsViews>(contents));
   }
 }
+#endif
 
 TabDialogsViews::TabDialogsViews(content::WebContents* contents)
     : web_contents_(contents) {
