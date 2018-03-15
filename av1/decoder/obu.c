@@ -419,13 +419,13 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           decoded_payload_size = seq_header_size;
         }
         break;
-#if CONFIG_OBU_FRAME
-      case OBU_FRAME:
-#endif  // CONFIG_OBU_FRAME
+      case OBU_FRAME_HEADER:
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
       case OBU_REDUNDANT_FRAME_HEADER:
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-      case OBU_FRAME_HEADER:
+#if CONFIG_OBU_FRAME
+      case OBU_FRAME:
+#endif  // CONFIG_OBU_FRAME
         // Only decode first frame header received
         if (!frame_header_received) {
           frame_header_size =
