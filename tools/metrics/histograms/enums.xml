@@ -39581,6 +39581,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Read data error"/>
 </enum>
 
+<enum name="ServiceWorkerRendererStartWorker">
+  <int value="0" label="Received on installed service worker."/>
+  <int value="1" label="Received on uninstalled service worker."/>
+</enum>
+
 <enum name="ServiceWorkerResponseError">
   <int value="0" label="ErrorUnknown"/>
   <int value="1" label="ErrorPromiseRejected"/>

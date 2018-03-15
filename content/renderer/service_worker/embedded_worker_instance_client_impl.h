@@ -45,6 +45,13 @@ class ServiceWorkerContextClient;
 class EmbeddedWorkerInstanceClientImpl
     : public mojom::EmbeddedWorkerInstanceClient {
  public:
+  // Enum for UMA to record when StartWorker is received.
+  enum class StartWorkerHistogramEnum {
+    RECEIVED_ON_INSTALLED = 0,
+    RECEIVED_ON_UNINSTALLED = 1,
+    NUM_TYPES
+  };
+
   // Creates a new EmbeddedWorkerInstanceClientImpl instance bound to
   // |request|. The instance destroys itself when needed, see the class
   // documentation.

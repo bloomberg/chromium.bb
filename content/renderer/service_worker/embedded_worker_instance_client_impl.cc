@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -70,6 +71,13 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       io_thread_runner_);
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
+  // Record UMA to indicate StartWorker is received on renderer.
+  StartWorkerHistogramEnum metric =
+      params->is_installed ? StartWorkerHistogramEnum::RECEIVED_ON_INSTALLED
+                           : StartWorkerHistogramEnum::RECEIVED_ON_UNINSTALLED;
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.EmbeddedWorkerInstanceClient.StartWorker", metric,
+      StartWorkerHistogramEnum::NUM_TYPES);
   wrapper_ = StartWorkerContext(std::move(params), std::move(client),
                                 std::move(interface_provider));
 }
