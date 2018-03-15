@@ -255,6 +255,11 @@ ios_framework_bundle("web_view") {
   }
 }
 
+ios_web_view_test_sources = [
+  "internal/translate/fake_web_view_translate_client.h",
+  "internal/translate/fake_web_view_translate_client.mm",
+]
+
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
@@ -269,6 +274,7 @@ test("ios_web_view_unittests") {
     "internal/web_view_web_client_unittest.mm",
   ]
   sources += ios_web_view_sources
+  sources += ios_web_view_test_sources
 
   deps = [
     "test:test_support",
