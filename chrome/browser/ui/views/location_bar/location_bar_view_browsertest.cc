@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -23,11 +24,14 @@
 #include "components/toolbar/toolbar_model_impl.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
+#include "services/network/public/cpp/features.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -214,21 +218,54 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
   }
 
   void SetUpInterceptor(net::CertStatus cert_status) {
-    base::FilePath serve_file;
-    PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
-    serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&AddUrlHandler, serve_file, cert_, cert_status));
+    // TODO(crbug.com/821557): Remove the non network service code path once
+    // the URLLoader intercepts frame requests.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+          base::BindRepeating(&SecurityIndicatorTest::InterceptURLLoad,
+                              base::Unretained(this), cert_status));
+    } else {
+      base::FilePath serve_file;
+      PathService::Get(chrome::DIR_TEST_DATA, &serve_file);
+      serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&AddUrlHandler, serve_file, cert_, cert_status));
+    }
   }
 
   void ResetInterceptor() {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&RemoveUrlHandler));
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      url_loader_interceptor_.reset();
+    } else {
+      content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                       base::BindOnce(&RemoveUrlHandler));
+    }
+  }
+
+  bool InterceptURLLoad(net::CertStatus cert_status,
+                        content::URLLoaderInterceptor::RequestParams* params) {
+    if (params->url_request.url.host() != kMockSecureHostname)
+      return false;
+    net::SSLInfo ssl_info;
+    ssl_info.cert = cert_;
+    ssl_info.cert_status = cert_status;
+    ssl_info.ct_policy_compliance =
+        net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
+    network::ResourceResponseHead resource_response;
+    resource_response.mime_type = "text/html";
+    params->client->OnReceiveResponse(resource_response, ssl_info,
+                                      /*downloaded_file=*/nullptr);
+    network::URLLoaderCompletionStatus completion_status;
+    completion_status.ssl_info = ssl_info;
+    params->client->OnComplete(completion_status);
+    return true;
   }
 
  private:
   scoped_refptr<net::X509Certificate> cert_;
+
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityIndicatorTest);
 };
