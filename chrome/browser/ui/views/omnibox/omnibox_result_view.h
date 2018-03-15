@@ -29,6 +29,7 @@ namespace gfx {
 class Image;
 }
 
+class OmniboxImageView;
 class OmniboxTabSwitchButton;
 class OmniboxTextView;
 
@@ -97,7 +98,7 @@ class OmniboxResultView : public views::View,
 
  private:
   // Create instance and add it as a child.
-  views::ImageView* AddImageView();
+  OmniboxImageView* AddOmniboxImageView();
   OmniboxTextView* AddOmniboxTextView(const gfx::FontList& font_list);
 
   // Returns the height of the text portion of the result view.

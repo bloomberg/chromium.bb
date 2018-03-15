@@ -121,6 +121,10 @@ gfx::Size OmniboxTextView::CalculatePreferredSize() const {
   return render_text_->GetStringSize();
 }
 
+bool OmniboxTextView::CanProcessEventsWithinSubtree() const {
+  return false;
+}
+
 const char* OmniboxTextView::GetClassName() const {
   return "OmniboxTextView";
 }
