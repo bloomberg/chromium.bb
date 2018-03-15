@@ -8,10 +8,6 @@ assert(is_chromeos, "ProximityAuth is Chrome OS only")
 
 static_library("proximity_auth") {
   sources = [
-    "bluetooth_connection.cc",
-    "bluetooth_connection.h",
-    "bluetooth_connection_finder.cc",
-    "bluetooth_connection_finder.h",
     "bluetooth_low_energy_connection_finder.cc",
     "bluetooth_low_energy_connection_finder.h",
     "bluetooth_low_energy_setup_connection_finder.cc",
@@ -99,8 +95,6 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "bluetooth_connection_finder_unittest.cc",
-    "bluetooth_connection_unittest.cc",
     "bluetooth_low_energy_connection_finder_unittest.cc",
     "messenger_impl_unittest.cc",
     "promotion_manager_unittests.cc",

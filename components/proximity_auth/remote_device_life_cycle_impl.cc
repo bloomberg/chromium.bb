@@ -16,8 +16,6 @@
 #include "components/cryptauth/device_to_device_authenticator.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
-#include "components/proximity_auth/bluetooth_connection.h"
-#include "components/proximity_auth/bluetooth_connection_finder.h"
 #include "components/proximity_auth/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger_impl.h"
