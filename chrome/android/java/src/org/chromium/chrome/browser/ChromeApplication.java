@@ -60,7 +60,7 @@ public class ChromeApplication extends Application {
         UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         checkAppBeingReplaced();
-        if (BuildConfig.isMultidexEnabled()) {
+        if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }
         ContextUtils.initApplicationContext(this);

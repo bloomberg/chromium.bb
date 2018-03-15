@@ -18,18 +18,11 @@ package org.chromium.base;
  */
 public class BuildConfig {
 
-    /** Whether multidex is enabled for this target.
-     *
-     *  This has to be a function instead of a static final boolean s.t. the initial false value
-     *  doesn't get optimized into {@link ChromiumMultiDexInstaller} at base_java compile time.
-     */
-    public static boolean isMultidexEnabled() {
 #if defined(ENABLE_MULTIDEX)
-        return true;
+    public static MAYBE_FINAL boolean IS_MULTIDEX_ENABLED = true;
 #else
-        return false;
+    public static MAYBE_FINAL boolean IS_MULTIDEX_ENABLED = false;
 #endif
-    }
 
 #if defined(_FIREBASE_APP_ID)
     public static MAYBE_FINAL String FIREBASE_APP_ID = QUOTE(_FIREBASE_APP_ID);

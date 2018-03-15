@@ -18,7 +18,7 @@ public class NativeTestApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         assert getBaseContext() != null;
-        if (BuildConfig.isMultidexEnabled()) {
+        if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }
     }

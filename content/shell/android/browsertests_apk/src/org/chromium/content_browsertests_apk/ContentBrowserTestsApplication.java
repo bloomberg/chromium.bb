@@ -22,7 +22,7 @@ public class ContentBrowserTestsApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        if (BuildConfig.isMultidexEnabled()) {
+        if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }
         ContextUtils.initApplicationContext(this);
