@@ -7,6 +7,8 @@
 //
 syntax = "proto2";
 package org.chromium.components.invalidation;
+
+// TODO(jkrcal): Remove when protobuf 4.0 is out, https://crbug.com/800281.
 option optimize_for = LITE_RUNTIME;
 
 message Invalidation {
