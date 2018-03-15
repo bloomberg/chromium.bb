@@ -404,63 +404,6 @@ void av1_iht32x8_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                         const TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  static const transform_2d IHT_8[] = {
-    { aom_idct8_c, aom_idct8_c },    // DCT_DCT  = 0
-    { aom_iadst8_c, aom_idct8_c },   // ADST_DCT = 1
-    { aom_idct8_c, aom_iadst8_c },   // DCT_ADST = 2
-    { aom_iadst8_c, aom_iadst8_c },  // ADST_ADST = 3
-    { aom_iadst8_c, aom_idct8_c },   // FLIPADST_DCT
-    { aom_idct8_c, aom_iadst8_c },   // DCT_FLIPADST
-    { aom_iadst8_c, aom_iadst8_c },  // FLIPADST_FLIPADST
-    { aom_iadst8_c, aom_iadst8_c },  // ADST_FLIPADST
-    { aom_iadst8_c, aom_iadst8_c },  // FLIPADST_ADST
-    { iidtx8_c, iidtx8_c },          // IDTX
-    { aom_idct8_c, iidtx8_c },       // V_DCT
-    { iidtx8_c, aom_idct8_c },       // H_DCT
-    { aom_iadst8_c, iidtx8_c },      // V_ADST
-    { iidtx8_c, aom_iadst8_c },      // H_ADST
-    { aom_iadst8_c, iidtx8_c },      // V_FLIPADST
-    { iidtx8_c, aom_iadst8_c },      // H_FLIPADST
-  };
-
-  tran_low_t tmp[8][8];
-  tran_low_t out[8][8];
-  tran_low_t *outp = &out[0][0];
-  int outstride = 8;
-
-  // inverse transform row vectors
-  for (int i = 0; i < 8; ++i) {
-    IHT_8[tx_type].rows(input, out[i]);
-    input += 8;
-  }
-
-  // transpose
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
-      tmp[j][i] = out[i][j];
-    }
-  }
-
-  // inverse transform column vectors
-  for (int i = 0; i < 8; ++i) {
-    IHT_8[tx_type].cols(tmp[i], out[i]);
-  }
-
-  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 8, 8);
-
-  // Sum with the destination
-  for (int i = 0; i < 8; ++i) {
-    for (int j = 0; j < 8; ++j) {
-      int d = i * stride + j;
-      int s = j * outstride + i;
-      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 5));
-    }
-  }
-}
-
 void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                              const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
