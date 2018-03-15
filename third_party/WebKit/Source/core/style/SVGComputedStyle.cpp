@@ -170,18 +170,11 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
   // need to be recalculated.
   if (stroke.Get() != other->stroke.Get()) {
     if (stroke->width != other->stroke->width ||
-        stroke->paint_type != other->stroke->paint_type ||
-        stroke->paint_color != other->stroke->paint_color ||
-        stroke->paint_uri != other->stroke->paint_uri ||
+        stroke->paint != other->stroke->paint ||
         stroke->miter_limit != other->stroke->miter_limit ||
         *stroke->dash_array != *other->stroke->dash_array ||
         stroke->dash_offset != other->stroke->dash_offset ||
-        stroke->visited_link_paint_color !=
-            other->stroke->visited_link_paint_color ||
-        stroke->visited_link_paint_uri !=
-            other->stroke->visited_link_paint_uri ||
-        stroke->visited_link_paint_type !=
-            other->stroke->visited_link_paint_type)
+        stroke->visited_link_paint != other->stroke->visited_link_paint)
       return true;
   }
 
@@ -208,9 +201,7 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
   // If fill changes, we just need to issue paint invalidations. Fill boundaries
   // are not influenced by this, only by the Path, that LayoutSVGPath contains.
   if (fill.Get() != other->fill.Get()) {
-    if (fill->paint_type != other->fill->paint_type ||
-        fill->paint_color != other->fill->paint_color ||
-        fill->paint_uri != other->fill->paint_uri ||
+    if (fill->paint != other->fill->paint ||
         fill->opacity != other->fill->opacity)
       return true;
   }

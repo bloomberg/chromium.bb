@@ -24,8 +24,7 @@ const CSSValue* Fill::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   return ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
-      svg_style.FillPaintType(), svg_style.FillPaintUri(),
-      svg_style.FillPaintColor(), style.GetColor());
+      svg_style.FillPaint(), style.GetColor());
 }
 
 }  // namespace CSSLonghand

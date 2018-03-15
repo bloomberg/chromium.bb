@@ -278,56 +278,28 @@ namespace blink {
 
 {% macro apply_svg_paint(property_id, paint_type) %}
 {% set property = properties_by_id[property_id] %}
+{% set visited_link_setter = 'SetVisitedLink' + paint_type %}
 {{declare_initial_function(property_id)}} {
-  {{set_value(property)}}(
-      SVGComputedStyle::Initial{{paint_type}}Type(),
-      SVGComputedStyle::Initial{{paint_type}}Color(),
-      SVGComputedStyle::Initial{{paint_type}}Uri(),
-      state.ApplyPropertyToRegularStyle(),
-      state.ApplyPropertyToVisitedLinkStyle());
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(SVGComputedStyle::Initial{{paint_type}}());
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->AccessSVGStyle().{{visited_link_setter}}(SVGComputedStyle::Initial{{paint_type}}());
 }
 
 {{declare_inherit_function(property_id)}} {
-  const SVGComputedStyle& svgParentStyle = state.ParentStyle()->SvgStyle();
-  {{set_value(property)}}(
-      svgParentStyle.{{paint_type}}Type(),
-      svgParentStyle.{{paint_type}}Color(),
-      svgParentStyle.{{paint_type}}Uri(),
-      state.ApplyPropertyToRegularStyle(),
-      state.ApplyPropertyToVisitedLinkStyle());
+  const SVGComputedStyle& parent_svg_style = state.ParentStyle()->SvgStyle();
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(parent_svg_style.{{paint_type}}());
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->AccessSVGStyle().{{visited_link_setter}}(parent_svg_style.{{paint_type}}());
 }
 
 {{declare_value_function(property_id)}} {
-  const CSSValue* localValue = &value;
-  String url;
-  if (value.IsValueList()) {
-    const CSSValueList& list = ToCSSValueList(value);
-    DCHECK_EQ(list.length(), 2U);
-    url = ToCSSURIValue(list.Item(0)).Value();
-    localValue = &list.Item(1);
-  }
-
-  Color color;
-  SVGPaintType paintType = SVG_PAINTTYPE_RGBCOLOR;
-  if (localValue->IsURIValue()) {
-    paintType = SVG_PAINTTYPE_URI;
-    url = ToCSSURIValue(localValue)->Value();
-  } else if (localValue->IsIdentifierValue() &&
-             ToCSSIdentifierValue(localValue)->GetValueID() == CSSValueNone) {
-    paintType = url.IsEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
-  } else if (localValue->IsIdentifierValue() &&
-             ToCSSIdentifierValue(localValue)->GetValueID() == CSSValueCurrentcolor) {
-    color = state.Style()->GetColor();
-    paintType = url.IsEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR
-    	                      : SVG_PAINTTYPE_URI_CURRENTCOLOR;
-  } else {
-    color = StyleBuilderConverter::ConvertColor(state, *localValue);
-    paintType = url.IsEmpty() ? SVG_PAINTTYPE_RGBCOLOR
-    	                      : SVG_PAINTTYPE_URI_RGBCOLOR;
-  }
-  {{set_value(property)}}(paintType, color, url,
-      state.ApplyPropertyToRegularStyle(),
-      state.ApplyPropertyToVisitedLinkStyle());
+  SVGPaint paint = StyleBuilderConverter::ConvertSVGPaint(state, value);
+  if (state.ApplyPropertyToRegularStyle())
+    {{set_value(property)}}(paint);
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->AccessSVGStyle().{{visited_link_setter}}(paint);
 }
 {% endmacro %}
 {{apply_svg_paint('CSSPropertyFill', 'FillPaint')}}

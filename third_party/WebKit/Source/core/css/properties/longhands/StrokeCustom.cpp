@@ -24,8 +24,7 @@ const CSSValue* Stroke::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   return ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
-      svg_style.StrokePaintType(), svg_style.StrokePaintUri(),
-      svg_style.StrokePaintColor(), style.GetColor());
+      svg_style.StrokePaint(), style.GetColor());
 }
 
 }  // namespace CSSLonghand

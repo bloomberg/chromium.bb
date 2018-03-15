@@ -149,10 +149,7 @@ class ComputedStyleUtils {
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);
   static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle&);
-  static CSSValue* AdjustSVGPaintForCurrentColor(SVGPaintType,
-                                                 const String&,
-                                                 const Color&,
-                                                 const Color&);
+  static CSSValue* AdjustSVGPaintForCurrentColor(const SVGPaint&, const Color&);
   static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
                                       bool use_spread);

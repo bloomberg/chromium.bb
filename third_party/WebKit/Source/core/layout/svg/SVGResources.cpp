@@ -123,19 +123,6 @@ static inline AtomicString TargetReferenceFromResource(SVGElement& element) {
       target, element.GetTreeScope());
 }
 
-static inline bool SvgPaintTypeHasURL(SVGPaintType paint_type) {
-  switch (paint_type) {
-    case SVG_PAINTTYPE_URI_NONE:
-    case SVG_PAINTTYPE_URI_CURRENTCOLOR:
-    case SVG_PAINTTYPE_URI_RGBCOLOR:
-    case SVG_PAINTTYPE_URI:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
 namespace {
 
 template <typename ContainerType>
@@ -253,17 +240,17 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
   }
 
   if (FillAndStrokeTags().Contains(tag_name)) {
-    if (style.HasFill() && SvgPaintTypeHasURL(style.FillPaintType())) {
+    if (style.HasFill() && style.FillPaint().HasUrl()) {
       AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-          style.FillPaintUri(), tree_scope);
+          style.FillPaint().GetUrl(), tree_scope);
       EnsureResources(resources).SetFill(
           AttachToResource<LayoutSVGResourcePaintServer>(tree_scope_resources,
                                                          id, element));
     }
 
-    if (style.HasStroke() && SvgPaintTypeHasURL(style.StrokePaintType())) {
+    if (style.HasStroke() && style.StrokePaint().HasUrl()) {
       AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
-          style.StrokePaintUri(), tree_scope);
+          style.StrokePaint().GetUrl(), tree_scope);
       EnsureResources(resources).SetStroke(
           AttachToResource<LayoutSVGResourcePaintServer>(tree_scope_resources,
                                                          id, element));

@@ -41,30 +41,12 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
   TEST_STYLE_VALUE_NO_DIFF(Length, StrokeDashOffset);
   TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
 
+  TEST_STYLE_VALUE_NO_DIFF(SVGPaint, StrokePaint);
   {
     scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
     scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
-    svg1->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
-                         SVGComputedStyle::InitialStrokePaintColor(),
-                         SVGComputedStyle::InitialStrokePaintUri(), true,
-                         false);
-    svg2->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
-                         SVGComputedStyle::InitialStrokePaintColor(),
-                         SVGComputedStyle::InitialStrokePaintUri(), true,
-                         false);
-    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());
-  }
-  {
-    scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
-    scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
-    svg1->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
-                         SVGComputedStyle::InitialStrokePaintColor(),
-                         SVGComputedStyle::InitialStrokePaintUri(), false,
-                         true);
-    svg2->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
-                         SVGComputedStyle::InitialStrokePaintColor(),
-                         SVGComputedStyle::InitialStrokePaintUri(), false,
-                         true);
+    svg1->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
+    svg2->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
     EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());
   }
 }

@@ -192,6 +192,7 @@ class StyleBuilderConverter {
   static StyleAutoColor ConvertStyleAutoColor(StyleResolverState&,
                                               const CSSValue&,
                                               bool for_visited_link = false);
+  static SVGPaint ConvertSVGPaint(StyleResolverState&, const CSSValue&);
   static TextEmphasisPosition ConvertTextTextEmphasisPosition(
       StyleResolverState&,
       const CSSValue&);

@@ -980,12 +980,6 @@ class ComputedStyle : public ComputedStyleBase,
   float FillOpacity() const { return SvgStyle().FillOpacity(); }
   void SetFillOpacity(float f) { AccessSVGStyle().SetFillOpacity(f); }
 
-  // Fill utiltiy functions.
-  const SVGPaintType& FillPaintType() const {
-    return SvgStyle().FillPaintType();
-  }
-  Color FillPaintColor() const { return SvgStyle().FillPaintColor(); }
-
   // stop-color
   void SetStopColor(const Color& c) { AccessSVGStyle().SetStopColor(c); }
 
@@ -1004,12 +998,6 @@ class ComputedStyle : public ComputedStyleBase,
   // stop-opacity
   float StopOpacity() const { return SvgStyle().StopOpacity(); }
   void SetStopOpacity(float f) { AccessSVGStyle().SetStopOpacity(f); }
-
-  // stroke
-  const SVGPaintType& StrokePaintType() const {
-    return SvgStyle().StrokePaintType();
-  }
-  Color StrokePaintColor() const { return SvgStyle().StrokePaintColor(); }
 
   // stroke-dasharray
   SVGDashArray* StrokeDashArray() const { return SvgStyle().StrokeDashArray(); }
