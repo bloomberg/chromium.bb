@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -35,8 +36,7 @@ TEST_F(DownloadManagerViewControllerTest, NotStartedWithLongFileName) {
               view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Download", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateNotStarted, view_controller_.stateIcon.state);
   EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
@@ -51,8 +51,7 @@ TEST_F(DownloadManagerViewControllerTest,
   EXPECT_NSEQ(@"file.zip - 1.05 GB", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Download", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateNotStarted, view_controller_.stateIcon.state);
   EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
@@ -66,8 +65,7 @@ TEST_F(DownloadManagerViewControllerTest, InProgressWithLongFileName) {
 
   EXPECT_NSEQ(@"Downloading… Zero KB/10 KB", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateInProgress, view_controller_.stateIcon.state);
   EXPECT_FALSE(view_controller_.progressView.hidden);
   EXPECT_EQ(0.0f, view_controller_.progressView.progress);
 }
@@ -84,8 +82,7 @@ TEST_F(DownloadManagerViewControllerTest,
 
   EXPECT_NSEQ(@"Downloading… 900 bytes", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateInProgress, view_controller_.stateIcon.state);
   EXPECT_FALSE(view_controller_.progressView.hidden);
   EXPECT_EQ(0.9f, view_controller_.progressView.progress);
 }
@@ -99,8 +96,7 @@ TEST_F(DownloadManagerViewControllerTest, SuceededWithWithLongFileName) {
   EXPECT_NSEQ(@"file.txt", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Open in…", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerSucceededImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateSucceeded, view_controller_.stateIcon.state);
   EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
@@ -113,8 +109,7 @@ TEST_F(DownloadManagerViewControllerTest, Failed) {
   EXPECT_NSEQ(@"Couldn't Download", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Try Again", [view_controller_.actionButton
                                 titleForState:UIControlStateNormal]);
-  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerFailedImage],
-              view_controller_.statusIcon.image);
+  EXPECT_EQ(kDownloadManagerStateFailed, view_controller_.stateIcon.state);
   EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
