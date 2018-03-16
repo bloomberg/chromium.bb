@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/profiler/stack_sampling_profiler.h"
-#include "components/metrics/call_stack_profile_params.h"
 
 namespace base {
 class CommandLine;
@@ -24,10 +23,12 @@ class StackSamplingConfiguration {
  public:
   StackSamplingConfiguration();
 
-  // Returns true if the profiler should be started for the specified thread in
-  // the current process.
-  bool IsProfilerEnabledForThread(
-      metrics::CallStackProfileParams::Thread thread) const;
+  // Get the stack sampling params to use for this process.
+  base::StackSamplingProfiler::SamplingParams
+      GetSamplingParamsForCurrentProcess() const;
+
+  // Returns true if the profiler should be started for the current process.
+  bool IsProfilerEnabledForCurrentProcess() const;
 
   // Get the synthetic field trial configuration. Returns true if a synthetic
   // field trial should be registered. This should only be called from the
