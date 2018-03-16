@@ -1,0 +1,12 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action("create_test_main") {
+  script = "//ui/file_manager/file_manager/test/scripts/create_test_main.py"
+  output = "$target_gen_dir/main.html"
+  args = [ "--output=" + rebase_path(output, root_build_dir) ]
+  outputs = [
+    output,
+  ]
+}

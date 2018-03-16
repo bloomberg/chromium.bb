@@ -26,7 +26,6 @@ chrome = {
   commandLinePrivate: {
     switches_: {},
     hasSwitch: (name, callback) => {
-      console.debug('chrome.commandLinePrivate.hasSwitch called', name);
       setTimeout(callback, 0, chrome.commandLinePrivate.switches_[name]);
     },
   },
@@ -40,7 +39,6 @@ chrome = {
 
   echoPrivate: {
     getOfferInfo: (id, callback) => {
-      console.debug('chrome.echoPrivate.getOfferInfo called', id);
       setTimeout(() => {
         // checkSpaceAndMaybeShowWelcomeBanner_ relies on lastError being set.
         chrome.runtime.lastError = {message: 'Not found'};
@@ -52,7 +50,6 @@ chrome = {
 
   extension: {
     getViews: (fetchProperties) => {
-      console.debug('chrome.extension.getViews called', fetchProperties);
       // Returns Window[].
       return [window];
     },
@@ -65,11 +62,18 @@ chrome = {
     },
   },
 
+  i18n: {
+    getMessage: (messageName, opt_substitutions) => {
+      return messageName;
+    },
+  },
+
   metricsPrivate: {
     MetricTypeType: {
       HISTOGRAM_LINEAR: 'histogram-linear',
     },
     recordMediumCount: () => {},
+    recordPercentage: () => {},
     recordSmallCount: () => {},
     recordTime: () => {},
     recordUserAction: () => {},
@@ -97,19 +101,31 @@ chrome = {
     onMessageExternal: {
       addListener: () => {},
     },
+    sendMessage: (extensionId, message, options, opt_callback) => {
+      // Returns JSON.
+      if (opt_callback)
+        setTimeout(opt_callback(''), 0);
+    },
   },
 
   storage: {
+    state: {},
     local: {
       get: (keys, callback) => {
-        console.debug('chrome.storage.local.get', keys);
-        setTimeout(callback, 0, {});
+        var keys = keys instanceof Array ? keys : [keys];
+        var result = {};
+        keys.forEach(function(key) {
+          if (key in chrome.storage.state)
+            result[key] = chrome.storage.state[key];
+        });
+        setTimeout(callback, 0, result);
       },
-      set: (items, callback) => {
-        console.debug('chrome.storage.local.set', items);
-        if (callback) {
-          setTimeout(callback, 0);
+      set: (items, opt_callback) => {
+        for (var key in items) {
+          chrome.storage.state[key] = items[key];
         }
+        if (opt_callback)
+          setTimeout(opt_callback, 0);
       },
     },
     onChanged: {
@@ -117,7 +133,6 @@ chrome = {
     },
     sync: {
       get: (keys, callback) => {
-        console.debug('chrome.storage.sync.get', keys);
         setTimeout(callback, 0, {});
       }
     },
@@ -128,14 +143,17 @@ chrome = {
 // a WebView.  It calls WebView.request.onBeforeSendHeaders.
 HTMLElement.prototype.request = {
   onBeforeSendHeaders: {
-    addListener: () => {
-      console.debug(
-          'HTMLElement.request.onBeforeSendHeaders.addListener called');
-    },
+    addListener: () => {},
   },
 };
 
 // cws_widget_container.js also calls WebView.stop.
-HTMLElement.prototype.stop = () => {
-  console.debug('HTMLElement.stop called');
+HTMLElement.prototype.stop = () => {};
+
+// domAutomationController is provided in tests, but is
+// useful for debugging tests in browser.
+window.domAutomationController = window.domAutomationController || {
+  send: msg => {
+    console.debug('domAutomationController.send', msg);
+  },
 };

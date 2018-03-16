@@ -7,17 +7,19 @@
 // running as a regular web page, we must provide test implementations.
 
 mockVolumeManager = new MockVolumeManager();
-mockVolumeManager
-    .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
-    .fileSystem.populate(
-        ['/New Folder/', '/a.txt', '/kittens.jpg', '/unknown.ext']);
+
+// Create drive /root/ immediately.
 mockVolumeManager
     .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
-    .fileSystem.populate(
-        ['/root/New Folder/', '/root/a.txt', '/root/kittens.jpg']);
+    .fileSystem.populate(['/root/']);
 
 chrome.fileManagerPrivate = {
   currentId_: 'test@example.com',
+  dispatchEvent_: function(listenerType, event) {
+    setTimeout(() => {
+      this[listenerType].listeners_.forEach(l => l.call(null, event));
+    }, 0);
+  },
   displayedId_: 'test@example.com',
   preferences_: {
     allowRedeemOffers: true,
@@ -27,6 +29,9 @@ chrome.fileManagerPrivate = {
     searchSuggestEnabled: true,
     timezone: 'Australia/Sydney',
     use24hourClock: false,
+  },
+  listeners_: {
+    'onDirectoryChanged': [],
   },
   profiles_: [{
     displayName: 'Test User',
@@ -40,67 +45,60 @@ chrome.fileManagerPrivate = {
     NATIVE_SOURCE: 'native_source',
   },
   addFileWatch: (entry, callback) => {
-    console.debug('c.fmp.addFileWatch called', entry);
+    // Returns success.
     setTimeout(callback, 0, true);
   },
-  enableExternalFileScheme: () => {
-    console.debug('c.fmp.enableExternalFileScheme called');
-  },
+  enableExternalFileScheme: () => {},
   executeTask: (taskId, entries, callback) => {
-    console.debug('c.fmp.executeTask called', taskId, entries);
     // Returns opened|message_sent|failed|empty.
     setTimeout(callback, 0, 'failed');
   },
   getDriveConnectionState: (callback) => {
-    console.debug('c.fmp.getDriveConnectionState called');
     setTimeout(callback, 0, mockVolumeManager.getDriveConnectionState());
   },
   getEntryProperties: (entries, names, callback) => {
-    console.debug('c.fmp.getEntryProperties called', entries, names);
     // Returns EntryProperties[].
     var results = [];
-    for (var i = 0; i < entries.length; i++) {
-      results.push({});
-    }
+    entries.forEach(entry => {
+      var props = {};
+      names.forEach(name => {
+        props[name] = entry.metadata[name];
+      });
+      results.push(props);
+    });
     setTimeout(callback, 0, results);
   },
   getFileTasks: (entries, callback) => {
-    console.debug('c.fmp.getFileTasks called', entries);
     // Returns FileTask[].
     setTimeout(callback, 0, []);
   },
   getPreferences: (callback) => {
-    console.debug('c.fmp.getPreferences called');
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);
   },
   getProfiles: (callback) => {
-    console.debug('c.fmp.getProfiles called');
+    // Returns profiles, currentId, displayedId
     setTimeout(
         callback, 0, chrome.fileManagerPrivate.profiles_,
         chrome.fileManagerPrivate.currentId_,
         chrome.fileManagerPrivate.displayedId_);
   },
   getProviders: (callback) => {
-    console.debug('c.fmp.getProviders called');
     // Returns Provider[].
     setTimeout(callback, 0, []);
   },
   getRecentFiles: (restriction, callback) => {
-    console.debug('c.fmp.getRecentFiles called', restriction);
     // Returns Entry[].
     setTimeout(callback, 0, []);
   },
   getSizeStats: (volumeId, callback) => {
-    console.debug('c.fmp.getSizeStats called', volumeId);
     // MountPointSizeStats { totalSize: double,  remainingSize: double }
     setTimeout(callback, 0, {totalSize: 16e9, remainingSize: 8e9});
   },
   getStrings: (callback) => {
-    console.debug('c.fmp.getStrings called');
+    // Returns map of strings.
     setTimeout(callback, 0, loadTimeData.data_);
   },
   getVolumeMetadataList: (callback) => {
-    console.debug('c.fmp.getVolumeMetadatalist called');
     var list = [];
     for (var i = 0; i < mockVolumeManager.volumeInfoList.length; i++) {
       list.push(mockVolumeManager.volumeInfoList.item(i));
@@ -108,80 +106,70 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, list);
   },
   grantAccess: (entryUrls, callback) => {
-    console.debug('c.fmp.grantAccess called', entryUrls);
     setTimeout(callback, 0);
   },
   isUMAEnabled: (callback) => {
-    console.debug('c.fmp.isUMAEnabled called');
     setTimeout(callback, 0, false);
   },
   onAppsUpdated: {
-    addListener: () => {
-      console.debug('c.fmp.onAppsUpdated.addListener called');
-    },
+    addListener: () => {},
   },
   onDeviceChanged: {
-    addListener: () => {
-      console.debug('c.fmp.onDeviceChanged.addListener called');
-    },
+    addListener: () => {},
   },
   onDirectoryChanged: {
-    addListener: () => {
-      console.debug('c.fmp.onDirectoryChanged.addListener called');
+    listeners_: [],
+    addListener: function(l) {
+      this.listeners_.push(l);
     },
   },
   onDriveConnectionStatusChanged: {
-    addListener: () => {
-      console.debug('c.fmp.onDriveConnectionStatusChanged.addListener called');
-    },
+    addListener: () => {},
   },
   onDriveSyncError: {
-    addListener: () => {
-      console.debug('c.fmp.onDriveSyncError.addListener called');
-    },
+    addListener: () => {},
   },
   onFileTransfersUpdated: {
-    addListener: () => {
-      console.debug('c.fmp.onFileTransfersUpdated.addListener called');
-    },
+    addListener: () => {},
   },
   onMountCompleted: {
-    addListener: () => {
-      console.debug('c.fmp.onMountCompleted.addListener called');
-    },
+    addListener: () => {},
   },
   onPreferencesChanged: {
-    addListener: () => {
-      console.debug('c.fmp.onPreferencesChanged.addListener called');
-    },
+    addListener: () => {},
   },
   removeFileWatch: (entry, callback) => {
-    console.debug('c.fmp.removeFileWatch called', entry);
     setTimeout(callback, 0, true);
   },
   requestWebStoreAccessToken: (callback) => {
-    console.debug('c.fmp.requestWebStoreAccessToken called');
     setTimeout(callback, 0, chrome.fileManagerPrivate.token_);
   },
   resolveIsolatedEntries: (entries, callback) => {
-    console.debug('c.fmp.resolveIsolatedEntries called', entries);
     setTimeout(callback, 0, entries);
   },
   searchDriveMetadata: (searchParams, callback) => {
-    console.debug('c.fmp.searchDriveMetadata called', searchParams);
     // Returns SearchResult[].
     // SearchResult { entry: Entry, highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
   validatePathNameLength: (parentEntry, name, callback) => {
-    console.debug('c.fmp.validatePathNameLength called', parentEntry, name);
     setTimeout(callback, 0, true);
+  },
+};
+
+chrome.mediaGalleries = {
+  getMetadata: (mediaFile, options, callback) => {
+    // Returns metdata {mimeType: ..., ...}.
+    setTimeout(() => {
+      webkitResolveLocalFileSystemURL(mediaFile.name, entry => {
+        callback({mimeType: entry.metadata.contentMimeType});
+      }, 0);
+    });
   },
 };
 
 chrome.fileSystem = {
   requestFileSystem: (options, callback) => {
-    console.debug('chrome.fileSystem.requestFileSystem called', options);
     var volume =
         mockVolumeManager.volumeInfoList.findByVolumeId(options.volumeId);
     setTimeout(callback, 0, volume ? volume.fileSystem : null);
@@ -195,13 +183,14 @@ chrome.fileSystem = {
  * @param {function(!DOMException)} errorCallback Error callback.
  */
 webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
-  console.debug('webkitResolveLocalFileSystemURL', url);
   var match = url.match(/^filesystem:(\w+)(\/.*)/);
   if (match) {
     var volumeType = match[1];
     var path = match[2];
     var volume = mockVolumeManager.getCurrentProfileVolumeInfo(volumeType);
     if (volume) {
+      // Decode URI in file paths.
+      path = path.split('/').map(decodeURIComponent).join('/');
       var entry = volume.fileSystem.entries[path];
       if (entry) {
         setTimeout(successCallback, 0, entry);
