@@ -33,7 +33,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
   U2fDevice();
   virtual ~U2fDevice();
   // Pure virtual function defined by each device type, implementing
-  // the device communication transaction.
+  // the device communication transaction. The function must not immediately
+  // call (i.e. hairpin) |callback|.
   virtual void DeviceTransact(std::vector<uint8_t> command,
                               DeviceCallback callback) = 0;
   virtual void TryWink(WinkCallback callback) = 0;

@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
@@ -58,17 +59,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
 
-  void DoRegister(uint8_t ins,
-                  uint8_t p1,
-                  uint8_t p2,
-                  base::span<const uint8_t> data,
-                  DeviceCallback cb);
+  base::Optional<std::vector<uint8_t>> DoRegister(
+      uint8_t ins,
+      uint8_t p1,
+      uint8_t p2,
+      base::span<const uint8_t> data);
 
-  void DoSign(uint8_t ins,
-              uint8_t p1,
-              uint8_t p2,
-              base::span<const uint8_t> data,
-              DeviceCallback cb);
+  base::Optional<std::vector<uint8_t>> DoSign(uint8_t ins,
+                                              uint8_t p1,
+                                              uint8_t p2,
+                                              base::span<const uint8_t> data);
 
   // Keyed on appId/rpId hash (aka "applicationParam")
   std::map<std::vector<uint8_t>, RegistrationData> registrations_;
