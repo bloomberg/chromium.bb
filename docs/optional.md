@@ -109,7 +109,9 @@ undefined value when the expected value can't be negative.
 It is recommended to not use `base::Optional<T>` as a function parameter as it
 will force the callers to use `base::Optional<T>`. Instead, it is recommended to
 keep using `T*` for arguments that can be omitted, with `nullptr` representing
-no value.
+no value. A helper, `base::OptionalOrNullptr`, is available in
+[stl_util.h](https://code.google.com/p/chromium/codesearch#chromium/src/base/stl_util.h)
+and can make it easier to convert `base::Optional<T>` to `T*`.
 
 Furthermore, depending on `T`, MSVC might fail to compile code using
 `base::Optional<T>` as a parameter because of memory alignment issues.
