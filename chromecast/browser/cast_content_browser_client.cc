@@ -469,7 +469,7 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
   prefs->allow_scripts_to_close_windows = true;
-  // TODO(lcwu): http://crbug.com/391089. This pref is set to true by default
+  // TODO(halliwell): http://crbug.com/391089. This pref defaults to to true
   // because some content providers such as YouTube use plain http requests
   // to retrieve media data chunks while running in a https page. This pref
   // should be disabled once all the content providers are no longer doing that.
