@@ -54,18 +54,6 @@ void DualMediaSinkService::StartMdnsDiscovery() {
     cast_media_sink_service_->StartMdnsDiscovery();
 }
 
-void DualMediaSinkService::RegisterMediaSinksObserver(
-    MediaSinksObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  dial_media_sink_service_->RegisterMediaSinksObserver(observer);
-}
-
-void DualMediaSinkService::UnregisterMediaSinksObserver(
-    MediaSinksObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  dial_media_sink_service_->UnregisterMediaSinksObserver(observer);
-}
-
 DualMediaSinkService::DualMediaSinkService() {
   OnDialSinkAddedCallback dial_sink_added_cb;
   if (CastDiscoveryEnabled()) {

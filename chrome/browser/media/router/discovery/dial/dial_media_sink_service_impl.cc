@@ -6,11 +6,30 @@
 
 #include <algorithm>
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace media_router {
+
+namespace {
+
+static constexpr const char* kDiscoveryOnlyModelNames[3] = {
+    "eureka dongle", "chromecast audio", "chromecast ultra"};
+
+// Returns true if DIAL (SSDP) was only used to discover this sink, and it is
+// not expected to support other DIAL features (app discovery, activity
+// discovery, etc.)
+// |model_name|: device model name.
+bool IsDiscoveryOnly(const std::string& model_name) {
+  std::string lower_model_name = base::ToLowerASCII(model_name);
+  return std::find(std::begin(kDiscoveryOnlyModelNames),
+                   std::end(kDiscoveryOnlyModelNames),
+                   lower_model_name) != std::end(kDiscoveryOnlyModelNames);
+}
+
+}  // namespace
 
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
     std::unique_ptr<service_manager::Connector> connector,
@@ -88,6 +107,8 @@ void DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp(
   // Start checking if |app_name| is available on existing sinks.
   for (const auto& dial_sink_it : current_sinks_)
     FetchAppInfoForSink(dial_sink_it.second, app_name);
+
+  NotifySinkObservers(app_name);
 }
 
 void DialMediaSinkServiceImpl::StopMonitoringAvailableSinksForApp(
@@ -115,7 +136,7 @@ void DialMediaSinkServiceImpl::SetAppDiscoveryServiceForTest(
 void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
   MediaSinkServiceBase::OnDiscoveryComplete();
   for (const auto& app_name : registered_apps_)
-    MaybeNotifySinkObservers(app_name);
+    NotifySinkObservers(app_name);
 }
 
 void DialMediaSinkServiceImpl::OnDialDeviceEvent(
@@ -151,7 +172,7 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
       MediaSinkInternal::ProcessDeviceUUID(description_data.unique_id);
   std::string sink_id = base::StringPrintf("dial:<%s>", processed_uuid.c_str());
   MediaSink sink(sink_id, description_data.friendly_name, SinkIconType::GENERIC,
-                 MediaRouteProviderId::EXTENSION);
+                 MediaRouteProviderId::DIAL);
   DialSinkExtraData extra_data;
   extra_data.app_url = description_data.app_url;
   extra_data.model_name = description_data.model_name;
@@ -166,9 +187,11 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   if (dial_sink_added_cb_)
     dial_sink_added_cb_.Run(dial_sink);
 
-  // Start checking if all registered apps are available on |dial_sink|.
-  for (const auto& app_name : registered_apps_)
-    FetchAppInfoForSink(dial_sink, app_name);
+  if (!IsDiscoveryOnly(description_data.model_name)) {
+    // Start checking if all registered apps are available on |dial_sink|.
+    for (const auto& app_name : registered_apps_)
+      FetchAppInfoForSink(dial_sink, app_name);
+  }
 
   // Start fetch timer again if device description comes back after
   // |finish_timer_| fires.
@@ -196,29 +219,29 @@ void DialMediaSinkServiceImpl::OnAppInfoParseCompleted(
   SetAppStatus(sink_id, app_name, app_status);
 
   if (old_status != app_status)
-    MaybeNotifySinkObservers(app_name);
+    NotifySinkObservers(app_name);
 }
 
-void DialMediaSinkServiceImpl::MaybeNotifySinkObservers(
+void DialMediaSinkServiceImpl::NotifySinkObservers(
     const std::string& app_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   base::flat_set<MediaSinkInternal> sinks = GetAvailableSinks(app_name);
-  auto& last_known_sinks = last_known_available_sinks_[app_name];
-  if (sinks == last_known_sinks)
-    return;
-
   DVLOG(2) << "NotifySinkObservers " << app_name << " has [" << sinks.size()
            << "] sinks";
   available_sinks_updated_callback_.Run(
       app_name, std::vector<MediaSinkInternal>(sinks.begin(), sinks.end()));
-
-  last_known_sinks.swap(sinks);
 }
 
 void DialMediaSinkServiceImpl::FetchAppInfoForSink(
     const MediaSinkInternal& dial_sink,
     const std::string& app_name) {
+  std::string model_name = dial_sink.dial_data().model_name;
+  if (IsDiscoveryOnly(model_name)) {
+    DVLOG(2) << "Model name does not support DIAL app availability: "
+             << model_name;
+    return;
+  }
+
   std::string sink_id = dial_sink.sink().id();
   SinkAppStatus app_status = GetAppStatus(sink_id, app_name);
   if (app_status != SinkAppStatus::kUnknown)
@@ -229,6 +252,13 @@ void DialMediaSinkServiceImpl::FetchAppInfoForSink(
 
 void DialMediaSinkServiceImpl::RescanAppInfo() {
   for (const auto& dial_sink_it : current_sinks_) {
+    std::string model_name = dial_sink_it.second.dial_data().model_name;
+    if (IsDiscoveryOnly(model_name)) {
+      DVLOG(2) << "Model name does not support DIAL app availability: "
+               << model_name;
+      continue;
+    }
+
     for (const auto& app_name : registered_apps_) {
       FetchAppInfoForSink(dial_sink_it.second, app_name);
     }

@@ -33,6 +33,10 @@ bool MediaSource::operator==(const MediaSource& other) const {
   return id_ == other.id();
 }
 
+bool MediaSource::operator<(const MediaSource& other) const {
+  return id_ < other.id();
+}
+
 std::string MediaSource::ToString() const {
   return "MediaSource[" + id_ + "]";
 }

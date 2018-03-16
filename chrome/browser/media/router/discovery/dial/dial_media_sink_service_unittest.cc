@@ -9,6 +9,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/common/media_router/discovery/media_sink_service_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -20,20 +21,6 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
 namespace media_router {
-
-class MockMediaSinksObserverInternal : public MediaSinksObserver {
- public:
-  MockMediaSinksObserverInternal(MediaRouter* router,
-                                 const MediaSource& source,
-                                 const url::Origin& origin)
-      : MediaSinksObserver(router, source, origin) {}
-  ~MockMediaSinksObserverInternal() override {}
-
-  MOCK_METHOD2(OnSinksUpdated,
-               void(const std::vector<MediaSink>& sinks,
-                    const std::vector<url::Origin>& origins));
-  MOCK_METHOD1(OnSinksReceived, void(const std::vector<MediaSink>& sinks));
-};
 
 class MockDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
  public:
@@ -103,6 +90,8 @@ class TestDialMediaSinkService : public DialMediaSinkService {
 
 class DialMediaSinkServiceTest : public ::testing::Test {
  public:
+  using SinkQueryByAppCallback = DialMediaSinkService::SinkQueryByAppCallback;
+
   DialMediaSinkServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         service_(new TestDialMediaSinkService(task_runner_)) {}
@@ -150,68 +139,119 @@ TEST_F(DialMediaSinkServiceTest, OnDialSinkAddedCallback) {
 }
 
 TEST_F(DialMediaSinkServiceTest, TestAddRemoveSinkQuery) {
-  MediaSource youtube_source("cast-dial:YouTube");
-  MediaSource netflix_source("cast-dial:Netflix");
-  std::vector<url::Origin> youtube_origins = {
-      url::Origin::Create(GURL("https://tv.youtube.com")),
-      url::Origin::Create(GURL("https://tv-green-qa.youtube.com")),
-      url::Origin::Create(GURL("https://tv-release-qa.youtube.com")),
-      url::Origin::Create(GURL("https://web-green-qa.youtube.com")),
-      url::Origin::Create(GURL("https://web-release-qa.youtube.com")),
-      url::Origin::Create(GURL("https://www.youtube.com"))};
-  std::vector<url::Origin> netflix_origins = {
-      url::Origin::Create(GURL("https://www.netflix.com"))};
+  base::MockCallback<SinkQueryByAppCallback> mock_callback;
+  std::string app_name("YouTube");
 
-  MockMediaRouter mock_router;
-  MockMediaSinksObserverInternal observer1(
-      &mock_router, youtube_source,
-      url::Origin::Create(GURL("https://tv.youtube.com")));
-  MockMediaSinksObserverInternal observer2(
-      &mock_router, youtube_source,
-      url::Origin::Create(GURL("https://www.youtube.com")));
-  MockMediaSinksObserverInternal observer3(
-      &mock_router, netflix_source,
-      url::Origin::Create(GURL("https://www.netflix.com")));
-  MockMediaSinksObserverInternal observer4(
-      &mock_router, netflix_source,
-      url::Origin::Create(GURL("https://www.netflix.com")));
-
-  EXPECT_CALL(*mock_impl_, StartMonitoringAvailableSinksForApp("YouTube"))
-      .Times(1);
-  EXPECT_CALL(*mock_impl_, StartMonitoringAvailableSinksForApp("Netflix"))
-      .Times(1);
-  service_->RegisterMediaSinksObserver(&observer1);
-  service_->RegisterMediaSinksObserver(&observer3);
-  EXPECT_CALL(observer4,
-              OnSinksUpdated(std::vector<MediaSink>(), netflix_origins));
-  service_->RegisterMediaSinksObserver(&observer4);
+  EXPECT_CALL(*mock_impl_, StartMonitoringAvailableSinksForApp(app_name));
+  auto subscription = service_->StartMonitoringAvailableSinksForApp(
+      app_name, mock_callback.Get());
   task_runner_->RunUntilIdle();
 
-  MediaSink sink("sink id 1", "sink name 1", SinkIconType::GENERIC);
-  MediaSinkInternal sink_internal(sink, DialSinkExtraData());
-  std::vector<MediaSink> sinks{sink};
+  MediaSinkInternal sink_internal = CreateDialSink(1);
+  std::vector<MediaSinkInternal> sinks{sink_internal};
 
-  EXPECT_CALL(observer1, OnSinksUpdated(sinks, youtube_origins));
-  mock_impl_->available_sinks_updated_cb().Run("YouTube", {sink_internal});
+  EXPECT_CALL(mock_callback, Run(app_name, sinks));
+  mock_impl_->available_sinks_updated_cb().Run(app_name, sinks);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(observer2, OnSinksUpdated(sinks, youtube_origins));
-  service_->RegisterMediaSinksObserver(&observer2);
-
-  EXPECT_CALL(observer3, OnSinksUpdated(sinks, netflix_origins));
-  EXPECT_CALL(observer4, OnSinksUpdated(sinks, netflix_origins));
-  mock_impl_->available_sinks_updated_cb().Run("Netflix", {sink_internal});
+  subscription.reset();
+  EXPECT_CALL(*mock_impl_, StopMonitoringAvailableSinksForApp(app_name));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*mock_impl_, StopMonitoringAvailableSinksForApp("YouTube"))
-      .Times(2);
-  service_->UnregisterMediaSinksObserver(&observer1);
-  service_->UnregisterMediaSinksObserver(&observer2);
+  EXPECT_CALL(mock_callback, Run(_, _)).Times(0);
+  mock_impl_->available_sinks_updated_cb().Run(app_name, sinks);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DialMediaSinkServiceTest, TestAddSinkQuerySameAppSameObserver) {
+  base::MockCallback<SinkQueryByAppCallback> mock_callback;
+  std::string app_name("YouTube");
+
+  EXPECT_CALL(*mock_impl_, StartMonitoringAvailableSinksForApp(app_name))
+      .Times(1);
+  auto subscription1 = service_->StartMonitoringAvailableSinksForApp(
+      app_name, mock_callback.Get());
+  auto subscription2 = service_->StartMonitoringAvailableSinksForApp(
+      app_name, mock_callback.Get());
   task_runner_->RunUntilIdle();
 
-  EXPECT_CALL(observer1, OnSinksUpdated(_, _)).Times(0);
-  EXPECT_CALL(observer2, OnSinksUpdated(_, _)).Times(0);
-  mock_impl_->available_sinks_updated_cb().Run("YouTube", {sink_internal});
+  MediaSinkInternal sink_internal = CreateDialSink(1);
+  std::vector<MediaSinkInternal> sinks{sink_internal};
+
+  EXPECT_CALL(mock_callback, Run(app_name, sinks)).Times(2);
+  mock_impl_->available_sinks_updated_cb().Run("YouTube", sinks);
+  base::RunLoop().RunUntilIdle();
+
+  subscription1.reset();
+  subscription2.reset();
+  EXPECT_CALL(*mock_impl_, StopMonitoringAvailableSinksForApp(app_name));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DialMediaSinkServiceTest, TestAddSinkQuerySameAppDifferentObservers) {
+  base::MockCallback<SinkQueryByAppCallback> mock_callback1;
+  base::MockCallback<SinkQueryByAppCallback> mock_callback2;
+  std::string app_name("YouTube");
+
+  EXPECT_CALL(*mock_impl_, StartMonitoringAvailableSinksForApp(app_name))
+      .Times(1);
+  auto subscription1 = service_->StartMonitoringAvailableSinksForApp(
+      app_name, mock_callback1.Get());
+  auto subscription2 = service_->StartMonitoringAvailableSinksForApp(
+      app_name, mock_callback2.Get());
+  task_runner_->RunUntilIdle();
+
+  MediaSinkInternal sink_internal = CreateDialSink(1);
+  std::vector<MediaSinkInternal> sinks{sink_internal};
+
+  EXPECT_CALL(mock_callback1, Run(app_name, sinks));
+  EXPECT_CALL(mock_callback2, Run(app_name, sinks));
+  mock_impl_->available_sinks_updated_cb().Run(app_name, sinks);
+  base::RunLoop().RunUntilIdle();
+
+  subscription1.reset();
+  EXPECT_CALL(*mock_impl_, StopMonitoringAvailableSinksForApp(app_name))
+      .Times(0);
+  base::RunLoop().RunUntilIdle();
+
+  subscription2.reset();
+  EXPECT_CALL(*mock_impl_, StopMonitoringAvailableSinksForApp(app_name));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DialMediaSinkServiceTest, TestAddSinkQueryDifferentApps) {
+  base::MockCallback<SinkQueryByAppCallback> mock_callback1;
+  base::MockCallback<SinkQueryByAppCallback> mock_callback2;
+  std::string youtube_app_name("YouTube");
+  std::string netflix_app_name("Netflix");
+
+  EXPECT_CALL(*mock_impl_,
+              StartMonitoringAvailableSinksForApp(youtube_app_name));
+  EXPECT_CALL(*mock_impl_,
+              StartMonitoringAvailableSinksForApp(netflix_app_name));
+  auto subscription1 = service_->StartMonitoringAvailableSinksForApp(
+      youtube_app_name, mock_callback1.Get());
+  auto subscription2 = service_->StartMonitoringAvailableSinksForApp(
+      netflix_app_name, mock_callback2.Get());
+  task_runner_->RunUntilIdle();
+
+  MediaSinkInternal sink_internal = CreateDialSink(1);
+  std::vector<MediaSinkInternal> sinks{sink_internal};
+
+  EXPECT_CALL(mock_callback1, Run(youtube_app_name, sinks));
+  mock_impl_->available_sinks_updated_cb().Run(youtube_app_name, sinks);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(mock_callback2, Run(netflix_app_name, sinks));
+  mock_impl_->available_sinks_updated_cb().Run(netflix_app_name, sinks);
+  base::RunLoop().RunUntilIdle();
+
+  subscription1.reset();
+  subscription2.reset();
+  EXPECT_CALL(*mock_impl_,
+              StopMonitoringAvailableSinksForApp(youtube_app_name));
+  EXPECT_CALL(*mock_impl_,
+              StopMonitoringAvailableSinksForApp(netflix_app_name));
   base::RunLoop().RunUntilIdle();
 }
 

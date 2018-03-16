@@ -17,8 +17,6 @@ class NoopDualMediaSinkService : public DualMediaSinkService {
   // DualMediaSinkService
   void OnUserGesture() override {}
   void StartMdnsDiscovery() override {}
-  void RegisterMediaSinksObserver(MediaSinksObserver* observer) override {}
-  void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoopDualMediaSinkService);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
+#include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -207,6 +208,8 @@ void MediaRouterDesktop::InitializeMediaRouteProviders() {
     InitializeWiredDisplayMediaRouteProvider();
   if (CastMediaRouteProviderEnabled())
     InitializeCastMediaRouteProvider();
+  if (DialSinkQueryEnabled())
+    InitializeDialMediaRouteProvider();
 }
 
 void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
@@ -245,6 +248,19 @@ void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::CAST,
                              std::move(cast_provider_ptr), base::DoNothing());
+}
+
+void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
+  mojom::MediaRouterPtr media_router_ptr;
+  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
+  mojom::MediaRouteProviderPtr dial_provider_ptr;
+  DCHECK(media_sink_service_);
+
+  dial_provider_ = std::make_unique<DialMediaRouteProvider>(
+      mojo::MakeRequest(&dial_provider_ptr), std::move(media_router_ptr),
+      media_sink_service_->dial_media_sink_service());
+  RegisterMediaRouteProvider(MediaRouteProviderId::DIAL,
+                             std::move(dial_provider_ptr), base::DoNothing());
 }
 
 #if defined(OS_WIN)

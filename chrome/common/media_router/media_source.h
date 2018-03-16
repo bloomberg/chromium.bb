@@ -37,6 +37,8 @@ class MediaSource {
   // Returns true if two MediaSource objects use the same media ID.
   bool operator==(const MediaSource& other) const;
 
+  bool operator<(const MediaSource& other) const;
+
   // Used for logging.
   std::string ToString() const;
 

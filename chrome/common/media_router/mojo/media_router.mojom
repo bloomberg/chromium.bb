@@ -247,7 +247,8 @@ interface MediaRouteProvider {
   enum Id {
     EXTENSION,
     WIRED_DISPLAY,
-    CAST
+    CAST,
+    DIAL
   };
 
   // Creates a media route from |media_source| to the sink given by |sink_id|.

@@ -99,6 +99,8 @@ static_library("router") {
       "providers/cast/chrome_cast_message_handler.h",
       "providers/cast/dual_media_sink_service.cc",
       "providers/cast/dual_media_sink_service.h",
+      "providers/dial/dial_media_route_provider.cc",
+      "providers/dial/dial_media_route_provider.h",
       "providers/extension/extension_media_route_provider_proxy.cc",
       "providers/extension/extension_media_route_provider_proxy.h",
       "providers/wired_display/wired_display_media_route_provider.cc",
