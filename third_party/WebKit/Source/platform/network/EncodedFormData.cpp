@@ -178,12 +178,13 @@ unsigned long long EncodedFormData::SizeInBytes() const {
           size += e.optional_blob_data_handle_->size();
         break;
       case FormDataElement::kDataPipe:
-        // We can get the size but it'd be async. Data pipe elements only exist
-        // for requests intercepted by service workers (and possibly
-        // subsequently redirected). But this function is only called for
-        // requests initiated by PingLoader, assume this function isn't needed
-        // in that case.
-        NOTREACHED();
+        // We can get the size but it'd be async. Data pipe elements exist only
+        // in EncodedFormData instances that were filled from the content side
+        // using the WebHTTPBody interface, and generally represent blobs.
+        // Since for actual kEncodedBlob elements we ignore their size as well
+        // if the element was created through WebHTTPBody (which never sets
+        // optional_blob_data_handle), we'll ignore the size of these elements
+        // as well.
         break;
     }
   }
