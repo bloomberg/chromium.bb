@@ -287,6 +287,24 @@ TEST_F(CanvasRenderingContext2DAPITest, GetImageDataTooBig) {
   EXPECT_EQ(kV8RangeError, exception_state.Code());
 }
 
+TEST_F(CanvasRenderingContext2DAPITest,
+       GetImageDataIntegerOverflowNegativeParams) {
+  CreateContext(kNonOpaque);
+  DummyExceptionStateForTesting exception_state;
+  ImageData* image_data = Context2d()->getImageData(
+      1, -2147483647, 1, -2147483647, exception_state);
+  EXPECT_EQ(nullptr, image_data);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(kV8RangeError, exception_state.Code());
+
+  exception_state.ClearException();
+  image_data = Context2d()->getImageData(-2147483647, 1, -2147483647, 1,
+                                         exception_state);
+  EXPECT_EQ(nullptr, image_data);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(kV8RangeError, exception_state.Code());
+}
+
 void ResetCanvasForAccessibilityRectTest(Document& document) {
   document.documentElement()->SetInnerHTMLFromString(R"HTML(
     <canvas id='canvas' style='position:absolute; top:0px; left:0px;

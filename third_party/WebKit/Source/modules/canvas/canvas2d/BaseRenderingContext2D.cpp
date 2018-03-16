@@ -1564,10 +1564,18 @@ ImageData* BaseRenderingContext2D::getImageData(
     return nullptr;
 
   if (sw < 0) {
+    if (!WTF::CheckAdd(sx, sw).IsValid<int>()) {
+      exception_state.ThrowRangeError("Out of memory at ImageData creation");
+      return nullptr;
+    }
     sx += sw;
     sw = -sw;
   }
   if (sh < 0) {
+    if (!WTF::CheckAdd(sy, sh).IsValid<int>()) {
+      exception_state.ThrowRangeError("Out of memory at ImageData creation");
+      return nullptr;
+    }
     sy += sh;
     sh = -sh;
   }
