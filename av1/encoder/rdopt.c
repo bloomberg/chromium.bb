@@ -2044,7 +2044,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 
 RECON_INTRA:
-  if (!is_inter && best_eob) {
+  if (!is_inter && best_eob &&
+      (blk_row + tx_size_high_unit[tx_size] < mi_size_high[plane_bsize] ||
+       blk_col + tx_size_wide_unit[tx_size] < mi_size_wide[plane_bsize])) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.
     if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
