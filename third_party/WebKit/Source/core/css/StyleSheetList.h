@@ -37,6 +37,7 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static StyleSheetList* Create();
   static StyleSheetList* Create(const HeapVector<Member<CSSStyleSheet>>&,
                                 ExceptionState&);
 
@@ -60,6 +61,7 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
  private:
   explicit StyleSheetList(const HeapVector<Member<CSSStyleSheet>>&);
   explicit StyleSheetList(TreeScope*);
+  StyleSheetList() {}
   const HeapVector<TraceWrapperMember<StyleSheet>>& StyleSheets() const;
 
   Member<TreeScope> tree_scope_;

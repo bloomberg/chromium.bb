@@ -327,7 +327,7 @@ bool TreeScope::HasMoreStyleSheets() const {
 
 StyleSheetList& TreeScope::MoreStyleSheets() {
   if (!more_style_sheets_)
-    SetMoreStyleSheets(StyleSheetList::Create(this));
+    SetMoreStyleSheets(StyleSheetList::Create());
   return *more_style_sheets_;
 }
 
