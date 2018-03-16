@@ -165,9 +165,9 @@ if _libkms != 'false'
   with_libkms = _libkms == 'true' or ['linux', 'freebsd', 'dragonfly'].contains(host_machine.system())
 endif
 
+config.set10('UDEV', with_udev)
 if with_udev
   dep_udev = dependency('udev')
-  config.set10('UDEV', true)
 else
   dep_udev = []
 endif

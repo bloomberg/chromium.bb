@@ -347,6 +347,8 @@ AC_SUBST(PCIACCESS_LIBS)
 
 if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
+else
+	AC_DEFINE(UDEV, 0)
 fi
 
 AC_CANONICAL_HOST
