@@ -2683,22 +2683,3 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   cm->lf.filter_level[1] = orig_filter_level[1];
 #endif
 }
-
-void av1_loop_filter_data_reset(LFWorkerData *lf_data,
-                                YV12_BUFFER_CONFIG *frame_buffer,
-                                struct AV1Common *cm,
-                                const struct macroblockd_plane *planes) {
-  lf_data->frame_buffer = frame_buffer;
-  lf_data->cm = cm;
-  lf_data->start = 0;
-  lf_data->stop = 0;
-  lf_data->y_only = 0;
-  memcpy(lf_data->planes, planes, sizeof(lf_data->planes));
-}
-
-int av1_loop_filter_worker(LFWorkerData *const lf_data, void *unused) {
-  (void)unused;
-  av1_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
-                       lf_data->start, lf_data->stop, lf_data->y_only);
-  return 1;
-}

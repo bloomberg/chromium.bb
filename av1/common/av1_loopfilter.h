@@ -218,13 +218,6 @@ typedef struct LoopFilterWorkerData {
   int y_only;
 } LFWorkerData;
 
-void av1_loop_filter_data_reset(LFWorkerData *lf_data,
-                                YV12_BUFFER_CONFIG *frame_buffer,
-                                struct AV1Common *cm,
-                                const struct macroblockd_plane *planes);
-
-// Operates on the rows described by 'lf_data'.
-int av1_loop_filter_worker(LFWorkerData *const lf_data, void *unused);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
