@@ -423,6 +423,12 @@ const IDNTestCase idn_cases[] = {
     {"xn--l1acpzs.com", L"\x0449\x043c\x043d\x0442\x044c.com", false},
     // шмнтв.com
     {"xn--b1atdu1a.com", L"\x0448\x043c\x043d\x0442\x0432.com", false},
+    // шмԋтв.com
+    {"xn--b1atsw09g.com", L"\x0448\x043c\x050b\x0442\x0432.com", false},
+    // шмԧтв.com
+    {"xn--b1atsw03i.com", L"\x0448\x043c\x0527\x0442\x0432.com", false},
+    // шмԋԏв.com
+    {"xn--b1at9a12dua.com", L"\x0448\x043c\x050b\x050f\x0432.com", false},
     // ഠട345.com
     {"xn--345-jtke.com",
      L"\x0d20\x0d1f"
@@ -490,6 +496,8 @@ const IDNTestCase idn_cases[] = {
     {"xn--o1at1tsi.com", L"\x0449\x04ce\x043f\x0491.com", false},
     // ґғ.com
     {"xn--03ae.com", L"\x0491\x0493.com", false},
+    // ґӻ.com
+    {"xn--03a6s.com", L"\x0491\x04fb.com", false},
     // ҫұҳҽ.com
     {"xn--r4amg4b.com", L"\x04ab\x04b1\x04b3\x04bd.com", false},
     // ҫұӽҽ.com
@@ -502,6 +510,25 @@ const IDNTestCase idn_cases[] = {
     {"xn--91a7osa62a.com", L"\x04ab\x04b1\x04ff\x0454.com", false},
     // ӏԃԍ.com
     {"xn--s5a8h4a.com", L"\x04cf\x0503\x050d.com", false},
+
+    // ꓲ2345б7890.com
+    {"xn--23457890-e7g93622b.com", L"\xa4f2" L"2345\x0431" L"7890.com", false},
+    // 1ᒿ345б7890.com
+    {"xn--13457890-e7g0943b.com", L"1\x14bf" L"345\x0431" L"7890.com", false},
+    // 12з4567890.com
+    {"xn--124567890-10h.com", L"12\x0437" L"4567890.com", false},
+    // 12ӡ4567890.com
+    {"xn--124567890-mfj.com", L"12\x04e1" L"4567890.com", false},
+    // 123Ꮞ567890.com
+    {"xn--123567890-dm4b.com", L"123\x13ce" L"567890.com", false},
+    // 12345б7890.com
+    {"xn--123457890-fzh.com", L"12345\x0431" L"7890.com", false},
+    // 1234567ȣ90.com
+    {"xn--123456790-6od.com", L"1234567\x0223" L"90.com", false},
+    // 12345678୨0.com
+    {"xn--123456780-71w.com", L"12345678\x0b68" L"0.com", false},
+    // 123456789ꓳ.com
+    {"xn--123456789-tx75a.com", L"123456789\xa4f3.com", false},
 
     // ငၔဌ၂ဝ.com (entirely made of Myanmar characters)
     {"xn--ridq5c9hnd.com", L"\x1004\x1054\x100c" L"\x1042\x101d.com", false},

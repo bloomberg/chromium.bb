@@ -155,17 +155,17 @@ IDNSpoofChecker::IDNSpoofChecker() {
   // Supplement the Unicode confusable list by the following mapping.
   //   - {U+00FE (þ), U+03FC (ϼ), U+048F (ҏ)} => p
   //   - {U+0127 (ħ), U+043D (н), U+045B (ћ), U+04A3 (ң), U+04A5 (ҥ),
-  //      U+04C8 (ӈ), U+04CA (ӊ), U+0527 (ԧ), U+0529 (ԩ)} => h
+  //      U+04C8 (ӈ), U+04CA (ӊ), U+050B (ԋ), U+0527 (ԧ), U+0529 (ԩ)} => h
   //   - {U+0138 (ĸ), U+03BA (κ), U+043A (к), U+049B (қ), U+049D (ҝ),
   //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
   //   - {U+014B (ŋ), U+043F (п)} => n
-  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ)} => t
+  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
   //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1F (ฟ)} => w
   //   - {U+043C (м), U+04CE (ӎ)} => m
   //   - {U+0454 (є), U+04BD (ҽ), U+04BF (ҿ), U+1054 (ၔ)} => e
   //   - U+0491 (ґ) => r
-  //   - U+0493 (ғ) => f
+  //   - {U+0493 (ғ), U+04FB (ӻ)} => f
   //   - {U+04AB (ҫ), U+1004 (င)} => c
   //   - U+04B1 (ұ) => y
   //   - U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ) => x
@@ -174,19 +174,21 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร)} => s
   //   - U+1042 (၂) => j
+  //   - {U+0437 (з), U+04E1 (ӡ)} => 3
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
-      icu::UnicodeString::fromUTF8("[þϼҏ] > p; [ħнћңҥӈӊԧԩ] > h;"
-                                   "[ĸκкқҝҟҡӄԟ] > k; [ŋп] > n; [ŧтҭ] > t;"
+      icu::UnicodeString::fromUTF8("[þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
+                                   "[ĸκкқҝҟҡӄԟ] > k; [ŋп] > n; [ŧтҭԏ] > t;"
                                    "[ƅьҍв] > b;  [ωшщฟ] > w; [мӎ] > m;"
-                                   "[єҽҿၔ] > e; ґ > r; ғ > f; [ҫင] > c;"
+                                   "[єҽҿၔ] > e; ґ > r; [ғӻ] > f; [ҫင] > c;"
                                    "ұ > y; [χҳӽӿ] > x;"
 #if defined(OS_WIN)
                                    "ӏ > i;"
 #else
                                    "ӏ > l;"
 #endif
-                                   "ԃ  > d; [ԍဌ] > g; [ടร] > s; ၂ > j"),
+                                   "ԃ  > d; [ԍဌ] > g; [ടร] > s; ၂ > j;"
+                                   "[зӡ] > 3"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
