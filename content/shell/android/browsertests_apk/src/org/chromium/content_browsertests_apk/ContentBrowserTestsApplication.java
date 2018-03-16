@@ -22,16 +22,16 @@ public class ContentBrowserTestsApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        ContextUtils.initApplicationContext(this);
+        // content_browsertests needs secondary dex in order to run EmbeddedTestServer in a
+        // privileged process.
         if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }
-        ContextUtils.initApplicationContext(this);
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        ApplicationStatus.initialize(this);
+        // The test harness runs in the main process, and browser in :test_process.
+        if (ContextUtils.getProcessName().contains(":test")) {
+            PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+            ApplicationStatus.initialize(this);
+        }
     }
 }

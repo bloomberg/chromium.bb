@@ -72,18 +72,11 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 
 #if defined(OS_ANDROID)
 TEST_F(GpuChannelManagerTest, OnLowEndBackgroundedWithoutWebGL) {
-  channel_manager()->set_low_end_mode_for_testing(true);
   TestOnApplicationStateChange(CONTEXT_TYPE_OPENGLES2, true);
 }
 
 TEST_F(GpuChannelManagerTest, OnLowEndBackgroundedWithWebGL) {
-  channel_manager()->set_low_end_mode_for_testing(true);
   TestOnApplicationStateChange(CONTEXT_TYPE_WEBGL2, false);
-}
-
-TEST_F(GpuChannelManagerTest, OnHighEndBackgrounded) {
-  channel_manager()->set_low_end_mode_for_testing(false);
-  TestOnApplicationStateChange(CONTEXT_TYPE_OPENGLES2, false);
 }
 #endif
 

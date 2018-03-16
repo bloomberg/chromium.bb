@@ -74,12 +74,6 @@ GpuChannelManager::GpuChannelManager(
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
 #if defined(OS_ANDROID)
-      // Runs on GPU main thread and unregisters when the listener is destroyed,
-      // So, Unretained is fine here.
-      application_status_listener_(
-          base::Bind(&GpuChannelManager::OnApplicationStateChange,
-                     base::Unretained(this))),
-      is_running_on_low_end_mode_(base::SysInfo::IsLowEndDevice()),
       is_backgrounded_for_testing_(false),
 #endif
       exiting_for_lost_context_(false),
@@ -92,6 +86,18 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
+
+#if defined(OS_ANDROID)
+  // ApplicationStatusListener does not currently support being used from
+  // non-browser processes. Enable this optimization only for low-end, where GPU
+  // is run in-process.
+  if (base::SysInfo::IsLowEndDevice()) {
+    // Runs on GPU main thread and unregisters when the listener is destroyed,
+    // So, Unretained is fine here.
+    application_status_listener_.emplace(base::Bind(
+        &GpuChannelManager::OnApplicationStateChange, base::Unretained(this)));
+  }
+#endif
 }
 
 GpuChannelManager::~GpuChannelManager() {
@@ -270,8 +276,7 @@ void GpuChannelManager::OnApplicationStateChange(
   // https://crbug.com/792120. Re-enable when the fix lands.
   return;
 
-  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES ||
-      !is_running_on_low_end_mode_) {
+  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
     return;
   }
 
@@ -301,9 +306,6 @@ void GpuChannelManager::OnApplicationBackgrounded() {
       !is_backgrounded_for_testing_) {
     return;
   }
-
-  if (!is_running_on_low_end_mode_)
-    return;
 
   // Delete all the GL contexts when the channel does not use WebGL and Chrome
   // goes to background on low-end devices.

@@ -16,6 +16,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -128,10 +129,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
 
   void OnApplicationStateChange(base::android::ApplicationState state);
 
-  void set_low_end_mode_for_testing(bool mode) {
-    is_running_on_low_end_mode_ = mode;
-  }
-
   void OnApplicationBackgroundedForTesting();
 #endif
 
@@ -193,8 +190,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   base::TimeTicks last_gpu_access_time_;
   base::TimeTicks begin_wake_up_time_;
 
-  base::android::ApplicationStatusListener application_status_listener_;
-  bool is_running_on_low_end_mode_;
+  base::Optional<base::android::ApplicationStatusListener>
+      application_status_listener_;
   bool is_backgrounded_for_testing_;
 #endif
 
