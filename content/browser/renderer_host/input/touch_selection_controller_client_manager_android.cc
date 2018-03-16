@@ -71,8 +71,10 @@ void TouchSelectionControllerClientManagerAndroid::UpdateClientSelectionBounds(
   // Notify TouchSelectionController if anything should change here. Only
   // update if the client is different and not making a change to empty, or
   // is the same client.
-  GetTouchSelectionController()->OnSelectionBoundsChanged(
-      manager_selection_start_, manager_selection_end_);
+  if (GetTouchSelectionController()) {
+    GetTouchSelectionController()->OnSelectionBoundsChanged(
+        manager_selection_start_, manager_selection_end_);
+  }
 }
 
 void TouchSelectionControllerClientManagerAndroid::InvalidateClient(

@@ -55,7 +55,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientManager {
   virtual void InvalidateClient(ui::TouchSelectionControllerClient* client) = 0;
 
   // Provides direct access to the TouchSelectionController that will be used
-  // with all clients accessing this manager. Always returns non-null value.
+  // with all clients accessing this manager. May return null values on Android.
   virtual ui::TouchSelectionController* GetTouchSelectionController() = 0;
 
   // The following two functions allow clients (or their owners, etc.) to
