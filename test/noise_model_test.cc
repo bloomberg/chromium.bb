@@ -602,6 +602,108 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
   }
 }
 
+TEST_F(NoiseModelUpdateTest, NoiseStrengthChangeSignalsDifferentNoiseType) {
+  // Create a gradient image with std = 1 uncorrelated noise
+  const double kStd = 1;
+  for (int i = 0; i < kWidth * kHeight; ++i) {
+    data_ptr_[0][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
+    data_ptr_[1][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
+    data_ptr_[2][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
+  }
+  flat_blocks_.assign(flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK,
+            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
+                                   kHeight, strides_, chroma_sub_,
+                                   &flat_blocks_[0], kBlockSize));
+  const int kNumBlocks = kWidth * kHeight / kBlockSize / kBlockSize;
+  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[2].strength_solver.num_equations);
+
+  // Bump up noise by an insignificant amount
+  for (int i = 0; i < kWidth * kHeight; ++i) {
+    data_ptr_[1][i] = (uint8_t)(data_ptr_[1][i] + aom_randn(0.2));
+    data_ptr_[2][i] = (uint8_t)(data_ptr_[2][i] + aom_randn(0.2));
+  }
+  EXPECT_EQ(AOM_NOISE_STATUS_OK,
+            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
+                                   kHeight, strides_, chroma_sub_,
+                                   &flat_blocks_[0], kBlockSize));
+  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(2 * kNumBlocks,
+            model_.combined_state[0].strength_solver.num_equations);
+  EXPECT_EQ(2 * kNumBlocks,
+            model_.combined_state[1].strength_solver.num_equations);
+  EXPECT_EQ(2 * kNumBlocks,
+            model_.combined_state[2].strength_solver.num_equations);
+
+  // Bump up the noise strength on half the image for one channel by a
+  // significant amount.
+  for (int i = 0; i < kWidth * kHeight; ++i) {
+    if (i % kWidth < kWidth / 2)
+      data_ptr_[0][i] = (uint8_t)(data_ptr_[0][i] + aom_randn(0.5));
+  }
+  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE,
+            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
+                                   kHeight, strides_, chroma_sub_,
+                                   &flat_blocks_[0], kBlockSize));
+  // Since we didn't update the combined state, it should still be at 2 *
+  // num_blocks
+  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(2 * kNumBlocks,
+            model_.combined_state[0].strength_solver.num_equations);
+
+  // In normal operation, the "latest" estimate can be saved to the "combined"
+  // state for continued updates.
+  aom_noise_model_save_latest(&model_);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model_.combined_state[2].strength_solver.num_equations);
+}
+
+TEST_F(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
+  const double kCoeffs[2][24] = {
+    { 0.02884, -0.03356, 0.00633,  0.01757,  0.02849,  -0.04620,
+      0.02833, -0.07178, 0.07076,  -0.11603, -0.10413, -0.16571,
+      0.05158, -0.07969, 0.02640,  -0.07191, 0.02530,  0.41968,
+      0.21450, -0.00702, -0.01401, -0.03676, -0.08713, 0.44196 },
+    { 0.00269, -0.01291, -0.01513, 0.07234,  0.03208,   0.00477,
+      0.00226, -0.00254, 0.03533,  0.12841,  -0.25970,  -0.06336,
+      0.05238, -0.00845, -0.03118, 0.09043,  -0.36558,  0.48903,
+      0.00595, -0.11938, 0.02106,  0.095956, -0.350139, 0.59305 }
+  };
+
+  aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[0],
+                  noise_ptr_[0], kWidth, kHeight);
+  for (int i = 0; i < kWidth * kHeight; ++i) {
+    data_ptr_[0][i] = (uint8_t)(128 + noise_ptr_[0][i]);
+  }
+  flat_blocks_.assign(flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK,
+            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
+                                   kHeight, strides_, chroma_sub_,
+                                   &flat_blocks_[0], kBlockSize));
+
+  // Now try with the second set of AR coefficients
+  aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[1],
+                  noise_ptr_[0], kWidth, kHeight);
+  for (int i = 0; i < kWidth * kHeight; ++i) {
+    data_ptr_[0][i] = (uint8_t)(128 + noise_ptr_[0][i]);
+  }
+  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE,
+            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
+                                   kHeight, strides_, chroma_sub_,
+                                   &flat_blocks_[0], kBlockSize));
+}
+
 TEST(NoiseModelGetGrainParameters, TestLagSize) {
   aom_film_grain_t film_grain;
   for (int lag = 1; lag <= 3; ++lag) {
@@ -757,6 +859,8 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
   EXPECT_EQ(7, film_grain.ar_coeff_shift);
   EXPECT_EQ(10, film_grain.scaling_shift);
   EXPECT_EQ(kNumScalingPointsY, film_grain.num_y_points);
+  EXPECT_EQ(1, film_grain.update_parameters);
+  EXPECT_EQ(1, film_grain.apply_grain);
 
   const int kNumARCoeffs = 24;
   for (int i = 0; i < kNumARCoeffs; ++i) {

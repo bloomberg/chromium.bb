@@ -226,6 +226,14 @@ aom_noise_status_t aom_noise_model_update(
     const uint8_t *const denoised[3], int w, int h, int strides[3],
     int chroma_sub_log2[2], const uint8_t *const flat_blocks, int block_size);
 
+/*\brief Save the "latest" estimate into the "combined" estimate.
+ *
+ * This is meant to be called when the noise modeling detected a change
+ * in parameters (or for example, if a user wanted to reset estimation at
+ * a shot boundary).
+ */
+void aom_noise_model_save_latest(aom_noise_model_t *noise_model);
+
 /*!\brief Converts the noise_model parameters to the corresponding
  *    grain_parameters.
  *

@@ -416,6 +416,12 @@ if (CONFIG_AV1_ENCODER)
                    "${AOM_ROOT}/examples/twopass_encoder.c"
                    $<TARGET_OBJECTS:aom_common_app_util>
                    $<TARGET_OBJECTS:aom_encoder_app_util>)
+    if (CONFIG_FILM_GRAIN)
+      add_executable(noise_model
+                     "${AOM_ROOT}/examples/noise_model.c"
+                     $<TARGET_OBJECTS:aom_common_app_util>
+                     $<TARGET_OBJECTS:aom_encoder_app_util>)
+    endif ()
     if (CONFIG_SCALABILITY)
       add_executable(scalable_encoder
                      "${AOM_ROOT}/examples/scalable_encoder.c"
@@ -425,7 +431,7 @@ if (CONFIG_AV1_ENCODER)
 
     # Maintain a list of encoder example targets.
     set(AOM_ENCODER_EXAMPLE_TARGETS
-        aomenc lossless_encoder set_maps simple_encoder twopass_encoder)
+        aomenc lossless_encoder noise_model set_maps simple_encoder twopass_encoder)
 
     if (CONFIG_SCALABILITY)
       set(AOM_ENCODER_EXAMPLE_TARGETS ${AOM_ENCODER_EXAMPLE_TARGETS}
