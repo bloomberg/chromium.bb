@@ -195,11 +195,36 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
   ASSERT_TRUE(read_header());
   EXPECT_EQ(net::OK, error());
   EXPECT_EQ(200, resource_response().headers->response_code());
+  EXPECT_EQ("text/html", resource_response().mime_type);
+  EXPECT_EQ("utf-8", resource_response().charset);
 
   std::string payload;
   int rv = ReadPayloadStream(&payload);
 
   std::string expected_payload = GetTestFileContents("test.html");
+
+  EXPECT_EQ(payload, expected_payload);
+  EXPECT_EQ(rv, static_cast<int>(expected_payload.size()));
+}
+
+TEST_P(SignedExchangeHandlerTest, MimeType) {
+  mock_cert_verifier_->set_default_result(net::OK);
+  std::string contents = GetTestFileContents("test.example.org_hello.txt.htxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(net::OK, error());
+  EXPECT_EQ(200, resource_response().headers->response_code());
+  EXPECT_EQ("text/plain", resource_response().mime_type);
+  EXPECT_EQ("iso-8859-1", resource_response().charset);
+
+  std::string payload;
+  int rv = ReadPayloadStream(&payload);
+
+  std::string expected_payload = GetTestFileContents("hello.txt");
 
   EXPECT_EQ(payload, expected_payload);
   EXPECT_EQ(rv, static_cast<int>(expected_payload.size()));
