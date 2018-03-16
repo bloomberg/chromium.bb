@@ -11,11 +11,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/user_action_tester.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
-#include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
-#import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/test/fakes/fake_contained_presenter.h"
 #import "ios/chrome/test/fakes/fake_document_interaction_controller.h"
@@ -81,22 +78,15 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
   }
   ~DownloadManagerCoordinatorTest() override {
     [document_interaction_controller_class_ stopMocking];
-    [application_ stopMocking];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
   FakeContainedPresenter* presenter_;
   UIViewController* base_view_controller_;
   ScopedKeyWindow scoped_key_window_;
   web::TestWebState web_state_;
   id document_interaction_controller_class_;
   StubTabHelper tab_helper_;
-  // Application can be lazily created by tests, but it has to be OCMock.
-  // Destructor will call -stopMocking on this object to make sure that
-  // UIApplication is not mocked after these test finish running.
-  id application_;
   DownloadManagerCoordinator* coordinator_;
-  base::UserActionTester user_action_tester_;
 };
 
 // Tests starting the coordinator. Verifies that view controller is presented
@@ -284,11 +274,8 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
-  @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
-    [viewController.delegate
-        downloadManagerViewControllerDidClose:viewController];
-  }
+  [viewController.delegate
+      downloadManagerViewControllerDidClose:viewController];
 
   // Verify that child view controller is removed, download task is set to null
   // and download task is cancelled.
@@ -318,11 +305,9 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
   // button changes it's alpha.
   ASSERT_EQ(1.0f, viewController.installDriveButton.superview.alpha);
 
-  @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
-    [viewController.delegate
-        installDriveForDownloadManagerViewController:viewController];
-  }
+  [viewController.delegate
+      installDriveForDownloadManagerViewController:viewController];
+
   // Verify that Store Kit dialog was presented.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     return [base_view_controller_.presentedViewController class] ==
@@ -334,27 +319,14 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
     return viewController.installDriveButton.superview.alpha == 0.0f;
   }));
 
-  // Simulate Google Drive app installation and verify that expected user action
-  // has been recorded.
-  ASSERT_EQ(0, user_action_tester_.GetActionCount(
-                   kDownloadManagerGoogleDriveInstalled));
-  // SKStoreProductViewController uses UIApplication, so it's not possible to
-  // install the mock before the test run.
-  application_ = OCMClassMock([UIApplication class]);
-  OCMStub([application_ sharedApplication]).andReturn(application_);
-  OCMStub([application_ canOpenURL:GetGoogleDriveAppUrl()]).andReturn(YES);
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
-    base::RunLoop().RunUntilIdle();
-    return user_action_tester_.GetActionCount(
-               kDownloadManagerGoogleDriveInstalled) == 1;
-  }));
-
   // Stop to avoid holding a dangling pointer to destroyed task.
   [coordinator_ stop];
 }
 
 // Tests presenting Open In... menu.
 TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
+  web::TestWebThreadBundle thread_bundle;
+
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
   task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
   coordinator_.downloadTask = &task;
@@ -385,11 +357,8 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
   UIView* view = [[UIView alloc] init];
   [view addLayoutGuide:guide];
   ASSERT_FALSE(document_interaction_controller.presentedOpenInMenu);
-  @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
-    [viewController.delegate downloadManagerViewController:viewController
-                          presentOpenInMenuWithLayoutGuide:guide];
-  }
+  [viewController.delegate downloadManagerViewController:viewController
+                        presentOpenInMenuWithLayoutGuide:guide];
   ASSERT_TRUE(document_interaction_controller.presentedOpenInMenu);
   ASSERT_TRUE(CGRectEqualToRect(
       CGRectZero, document_interaction_controller.presentedOpenInMenu.rect));
@@ -409,11 +378,9 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
-  @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
-    [viewController.delegate
-        downloadManagerViewControllerDidClose:viewController];
-  }
+  [viewController.delegate
+      downloadManagerViewControllerDidClose:viewController];
+
   // Verify that UIAlert is presented.
   ASSERT_TRUE([base_view_controller_.presentedViewController
       isKindOfClass:[UIAlertController class]]);
@@ -461,6 +428,8 @@ TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
 // Tests starting the download. Verifies that download task is started and its
 // file writer is configured to write into download directory.
 TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
+  web::TestWebThreadBundle thread_bundle;
+
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
   task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
   web::DownloadTask* task_ptr = &task;
@@ -470,11 +439,8 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
-  @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
-    [viewController.delegate
-        downloadManagerViewControllerDidStartDownload:viewController];
-  }
+  [viewController.delegate
+      downloadManagerViewControllerDidStartDownload:viewController];
 
   // Starting download is async for model.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
