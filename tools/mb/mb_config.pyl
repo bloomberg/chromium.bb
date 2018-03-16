@@ -616,6 +616,7 @@
       'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
+      'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
@@ -1607,6 +1608,10 @@
 
     'release_trybot_arm': [
       'release_trybot', 'arm',
+    ],
+
+    'release_trybot_enable_blink_heap_verification': [
+      'release_trybot', 'enable_blink_heap_verification',
     ],
 
     'release_trybot_fuchsia': [
