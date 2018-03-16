@@ -132,6 +132,10 @@ Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/share
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Skip ]
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Skip ]
 
+# Layout tests don't work for printing cross-site frames.
+crbug.com/822372 http/tests/printing/cross-site-frame.html [ Crash ]
+crbug.com/822372 http/tests/printing/cross-site-frame-scrolled.html [ Crash ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/004.html [ Timeout ]
 
