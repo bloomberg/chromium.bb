@@ -71,7 +71,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     DCHECK(IsMainThread());
     WorkletThreadHolder<ThreadedWorkletThreadForTest>::CreateForTest(
         WebThreadCreationParams(WebThreadType::kTestThread)
-            .SetThreadName("ThreadedWorkletThreadForTest"));
+            .SetThreadNameForTest("ThreadedWorkletThreadForTest"));
   }
 
   static void ClearSharedBackingThread() {

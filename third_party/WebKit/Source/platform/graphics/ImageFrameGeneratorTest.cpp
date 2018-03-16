@@ -257,7 +257,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   AddNewData();
   std::unique_ptr<WebThread> thread = Platform::Current()->CreateThread(
       WebThreadCreationParams(WebThreadType::kTestThread)
-          .SetThreadName("DecodeThread"));
+          .SetThreadNameForTest("DecodeThread"));
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&DecodeThreadMain, WTF::RetainedRef(generator_),

@@ -42,7 +42,7 @@ class AnimationWorkletTestPlatform : public TestingPlatformSupport {
   AnimationWorkletTestPlatform()
       : thread_(old_platform_->CreateThread(
             WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadName("Compositor"))) {}
+                .SetThreadNameForTest("Compositor"))) {}
 
   WebThread* CompositorThread() const override { return thread_.get(); }
 
