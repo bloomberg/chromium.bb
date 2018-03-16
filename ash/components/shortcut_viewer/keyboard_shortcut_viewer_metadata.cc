@@ -63,6 +63,9 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       msg_id = ui::DeviceUsesKeyboardLayout2() ? IDS_KSV_MODIFIER_LAUNCHER
                                                : IDS_KSV_MODIFIER_SEARCH;
       break;
+    case ui::VKEY_ESCAPE:
+      msg_id = IDS_KSV_KEY_ESCAPE;
+      break;
     case ui::VKEY_SPACE:
       msg_id = IDS_KSV_KEY_SPACE;
       break;
