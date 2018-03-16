@@ -57,6 +57,8 @@ class PasswordGenerationInteractiveTest :
     public PasswordManagerBrowserTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
+
     // Make sure the feature is enabled.
     command_line->AppendSwitch(autofill::switches::kEnablePasswordGeneration);
 
