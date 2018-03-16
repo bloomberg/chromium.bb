@@ -71,7 +71,7 @@ Here is a typical flow for using the setup.
     \ [1/1 files][  1.9 GiB/  1.9 GiB] 100% Done  83.3 MiB/s ETA 00:00:00
     Operation completed over 1 objects/1.9 GiB.
     ```
-  - unzip into *moblab_image_source* folder. Note that we need the image as well
+  - unzip into *moblab_image* folder. Note that we need the image as well
     as some of the scripts bundled with it, and that the unzipped contents take
     up about 13 GB.
     ```
@@ -95,7 +95,7 @@ Here is a typical flow for using the setup.
       inflating: pack_partitions.sh
     ```
 - Obtain and unzip our DUT image. You could use the same moblab image that you
-  just downloaded (just provided the same path for *dut_image_source* below).
+  just downloaded (just provided the same path for *dut_image* below).
   We'll use a recent [betty paladin
   image](https://uberchromegw.corp.google.com/i/chromeos/builders/betty-paladin).
   ```
