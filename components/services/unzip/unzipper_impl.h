@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UNZIP_SERVICE_UNZIPPER_IMPL_H_
-#define COMPONENTS_UNZIP_SERVICE_UNZIPPER_IMPL_H_
+#ifndef COMPONENTS_SERVICES_UNZIP_UNZIPPER_IMPL_H_
+#define COMPONENTS_SERVICES_UNZIP_UNZIPPER_IMPL_H_
 
 #include <memory>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "components/unzip_service/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace unzip {
@@ -38,4 +38,4 @@ class UnzipperImpl : public mojom::Unzipper {
 
 }  // namespace unzip
 
-#endif  // COMPONENTS_UNZIP_SERVICE_UNZIPPER_IMPL_H_
+#endif  // COMPONENTS_SERVICES_UNZIP_UNZIPPER_IMPL_H_

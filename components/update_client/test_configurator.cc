@@ -10,7 +10,7 @@
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/patch/patch_service.h"
-#include "components/unzip_service/unzip_service.h"
+#include "components/services/unzip/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/service_manager/public/cpp/connector.h"

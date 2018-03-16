@@ -21,7 +21,7 @@ source_set("lib") {
 
   public_deps = [
     "//components/services/filesystem/public/interfaces",
-    "//components/unzip_service/public/interfaces",
+    "//components/services/unzip/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -51,7 +51,7 @@ source_set("unit_tests") {
     ":unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
-    "//components/unzip_service/public/cpp",
+    "//components/services/unzip/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

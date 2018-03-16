@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_
-#define COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_
+#ifndef COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_
+#define COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/unzip_service/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -47,4 +47,4 @@ class CrashyUnzipService : public service_manager::Service,
 
 }  // namespace unzip
 
-#endif  // COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_
+#endif  // COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_TEST_UNZIP_SERVICE_H_

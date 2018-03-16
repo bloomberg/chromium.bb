@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_UNZIP_H_
-#define COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_UNZIP_H_
+#ifndef COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_UNZIP_H_
+#define COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_UNZIP_H_
 
 #include <memory>
 
@@ -38,4 +38,4 @@ void UnzipWithFilter(std::unique_ptr<service_manager::Connector> connector,
 
 }  // namespace unzip
 
-#endif  // COMPONENTS_UNZIP_SERVICE_PUBLIC_CPP_UNZIP_H_
+#endif  // COMPONENTS_SERVICES_UNZIP_PUBLIC_CPP_UNZIP_H_

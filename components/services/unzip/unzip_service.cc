@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/unzip_service/unzip_service.h"
+#include "components/services/unzip/unzip_service.h"
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "components/unzip_service/unzipper_impl.h"
+#include "components/services/unzip/unzipper_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace unzip {

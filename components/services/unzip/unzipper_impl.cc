@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/unzip_service/unzipper_impl.h"
+#include "components/services/unzip/unzipper_impl.h"
 
 #include <string>
 #include <utility>

@@ -388,7 +388,7 @@ chrome_packaged_services = [
   ":chrome_manifest",
   "//chrome/profiling:manifest",
   "//components/services/patch:manifest",
-  "//components/unzip_service:manifest",
+  "//components/services/unzip:manifest",
   "//chrome/services/file_util:manifest",
   "//services/proxy_resolver:proxy_resolver_manifest",
   "//services/preferences:local_state_manifest",

@@ -21,7 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/crx_file/crx_verifier.h"
-#include "components/unzip_service/public/cpp/unzip.h"
+#include "components/services/unzip/public/cpp/unzip.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
