@@ -18,48 +18,70 @@ constexpr char kUrlSpec[] = "https://www.google.com/";
 
 }  // namespace
 
-TEST(ManifestShareTargetUtilTest,
-     ReplaceWebShareUrlPlaceholdersInvalidTemplate) {
-  const GURL kUrl(kUrlSpec);
-  GURL url_template_filled;
-
+TEST(ManifestShareTargetUtilTest, ReplaceUrlPlaceholdersInvalidTemplate) {
   // Badly nested placeholders.
   GURL url_template = GURL("http://example.com/?q={");
-  bool succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText,
-                                                  kUrl, &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   url_template = GURL("http://example.com/?q={title");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   url_template = GURL("http://example.com/?q={title{text}}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   url_template = GURL("http://example.com/?q={title{}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   url_template = GURL("http://example.com/?q={{title}}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   // Placeholder with non-identifier character.
   url_template = GURL("http://example.com/?q={title?}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
+
+  // Placeholder with digit character.
+  url_template = GURL("http://example.com/?q={title1}");
+  EXPECT_TRUE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_TRUE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
+
+  // Empty placeholder.
+  url_template = GURL("http://example.com/?q={}");
+  EXPECT_TRUE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_TRUE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
 
   // Invalid placeholder in URL fragment.
   url_template = GURL("http://example.com/#{title?}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_FALSE(succeeded);
+  EXPECT_FALSE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_FALSE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
+
+  // { in path.
+  url_template = GURL("http://example.com/subpath{/");
+  EXPECT_TRUE(ValidateWebShareUrlTemplate(url_template));
+  EXPECT_TRUE(
+      ReplaceWebShareUrlPlaceholders(url_template, "", "", GURL(), nullptr));
+
+  // Invalid placeholder. Non-empty title, text, share URL and non-empty output
+  // parameter.
+  GURL url_template_filled;
+  url_template = GURL("http://example.com/?q={");
+  EXPECT_FALSE(ReplaceWebShareUrlPlaceholders(url_template, "text", "title",
+                                              GURL("http://www.google.com"),
+                                              &url_template_filled));
 }
 
 TEST(ManifestShareTargetUtilTest, ReplaceWebShareUrlPlaceholders) {
@@ -72,13 +94,6 @@ TEST(ManifestShareTargetUtilTest, ReplaceWebShareUrlPlaceholders) {
                                                   kUrl, &url_template_filled);
   EXPECT_TRUE(succeeded);
   EXPECT_EQ(url_template, url_template_filled);
-
-  // Empty |url_template|
-  url_template = GURL();
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_TRUE(succeeded);
-  EXPECT_EQ(GURL(), url_template_filled);
 
   // One title placeholder.
   url_template = GURL("http://example.com/#{title}");
@@ -146,13 +161,6 @@ TEST(ManifestShareTargetUtilTest, ReplaceWebShareUrlPlaceholders) {
       "text=My%20text&"
       "text=My%20text&title=My%20title&url=https%3A%2F%2Fwww.google.com%2F",
       url_template_filled.spec());
-
-  // Placeholder with digit character.
-  url_template = GURL("http://example.com/#{title1}");
-  succeeded = ReplaceWebShareUrlPlaceholders(url_template, kTitle, kText, kUrl,
-                                             &url_template_filled);
-  EXPECT_TRUE(succeeded);
-  EXPECT_EQ("http://example.com/#", url_template_filled.spec());
 
   // Empty placeholder.
   url_template = GURL("http://example.com/#{}");

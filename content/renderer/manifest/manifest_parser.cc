@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/manifest.h"
+#include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
@@ -349,8 +350,16 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
 
 GURL ManifestParser::ParseShareTargetURLTemplate(
     const base::DictionaryValue& share_target) {
-  return ParseURL(share_target, "url_template", manifest_url_,
-                  ParseURLOriginRestrictions::kSameOriginOnly);
+  GURL url_template = ParseURL(share_target, "url_template", manifest_url_,
+                               ParseURLOriginRestrictions::kSameOriginOnly);
+  if (!ValidateWebShareUrlTemplate(url_template)) {
+    AddErrorInfo(
+        "property 'url_template' ignored. Placeholders have incorrect "
+        "syntax.");
+    return GURL();
+  }
+
+  return url_template;
 }
 
 base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
