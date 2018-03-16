@@ -30,12 +30,16 @@ How to update or add fonts:
 7.  (optional) Update FONT_FILES in
     third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/port/base.py .
 
-If you need access to the chromium-fonts bucket, contact Chrome infra. For
+If you need access to the chromium-fonts bucket, contact Chrome infra.% For
 details, please refer to
 https://chromium.googlesource.com/infra/infra/+/master/doc/users/contacting_troopers.md
 
 Font Origins:
 
+Arimo-Bold.ttf             https://github.com/google/fonts/tree/master/apache/arimo
+Arimo-BoldItalic.ttf       https://github.com/google/fonts/tree/master/apache/arimo
+Arimo-Italic.ttf           https://github.com/google/fonts/tree/master/apache/arimo
+Arimo-Regular.ttf          https://github.com/google/fonts/tree/master/apache/arimo
 DejaVuSans.ttf             https://dejavu-fonts.github.io/Download.html
 Garuda.ttf                 https://linux.thai.net/projects/fonts-tlwg
 Lohit-Devanagari.ttf       https://pagure.io/lohit
@@ -44,3 +48,7 @@ Lohit-Tamil.ttf            https://pagure.io/lohit
 MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
 NotoSansCJKjp-Regular.otf  https://www.google.com/get/noto/#sans-jpan
 NotoSansKhmer-Regular.ttf  https://www.google.com/get/noto/#sans-khmr
+Tinos-Bold.ttf             https://github.com/google/fonts/tree/master/apache/tinos
+Tinos-BoldItalic.ttf       https://github.com/google/fonts/tree/master/apache/tinos
+Tinos-Italic.ttf           https://github.com/google/fonts/tree/master/apache/tinos
+Tinos-Regular.ttf          https://github.com/google/fonts/tree/master/apache/tinos
