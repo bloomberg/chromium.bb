@@ -27,6 +27,8 @@ namespace scheduler {
 #define DURATION_PER_TASK_TYPE_METRIC_NAME \
   "RendererScheduler.TaskDurationPerTaskType"
 #define COUNT_PER_FRAME_METRIC_NAME "RendererScheduler.TaskCountPerFrameType"
+#define DURATION_PER_TASK_USE_CASE_NAME \
+  "RendererScheduler.TaskDurationPerUseCase"
 
 enum class MainThreadTaskLoadState { kLow, kHigh, kUnknown };
 
@@ -100,6 +102,7 @@ RendererMetricsHelper::RendererMetricsHelper(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Foreground"),
       background_per_task_type_duration_reporter_(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Background"),
+      per_task_use_case_duration_reporter_(DURATION_PER_TASK_USE_CASE_NAME),
       main_thread_task_load_state_(MainThreadTaskLoadState::kUnknown) {
   main_thread_load_tracker_.Resume(now);
   if (renderer_backgrounded) {
@@ -365,6 +368,9 @@ void RendererMetricsHelper::RecordTaskMetrics(
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan1s",
                               frame_status, FrameStatus::kCount);
   }
+
+  per_task_use_case_duration_reporter_.RecordTask(
+      renderer_scheduler_->main_thread_only().current_use_case, duration);
 }
 
 void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,

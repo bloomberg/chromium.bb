@@ -21,10 +21,23 @@
 namespace blink {
 namespace scheduler {
 
+namespace {
+class RendererSchedulerImplForTest : public RendererSchedulerImpl {
+ public:
+  RendererSchedulerImplForTest(
+      std::unique_ptr<TaskQueueManager> task_queue_manager,
+      base::Optional<base::Time> initial_virtual_time)
+      : RendererSchedulerImpl(std::move(task_queue_manager),
+                              initial_virtual_time){};
+
+  using RendererSchedulerImpl::SetCurrentUseCaseForTest;
+};
+}  // namespace
+
 using QueueType = MainThreadTaskQueue::QueueType;
+using base::Bucket;
 using testing::ElementsAre;
 using testing::UnorderedElementsAre;
-using base::Bucket;
 
 class RendererMetricsHelperTest : public ::testing::Test {
  public:
@@ -35,7 +48,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
     histogram_tester_.reset(new base::HistogramTester());
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
-    scheduler_ = std::make_unique<RendererSchedulerImpl>(
+    scheduler_ = std::make_unique<RendererSchedulerImplForTest>(
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
@@ -55,7 +68,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
         new MainThreadTaskQueueForTest(queue_type));
 
     // Pass an empty task for recording.
-    TaskQueue::PostedTask posted_task(base::Closure(), FROM_HERE);
+    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
     TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
     metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
                                        start + duration, base::nullopt);
@@ -70,7 +83,22 @@ class RendererMetricsHelperTest : public ::testing::Test {
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     queue->SetFrameScheduler(scheduler);
     // Pass an empty task for recording.
-    TaskQueue::PostedTask posted_task(base::Closure(), FROM_HERE);
+    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
+    TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
+    metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
+                                       start + duration, base::nullopt);
+  }
+
+  void RunTask(UseCase use_case,
+               base::TimeTicks start,
+               base::TimeDelta duration) {
+    DCHECK_LE(clock_.NowTicks(), start);
+    clock_.SetNowTicks(start + duration);
+    scoped_refptr<MainThreadTaskQueueForTest> queue(
+        new MainThreadTaskQueueForTest(QueueType::kDefault));
+    scheduler_->SetCurrentUseCaseForTest(use_case);
+    // Pass an empty task for recording.
+    TaskQueue::PostedTask posted_task(base::OnceClosure(), FROM_HERE);
     TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
     metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
                                        start + duration, base::nullopt);
@@ -192,7 +220,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<RendererSchedulerImplForTest> scheduler_;
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<FakePageScheduler> playing_view_ =
@@ -294,6 +322,41 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
           Bucket(static_cast<int>(QueueType::kCompositor), 20),
           Bucket(static_cast<int>(QueueType::kIdle), 1650),
           Bucket(static_cast<int>(QueueType::kFrameLoadingControl), 5)));
+
+  RunTask(UseCase::kTouchstart, Milliseconds(7000),
+          base::TimeDelta::FromMilliseconds(25));
+  RunTask(UseCase::kTouchstart, Milliseconds(7050),
+          base::TimeDelta::FromMilliseconds(25));
+  RunTask(UseCase::kTouchstart, Milliseconds(7100),
+          base::TimeDelta::FromMilliseconds(25));
+
+  RunTask(UseCase::kCompositorGesture, Milliseconds(7150),
+          base::TimeDelta::FromMilliseconds(5));
+  RunTask(UseCase::kCompositorGesture, Milliseconds(7200),
+          base::TimeDelta::FromMilliseconds(30));
+
+  RunTask(UseCase::kMainThreadCustomInputHandling, Milliseconds(7300),
+          base::TimeDelta::FromMilliseconds(2));
+  RunTask(UseCase::kSynchronizedGesture, Milliseconds(7400),
+          base::TimeDelta::FromMilliseconds(250));
+  RunTask(UseCase::kMainThreadCustomInputHandling, Milliseconds(7700),
+          base::TimeDelta::FromMilliseconds(150));
+  RunTask(UseCase::kLoading, Milliseconds(7900),
+          base::TimeDelta::FromMilliseconds(50));
+  RunTask(UseCase::kMainThreadGesture, Milliseconds(8000),
+          base::TimeDelta::FromMilliseconds(60));
+  EXPECT_THAT(
+      histogram_tester_->GetAllSamples(
+          "RendererScheduler.TaskDurationPerUseCase"),
+      UnorderedElementsAre(
+          Bucket(static_cast<int>(UseCase::kNone), 2482),
+          Bucket(static_cast<int>(UseCase::kCompositorGesture), 35),
+          Bucket(static_cast<int>(UseCase::kMainThreadCustomInputHandling),
+                 152),
+          Bucket(static_cast<int>(UseCase::kSynchronizedGesture), 250),
+          Bucket(static_cast<int>(UseCase::kTouchstart), 75),
+          Bucket(static_cast<int>(UseCase::kLoading), 50),
+          Bucket(static_cast<int>(UseCase::kMainThreadGesture), 60)));
 }
 
 TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
@@ -361,8 +424,8 @@ TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
   // Waste 5+ minutes so that the delayed stop is triggered
   RunTask(QueueType::kDefault, Milliseconds(1),
           base::TimeDelta::FromSeconds(5 * 61));
-  // Firing ForceUpdatePolicy multiple times to make sure that the metric is
-  // only recorded upon an actual change.
+  // Firing ForceUpdatePolicy multiple times to make sure that the
+  // metric is only recorded upon an actual change.
   ForceUpdatePolicy();
   ForceUpdatePolicy();
   ForceUpdatePolicy();
@@ -472,7 +535,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
 
   EXPECT_THAT(
       histogram_tester_->GetAllSamples(
-          "RendererScheduler.TaskCountPerFrameType.LongerThan16ms"),
+          "RendererScheduler.TaskCountPerFrameType."
+          "LongerThan16ms"),
       UnorderedElementsAre(
           Bucket(static_cast<int>(FrameStatus::kMainFrameBackground), 10),
           Bucket(static_cast<int>(FrameStatus::kSameOriginHidden), 15),
@@ -481,7 +545,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
 
   EXPECT_THAT(
       histogram_tester_->GetAllSamples(
-          "RendererScheduler.TaskCountPerFrameType.LongerThan50ms"),
+          "RendererScheduler.TaskCountPerFrameType."
+          "LongerThan50ms"),
       UnorderedElementsAre(
           Bucket(static_cast<int>(FrameStatus::kMainFrameBackground), 7),
           Bucket(static_cast<int>(FrameStatus::kSameOriginHidden), 10),
@@ -490,7 +555,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
 
   EXPECT_THAT(
       histogram_tester_->GetAllSamples(
-          "RendererScheduler.TaskCountPerFrameType.LongerThan100ms"),
+          "RendererScheduler.TaskCountPerFrameType."
+          "LongerThan100ms"),
       UnorderedElementsAre(
           Bucket(static_cast<int>(FrameStatus::kMainFrameBackground), 2),
           Bucket(static_cast<int>(FrameStatus::kSameOriginHidden), 7),
@@ -499,7 +565,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
 
   EXPECT_THAT(
       histogram_tester_->GetAllSamples(
-          "RendererScheduler.TaskCountPerFrameType.LongerThan150ms"),
+          "RendererScheduler.TaskCountPerFrameType."
+          "LongerThan150ms"),
       UnorderedElementsAre(
           Bucket(static_cast<int>(FrameStatus::kMainFrameBackground), 1),
           Bucket(static_cast<int>(FrameStatus::kSameOriginHidden), 4),
@@ -514,12 +581,14 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
           Bucket(static_cast<int>(FrameStatus::kSameOriginHidden), 2)));
 }
 
-// TODO(crbug.com/754656): Add tests for NthMinute and AfterNthMinute
+// TODO(crbug.com/754656): Add tests for NthMinute and
+// AfterNthMinute histograms.
+
+// TODO(crbug.com/754656): Add tests for
+// TaskDuration.Hidden/Visible histograms.
+
+// TODO(crbug.com/754656): Add tests for non-TaskDuration
 // histograms.
-
-// TODO(crbug.com/754656): Add tests for TaskDuration.Hidden/Visible histograms.
-
-// TODO(crbug.com/754656): Add tests for non-TaskDuration histograms.
 
 }  // namespace scheduler
 }  // namespace blink

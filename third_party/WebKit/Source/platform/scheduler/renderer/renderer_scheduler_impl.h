@@ -31,6 +31,7 @@
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
+#include "platform/scheduler/renderer/use_case.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/util/tracing_helper.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -39,7 +40,7 @@ namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
 }
-}
+}  // namespace base
 
 namespace blink {
 namespace scheduler {
@@ -61,36 +62,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       public base::trace_event::TraceLog::AsyncEnabledStateObserver,
       public AutoAdvancingVirtualTimeDomain::Observer {
  public:
-  // Keep RendererScheduler::UseCaseToString in sync with this enum.
-  enum class UseCase {
-    // No active use case detected.
-    kNone,
-    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
-    // compositor thread.
-    kCompositorGesture,
-    // An unspecified touch gesture which is being handled by the main thread.
-    // Note that since we don't have a full view of the use case, we should be
-    // careful to prioritize all work equally.
-    kMainThreadCustomInputHandling,
-    // A continuous gesture (e.g., scroll, pinch) which is being driven by the
-    // compositor thread but also observed by the main thread. An example is
-    // synchronized scrolling where a scroll listener on the main thread changes
-    // page layout based on the current scroll position.
-    kSynchronizedGesture,
-    // A gesture has recently started and we are about to run main thread touch
-    // listeners to find out the actual gesture type. To minimize touch latency,
-    // only input handling work should run in this state.
-    kTouchstart,
-    // A page is loading.
-    kLoading,
-    // A continuous gesture (e.g., scroll) which is being handled by the main
-    // thread.
-    kMainThreadGesture,
-    // Must be the last entry.
-    kUseCaseCount,
-    kFirstUseCase = kNone,
-  };
-
   // Don't use except for tracing.
   struct TaskDescriptionForTracing {
     TaskType task_type;
@@ -313,6 +284,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
+
+  // `current_use_case` will be overwritten by the next call to UpdatePolicy.
+  // Thus, this function should be only used for testing purposes.
+  void SetCurrentUseCaseForTest(UseCase use_case) {
+    main_thread_only().current_use_case = use_case;
+  }
 
  private:
   friend class RenderWidgetSchedulingState;
@@ -681,8 +658,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
         keep_active_fetch_or_worker;
     TraceableState<bool, kTracingCategoryNameInfo>
         stopping_when_backgrounded_enabled;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        stopped_when_backgrounded;
+    TraceableState<bool, kTracingCategoryNameInfo> stopped_when_backgrounded;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
         loading_task_estimated_cost;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
@@ -750,18 +726,15 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     UserModel user_model;
     TraceableState<bool, kTracingCategoryNameInfo>
         awaiting_touch_start_response;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        in_idle_period;
+    TraceableState<bool, kTracingCategoryNameInfo> in_idle_period;
     TraceableState<bool, kTracingCategoryNameInfo>
         begin_main_frame_on_critical_path;
     TraceableState<bool, kTracingCategoryNameInfo>
         last_gesture_was_compositor_driven;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        default_gesture_prevented;
+    TraceableState<bool, kTracingCategoryNameInfo> default_gesture_prevented;
     TraceableState<bool, kTracingCategoryNameInfo>
         have_seen_a_potentially_blocking_gesture;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        waiting_for_meaningful_paint;
+    TraceableState<bool, kTracingCategoryNameInfo> waiting_for_meaningful_paint;
     TraceableState<bool, kTracingCategoryNameInfo>
         have_seen_input_since_navigation;
   };

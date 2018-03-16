@@ -539,12 +539,11 @@ RendererSchedulerImpl::AnyThread::AnyThread(
           renderer_scheduler_impl,
           &renderer_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      in_idle_period(
-          false,
-          "RendererScheduler.InIdlePeriod",
-          renderer_scheduler_impl,
-          &renderer_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
+      in_idle_period(false,
+                     "RendererScheduler.InIdlePeriod",
+                     renderer_scheduler_impl,
+                     &renderer_scheduler_impl->tracing_controller_,
+                     YesNoStateToString),
       begin_main_frame_on_critical_path(
           false,
           "RendererScheduler.BeginMainFrameOnCriticalPath",
@@ -557,12 +556,11 @@ RendererSchedulerImpl::AnyThread::AnyThread(
           renderer_scheduler_impl,
           &renderer_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      default_gesture_prevented(
-          true,
-          "RendererScheduler.DefaultGesturePrevented",
-          renderer_scheduler_impl,
-          &renderer_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
+      default_gesture_prevented(true,
+                                "RendererScheduler.DefaultGesturePrevented",
+                                renderer_scheduler_impl,
+                                &renderer_scheduler_impl->tracing_controller_,
+                                YesNoStateToString),
       have_seen_a_potentially_blocking_gesture(
           false,
           "RendererScheduler.HaveSeenPotentiallyBlockingGesture",
@@ -1659,7 +1657,7 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
   }
 }
 
-RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
+UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     base::TimeTicks now,
     base::TimeDelta* expected_use_case_duration) const {
   any_thread_lock_.AssertAcquired();
