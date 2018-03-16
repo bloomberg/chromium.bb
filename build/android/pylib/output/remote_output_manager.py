@@ -66,7 +66,7 @@ class GoogleStorageArchivedFile(output_manager.ArchivedFile):
   def _PrepareArchive(self):
     self._content_addressed = (self._datatype in (
         output_manager.Datatype.HTML,
-        output_manager.Datatype.IMAGE,
+        output_manager.Datatype.PNG,
         output_manager.Datatype.JSON))
     if self._content_addressed:
       sha1 = hashlib.sha1()
@@ -85,10 +85,5 @@ class GoogleStorageArchivedFile(output_manager.ArchivedFile):
         google_storage_helper.exists(self._upload_path, self._bucket)):
       return
 
-    content_type = None
-    if self._datatype == output_manager.Datatype.HTML:
-      content_type = 'text/html'
-    elif self._datatype == output_manager.Datatype.JSON:
-      content_type = 'application/json'
     google_storage_helper.upload(
-        self._upload_path, self.name, self._bucket, content_type=content_type)
+        self._upload_path, self.name, self._bucket, content_type=self._datatype)
