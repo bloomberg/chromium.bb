@@ -215,7 +215,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public void updateCustomActionButton(int index, Drawable drawable, String description) {
-        ImageButton button = (ImageButton) mCustomActionButtons.getChildAt(index);
+        ImageButton button = (ImageButton) mCustomActionButtons.getChildAt(
+                mCustomActionButtons.getChildCount() - 1 - index);
         assert button != null;
         updateCustomActionButtonVisuals(button, drawable, description);
     }

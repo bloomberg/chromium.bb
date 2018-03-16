@@ -484,7 +484,10 @@ public class CustomTabActivity extends ChromeActivity {
             @Override
             public boolean updateCustomButton(int id, Bitmap bitmap, String description) {
                 CustomButtonParams params = mIntentDataProvider.getButtonParamsForId(id);
-                if (params == null) return false;
+                if (params == null) {
+                    Log.w(TAG, "Custom toolbar button with ID %d not found", id);
+                    return false;
+                }
 
                 params.update(bitmap, description);
                 if (params.showOnToolbar()) {
@@ -492,10 +495,7 @@ public class CustomTabActivity extends ChromeActivity {
                         return false;
                     }
                     int index = mIntentDataProvider.getCustomToolbarButtonIndexForId(id);
-                    if (index == -1) {
-                        Log.w(TAG, "Invalid ID for custom toolbar button: %s", id);
-                        return false;
-                    }
+                    assert index != -1;
                     getToolbarManager().updateCustomActionButton(
                             index, params.getIcon(getResources()), description);
                 } else {
