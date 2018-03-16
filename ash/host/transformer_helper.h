@@ -47,7 +47,8 @@ class ASH_EXPORT TransformerHelper {
 
   // Updates the root window size based on the host size and
   // current transform.
-  void UpdateWindowSize(const gfx::Size& host_size);
+  void UpdateWindowSizeAndScale(const gfx::Size& host_size,
+                                float device_scale_factor);
 
  private:
   AshWindowTreeHost* ash_host_;
