@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -40,6 +41,8 @@
 #endif
 
 namespace {
+
+constexpr char kEngagementThreshold[] = "engagement_threshold";
 
 void LogAction(TabUnderNavigationThrottle::Action action, bool off_the_record) {
   UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction", action,
@@ -83,7 +86,6 @@ void OnListItemClicked(bool off_the_record,
 
 void LogTabUnderAttempt(content::NavigationHandle* handle,
                         base::Optional<ukm::SourceId> opener_source_id,
-                        double engagement_score,
                         bool off_the_record) {
   LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder, off_the_record);
 
@@ -96,9 +98,6 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
         .SetDidTabUnder(true)
         .Record(ukm_recorder);
   }
-  DCHECK_EQ(100, SiteEngagementService::GetMaxPoints());
-  UMA_HISTOGRAM_COUNTS_100("Tab.TabUnder.EngagementScore",
-                           std::ceil(engagement_score));
 }
 
 }  // namespace
@@ -119,40 +118,56 @@ TabUnderNavigationThrottle::~TabUnderNavigationThrottle() = default;
 TabUnderNavigationThrottle::TabUnderNavigationThrottle(
     content::NavigationHandle* handle)
     : content::NavigationThrottle(handle),
+      engagement_threshold_(
+          base::GetFieldTrialParamByFeatureAsInt(kBlockTabUnders,
+                                                 kEngagementThreshold,
+                                                 0 /* default_value */)),
       off_the_record_(
           handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()),
       block_(base::FeatureList::IsEnabled(kBlockTabUnders)),
       has_opened_popup_since_last_user_gesture_at_start_(
           HasOpenedPopupSinceLastUserGesture()) {}
 
-// static
-bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
-    content::NavigationHandle* navigation_handle) {
+bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect() const {
   // Some browser initiated navigations have HasUserGesture set to false. This
   // should eventually be fixed in crbug.com/617904. In the meantime, just dont
   // block browser initiated ones.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->HasUserGesture() ||
-      !navigation_handle->IsRendererInitiated()) {
+  if (!navigation_handle()->IsInMainFrame() ||
+      navigation_handle()->HasUserGesture() ||
+      !navigation_handle()->IsRendererInitiated()) {
     return false;
   }
 
   // An empty previous URL indicates this was the first load. We filter these
   // out because we're primarily interested in sites which navigate themselves
   // away while in the background.
+  content::WebContents* contents = navigation_handle()->GetWebContents();
   const GURL& previous_main_frame_url =
-      navigation_handle->HasCommitted()
-          ? navigation_handle->GetPreviousURL()
-          : navigation_handle->GetWebContents()->GetLastCommittedURL();
+      navigation_handle()->HasCommitted()
+          ? navigation_handle()->GetPreviousURL()
+          : contents->GetLastCommittedURL();
   if (previous_main_frame_url.is_empty())
     return false;
 
   // Same-site navigations are exempt from tab-under protection.
+  const GURL& target_url = navigation_handle()->GetURL();
   if (net::registry_controlled_domains::SameDomainOrHost(
-          previous_main_frame_url, navigation_handle->GetURL(),
+          previous_main_frame_url, target_url,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     return false;
   }
+
+  // This metric should be logged as the last check before a site would be
+  // blocked, to give an accurate sense of what scores tab-under destinations
+  // typically have.
+  DCHECK_EQ(100, SiteEngagementService::GetMaxPoints());
+  auto* site_engagement_service = SiteEngagementService::Get(
+      Profile::FromBrowserContext(contents->GetBrowserContext()));
+  double engagement_score = site_engagement_service->GetScore(target_url);
+  UMA_HISTOGRAM_COUNTS_100("Tab.TabUnder.EngagementScore",
+                           std::ceil(engagement_score));
+  if (engagement_score > engagement_threshold_ && engagement_threshold_ != -1)
+    return false;
 
   return true;
 }
@@ -160,7 +175,7 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
 content::NavigationThrottle::ThrottleCheckResult
 TabUnderNavigationThrottle::MaybeBlockNavigation() {
   if (seen_tab_under_ || !has_opened_popup_since_last_user_gesture_at_start_ ||
-      !IsSuspiciousClientRedirect(navigation_handle())) {
+      !IsSuspiciousClientRedirect()) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -170,17 +185,13 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
   DCHECK(popup_opener);
   popup_opener->OnDidTabUnder();
 
-  auto* site_engagement_service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(contents->GetBrowserContext()));
-  const GURL& url = navigation_handle()->GetURL();
-  double engagement_score = site_engagement_service->GetScore(url);
   LogTabUnderAttempt(navigation_handle(),
-                     popup_opener->last_committed_source_id(), engagement_score,
-                     off_the_record_);
+                     popup_opener->last_committed_source_id(), off_the_record_);
 
   if (block_) {
     const std::string error =
-        base::StringPrintf(kBlockTabUnderFormatMessage, url.spec().c_str());
+        base::StringPrintf(kBlockTabUnderFormatMessage,
+                           navigation_handle()->GetURL().spec().c_str());
     contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, error.c_str());
     LogAction(Action::kBlocked, off_the_record_);
