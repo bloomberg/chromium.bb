@@ -24,7 +24,6 @@
 #include "core/style/ComputedStyle.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/MediaControlsResourceLoader.h"
-#include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "platform/runtime_enabled_features.h"
 #include "public/platform/Platform.h"
@@ -52,8 +51,6 @@ namespace blink {
 // MediaControlTimelineElement
 //   (-webkit-media-controls-timeline)
 // +-div#thumb (created by the HTMLSliderElement)
-//  +-MediaControlCurrentTimeDisplayElement#thumb-current-time
-//    {if IsModern() and IsHTMLVideoElement()}
 //
 //   The child elements are only present if MediaControlsImpl::IsModern() is
 //   enabled. These three <div>'s are used to show the buffering animation.
@@ -63,8 +60,7 @@ namespace blink {
 // +-HTMLStyleElement
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
-    : MediaControlSliderElement(media_controls, kMediaSlider),
-      current_time_display_(nullptr) {
+    : MediaControlSliderElement(media_controls, kMediaSlider) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
 
   if (MediaControlsImpl::IsModern()) {
@@ -75,21 +71,6 @@ MediaControlTimelineElement::MediaControlTimelineElement(
                                           &track);
     MediaControlElementsHelper::CreateDiv("-internal-track-segment-buffering",
                                           &track);
-
-    // Create the current time scrubbing element.
-    if (MediaElement().IsHTMLVideoElement()) {
-      Element* thumb = track.getElementById("thumb");
-      DCHECK(thumb);
-
-      // The time display should have a have a timeline-specific pseudo ID. This
-      // is to ensure it does not pick up styles from the current time display.
-      current_time_display_ =
-          new MediaControlCurrentTimeDisplayElement(GetMediaControls());
-      current_time_display_->setAttribute(
-          "pseudo", "-internal-media-controls-thumb-current-time");
-      current_time_display_->SetIsWanted(false);
-      thumb->AppendChild(current_time_display_);
-    }
 
     // This stylesheet element contains rules that cannot be present in the UA
     // stylesheet (e.g. animations).
@@ -142,17 +123,11 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
         ShadowElementNames::SliderThumb());
     bool started_from_thumb = thumb && thumb == event->target()->ToNode();
     metrics_.StartGesture(started_from_thumb);
-
-    if (current_time_display_)
-      current_time_display_->SetIsWanted(true);
   } else if (EndScrubbingEvent(*event)) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.ScrubbingEnd"));
     GetMediaControls().EndScrubbing();
     metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
-
-    if (current_time_display_)
-      current_time_display_->SetIsWanted(false);
   }
 
   if (event->type() == EventTypeNames::keydown) {
@@ -183,22 +158,6 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   }
 
   double time = value().ToDouble();
-
-  // Update the scrubbing UI with the current time.
-  if (current_time_display_) {
-    current_time_display_->SetCurrentValue(time);
-
-    // Set the margin left based on the new width of the text so we are
-    // correctly centered.
-    if (LayoutBox* box = current_time_display_->GetLayoutBox()) {
-      String margin_left =
-          WTF::String::Number(ceil(box->LogicalWidth().Round() / 2) * -1) +
-          "px";
-      current_time_display_->style()->setProperty(
-          &GetDocument(), "margin-left", margin_left, "", ASSERT_NO_EXCEPTION);
-    }
-  }
-
   double duration = MediaElement().duration();
   // Workaround for floating point error - it's possible for this element's max
   // attribute to be rounded to a value slightly higher than the duration. If
@@ -294,7 +253,6 @@ void MediaControlTimelineElement::RenderBarSegments() {
 
 void MediaControlTimelineElement::Trace(blink::Visitor* visitor) {
   MediaControlSliderElement::Trace(visitor);
-  visitor->Trace(current_time_display_);
 }
 
 bool MediaControlTimelineElement::BeginScrubbingEvent(Event& event) {
@@ -313,8 +271,6 @@ void MediaControlTimelineElement::OnControlsHidden() {
 
   // End scrubbing state.
   is_touching_ = false;
-  if (current_time_display_)
-    current_time_display_->SetIsWanted(false);
 }
 
 void MediaControlTimelineElement::OnControlsShown() {
