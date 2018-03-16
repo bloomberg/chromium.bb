@@ -39,7 +39,7 @@
             focus-row-control focus-type="menu">
         </button>
       </paper-icon-button-light>
-      <dialog is="cr-action-menu">
+      <cr-action-menu>
         <button slot="item" class="dropdown-item" on-click="onManageTap_"
             id="manage">
           $i18n{searchEnginesManageExtension}
@@ -48,7 +48,7 @@
             id="disable">
           $i18n{disable}
         </button>
-      </dialog>
+      </cr-action-menu>
     </div>
   </template>
   <script src="omnibox_extension_entry.js"></script>

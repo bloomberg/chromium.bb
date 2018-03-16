@@ -58,7 +58,7 @@
             focus-row-control focus-type="cr-menu-button">
         </button>
       </paper-icon-button-light>
-      <dialog is="cr-action-menu">
+      <cr-action-menu>
         <button slot="item" class="dropdown-item" on-click="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">
           $i18n{searchEnginesMakeDefault}
@@ -71,7 +71,7 @@
             hidden$="[[!engine.canBeRemoved]]" id="delete">
           $i18n{searchEnginesRemoveFromList}
         </button>
-      </dialog>
+      </cr-action-menu>
     </div>
     <template is="dom-if" if="[[engine.extension]]">
       <extension-controlled-indicator

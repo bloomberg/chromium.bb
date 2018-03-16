@@ -186,7 +186,7 @@
         </paper-button>
       </div>
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
-        <dialog is="cr-action-menu" id="menu" auto-reposition>
+        <cr-action-menu id="menu" auto-reposition>
           <template is="dom-repeat" items="[[storedAccounts_]]">
             <button class="dropdown-item" on-click="onAccountTap_" slot="item">
               <img class="account-icon small" alt=""
@@ -200,7 +200,7 @@
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span>$i18n{useAnotherAccount}</span>
           </button>
-        </dialog>
+        </cr-action-menu>
       </template>
     </template>
   </template>

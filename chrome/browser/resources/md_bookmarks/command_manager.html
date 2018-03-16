@@ -29,7 +29,7 @@
       }
     </style>
     <template is="cr-lazy-render" id="dropdown">
-      <dialog is="cr-action-menu" on-mousedown="onMenuMousedown_">
+      <cr-action-menu on-mousedown="onMenuMousedown_">
         <template is="dom-repeat" items="[[menuCommands_]]" as="command">
           <button slot="item" class="dropdown-item"
               command$="[[command]]"
@@ -47,7 +47,7 @@
               aria-hidden="true">
           </hr>
         </template>
-      </dialog>
+      </cr-action-menu>
     </template>
     <template is="cr-lazy-render" id="editDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>

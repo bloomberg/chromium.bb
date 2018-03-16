@@ -37,7 +37,7 @@
         </button>
       </paper-icon-button-light>
       <template is="cr-lazy-render" id="menu">
-        <dialog is="cr-action-menu">
+        <cr-action-menu>
           <button slot="item" class="dropdown-item" id="view"
               on-tap="onViewTap_">
             [[i18n('certificateManagerView')]]
@@ -57,7 +57,7 @@
               on-tap="onDeleteTap_">
             [[i18n('certificateManagerDelete')]]
           </button>
-        </dialog>
+        </cr-action-menu>
       </template>
     <div>
   </template>

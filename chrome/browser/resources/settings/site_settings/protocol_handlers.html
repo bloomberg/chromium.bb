@@ -57,7 +57,7 @@
       </div>
     </template>
 
-    <dialog is="cr-action-menu">
+    <cr-action-menu>
       <button slot="item" class="dropdown-item" on-click="onDefaultClick_"
           id="defaultButton" hidden$="[[actionMenuModel_.is_default]]">
         $i18n{handlerSetDefault}
@@ -66,7 +66,7 @@
           id="removeButton">
         $i18n{handlerRemove}
       </button>
-    </dialog>
+    </cr-action-menu>
 
     <template is="dom-if" if="[[ignoredProtocols.length]]">
       <div class="column-header">$i18n{siteSettingsBlocked}</div>

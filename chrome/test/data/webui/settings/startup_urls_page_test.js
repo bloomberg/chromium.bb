@@ -335,10 +335,10 @@ cr.define('settings_startup_urls_page', function() {
       Polymer.dom.flush();
 
       // Bring up the popup menu.
-      assertFalse(!!element.$$('dialog[is=cr-action-menu]'));
+      assertFalse(!!element.$$('cr-action-menu'));
       MockInteractions.tap(element.$$('#dots'));
       Polymer.dom.flush();
-      assertTrue(!!element.$$('dialog[is=cr-action-menu]'));
+      assertTrue(!!element.$$('cr-action-menu'));
 
       const removeButton = element.shadowRoot.querySelector('#remove');
       MockInteractions.tap(removeButton);

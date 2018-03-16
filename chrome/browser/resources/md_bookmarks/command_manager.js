@@ -131,7 +131,7 @@ cr.define('bookmarks', function() {
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
       bookmarks.DialogFocusManager.getInstance().showDialog(
-          dropdown, function() {
+          dropdown.getDialog(), function() {
             dropdown.showAtPosition({top: y, left: x});
           });
     },
@@ -151,7 +151,7 @@ cr.define('bookmarks', function() {
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
       bookmarks.DialogFocusManager.getInstance().showDialog(
-          dropdown, function() {
+          dropdown.getDialog(), function() {
             dropdown.showAt(target);
           });
     },

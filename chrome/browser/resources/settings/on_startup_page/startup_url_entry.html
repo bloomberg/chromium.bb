@@ -31,7 +31,7 @@
           </button>
         </paper-icon-button-light>
         <template is="cr-lazy-render" id="menu">
-          <dialog is="cr-action-menu">
+          <cr-action-menu>
             <button slot="item" class="dropdown-item" on-click="onEditTap_">
               $i18n{edit}
             </button>
@@ -39,7 +39,7 @@
                 on-click="onRemoveTap_">
               $i18n{onStartupRemove}
             </button>
-          </dialog>
+          </cr-action-menu>
         </template>
       </template>
     </div>

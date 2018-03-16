@@ -84,7 +84,7 @@
       </template>
     </div>
 
-    <dialog id="dotsMenu" is="cr-action-menu">
+    <cr-action-menu id="dotsMenu">
       <button slot="item" class="dropdown-item" hidden="[[!showAddPreferred_]]"
           on-click="onAddPreferredTap_">
         $i18n{knownNetworksMenuAddPreferred}
@@ -97,7 +97,7 @@
           on-click="onForgetTap_">
         $i18n{knownNetworksMenuForget}
       </button>
-    </dialog>
+    </cr-action-menu>
 
   </template>
   <script src="internet_known_networks_page.js"></script>

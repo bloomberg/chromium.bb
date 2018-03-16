@@ -177,7 +177,7 @@ cr.define('settings_search_engines_page', function() {
       test('Remove_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        const menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
         const deleteButton = entry.$.delete;
@@ -194,7 +194,7 @@ cr.define('settings_search_engines_page', function() {
       test('MakeDefault_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        const menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
         const makeDefaultButton = entry.$.makeDefault;
@@ -211,7 +211,7 @@ cr.define('settings_search_engines_page', function() {
       test('Edit_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        const menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('cr-action-menu');
         assertTrue(menu.open);
 
         const engine = entry.engine;

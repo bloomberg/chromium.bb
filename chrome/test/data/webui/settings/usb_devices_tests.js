@@ -94,7 +94,7 @@ suite('UsbDevices', function() {
           testElement.$$('paper-icon-button-light.icon-more-vert');
       assertTrue(!!menuButton);
       MockInteractions.tap(menuButton.querySelector('button'));
-      const dialog = testElement.$$('dialog[is=cr-action-menu]');
+      const dialog = testElement.$$('cr-action-menu');
       assertTrue(dialog.open);
     });
   });
@@ -123,7 +123,7 @@ suite('UsbDevices', function() {
       assertEquals(deviceList[indexToRemove].embeddingOrigin, args[1]);
       assertEquals(deviceList[indexToRemove].object, args[2]);
 
-      const dialog = testElement.$$('dialog[is=cr-action-menu]');
+      const dialog = testElement.$$('cr-action-menu');
       assertFalse(dialog.open);
     });
   }

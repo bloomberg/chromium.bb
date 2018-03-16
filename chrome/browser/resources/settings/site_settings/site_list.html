@@ -35,7 +35,7 @@
         </paper-button>
       </div>
 
-      <dialog is="cr-action-menu">
+      <cr-action-menu>
         <button slot="item" class="dropdown-item" id="allow"
             on-click="onAllowTap_" hidden$="[[!showAllowAction_]]">
           $i18n{siteSettingsActionAllow}
@@ -57,7 +57,7 @@
             on-click="onResetTap_">
           $i18n{siteSettingsActionReset}
         </button>
-      </dialog>
+      </cr-action-menu>
 
       <div class="list-frame" hidden$="[[hasSites_(sites)]]">
         <div class="list-item secondary">$i18n{noSitesAdded}</div>

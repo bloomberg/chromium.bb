@@ -139,7 +139,7 @@ Polymer({
 
   /** @private */
   closePopupMenu_: function() {
-    this.$$('dialog[is=cr-action-menu]').close();
+    this.$$('cr-action-menu').close();
   },
 
   /** @private */

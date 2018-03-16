@@ -48,7 +48,7 @@
         </button>
       </paper-icon-button-light>
     </cr-toolbar>
-    <dialog is="cr-action-menu" id="moreActionsMenu">
+    <cr-action-menu id="moreActionsMenu">
       <button slot="item" class="dropdown-item clear-all"
           on-click="onClearAllTap_">
         $i18n{clearAll}
@@ -57,7 +57,7 @@
           on-click="onOpenDownloadsFolderTap_">
         $i18n{openDownloadsFolder}
       </button>
-    </dialog>
+    </cr-action-menu>
   </template>
   <script src="chrome://downloads/toolbar.js"></script>
 </dom-module>

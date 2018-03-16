@@ -88,7 +88,7 @@
     </div>
 
     <template is="cr-lazy-render" id="menu">
-      <dialog is="cr-action-menu">
+      <cr-action-menu>
         <button id="menuOpenButton" slot="item" class="dropdown-item"
             on-click="onOpenAllTap_">
           $i18n{openAll}
@@ -97,7 +97,7 @@
             on-click="onDeleteSessionTap_">
           $i18n{deleteSession}
         </button>
-      </dialog>
+      </cr-action-menu>
     </template>
   </template>
   <script src="chrome://history/synced_device_manager.js"></script>

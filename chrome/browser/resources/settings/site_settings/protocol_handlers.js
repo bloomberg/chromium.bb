@@ -150,7 +150,7 @@ Polymer({
    * @private
    */
   closeActionMenu_: function() {
-    this.$$('dialog[is=cr-action-menu]').close();
+    this.$$('cr-action-menu').close();
     this.actionMenuModel_ = null;
   },
 
@@ -198,7 +198,7 @@ Polymer({
    */
   showMenu_: function(event) {
     this.actionMenuModel_ = event.model.item;
-    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+    /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (event)).localTarget));

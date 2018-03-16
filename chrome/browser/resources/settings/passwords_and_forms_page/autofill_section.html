@@ -126,12 +126,12 @@
         $i18n{noAddressesFound}
       </div>
     </div>
-    <dialog is="cr-action-menu" id="addressSharedMenu">
+    <cr-action-menu id="addressSharedMenu">
       <button id="menuEditAddress" slot="item" class="dropdown-item"
           on-click="onMenuEditAddressTap_">$i18n{edit}</button>
       <button id="menuRemoveAddress" slot="item" class="dropdown-item"
           on-click="onMenuRemoveAddressTap_">$i18n{removeAddress}</button>
-    </dialog>
+    </cr-action-menu>
     <template is="dom-if" if="[[showAddressDialog_]]" restamp>
       <settings-address-edit-dialog address="[[activeAddress]]"
           on-close="onAddressDialogClosed_">
@@ -202,7 +202,7 @@
         $i18n{noCreditCardsPolicy}
       </div>
     </div>
-    <dialog is="cr-action-menu" id="creditCardSharedMenu">
+    <cr-action-menu id="creditCardSharedMenu">
       <button id="menuEditCreditCard" slot="item" class="dropdown-item"
           on-click="onMenuEditCreditCardTap_">$i18n{edit}</button>
       <button id="menuRemoveCreditCard" slot="item" class="dropdown-item"
@@ -213,7 +213,7 @@
           hidden$="[[!activeCreditCard.metadata.isCached]]">
         $i18n{clearCreditCard}
       </button>
-    </dialog>
+    </cr-action-menu>
     <template is="dom-if" if="[[showCreditCardDialog_]]" restamp>
       <settings-credit-card-edit-dialog credit-card="[[activeCreditCard]]"
           on-close="onCreditCardDialogClosed_">
