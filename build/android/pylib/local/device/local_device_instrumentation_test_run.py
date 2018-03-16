@@ -538,7 +538,7 @@ class LocalDeviceInstrumentationTestRun(
       json_data = json.loads(device.ReadFile(json_path))
       image_file_path = posixpath.join(source_dir, json_data['location'])
       with self._env.output_manager.ArchivedTempfile(
-          json_data['location'], 'ui_capture', output_manager.Datatype.IMAGE
+          json_data['location'], 'ui_capture', output_manager.Datatype.PNG
           ) as image_archive:
         device.PullFile(image_file_path, image_archive.name)
       json_data['image_link'] = image_archive.Link()
@@ -764,7 +764,7 @@ class LocalDeviceInstrumentationTestRun(
       if device.FileExists(screenshot_device_file.name):
         with self._env.output_manager.ArchivedTempfile(
             screenshot_filename, 'screenshot',
-            output_manager.Datatype.IMAGE) as screenshot_host_file:
+            output_manager.Datatype.PNG) as screenshot_host_file:
           try:
             device.PullFile(screenshot_device_file.name,
                             screenshot_host_file.name)
@@ -791,7 +791,7 @@ class LocalDeviceInstrumentationTestRun(
 
       with self._env.output_manager.ArchivedTempfile(
           'fail_%s' % failure_filename, 'render_tests',
-          output_manager.Datatype.IMAGE) as failure_image_host_file:
+          output_manager.Datatype.PNG) as failure_image_host_file:
         device.PullFile(
             posixpath.join(failure_images_device_dir, failure_filename),
             failure_image_host_file.name)
@@ -802,7 +802,7 @@ class LocalDeviceInstrumentationTestRun(
       if device.PathExists(golden_image_device_file):
         with self._env.output_manager.ArchivedTempfile(
             'golden_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.IMAGE) as golden_image_host_file:
+            output_manager.Datatype.PNG) as golden_image_host_file:
           device.PullFile(
               golden_image_device_file, golden_image_host_file.name)
         golden_link = golden_image_host_file.Link()
@@ -814,7 +814,7 @@ class LocalDeviceInstrumentationTestRun(
       if device.PathExists(diff_image_device_file):
         with self._env.output_manager.ArchivedTempfile(
             'diff_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.IMAGE) as diff_image_host_file:
+            output_manager.Datatype.PNG) as diff_image_host_file:
           device.PullFile(
               diff_image_device_file, diff_image_host_file.name)
         diff_link = diff_image_host_file.Link()
