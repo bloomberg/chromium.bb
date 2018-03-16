@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -132,7 +131,6 @@ class QuicChromiumClientSessionTest
       socket_factory_.AddSocketDataProvider(socket_data_.get());
     std::unique_ptr<DatagramClientSocket> socket =
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
-                                                   base::Bind(&base::RandInt),
                                                    &net_log_, NetLogSource());
     socket->Connect(kIpEndPoint);
     QuicChromiumPacketWriter* writer = new net::QuicChromiumPacketWriter(
@@ -1263,7 +1261,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   // Create connected socket.
   std::unique_ptr<DatagramClientSocket> new_socket =
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
-                                                 base::Bind(&base::RandInt),
                                                  &net_log_, NetLogSource());
   EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
@@ -1322,7 +1319,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
     // Create connected socket.
     std::unique_ptr<DatagramClientSocket> new_socket =
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
-                                                   base::Bind(&base::RandInt),
                                                    &net_log_, NetLogSource());
     EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 
@@ -1389,7 +1385,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   // Create connected socket.
   std::unique_ptr<DatagramClientSocket> new_socket =
       socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
-                                                 base::Bind(&base::RandInt),
                                                  &net_log_, NetLogSource());
   EXPECT_THAT(new_socket->Connect(kIpEndPoint), IsOk());
 

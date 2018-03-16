@@ -466,8 +466,7 @@ CheckSourceMessageContent(std::string pattern,
 void MockDisplaySourceConnectionDelegate::BindToUdpSocket() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                   net::RandIntCallback(), nullptr,
+  socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND, nullptr,
                                    net::NetLogSource()));
 
   net::IPAddress address;

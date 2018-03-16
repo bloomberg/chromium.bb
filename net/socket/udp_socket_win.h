@@ -24,7 +24,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/rand_callback.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/diff_serv_code_point.h"
@@ -40,7 +39,6 @@ class SocketTag;
 class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
  public:
   UDPSocketWin(DatagramSocket::BindType bind_type,
-               const RandIntCallback& rand_int_cb,
                net::NetLog* net_log,
                const net::NetLogSource& source);
   ~UDPSocketWin() override;
@@ -287,9 +285,6 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // How to do source port binding, used only when UDPSocket is part of
   // UDPClientSocket, since UDPServerSocket provides Bind.
   DatagramSocket::BindType bind_type_;
-
-  // PRNG function for generating port numbers.
-  RandIntCallback rand_int_cb_;
 
   // These are mutable since they're just cached copies to make
   // GetPeerAddress/GetLocalAddress smarter.

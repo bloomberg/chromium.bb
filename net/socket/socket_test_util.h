@@ -528,7 +528,6 @@ class MockClientSocketFactory : public ClientSocketFactory {
   // ClientSocketFactory
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLogSource& source) override;
   std::unique_ptr<StreamSocket> CreateTransportClientSocket(
@@ -1145,7 +1144,6 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
   // ClientSocketFactory implementation.
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLogSource& source) override;
   std::unique_ptr<StreamSocket> CreateTransportClientSocket(

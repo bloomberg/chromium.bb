@@ -11,12 +11,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "media/cast/net/udp_packet_pipe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -71,7 +69,6 @@ UdpTransportImpl::UdpTransportImpl(
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                     net::RandIntCallback(),
                                      net_log,
                                      net::NetLogSource())),
       send_pending_(false),

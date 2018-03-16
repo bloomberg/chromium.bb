@@ -139,7 +139,6 @@ FuzzedSocketFactory::~FuzzedSocketFactory() = default;
 std::unique_ptr<DatagramClientSocket>
 FuzzedSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
-    const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLogSource& source) {
   return std::make_unique<FuzzedDatagramClientSocket>(data_provider_);

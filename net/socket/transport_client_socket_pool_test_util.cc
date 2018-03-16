@@ -372,7 +372,6 @@ MockTransportClientSocketFactory::~MockTransportClientSocketFactory() = default;
 std::unique_ptr<DatagramClientSocket>
 MockTransportClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
-    const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLogSource& source) {
   NOTREACHED();

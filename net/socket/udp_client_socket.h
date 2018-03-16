@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/base/rand_callback.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/udp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -23,7 +22,6 @@ struct NetLogSource;
 class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
  public:
   UDPClientSocket(DatagramSocket::BindType bind_type,
-                  const RandIntCallback& rand_int_cb,
                   net::NetLog* net_log,
                   const net::NetLogSource& source);
   ~UDPClientSocket() override;

@@ -280,7 +280,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
     // Each socket can only be bound once.
     std::unique_ptr<DatagramClientSocket> socket(
         socket_factory_->CreateDatagramClientSocket(
-            DatagramSocket::DEFAULT_BIND, RandIntCallback(), NULL /* NetLog */,
+            DatagramSocket::DEFAULT_BIND, nullptr /* NetLog */,
             NetLogSource()));
 
     // Even though no packets are sent, cannot use port 0 in Connect.

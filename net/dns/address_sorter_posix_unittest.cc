@@ -111,7 +111,6 @@ class TestSocketFactory : public ClientSocketFactory {
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType,
-      const RandIntCallback&,
       NetLog*,
       const NetLogSource&) override {
     return std::unique_ptr<DatagramClientSocket>(

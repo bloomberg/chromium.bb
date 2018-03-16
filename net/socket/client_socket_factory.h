@@ -9,7 +9,6 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/base/rand_callback.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/socket_performance_watcher.h"
 
@@ -36,7 +35,6 @@ class NET_EXPORT ClientSocketFactory {
   // if it has one.
   virtual std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLogSource& source) = 0;
 

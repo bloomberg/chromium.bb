@@ -384,10 +384,9 @@ net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
   // Creation and connection of a UDP socket might be janky.
   DCHECK(network_list_task_runner_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<net::DatagramClientSocket> socket(
+  auto socket =
       net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
-          net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), nullptr,
-          net::NetLogSource()));
+          net::DatagramSocket::DEFAULT_BIND, nullptr, net::NetLogSource());
 
   net::IPAddress ip_address;
   if (family == AF_INET) {

@@ -14,7 +14,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1347,7 +1346,7 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
     NetLog* net_log,
     const NetLogSource& source) {
   auto socket = client_socket_factory_->CreateDatagramClientSocket(
-      DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log, source);
+      DatagramSocket::DEFAULT_BIND, net_log, source);
   if (enable_socket_recv_optimization_)
     socket->EnableRecvOptimization();
   return socket;

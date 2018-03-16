@@ -45,9 +45,8 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     QuicSocketAddress server_address,
     QuicIpAddress bind_to_address,
     int bind_to_port) {
-  std::unique_ptr<UDPClientSocket> socket(
-      new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
-                          &net_log_, NetLogSource()));
+  auto socket = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
+                                                  &net_log_, NetLogSource());
 
   if (bind_to_address.IsInitialized()) {
     client_address_ = QuicSocketAddress(bind_to_address, client_->local_port());

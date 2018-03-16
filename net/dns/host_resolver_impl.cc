@@ -2415,8 +2415,7 @@ bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
                                            const NetLogWithSource& net_log) {
   std::unique_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
-          DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log.net_log(),
-          net_log.source()));
+          DatagramSocket::DEFAULT_BIND, net_log.net_log(), net_log.source()));
   int rv = socket->Connect(IPEndPoint(dest, 53));
   if (rv != OK)
     return false;
