@@ -59,6 +59,7 @@ class WebHTTPBody {
     long long file_length;  // -1 means to the end of the file.
     double modification_time;
     WebString blob_uuid;
+    mojo::ScopedMessagePipeHandle optional_blob_handle;
     // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
     // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
     // and non-Blink variant types.
