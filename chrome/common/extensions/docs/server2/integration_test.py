@@ -166,12 +166,15 @@ class IntegrationTest(unittest.TestCase):
           path = path_without_ext
 
         def check_result(response):
-          self.assertEqual(200, response.status,
-              'Got %s when rendering %s' % (response.status, path))
+          # TODO(dbertoni@chromium.org): Explore following redirects and/or
+          # keeping an explicit list of files that expect 200 vs. 302.
+          self.assertTrue(response.status == 200 or response.status == 302,
+                          'Got %s when rendering %s' % (response.status, path))
 
           # This is reaaaaally rough since usually these will be tiny templates
           # that render large files. At least it'll catch zero-length responses.
-          self.assertTrue(len(response.content) >= len(content),
+          self.assertTrue(len(response.content) >= len(content) or
+                          response.status == 302,
               'Rendered content length was %s vs template content length %s '
               'when rendering %s' % (len(response.content), len(content), path))
 
@@ -247,8 +250,9 @@ class IntegrationTest(unittest.TestCase):
       start_time = time.time()
       try:
         response = LocalRenderer.Render(_ToPosixPath(filename))
-        self.assertEqual(200, response.status)
-        self.assertTrue(response.content != '')
+        self.assertTrue(response.status == 200 or response.status == 302,
+                        'Got %s when rendering %s' % (response.status, path))
+        self.assertTrue(response.content != '' or response.status == 302)
       finally:
         print('Took %s seconds' % (time.time() - start_time))
 
