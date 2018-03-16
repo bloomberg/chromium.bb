@@ -3609,13 +3609,6 @@ split_static_library("ui") {
       ]
       deps += [ "//mash/common" ]
     }
-  } else {
-    sources += [
-      "app_list/app_list_service.h",
-      "app_list/app_list_service_disabled.cc",
-      "app_list/app_list_service_disabled_mac.h",
-      "app_list/app_list_service_disabled_mac.mm",
-    ]
   }
 
   if (enable_extensions) {

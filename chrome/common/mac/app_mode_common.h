@@ -5,10 +5,15 @@
 #ifndef CHROME_COMMON_MAC_APP_MODE_COMMON_H_
 #define CHROME_COMMON_MAC_APP_MODE_COMMON_H_
 
-#import <Foundation/Foundation.h>
-
+#include <CoreServices/CoreServices.h>
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+
+#ifdef __OBJC__
+@class NSString;
+#else
+class NSString;
+#endif
 
 // This file contains constants, interfaces, etc. which are common to the
 // browser application and the app mode loader (a.k.a. shim).

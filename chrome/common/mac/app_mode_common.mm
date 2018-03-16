@@ -4,6 +4,8 @@
 
 #include "chrome/common/mac/app_mode_common.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/files/file_util.h"
 
 namespace app_mode {

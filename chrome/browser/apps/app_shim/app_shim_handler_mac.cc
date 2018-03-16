@@ -13,10 +13,11 @@
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_shim/apps_page_shim_handler.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -28,7 +29,7 @@ namespace {
 void TerminateIfNoAppWindows() {
   bool app_windows_left =
       AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0);
-  if (!app_windows_left && !AppListService::Get()->IsAppListVisible()) {
+  if (!app_windows_left) {
     chrome::AttemptExit();
   }
 }
@@ -91,6 +92,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
     registrar_.Add(
         this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
         content::NotificationService::AllBrowserContextsAndSources());
+    SetForAppMode(app_mode::kAppListModeId, &apps_page_shim_handler_);
   }
 
   ~AppShimHandlerRegistry() override {}
@@ -114,6 +116,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
 
   HandlerMap handlers_;
   AppShimHandler* default_handler_;
+  AppsPageShimHandler apps_page_shim_handler_;
   content::NotificationRegistrar registrar_;
   bool browser_session_running_;
 
