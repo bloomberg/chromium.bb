@@ -1,41 +1,8 @@
 This is a testharness.js-based test.
-Found 59 tests; 53 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS AnimationEffectReadOnly interface: existence and properties of interface object
-PASS AnimationEffectReadOnly interface object length
-PASS AnimationEffectReadOnly interface object name
-PASS AnimationEffectReadOnly interface: existence and properties of interface prototype object
-PASS AnimationEffectReadOnly interface: existence and properties of interface prototype object's "constructor" property
-PASS AnimationEffectReadOnly interface: existence and properties of interface prototype object's @@unscopables property
-PASS AnimationEffectReadOnly interface: attribute timing
-PASS Unscopable handled correctly for timing property on AnimationEffectReadOnly
-PASS AnimationEffectReadOnly interface: operation getComputedTiming()
-PASS Unscopable handled correctly for getComputedTiming() on AnimationEffectReadOnly
-PASS KeyframeEffectReadOnly interface: existence and properties of interface object
-PASS KeyframeEffectReadOnly interface object length
-PASS KeyframeEffectReadOnly interface object name
-PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object
-PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object's "constructor" property
-PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object's @@unscopables property
-PASS KeyframeEffectReadOnly interface: attribute target
-PASS Unscopable handled correctly for target property on KeyframeEffectReadOnly
-FAIL KeyframeEffectReadOnly interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
-PASS Unscopable handled correctly for iterationComposite property on KeyframeEffectReadOnly
-PASS KeyframeEffectReadOnly interface: attribute composite
-PASS Unscopable handled correctly for composite property on KeyframeEffectReadOnly
-PASS KeyframeEffectReadOnly interface: operation getKeyframes()
-PASS Unscopable handled correctly for getKeyframes() on KeyframeEffectReadOnly
-PASS KeyframeEffectReadOnly must be primary interface of new KeyframeEffectReadOnly(null, null)
-PASS Stringification of new KeyframeEffectReadOnly(null, null)
-PASS KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "target" with the proper type
-FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
-PASS KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "composite" with the proper type
-PASS KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getKeyframes()" with the proper type
-PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "timing" with the proper type
-PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getComputedTiming()" with the proper type
-PASS KeyframeEffect interface: existence and properties of interface object
+FAIL KeyframeEffect interface: existence and properties of interface object assert_own_property: should inherit from AnimationEffect, but self has no such property expected property "AnimationEffect" missing
 PASS KeyframeEffect interface object length
 PASS KeyframeEffect interface object name
-PASS KeyframeEffect interface: existence and properties of interface prototype object
+FAIL KeyframeEffect interface: existence and properties of interface prototype object assert_own_property: should inherit from AnimationEffect, but self has no such property expected property "AnimationEffect" missing
 PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
 PASS KeyframeEffect interface: existence and properties of interface prototype object's @@unscopables property
 FAIL KeyframeEffect interface: attribute target assert_own_property: expected property "target" missing
@@ -44,6 +11,8 @@ FAIL KeyframeEffect interface: attribute iterationComposite assert_true: The pro
 PASS Unscopable handled correctly for iterationComposite property on KeyframeEffect
 PASS KeyframeEffect interface: attribute composite
 PASS Unscopable handled correctly for composite property on KeyframeEffect
+FAIL KeyframeEffect interface: operation getKeyframes() assert_own_property: interface prototype object missing non-static operation expected property "getKeyframes" missing
+PASS Unscopable handled correctly for getKeyframes() on KeyframeEffect
 PASS KeyframeEffect interface: operation setKeyframes(object)
 PASS Unscopable handled correctly for setKeyframes(object) on KeyframeEffect
 PASS KeyframeEffect must be primary interface of new KeyframeEffect(null, null)
@@ -51,13 +20,8 @@ PASS Stringification of new KeyframeEffect(null, null)
 PASS KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type
 FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
 PASS KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type
+PASS KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "getKeyframes()" with the proper type
 PASS KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "setKeyframes(object)" with the proper type
 PASS KeyframeEffect interface: calling setKeyframes(object) on new KeyframeEffect(null, null) with too few arguments must throw TypeError
-PASS KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type
-FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
-PASS KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type
-PASS KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getKeyframes()" with the proper type
-PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "timing" with the proper type
-PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getComputedTiming()" with the proper type
 Harness: the test ran to completion.
 
