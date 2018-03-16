@@ -64,7 +64,7 @@ public class PaymentRequestExtraShippingOptionsTest implements MainActivityStart
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa", "123", "Google",
-                        "340 Main St", "CA", "Los Angeles", "90291", "US", "en"});
+                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123",
+                        "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en"});
     }
 }

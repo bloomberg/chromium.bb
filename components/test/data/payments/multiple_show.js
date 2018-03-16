@@ -15,7 +15,13 @@ var request2;
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'visa']}],
+        [
+          {supportedMethods: 'https://bobpay.com'},
+          {
+            supportedMethods: 'basic-card',
+            data: {supportedNetworks: ['visa']},
+          },
+        ],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.show()
         .then(function(resp) {
@@ -64,7 +70,13 @@ function showAgain() {  // eslint-disable-line no-unused-vars
 function showSecondRequest() {  // eslint-disable-line no-unused-vars
   try {
     request2 = new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'visa']}],
+        [
+          {supportedMethods: 'https://bobpay.com'},
+          {
+            supportedMethods: 'basic-card',
+            data: {supportedNetworks: ['visa']},
+          },
+        ],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request2.show()
         .then(function(resp) {

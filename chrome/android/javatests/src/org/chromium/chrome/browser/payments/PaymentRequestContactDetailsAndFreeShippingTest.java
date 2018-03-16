@@ -67,10 +67,10 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Jon Doe", "jon.doe@google.com", "+15555555555", "Jon Doe",
-                        "4111111111111111", "12", "2050", "visa", "123", "Google", "340 Main St",
-                        "CA", "Los Angeles", "90291", "US", "en", "freeShippingOption"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe", "jon.doe@google.com",
+                "+15555555555", "Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123",
+                "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
+                "freeShippingOption"});
     }
 
     /**
@@ -91,10 +91,10 @@ public class PaymentRequestContactDetailsAndFreeShippingTest implements MainActi
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Jon Doe", "jon.doe@google.com", "+15555555555", "Jon Doe",
-                        "4111111111111111", "12", "2050", "visa", "123", "Google", "340 Main St",
-                        "CA", "Los Angeles", "90291", "US", "en", "freeShippingOption"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe", "jon.doe@google.com",
+                "+15555555555", "Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123",
+                "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
+                "freeShippingOption"});
 
         int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
                 | Event.COMPLETED | Event.HAD_INITIAL_FORM_OF_PAYMENT

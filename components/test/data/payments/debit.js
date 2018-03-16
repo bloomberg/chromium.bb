@@ -12,7 +12,7 @@
 function buildPaymentRequest() {
   return new PaymentRequest(
       [{
-        supportedMethods: ['basic-card'],
+        supportedMethods: 'basic-card',
         data: {
           supportedTypes: ['debit'],
         },

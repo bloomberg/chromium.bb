@@ -23,7 +23,8 @@ function buy() {  // eslint-disable-line no-unused-vars
     };
 
     var request = new PaymentRequest(
-        [{supportedMethods: ['visa']}], details, {requestShipping: true});
+        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
+        details, {requestShipping: true});
 
     request.addEventListener('shippingaddresschange', function(evt) {
       evt.updateWith(new Promise(function(resolve) {

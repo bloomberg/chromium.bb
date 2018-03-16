@@ -187,8 +187,8 @@ public class PaymentRequestPaymentAppAndCardsTest implements MainActivityStartCa
                     R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
             mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                     DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
-            mPaymentRequestTestRule.expectResultContains(
-                    new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa", "123"});
+            mPaymentRequestTestRule.expectResultContains(new String[] {
+                    "Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123"});
         }
     }
 }
