@@ -42,10 +42,8 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
                                 float* dest_p,
                                 int dest_stride,
                                 size_t frames_to_process) {
-  vDSP_vclip(const_cast<float*>(source_p), source_stride,
-             const_cast<float*>(low_threshold_p),
-             const_cast<float*>(high_threshold_p), dest_p, dest_stride,
-             frames_to_process);
+  vDSP_vclip(source_p, source_stride, low_threshold_p, high_threshold_p, dest_p,
+             dest_stride, frames_to_process);
 }
 
 static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
@@ -100,8 +98,7 @@ static ALWAYS_INLINE void Vsvesq(const float* source_p,
                                  int source_stride,
                                  float* sum_p,
                                  size_t frames_to_process) {
-  vDSP_svesq(const_cast<float*>(source_p), source_stride, sum_p,
-             frames_to_process);
+  vDSP_svesq(source_p, source_stride, sum_p, frames_to_process);
 }
 
 static ALWAYS_INLINE void Zvmul(const float* real1p,
