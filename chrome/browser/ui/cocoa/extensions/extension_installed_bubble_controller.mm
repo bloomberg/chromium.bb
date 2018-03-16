@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -123,44 +124,8 @@ bool ExtensionInstalledBubble::ShouldShow() {
 
 gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
     gfx::NativeWindow window) const {
-  BrowserWindowController* windowController =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-
-  auto getAppMenuButtonAnchorPoint = [windowController]() {
-    // Point at the bottom of the app menu menu.
-    NSView* appMenuButton =
-        [[windowController toolbarController] appMenuButton];
-    const NSRect bounds = [appMenuButton bounds];
-    NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
-    return [appMenuButton convertPoint:anchor toView:nil];
-  };
-
-  NSPoint arrowPoint;
-  switch (anchor_position()) {
-    case ExtensionInstalledBubble::ANCHOR_ACTION: {
-      BrowserActionsController* controller =
-          [[windowController toolbarController] browserActionsController];
-      arrowPoint = [controller popupPointForId:extension()->id()];
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
-      LocationBarViewMac* locationBarView =
-          [windowController locationBarBridge];
-      arrowPoint = locationBarView->GetPageInfoBubblePoint();
-      break;
-    }
-    case ExtensionInstalledBubble::ANCHOR_APP_MENU: {
-      arrowPoint = getAppMenuButtonAnchorPoint();
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
-  // Convert to screen coordinates.
-  arrowPoint = ui::ConvertPointFromWindowToScreen(window, arrowPoint);
-  return gfx::ScreenPointFromNSPoint(arrowPoint);
+  return bubble_anchor_util::GetExtensionInstalledAnchorPointCocoa(window,
+                                                                   this);
 }
 
 // Implemented here to create the platform specific instance of the BubbleUi.

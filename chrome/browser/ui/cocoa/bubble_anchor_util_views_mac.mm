@@ -4,7 +4,15 @@
 
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 
-#include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
+#import <Cocoa/Cocoa.h>
+
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/rect.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -19,6 +27,41 @@ gfx::Rect GetPageInfoAnchorRectCocoa(Browser* browser) {
   return gfx::Rect(
       gfx::ScreenPointFromNSPoint(GetPageInfoAnchorPointForBrowser(browser)),
       gfx::Size());
+}
+
+gfx::Point GetExtensionInstalledAnchorPointCocoa(
+    gfx::NativeWindow window,
+    const ExtensionInstalledBubble* bubble) {
+  BrowserWindowController* window_controller =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  ToolbarController* toolbar_controller = [window_controller toolbarController];
+
+  NSPoint arrow_point;
+  switch (bubble->anchor_position()) {
+    case ExtensionInstalledBubble::ANCHOR_ACTION: {
+      BrowserActionsController* controller =
+          [toolbar_controller browserActionsController];
+      arrow_point = [controller popupPointForId:bubble->extension()->id()];
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
+      LocationBarViewMac* locationBarView =
+          [window_controller locationBarBridge];
+      arrow_point = locationBarView->GetPageInfoBubblePoint();
+      break;
+    }
+    case ExtensionInstalledBubble::ANCHOR_APP_MENU: {
+      arrow_point = [toolbar_controller appMenuBubblePoint];
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+  // Convert to screen coordinates.
+  arrow_point = ui::ConvertPointFromWindowToScreen(window, arrow_point);
+  return gfx::ScreenPointFromNSPoint(arrow_point);
 }
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)
