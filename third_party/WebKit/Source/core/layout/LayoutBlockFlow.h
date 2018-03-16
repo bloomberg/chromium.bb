@@ -147,14 +147,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                : LogicalWidth() - LogicalRightOffsetForLine(
                                       position, indent_text, logical_height);
   }
-  LayoutUnit EndOffsetForLine(LayoutUnit position,
-                              IndentTextOrNot indent_text,
-                              LayoutUnit logical_height = LayoutUnit()) const {
-    return !Style()->IsLeftToRightDirection()
-               ? LogicalLeftOffsetForLine(position, indent_text, logical_height)
-               : LogicalWidth() - LogicalRightOffsetForLine(
-                                      position, indent_text, logical_height);
-  }
 
   LayoutUnit AvailableLogicalWidthForAvoidingFloats(
       LayoutUnit position,

@@ -2044,38 +2044,25 @@ LayoutUnit LayoutBox::ShrinkLogicalWidthToAvoidFloats(
   LayoutUnit logical_top_position = LogicalTop();
   LayoutUnit start_offset_for_content = cb->StartOffsetForContent();
   LayoutUnit end_offset_for_content = cb->EndOffsetForContent();
+
+  // NOTE: This call to LogicalHeightForChild is bad, as it may contain data
+  // from a previous layout.
   LayoutUnit logical_height = cb->LogicalHeightForChild(*this);
-  LayoutUnit start_offset_for_line = cb->StartOffsetForLine(
-      logical_top_position, kDoNotIndentText, logical_height);
-  LayoutUnit end_offset_for_line = cb->EndOffsetForLine(
-      logical_top_position, kDoNotIndentText, logical_height);
+  LayoutUnit start_offset_for_avoiding_floats =
+      cb->StartOffsetForAvoidingFloats(logical_top_position, logical_height);
+  LayoutUnit end_offset_for_avoiding_floats =
+      cb->EndOffsetForAvoidingFloats(logical_top_position, logical_height);
 
   // If there aren't any floats constraining us then allow the margins to
   // shrink/expand the width as much as they want.
-  if (start_offset_for_content == start_offset_for_line &&
-      end_offset_for_content == end_offset_for_line)
-    return cb->AvailableLogicalWidthForLine(logical_top_position,
-                                            kDoNotIndentText, logical_height) -
+  if (start_offset_for_content == start_offset_for_avoiding_floats &&
+      end_offset_for_content == end_offset_for_avoiding_floats)
+    return cb->AvailableLogicalWidthForAvoidingFloats(logical_top_position,
+                                                      logical_height) -
            child_margin_start - child_margin_end;
 
-  LayoutUnit width = cb->AvailableLogicalWidthForLine(
-      logical_top_position, kDoNotIndentText, logical_height);
-
-  // This section of code is just for a use counter. It counts if something
-  // that avoids floats may have been affected by a float with shape-outside.
-  // NOTE(ikilpatrick): This isn't the only code-path which uses
-  // AvailableLogicalWidthForLine, if we switch this over we need to inspect
-  // other usages.
-  if (!ShapeOutsideInfo::IsEmpty()) {
-    LayoutUnit alternate_width = cb->AvailableLogicalWidthForAvoidingFloats(
-        logical_top_position, logical_height);
-
-    if (alternate_width != width) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kShapeOutsideMaybeAffectedInlineSize);
-    }
-  }
-
+  LayoutUnit width = cb->AvailableLogicalWidthForAvoidingFloats(
+      logical_top_position, logical_height);
   width -= std::max(LayoutUnit(), child_margin_start);
   width -= std::max(LayoutUnit(), child_margin_end);
 
@@ -2087,10 +2074,11 @@ LayoutUnit LayoutBox::ShrinkLogicalWidthToAvoidFloats(
   // can use the line offset, but we need to grow it by the margin to reflect
   // the fact that the margin was "consumed" by the float. Negative margins
   // aren't consumed by the float, and so we ignore them.
+  width += PortionOfMarginNotConsumedByFloat(child_margin_start,
+                                             start_offset_for_content,
+                                             start_offset_for_avoiding_floats);
   width += PortionOfMarginNotConsumedByFloat(
-      child_margin_start, start_offset_for_content, start_offset_for_line);
-  width += PortionOfMarginNotConsumedByFloat(
-      child_margin_end, end_offset_for_content, end_offset_for_line);
+      child_margin_end, end_offset_for_content, end_offset_for_avoiding_floats);
   return width;
 }
 
@@ -2129,10 +2117,10 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
 
 LayoutUnit LayoutBox::ContainingBlockAvailableLineWidth() const {
   LayoutBlock* cb = ContainingBlock();
-  if (cb->IsLayoutBlockFlow())
-    return ToLayoutBlockFlow(cb)->AvailableLogicalWidthForLine(
-        LogicalTop(), kDoNotIndentText,
-        AvailableLogicalHeight(kIncludeMarginBorderPadding));
+  if (cb->IsLayoutBlockFlow()) {
+    return ToLayoutBlockFlow(cb)->AvailableLogicalWidthForAvoidingFloats(
+        LogicalTop(), AvailableLogicalHeight(kIncludeMarginBorderPadding));
+  }
   return LayoutUnit();
 }
 

@@ -229,10 +229,6 @@ class FloatingObjects {
       LayoutUnit logical_top,
       LayoutUnit* height_remaining);
 
-  // NOTE(ikilpatrick): These methods exist for determining how shape-outside
-  // affects positioning and sizing of block children avoiding floats.
-  // If usage is low enough these may be used instead of LogicalLeftOffset,
-  // LogicalLeftOffset for children avoiding floats.
   LayoutUnit LogicalLeftOffsetForAvoidingFloats(LayoutUnit fixed_offset,
                                                 LayoutUnit logical_top,
                                                 LayoutUnit logical_height);
