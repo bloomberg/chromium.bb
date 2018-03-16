@@ -24,6 +24,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -32,6 +33,8 @@ namespace {
 
 // Padding around content setting icons.
 constexpr int kContentSettingIconInteriorPadding = 4;
+
+constexpr int kMenuHighlightFadeDurationMs = 800;
 
 constexpr base::TimeDelta kContentSettingsFadeInDuration =
     base::TimeDelta::FromMilliseconds(500);
@@ -183,9 +186,32 @@ void HostedAppButtonContainer::AppMenuButton::OnMenuButtonClicked(
 
 void HostedAppButtonContainer::StartTitlebarAnimation(
     base::TimeDelta origin_text_slide_duration) {
+  app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
+
   fade_in_content_setting_buttons_timer_.Start(
       FROM_HERE, origin_text_slide_duration, content_settings_container_,
       &ContentSettingsContainer::FadeIn);
+}
+
+void HostedAppButtonContainer::AppMenuButton::StartHighlightAnimation(
+    base::TimeDelta duration) {
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+  GetInkDrop()->SetHovered(true);
+  GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
+
+  highlight_off_timer_.Start(
+      FROM_HERE,
+      duration -
+          base::TimeDelta::FromMilliseconds(kMenuHighlightFadeDurationMs),
+      this, &HostedAppButtonContainer::AppMenuButton::FadeHighlightOff);
+}
+
+void HostedAppButtonContainer::AppMenuButton::FadeHighlightOff() {
+  if (!ShouldEnterHoveredState()) {
+    GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+    GetInkDrop()->SetHovered(false);
+    GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
+  }
 }
 
 HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,

@@ -22,6 +22,8 @@ class VIEWS_EXPORT InkDropStub : public InkDrop {
   void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState state) override;
+  void SetHoverHighlightFadeDurationMs(int duration_ms) override;
+  void UseDefaultHoverHighlightFadeDuration() override;
   void SnapToActivated() override;
   void SnapToHidden() override;
   void SetHovered(bool is_hovered) override;

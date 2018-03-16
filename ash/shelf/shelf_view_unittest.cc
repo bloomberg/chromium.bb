@@ -2228,6 +2228,15 @@ class InkDropSpy : public views::InkDrop {
     requested_states_.push_back(ink_drop_state);
     ink_drop_->AnimateToState(ink_drop_state);
   }
+
+  void SetHoverHighlightFadeDurationMs(int duration_ms) override {
+    ink_drop_->SetHoverHighlightFadeDurationMs(duration_ms);
+  }
+
+  void UseDefaultHoverHighlightFadeDuration() override {
+    ink_drop_->UseDefaultHoverHighlightFadeDuration();
+  }
+
   void SnapToActivated() override { ink_drop_->SnapToActivated(); }
   void SnapToHidden() override { ink_drop_->SnapToHidden(); }
   void SetHovered(bool is_hovered) override {
