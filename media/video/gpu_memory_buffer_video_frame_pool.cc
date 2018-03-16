@@ -699,9 +699,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
       ++copies;
   }
 
-  const base::RepeatingClosure barrier = base::BarrierClosure(
-      copies, base::BindOnce(&PoolImpl::OnCopiesDone, this, video_frame,
-                             frame_resources));
+  const base::Closure copies_done =
+      base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources);
+  const base::RepeatingClosure barrier =
+      base::BarrierClosure(copies, copies_done);
 
   // Map the buffers.
   for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++) {
@@ -839,24 +840,25 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++)
     mailbox_holders[i].sync_token = sync_token;
 
+  auto release_mailbox_callback = BindToCurrentLoop(
+      base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources));
+
   VideoPixelFormat frame_format = VideoFormat(output_format_);
 
   // Create the VideoFrame backed by native textures.
   gfx::Size visible_size = video_frame->visible_rect().size();
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      frame_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(), coded_size,
+      frame_format, mailbox_holders, release_mailbox_callback, coded_size,
       gfx::Rect(visible_size), video_frame->natural_size(),
       video_frame->timestamp());
 
   if (!frame) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
-    MailboxHoldersReleased(frame_resources, gpu::SyncToken());
+    release_mailbox_callback.Run(gpu::SyncToken());
     std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
     frame_copy_requests_.pop_front();
     return;
   }
-  frame->SetReleaseMailboxCB(
-      base::BindOnce(&PoolImpl::MailboxHoldersReleased, this, frame_resources));
 
   frame->set_color_space(video_frame->ColorSpace());
 
@@ -911,7 +913,6 @@ GpuMemoryBufferVideoFramePool::PoolImpl::~PoolImpl() {
 }
 
 void GpuMemoryBufferVideoFramePool::PoolImpl::Shutdown() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
   // Clients don't care about copies once shutdown has started, so abort them.
   Abort();
 
@@ -940,7 +941,6 @@ GpuMemoryBufferVideoFramePool::PoolImpl::FrameResources*
 GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::Size& size,
     GpuVideoAcceleratorFactories::OutputFormat format) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   auto it = resources_pool_.begin();
   while (it != resources_pool_.end()) {
@@ -1001,6 +1001,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
   // TODO(dcastagna): As soon as the context lost is dealt with in media,
   // make sure that we won't execute this callback (use a weak pointer to
   // the old context).
+
   gpu::gles2::GLES2Interface* gles2 = gpu_factories->ContextGL();
   if (!gles2)
     return;
@@ -1018,13 +1019,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
 void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
     FrameResources* frame_resources,
     const gpu::SyncToken& release_sync_token) {
-  if (!media_task_runner_->BelongsToCurrentThread()) {
-    media_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&PoolImpl::MailboxHoldersReleased, this,
-                                  frame_resources, release_sync_token));
-    return;
-  }
-
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (in_shutdown_) {
     DeleteFrameResources(gpu_factories_, frame_resources);
     delete frame_resources;
