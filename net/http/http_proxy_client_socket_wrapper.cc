@@ -654,12 +654,11 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateStream(int result) {
 
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM_COMPLETE;
   quic_session_ = quic_stream_request_.ReleaseSessionHandle();
-  // TODO(https://crbug.com/656607): Add proper annotation here.
   return quic_session_->RequestStream(
       false,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      traffic_annotation_);
 }
 
 int HttpProxyClientSocketWrapper::DoQuicProxyCreateStreamComplete(int result) {
