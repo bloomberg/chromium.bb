@@ -1501,6 +1501,7 @@ test("content_unittests") {
     "../browser/web_contents/web_drag_dest_mac_unittest.mm",
     "../browser/web_contents/web_drag_source_mac_unittest.mm",
     "../browser/web_package/signed_exchange_cert_fetcher_unittest.cc",
+    "../browser/web_package/signed_exchange_handler_unittest.cc",
     "../browser/web_package/signed_exchange_header_parser_unittest.cc",
     "../browser/web_package/signed_exchange_header_unittest.cc",
     "../browser/web_package/signed_exchange_signature_verifier_unittest.cc",

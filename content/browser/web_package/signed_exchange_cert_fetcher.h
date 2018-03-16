@@ -45,6 +45,9 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   // be called with the certificate if succeeded. Otherwise it will be called
   // with null. If the returned fetcher is destructed before the |callback| is
   // called, the request will be canceled and the |callback| will no be called.
+  //
+  // Using SignedExchangeCertFetcherFactory is preferred rather than directly
+  // calling this.
   static std::unique_ptr<SignedExchangeCertFetcher> CreateAndStart(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,

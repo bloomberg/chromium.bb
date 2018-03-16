@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/common/content_features.h"
 #include "net/cert/cert_status_flags.h"
@@ -165,13 +166,16 @@ void WebPackageLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void WebPackageLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
+      std::move(request_initiator_), std::move(url_loader_factory_),
+      std::move(url_loader_throttles_getter_));
+
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
         std::make_unique<DataPipeToSourceStream>(std::move(body)),
         base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                        weak_factory_.GetWeakPtr()),
-        std::move(request_initiator_), std::move(url_loader_factory_),
-        std::move(url_loader_throttles_getter_));
+        std::move(cert_fetcher_factory));
     return;
   }
 
@@ -179,9 +183,7 @@ void WebPackageLoader::OnStartLoadingResponseBody(
       content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(request_initiator_), std::move(url_loader_factory_),
-      std::move(url_loader_throttles_getter_),
-      std::move(request_context_getter_));
+      std::move(cert_fetcher_factory), std::move(request_context_getter_));
 }
 
 void WebPackageLoader::OnComplete(

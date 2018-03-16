@@ -32,14 +32,13 @@ class X509Certificate;
 }  // namespace net
 
 namespace network {
-class SharedURLLoaderFactory;
 struct ResourceResponseHead;
 }  // namespace network
 
 namespace content {
 
 class SignedExchangeCertFetcher;
-class URLLoaderThrottle;
+class SignedExchangeCertFetcherFactory;
 
 // IMPORTANT: Currenly SignedExchangeHandler partially implements the verifying
 // logic.
@@ -55,9 +54,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
                               std::unique_ptr<net::SourceStream> payload_stream,
                               base::Optional<net::SSLInfo>)>;
 
-  using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
-
   // TODO(https://crbug.com/817187): Find a more sophisticated way to use a
   // MockCertVerifier in browser tests instead of using the static method.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
@@ -67,16 +63,13 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read
-  // from |payload_stream| passed to |headers_callback|. |url_loader_factory|
-  // and |url_loader_throttles_getter| are used to set up a network URLLoader to
-  // actually fetch the certificate.
+  // from |payload_stream| passed to |headers_callback|. |cert_fetcher_factory|
+  // is used to create a SignedExchangeCertFetcher that fetches the certificate.
   SignedExchangeHandler(
       std::string content_type,
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
-      url::Origin request_initiator,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~SignedExchangeHandler();
 
@@ -114,13 +107,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   base::Optional<SignedExchangeHeader> header_;
 
-  // Used to create |cert_fetcher_|.
-  url::Origin request_initiator_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  // This getter is guaranteed to be valid at least until the headers callback
-  // is run.
-  URLLoaderThrottlesGetter url_loader_throttles_getter_;
-
+  std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory_;
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -149,10 +136,8 @@ class SignedExchangeHandlerFactory {
   virtual std::unique_ptr<SignedExchangeHandler> Create(
       std::unique_ptr<net::SourceStream> body,
       SignedExchangeHandler::ExchangeHeadersCallback headers_callback,
-      url::Origin request_initiator,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      SignedExchangeHandler::URLLoaderThrottlesGetter
-          url_loader_throttles_getter) = 0;
+      std::unique_ptr<SignedExchangeCertFetcherFactory>
+          cert_fetcher_factory) = 0;
 };
 
 }  // namespace content

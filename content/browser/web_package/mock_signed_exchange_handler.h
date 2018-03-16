@@ -13,6 +13,8 @@
 
 namespace content {
 
+class SignedExchangeCertFetcherFactory;
+
 class MockSignedExchangeHandler final : public SignedExchangeHandler {
  public:
   MockSignedExchangeHandler(net::Error error,
@@ -32,8 +34,6 @@ class MockSignedExchangeHandlerFactory final
  public:
   using ExchangeHeadersCallback =
       SignedExchangeHandler::ExchangeHeadersCallback;
-  using URLLoaderThrottlesGetter =
-      SignedExchangeHandler::URLLoaderThrottlesGetter;
 
   // Creates a factory that creates SignedExchangeHandler which always fires
   // a headers callback with the given |error|, |request_url|, |mime_type|
@@ -49,9 +49,8 @@ class MockSignedExchangeHandlerFactory final
   std::unique_ptr<SignedExchangeHandler> Create(
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
-      url::Origin request_initiator,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter) override;
+      std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory)
+      override;
 
  private:
   const net::Error error_;
