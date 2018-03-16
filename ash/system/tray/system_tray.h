@@ -30,6 +30,7 @@ class TrayBluetooth;
 class TrayCapsLock;
 class TrayCast;
 class TrayEnterprise;
+class TrayIME;
 class TrayNetwork;
 class TrayNightLight;
 class TrayScale;
@@ -126,6 +127,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   TrayBluetooth* GetTrayBluetooth() const;
   // Returns TrayAccessibility object if present or null otherwise.
   TrayAccessibility* GetTrayAccessibility() const;
+  // Returns TrayIME object if present or null otherwise.
+  TrayIME* GetTrayIME() const;
 
   // Determines if it's ok to switch away from the currently active user. Screen
   // casting may block this (or at least throw up a confirmation dialog). Calls
@@ -225,6 +228,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   TrayCapsLock* tray_caps_lock_ = nullptr;
   TrayCast* tray_cast_ = nullptr;
   TrayEnterprise* tray_enterprise_ = nullptr;
+  TrayIME* tray_ime_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
   TrayScale* tray_scale_ = nullptr;

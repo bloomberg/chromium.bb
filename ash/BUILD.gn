@@ -531,6 +531,8 @@ component("ash") {
     "system/enterprise/tray_enterprise.h",
     "system/flag_warning/flag_warning_tray.cc",
     "system/flag_warning/flag_warning_tray.h",
+    "system/ime/ime_feature_pod_controller.cc",
+    "system/ime/ime_feature_pod_controller.h",
     "system/ime/ime_observer.h",
     "system/ime/tray_ime_chromeos.cc",
     "system/ime/tray_ime_chromeos.h",

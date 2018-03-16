@@ -12,6 +12,8 @@
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
+#include "ash/system/ime/ime_feature_pod_controller.h"
+#include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
@@ -83,7 +85,8 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView() {
   // Initially create default view to set |default_bubble_height_|.
   system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
                                 true /* show_by_click */);
-  system_tray_->ShowDetailedView(system_tray_->GetTrayNetwork(), 0,
+  system_tray_->ShowDetailedView(system_tray_->GetTrayNetwork(),
+                                 0 /* close_delay_in_seconds */,
                                  BubbleCreationType::BUBBLE_USE_EXISTING);
 }
 
@@ -93,7 +96,8 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
   // Initially create default view to set |default_bubble_height_|.
   system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
                                 true /* show_by_click */);
-  system_tray_->ShowDetailedView(system_tray_->GetTrayBluetooth(), 0,
+  system_tray_->ShowDetailedView(system_tray_->GetTrayBluetooth(),
+                                 0 /* close_delay_in_seconds */,
                                  BubbleCreationType::BUBBLE_USE_EXISTING);
 }
 
@@ -103,7 +107,18 @@ void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
   // Initially create default view to set |default_bubble_height_|.
   system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
                                 true /* show_by_click */);
-  system_tray_->ShowDetailedView(system_tray_->GetTrayAccessibility(), 0,
+  system_tray_->ShowDetailedView(system_tray_->GetTrayAccessibility(),
+                                 0 /* close_delay_in_seconds */,
+                                 BubbleCreationType::BUBBLE_USE_EXISTING);
+}
+
+void UnifiedSystemTrayController::ShowIMEDetailedView() {
+  // TODO(tetsui): Implement UnifiedSystemTray's IME detailed view.
+  // Initially create default view to set |default_bubble_height_|.
+  system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
+                                true /* show_by_click */);
+  system_tray_->ShowDetailedView(system_tray_->GetTrayIME(),
+                                 0 /* close_delay_in_seconds */,
                                  BubbleCreationType::BUBBLE_USE_EXISTING);
 }
 
@@ -114,6 +129,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
   // TODO(tetsui): Add more feature pod items in spec.
