@@ -178,8 +178,8 @@ WebBluetoothServiceImpl::~WebBluetoothServiceImpl() {
 }
 
 void WebBluetoothServiceImpl::SetClientConnectionErrorHandler(
-    base::Closure closure) {
-  binding_.set_connection_error_handler(closure);
+    base::OnceClosure closure) {
+  binding_.set_connection_error_handler(std::move(closure));
 }
 
 bool WebBluetoothServiceImpl::IsDevicePaired(
