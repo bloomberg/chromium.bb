@@ -49,8 +49,12 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
   // Wrapper tracing is needed for callbacks. The reference chain is
   // NavigatorLocksImpl -> LockManager -> LockRequestImpl ->
   // V8LockGrantedCallback.
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(lock_manager_);
+  }
+
+  const char* NameInHeapSnapshot() const override {
+    return "NavigatorLocksImpl";
   }
 
  private:

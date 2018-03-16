@@ -19,6 +19,9 @@ class GeolocationWatchers : public TraceWrapperBase {
   GeolocationWatchers() = default;
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
+  const char* NameInHeapSnapshot() const override {
+    return "GeolocationWatchers";
+  }
 
   bool Add(int id, GeoNotifier*);
   GeoNotifier* Find(int id) const;

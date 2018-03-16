@@ -35,6 +35,9 @@ class PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(string_);
   }
+  const char* NameInHeapSnapshot() const override {
+    return "TraceWrapperV8String";
+  }
 
  private:
   TraceWrapperV8Reference<v8::String> string_;

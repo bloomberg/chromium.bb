@@ -62,7 +62,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                               String* failure_reason = nullptr);
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
  private:
   ModuleScript(Modulator* settings_object,

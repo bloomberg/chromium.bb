@@ -67,7 +67,10 @@ class CORE_EXPORT StyleSheetCollection
   void MarkSheetListDirty() { sheet_list_dirty_ = true; }
 
   virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "StyleSheetCollection";
+  }
 
   void Dispose();
 

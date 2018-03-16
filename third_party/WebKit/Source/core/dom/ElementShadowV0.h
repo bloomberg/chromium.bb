@@ -55,7 +55,8 @@ class CORE_EXPORT ElementShadowV0 final
   void ClearDistribution();
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override { return "ElementShadowV0"; }
 
  private:
   explicit ElementShadowV0(ElementShadow&);

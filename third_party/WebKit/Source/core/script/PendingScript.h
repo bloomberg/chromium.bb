@@ -83,6 +83,7 @@ class CORE_EXPORT PendingScript
 
   virtual void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const override {}
+  const char* NameInHeapSnapshot() const override { return "PendingScript"; }
 
   // Returns false if the script should not be run due to MIME type check.
   // Should be called just before GetSource().

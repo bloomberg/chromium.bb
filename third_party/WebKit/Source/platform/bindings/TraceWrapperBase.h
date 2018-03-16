@@ -24,7 +24,7 @@ class PLATFORM_EXPORT TraceWrapperBase {
 
   // Human-readable name of this object. The DevTools heap snapshot uses
   // this method to show the object.
-  virtual const char* NameInHeapSnapshot() const { return "UnknownNode"; }
+  virtual const char* NameInHeapSnapshot() const = 0;
 };
 
 }  // namespace blink

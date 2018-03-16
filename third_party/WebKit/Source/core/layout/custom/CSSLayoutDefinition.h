@@ -50,6 +50,9 @@ class CSSLayoutDefinition final
 
     void Trace(blink::Visitor*);
     void TraceWrappers(const ScriptWrappableVisitor*) const override;
+    const char* NameInHeapSnapshot() const override {
+      return "CSSLayoutDefinition::Instance";
+    }
 
    private:
     Member<CSSLayoutDefinition> definition_;
@@ -81,6 +84,9 @@ class CSSLayoutDefinition final
 
   void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "CSSLayoutDefinition";
+  }
 
  private:
   scoped_refptr<ScriptState> script_state_;

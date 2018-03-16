@@ -83,6 +83,9 @@ class LockManager::LockRequestImpl final
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(callback_);
   }
+  const char* NameInHeapSnapshot() const override {
+    return "LockManager::LockRequestImpl";
+  }
 
   // Called to immediately close the pipe which signals the back-end,
   // unblocking further requests, without waiting for GC finalize the object.
