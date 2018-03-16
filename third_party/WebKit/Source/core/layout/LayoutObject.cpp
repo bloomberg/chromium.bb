@@ -697,9 +697,10 @@ PaintLayer* LayoutObject::PaintingLayer() const {
 }
 
 bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
+  if (StyleRef().GetPosition() != EPosition::kFixed)
+    return false;
   LayoutView* view = View();
-  return StyleRef().GetPosition() == EPosition::kFixed && Container() == view &&
-         view->PageLogicalHeight() &&
+  return Container() == view && view->PageLogicalHeight() &&
          // TODO(crbug.com/619094): Figure out the correct behaviour for fixed
          // position objects in paged media with vertical writing modes.
          view->IsHorizontalWritingMode();

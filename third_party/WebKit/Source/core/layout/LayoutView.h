@@ -249,6 +249,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   LayoutRect DebugRect() const override;
 
+  virtual IntSize ScrolledContentOffset() const;
+
  private:
   void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,

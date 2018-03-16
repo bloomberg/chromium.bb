@@ -279,6 +279,19 @@ IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
   return size;
 }
 
+IntSize LayoutFlexibleBox::ScrolledContentOffset() const {
+  DCHECK(HasOverflowClip());
+  DCHECK(HasLayer());
+  // FIXME: Return DoubleSize here. crbug.com/414283.
+  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
+  IntSize result =
+      scrollable_area->ScrollOffsetInt() + OriginAdjustmentForScrollbars();
+  if (IsHorizontalWritingMode() &&
+      ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    result.Expand(-VerticalScrollbarWidth(), 0);
+  return result;
+}
+
 bool LayoutFlexibleBox::HasTopOverflow() const {
   EFlexDirection flex_direction = Style()->FlexDirection();
   if (IsHorizontalWritingMode())
