@@ -56,3 +56,14 @@ gen-signedexchange \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -o test.example.com_invalid_test.htxg \
   -miRecordSize 100
+
+gen-signedexchange \
+  -uri https://test.example.org/hello.txt \
+  -status 200 \
+  -content hello.txt \
+  -certificate /tmp/wildcard_example.org.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://cert.example.org/resource.validity.msg \
+  -privateKey /tmp/wildcard_example.org.private.pem \
+  -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
+  -o test.example.org_hello.txt.htxg

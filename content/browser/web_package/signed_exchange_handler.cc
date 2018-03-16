@@ -323,9 +323,8 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
 
   network::ResourceResponseHead response_head;
   response_head.headers = header_->BuildHttpResponseHeaders();
-  // TODO(https://crbug.com/803774): |mime_type| should be derived from
-  // "Content-Type" header.
-  response_head.mime_type = "text/html";
+  response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
+                                               &response_head.charset);
 
   std::string mi_header_value;
   if (!response_head.headers->EnumerateHeader(nullptr, kMiHeader,
