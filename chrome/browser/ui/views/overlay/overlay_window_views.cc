@@ -44,6 +44,21 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
 };
 
+OverlayWindowViews::OverlayWindowViews() {
+  // TODO(apacible): Change window type to TYPE_WINDOW_FRAMELESS. It is
+  // temporarily TYPE_WINDOW for resizing purposes.
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = CalculateAndUpdateBounds();
+  params.keep_on_top = true;
+  params.visible_on_all_workspaces = true;
+
+  // Set WidgetDelegate for more control over |widget_|.
+  params.delegate = new OverlayWindowWidgetDelegate(this);
+
+  Init(params);
+}
+
 OverlayWindowViews::~OverlayWindowViews() = default;
 
 gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
@@ -123,19 +138,4 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // TODO(apacible): Update sizes and maybe resize the current
   // Picture-in-Picture window. Currently, switching between workspaces on linux
   // does not trigger this function. http://crbug.com/819673
-}
-
-OverlayWindowViews::OverlayWindowViews() {
-  // TODO(apacible): Change window type to TYPE_WINDOW_FRAMELESS. It is
-  // temporarily TYPE_WINDOW for resizing purposes.
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = CalculateAndUpdateBounds();
-  params.keep_on_top = true;
-  params.visible_on_all_workspaces = true;
-
-  // Set WidgetDelegate for more control over |widget_|.
-  params.delegate = new OverlayWindowWidgetDelegate(this);
-
-  Init(params);
 }
