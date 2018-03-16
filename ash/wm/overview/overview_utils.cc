@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/command_line.h"
 #include "base/optional.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/client/aura_constants.h"
@@ -25,11 +24,6 @@
 namespace ash {
 
 namespace {
-
-// Cache the result of the command line lookup so the command line is only
-// looked up once.
-base::Optional<bool> g_enable_new_overview_animations = base::nullopt;
-base::Optional<bool> g_enable_new_overview_ui = base::nullopt;
 
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
@@ -105,30 +99,11 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
 }
 
 bool IsNewOverviewAnimationsEnabled() {
-  if (g_enable_new_overview_animations == base::nullopt) {
-    g_enable_new_overview_animations =
-        base::make_optional(ash::features::IsNewOverviewAnimationsEnabled());
-  }
-
-  return g_enable_new_overview_animations.value();
+  return base::FeatureList::IsEnabled(features::kNewOverviewAnimations);
 }
 
 bool IsNewOverviewUi() {
-  if (g_enable_new_overview_ui == base::nullopt) {
-    g_enable_new_overview_ui =
-        base::make_optional(base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableNewOverviewUi));
-  }
-
-  return g_enable_new_overview_ui.value();
-}
-
-void ResetCachedOverviewAnimationsValueForTesting() {
-  g_enable_new_overview_animations = base::nullopt;
-}
-
-void ResetCachedOverviewUiValueForTesting() {
-  g_enable_new_overview_ui = base::nullopt;
+  return base::FeatureList::IsEnabled(features::kNewOverviewUi);
 }
 
 std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,

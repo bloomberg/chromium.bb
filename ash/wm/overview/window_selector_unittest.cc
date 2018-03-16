@@ -40,7 +40,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -119,13 +118,6 @@ class WindowSelectorTest : public AshTestBase {
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_api_->SetAnimationDuration(1);
     ScopedTransformOverviewWindow::SetImmediateCloseForTests();
-  }
-
-  void TearDown() override {
-    ResetCachedOverviewAnimationsValueForTesting();
-    ResetCachedOverviewUiValueForTesting();
-
-    AshTestBase::TearDown();
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
@@ -386,7 +378,7 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   // y: -kTextFilterHeight (since there's no text in the filter) - 2.
   // w: std::min(kTextFilterWidth, total_bounds.width()).
   // h: kTextFilterHeight.
-  gfx::Rect expected_bounds(60, -42, 280, 40);
+  gfx::Rect expected_bounds(60, -34, 280, 32);
   EXPECT_EQ(expected_bounds, text_filter->GetClientAreaBoundsInScreen());
 
   // Rotates the display, which triggers the WindowSelector's
@@ -394,7 +386,7 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   UpdateDisplay("400x300/r");
 
   // Uses the same formulas as above using width = 300, height = 400.
-  expected_bounds = gfx::Rect(10, -42, 280, 40);
+  expected_bounds = gfx::Rect(10, -34, 280, 32);
   EXPECT_EQ(expected_bounds, text_filter->GetClientAreaBoundsInScreen());
 }
 
@@ -1903,9 +1895,6 @@ TEST_F(WindowSelectorTest, TransformedRectIsCenteredWithInset) {
 // Verify that a window which will be displayed like a letter box on the window
 // grid has the correct bounds.
 TEST_F(WindowSelectorTest, TransformingLetteredRect) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Create a window whose width is more than twice the height.
   const gfx::Rect original_bounds(10, 10, 300, 100);
   const int scale = 3;
@@ -1946,9 +1935,6 @@ TEST_F(WindowSelectorTest, TransformingLetteredRect) {
 // Verify that a window which will be displayed like a pillar box on the window
 // grid has the correct bounds.
 TEST_F(WindowSelectorTest, TransformingPillaredRect) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Create a window whose height is more than twice the width.
   const gfx::Rect original_bounds(10, 10, 100, 300);
   const int scale = 3;
@@ -2000,20 +1986,11 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   resizer->RevertDrag();
 }
 
-// Verify that entering overview mode without windows with the old ui is not
-// possible.
-TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorOldUi) {
-  ToggleOverview();
-  EXPECT_FALSE(window_selector());
-}
-
 // Verify that the overview no windows indicator appears when entering overview
 // mode with no windows.
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
   // Verify that by entering overview mode without windows, the no items
   // indicator appears.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
   ToggleOverview();
   ASSERT_TRUE(window_selector());
   EXPECT_EQ(0u, GetWindowItemsForRoot(0).size());
@@ -2024,9 +2001,6 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
 
 // Verify that the overview no windows indicator position is as expected.
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   UpdateDisplay("400x300");
   // Midpoint of height minus shelf.
   const int expected_y = (300 - kShelfSize) / 2;
@@ -2072,9 +2046,6 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
 // Verify that when opening overview mode with multiple displays, the no items
 // indicator appears on the grid(s) if it has no windows.
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Create two windows, one each on the first two monitors.
   UpdateDisplay("400x400,400x400,400x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -2103,8 +2074,6 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
 // Verify that pressing and releasing keys does not show the overview textbox
 // when there are no windows opened.
 TEST_F(WindowSelectorTest, TextfilterHiddenWhenNoWindows) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
   ToggleOverview();
   ASSERT_TRUE(window_selector());
 
@@ -2114,9 +2083,6 @@ TEST_F(WindowSelectorTest, TextfilterHiddenWhenNoWindows) {
 
 // Tests the cases when very wide or tall windows enter overview mode.
 TEST_F(WindowSelectorTest, ExtremeWindowBounds) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Add three windows which in overview mode will be considered wide, tall and
   // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
   // when the 400x200 is rotated to 200x400, and should be considered a normal
@@ -2553,9 +2519,6 @@ TEST_F(WindowSelectorTest, WindowItemCanAnimateOnDragRelease) {
 // Verify that the window selector items titlebar and close button change
 // visibility when a item is being dragged.
 TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   UpdateDisplay("400x400");
   const gfx::Rect bounds(10, 10, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -2593,9 +2556,6 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
 
 // Tests that overview widgets are stacked in the correct order.
 TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Helper function to get the index of |child|, give its parent window
   // |parent|. Given the same |parent|, the children with higher index will be
   // stacked above (but not neccessarily directly) the children with lower
@@ -2694,9 +2654,6 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
 // Verify that a windows which enter overview mode have a visible backdrop, if
 // the window is to be letter or pillar fitted.
 TEST_F(WindowSelectorTest, Backdrop) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   // Add three windows which in overview mode will be considered wide, tall and
   // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
   // when the 400x200 is rotated to 200x400, and should be considered a normal
@@ -2737,9 +2694,6 @@ TEST_F(WindowSelectorTest, Backdrop) {
 // Verify that the mask that is applied to add rounded corners in overview mode
 // is removed during animations and drags.
 TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   UpdateDisplay("400x400");
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -3902,9 +3856,6 @@ TEST_F(SplitViewWindowSelectorTest,
 // the item to be dragged or enter splitview, but will still be able to select a
 // window.
 TEST_F(SplitViewWindowSelectorTest, EventsOnOverviewTitleBar) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableNewOverviewUi);
-
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 

@@ -3654,7 +3654,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-new-overview-ui",
      flag_descriptions::kAshEnableNewOverviewUiName,
      flag_descriptions::kAshEnableNewOverviewUiDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewOverviewUi)},
+     FEATURE_VALUE_TYPE(ash::features::kNewOverviewUi)},
 #endif  // defined(OS_CHROMEOS)
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
