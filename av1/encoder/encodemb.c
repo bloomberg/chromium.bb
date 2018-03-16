@@ -344,26 +344,6 @@ typedef struct encode_block_pass1_args {
   MACROBLOCK *x;
 } encode_block_pass1_args;
 
-static void iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                        const TxfmParam *txfm_param) {
-  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-  const int eob = txfm_param->eob;
-  if (eob > 1)
-    aom_iwht4x4_16_add(input, dest, stride);
-  else
-    aom_iwht4x4_1_add(input, dest, stride);
-}
-
-static void idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                        const TxfmParam *txfm_param) {
-  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-  const int eob = txfm_param->eob;
-  if (eob > 1)
-    av1_iht4x4_16_add(input, dest, stride, txfm_param);
-  else
-    aom_idct4x4_1_add(input, dest, stride);
-}
-
 static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                void *arg) {
@@ -396,11 +376,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
     }
-    if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-      iwht4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
-    } else {
-      idct4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
-    }
+    av1_inv_txfm_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
   }
 }
 
