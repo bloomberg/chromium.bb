@@ -46,6 +46,8 @@ class StyleEngineTest : public ::testing::Test {
   RuleSetInvalidation ScheduleInvalidationsForRules(TreeScope&,
                                                     const String& css_text);
 
+  ShadowRoot* AttachShadowTo(Element&);
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
@@ -70,6 +72,14 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
   rule_sets.insert(&rule_set);
   GetStyleEngine().ScheduleInvalidationsForRuleSets(tree_scope, rule_sets);
   return kRuleSetInvalidationsScheduled;
+}
+
+ShadowRoot* StyleEngineTest::AttachShadowTo(Element& element) {
+  ShadowRootInit init;
+  init.setMode("open");
+  return element.attachShadow(
+      ToScriptStateForMainWorld(GetDocument().GetFrame()), init,
+      ASSERT_NO_EXCEPTION);
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
@@ -713,11 +723,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString("<div></div><div></div><div></div>");
@@ -763,11 +769,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString("<slot name=other></slot><slot></slot>");
@@ -795,11 +797,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString(
@@ -828,11 +826,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString(
@@ -1049,11 +1043,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   ASSERT_TRUE(host);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString(R"HTML(
@@ -1118,11 +1108,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   ASSERT_TRUE(host);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  ShadowRootInit init;
-  init.setMode("open");
-  ShadowRoot* shadow_root =
-      host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
-                         init, ASSERT_NO_EXCEPTION);
+  ShadowRoot* shadow_root = AttachShadowTo(*host);
   ASSERT_TRUE(shadow_root);
 
   shadow_root->SetInnerHTMLFromString("<style>span { color: green }</style>");
