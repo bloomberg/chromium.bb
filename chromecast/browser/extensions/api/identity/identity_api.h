@@ -12,7 +12,7 @@
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
-namespace shell {
+namespace cast {
 
 // Returns an OAuth2 access token for a user. See the IDL file for
 // documentation.
@@ -49,7 +49,7 @@ class IdentityRemoveCachedAuthTokenFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(IdentityRemoveCachedAuthTokenFunction);
 };
 
-}  // namespace shell
+}  // namespace cast
 }  // namespace extensions
 
 #endif  // CHROMECAST_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_API_H_
