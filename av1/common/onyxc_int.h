@@ -653,6 +653,15 @@ static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
   return cm->frame_type == KEY_FRAME || cm->intra_only;
 }
 
+static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
+      cm->frame_refs[cm->primary_ref_frame].idx == INVALID_IDX) {
+    return NULL;
+  } else {
+    return &cm->buffer_pool
+                ->frame_bufs[cm->frame_refs[cm->primary_ref_frame].idx];
+  }
+}
 // Returns 1 if this frame might use mvs from some previous frame. This
 // function doesn't consider whether prev_frame is actually suitable (see
 // frame_can_use_prev_frame_mvs for that)

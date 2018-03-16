@@ -379,9 +379,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   if (!cm->show_existing_frame) {
     cm->last_show_frame = cm->show_frame;
 
-    // NOTE: It is not supposed to ref to any frame not used as reference
-    if (cm->is_reference_frame) cm->prev_frame = cm->cur_frame;
-
     if (cm->seg.enabled) {
 #if CONFIG_SEGMENT_PRED_LAST
       if (cm->prev_frame && (cm->mi_rows == cm->prev_frame->mi_rows) &&

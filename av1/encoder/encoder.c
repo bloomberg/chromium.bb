@@ -302,10 +302,6 @@ static void setup_frame(AV1_COMP *cpi) {
   // other inter-frames the encoder currently uses only two contexts;
   // context 1 for ALTREF frames and context 0 for the others.
 
-#if CONFIG_SEGMENT_PRED_LAST
-  if (cm->prev_frame) cm->last_frame_seg_map = cm->prev_frame->seg_map;
-  cm->current_frame_seg_map = cm->cur_frame->seg_map;
-#endif
   cm->primary_ref_frame = PRIMARY_REF_NONE;
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
@@ -361,7 +357,16 @@ static void setup_frame(AV1_COMP *cpi) {
     av1_zero(cpi->interp_filter_selected[0]);
   }
 
+  cm->prev_frame = get_prev_frame(cm);
   cpi->vaq_refresh = 0;
+
+#if CONFIG_SEGMENT_PRED_LAST
+  if (cm->prev_frame)
+    cm->last_frame_seg_map = cm->prev_frame->seg_map;
+  else
+    cm->last_frame_seg_map = NULL;
+  cm->current_frame_seg_map = cm->cur_frame->seg_map;
+#endif
 }
 
 static void enc_setup_mi(AV1_COMMON *cm) {
@@ -560,8 +565,10 @@ static void save_coding_context(AV1_COMP *cpi) {
     av1_set_default_ref_deltas(last_ref_deltas);
     av1_set_default_mode_deltas(last_mode_deltas);
   } else {
+    assert(cm->buffer_pool->frame_bufs[buf_idx].ref_deltas != NULL);
     memcpy(last_ref_deltas, cm->buffer_pool->frame_bufs[buf_idx].ref_deltas,
            TOTAL_REFS_PER_FRAME);
+    assert(cm->buffer_pool->frame_bufs[buf_idx].mode_deltas != NULL);
     memcpy(last_mode_deltas, cm->buffer_pool->frame_bufs[buf_idx].mode_deltas,
            MAX_MODE_LF_DELTAS);
   }
@@ -4386,10 +4393,11 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   apply_active_map(cpi);
 #if CONFIG_SEGMENT_PRED_LAST
   if (cm->seg.enabled) {
-    if (cm->seg.update_data)
+    if (cm->seg.update_data) {
       segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
-    else if (cm->prev_frame)
+    } else if (cm->prev_frame) {
       segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+    }
   }
 #endif
 
@@ -4494,10 +4502,11 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
 #if CONFIG_SEGMENT_PRED_LAST
     if (cm->seg.enabled) {
-      if (cm->seg.update_data)
+      if (cm->seg.update_data) {
         segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
-      else if (cm->prev_frame)
+      } else if (cm->prev_frame) {
         segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+      }
     }
 #endif
 
@@ -5211,7 +5220,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (cm->seg.enabled) {
     if (cm->seg.update_map) {
       update_reference_segmentation_map(cpi);
-    } else {
+    } else if (cm->last_frame_seg_map) {
       memcpy(cm->current_frame_seg_map, cm->last_frame_seg_map,
              cm->mi_cols * cm->mi_rows * sizeof(uint8_t));
     }
@@ -5283,7 +5292,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // NOTE: Shall not refer to any frame not used as reference.
   if (cm->is_reference_frame) {
-    cm->prev_frame = cm->cur_frame;
     // keep track of the last coded dimensions
     cm->last_width = cm->width;
     cm->last_height = cm->height;

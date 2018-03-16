@@ -4460,7 +4460,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   ref_best_rd = AOMMIN(rd, ref_best_rd);
   if (rd < best_rd) {
-    best_rd = rd;
     *rd_stats = this_rd_stats;
     best_tx = mbmi->tx_size;
     memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);

@@ -2928,8 +2928,9 @@ static void write_global_motion(AV1_COMP *cpi,
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     const WarpedMotionParams *ref_params =
-        cm->error_resilient_mode ? &default_warp_params
-                                 : &cm->prev_frame->global_motion[frame];
+        (cm->error_resilient_mode || cm->prev_frame == NULL)
+            ? &default_warp_params
+            : &cm->prev_frame->global_motion[frame];
     write_global_motion_params(&cm->global_motion[frame], ref_params, wb,
                                cm->allow_high_precision_mv);
     // TODO(sarahparker, debargha): The logic in the commented out code below
@@ -3085,6 +3086,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
 #endif
+
+  if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
+    aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
+  }
 
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
@@ -3243,9 +3248,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
   }
-  if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
-    aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
-  }
+
 #if CONFIG_TILE_INFO_FIRST
   write_tile_info(cm, saved_wb, wb);
 #endif  // CONFIG_TILE_INFO_FIRST
