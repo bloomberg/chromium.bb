@@ -125,10 +125,6 @@ mr.UnitTestUtils.mockChromeApi = function() {
       VolumeControlType:
           {ATTENUATION: 'attenuation', FIXED: 'fixed', MASTER: 'master'}
     },
-    dial: {
-      onDeviceList: jasmine.createSpy('chrome.dial.onDeviceList spy'),
-      onError: jasmine.createSpy('chrome.dial.onError spy')
-    },
     identity: {
       onSignInChanged: {
         addListener:
