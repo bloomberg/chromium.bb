@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -88,6 +89,7 @@ DetachedResourceRequest::DetachedResourceRequest(
 void DetachedResourceRequest::Start(
     std::unique_ptr<DetachedResourceRequest> request,
     content::BrowserContext* browser_context) {
+  request->start_time_ = base::TimeTicks::Now();
   auto* storage_partition =
       content::BrowserContext::GetStoragePartition(browser_context, nullptr);
   // |url_loader_| is owned by the request, and must be kept alive to not cancel
@@ -106,7 +108,17 @@ void DetachedResourceRequest::Start(
 void DetachedResourceRequest::OnResponseCallback(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(cb_).Run(url_loader_->NetError() == net::OK);
+  bool success = url_loader_->NetError() == net::OK;
+  auto duration = base::TimeTicks::Now() - start_time_;
+  if (success) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "CustomTabs.DetachedResourceRequest.Duration.Success", duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "CustomTabs.DetachedResourceRequest.Duration.Failure", duration);
+  }
+
+  std::move(cb_).Run(success);
 }
 
 }  // namespace customtabs

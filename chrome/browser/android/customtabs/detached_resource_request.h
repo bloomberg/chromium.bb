@@ -10,6 +10,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -54,6 +55,7 @@ class DetachedResourceRequest {
 
   const GURL url_;
   const GURL site_for_cookies_;
+  base::TimeTicks start_time_;
   OnResultCallback cb_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
