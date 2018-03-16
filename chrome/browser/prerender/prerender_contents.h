@@ -45,6 +45,10 @@ namespace history {
 struct HistoryAddPageArgs;
 }
 
+namespace memory_instrumentation {
+class GlobalMemoryDump;
+}
+
 namespace prerender {
 
 class PrerenderManager;
@@ -302,7 +306,9 @@ class PrerenderContents : public content::NotificationObserver,
   friend class PrerenderContentsFactoryImpl;
 
   // Returns the ProcessMetrics for the render process, if it exists.
-  base::ProcessMetrics* MaybeGetProcessMetrics();
+  void DidGetMemoryUsage(
+      bool success,
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // chrome::mojom::PrerenderCanceler:
   void CancelPrerenderForPrinting() override;
@@ -354,9 +360,9 @@ class PrerenderContents : public content::NotificationObserver,
   // Used solely to prevent double deletion.
   bool prerendering_has_been_cancelled_;
 
-  // Process Metrics of the render process associated with the
-  // RenderViewHost for this object.
-  std::unique_ptr<base::ProcessMetrics> process_metrics_;
+  // Pid of the render process associated with the RenderViewHost for this
+  // object.
+  base::ProcessId process_pid_;
 
   std::unique_ptr<WebContentsDelegateImpl> web_contents_delegate_;
 
