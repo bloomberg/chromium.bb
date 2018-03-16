@@ -125,7 +125,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     } else if (element.type() == network::DataElement::TYPE_DATA_PIPE) {
       // Read the content into |data_pipe|.
       mojo::DataPipe data_pipe;
-      network::mojom::DataPipeGetterPtr ptr = element.ReleaseDataPipeGetter();
+      network::mojom::DataPipeGetterPtr ptr(element.ReleaseDataPipeGetter());
       base::RunLoop run_loop;
       ptr->Read(
           std::move(data_pipe.producer_handle),

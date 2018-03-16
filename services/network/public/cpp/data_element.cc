@@ -61,8 +61,9 @@ void DataElement::SetToBlobRange(const std::string& blob_uuid,
 }
 
 void DataElement::SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter) {
+  DCHECK(data_pipe_getter);
   type_ = TYPE_DATA_PIPE;
-  data_pipe_getter_ = std::move(data_pipe_getter);
+  data_pipe_getter_ = data_pipe_getter.PassInterface();
 }
 
 void DataElement::SetToChunkedDataPipe(
@@ -75,9 +76,21 @@ base::File DataElement::ReleaseFile() {
   return std::move(file_);
 }
 
-mojom::DataPipeGetterPtr DataElement::ReleaseDataPipeGetter() {
+mojom::DataPipeGetterPtrInfo DataElement::ReleaseDataPipeGetter() {
   DCHECK_EQ(TYPE_DATA_PIPE, type_);
+  DCHECK(data_pipe_getter_.is_valid());
   return std::move(data_pipe_getter_);
+}
+
+mojom::DataPipeGetterPtr DataElement::CloneDataPipeGetter() const {
+  DCHECK_EQ(TYPE_DATA_PIPE, type_);
+  DCHECK(data_pipe_getter_.is_valid());
+  auto* mutable_this = const_cast<DataElement*>(this);
+  mojom::DataPipeGetterPtr owned(std::move(mutable_this->data_pipe_getter_));
+  mojom::DataPipeGetterPtr clone;
+  owned->Clone(MakeRequest(&clone));
+  mutable_this->data_pipe_getter_ = owned.PassInterface();
+  return clone;
 }
 
 mojom::ChunkedDataPipeGetterPtr DataElement::ReleaseChunkedDataPipeGetter() {

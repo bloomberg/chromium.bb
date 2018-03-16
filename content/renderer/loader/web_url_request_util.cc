@@ -415,11 +415,8 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
         // Append the cloned data pipe to the |http_body|. This might not be
         // needed for all callsites today but it respects the constness of
         // |input|, as opposed to moving the data pipe out of |input|.
-        network::mojom::DataPipeGetterPtr cloned_data_pipe_getter;
-        const_cast<network::mojom::DataPipeGetterPtr&>(element.data_pipe())
-            ->Clone(mojo::MakeRequest(&cloned_data_pipe_getter));
         http_body.AppendDataPipe(
-            cloned_data_pipe_getter.PassInterface().PassHandle());
+            element.CloneDataPipeGetter().PassInterface().PassHandle());
         break;
       }
       case network::DataElement::TYPE_UNKNOWN:
