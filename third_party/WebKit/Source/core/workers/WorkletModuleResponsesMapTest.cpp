@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/testing/DummyPageHolder.h"
 #include "core/workers/WorkletModuleResponsesMap.h"
 #include "platform/loader/testing/FetchTestingPlatformSupport.h"
 #include "platform/loader/testing/MockFetchContext.h"
@@ -56,7 +55,6 @@ class WorkletModuleResponsesMapTest : public ::testing::Test {
 
   void SetUp() override {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-    dummy_page_holder_ = DummyPageHolder::Create();
     auto* context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
     fetcher_ = ResourceFetcher::Create(context);
@@ -71,7 +69,6 @@ class WorkletModuleResponsesMapTest : public ::testing::Test {
 
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<ResourceFetcher> fetcher_;
   Persistent<WorkletModuleResponsesMap> map_;
 };
