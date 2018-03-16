@@ -53,7 +53,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 

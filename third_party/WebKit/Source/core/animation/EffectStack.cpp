@@ -35,7 +35,6 @@
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 
@@ -119,9 +118,8 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
   if (effect_stack) {
     HeapVector<Member<SampledEffect>>& sampled_effects =
         effect_stack->sampled_effects_;
-    // std::sort doesn't work with OwnPtrs
-    NonCopyingSort(sampled_effects.begin(), sampled_effects.end(),
-                   CompareSampledEffects);
+    std::sort(sampled_effects.begin(), sampled_effects.end(),
+              CompareSampledEffects);
     effect_stack->RemoveRedundantSampledEffects();
     for (const auto& sampled_effect : sampled_effects) {
       if (sampled_effect->GetPriority() != priority ||

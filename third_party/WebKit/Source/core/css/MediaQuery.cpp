@@ -28,11 +28,11 @@
 
 #include "core/css/MediaQuery.h"
 
+#include <algorithm>
 #include <memory>
 #include "core/css/MediaQueryExp.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/media_type_names.h"
-#include "platform/wtf/NonCopyingSort.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -92,7 +92,7 @@ MediaQuery::MediaQuery(RestrictorType restrictor,
     : restrictor_(restrictor),
       media_type_(AttemptStaticStringCreation(media_type.LowerASCII())),
       expressions_(std::move(expressions)) {
-  NonCopyingSort(expressions_.begin(), expressions_.end(), ExpressionCompare);
+  std::sort(expressions_.begin(), expressions_.end(), ExpressionCompare);
 
   // Remove all duplicated expressions.
   MediaQueryExp key = MediaQueryExp::Invalid();

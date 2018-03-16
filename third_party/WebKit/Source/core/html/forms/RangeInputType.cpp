@@ -31,6 +31,7 @@
 
 #include "core/html/forms/RangeInputType.h"
 
+#include <algorithm>
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/AXObjectCache.h"
@@ -53,7 +54,6 @@
 #include "core/input_type_names.h"
 #include "core/layout/LayoutSlider.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 
@@ -375,8 +375,7 @@ void RangeInputType::UpdateTickMarkValues() {
     tick_mark_values_.push_back(ParseToNumber(option_value, Decimal::Nan()));
   }
   tick_mark_values_.ShrinkToFit();
-  NonCopyingSort(tick_mark_values_.begin(), tick_mark_values_.end(),
-                 DecimalCompare);
+  std::sort(tick_mark_values_.begin(), tick_mark_values_.end(), DecimalCompare);
 }
 
 Decimal RangeInputType::FindClosestTickMarkValue(const Decimal& value) {

@@ -4,6 +4,7 @@
 
 #include "core/html/track/CueTimeline.h"
 
+#include <algorithm>
 #include "core/dom/events/Event.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/HTMLTrackElement.h"
@@ -11,7 +12,6 @@
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 
@@ -283,7 +283,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
 
   // 12 - Sort the tasks in events in ascending time order (tasks with earlier
   // times first).
-  NonCopyingSort(event_tasks.begin(), event_tasks.end(), EventTimeCueCompare);
+  std::sort(event_tasks.begin(), event_tasks.end(), EventTimeCueCompare);
 
   for (const auto& task : event_tasks) {
     if (!affected_tracks.Contains(task.second->track()))
@@ -311,8 +311,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
 
   // 14 - Sort affected tracks in the same order as the text tracks appear in
   // the media element's list of text tracks, and remove duplicates.
-  NonCopyingSort(affected_tracks.begin(), affected_tracks.end(),
-                 TrackIndexCompare);
+  std::sort(affected_tracks.begin(), affected_tracks.end(), TrackIndexCompare);
 
   // 15 - For each text track in affected tracks, in the list order, queue a
   // task to fire a simple event named cuechange at the TextTrack object, and,
