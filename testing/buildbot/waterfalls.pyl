@@ -1940,28 +1940,47 @@
     'machines': {
       'Android Builder': {
         'additional_compile_targets': [
-          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Android Builder (dbg)': {
         'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
           'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Android Builder ARM64 (dbg)': {
         'additional_compile_targets': [
+          'browser_tests',
+          'capture_unittests',
           'content_browsertests',
+          'content_unittests',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Linux Builder': {
         'additional_compile_targets': [
-          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Linux Builder (dbg)': {
         'additional_compile_targets': [
-          'all',
-          # TODO(dpranke): Specifying these additional targets is pointless :).
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
@@ -1993,12 +2012,17 @@
       },
       'Win Builder': {
         'additional_compile_targets': [
-          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Win Builder (dbg)': {
         'additional_compile_targets': [
-          'all',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
