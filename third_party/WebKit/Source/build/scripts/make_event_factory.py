@@ -141,7 +141,7 @@ class EventFactoryWriter(json5_generator.Writer):
             includes[cpp_name] = self._headers_header_include_path(entry)
         return sorted(includes.values())
 
-    @template_expander.use_jinja('templates/EventFactory.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/event_factory.cc.tmpl', filters=filters)
     def generate_implementation(self):
         return {
             'include_header_paths': self._headers_header_includes(
