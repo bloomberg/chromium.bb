@@ -125,11 +125,6 @@ public class SavePasswordsPreferences
     // Name of the subdirectory in cache which stores the exported passwords file.
     private static final String PASSWORDS_CACHE_DIR = "/passwords";
 
-    // Name of the histogram that records whether the user visiting the settings triggered the
-    // search.
-    private static final String HISTOGRAM_SEARCH_TRIGGERED =
-            "PasswordManager.Android.PasswordSearchTriggered";
-
     // Potential values of the histogram recording the result of exporting. This needs to match
     // ExportPasswordsResult from
     // //components/password_manager/core/browser/password_manager_metrics_util.h.
@@ -302,7 +297,8 @@ public class SavePasswordsPreferences
     private void maybeRecordTriggeredPasswordSearch(boolean searchTriggered) {
         if (providesPasswordSearch() && !mSearchRecorded) {
             mSearchRecorded = true;
-            RecordHistogram.recordBooleanHistogram(HISTOGRAM_SEARCH_TRIGGERED, searchTriggered);
+            RecordHistogram.recordBooleanHistogram(
+                    "PasswordManager.Android.PasswordSearchTriggered", searchTriggered);
         }
     }
 
