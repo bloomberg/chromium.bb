@@ -247,12 +247,6 @@ gfx::NativeViewAccessible
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::CreateCompositorFrameSink(
-    CreateCompositorFrameSinkCallback callback) {
-  DCHECK(GetFrameSinkId().is_valid());
-  std::move(callback).Run(GetFrameSinkId());
-}
-
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   RenderWidgetHostImpl* impl = GetRenderWidgetHostImpl();
 
