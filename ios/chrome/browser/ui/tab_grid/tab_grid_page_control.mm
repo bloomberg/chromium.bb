@@ -99,6 +99,15 @@ const int kBackgroundColor = 0x5F6368;
 CGPoint RectCenter(CGRect rect) {
   return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
 }
+
+// Returns the string to use for a numeric item count.
+NSString* StringForItemCount(long count) {
+  if (count == 0)
+    return @"";
+  if (count > 99)
+    return @":-)";
+  return [NSString stringWithFormat:@"%ld", count];
+}
 }
 
 // View class used for the background of this control; it draws the grey
@@ -138,8 +147,8 @@ CGPoint RectCenter(CGRect rect) {
 // Public properties
 @synthesize selectedPage = _selectedPage;
 @synthesize sliderPosition = _sliderPosition;
-@synthesize incognitoText = _incognitoText;
-@synthesize regularText = _regularText;
+@synthesize incognitoTabCount = _incognitoTabCount;
+@synthesize regularTabCount = _regularTabCount;
 // Private properties
 @synthesize incognitoGuide = _incognitoGuide;
 @synthesize regularGuide = _regularGuide;
@@ -192,16 +201,18 @@ CGPoint RectCenter(CGRect rect) {
 // the text in both labels (the regular and the  "selected" versions that's
 // visible when the slider is over a segment), and an ivar to store values that
 // are set before the labels are created.
-- (void)setIncognitoText:(NSString*)incognitoText {
+- (void)setIncognitoTabCount:(NSUInteger)incognitoTabCount {
+  NSString* incognitoText = StringForItemCount(incognitoTabCount);
   self.incognitoLabel.text = incognitoText;
   self.incognitoSelectedLabel.text = incognitoText;
-  _incognitoText = [incognitoText copy];
+  _incognitoTabCount = incognitoTabCount;
 }
 
-- (void)setRegularText:(NSString*)regularText {
+- (void)setRegularTabCount:(NSUInteger)regularTabCount {
+  NSString* regularText = StringForItemCount(regularTabCount);
   self.regularLabel.text = regularText;
   self.regularSelectedLabel.text = regularText;
-  _regularText = [regularText copy];
+  _regularTabCount = regularTabCount;
 }
 
 #pragma mark - Public methods
@@ -374,8 +385,8 @@ CGPoint RectCenter(CGRect rect) {
 
   // Update the label text, in case these properties have been set before the
   // views were set up.
-  self.regularText = _regularText;
-  self.incognitoText = _incognitoText;
+  self.regularTabCount = _regularTabCount;
+  self.incognitoTabCount = _incognitoTabCount;
 
   // Mark the control's layout as dirty so the the guides will be computed, then
   // force a layout now so it won't be triggered later (perhaps during an

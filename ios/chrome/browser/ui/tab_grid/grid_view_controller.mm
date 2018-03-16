@@ -105,6 +105,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self.items.count == 0;
 }
 
+- (NSUInteger)itemCount {
+  return self.items.count;
+}
+
 - (BOOL)isSelectedCellVisible {
   if (self.collectionView.indexPathsForSelectedItems.count == 0)
     return NO;
