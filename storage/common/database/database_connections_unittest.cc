@@ -70,8 +70,8 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   another.AddConnection(kOriginId, kName);
   another.AddConnection(kOriginId, kName2);
 
-  std::vector<std::pair<std::string, base::string16> > closed_dbs;
-  connections.RemoveConnections(another, &closed_dbs);
+  std::vector<std::pair<std::string, base::string16>> closed_dbs =
+      connections.RemoveConnections(another);
   EXPECT_EQ(1u, closed_dbs.size());
   EXPECT_EQ(kOriginId, closed_dbs[0].first);
   EXPECT_EQ(kName2, closed_dbs[0].second);

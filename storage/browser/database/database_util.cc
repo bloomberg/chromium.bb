@@ -17,11 +17,9 @@ namespace {
 
 bool IsSafeSuffix(const base::string16& suffix) {
   base::char16 prev_c = 0;
-  for (base::string16::const_iterator it = suffix.begin();
-      it < suffix.end(); ++it) {
-    base::char16 c = *it;
-    if (!(base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) ||
-          c == '-' || c == '.' || c == '_')) {
+  for (const base::char16 c : suffix) {
+    if (!(base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) || c == '-' ||
+          c == '.' || c == '_')) {
       return false;
     }
     if (c == '.' && prev_c == '.')
