@@ -47,6 +47,10 @@ gfx::Rect GetPageInfoAnchorRectCocoa(Browser* browser);
 gfx::Point GetExtensionInstalledAnchorPointCocoa(
     gfx::NativeWindow window,
     const ExtensionInstalledBubble* bubble);
+
+// Returns the app menu anchor rect for |browser|, which is assumed to have a
+// Cocoa browser window.
+gfx::Rect GetAppMenuAnchorRectCocoa(Browser* browser);
 #endif
 
 }  // namespace bubble_anchor_util
