@@ -1746,4 +1746,30 @@ TEST_F(TabletModeWindowManagerTest, NoWindowResizerInTabletMode) {
   EXPECT_FALSE(resizer.get());
 }
 
+// Test that the minimized window bounds doesn't change until it's unminimized.
+TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_EQ(window->bounds(), rect);
+
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  window_selector_controller->ToggleOverview();
+  EXPECT_EQ(window->bounds(), rect);
+
+  // Exit overview mode will update all windows' bounds. However, if the window
+  // is minimized, the bounds will not be updated.
+  window_selector_controller->ToggleOverview();
+  EXPECT_EQ(window->bounds(), rect);
+}
+
 }  // namespace ash

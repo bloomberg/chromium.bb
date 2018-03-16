@@ -381,13 +381,17 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
                                          bool animated) {
   if (defer_bounds_updates_)
     return;
+
+  // Do not update minimized windows bounds until it was unminimized.
+  if (current_state_type_ == mojom::WindowStateType::MINIMIZED)
+    return;
+
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
   // If we have a target bounds rectangle, we center it and set it
   // accordingly.
   if (!bounds_in_parent.IsEmpty() &&
       bounds_in_parent != window_state->window()->bounds()) {
-    if (current_state_type_ == mojom::WindowStateType::MINIMIZED ||
-        !window_state->window()->IsVisible() || !animated) {
+    if (!window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
       // If we animate (to) tablet mode, we want to use the cross fade to
