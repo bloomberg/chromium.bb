@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_IME_MENU_IME_MENU_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -37,7 +38,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Shows the virtual keyboard with the given keyset: emoji, handwriting or
   // voice.
-  void ShowKeyboardWithKeyset(const std::string& keyset);
+  void ShowKeyboardWithKeyset(mojom::ImeKeyset keyset);
 
   // Returns true if the menu should show emoji, handwriting and voice buttons
   // on the bottom. Otherwise, the menu will show a 'Customize...' bottom row
@@ -88,6 +89,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Disables the virtual keyboard.
   void DisableVirtualKeyboard();
+
+  // Show the virtual keyboard.
+  void ShowKeyboard();
 
   ImeController* ime_controller_;
 

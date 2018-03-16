@@ -22723,7 +22723,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Emoji"/>
   <int value="2" label="Handwriting"/>
   <int value="3" label="Voice"/>
-  <int value="4" label="Settings"/>
 </enum>
 
 <enum name="IMERegisterProxyView">

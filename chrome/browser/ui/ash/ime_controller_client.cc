@@ -112,6 +112,29 @@ void ImeControllerClient::SetCapsLockEnabled(bool caps_enabled) {
     keyboard->SetCapsLockEnabled(caps_enabled);
 }
 
+void ImeControllerClient::OverrideKeyboardKeyset(
+    ash::mojom::ImeKeyset keyset,
+    OverrideKeyboardKeysetCallback callback) {
+  std::string url_ref;
+  switch (keyset) {
+    case ash::mojom::ImeKeyset::kNone:
+      // kNone resets url_ref to the empty string.
+      break;
+    case ash::mojom::ImeKeyset::kEmoji:
+      url_ref = "emoji";
+      break;
+    case ash::mojom::ImeKeyset::kVoice:
+      url_ref = "voice";
+      break;
+    case ash::mojom::ImeKeyset::kHandwriting:
+      url_ref = "hwt";
+      break;
+  }
+
+  input_method_manager_->OverrideKeyboardUrlRef(url_ref);
+  std::move(callback).Run();
+}
+
 // chromeos::input_method::InputMethodManager::Observer:
 void ImeControllerClient::InputMethodChanged(InputMethodManager* manager,
                                              Profile* profile,
