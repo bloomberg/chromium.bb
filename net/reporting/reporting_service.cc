@@ -54,7 +54,7 @@ class ReportingServiceImpl : public ReportingService {
         base::BindRepeating(&ReportingServiceImpl::ProcessHeaderValue,
                             weak_factory_.GetWeakPtr(), url),
         base::BindRepeating(
-            &ReportingHeaderParser::RecordHeaderDiscardedForInvalidJson));
+            &ReportingHeaderParser::RecordHeaderDiscardedForJsonInvalid));
   }
 
   void RemoveBrowsingData(int data_type_mask,
