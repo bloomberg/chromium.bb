@@ -112,7 +112,7 @@ struct CookieMonsterTestTraits {
     return std::make_unique<CookieMonster>(nullptr);
   }
 
-  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+  static void DeliverChangeNotifications() { base::RunLoop().RunUntilIdle(); }
 
   static const bool supports_http_only = true;
   static const bool supports_non_dotted_domains = true;
@@ -124,6 +124,8 @@ struct CookieMonsterTestTraits {
   static const bool supports_url_cookie_tracking = true;
   static const bool supports_named_cookie_tracking = true;
   static const bool supports_multiple_tracking_callbacks = true;
+  static const bool has_exact_change_cause = true;
+  static const bool has_exact_change_ordering = true;
   static const int creation_time_granularity_in_ms = 0;
 };
 

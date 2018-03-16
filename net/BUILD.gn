@@ -2573,6 +2573,8 @@ static_library("test_support") {
     "cert/mock_client_cert_verifier.cc",
     "cert/mock_client_cert_verifier.h",
     "cookies/canonical_cookie_test_helpers.h",
+    "cookies/cookie_change_dispatcher_test_helpers.cc",
+    "cookies/cookie_change_dispatcher_test_helpers.h",
     "cookies/cookie_monster_store_test.cc",
     "cookies/cookie_monster_store_test.h",
     "cookies/cookie_store_change_unittest.h",
