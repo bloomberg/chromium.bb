@@ -89,7 +89,7 @@
                        context:(void*)context {
   if ([keyPath isEqualToString:@"knobAlpha"]) {
     BOOL visible = [_scrollbarPainter.Get() knobAlpha] > 0;
-    _scrollbar->SetScrollbarsHidden(!visible);
+    _scrollbar->SetScrollbarsHiddenIfOverlay(!visible);
   }
 }
 

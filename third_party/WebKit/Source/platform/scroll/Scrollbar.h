@@ -98,7 +98,7 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   ScrollbarPart HoveredPart() const override { return hovered_part_; }
 
   void StyleChanged() override {}
-  void SetScrollbarsHidden(bool) override;
+  void SetScrollbarsHiddenIfOverlay(bool) override;
   bool Enabled() const override { return enabled_; }
   void SetEnabled(bool) override;
 

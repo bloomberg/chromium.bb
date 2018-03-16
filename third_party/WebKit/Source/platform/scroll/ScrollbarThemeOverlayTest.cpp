@@ -121,7 +121,8 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   // Hiding the scrollbar should invalidate the layer (SetNeedsDisplay) but not
   // trigger repaint of the thumb resouce, since the compositor will give the
   // entire layer opacity 0.
-  EXPECT_CALL(*mock_scrollable_area, ScrollbarsHidden()).WillOnce(Return(true));
+  EXPECT_CALL(*mock_scrollable_area, ScrollbarsHiddenIfOverlay())
+      .WillOnce(Return(true));
   vertical_scrollbar->SetEnabled(false);
   EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
@@ -131,7 +132,7 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   // Showing the scrollbar needs to repaint the thumb resource, since it may
   // have been repainted in the disabled state while hidden (e.g. from
   // SetProportion on bounds changes).
-  EXPECT_CALL(*mock_scrollable_area, ScrollbarsHidden())
+  EXPECT_CALL(*mock_scrollable_area, ScrollbarsHiddenIfOverlay())
       .WillOnce(Return(false));
   vertical_scrollbar->SetEnabled(true);
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());

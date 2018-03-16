@@ -60,6 +60,8 @@
         internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
         var d = document.getElementById('container');
+        internals.setScrollbarVisibilityInScrollableArea(d, true);
+
         var plugin = document.createElement('object');
         plugin.type = 'application/x-blink-test-plugin';
         plugin.width = window.innerWidth * 2;

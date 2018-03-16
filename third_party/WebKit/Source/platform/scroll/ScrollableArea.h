@@ -286,8 +286,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool ShouldScrollOnMainThread() const;
 
   // Overlay scrollbars can "fade-out" when inactive.
-  virtual bool ScrollbarsHidden() const;
-  virtual void SetScrollbarsHidden(bool);
+  virtual bool ScrollbarsHiddenIfOverlay() const;
+  virtual void SetScrollbarsHiddenIfOverlay(bool);
 
   // Returns true if the GraphicsLayer tree needs to be rebuilt.
   virtual bool UpdateAfterCompositingChange() { return false; }
@@ -490,7 +490,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned horizontal_scrollbar_needs_paint_invalidation_ : 1;
   unsigned vertical_scrollbar_needs_paint_invalidation_ : 1;
   unsigned scroll_corner_needs_paint_invalidation_ : 1;
-  unsigned scrollbars_hidden_ : 1;
+  unsigned scrollbars_hidden_if_overlay_ : 1;
   unsigned scrollbar_captured_ : 1;
   unsigned mouse_over_scrollbar_ : 1;
 

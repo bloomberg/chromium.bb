@@ -1321,9 +1321,9 @@ void GraphicsLayer::didUpdateMainThreadScrollingReasons() {
       PlatformLayer()->MainThreadScrollingReasons());
 }
 
-void GraphicsLayer::didChangeScrollbarsHidden(bool hidden) {
+void GraphicsLayer::didChangeScrollbarsHiddenIfOverlay(bool hidden) {
   if (scrollable_area_)
-    scrollable_area_->SetScrollbarsHidden(hidden);
+    scrollable_area_->SetScrollbarsHiddenIfOverlay(hidden);
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {
