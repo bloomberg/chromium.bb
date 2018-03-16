@@ -25,12 +25,14 @@ public class ContentShellApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        if (BuildConfig.IS_MULTIDEX_ENABLED) {
-            ChromiumMultiDexInstaller.install(this);
-        }
         ContextUtils.initApplicationContext(this);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        ApplicationStatus.initialize(this);
+        if (ContextUtils.isMainProcess()) {
+            if (BuildConfig.IS_MULTIDEX_ENABLED) {
+                ChromiumMultiDexInstaller.install(this);
+            }
+            PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+            ApplicationStatus.initialize(this);
+        }
     }
 
     public void initCommandLine() {

@@ -22,16 +22,15 @@ public class ComponentsBrowserTestsApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        if (BuildConfig.IS_MULTIDEX_ENABLED) {
+        ContextUtils.initApplicationContext(this);
+        // The test harness runs in the main process, and browser in :test_process.
+        boolean isBrowserProcess = ContextUtils.getProcessName().contains(":test");
+        if (BuildConfig.IS_MULTIDEX_ENABLED && (ContextUtils.isMainProcess() || isBrowserProcess)) {
             ChromiumMultiDexInstaller.install(this);
         }
-        ContextUtils.initApplicationContext(this);
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        ApplicationStatus.initialize(this);
+        if (isBrowserProcess) {
+            PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+            ApplicationStatus.initialize(this);
+        }
     }
 }
