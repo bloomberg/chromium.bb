@@ -529,6 +529,10 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 
 # ====== IncrementalShadowDOM-only failures from here ======
 
+crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-002.html [ Crash Pass ]
+crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-003.html [ Crash Pass ]
+crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-005.html [ Crash Pass ]
+
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 
 crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-1-and-click.html [ Crash Failure ]
