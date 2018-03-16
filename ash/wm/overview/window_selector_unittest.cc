@@ -2591,9 +2591,11 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
   EXPECT_EQ(1.f, item2->GetCloseButtonOpacityForTesting());
 }
 
-// http://crbug.com/822049
 // Tests that overview widgets are stacked in the correct order.
-TEST_F(WindowSelectorTest, DISABLED_OverviewWidgetStackingOrder) {
+TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
   // Helper function to get the index of |child|, give its parent window
   // |parent|. Given the same |parent|, the children with higher index will be
   // stacked above (but not neccessarily directly) the children with lower
@@ -2663,6 +2665,8 @@ TEST_F(WindowSelectorTest, DISABLED_OverviewWidgetStackingOrder) {
             index_of(window.get(), parent));
   EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
             index_of(min_widget2->GetNativeWindow(), parent));
+  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
+            index_of(window3.get(), parent));
 
   // Drag the first window. Verify that it's item widget is not stacked above
   // the other two.

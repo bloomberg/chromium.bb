@@ -165,6 +165,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
+  // Stacks the |item_widget_| in the correct place. |item_widget_| may be
+  // initially stacked in the wrong place due to animation or if it is a
+  // minimized window, the overview minimized widget is not available on
+  // |item_widget_|'s creation.
+  void RestackItemWidget();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

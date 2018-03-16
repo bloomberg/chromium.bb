@@ -448,11 +448,8 @@ class WindowSelectorItem::RoundedContainerView
     // during the initial animation. Once the initial fade-in completes and the
     // overview header is fully exposed update stacking to keep the label above
     // the item which prevents input events from reaching the window.
-    aura::Window* widget_window = GetWidget()->GetNativeWindow();
-    aura::Window* stacking_window =
-        item_ ? item_->GetWindowForStacking() : nullptr;
-    if (widget_window && stacking_window)
-      widget_window->parent()->StackChildAbove(widget_window, stacking_window);
+    if (item_)
+      item_->RestackItemWidget();
   }
 
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -753,6 +750,14 @@ void WindowSelectorItem::Shutdown() {
 
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
+  RestackItemWidget();
+  // The minimized widget was unavailable up to this point, but if a window
+  // is minimized, |item_widget_| should stack on top of it, unless the
+  // animation is in progress and will take care of that.
+  if (!background_view_->should_animate() &&
+      wm::GetWindowState(GetWindow())->IsMinimized()) {
+    RestackItemWidget();
+  }
   UpdateHeaderLayout(HeaderFadeInMode::kEnter,
                      OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
@@ -896,6 +901,12 @@ void WindowSelectorItem::UpdateBackdropBounds() {
 void WindowSelectorItem::SetDimmed(bool dimmed) {
   dimmed_ = dimmed;
   SetOpacity(dimmed ? kDimmedItemOpacity : 1.0f);
+}
+
+void WindowSelectorItem::RestackItemWidget() {
+  aura::Window* widget_window = item_widget_->GetNativeWindow();
+  widget_window->parent()->StackChildAbove(widget_window,
+                                           GetWindowForStacking());
 }
 
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
