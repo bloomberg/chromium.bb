@@ -283,6 +283,12 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
  */
 cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
   if (msg['action'] == 'speak') {
+    // The only caller sending this message is a ChromeVox Classic api client.
+    // Disallow empty strings.
+    if (msg['text'] == '') {
+      return;
+    }
+
     this.tts.speak(
         msg['text'],
         /** cvox.QueueMode */ msg['queueMode'], msg['properties']);
