@@ -73,6 +73,8 @@ storage::DirectoryEntry::DirectoryEntryType MapEntryType(bool is_directory) {
                       : storage::DirectoryEntry::FILE;
 }
 
+constexpr size_t kTaskQueueCapacity = 2;
+
 }  // namespace
 
 using file_system_provider::AbortCallback;
@@ -81,7 +83,8 @@ SmbFileSystem::SmbFileSystem(
     const file_system_provider::ProvidedFileSystemInfo& file_system_info,
     UnmountCallback unmount_callback)
     : file_system_info_(file_system_info),
-      unmount_callback_(std::move(unmount_callback)) {}
+      unmount_callback_(std::move(unmount_callback)),
+      task_queue_(kTaskQueueCapacity) {}
 
 SmbFileSystem::~SmbFileSystem() {}
 
@@ -153,29 +156,48 @@ base::WeakPtr<SmbProviderClient> SmbFileSystem::GetWeakSmbProviderClient()
   return GetSmbProviderClient()->AsWeakPtr();
 }
 
-void SmbFileSystem::Abort() {
-  // TODO(zentaro): To implement Abort() fully will require storing a
-  // request id unique to each method call and also passing it to the daemon.
-  // However none of current operations on the daemon are cancelable, so
-  // until there are operations that can actually be cancelled this will
-  // be a no-op.
+void SmbFileSystem::EnqueueTask(SmbTask task, OperationId operation_id) {
+  task_queue_.AddTask(std::move(task), operation_id);
+}
+
+OperationId SmbFileSystem::EnqueueTaskAndGetOperationId(SmbTask task) {
+  OperationId operation_id = task_queue_.GetNextOperationId();
+  EnqueueTask(std::move(task), operation_id);
+  return operation_id;
+}
+
+AbortCallback SmbFileSystem::EnqueueTaskAndGetCallback(SmbTask task) {
+  OperationId operation_id = EnqueueTaskAndGetOperationId(std::move(task));
+  return CreateAbortCallback(operation_id);
+}
+
+void SmbFileSystem::Abort(OperationId operation_id) {
+  task_queue_.AbortOperation(operation_id);
+}
+
+AbortCallback SmbFileSystem::CreateAbortCallback(OperationId operation_id) {
+  return base::BindRepeating(&SmbFileSystem::Abort, AsWeakPtr(), operation_id);
 }
 
 AbortCallback SmbFileSystem::CreateAbortCallback() {
-  return base::BindRepeating(&SmbFileSystem::Abort, AsWeakPtr());
+  return base::DoNothing();
 }
 
 AbortCallback SmbFileSystem::RequestUnmount(
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->Unmount(
-      GetMountId(), base::BindOnce(&SmbFileSystem::HandleRequestUnmountCallback,
-                                   AsWeakPtr(), callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleRequestUnmountCallback,
+                              AsWeakPtr(), callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::Unmount, GetWeakSmbProviderClient(),
+                     GetMountId(), std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 void SmbFileSystem::HandleRequestUnmountCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) {
+  task_queue_.TaskFinished();
   base::File::Error result = TranslateError(error);
   if (result == base::File::FILE_OK) {
     result = RunUnmountCallback(
@@ -189,11 +211,14 @@ AbortCallback SmbFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     ProvidedFileSystemInterface::MetadataFieldMask fields,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
-  GetSmbProviderClient()->GetMetadataEntry(
-      GetMountId(), entry_path,
+  auto reply =
       base::BindOnce(&SmbFileSystem::HandleRequestGetMetadataEntryCallback,
-                     AsWeakPtr(), fields, callback));
-  return CreateAbortCallback();
+                     AsWeakPtr(), fields, callback);
+  SmbTask task = base::BindOnce(&SmbProviderClient::GetMetadataEntry,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                entry_path, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::GetActions(
@@ -216,11 +241,14 @@ AbortCallback SmbFileSystem::ExecuteAction(
 AbortCallback SmbFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
-  GetSmbProviderClient()->ReadDirectory(
-      GetMountId(), directory_path,
+  auto reply =
       base::BindOnce(&SmbFileSystem::HandleRequestReadDirectoryCallback,
-                     AsWeakPtr(), callback));
-  return CreateAbortCallback();
+                     AsWeakPtr(), callback);
+  SmbTask task = base::BindOnce(&SmbProviderClient::ReadDirectory,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                directory_path, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
@@ -228,28 +256,34 @@ AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
                                       const OpenFileCallback& callback) {
   bool writeable =
       mode == file_system_provider::OPEN_FILE_MODE_WRITE ? true : false;
-  GetSmbProviderClient()->OpenFile(
-      GetMountId(), file_path, writeable,
-      base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+
+  auto reply = base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback,
+                              AsWeakPtr(), callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::OpenFile, GetWeakSmbProviderClient(),
+                     GetMountId(), file_path, writeable, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 void SmbFileSystem::HandleRequestOpenFileCallback(
     const OpenFileCallback& callback,
     smbprovider::ErrorType error,
     int32_t file_id) const {
+  task_queue_.TaskFinished();
   callback.Run(file_id, TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->CloseFile(
-      GetMountId(), file_handle,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::CloseFile, GetWeakSmbProviderClient(),
+                     GetMountId(), file_handle, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::ReadFile(
@@ -258,76 +292,96 @@ AbortCallback SmbFileSystem::ReadFile(
     int64_t offset,
     int length,
     const ReadChunkReceivedCallback& callback) {
-  GetSmbProviderClient()->ReadFile(
-      GetMountId(), file_handle, offset, length,
+  auto reply =
       base::BindOnce(&SmbFileSystem::HandleRequestReadFileCallback, AsWeakPtr(),
-                     length, scoped_refptr<net::IOBuffer>(buffer), callback));
-  return CreateAbortCallback();
+                     length, scoped_refptr<net::IOBuffer>(buffer), callback);
+
+  SmbTask task = base::BindOnce(&SmbProviderClient::ReadFile,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                file_handle, offset, length, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->CreateDirectory(
-      GetMountId(), directory_path, recursive,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+
+  SmbTask task = base::BindOnce(&SmbProviderClient::CreateDirectory,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                directory_path, recursive, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::CreateFile(
     const base::FilePath& file_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->CreateFile(
-      GetMountId(), file_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::CreateFile, GetWeakSmbProviderClient(),
+                     GetMountId(), file_path, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->GetDeleteList(
-      GetMountId(), entry_path,
-      base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  OperationId operation_id = task_queue_.GetNextOperationId();
+
+  auto reply = base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback,
+                              AsWeakPtr(), callback, operation_id);
+  SmbTask task = base::BindOnce(&SmbProviderClient::GetDeleteList,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                entry_path, std::move(reply));
+
+  EnqueueTask(std::move(task), operation_id);
+  return CreateAbortCallback(operation_id);
 }
 
 AbortCallback SmbFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->CopyEntry(
-      GetMountId(), source_path, target_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::CopyEntry, GetWeakSmbProviderClient(),
+                     GetMountId(), source_path, target_path, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->MoveEntry(
-      GetMountId(), source_path, target_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::MoveEntry, GetWeakSmbProviderClient(),
+                     GetMountId(), source_path, target_path, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::Truncate(
     const base::FilePath& file_path,
     int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->Truncate(
-      GetMountId(), file_path, length,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task =
+      base::BindOnce(&SmbProviderClient::Truncate, GetWeakSmbProviderClient(),
+                     GetMountId(), file_path, length, std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::WriteFile(
@@ -339,11 +393,13 @@ AbortCallback SmbFileSystem::WriteFile(
   const std::vector<uint8_t> data(buffer->data(), buffer->data() + length);
   base::ScopedFD temp_fd = temp_file_manager_.CreateTempFile(data);
 
-  GetSmbProviderClient()->WriteFile(
-      GetMountId(), file_handle, offset, length, std::move(temp_fd),
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                     callback));
-  return CreateAbortCallback();
+  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                              callback);
+  SmbTask task = base::BindOnce(
+      &SmbProviderClient::WriteFile, GetWeakSmbProviderClient(), GetMountId(),
+      file_handle, offset, length, std::move(temp_fd), std::move(reply));
+
+  return EnqueueTaskAndGetCallback(std::move(task));
 }
 
 AbortCallback SmbFileSystem::AddWatcher(
@@ -424,6 +480,7 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
     smbprovider::ErrorType error,
     const smbprovider::DirectoryEntryListProto& entries) const {
+  task_queue_.TaskFinished();
   uint32_t batch_size = kReadDirectoryInitialBatchSize;
   storage::AsyncFileUtil::EntryList entry_list;
 
@@ -445,8 +502,10 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
 
 void SmbFileSystem::HandleGetDeleteListCallback(
     storage::AsyncFileUtil::StatusCallback callback,
+    OperationId operation_id,
     smbprovider::ErrorType list_error,
     const smbprovider::DeleteListProto& delete_list) {
+  task_queue_.TaskFinished();
   if (delete_list.entries_size() == 0) {
     // There are no entries to delete.
     DCHECK_NE(smbprovider::ERROR_OK, list_error);
@@ -458,10 +517,14 @@ void SmbFileSystem::HandleGetDeleteListCallback(
     const base::FilePath entry_path(delete_list.entries(i));
     bool is_last_entry = (i == delete_list.entries_size() - 1);
 
-    GetSmbProviderClient()->DeleteEntry(
-        GetMountId(), entry_path, false /* recursive */,
+    auto reply =
         base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback, AsWeakPtr(),
-                       callback, list_error, is_last_entry));
+                       callback, list_error, is_last_entry);
+
+    SmbTask task = base::BindOnce(
+        &SmbProviderClient::DeleteEntry, GetWeakSmbProviderClient(),
+        GetMountId(), entry_path, false /* recursive */, std::move(reply));
+    EnqueueTask(std::move(task), operation_id);
   }
 }
 
@@ -470,6 +533,7 @@ void SmbFileSystem::HandleDeleteEntryCallback(
     smbprovider::ErrorType list_error,
     bool is_last_entry,
     smbprovider::ErrorType delete_error) const {
+  task_queue_.TaskFinished();
   if (is_last_entry) {
     // Only run the callback once.
     if (list_error != smbprovider::ERROR_OK) {
@@ -484,6 +548,7 @@ void SmbFileSystem::HandleRequestGetMetadataEntryCallback(
     const ProvidedFileSystemInterface::GetMetadataCallback& callback,
     smbprovider::ErrorType error,
     const smbprovider::DirectoryEntryProto& entry) const {
+  task_queue_.TaskFinished();
   if (error != smbprovider::ERROR_OK) {
     callback.Run(std::unique_ptr<file_system_provider::EntryMetadata>(),
                  TranslateError(error));
@@ -526,6 +591,8 @@ void SmbFileSystem::HandleRequestReadFileCallback(
     const ReadChunkReceivedCallback& callback,
     smbprovider::ErrorType error,
     const base::ScopedFD& fd) const {
+  task_queue_.TaskFinished();
+
   if (error != smbprovider::ERROR_OK) {
     callback.Run(0 /* chunk_length */, false /* has_more */,
                  TranslateError(error));
@@ -555,6 +622,8 @@ void SmbFileSystem::HandleRequestReadFileCallback(
 void SmbFileSystem::HandleStatusCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) const {
+  task_queue_.TaskFinished();
+
   callback.Run(TranslateError(error));
 }
 

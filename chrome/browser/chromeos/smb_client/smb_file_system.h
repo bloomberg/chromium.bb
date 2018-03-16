@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -176,7 +177,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
-  void Abort();
+  void Abort(OperationId operation_id);
+
+  file_system_provider::AbortCallback CreateAbortCallback(
+      OperationId operation_id);
 
   file_system_provider::AbortCallback CreateAbortCallback();
 
@@ -216,6 +220,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   void HandleGetDeleteListCallback(
       storage::AsyncFileUtil::StatusCallback callback,
+      OperationId operation_id,
       smbprovider::ErrorType list_error,
       const smbprovider::DeleteListProto& delete_list);
 
@@ -230,6 +235,17 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   SmbProviderClient* GetSmbProviderClient() const;
   base::WeakPtr<SmbProviderClient> GetWeakSmbProviderClient() const;
 
+  // Gets a new OperationId and adds |task| to the task_queue_ with it. Returns
+  // an AbortCallback to abort the newly created operation.
+  file_system_provider::AbortCallback EnqueueTaskAndGetCallback(SmbTask task);
+
+  // Adds |task| to the task_queue_ for |operation_id|.
+  void EnqueueTask(SmbTask task, OperationId operation_id);
+
+  // Gets a new OperationId and adds |task| to the task_queue_ with it. Returns
+  // the OperationId for the newly created Operation.
+  OperationId EnqueueTaskAndGetOperationId(SmbTask task);
+
   file_system_provider::ProvidedFileSystemInfo file_system_info_;
   file_system_provider::OpenedFiles opened_files_;
   storage::AsyncFileUtil::EntryList entry_list_;
@@ -237,6 +253,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   UnmountCallback unmount_callback_;
   TempFileManager temp_file_manager_;
+  mutable SmbTaskQueue task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbFileSystem);
 };
