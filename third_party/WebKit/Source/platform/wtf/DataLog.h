@@ -26,29 +26,15 @@
 #ifndef DataLog_h
 #define DataLog_h
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/FilePrintStream.h"
+#include "base/compiler_specific.h"
 #include "platform/wtf/WTFExport.h"
-
-#include <stdarg.h>
-#include <stdio.h>
 
 namespace WTF {
 
-FilePrintStream& DataFile();
-
-WTF_EXPORT PRINTF_FORMAT(1, 0) void DataLogFV(const char* format, va_list);
 WTF_EXPORT PRINTF_FORMAT(1, 2) void DataLogF(const char* format, ...);
-
-template <typename... T>
-void DataLog(const T&... values) {
-  DataFile().Print(values...);
-}
 
 }  // namespace WTF
 
-using WTF::DataLog;
 using WTF::DataLogF;
 
 #endif  // DataLog_h

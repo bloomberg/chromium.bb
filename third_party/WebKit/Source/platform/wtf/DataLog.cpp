@@ -25,12 +25,10 @@
 
 #include "platform/wtf/DataLog.h"
 
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include "build/build_config.h"
-
-#if defined(OS_POSIX)
-#include <pthread.h>
-#include <unistd.h>
-#endif
 
 #define DATA_LOG_TO_FILE 0
 
@@ -44,61 +42,42 @@
 
 namespace WTF {
 
-#if defined(OS_POSIX)
-static pthread_once_t g_initialize_log_file_once_key = PTHREAD_ONCE_INIT;
-#endif
-
-static FilePrintStream* g_file;
-
-static void InitializeLogFileOnce() {
+static FILE* OpenLogFile() {
+  FILE* file = nullptr;
 #if DATA_LOG_TO_FILE
 #ifdef DATA_LOG_FILENAME
   const char* filename = DATA_LOG_FILENAME;
 #else
   const char* filename = getenv("WTF_DATA_LOG_FILENAME");
 #endif
-  char actualFilename[1024];
+  char actual_filename[1024];
 
-  snprintf(actualFilename, sizeof(actualFilename), "%s.%d.txt", filename,
+  snprintf(actual_filename, sizeof(actual_filename), "%s.%d.txt", filename,
            getpid());
 
   if (filename) {
-    file = FilePrintStream::open(actualFilename, "w").release();
-    if (!file)
+    file = fopen(actual_filename, "w");
+    if (!file) {
       fprintf(stderr, "Warning: Could not open log file %s for writing.\n",
-              actualFilename);
+              actual_filename);
+    }
   }
 #endif  // DATA_LOG_TO_FILE
-  if (!g_file)
-    g_file = new FilePrintStream(stderr, FilePrintStream::kBorrow);
+  if (!file)
+    file = stderr;
 
   // Prefer unbuffered output, so that we get a full log upon crash or
   // deadlock.
-  setvbuf(g_file->File(), nullptr, _IONBF, 0);
-}
+  setvbuf(file, nullptr, _IONBF, 0);
 
-static void InitializeLogFile() {
-#if defined(OS_POSIX)
-  pthread_once(&g_initialize_log_file_once_key, InitializeLogFileOnce);
-#else
-  if (!g_file)
-    InitializeLogFileOnce();
-#endif
-}
-
-FilePrintStream& DataFile() {
-  InitializeLogFile();
-  return *g_file;
-}
-
-void DataLogFV(const char* format, va_list arg_list) {
-  DataFile().Vprintf(format, arg_list);
+  return file;
 }
 
 void DataLogF(const char* format, ...) {
+  static FILE* file = OpenLogFile();
   va_list arg_list;
   va_start(arg_list, format);
-  DataLogFV(format, arg_list);
+  vfprintf(file, format, arg_list);
   va_end(arg_list);
 }
 
