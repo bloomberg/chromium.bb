@@ -97,17 +97,26 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 }
 
 void InterfaceFactoryImpl::CreateRenderer(
-    const std::string& audio_device_id,
+    media::mojom::HostedRendererType type,
+    const std::string& type_specific_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   RendererFactory* renderer_factory = GetRendererFactory();
   if (!renderer_factory)
     return;
 
+  // Creation requests for non default renderers should have already been
+  // handled by now, in a different layer.
+  if (type != media::mojom::HostedRendererType::kDefault) {
+    DLOG(ERROR) << "Creation of specialized renderers is not supported.";
+    return;
+  }
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
   auto audio_sink =
-      mojo_media_client_->CreateAudioRendererSink(audio_device_id);
+      mojo_media_client_->CreateAudioRendererSink(type_specific_id);
+
   auto video_sink = mojo_media_client_->CreateVideoRendererSink(task_runner);
   // TODO(hubbe): Find out if gfx::ColorSpace() is correct for the
   // target_color_space.

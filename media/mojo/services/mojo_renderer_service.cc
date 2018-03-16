@@ -39,7 +39,7 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
     scoped_refptr<AudioRendererSink> audio_sink,
     std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
-    InitiateSurfaceRequestCB initiate_surface_request_cb,
+    const InitiateSurfaceRequestCB& initiate_surface_request_cb,
     mojo::InterfaceRequest<mojom::Renderer> request) {
   MojoRendererService* service = new MojoRendererService(
       mojo_cdm_service_context, std::move(audio_sink), std::move(video_sink),
@@ -52,6 +52,16 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
   service->set_bad_message_cb(base::Bind(&CloseBindingOnBadMessage, binding));
 
   return binding;
+}
+
+// static
+mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
+    std::unique_ptr<media::Renderer> renderer,
+    const InitiateSurfaceRequestCB& initiate_surface_request_cb,
+    mojo::InterfaceRequest<mojom::Renderer> request) {
+  return MojoRendererService::Create(
+      nullptr, nullptr, nullptr, std::move(renderer),
+      initiate_surface_request_cb, std::move(request));
 }
 
 MojoRendererService::MojoRendererService(
