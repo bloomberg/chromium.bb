@@ -150,10 +150,8 @@ class ClientControlledShellSurface
   void OnDragStarted(int component);
   void OnDragFinished(bool cancel, const gfx::Point& location);
 
-  void StartResize(int component);
-
-  // Starts the move-by-drag operation.
-  void StartMove(const gfx::Point& location);
+  // Starts the drag operation.
+  void StartDrag(int component, const gfx::Point& location);
 
   // Set if the surface can be maximzied.
   void SetCanMaximize(bool can_maximize);

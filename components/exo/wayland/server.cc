@@ -2126,9 +2126,7 @@ void remote_surface_set_window_type(wl_client* client,
   }
 }
 
-void remote_surface_resize(wl_client* client,
-                           wl_resource* resource,
-                           uint32_t direction) {
+void remote_surface_resize(wl_client* client, wl_resource* resource) {
   // DEPRECATED
 }
 
@@ -2143,8 +2141,8 @@ void remote_surface_start_move(wl_client* client,
                                wl_resource* resource,
                                int32_t x,
                                int32_t y) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->StartMove(
-      gfx::Point(x, y));
+  GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
+      HTCAPTION, gfx::Point(x, y));
 }
 
 void remote_surface_set_can_maximize(wl_client* client, wl_resource* resource) {
@@ -2184,9 +2182,11 @@ void remote_surface_set_snapped_to_right(wl_client* client,
 
 void remote_surface_start_resize(wl_client* client,
                                  wl_resource* resource,
-                                 uint32_t direction) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->StartResize(
-      Component(direction));
+                                 uint32_t direction,
+                                 int32_t x,
+                                 int32_t y) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
+      Component(direction), gfx::Point(x, y));
 }
 
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {

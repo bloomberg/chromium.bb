@@ -364,21 +364,14 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
     state_changed_callback_.Run(current_state, next_state);
 }
 
-void ClientControlledShellSurface::StartResize(int component) {
-  TRACE_EVENT1("exo", "ClientControlledShellSurface::StartResize", "component",
-               component);
+void ClientControlledShellSurface::StartDrag(int component,
+                                             const gfx::Point& location) {
+  TRACE_EVENT2("exo", "ClientControlledShellSurface::StartResize", "component",
+               component, "location", location.ToString());
 
-  if (!widget_ || client_controlled_move_resize_)
+  if (!widget_ || (client_controlled_move_resize_ && component != HTCAPTION))
     return;
-  AttemptToStartDrag(component, GetMouseLocation());
-}
-
-void ClientControlledShellSurface::StartMove(const gfx::Point& location) {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::StartMove");
-
-  if (!widget_)
-    return;
-  AttemptToStartDrag(HTCAPTION, location);
+  AttemptToStartDrag(component, location);
 }
 
 void ClientControlledShellSurface::AttemptToStartDrag(

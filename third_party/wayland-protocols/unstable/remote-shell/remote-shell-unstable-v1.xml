@@ -778,6 +778,8 @@
     <request name="start_resize" since="12">
       <description summary="start an interactive resize">
 	Request to start an interactive, user-driven resize of the surface.
+	"x" and "y" specifies the starting point of the pointer device
+	that initiated the reize.
 
 	The compositor responds to this request with a "drag_started"
 	event, followed by "bounds_changed" events, and ends the
@@ -789,6 +791,8 @@
 	surface, e.g. fullscreen or maximized, or no drag event is in pregress.
       </description>
       <arg name="resize_direction" type="uint" summary="the direction of resize"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
     </request>
 
   </interface>

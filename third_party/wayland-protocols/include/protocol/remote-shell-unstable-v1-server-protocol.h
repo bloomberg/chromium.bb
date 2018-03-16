@@ -900,12 +900,10 @@ struct zcr_remote_surface_v1_interface {
 	 *
 	 * The compositor may ignore resize requests depending on the state
 	 * of the surface, e.g. fullscreen or maximized.
-	 * @param direction the direction of resize
 	 * @since 9
 	 */
 	void (*resize)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       uint32_t direction);
+		       struct wl_resource *resource);
 	/**
 	 * expand input region for resizing
 	 *
@@ -1005,7 +1003,8 @@ struct zcr_remote_surface_v1_interface {
 	 * start an interactive resize
 	 *
 	 * Request to start an interactive, user-driven resize of the
-	 * surface.
+	 * surface. "x" and "y" specifies the starting point of the pointer
+	 * device that initiated the reize.
 	 *
 	 * The compositor responds to this request with a "drag_started"
 	 * event, followed by "bounds_changed" events, and ends the resize
@@ -1021,7 +1020,9 @@ struct zcr_remote_surface_v1_interface {
 	 */
 	void (*start_resize)(struct wl_client *client,
 			     struct wl_resource *resource,
-			     uint32_t resize_direction);
+			     uint32_t resize_direction,
+			     int32_t x,
+			     int32_t y);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
