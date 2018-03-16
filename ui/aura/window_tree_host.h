@@ -98,6 +98,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Updates the root window's size using |host_size_in_pixels|, current
   // transform and outsets.
+  // TODO(ccameron): Make this function take no arguments, and make this
+  // function no longer public. The interaction between this call, GetBounds,
+  // and OnHostResizedInPixels is ambiguous and allows for inconsistencies.
   virtual void UpdateRootWindowSizeInPixels(
       const gfx::Size& host_size_in_pixels);
 
@@ -192,6 +195,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Releases OS capture of the root window.
   virtual void ReleaseCapture() = 0;
+
+  // Returns the device scale assumed by the WindowTreeHost (set during the
+  // most recent call to OnHostResizedInPixels).
+  float device_scale_factor() const { return device_scale_factor_; }
 
   // Requests that |keys| be intercepted at the platform level and routed
   // directly to the web content.  If |keys| is empty, all keys will be
