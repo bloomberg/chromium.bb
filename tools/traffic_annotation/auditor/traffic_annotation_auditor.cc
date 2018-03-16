@@ -37,8 +37,7 @@ std::map<int, std::string> kReservedAnnotations = {
     {TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test"},
     {PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test_partial"},
     {NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code, "undefined"},
-    {MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"},
-    {NO_TRAFFIC_ANNOTATION_BUG_656607.unique_id_hash_code, "undefined-656607"}};
+    {MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"}};
 
 struct AnnotationID {
   // Two ids can be the same in the following cases:

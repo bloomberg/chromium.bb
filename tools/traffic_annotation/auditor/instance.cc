@@ -181,13 +181,6 @@ AuditorResult AnnotationInstance::Deserialize(
     return AuditorResult(AuditorResult::Type::ERROR_MISSING_TAG_USED, "",
                          file_path, line_number);
 
-  // TODO(crbug.com/656607): Remove this test.
-  // Process temporary tag.
-  if (unique_id_hash_code ==
-      NO_TRAFFIC_ANNOTATION_BUG_656607.unique_id_hash_code) {
-    return AuditorResult(AuditorResult::Type::RESULT_IGNORE);
-  }
-
   // Decode serialized proto.
   std::string annotation_text = "";
   while (start_line < end_line) {
