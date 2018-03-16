@@ -2228,11 +2228,29 @@ void RendererSchedulerImpl::OnPendingTasksChanged(bool has_tasks) {
       main_thread_only().compositor_will_send_main_frame_not_expected.get())
     return;
 
+  // Dispatch RequestBeginMainFrameNotExpectedSoon notifications asynchronously.
+  // This is needed because idle task can be posted (and OnPendingTasksChanged
+  // called) at any moment, including in the middle of allocating an object,
+  // when state is not consistent. Posting a task to dispatch notifications
+  // minimizes the amount of code that runs and sees an inconsistent state .
+  control_task_queue_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RendererSchedulerImpl::DispatchRequestBeginMainFrameNotExpected,
+          weak_factory_.GetWeakPtr(), has_tasks));
+}
+
+void RendererSchedulerImpl::DispatchRequestBeginMainFrameNotExpected(
+    bool has_tasks) {
+  if (has_tasks ==
+      main_thread_only().compositor_will_send_main_frame_not_expected.get())
+    return;
   main_thread_only().compositor_will_send_main_frame_not_expected = has_tasks;
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnPendingTasksChanged", "has_tasks",
-               has_tasks);
+  TRACE_EVENT1(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+      "RendererSchedulerImpl::DispatchRequestBeginMainFrameNotExpected",
+      "has_tasks", has_tasks);
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     page_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
   }

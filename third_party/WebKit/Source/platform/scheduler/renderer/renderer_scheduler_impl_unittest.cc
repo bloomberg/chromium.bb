@@ -34,6 +34,8 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace renderer_scheduler_impl_unittest {
 
+using ::testing::Mock;
+
 class FakeInputEvent : public blink::WebInputEvent {
  public:
   explicit FakeInputEvent(blink::WebInputEvent::Type event_type,
@@ -207,9 +209,10 @@ class ScopedAutoAdvanceNowEnabler {
 
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
  public:
+  using RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration;
   using RendererSchedulerImpl::OnIdlePeriodEnded;
   using RendererSchedulerImpl::OnIdlePeriodStarted;
-  using RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration;
+  using RendererSchedulerImpl::OnPendingTasksChanged;
 
   RendererSchedulerImplForTest(std::unique_ptr<TaskQueueManager> manager,
                                base::Optional<base::Time> initial_virtual_time)
@@ -3258,6 +3261,8 @@ class PageSchedulerImplForTest : public PageSchedulerImpl {
     return interventions_;
   }
 
+  MOCK_METHOD1(RequestBeginMainFrameNotExpected, void(bool));
+
  private:
   std::vector<std::string> interventions_;
 
@@ -4159,6 +4164,40 @@ TEST_F(RendererSchedulerImplTest, LoadingControlTasks) {
                                    std::string("L1"), std::string("L2"),
                                    std::string("L3"), std::string("L4"),
                                    std::string("L5"), std::string("L6")));
+}
+
+TEST_F(RendererSchedulerImplTest, RequestBeginMainFrameNotExpected) {
+  std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
+      std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
+  scheduler_->AddPageScheduler(page_scheduler.get());
+
+  scheduler_->OnPendingTasksChanged(true);
+  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true)).Times(1);
+  RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(page_scheduler.get());
+
+  scheduler_->OnPendingTasksChanged(false);
+  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(false))
+      .Times(1);
+  RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(page_scheduler.get());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       RequestBeginMainFrameNotExpected_MultipleCalls) {
+  std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
+      std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
+  scheduler_->AddPageScheduler(page_scheduler.get());
+
+  scheduler_->OnPendingTasksChanged(true);
+  scheduler_->OnPendingTasksChanged(true);
+  // Multiple calls should result in only one call.
+  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true)).Times(1);
+  RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(page_scheduler.get());
 }
 
 #if defined(OS_ANDROID)

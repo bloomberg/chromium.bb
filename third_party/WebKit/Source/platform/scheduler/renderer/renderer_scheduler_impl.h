@@ -484,6 +484,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnIdlePeriodEnded() override;
 
   void OnPendingTasksChanged(bool has_tasks) override;
+  void DispatchRequestBeginMainFrameNotExpected(bool has_tasks);
 
   void EndIdlePeriod();
 

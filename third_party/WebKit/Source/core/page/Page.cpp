@@ -802,15 +802,6 @@ void Page::RequestBeginMainFrameNotExpected(bool new_state) {
     return;
 
   if (LocalFrame* main_frame = DeprecatedLocalMainFrame()) {
-    if (!main_frame->Client()) {
-      // This can happen while swapping out web frames because the scheduler can
-      // be invoked in the middle of Oilpan allocation.
-      // TODO(https://crbug.com/820893): Figure out how to avoid this
-      // complicated corner case. As written, it's not clear PageScheduler
-      // does this correctly for OOPIF anyway since it only talks to the root
-      // WebLayerTreeView, but a page with OOPIFs also has local roots.
-      return;
-    }
     if (WebLayerTreeView* layer_tree_view =
             chrome_client_->GetWebLayerTreeView(main_frame)) {
       layer_tree_view->RequestBeginMainFrameNotExpected(new_state);
