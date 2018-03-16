@@ -24,9 +24,11 @@ Example:
 # check those details to determine if there was activity in the given period.
 # This means that query time scales mostly with (today() - begin).
 
+import collections
 from datetime import datetime
 from datetime import timedelta
 from functools import partial
+import itertools
 import json
 import logging
 import optparse
@@ -112,27 +114,23 @@ gerrit_instances = [
   },
 ]
 
-google_code_projects = [
-  {
-    'name': 'chromium',
+monorail_projects = {
+  'chromium': {
     'shorturl': 'crbug.com',
     'short_url_protocol': 'https',
   },
-  {
-    'name': 'google-breakpad',
-  },
-  {
-    'name': 'gyp',
-  },
-  {
-    'name': 'skia',
-  },
-  {
-    'name': 'pdfium',
+  'google-breakpad': {},
+  'gyp': {},
+  'skia': {},
+  'pdfium': {
     'shorturl': 'crbug.com/pdfium',
     'short_url_protocol': 'https',
   },
-]
+  'v8': {
+    'shorturl': 'crbug.com/v8',
+    'short_url_protocol': 'https',
+  },
+}
 
 def username(email):
   """Keeps the username of an email address."""
@@ -196,6 +194,7 @@ class MyActivity(object):
     self.changes = []
     self.reviews = []
     self.issues = []
+    self.referenced_issues = []
     self.check_cookies()
     self.google_code_auth_token = None
 
@@ -279,11 +278,14 @@ class MyActivity(object):
     if description:
       # Handle both "Bug: 99999" and "BUG=99999" bug notations
       # Multiple bugs can be noted on a single line or in multiple ones.
-      matches = re.findall(r'BUG[=:]\s?(((\d+)(,\s?)?)+)', description,
-                           flags=re.IGNORECASE)
+      matches = re.findall(
+          r'BUG[=:]\s?((((?:[a-zA-Z0-9-]+:)?\d+)(,\s?)?)+)', description,
+          flags=re.IGNORECASE)
       if matches:
         for match in matches:
           bugs.extend(match[0].replace(' ', '').split(','))
+        # Add default chromium: prefix if none specified.
+        bugs = [bug if ':' in bug else 'chromium:%s' % bug for bug in bugs]
 
     return bugs
 
@@ -327,7 +329,7 @@ class MyActivity(object):
     ret['created'] = datetime_from_rietveld(issue['created'])
     ret['replies'] = self.process_rietveld_replies(issue['messages'])
 
-    ret['bug'] = self.extract_bug_number_from_description(issue)
+    ret['bugs'] = self.extract_bug_number_from_description(issue)
     ret['landed_days_ago'] = issue['landed_days_ago']
 
     return ret
@@ -399,7 +401,7 @@ class MyActivity(object):
       ret['replies'] = []
     ret['reviewers'] = set(r['author'] for r in ret['replies'])
     ret['reviewers'].discard(ret['author'])
-    ret['bug'] = self.extract_bug_number_from_description(issue)
+    ret['bugs'] = self.extract_bug_number_from_description(issue)
     return ret
 
   @staticmethod
@@ -415,63 +417,75 @@ class MyActivity(object):
       })
     return ret
 
-  def project_hosting_issue_search(self, instance):
+  def monorail_query_issues(self, project, query):
+    project_config = monorail_projects.get(project, {})
     auth_config = auth.extract_auth_config_from_options(self.options)
     authenticator = auth.get_authenticator_for_host(
         'bugs.chromium.org', auth_config)
     http = authenticator.authorize(httplib2.Http())
     url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
-           '/%s/issues') % instance['name']
+           '/%s/issues') % project
+    query_data = urllib.urlencode(query)
+    url = url + '?' + query_data
+    _, body = http.request(url)
+    content = json.loads(body)
+    if not content:
+      logging.error('Unable to parse %s response from projecthosting.', project)
+      return []
+
+    issues = []
+    for item in content.get('items', []):
+      if project_config.get('shorturl'):
+        protocol = project_config.get('short_url_protocol', 'http')
+        item_url = '%s://%s/%d' % (
+            protocol, project_config['shorturl'], item['id'])
+      else:
+        item_url = 'https://bugs.chromium.org/p/%s/issues/detail?id=%d' % (
+            project, item['id'])
+      issue = {
+        'uid': '%s:%s' % (project, item['id']),
+        'header': item['title'],
+        'created': dateutil.parser.parse(item['published']),
+        'modified': dateutil.parser.parse(item['updated']),
+        'author': item['author']['name'],
+        'url': item_url,
+        'comments': [],
+        'status': item['status'],
+        'labels': [],
+        'components': []
+      }
+      if 'owner' in item:
+        issue['owner'] = item['owner']['name']
+      else:
+        issue['owner'] = 'None'
+      if 'labels' in item:
+        issue['labels'] = item['labels']
+      if 'components' in item:
+        issue['components'] = item['components']
+      issues.append(issue)
+
+    return issues
+
+  def monorail_issue_search(self, project):
     epoch = datetime.utcfromtimestamp(0)
     user_str = '%s@chromium.org' % self.user
 
-    query_data = urllib.urlencode({
+    issues = self.monorail_query_issues(project, {
       'maxResults': 10000,
       'q': user_str,
       'publishedMax': '%d' % (self.modified_before - epoch).total_seconds(),
       'updatedMin': '%d' % (self.modified_after - epoch).total_seconds(),
     })
-    url = url + '?' + query_data
-    _, body = http.request(url)
-    content = json.loads(body)
-    if not content:
-      logging.error('Unable to parse %s response from projecthosting.',
-          instance['name'])
-      return []
 
-    issues = []
-    if 'items' in content:
-      items = content['items']
-      for item in items:
-        if instance.get('shorturl'):
-          protocol = instance.get('short_url_protocol', 'http')
-          item_url = '%s://%s/%d' % (protocol, instance['shorturl'], item['id'])
-        else:
-          item_url = 'https://bugs.chromium.org/p/%s/issues/detail?id=%d' % (
-              instance['name'], item['id'])
-        issue = {
-          'header': item['title'],
-          'created': dateutil.parser.parse(item['published']),
-          'modified': dateutil.parser.parse(item['updated']),
-          'author': item['author']['name'],
-          'url': item_url,
-          'comments': [],
-          'status': item['status'],
-          'labels': [],
-          'components': []
-        }
-        if 'owner' in item:
-          issue['owner'] = item['owner']['name']
-        else:
-          issue['owner'] = 'None'
-        if issue['owner'] == user_str or issue['author'] == user_str:
-          issues.append(issue)
-        if 'labels' in item:
-          issue['labels'] = item['labels']
-        if 'components' in item:
-          issue['components'] = item['components']
+    return [
+        issue for issue in issues
+        if issue['author'] == user_str or issue['owner'] == user_str]
 
-    return issues
+  def monorail_get_issues(self, project, issue_ids):
+    return self.monorail_query_issues(project, {
+      'maxResults': 10000,
+      'q': 'id:%s' % ','.join(issue_ids)
+    })
 
   def print_heading(self, heading):
     print
@@ -602,7 +616,7 @@ class MyActivity(object):
     if self.changes:
       self.print_heading('Changes')
       for change in self.changes:
-        self.print_change(change)
+          self.print_change(change)
 
   def get_reviews(self):
     for instance in rietveld_instances:
@@ -620,14 +634,79 @@ class MyActivity(object):
         self.print_review(review)
 
   def get_issues(self):
-    for project in google_code_projects:
-      self.issues += self.project_hosting_issue_search(project)
+    for project in monorail_projects:
+      self.issues += self.monorail_issue_search(project)
+
+  def get_referenced_issues(self):
+    if not self.issues:
+      self.get_issues()
+
+    if not self.changes:
+      self.get_changes()
+
+    referenced_issue_uids = set(itertools.chain.from_iterable(
+      change['bugs'] for change in self.changes))
+    fetched_issue_uids = set(issue['uid'] for issue in self.issues)
+    missing_issue_uids = referenced_issue_uids - fetched_issue_uids
+
+    missing_issues_by_project = collections.defaultdict(list)
+    for issue_uid in missing_issue_uids:
+      project, issue_id = issue_uid.split(':')
+      missing_issues_by_project[project].append(issue_id)
+
+    for project, issue_ids in missing_issues_by_project.iteritems():
+      self.referenced_issues += self.monorail_get_issues(project, issue_ids)
 
   def print_issues(self):
     if self.issues:
       self.print_heading('Issues')
       for issue in self.issues:
         self.print_issue(issue)
+
+  def print_changes_by_issue(self, skip_empty_own):
+    if not self.issues or not self.changes:
+      return
+
+    self.print_heading('Changes by referenced issue(s)')
+    issues = {issue['uid']: issue for issue in self.issues}
+    ref_issues = {issue['uid']: issue for issue in self.referenced_issues}
+    changes_by_issue_uid = collections.defaultdict(list)
+    changes_by_ref_issue_uid = collections.defaultdict(list)
+    changes_without_issue = []
+    for change in self.changes:
+      added = False
+      for issue_uid in change['bugs']:
+        if issue_uid in issues:
+          changes_by_issue_uid[issue_uid].append(change)
+          added = True
+        if issue_uid in ref_issues:
+          changes_by_ref_issue_uid[issue_uid].append(change)
+          added = True
+      if not added:
+        changes_without_issue.append(change)
+
+    # Changes referencing own issues.
+    for issue_uid in issues:
+      if changes_by_issue_uid[issue_uid] or not skip_empty_own:
+        self.print_issue(issues[issue_uid])
+      for change in changes_by_issue_uid[issue_uid]:
+        print '',  # this prints one space due to comma, but no newline
+        self.print_change(change)
+
+    # Changes referencing others' issues.
+    for issue_uid in ref_issues:
+      assert changes_by_ref_issue_uid[issue_uid]
+      self.print_issue(ref_issues[issue_uid])
+      for change in changes_by_ref_issue_uid[issue_uid]:
+        print '',  # this prints one space due to comma, but no newline
+        self.print_change(change)
+
+    # Changes referencing no issues.
+    if changes_without_issue:
+      print self.options.output_format_no_url.format(title='Other changes')
+      for change in changes_without_issue:
+        print '',  # this prints one space due to comma, but no newline
+        self.print_change(change)
 
   def print_activity(self):
     self.print_changes()
@@ -702,6 +781,18 @@ def main():
       '-d', '--deltas',
       action='store_true',
       help='Fetch deltas for changes.')
+  parser.add_option(
+      '--no-referenced-issues',
+      action='store_true',
+      help='Do not fetch issues referenced by owned changes. Useful in '
+           'combination with --changes-by-issue when you only want to list '
+           'issues that are your own in the output.')
+  parser.add_option(
+      '--skip-own-issues-without-changes',
+      action='store_true',
+      help='Skips listing own issues without changes when showing changes '
+           'grouped by referenced issue(s). See --changes-by-issue for more '
+           'details.')
 
   activity_types_group = optparse.OptionGroup(parser, 'Activity Types',
                                'By default, all activity will be looked up and '
@@ -719,6 +810,9 @@ def main():
       '-r', '--reviews',
       action='store_true',
       help='Show reviews.')
+  activity_types_group.add_option(
+      '--changes-by-issue', action='store_true',
+      help='Show changes grouped by referenced issue(s).')
   parser.add_option_group(activity_types_group)
 
   output_format_group = optparse.OptionGroup(parser, 'Output Format',
@@ -753,6 +847,9 @@ def main():
       '--output-format-heading', metavar='<format>',
       default=u'{heading}:',
       help='Specifies the format to use when printing headings.')
+  output_format_group.add_option(
+      '--output-format-no-url', default='{title}',
+      help='Specifies the format to use when printing activity without url.')
   output_format_group.add_option(
       '-m', '--markdown', action='store_true',
       help='Use markdown-friendly output (overrides --output-format '
@@ -825,19 +922,21 @@ def main():
   if options.markdown:
     options.output_format = ' * [{title}]({url})'
     options.output_format_heading = '### {heading} ###'
+    options.output_format_no_url = ' * {title}'
   logging.info('Searching for activity by %s', options.user)
   logging.info('Using range %s to %s', options.begin, options.end)
 
   my_activity = MyActivity(options)
 
-  if not (options.changes or options.reviews or options.issues):
+  if not (options.changes or options.reviews or options.issues or
+          options.changes_by_issue):
     options.changes = True
     options.issues = True
     options.reviews = True
 
   # First do any required authentication so none of the user interaction has to
   # wait for actual work.
-  if options.changes:
+  if options.changes or options.changes_by_issue:
     my_activity.auth_for_changes()
   if options.reviews:
     my_activity.auth_for_reviews()
@@ -845,12 +944,14 @@ def main():
   logging.info('Looking up activity.....')
 
   try:
-    if options.changes:
+    if options.changes or options.changes_by_issue:
       my_activity.get_changes()
     if options.reviews:
       my_activity.get_reviews()
-    if options.issues:
+    if options.issues or options.changes_by_issue:
       my_activity.get_issues()
+    if not options.no_referenced_issues:
+      my_activity.get_referenced_issues()
   except auth.AuthenticationError as e:
     logging.error('auth.AuthenticationError: %s', e)
 
@@ -866,9 +967,15 @@ def main():
     if options.json:
       my_activity.dump_json()
     else:
-      my_activity.print_changes()
-      my_activity.print_reviews()
-      my_activity.print_issues()
+      if options.changes:
+        my_activity.print_changes()
+      if options.reviews:
+        my_activity.print_reviews()
+      if options.issues:
+        my_activity.print_issues()
+      if options.changes_by_issue:
+        my_activity.print_changes_by_issue(
+            options.skip_own_issues_without_changes)
   finally:
     if output_file:
       logging.info('Done printing to file.')
