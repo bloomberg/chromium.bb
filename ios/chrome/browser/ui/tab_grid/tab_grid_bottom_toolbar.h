@@ -16,11 +16,6 @@
 @property(nonatomic, weak, readonly) UIButton* leadingButton;
 @property(nonatomic, weak, readonly) UIButton* trailingButton;
 @property(nonatomic, weak, readonly) UIButton* centerButton;
-
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_BOTTOM_TOOLBAR_H_

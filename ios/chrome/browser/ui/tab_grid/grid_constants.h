@@ -20,19 +20,33 @@ extern NSString* const kGridCellCloseButtonIdentifier;
 // converted into UIColors using the UIColorFromRGB() function, from
 // uikit_ui_util.h
 
+// Grid styling.
+extern const int kGridBackgroundColor;
+
 // GridCell styling.
 // Common colors.
-extern const CGFloat kGridCellIconBackgroundColor;
-extern const CGFloat kGridCellSnapshotBackgroundColor;
+extern const int kGridCellIconBackgroundColor;
+extern const int kGridCellSnapshotBackgroundColor;
 // Light theme colors.
-extern const CGFloat kGridLightThemeCellTitleColor;
-extern const CGFloat kGridLightThemeCellHeaderColor;
-extern const CGFloat kGridLightThemeCellSelectionColor;
-extern const CGFloat kGridLightThemeCellCloseButtonTintColor;
+extern const int kGridLightThemeCellTitleColor;
+extern const int kGridLightThemeCellHeaderColor;
+extern const int kGridLightThemeCellSelectionColor;
+extern const int kGridLightThemeCellCloseButtonTintColor;
 // Dark theme colors.
-extern const CGFloat kGridDarkThemeCellTitleColor;
-extern const CGFloat kGridDarkThemeCellHeaderColor;
-extern const CGFloat kGridDarkThemeCellSelectionColor;
-extern const CGFloat kGridDarkThemeCellCloseButtonTintColor;
+extern const int kGridDarkThemeCellTitleColor;
+extern const int kGridDarkThemeCellHeaderColor;
+extern const int kGridDarkThemeCellSelectionColor;
+extern const int kGridDarkThemeCellCloseButtonTintColor;
+
+// GridCell dimensions.
+extern const CGFloat kGridCellCornerRadius;
+extern const CGFloat kGridCellIconCornerRadius;
+// Height of the cell header containing the icon, title, and close button.
+extern const CGFloat kGridCellHeaderHeight;
+extern const CGFloat kGridCellHeaderLeadingInset;
+extern const CGFloat kGridCellHeaderTrailingInset;
+extern const CGFloat kGridCellIconDiameter;
+extern const CGFloat kGridCellSelectionRingGapWidth;
+extern const CGFloat kGridCellSelectionRingTintWidth;
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSTANTS_H_

@@ -15,17 +15,31 @@ NSString* const kGridCellIdentifierPrefix = @"GridCellIdentifierPrefix";
 NSString* const kGridCellCloseButtonIdentifier =
     @"GridCellCloseButtonIdentifier";
 
+// Grid styling.
+const int kGridBackgroundColor = 0x222222;
+
 // GridCell styling.
 // Common colors.
-const CGFloat kGridCellIconBackgroundColor = 0xF1F3F4;
-const CGFloat kGridCellSnapshotBackgroundColor = 0xE8EAED;
+const int kGridCellIconBackgroundColor = 0xF1F3F4;
+const int kGridCellSnapshotBackgroundColor = 0xE8EAED;
 // Light theme colors.
-const CGFloat kGridLightThemeCellTitleColor = 0x000000;
-const CGFloat kGridLightThemeCellHeaderColor = 0xF8F9FA;
-const CGFloat kGridLightThemeCellSelectionColor = 0x1A73E8;
-const CGFloat kGridLightThemeCellCloseButtonTintColor = 0x3C4043;
+const int kGridLightThemeCellTitleColor = 0x000000;
+const int kGridLightThemeCellHeaderColor = 0xF8F9FA;
+const int kGridLightThemeCellSelectionColor = 0x1A73E8;
+const int kGridLightThemeCellCloseButtonTintColor = 0x3C4043;
 // Dark theme colors.
-const CGFloat kGridDarkThemeCellTitleColor = 0xFFFFFF;
-const CGFloat kGridDarkThemeCellHeaderColor = 0x5F6368;
-const CGFloat kGridDarkThemeCellSelectionColor = 0x9AA0A6;
-const CGFloat kGridDarkThemeCellCloseButtonTintColor = 0xFFFFFF;
+const int kGridDarkThemeCellTitleColor = 0xFFFFFF;
+const int kGridDarkThemeCellHeaderColor = 0x5F6368;
+const int kGridDarkThemeCellSelectionColor = 0x9AA0A6;
+const int kGridDarkThemeCellCloseButtonTintColor = 0xFFFFFF;
+
+// GridCell dimensions.
+const CGFloat kGridCellCornerRadius = 13.0f;
+const CGFloat kGridCellIconCornerRadius = 3.0f;
+// The cell header contains the icon, title, and close button.
+const CGFloat kGridCellHeaderHeight = 32.0f;
+const CGFloat kGridCellHeaderLeadingInset = 5.0f;
+const CGFloat kGridCellHeaderTrailingInset = 8.5f;
+const CGFloat kGridCellIconDiameter = 22.0f;
+const CGFloat kGridCellSelectionRingGapWidth = 2.0f;
+const CGFloat kGridCellSelectionRingTintWidth = 5.0f;

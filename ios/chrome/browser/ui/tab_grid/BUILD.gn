@@ -53,6 +53,8 @@ source_set("tab_grid_ui") {
     "grid_view_controller.mm",
     "tab_grid_bottom_toolbar.h",
     "tab_grid_bottom_toolbar.mm",
+    "tab_grid_constants.h",
+    "tab_grid_constants.mm",
     "tab_grid_page_control.h",
     "tab_grid_page_control.mm",
     "tab_grid_paging.h",
