@@ -10613,12 +10613,19 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
             "mode differs from active transformfeedback's primitiveMode");
         return error::kNoError;
       }
+      GLsizei vertices = 0;
+      bool valid = state_.bound_transform_feedback->GetVerticesNeededForDraw(
+          mode, count, primcount, &vertices);
+      if (!valid) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                           "integer overflow calculating number of vertices "
+                           "for transform feedback");
+        return error::kNoError;
+      }
       if (!buffer_manager()->RequestBuffersAccess(
               state_.GetErrorState(), state_.bound_transform_feedback.get(),
               state_.current_program->GetTransformFeedbackVaryingSizes(),
-              state_.bound_transform_feedback->VerticesNeededForDraw(
-                  mode, count, primcount),
-              function_name, "transformfeedback buffers")) {
+              vertices, function_name, "transformfeedback buffers")) {
         return error::kNoError;
       }
     }

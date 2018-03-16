@@ -61,15 +61,16 @@ class GPU_GLES2_EXPORT TransformFeedback : public IndexedBufferBindingHost {
     return primitive_mode_;
   }
 
-  // Returns the number of vertices that this draw call will write to the
+  // Calculates the number of vertices that this draw call will write to the
   // transform feedback buffer, plus the number of vertices that were previously
   // written since the last call to BeginTransformFeedback (because vertices are
   // written starting just after the last vertex written by the previous draw).
   // This is used to calculate whether there is enough space in the transform
-  // feedback buffers.
-  GLsizei VerticesNeededForDraw(GLenum mode,
+  // feedback buffers. Returns false on integer overflow.
+  bool GetVerticesNeededForDraw(GLenum mode,
                                 GLsizei count,
-                                GLsizei primcount) const;
+                                GLsizei primcount,
+                                GLsizei* vertices_out) const;
   // This must be called every time a transform feedback draw happens to keep
   // track of how many vertices have been written to the transform feedback
   // buffers.
