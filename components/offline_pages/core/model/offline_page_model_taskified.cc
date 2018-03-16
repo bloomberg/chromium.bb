@@ -141,6 +141,7 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
       clock_(std::move(clock)),
       task_queue_(this),
       skip_clearing_original_url_for_testing_(false),
+      skip_maintenance_tasks_for_testing_(false),
       task_runner_(task_runner),
       weak_ptr_factory_(this) {
   DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStoreSQL::kClosingDelay);
@@ -553,6 +554,8 @@ void OfflinePageModelTaskified::RemoveFromDownloadManager(
 }
 
 void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
+  if (skip_maintenance_tasks_for_testing_)
+    return;
   // If not enough time has passed, don't queue maintenance tasks.
   base::Time now = GetCurrentTime();
   if (now - last_maintenance_tasks_schedule_time_ < kClearStorageInterval)
@@ -570,6 +573,7 @@ void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
 
 void OfflinePageModelTaskified::RunMaintenanceTasks(const base::Time now,
                                                     bool first_run) {
+  DCHECK(!skip_maintenance_tasks_for_testing_);
   // If this is the first run of this session, enqueue the run-once tasks.
   if (first_run) {
     // TODO(romax): When we have external directory, adding the support of

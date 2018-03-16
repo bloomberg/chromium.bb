@@ -145,6 +145,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void SetSkipClearingOriginalUrlForTesting() {
     skip_clearing_original_url_for_testing_ = true;
   }
+  void DoNotRunMaintenanceTasksForTesting() {
+    skip_maintenance_tasks_for_testing_ = true;
+  }
 
  private:
   // TODO(romax): https://crbug.com/791115, remove the friend class usage.
@@ -254,6 +257,11 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // This value will be affecting the CreateArchiveTasks that are created by the
   // model to skip saving original_urls.
   bool skip_clearing_original_url_for_testing_;
+
+  // For testing only.
+  // This flag controls the execution of maintenance tasks; when false they will
+  // not be executed.
+  bool skip_maintenance_tasks_for_testing_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -496,7 +496,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  base::HistogramTester histogram_tester_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
   int64_t last_offline_id_;
   std::string data_received_;
@@ -578,6 +578,9 @@ void OfflinePageRequestJobTest::SetUp() {
   // metadata already written to the store.
   model->SetSkipClearingOriginalUrlForTesting();
 
+  // Avoid running the model's maintenance tasks.
+  model->DoNotRunMaintenanceTasksForTesting();
+
   // Move test data files into their respective temporary test directories. The
   // model's maintenance tasks must not be executed in the meantime otherwise
   // these files will be wiped by consistency checks.
@@ -591,6 +594,8 @@ void OfflinePageRequestJobTest::SetUp() {
       test_data_dir_path.AppendASCII(kPublicOfflineFileDir);
   ASSERT_TRUE(base::CopyDirectory(test_data_public_archives_dir,
                                   public_archives_dir_.DirName(), true));
+
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void OfflinePageRequestJobTest::TearDown() {
@@ -598,8 +603,8 @@ void OfflinePageRequestJobTest::TearDown() {
   EXPECT_TRUE(public_archives_temp_base_dir_.Delete());
   // This check confirms that the model's maintenance tasks were not executed
   // during the test run.
-  histogram_tester_.ExpectTotalCount("OfflinePages.ClearTemporaryPages.Result",
-                                     0);
+  histogram_tester_->ExpectTotalCount("OfflinePages.ClearTemporaryPages.Result",
+                                      0);
 }
 
 void OfflinePageRequestJobTest::SimulateHasNetworkConnectivity(bool online) {
@@ -709,54 +714,56 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
 
 void OfflinePageRequestJobTest::ExpectOneUniqueSampleForAggregatedRequestResult(
     OfflinePageRequestJob::AggregatedRequestResult result) {
-  histogram_tester_.ExpectUniqueSample(kAggregatedRequestResultHistogram,
-                                       static_cast<int>(result), 1);
+  histogram_tester_->ExpectUniqueSample(kAggregatedRequestResultHistogram,
+                                        static_cast<int>(result), 1);
 }
 
 void OfflinePageRequestJobTest::
     ExpectMultiUniqueSampleForAggregatedRequestResult(
         OfflinePageRequestJob::AggregatedRequestResult result,
         int count) {
-  histogram_tester_.ExpectUniqueSample(kAggregatedRequestResultHistogram,
-                                       static_cast<int>(result), count);
+  histogram_tester_->ExpectUniqueSample(kAggregatedRequestResultHistogram,
+                                        static_cast<int>(result), count);
 }
 
 void OfflinePageRequestJobTest::
     ExpectOneNonuniqueSampleForAggregatedRequestResult(
         OfflinePageRequestJob::AggregatedRequestResult result) {
-  histogram_tester_.ExpectBucketCount(kAggregatedRequestResultHistogram,
-                                      static_cast<int>(result), 1);
+  histogram_tester_->ExpectBucketCount(kAggregatedRequestResultHistogram,
+                                       static_cast<int>(result), 1);
 }
 
 void OfflinePageRequestJobTest::ExpectNoSamplesInAggregatedRequestResult() {
-  histogram_tester_.ExpectTotalCount(kAggregatedRequestResultHistogram, 0);
+  histogram_tester_->ExpectTotalCount(kAggregatedRequestResultHistogram, 0);
 }
 
 void OfflinePageRequestJobTest::ExpectOpenFileErrorCode(int result) {
-  histogram_tester_.ExpectUniqueSample(kOpenFileErrorCodeHistogram, -result, 1);
+  histogram_tester_->ExpectUniqueSample(kOpenFileErrorCodeHistogram, -result,
+                                        1);
 }
 
 void OfflinePageRequestJobTest::ExpectSeekFileErrorCode(int result) {
-  histogram_tester_.ExpectUniqueSample(kSeekFileErrorCodeHistogram, -result, 1);
+  histogram_tester_->ExpectUniqueSample(kSeekFileErrorCodeHistogram, -result,
+                                        1);
 }
 
 void OfflinePageRequestJobTest::ExpectAccessEntryPoint(
     OfflinePageRequestJob::AccessEntryPoint entry_point) {
-  histogram_tester_.ExpectUniqueSample(
+  histogram_tester_->ExpectUniqueSample(
       std::string(kAccessEntryPointHistogram) + kDownloadNamespace,
       static_cast<int>(entry_point), 1);
 }
 
 void OfflinePageRequestJobTest::ExpectNoAccessEntryPoint() {
   EXPECT_TRUE(
-      histogram_tester_.GetTotalCountsForPrefix(kAccessEntryPointHistogram)
+      histogram_tester_->GetTotalCountsForPrefix(kAccessEntryPointHistogram)
           .empty());
 }
 
 void OfflinePageRequestJobTest::ExpectOfflinePageSizeUniqueSample(
     int bucket,
     int count) {
-  histogram_tester_.ExpectUniqueSample(
+  histogram_tester_->ExpectUniqueSample(
       std::string(kPageSizeAccessOfflineHistogramBase) + kDownloadNamespace,
       bucket, count);
 }
@@ -765,7 +772,7 @@ void OfflinePageRequestJobTest::ExpectOfflinePageSizeTotalSuffixCount(
     int count) {
   int total_offline_count = 0;
   base::HistogramTester::CountsMap all_offline_counts =
-      histogram_tester_.GetTotalCountsForPrefix(
+      histogram_tester_->GetTotalCountsForPrefix(
           kPageSizeAccessOfflineHistogramBase);
   for (const std::pair<std::string, base::HistogramBase::Count>&
            namespace_and_count : all_offline_counts) {
@@ -779,7 +786,7 @@ void OfflinePageRequestJobTest::ExpectOfflinePageSizeTotalSuffixCount(
 void OfflinePageRequestJobTest::ExpectOnlinePageSizeUniqueSample(
     int bucket,
     int count) {
-  histogram_tester_.ExpectUniqueSample(
+  histogram_tester_->ExpectUniqueSample(
       std::string(kPageSizeAccessOnlineHistogramBase) + kDownloadNamespace,
       bucket, count);
 }
@@ -788,7 +795,7 @@ void OfflinePageRequestJobTest::ExpectOnlinePageSizeTotalSuffixCount(
     int count) {
   int online_count = 0;
   base::HistogramTester::CountsMap all_online_counts =
-      histogram_tester_.GetTotalCountsForPrefix(
+      histogram_tester_->GetTotalCountsForPrefix(
           kPageSizeAccessOnlineHistogramBase);
   for (const std::pair<std::string, base::HistogramBase::Count>&
            namespace_and_count : all_online_counts) {
