@@ -25,6 +25,9 @@ const base::Feature kPersistentWindowBounds{"PersistentWindowBounds",
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTrilinearFiltering{"TrilinearFiltering",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -44,12 +47,18 @@ bool IsNewOverviewAnimationsEnabled() {
   return base::FeatureList::IsEnabled(kNewOverviewAnimations);
 }
 
+bool IsPersistentWindowBoundsEnabled() {
+  return base::FeatureList::IsEnabled(kPersistentWindowBounds);
+}
+
 bool IsSystemTrayUnifiedEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayUnified);
 }
 
-bool IsPersistentWindowBoundsEnabled() {
-  return base::FeatureList::IsEnabled(kPersistentWindowBounds);
+bool IsTrilinearFilteringEnabled() {
+  static bool use_trilinear_filtering =
+      base::FeatureList::IsEnabled(kTrilinearFiltering);
+  return use_trilinear_filtering;
 }
 
 bool IsLockScreenNotificationsEnabled() {

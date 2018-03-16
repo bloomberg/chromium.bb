@@ -39,6 +39,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kPersistentWindowBounds;
 // Enables new system menu.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
+// Enables trilinear filtering.
+ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
+
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
@@ -53,6 +56,8 @@ ASH_PUBLIC_EXPORT bool IsNewOverviewAnimationsEnabled();
 ASH_PUBLIC_EXPORT bool IsPersistentWindowBoundsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
+
+ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 

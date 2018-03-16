@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -72,8 +72,8 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
         preview_background_(new views::View),
         mirror_view_(
             new wm::WindowMirrorView(window,
-                                     /*trilinear_filtering_on_init=*/switches::
-                                         IsTrilinearFilteringEnabled())),
+                                     /*trilinear_filtering_on_init=*/
+                                     features::IsTrilinearFilteringEnabled())),
         window_observer_(this) {
     window_observer_.Add(window);
     window_title_->SetText(window->GetTitle());
