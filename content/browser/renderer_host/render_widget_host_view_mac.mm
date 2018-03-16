@@ -334,8 +334,7 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor() const {
   // When making an element on the page fullscreen the element's background
   // may not match the page's, so use black as the gutter color to avoid
   // flashes of brighter colors during the transition.
-  if (render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->IsFullscreenForCurrentTab()) {
+  if (host()->delegate() && host()->delegate()->IsFullscreenForCurrentTab()) {
     return SK_ColorBLACK;
   }
   return last_frame_root_background_color_;
@@ -350,7 +349,7 @@ void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
 }
 
 void RenderWidgetHostViewMac::DidReceiveFirstFrameAfterNavigation() {
-  render_widget_host_->DidReceiveFirstFrameAfterNavigation();
+  host()->DidReceiveFirstFrameAfterNavigation();
 }
 
 void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
@@ -389,7 +388,7 @@ void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                                                  bool is_guest_view_hack)
-    : render_widget_host_(RenderWidgetHostImpl::From(widget)),
+    : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
       is_loading_(false),
@@ -409,26 +408,24 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   viz::FrameSinkId frame_sink_id = is_guest_view_hack_
                                        ? AllocateFrameSinkIdForGuestViewHack()
-                                       : render_widget_host_->GetFrameSinkId();
+                                       : host()->GetFrameSinkId();
 
-  browser_compositor_.reset(
-      new BrowserCompositorMac(this, this, render_widget_host_->is_hidden(),
-                               [cocoa_view_ window], frame_sink_id));
+  browser_compositor_.reset(new BrowserCompositorMac(
+      this, this, host()->is_hidden(), [cocoa_view_ window], frame_sink_id));
 
   display::Screen::GetScreen()->AddObserver(this);
 
   if (!is_guest_view_hack_)
-    render_widget_host_->SetView(this);
+    host()->SetView(this);
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
-  if (render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->GetInputEventRouter()) {
-    render_widget_host_->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
+  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
         GetFrameSinkId(), this);
   }
 
-  RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
+  RenderViewHost* rvh = RenderViewHost::From(host());
   bool needs_begin_frames = true;
 
   if (rvh) {
@@ -470,12 +467,12 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
   // us.
-  if (render_widget_host_) {
+  if (host()) {
     // If this is a RenderWidgetHostViewGuest's platform_view_, we're not the
     // RWH's view, the RenderWidgetHostViewGuest is. So don't reset the RWH's
     // view, the RenderWidgetHostViewGuest will do it.
     if (!is_guest_view_hack_)
-      render_widget_host_->SetView(NULL);
+      host()->SetView(NULL);
   }
 
   // In case the view is deleted (by cocoa view) before calling destroy, we need
@@ -597,7 +594,7 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
   // the rwhvmac: The PepperFlashFullscreenWindow retains cocoa_view_,
   // but cocoa_view_ keeps pepper_fullscreen_window_ in an instance variable.
   // This cycle is normally broken when -keyEvent: receives an <esc> key, which
-  // explicitly calls Shutdown on the render_widget_host_, which calls
+  // explicitly calls Shutdown on the host(), which calls
   // Destroy() on RWHVMac, which drops the reference to
   // pepper_fullscreen_window_.
   [[pepper_fullscreen_window_ contentView] addSubview:cocoa_view_];
@@ -649,7 +646,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
 }
 
 void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
-  if (!render_widget_host_ || !display_link_.get())
+  if (!host() || !display_link_.get())
     return;
 
   if (!display_link_->GetVSyncParameters(&vsync_timebase_, &vsync_interval_)) {
@@ -677,7 +674,7 @@ RenderWidgetHostDelegate*
 RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
   if (auto* focused_widget = GetFocusedWidget())
     return focused_widget->delegate();
-  return render_widget_host_->delegate();
+  return host()->delegate();
 }
 
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
@@ -686,20 +683,20 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
 
   // During auto-resize it is the responsibility of the caller to ensure that
   // the NSView and RenderWidgetHostImpl are kept in sync.
-  if (render_widget_host_->auto_resize_enabled())
+  if (host()->auto_resize_enabled())
     return;
 
-  if (render_widget_host_->delegate())
-    render_widget_host_->delegate()->SendScreenRects();
+  if (host()->delegate())
+    host()->delegate()->SendScreenRects();
   else
-    render_widget_host_->SendScreenRects();
+    host()->SendScreenRects();
 
   // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
   // to send to the renderer, so it is required that BrowserCompositorMac be
   // updated first. Only notify RenderWidgetHostImpl of the update if any
   // properties it will query have changed.
   if (browser_compositor_->UpdateNSViewAndDisplay())
-    render_widget_host_->NotifyScreenInfoChanged();
+    host()->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
@@ -713,16 +710,16 @@ void RenderWidgetHostViewMac::Show() {
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
   ui::LatencyInfo renderer_latency_info;
-  renderer_latency_info.AddLatencyNumber(
-      ui::TAB_SHOW_COMPONENT, render_widget_host_->GetLatencyComponentId(), 0);
+  renderer_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
+                                         host()->GetLatencyComponentId(), 0);
   renderer_latency_info.set_trace_id(++tab_show_sequence_);
-  render_widget_host_->WasShown(renderer_latency_info);
+  host()->WasShown(renderer_latency_info);
   TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
                            tab_show_sequence_);
 
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
-  render_widget_host_->ScheduleComposite();
+  host()->ScheduleComposite();
   PauseForPendingResizeOrRepaintsAndDraw();
 }
 
@@ -733,7 +730,7 @@ void RenderWidgetHostViewMac::Hide() {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:YES];
 
-  render_widget_host_->WasHidden();
+  host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
 
@@ -742,14 +739,14 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
     return;
 
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
-  render_widget_host_->WasShown(ui::LatencyInfo());
+  host()->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
   if (!browser_compositor_)
     return;
 
-  render_widget_host_->WasHidden();
+  host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
 
@@ -1026,11 +1023,11 @@ void RenderWidgetHostViewMac::Destroy() {
   pepper_fullscreen_window_.autorelease();
 
   // Delete the delegated frame state, which will reach back into
-  // render_widget_host_.
+  // host().
   browser_compositor_.reset();
 
   // Make sure none of our observers send events for us to process after
-  // we release render_widget_host_.
+  // we release host().
   NotifyObserversAboutShutdown();
 
   if (text_input_manager_)
@@ -1038,12 +1035,12 @@ void RenderWidgetHostViewMac::Destroy() {
 
   mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
 
-  // We get this call just before |render_widget_host_| deletes
+  // We get this call just before host() deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
   // by some other code.  Examples are WebContentsViewMac's
   // |latent_focus_view_| and TabWindowController's
   // |cachedContentView_|.
-  render_widget_host_ = NULL;
+  RenderWidgetHostViewBase::Destroy();
 }
 
 // Called from the renderer to tell us what the tooltip text should be. It
@@ -1096,13 +1093,12 @@ void RenderWidgetHostViewMac::SpeakSelection() {
   if (!selection)
     return;
 
-  if (selection->selected_text().empty() && render_widget_host_) {
+  if (selection->selected_text().empty() && host()) {
     // TODO: This will not work with OOPIFs (https://crbug.com/659753).
     // If there's no selection, speak all text. Send an asynchronous IPC
     // request for fetching all the text for a webcontent.
     // ViewMsg_GetRenderedTextCompleted is sent back to IPC Message receiver.
-    render_widget_host_->Send(
-        new ViewMsg_GetRenderedText(render_widget_host_->GetRoutingID()));
+    host()->Send(new ViewMsg_GetRenderedText(host()->GetRoutingID()));
     return;
   }
 
@@ -1153,8 +1149,8 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 }
 
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
-  if (render_widget_host_)
-    render_widget_host_->ForwardMouseEvent(event);
+  if (host())
+    host()->ForwardMouseEvent(event);
 
   if (event.GetType() == WebInputEvent::kMouseLeave) {
     [cocoa_view_ setToolTipAtMousePoint:nil];
@@ -1175,7 +1171,7 @@ void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
     const gfx::Size& new_size,
     uint64_t sequence_number) {
   browser_compositor_->UpdateForAutoResize(new_size);
-  render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+  host()->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
@@ -1287,8 +1283,7 @@ gfx::Range RenderWidgetHostViewMac::ConvertCharacterRangeToCompositionRange(
 }
 
 WebContents* RenderWidgetHostViewMac::GetWebContents() {
-  return WebContents::FromRenderViewHost(
-      RenderViewHost::From(render_widget_host_));
+  return WebContents::FromRenderViewHost(RenderViewHost::From(host()));
 }
 
 bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
@@ -1453,8 +1448,8 @@ void RenderWidgetHostViewMac::UnlockMouse() {
   CGAssociateMouseAndMouseCursorPosition(YES);
   [NSCursor unhide];
 
-  if (render_widget_host_)
-    render_widget_host_->LostMouseLock();
+  if (host())
+    host()->LostMouseLock();
 }
 
 void RenderWidgetHostViewMac::GestureEventAck(
@@ -1485,10 +1480,6 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetMac(host, cocoa_view_));
 }
 
-RenderWidgetHostImpl* RenderWidgetHostViewMac::GetRenderWidgetHostImpl() const {
-  return render_widget_host_;
-}
-
 viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
   return browser_compositor_->GetRendererLocalSurfaceId();
 }
@@ -1505,8 +1496,7 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
   DCHECK(WebInputEvent::IsMouseEventType(event.GetType()) ||
          event.GetType() == WebInputEvent::kMouseWheel ||
          WebInputEvent::IsPinchGestureEventType(event.GetType()));
-  return render_widget_host_->delegate() &&
-         render_widget_host_->delegate()->GetInputEventRouter();
+  return host()->delegate() && host()->delegate()->GetInputEventRouter();
 }
 
 void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
@@ -1514,11 +1504,11 @@ void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
   if (ShouldRouteEvent(*event)) {
     DCHECK(event->source_device ==
            blink::WebGestureDevice::kWebGestureDeviceTouchpad);
-    render_widget_host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+    host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
     return;
   }
-  render_widget_host_->ForwardGestureEvent(*event);
+  host()->ForwardGestureEvent(*event);
 }
 
 bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
@@ -1560,26 +1550,26 @@ viz::SurfaceId RenderWidgetHostViewMac::GetCurrentSurfaceId() const {
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
-  if (render_widget_host_)
-    return render_widget_host_->Send(message);
+  if (host())
+    return host()->Send(message);
   delete message;
   return false;
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {
   weak_factory_.InvalidateWeakPtrs();
-  render_widget_host_->ShutdownAndDestroyWidget(true);
+  host()->ShutdownAndDestroyWidget(true);
   // Do not touch any members at this point, |this| has been deleted.
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
-  if (render_widget_host_) {
-    render_widget_host_->SetActive(active);
+  if (host()) {
+    host()->SetActive(active);
     if (active) {
       if (HasFocus())
-        render_widget_host_->Focus();
+        host()->Focus();
     } else {
-      render_widget_host_->Blur();
+      host()->Blur();
     }
   }
   if (HasFocus())
@@ -1605,8 +1595,8 @@ void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
   bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   if (background_is_opaque_ != opaque) {
     background_is_opaque_ = opaque;
-    if (render_widget_host_)
-      render_widget_host_->SetBackgroundOpaque(opaque);
+    if (host())
+      host()->SetBackgroundOpaque(opaque);
   }
 }
 
@@ -1673,8 +1663,7 @@ void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
-  if (!render_widget_host_ || !browser_compositor_ ||
-      render_widget_host_->is_hidden()) {
+  if (!host() || !browser_compositor_ || host()->is_hidden()) {
     return;
   }
 
@@ -1684,9 +1673,8 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
     return;
 
   // Wait for a frame of the right size to come in.
-  browser_compositor_->BeginPauseForFrame(
-      render_widget_host_->auto_resize_enabled());
-  render_widget_host_->PauseForPendingResizeOrRepaints();
+  browser_compositor_->BeginPauseForFrame(host()->auto_resize_enabled());
+  host()->PauseForPendingResizeOrRepaints();
   browser_compositor_->EndPauseForFrame();
 }
 
@@ -1908,7 +1896,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
-    if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
+    if (!mouseEventWasIgnored_ && renderWidgetHostView_->host()) {
       WebMouseEvent exitEvent =
           WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       exitEvent.SetType(WebInputEvent::kMouseLeave);
@@ -1922,7 +1910,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   if (mouseEventWasIgnored_) {
     // If this is the first mouse event after a previous event that was ignored
     // due to the hitTest, send a mouse enter event to the host view.
-    if (renderWidgetHostView_->render_widget_host_) {
+    if (renderWidgetHostView_->host()) {
       WebMouseEvent enterEvent =
           WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       enterEvent.SetType(WebInputEvent::kMouseMove);
@@ -1930,7 +1918,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
       ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
       latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
       if (renderWidgetHostView_->ShouldRouteEvent(enterEvent)) {
-        renderWidgetHostView_->render_widget_host_->delegate()
+        renderWidgetHostView_->host()
+            ->delegate()
             ->GetInputEventRouter()
             ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent,
                               latency_info);
@@ -1970,7 +1959,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (renderWidgetHostView_->ShouldRouteEvent(event)) {
-    renderWidgetHostView_->render_widget_host_->delegate()
+    renderWidgetHostView_->host()
+        ->delegate()
         ->GetInputEventRouter()
         ->RouteMouseEvent(renderWidgetHostView_.get(), &event, latency_info);
   } else {
@@ -2079,7 +2069,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
 
-  RenderWidgetHostImpl* widgetHost = renderWidgetHostView_->render_widget_host_;
+  RenderWidgetHostImpl* widgetHost = renderWidgetHostView_->host();
   DCHECK(widgetHost);
 
   NativeWebKeyboardEvent event(theEvent);
@@ -2203,9 +2193,9 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
   // Calling ForwardKeyboardEventWithCommands() could have destroyed the
   // widget. When the widget was destroyed,
-  // |renderWidgetHostView_->render_widget_host_| will be set to NULL. So we
+  // |renderWidgetHostView_->host()| will be set to NULL. So we
   // check it here and return immediately if it's NULL.
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return;
 
   // Then send keypress and/or composition related events.
@@ -2266,7 +2256,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
     widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent,
                                                     fake_event_latency_info);
-    // Not checking |renderWidgetHostView_->render_widget_host_| here because
+    // Not checking |renderWidgetHostView_->host()| here because
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
@@ -2275,9 +2265,9 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
     // Calling ForwardKeyboardEventWithCommands() could have destroyed the
     // widget. When the widget was destroyed,
-    // |renderWidgetHostView_->render_widget_host_| will be set to NULL. So we
+    // |renderWidgetHostView_->host()| will be set to NULL. So we
     // check it here and return immediately if it's NULL.
-    if (!renderWidgetHostView_->render_widget_host_)
+    if (!renderWidgetHostView_->host())
       return;
   }
 
@@ -2323,7 +2313,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     return;
   }
 
-  if (renderWidgetHostView_->render_widget_host_) {
+  if (renderWidgetHostView_->host()) {
     // History-swiping is not possible if the logic reaches this point.
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
         event, self);
@@ -2334,8 +2324,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     } else {
       ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
       latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-      renderWidgetHostView_->render_widget_host_
-          ->ForwardWheelEventWithLatencyInfo(webEvent, latency_info);
+      renderWidgetHostView_->host()->ForwardWheelEventWithLatencyInfo(
+          webEvent, latency_info);
     }
   }
 
@@ -2368,7 +2358,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
       [event type] == NSEventTypeEndGesture) {
     gestureBeginEvent_.reset();
 
-    if (!renderWidgetHostView_->render_widget_host_)
+    if (!renderWidgetHostView_->host())
       return;
 
     if (gestureBeginPinchSent_) {
@@ -2433,9 +2423,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 - (void)smartMagnifyWithEvent:(NSEvent*)event {
   const WebGestureEvent& smartMagnifyEvent =
       WebGestureEventBuilder::Build(event, self);
-  if (renderWidgetHostView_ && renderWidgetHostView_->render_widget_host_) {
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(
-        smartMagnifyEvent);
+  if (renderWidgetHostView_ && renderWidgetHostView_->host()) {
+    renderWidgetHostView_->host()->ForwardGestureEvent(smartMagnifyEvent);
   }
 }
 
@@ -2504,14 +2493,14 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
   gfx::PointF rootPoint(point.x, NSHeight([self frame]) - point.y);
   gfx::PointF transformedPoint;
-  if (!renderWidgetHostView_->render_widget_host_ ||
-      !renderWidgetHostView_->render_widget_host_->delegate() ||
-      !renderWidgetHostView_->render_widget_host_->delegate()
-           ->GetInputEventRouter())
+  if (!renderWidgetHostView_->host() ||
+      !renderWidgetHostView_->host()->delegate() ||
+      !renderWidgetHostView_->host()->delegate()->GetInputEventRouter())
     return;
 
   RenderWidgetHostImpl* widgetHost =
-      renderWidgetHostView_->render_widget_host_->delegate()
+      renderWidgetHostView_->host()
+          ->delegate()
           ->GetInputEventRouter()
           ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
                                        &transformedPoint);
@@ -2613,7 +2602,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   }
 
   // This is responsible for content scrolling!
-  if (renderWidgetHostView_->render_widget_host_) {
+  if (renderWidgetHostView_->host()) {
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(event, self);
     webEvent.rails_mode = mouseWheelFilter_.UpdateRailsMode(webEvent);
     ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
@@ -2631,7 +2620,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     }
 
     if (renderWidgetHostView_->ShouldRouteEvent(webEvent)) {
-      renderWidgetHostView_->render_widget_host_->delegate()
+      renderWidgetHostView_->host()
+          ->delegate()
           ->GetInputEventRouter()
           ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent,
                                  latency_info);
@@ -2643,7 +2633,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return;
 
 #if defined(MAC_OS_X_VERSION_10_11) && \
@@ -2802,14 +2792,14 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 - (BOOL)canBecomeKeyView {
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return NO;
 
   return canBeKeyView_;
 }
 
 - (BOOL)acceptsFirstResponder {
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return NO;
 
   return canBeKeyView_;
@@ -2840,12 +2830,12 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 - (BOOL)becomeFirstResponder {
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return NO;
   if ([responderDelegate_ respondsToSelector:@selector(becomeFirstResponder)])
     [responderDelegate_ becomeFirstResponder];
 
-  renderWidgetHostView_->render_widget_host_->GotFocus();
+  renderWidgetHostView_->host()->GotFocus();
   renderWidgetHostView_->SetTextInputActive(true);
 
   // Cancel any onging composition text which was left before we lost focus.
@@ -2871,13 +2861,13 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
   if ([responderDelegate_ respondsToSelector:@selector(resignFirstResponder)])
     [responderDelegate_ resignFirstResponder];
   renderWidgetHostView_->SetTextInputActive(false);
-  if (!renderWidgetHostView_->render_widget_host_)
+  if (!renderWidgetHostView_->host())
     return YES;
 
   if (closeOnDeactivate_)
     renderWidgetHostView_->KillSelf();
 
-  renderWidgetHostView_->render_widget_host_->LostFocus();
+  renderWidgetHostView_->host()->LostFocus();
 
   // We should cancel any onging composition whenever RWH's Blur() method gets
   // called, because in this case, webkit will confirm the ongoing composition
@@ -2901,8 +2891,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
   SEL action = [item action];
   BOOL is_render_view =
-      RenderViewHost::From(renderWidgetHostView_->render_widget_host_) !=
-      nullptr;
+      RenderViewHost::From(renderWidgetHostView_->host()) != nullptr;
 
   if (action == @selector(stopSpeaking:))
     return is_render_view && ui::TextServicesContextMenu::IsSpeaking();
@@ -2960,8 +2949,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->render_widget_host_
-          ->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
 
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
@@ -2987,8 +2975,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 - (id)accessibilityHitTest:(NSPoint)point {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->render_widget_host_
-          ->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
   if (!manager)
     return self;
   NSPoint pointInWindow =
@@ -3003,15 +2990,13 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 - (BOOL)accessibilityIsIgnored {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->render_widget_host_
-          ->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
   return !manager;
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->render_widget_host_
-          ->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
       ToBrowserAccessibilityCocoa(manager->GetRoot()) == child) {
@@ -3023,8 +3008,7 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 - (id)accessibilityFocusedUIElement {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->render_widget_host_
-          ->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
   if (manager) {
     BrowserAccessibility* focused_item = manager->GetFocus();
     DCHECK(focused_item);
@@ -3120,16 +3104,16 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   thePoint = [self convertPoint:thePoint fromView:nil];
   thePoint.y = NSHeight([self frame]) - thePoint.y;
 
-  if (!renderWidgetHostView_->render_widget_host_ ||
-      !renderWidgetHostView_->render_widget_host_->delegate() ||
-      !renderWidgetHostView_->render_widget_host_->delegate()
-           ->GetInputEventRouter())
+  if (!renderWidgetHostView_->host() ||
+      !renderWidgetHostView_->host()->delegate() ||
+      !renderWidgetHostView_->host()->delegate()->GetInputEventRouter())
     return NSNotFound;
 
   gfx::PointF rootPoint(thePoint.x, thePoint.y);
   gfx::PointF transformedPoint;
   RenderWidgetHostImpl* widgetHost =
-      renderWidgetHostView_->render_widget_host_->delegate()
+      renderWidgetHostView_->host()
+          ->delegate()
           ->GetInputEventRouter()
           ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
                                        &transformedPoint);
@@ -3167,7 +3151,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange
                          actualRange:(NSRangePointer)actualRange {
   // During tab closure, events can arrive after RenderWidgetHostViewMac::
-  // Destroy() is called, which will have set |render_widget_host_| to null.
+  // Destroy() is called, which will have set |host()| to null.
   if (!renderWidgetHostView_->GetFocusedWidget()) {
     [self cancelComposition];
     return NSZeroRect;
@@ -3375,9 +3359,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
                           base::CompareCase::INSENSITIVE_ASCII))
       editCommands_.push_back(EditCommand(command, ""));
   } else {
-    if (renderWidgetHostView_->render_widget_host_->delegate()) {
-      renderWidgetHostView_->render_widget_host_->delegate()
-          ->ExecuteEditCommand(command, base::nullopt);
+    if (renderWidgetHostView_->host()->delegate()) {
+      renderWidgetHostView_->host()->delegate()->ExecuteEditCommand(
+          command, base::nullopt);
     }
   }
 }

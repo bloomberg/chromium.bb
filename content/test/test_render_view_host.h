@@ -115,7 +115,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
 
@@ -139,7 +138,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
  protected:
-  RenderWidgetHostImpl* rwh_;
   viz::FrameSinkId frame_sink_id_;
 
  private:

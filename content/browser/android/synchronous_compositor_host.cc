@@ -259,11 +259,9 @@ void SynchronousCompositorHost::InitMojo() {
   mojom::SynchronousCompositorAssociatedRequest compositor_request =
       mojo::MakeRequest(&sync_compositor_);
 
-  rwhva_->GetRenderWidgetHostImpl()
-      ->GetWidgetInputHandler()
-      ->AttachSynchronousCompositor(std::move(host_control),
-                                    host.PassInterface(),
-                                    std::move(compositor_request));
+  rwhva_->host()->GetWidgetInputHandler()->AttachSynchronousCompositor(
+      std::move(host_control), host.PassInterface(),
+      std::move(compositor_request));
 }
 
 bool SynchronousCompositorHost::IsReadyForSynchronousCall() {
@@ -595,7 +593,7 @@ void SynchronousCompositorHost::SetBeginFramePaused(bool paused) {
 }
 
 void SynchronousCompositorHost::SetNeedsBeginFrames(bool needs_begin_frames) {
-  rwhva_->GetRenderWidgetHostImpl()->SetNeedsBeginFrame(needs_begin_frames);
+  rwhva_->host()->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {

@@ -113,16 +113,14 @@ void TouchSelectionControllerClientChildFrame::SetNeedsAnimate() {
 
 void TouchSelectionControllerClientChildFrame::MoveCaret(
     const gfx::PointF& position) {
-  RenderWidgetHostDelegate* host_delegate =
-      rwhv_->GetRenderWidgetHostImpl()->delegate();
+  RenderWidgetHostDelegate* host_delegate = rwhv_->host()->delegate();
   if (host_delegate)
     host_delegate->MoveCaret(ConvertFromRoot(position));
 }
 
 void TouchSelectionControllerClientChildFrame::MoveRangeSelectionExtent(
     const gfx::PointF& extent) {
-  RenderWidgetHostDelegate* host_delegate =
-      rwhv_->GetRenderWidgetHostImpl()->delegate();
+  RenderWidgetHostDelegate* host_delegate = rwhv_->host()->delegate();
   if (host_delegate)
     host_delegate->MoveRangeSelectionExtent(ConvertFromRoot(extent));
 }
@@ -130,8 +128,7 @@ void TouchSelectionControllerClientChildFrame::MoveRangeSelectionExtent(
 void TouchSelectionControllerClientChildFrame::SelectBetweenCoordinates(
     const gfx::PointF& base,
     const gfx::PointF& extent) {
-  RenderWidgetHostDelegate* host_delegate =
-      rwhv_->GetRenderWidgetHostImpl()->delegate();
+  RenderWidgetHostDelegate* host_delegate = rwhv_->host()->delegate();
   if (host_delegate) {
     host_delegate->SelectRange(ConvertFromRoot(base), ConvertFromRoot(extent));
   }
@@ -181,8 +178,7 @@ void TouchSelectionControllerClientChildFrame::ExecuteCommand(int command_id,
                                                               int event_flags) {
   manager_->GetTouchSelectionController()
       ->HideAndDisallowShowingAutomatically();
-  RenderWidgetHostDelegate* host_delegate =
-      rwhv_->GetRenderWidgetHostImpl()->delegate();
+  RenderWidgetHostDelegate* host_delegate = rwhv_->host()->delegate();
   if (!host_delegate)
     return;
 
@@ -209,7 +205,7 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
       gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
   gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
   anchor_point.Offset(-origin.x(), -origin.y());
-  RenderWidgetHostImpl* host = rwhv_->GetRenderWidgetHostImpl();
+  RenderWidgetHostImpl* host = rwhv_->host();
   host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(),
                                          ui::MENU_SOURCE_TOUCH_EDIT_MENU,
                                          gfx::ToRoundedPoint(anchor_point)));

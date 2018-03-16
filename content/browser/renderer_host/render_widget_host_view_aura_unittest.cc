@@ -647,8 +647,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     // First mock-focus the widget if not already.
     if (render_widget_host_delegate()->GetFocusedRenderWidgetHost(
             widget_host_) != view->GetRenderWidgetHost()) {
-      render_widget_host_delegate()->set_focused_widget(
-          view->GetRenderWidgetHostImpl());
+      render_widget_host_delegate()->set_focused_widget(view->host());
     }
 
     TextInputManager* manager =

@@ -37,7 +37,6 @@ class CompositorFrameSinkSupport;
 namespace content {
 class FrameConnectorDelegate;
 class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewChildFrameTest;
 class RenderWidgetHostViewGuestSurfaceTest;
 class TouchSelectionControllerClientChildFrame;
@@ -142,7 +141,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DidStopFlinging() override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
@@ -256,9 +254,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
 
-  // Members will become private when RenderWidgetHostViewGuest is removed.
-  // The model object.
-  RenderWidgetHostImpl* host_;
 
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;

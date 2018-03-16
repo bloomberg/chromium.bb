@@ -39,8 +39,9 @@
 
 namespace content {
 
-RenderWidgetHostViewBase::RenderWidgetHostViewBase()
-    : is_fullscreen_(false),
+RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
+    : host_(RenderWidgetHostImpl::From(host)),
+      is_fullscreen_(false),
       popup_type_(blink::kWebPopupTypeNone),
       mouse_locked_(false),
       current_device_scale_factor_(0),
@@ -69,14 +70,13 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  return host && host->delegate()
-             ? host->delegate()->GetFocusedRenderWidgetHost(host)
+  return host() && host()->delegate()
+             ? host()->delegate()->GetFocusedRenderWidgetHost(host())
              : nullptr;
 }
 
 RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
-  return GetRenderWidgetHostImpl();
+  return host();
 }
 
 void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
@@ -227,9 +227,8 @@ RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
-  RenderWidgetHostImpl* impl = GetRenderWidgetHostImpl();
-  if (impl)
-    impl->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
+  if (host())
+    host()->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
 }
 
 gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(
@@ -248,14 +247,12 @@ gfx::NativeViewAccessible
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
-  RenderWidgetHostImpl* impl = GetRenderWidgetHostImpl();
+  if (host() && host()->delegate())
+    host()->delegate()->SendScreenRects();
 
-  if (impl && impl->delegate())
-    impl->delegate()->SendScreenRects();
-
-  if (HasDisplayPropertyChanged(view) && impl) {
+  if (HasDisplayPropertyChanged(view) && host()) {
     OnSynchronizedDisplayPropertiesChanged();
-    impl->NotifyScreenInfoChanged();
+    host()->NotifyScreenInfoChanged();
   }
 }
 
@@ -306,9 +303,8 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
 
 std::unique_ptr<SyntheticGestureTarget>
 RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
   return std::unique_ptr<SyntheticGestureTarget>(
-      new SyntheticGestureTargetBase(host));
+      new SyntheticGestureTargetBase(host()));
 }
 
 void RenderWidgetHostViewBase::FocusedNodeTouched(
@@ -359,16 +355,10 @@ CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
-RenderWidgetHostImpl* RenderWidgetHostViewBase::GetRenderWidgetHostImpl()
-    const {
-  return nullptr;
-}
-
 void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
     uint32_t frame_token) {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  if (host)
-    host->DidProcessFrame(frame_token);
+  if (host())
+    host()->DidProcessFrame(frame_token);
 }
 
 viz::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
@@ -417,30 +407,26 @@ void RenderWidgetHostViewBase::ProcessMouseEvent(
     const blink::WebMouseEvent& event,
     const ui::LatencyInfo& latency) {
   PreProcessMouseEvent(event);
-  auto* host = GetRenderWidgetHostImpl();
-  host->ForwardMouseEventWithLatencyInfo(event, latency);
+  host()->ForwardMouseEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewBase::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event,
     const ui::LatencyInfo& latency) {
-  auto* host = GetRenderWidgetHostImpl();
-  host->ForwardWheelEventWithLatencyInfo(event, latency);
+  host()->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewBase::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
   PreProcessTouchEvent(event);
-  auto* host = GetRenderWidgetHostImpl();
-  host->ForwardTouchEventWithLatencyInfo(event, latency);
+  host()->ForwardTouchEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewBase::ProcessGestureEvent(
     const blink::WebGestureEvent& event,
     const ui::LatencyInfo& latency) {
-  auto* host = GetRenderWidgetHostImpl();
-  host->ForwardGestureEventWithLatencyInfo(event, latency);
+  host()->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
 gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
@@ -481,6 +467,10 @@ bool RenderWidgetHostViewBase::HasSize() const {
   return true;
 }
 
+void RenderWidgetHostViewBase::Destroy() {
+  host_ = nullptr;
+}
+
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
   if (GetTextInputManager())
@@ -505,13 +495,12 @@ TextInputManager* RenderWidgetHostViewBase::GetTextInputManager() {
   if (text_input_manager_)
     return text_input_manager_;
 
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  if (!host || !host->delegate())
+  if (!host() || !host()->delegate())
     return nullptr;
 
   // This RWHV needs to be registered with the TextInputManager so that the
   // TextInputManager starts tracking its state, and observing its lifetime.
-  text_input_manager_ = host->delegate()->GetTextInputManager();
+  text_input_manager_ = host()->delegate()->GetTextInputManager();
   if (text_input_manager_)
     text_input_manager_->Register(this);
 
@@ -598,9 +587,8 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 
 void RenderWidgetHostViewBase::OnResizeDueToAutoResizeComplete(
     uint64_t sequence_number) {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  if (host)
-    host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+  if (host())
+    host()->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
 }
 
 #if defined(OS_MACOSX)

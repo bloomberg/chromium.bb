@@ -2578,8 +2578,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     widget_host_view->InitAsPopup(view, initial_rect);
   }
 
-  RenderWidgetHostImpl* render_widget_host_impl =
-      widget_host_view->GetRenderWidgetHostImpl();
+  RenderWidgetHostImpl* render_widget_host_impl = widget_host_view->host();
   render_widget_host_impl->Init();
   // Only allow privileged mouse lock for fullscreen render widget, which is
   // used to implement Pepper Flash fullscreen.

@@ -429,7 +429,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                  int error_code) = 0;
 
   // Tells the View to destroy itself.
-  virtual void Destroy() = 0;
+  virtual void Destroy();
 
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
@@ -457,7 +457,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void SetShowingContextMenu(bool showing) {}
 
   // Returns the associated RenderWidgetHostImpl.
-  virtual RenderWidgetHostImpl* GetRenderWidgetHostImpl() const;
+  RenderWidgetHostImpl* host() const { return host_; }
 
   // Process swap messages sent before |frame_token| in RenderWidgetHostImpl.
   void OnFrameTokenChangedForView(uint32_t frame_token);
@@ -510,8 +510,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void OnRenderWidgetInit() {}
 
  protected:
-  // Interface class only, do not construct.
-  RenderWidgetHostViewBase();
+  explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
 
   void NotifyObserversAboutShutdown();
 
@@ -522,6 +521,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   ui::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
 #endif
+
+  // The model object. Members will become private when
+  // RenderWidgetHostViewGuest is removed.
+  RenderWidgetHostImpl* host_;
 
   // Is this a fullscreen view?
   bool is_fullscreen_;
