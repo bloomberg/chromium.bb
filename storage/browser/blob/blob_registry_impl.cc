@@ -89,6 +89,9 @@ class BlobRegistryImpl::BlobUnderConstruction {
                     const std::string& bad_message_reason = "") {
     DCHECK(BlobStatusIsError(reason));
     DCHECK_EQ(bad_message_reason.empty(), !BlobStatusIsBadIPC(reason));
+    // Cancelling would also try to delete |this| by removing it from
+    // blobs_under_construction_, so preemptively own |this|.
+    auto self = std::move(blob_registry_->blobs_under_construction_[uuid()]);
     // The blob might no longer have any references, in which case it may no
     // longer exist. If that happens just skip calling cancel.
     if (context() && context()->registry().HasEntry(uuid()))
@@ -526,8 +529,10 @@ void BlobRegistryImpl::Register(
       this, uuid, content_type, content_disposition, std::move(elements),
       bindings_.GetBadMessageCallback());
 
-  std::unique_ptr<BlobDataHandle> handle =
-      context_->AddFutureBlob(uuid, content_type, content_disposition);
+  std::unique_ptr<BlobDataHandle> handle = context_->AddFutureBlob(
+      uuid, content_type, content_disposition,
+      base::BindOnce(&BlobRegistryImpl::BlobBuildAborted,
+                     weak_ptr_factory_.GetWeakPtr(), uuid));
   BlobImpl::Create(std::move(handle), std::move(blob));
 
   blobs_under_construction_[uuid]->StartTransportation();
@@ -594,6 +599,10 @@ void BlobRegistryImpl::URLStoreForOrigin(
 void BlobRegistryImpl::SetURLStoreCreationHookForTesting(
     URLStoreCreationHook* hook) {
   g_url_store_creation_hook = hook;
+}
+
+void BlobRegistryImpl::BlobBuildAborted(const std::string& uuid) {
+  blobs_under_construction_.erase(uuid);
 }
 
 void BlobRegistryImpl::StreamingBlobDone(

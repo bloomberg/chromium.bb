@@ -70,6 +70,8 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
  private:
   class BlobUnderConstruction;
 
+  void BlobBuildAborted(const std::string& uuid);
+
   void StreamingBlobDone(RegisterFromStreamCallback callback,
                          BlobBuilderFromStream* builder,
                          std::unique_ptr<BlobDataHandle> result);

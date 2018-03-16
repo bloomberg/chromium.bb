@@ -917,7 +917,8 @@ TEST_F(BlobRegistryImplTest,
   const std::string kDepId = "dep-id";
 
   // Create future blob.
-  auto blob_handle = context_->AddFutureBlob(kDepId, "", "");
+  auto blob_handle = context_->AddFutureBlob(
+      kDepId, "", "", BlobStorageContext::BuildAbortedCallback());
   blink::mojom::BlobPtrInfo referenced_blob_info;
   mojo::MakeStrongBinding(std::make_unique<MockBlob>(kDepId),
                           MakeRequest(&referenced_blob_info));
@@ -957,6 +958,42 @@ TEST_F(BlobRegistryImplTest,
        Register_DefereferencedWhileBuildingBeforeTransporting) {
   const std::string kId = "id";
   const std::string kData = "hello world";
+
+  blink::mojom::BytesProviderPtrInfo bytes_provider_info;
+  auto request = MakeRequest(&bytes_provider_info);
+
+  std::vector<blink::mojom::DataElementPtr> elements;
+  elements.push_back(
+      blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
+          kData.size(), base::nullopt, std::move(bytes_provider_info))));
+
+  blink::mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  EXPECT_TRUE(context_->registry().HasEntry(kId));
+  EXPECT_TRUE(context_->GetBlobDataFromUUID(kId)->IsBeingBuilt());
+  EXPECT_EQ(1u, BlobsUnderConstruction());
+
+  // Now drop all references to the blob.
+  blob.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(context_->registry().HasEntry(kId));
+
+  // Now cause construction to complete, if it would still be going on.
+  CreateBytesProvider(kData, std::move(request));
+  scoped_task_environment_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, BlobsUnderConstruction());
+}
+
+TEST_F(BlobRegistryImplTest,
+       Register_DefereferencedWhileBuildingBeforeTransportingByFile) {
+  const std::string kId = "id";
+  const std::string kData =
+      base::RandBytesAsString(kTestBlobStorageMaxBlobMemorySize + 42);
 
   blink::mojom::BytesProviderPtrInfo bytes_provider_info;
   auto request = MakeRequest(&bytes_provider_info);
