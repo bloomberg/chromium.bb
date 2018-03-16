@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/unzip_service/public/interfaces/constants.mojom.h"
-#include "components/unzip_service/unzip_service.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/unzip_service.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 
 void RegisterUnzipService(web::BrowserState::StaticServiceMap* services) {

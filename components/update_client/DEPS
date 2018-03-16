@@ -4,7 +4,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/services/patch",
   "+components/prefs",
-  "+components/unzip_service",
+  "+components/services/unzip",
   "+components/version_info",
   "+courgette",
   "+crypto",

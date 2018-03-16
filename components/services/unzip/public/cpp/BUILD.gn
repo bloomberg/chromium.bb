@@ -12,7 +12,7 @@ source_set("cpp") {
 
   public_deps = [
     "//components/services/filesystem:lib",
-    "//components/unzip_service/public/interfaces",
+    "//components/services/unzip/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -27,7 +27,7 @@ static_library("test_support") {
   deps = [
     ":cpp",
     "//base",
-    "//components/unzip_service:lib",
+    "//components/services/unzip:lib",
     "//services/service_manager/public/cpp/test:test_support",
   ]
 }

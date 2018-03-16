@@ -1,4 +1,4 @@
 include_rules = [
-  "+components/unzip_service",
+  "+components/services/unzip",
   "+services/service_manager/embedder",
 ]

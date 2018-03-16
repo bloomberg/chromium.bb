@@ -25,7 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
-#include "components/unzip_service/public/cpp/unzip.h"
+#include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/unzip_service/public/cpp/test_unzip_service.h"
+#include "components/services/unzip/public/cpp/test_unzip_service.h"
 
 namespace unzip {
 

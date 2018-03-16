@@ -9,7 +9,7 @@ source_set("unzip") {
   ]
   deps = [
     "//base",
-    "//components/unzip_service:lib",
+    "//components/services/unzip:lib",
     "//ios/web/public",
     "//services/service_manager/embedder",
   ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/unzip_service/public/cpp/unzip.h"
+#include "components/services/unzip/public/cpp/unzip.h"
 
 #include <utility>
 
@@ -18,8 +18,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "components/unzip_service/public/interfaces/constants.mojom.h"
-#include "components/unzip_service/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 

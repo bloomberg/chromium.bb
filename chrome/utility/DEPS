@@ -23,7 +23,7 @@ include_rules = [
   "+components/payments/content/utility",
   "+components/printing/service/public/cpp",
   "+components/printing/service/public/interfaces",
-  "+components/unzip_service",
+  "+components/services/unzip",
   "+components/wifi",
   "+content/public/child",
   "+content/public/utility",
