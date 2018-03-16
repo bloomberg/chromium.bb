@@ -1303,6 +1303,24 @@
             ]
         }
     ],
+    "EnableCastLocalMedia": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableCastLocalMedia"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableCsrssLockdown": [
         {
             "platforms": [
