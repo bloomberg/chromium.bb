@@ -703,6 +703,26 @@ TEST_F(BlockTabUnderTest, SiteEngagement_Some) {
   auto* site_engagement_service = SiteEngagementService::Get(profile());
   site_engagement_service->AddPointsForTesting(blocked_url, 1);
 
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(blocked_url));
+  ExpectUIShown(false);
+  histogram_tester()->ExpectTotalCount(kEngagementScore, 1);
+  auto samples = histogram_tester()->GetAllSamples(kEngagementScore);
+  EXPECT_LT(0, samples[0].min);
+}
+
+TEST_F(BlockTabUnderTest, SiteEngagementNoThreshold_Blocks) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeatureWithParameters(
+      TabUnderNavigationThrottle::kBlockTabUnders,
+      {{"engagement_threshold", "-1"}});
+
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+  const GURL blocked_url("https://example.test/");
+
+  auto* site_engagement_service = SiteEngagementService::Get(profile());
+  site_engagement_service->AddPointsForTesting(blocked_url, 1);
+
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
   ExpectUIShown(true);
   histogram_tester()->ExpectTotalCount(kEngagementScore, 1);
