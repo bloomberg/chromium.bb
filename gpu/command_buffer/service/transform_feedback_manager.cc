@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
 
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -98,30 +99,46 @@ void TransformFeedback::DoResumeTransformFeedback() {
   paused_ = false;
 }
 
-GLsizei TransformFeedback::VerticesNeededForDraw(GLenum mode,
+bool TransformFeedback::GetVerticesNeededForDraw(GLenum mode,
                                                  GLsizei count,
-                                                 GLsizei primcount) const {
+                                                 GLsizei primcount,
+                                                 GLsizei* vertices_out) const {
   // Transform feedback only outputs complete primitives, so we need to round
   // down to the nearest complete primitive before multiplying by the number of
   // instances.
+  base::CheckedNumeric<GLsizei> checked_vertices = vertices_drawn_;
+  base::CheckedNumeric<GLsizei> checked_count = count;
+  base::CheckedNumeric<GLsizei> checked_primcount = primcount;
   switch (mode) {
     case GL_TRIANGLES:
-      return vertices_drawn_ + primcount * (count - count % 3);
+      checked_vertices +=
+          checked_primcount * (checked_count - checked_count % 3);
+      break;
     case GL_LINES:
-      return vertices_drawn_ + primcount * (count - count % 2);
+      checked_vertices +=
+          checked_primcount * (checked_count - checked_count % 2);
+      break;
     default:
       NOTREACHED();
       FALLTHROUGH;
     case GL_POINTS:
-      return vertices_drawn_ + primcount * count;
+      checked_vertices += checked_primcount * checked_count;
   }
+  // Note that the use of GLsizei limits us to 32-bit numbers of vertices. If
+  // the command buffer is upgraded to allow 64-bit buffer sizes then this
+  // should be expanded to 64 bits as well.
+  *vertices_out = checked_vertices.ValueOrDefault(0);
+  return checked_vertices.IsValid();
 }
 
 void TransformFeedback::OnVerticesDrawn(GLenum mode,
                                         GLsizei count,
                                         GLsizei primcount) {
   if (active_ && !paused_) {
-    vertices_drawn_ = VerticesNeededForDraw(mode, count, primcount);
+    GLsizei vertices = 0;
+    bool valid = GetVerticesNeededForDraw(mode, count, primcount, &vertices);
+    DCHECK(valid);
+    vertices_drawn_ = vertices;
   }
 }
 
