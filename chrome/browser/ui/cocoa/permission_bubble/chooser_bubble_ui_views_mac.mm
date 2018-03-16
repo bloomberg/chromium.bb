@@ -17,14 +17,6 @@
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
-std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    return std::make_unique<ChooserBubbleUiCocoa>(
-        browser_, std::move(chooser_controller_));
-  }
-  return std::make_unique<ChooserBubbleUi>(browser_,
-                                           std::move(chooser_controller_));
-}
 
 void ChooserBubbleUi::CreateAndShowCocoa(
     views::BubbleDialogDelegateView* delegate) {
@@ -40,5 +32,14 @@ void ChooserBubbleUi::CreateAndShowCocoa(
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)
 void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
   CreateAndShowCocoa(delegate);
+}
+
+std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
+    return std::make_unique<ChooserBubbleUiCocoa>(
+        browser_, std::move(chooser_controller_));
+  }
+  return std::make_unique<ChooserBubbleUi>(browser_,
+                                           std::move(chooser_controller_));
 }
 #endif
