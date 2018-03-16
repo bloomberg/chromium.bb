@@ -157,6 +157,7 @@
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
+#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #endif
 
 using blink::Platform;
@@ -1019,6 +1020,13 @@ RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
+}
+
+void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
+    blink::WebRTCAPIName api_name) {
+#if BUILDFLAG(ENABLE_WEBRTC)
+  UpdateWebRTCMethodCount(api_name);
+#endif
 }
 
 //------------------------------------------------------------------------------

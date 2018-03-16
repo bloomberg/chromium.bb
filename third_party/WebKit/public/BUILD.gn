@@ -281,6 +281,7 @@ source_set("blink_headers") {
     "platform/WebPrescientNetworking.h",
     "platform/WebPrivatePtr.h",
     "platform/WebPublicSuffixList.h",
+    "platform/WebRTCAPIName.h",
     "platform/WebRTCAnswerOptions.h",
     "platform/WebRTCCertificate.h",
     "platform/WebRTCCertificateGenerator.h",

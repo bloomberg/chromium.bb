@@ -47,6 +47,7 @@
 #include "WebGestureDevice.h"
 #include "WebLocalizedString.h"
 #include "WebPlatformEventType.h"
+#include "WebRTCAPIName.h"
 #include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebString.h"
@@ -630,6 +631,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if the functionality is not available.
   virtual std::unique_ptr<WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber();
+
+  virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
 
   // WebSocket ----------------------------------------------------------
 

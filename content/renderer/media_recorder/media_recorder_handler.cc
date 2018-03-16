@@ -190,7 +190,7 @@ bool MediaRecorderHandler::Initialize(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Save histogram data so we can see how much MediaStream Recorder is used.
   // The histogram counts the number of calls to the JS API.
-  UpdateWebRTCMethodCount(WEBKIT_MEDIA_STREAM_RECORDER);
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kMediaStreamRecorder);
 
   if (!CanSupportMimeType(type, codecs)) {
     DLOG(ERROR) << "Unsupported " << type.Utf8() << ";codecs=" << codecs.Utf8();

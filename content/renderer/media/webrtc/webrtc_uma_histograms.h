@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
+#include "third_party/WebKit/public/platform/WebRTCAPIName.h"
 
 namespace content {
 
@@ -30,20 +31,6 @@ enum MediaStreamRequestState {
 void LogUserMediaRequestWithNoResult(MediaStreamRequestState state);
 void LogUserMediaRequestResult(MediaStreamRequestResult result);
 
-// Helper enum used for histogramming calls to WebRTC APIs from JavaScript.
-// The entries are linked to UMA values and cannot be changed.
-enum JavaScriptAPIName {
-  WEBKIT_GET_USER_MEDIA,
-  WEBKIT_PEER_CONNECTION,
-  WEBKIT_DEPRECATED_PEER_CONNECTION,
-  WEBKIT_RTC_PEER_CONNECTION,
-  WEBKIT_GET_MEDIA_DEVICES,
-  WEBKIT_MEDIA_STREAM_RECORDER,
-  WEBKIT_CANVAS_CAPTURE_STREAM,
-  WEBKIT_VIDEO_CAPTURE_STREAM,
-  INVALID_NAME
-};
-
 // Helper method used to collect information about the number of times
 // different WebRTC APIs are called from JavaScript.
 //
@@ -55,7 +42,7 @@ enum JavaScriptAPIName {
 // that gets incremented only once per "session" as established by the
 // PerSessionWebRTCAPIMetrics singleton below. It can be viewed at
 // chrome://histograms/WebRTC.webkitApiCountPerSession.
-void UpdateWebRTCMethodCount(JavaScriptAPIName api_name);
+void UpdateWebRTCMethodCount(blink::WebRTCAPIName api_name);
 
 // A singleton that keeps track of the number of MediaStreams being
 // sent over PeerConnections. It uses the transition to zero such
@@ -79,24 +66,24 @@ class CONTENT_EXPORT PerSessionWebRTCAPIMetrics {
 
  protected:
   friend struct base::DefaultSingletonTraits<PerSessionWebRTCAPIMetrics>;
-  friend void UpdateWebRTCMethodCount(JavaScriptAPIName);
+  friend void UpdateWebRTCMethodCount(blink::WebRTCAPIName);
 
   // Protected so that unit tests can test without this being a
   // singleton.
   PerSessionWebRTCAPIMetrics();
 
   // Overridable by unit tests.
-  virtual void LogUsage(JavaScriptAPIName api_name);
+  virtual void LogUsage(blink::WebRTCAPIName api_name);
 
   // Called by UpdateWebRTCMethodCount above. Protected rather than
   // private so that unit tests can call it.
-  void LogUsageOnlyOnce(JavaScriptAPIName api_name);
+  void LogUsageOnlyOnce(blink::WebRTCAPIName api_name);
 
  private:
   void ResetUsage();
 
   int num_streams_;
-  bool has_used_api_[INVALID_NAME];
+  bool has_used_api_[static_cast<int>(blink::WebRTCAPIName::kInvalidName)];
 
   SEQUENCE_CHECKER(sequence_checker_);
 
