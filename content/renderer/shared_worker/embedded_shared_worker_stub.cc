@@ -52,7 +52,7 @@ class SharedWorkerWebApplicationCacheHostImpl
             kAppCacheNoHostId) {}
 
   // Main resource loading is different for workers. The main resource is
-  // loaded by the worker using WorkerScriptLoader.
+  // loaded by the worker using WorkerClassicScriptLoader.
   // These overrides are stubbed out.
   void WillStartMainResourceRequest(
       const blink::WebURL& url,

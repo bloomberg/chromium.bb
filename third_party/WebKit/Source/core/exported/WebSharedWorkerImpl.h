@@ -54,8 +54,8 @@ class WebServiceWorkerNetworkProvider;
 class WebSharedWorkerClient;
 class WebString;
 class WebURL;
+class WorkerClassicScriptLoader;
 class WorkerInspectorProxy;
-class WorkerScriptLoader;
 
 // This class is used by the worker process code to talk to the SharedWorker
 // implementation. This is basically accessed on the main thread, but some
@@ -131,7 +131,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   bool is_paused_on_start_ = false;
 
   // Kept around only while main script loading is ongoing.
-  scoped_refptr<WorkerScriptLoader> main_script_loader_;
+  scoped_refptr<WorkerClassicScriptLoader> main_script_loader_;
 
   WebURL url_;
   WebString name_;

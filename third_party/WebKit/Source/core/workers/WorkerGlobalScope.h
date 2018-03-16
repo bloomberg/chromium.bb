@@ -176,10 +176,10 @@ class CORE_EXPORT WorkerGlobalScope
       KURL* out_response_url,
       String* out_source_code,
       std::unique_ptr<Vector<char>>* out_cached_meta_data);
-  // Tries to load the script synchronously from the WorkerScriptLoader, which
-  // requests the script from the browser. This
-  // blocks until the script is received.
-  LoadResult LoadingScriptFromWorkerScriptLoader(
+  // Tries to load the script synchronously from the WorkerClassicScriptLoader,
+  // which requests the script from the browser. This blocks until the script is
+  // received.
+  LoadResult LoadingScriptFromClassicScriptLoader(
       const KURL& script_url,
       KURL* out_response_url,
       String* out_source_code,

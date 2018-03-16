@@ -41,10 +41,10 @@
 #include "core/probe/CoreProbes.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
+#include "core/workers/WorkerClassicScriptLoader.h"
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerScriptLoader.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -267,7 +267,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   }
 
   DCHECK(!main_script_loader_);
-  main_script_loader_ = WorkerScriptLoader::Create();
+  main_script_loader_ = WorkerClassicScriptLoader::Create();
   main_script_loader_->LoadAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
       WebURLRequest::kRequestContextServiceWorker,

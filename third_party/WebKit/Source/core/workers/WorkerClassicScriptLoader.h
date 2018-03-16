@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef WorkerScriptLoader_h
-#define WorkerScriptLoader_h
+#ifndef WorkerClassicScriptLoader_h
+#define WorkerClassicScriptLoader_h
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -51,14 +51,14 @@ class ResourceResponse;
 class ExecutionContext;
 class TextResourceDecoder;
 
-class CORE_EXPORT WorkerScriptLoader final
-    : public RefCounted<WorkerScriptLoader>,
+class CORE_EXPORT WorkerClassicScriptLoader final
+    : public RefCounted<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient {
-  USING_FAST_MALLOC(WorkerScriptLoader);
+  USING_FAST_MALLOC(WorkerClassicScriptLoader);
 
  public:
-  static scoped_refptr<WorkerScriptLoader> Create() {
-    return base::AdoptRef(new WorkerScriptLoader());
+  static scoped_refptr<WorkerClassicScriptLoader> Create() {
+    return base::AdoptRef(new WorkerClassicScriptLoader());
   }
 
   void LoadSynchronously(ExecutionContext&,
@@ -121,10 +121,10 @@ class CORE_EXPORT WorkerScriptLoader final
   void DidFailRedirectCheck() override;
 
  private:
-  friend class WTF::RefCounted<WorkerScriptLoader>;
+  friend class WTF::RefCounted<WorkerClassicScriptLoader>;
 
-  WorkerScriptLoader();
-  ~WorkerScriptLoader() override;
+  WorkerClassicScriptLoader();
+  ~WorkerClassicScriptLoader() override;
 
   void NotifyError();
   void NotifyFinished();
@@ -159,4 +159,4 @@ class CORE_EXPORT WorkerScriptLoader final
 
 }  // namespace blink
 
-#endif  // WorkerScriptLoader_h
+#endif  // WorkerClassicScriptLoader_h
