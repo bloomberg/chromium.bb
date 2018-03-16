@@ -300,8 +300,10 @@ void SessionMetricsHelper::RecordVoiceSearchStarted() {
   num_voice_search_started_++;
 }
 
-void SessionMetricsHelper::RecordUrlRequestedByVoice(GURL url) {
-  url_requested_by_voice_ = url;
+void SessionMetricsHelper::RecordUrlRequested(GURL url,
+                                              NavigationMethod method) {
+  last_requested_url_ = url;
+  last_url_request_method_ = method;
 }
 
 void SessionMetricsHelper::SetVrMode(Mode new_mode) {
@@ -558,13 +560,21 @@ void SessionMetricsHelper::DidFinishNavigation(
                 ukm::GetSourceIdForWebContentsDocument(web_contents())));
 
     // Check that the completed navigation is indeed the one that was requested
-    // by voice, in case that one was incomplete and another was begun. Check
-    // against the first entry for the navigation, as redirects might have
-    // changed what the URL looks like.
-    if (url_requested_by_voice_ == handle->GetRedirectChain().front()) {
-      page_session_tracker_->ukm_entry()->SetWasVoiceSearchNavigation(1);
+    // by either voice or omnibox entry, in case the requested navigation was
+    // incomplete when another was begun. Check against the first entry for the
+    // navigation, as redirects might have changed what the URL looks like.
+    if (last_requested_url_ == handle->GetRedirectChain().front()) {
+      switch (last_url_request_method_) {
+        case kOmniboxUrlEntry:
+        case kOmniboxSuggestionSelected:
+          page_session_tracker_->ukm_entry()->SetWasOmniboxNavigation(1);
+          break;
+        case kVoiceSearch:
+          page_session_tracker_->ukm_entry()->SetWasVoiceSearchNavigation(1);
+          break;
+      }
     }
-    url_requested_by_voice_ = GURL();
+    last_requested_url_ = GURL();
 
     if (mode_ == Mode::kWebXrVrPresentation) {
       presentation_session_tracker_ = std::make_unique<

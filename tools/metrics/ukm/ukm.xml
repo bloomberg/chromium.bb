@@ -3169,6 +3169,12 @@ be describing additional metrics about the same event.
       Deprecated.
     </summary>
   </metric>
+  <metric name="WasOmniboxNavigation">
+    <summary>
+      A boolean that is set to 1 if this page was entered into the omnibox,
+      either manually or using autocomplete.
+    </summary>
+  </metric>
   <metric name="WasVoiceSearchNavigation">
     <summary>
       A boolean that is set to 1 if this page was specifically requested and

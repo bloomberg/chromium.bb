@@ -188,7 +188,8 @@ void OnSuggestionModelAdded(UiScene* scene,
       kNone, kPhaseForeground,
       base::BindRepeating(
           [](UiBrowserInterface* b, Ui* ui, Model* m, SuggestionBinding* e) {
-            b->Navigate(e->model()->destination);
+            b->Navigate(e->model()->destination,
+                        NavigationMethod::kOmniboxSuggestionSelected);
             ui->OnUiRequestedNavigation();
           },
           base::Unretained(browser), base::Unretained(ui),
@@ -1998,7 +1999,8 @@ void UiSceneCreator::CreateOmnibox() {
       [](Model* model, UiBrowserInterface* browser, Ui* ui,
          const EditedText& text) {
         if (!model->omnibox_suggestions.empty()) {
-          browser->Navigate(model->omnibox_suggestions.front().destination);
+          browser->Navigate(model->omnibox_suggestions.front().destination,
+                            NavigationMethod::kOmniboxUrlEntry);
           ui->OnUiRequestedNavigation();
         }
       },

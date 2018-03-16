@@ -13,6 +13,13 @@
 
 namespace vr {
 
+// A actions which can trigger the navigate function.
+enum NavigationMethod {
+  kOmniboxUrlEntry,
+  kOmniboxSuggestionSelected,
+  kVoiceSearch,
+};
+
 // An interface for the VR UI to communicate with VrShell. Many of the functions
 // in this interface are proxies to methods on VrShell.
 class UiBrowserInterface {
@@ -21,7 +28,7 @@ class UiBrowserInterface {
 
   virtual void ExitPresent() = 0;
   virtual void ExitFullscreen() = 0;
-  virtual void Navigate(GURL gurl) = 0;
+  virtual void Navigate(GURL gurl, NavigationMethod method) = 0;
   virtual void NavigateBack() = 0;
   virtual void ExitCct() = 0;
   virtual void CloseHostedDialog() = 0;

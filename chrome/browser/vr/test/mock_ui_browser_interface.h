@@ -18,7 +18,7 @@ class MockUiBrowserInterface : public UiBrowserInterface {
 
   MOCK_METHOD0(ExitPresent, void());
   MOCK_METHOD0(ExitFullscreen, void());
-  MOCK_METHOD1(Navigate, void(GURL gurl));
+  MOCK_METHOD2(Navigate, void(GURL gurl, NavigationMethod method));
   MOCK_METHOD0(NavigateBack, void());
   MOCK_METHOD0(ExitCct, void());
   MOCK_METHOD0(CloseHostedDialog, void());
