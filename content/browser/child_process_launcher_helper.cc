@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task_traits.h"
@@ -206,17 +207,17 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
   static base::NoDestructor<scoped_refptr<base::SingleThreadTaskRunner>>
       launcher_task_runner(
           android::LauncherThread::GetMessageLoop()->task_runner());
-#else   // defined(OS_ANDROID)
-  constexpr base::TaskTraits task_traits = {
-      base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-      base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  // TODO(wez): Investigates whether we could use SequencedTaskRunner on
-  // platforms other than Windows. http://crbug.com/820200.
-  static base::NoDestructor<scoped_refptr<base::SingleThreadTaskRunner>>
-      launcher_task_runner(base::CreateSingleThreadTaskRunnerWithTraits(
-          task_traits, base::SingleThreadTaskRunnerThreadMode::DEDICATED));
-#endif  // defined(OS_ANDROID)
   return (*launcher_task_runner).get();
+#else   // defined(OS_ANDROID)
+  // TODO(http://crbug.com/820200): Investigate whether we could use
+  // SequencedTaskRunner on platforms other than Windows.
+  static base::LazySingleThreadTaskRunner launcher_task_runner =
+      LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
+          base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+  return launcher_task_runner.Get().get();
+#endif  // defined(OS_ANDROID)
 }
 
 // static
