@@ -7,45 +7,45 @@
 
 #include <vector>
 
+#include "device/fido/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_ble_frames.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   auto data_span = base::make_span(raw_data, size);
   std::vector<uint8_t> data(data_span.begin(), data_span.end());
 
   {
-    device::U2fBleFrameInitializationFragment fragment(
+    device::FidoBleFrameInitializationFragment fragment(
         device::FidoBleDeviceCommand::kMsg, 21123, data_span);
     std::vector<uint8_t> buffer;
     fragment.Serialize(&buffer);
 
-    device::U2fBleFrameInitializationFragment parsed_fragment;
-    device::U2fBleFrameInitializationFragment::Parse(data, &parsed_fragment);
-    device::U2fBleFrameInitializationFragment::Parse(buffer, &parsed_fragment);
+    device::FidoBleFrameInitializationFragment parsed_fragment;
+    device::FidoBleFrameInitializationFragment::Parse(data, &parsed_fragment);
+    device::FidoBleFrameInitializationFragment::Parse(buffer, &parsed_fragment);
 
     buffer.clear();
     parsed_fragment.Serialize(&buffer);
   }
 
   {
-    device::U2fBleFrameContinuationFragment fragment(data_span, 61);
+    device::FidoBleFrameContinuationFragment fragment(data_span, 61);
     std::vector<uint8_t> buffer;
     fragment.Serialize(&buffer);
 
-    device::U2fBleFrameContinuationFragment parsed_fragment;
-    device::U2fBleFrameContinuationFragment::Parse(data, &parsed_fragment);
-    device::U2fBleFrameContinuationFragment::Parse(buffer, &parsed_fragment);
+    device::FidoBleFrameContinuationFragment parsed_fragment;
+    device::FidoBleFrameContinuationFragment::Parse(data, &parsed_fragment);
+    device::FidoBleFrameContinuationFragment::Parse(buffer, &parsed_fragment);
 
     buffer.clear();
     parsed_fragment.Serialize(&buffer);
   }
 
   {
-    device::U2fBleFrame frame(device::FidoBleDeviceCommand::kPing, data);
+    device::FidoBleFrame frame(device::FidoBleDeviceCommand::kPing, data);
     auto fragments = frame.ToFragments(20);
 
-    device::U2fBleFrameAssembler assembler(fragments.first);
+    device::FidoBleFrameAssembler assembler(fragments.first);
     while (!fragments.second.empty()) {
       assembler.AddFragment(fragments.second.front());
       fragments.second.pop();

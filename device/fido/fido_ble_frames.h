@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_BLE_FRAMES_H_
-#define DEVICE_FIDO_U2F_BLE_FRAMES_H_
+#ifndef DEVICE_FIDO_FIDO_BLE_FRAMES_H_
+#define DEVICE_FIDO_FIDO_BLE_FRAMES_H_
 
 #include <stdint.h>
 
@@ -18,18 +18,18 @@
 
 namespace device {
 
-class U2fBleFrameInitializationFragment;
-class U2fBleFrameContinuationFragment;
+class FidoBleFrameInitializationFragment;
+class FidoBleFrameContinuationFragment;
 
-// Encapsulates a frame, i.e., a single request to or response from a U2F
-// authenticator, designed to be transported via BLE. The frame is further split
-// into fragments (see U2fBleFrameFragment class).
+// Encapsulates a frame, i.e., a single request to or response from a FIDO
+// compliant authenticator, designed to be transported via BLE. The frame is
+// further split into fragments (see FidoBleFrameFragment class).
 //
 // The specification of what constitues a frame can be found here:
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-bt-protocol-v1.2-ps-20170411.html#h2_framing
 //
 // TODO(crbug/763303): Consider refactoring U2fMessage to support BLE frames.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrame {
  public:
   // The values which can be carried in the |data| section of a KEEPALIVE
   // message sent from an authenticator.
@@ -55,13 +55,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
     OTHER = 0x7F,        // Other, unspecified error.
   };
 
-  U2fBleFrame();
-  U2fBleFrame(FidoBleDeviceCommand command, std::vector<uint8_t> data);
+  FidoBleFrame();
+  FidoBleFrame(FidoBleDeviceCommand command, std::vector<uint8_t> data);
 
-  U2fBleFrame(U2fBleFrame&&);
-  U2fBleFrame& operator=(U2fBleFrame&&);
+  FidoBleFrame(FidoBleFrame&&);
+  FidoBleFrame& operator=(FidoBleFrame&&);
 
-  ~U2fBleFrame();
+  ~FidoBleFrame();
 
   FidoBleDeviceCommand command() const { return command_; }
 
@@ -78,15 +78,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
   //
   // The |max_fragment_size| parameter ought to be at least 3. The resulting
   // fragments' binary sizes will not exceed this value.
-  std::pair<U2fBleFrameInitializationFragment,
-            base::queue<U2fBleFrameContinuationFragment>>
+  std::pair<FidoBleFrameInitializationFragment,
+            base::queue<FidoBleFrameContinuationFragment>>
   ToFragments(size_t max_fragment_size) const;
 
  private:
   FidoBleDeviceCommand command_ = FidoBleDeviceCommand::kMsg;
   std::vector<uint8_t> data_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fBleFrame);
+  DISALLOW_COPY_AND_ASSIGN(FidoBleFrame);
 };
 
 // A single frame sent over BLE may be split over multiple writes and
@@ -98,33 +98,33 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-bt-protocol-v1.2-ps-20170411.html#h2_framing-fragmentation
 //
 // Note: This class and its subclasses don't own the |data|.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameFragment {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrameFragment {
  public:
   base::span<const uint8_t> fragment() const { return fragment_; }
   virtual size_t Serialize(std::vector<uint8_t>* buffer) const = 0;
 
  protected:
-  U2fBleFrameFragment();
-  explicit U2fBleFrameFragment(base::span<const uint8_t> fragment);
-  U2fBleFrameFragment(const U2fBleFrameFragment& frame);
-  virtual ~U2fBleFrameFragment();
+  FidoBleFrameFragment();
+  explicit FidoBleFrameFragment(base::span<const uint8_t> fragment);
+  FidoBleFrameFragment(const FidoBleFrameFragment& frame);
+  virtual ~FidoBleFrameFragment();
 
  private:
   base::span<const uint8_t> fragment_;
 };
 
 // An initialization fragment of a frame.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameInitializationFragment
-    : public U2fBleFrameFragment {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrameInitializationFragment
+    : public FidoBleFrameFragment {
  public:
   static bool Parse(base::span<const uint8_t> data,
-                    U2fBleFrameInitializationFragment* fragment);
+                    FidoBleFrameInitializationFragment* fragment);
 
-  U2fBleFrameInitializationFragment() = default;
-  U2fBleFrameInitializationFragment(FidoBleDeviceCommand command,
-                                    uint16_t data_length,
-                                    base::span<const uint8_t> fragment)
-      : U2fBleFrameFragment(fragment),
+  FidoBleFrameInitializationFragment() = default;
+  FidoBleFrameInitializationFragment(FidoBleDeviceCommand command,
+                                     uint16_t data_length,
+                                     base::span<const uint8_t> fragment)
+      : FidoBleFrameFragment(fragment),
         command_(command),
         data_length_(data_length) {}
 
@@ -139,16 +139,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameInitializationFragment
 };
 
 // A continuation fragment of a frame.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameContinuationFragment
-    : public U2fBleFrameFragment {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrameContinuationFragment
+    : public FidoBleFrameFragment {
  public:
   static bool Parse(base::span<const uint8_t> data,
-                    U2fBleFrameContinuationFragment* fragment);
+                    FidoBleFrameContinuationFragment* fragment);
 
-  U2fBleFrameContinuationFragment() = default;
-  U2fBleFrameContinuationFragment(base::span<const uint8_t> fragment,
-                                  uint8_t sequence)
-      : U2fBleFrameFragment(fragment), sequence_(sequence) {}
+  FidoBleFrameContinuationFragment() = default;
+  FidoBleFrameContinuationFragment(base::span<const uint8_t> fragment,
+                                   uint8_t sequence)
+      : FidoBleFrameFragment(fragment), sequence_(sequence) {}
 
   uint8_t sequence() const { return sequence_; }
 
@@ -158,26 +158,26 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameContinuationFragment
   uint8_t sequence_ = 0;
 };
 
-// The helper used to construct a U2fBleFrame from a sequence of its fragments.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameAssembler {
+// The helper used to construct a FidoBleFrame from a sequence of its fragments.
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrameAssembler {
  public:
-  explicit U2fBleFrameAssembler(
-      const U2fBleFrameInitializationFragment& fragment);
-  ~U2fBleFrameAssembler();
+  explicit FidoBleFrameAssembler(
+      const FidoBleFrameInitializationFragment& fragment);
+  ~FidoBleFrameAssembler();
 
   bool IsDone() const;
 
-  bool AddFragment(const U2fBleFrameContinuationFragment& fragment);
-  U2fBleFrame* GetFrame();
+  bool AddFragment(const FidoBleFrameContinuationFragment& fragment);
+  FidoBleFrame* GetFrame();
 
  private:
   uint16_t data_length_ = 0;
   uint8_t sequence_number_ = 0;
-  U2fBleFrame frame_;
+  FidoBleFrame frame_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fBleFrameAssembler);
+  DISALLOW_COPY_AND_ASSIGN(FidoBleFrameAssembler);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_BLE_FRAMES_H_
+#endif  // DEVICE_FIDO_FIDO_BLE_FRAMES_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_device.h"
+#include "device/fido/fido_ble_device.h"
 
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/mock_u2f_ble_connection.h"
+#include "device/fido/mock_fido_ble_connection.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,20 +24,20 @@ using TestDeviceCallbackReceiver =
 
 }  // namespace
 
-class U2fBleDeviceTest : public Test {
+class FidoBleDeviceTest : public Test {
  public:
-  U2fBleDeviceTest() {
-    auto connection = std::make_unique<MockU2fBleConnection>(
+  FidoBleDeviceTest() {
+    auto connection = std::make_unique<MockFidoBleConnection>(
         BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
-    device_ = std::make_unique<U2fBleDevice>(std::move(connection));
+    device_ = std::make_unique<FidoBleDevice>(std::move(connection));
     connection_->connection_status_callback() =
         device_->GetConnectionStatusCallbackForTesting();
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 
-  U2fBleDevice* device() { return device_.get(); }
-  MockU2fBleConnection* connection() { return connection_; }
+  FidoBleDevice* device() { return device_.get(); }
+  MockFidoBleConnection* connection() { return connection_; }
 
   void ConnectWithLength(uint16_t length) {
     EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
@@ -55,18 +55,18 @@ class U2fBleDeviceTest : public Test {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
  private:
-  MockU2fBleConnection* connection_;
-  std::unique_ptr<U2fBleDevice> device_;
+  MockFidoBleConnection* connection_;
+  std::unique_ptr<FidoBleDevice> device_;
 };
 
-TEST_F(U2fBleDeviceTest, ConnectionFailureTest) {
+TEST_F(FidoBleDeviceTest, ConnectionFailureTest) {
   EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
     connection()->connection_status_callback().Run(false);
   }));
   device()->Connect();
 }
 
-TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Callback) {
+TEST_F(FidoBleDeviceTest, SendPingTest_Failure_Callback) {
   ConnectWithLength(20);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -80,7 +80,7 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Callback) {
   EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
 }
 
-TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
+TEST_F(FidoBleDeviceTest, SendPingTest_Failure_Timeout) {
   ConnectWithLength(20);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -95,7 +95,7 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
   EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
 }
 
-TEST_F(U2fBleDeviceTest, SendPingTest) {
+TEST_F(FidoBleDeviceTest, SendPingTest) {
   ConnectWithLength(20);
 
   const std::vector<uint8_t> ping_data = {'T', 'E', 'S', 'T'};
@@ -117,18 +117,18 @@ TEST_F(U2fBleDeviceTest, SendPingTest) {
   EXPECT_EQ(ping_data, *result);
 }
 
-TEST_F(U2fBleDeviceTest, StaticGetIdTest) {
+TEST_F(FidoBleDeviceTest, StaticGetIdTest) {
   std::string address = BluetoothTestBase::kTestDeviceAddress1;
-  EXPECT_EQ("ble:" + address, U2fBleDevice::GetId(address));
+  EXPECT_EQ("ble:" + address, FidoBleDevice::GetId(address));
 }
 
-TEST_F(U2fBleDeviceTest, TryWinkTest) {
+TEST_F(FidoBleDeviceTest, TryWinkTest) {
   test::TestCallbackReceiver<> closure_receiver;
   device()->TryWink(closure_receiver.callback());
   closure_receiver.WaitForCallback();
 }
 
-TEST_F(U2fBleDeviceTest, GetIdTest) {
+TEST_F(FidoBleDeviceTest, GetIdTest) {
   EXPECT_EQ(std::string("ble:") + BluetoothTestBase::kTestDeviceAddress1,
             device()->GetId());
 }

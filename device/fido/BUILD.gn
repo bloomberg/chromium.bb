@@ -35,6 +35,16 @@ component("fido") {
     "ec_public_key.h",
     "fido_attestation_statement.cc",
     "fido_attestation_statement.h",
+    "fido_ble_connection.cc",
+    "fido_ble_connection.h",
+    "fido_ble_device.cc",
+    "fido_ble_device.h",
+    "fido_ble_discovery.cc",
+    "fido_ble_discovery.h",
+    "fido_ble_frames.cc",
+    "fido_ble_frames.h",
+    "fido_ble_transaction.cc",
+    "fido_ble_transaction.h",
     "fido_ble_uuids.cc",
     "fido_ble_uuids.h",
     "fido_constants.cc",
@@ -63,16 +73,6 @@ component("fido") {
     "response_data.h",
     "sign_response_data.cc",
     "sign_response_data.h",
-    "u2f_ble_connection.cc",
-    "u2f_ble_connection.h",
-    "u2f_ble_device.cc",
-    "u2f_ble_device.h",
-    "u2f_ble_discovery.cc",
-    "u2f_ble_discovery.h",
-    "u2f_ble_frames.cc",
-    "u2f_ble_frames.h",
-    "u2f_ble_transaction.cc",
-    "u2f_ble_transaction.h",
     "u2f_parsing_utils.cc",
     "u2f_parsing_utils.h",
     "u2f_register.cc",
@@ -125,12 +125,12 @@ source_set("mocks") {
   testonly = true
 
   sources = [
+    "mock_fido_ble_connection.cc",
+    "mock_fido_ble_connection.h",
     "mock_fido_device.cc",
     "mock_fido_device.h",
     "mock_fido_discovery_observer.cc",
     "mock_fido_discovery_observer.h",
-    "mock_u2f_ble_connection.cc",
-    "mock_u2f_ble_connection.h",
   ]
 
   deps = [
@@ -152,9 +152,9 @@ fuzzer_test("fido_hid_message_fuzzer") {
   libfuzzer_options = [ "max_len=2048" ]
 }
 
-fuzzer_test("u2f_ble_frames_fuzzer") {
+fuzzer_test("fido_ble_frames_fuzzer") {
   sources = [
-    "u2f_ble_frames_fuzzer.cc",
+    "fido_ble_frames_fuzzer.cc",
   ]
   deps = [
     ":fido",

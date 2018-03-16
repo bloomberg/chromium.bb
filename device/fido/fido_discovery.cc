@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "device/fido/fido_ble_discovery.h"
 #include "device/fido/fido_device.h"
-#include "device/fido/u2f_ble_discovery.h"
 
 // HID is not supported on Android.
 #if !defined(OS_ANDROID)
@@ -34,7 +34,7 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
 #endif  // !defined(OS_ANDROID)
       break;
     case U2fTransportProtocol::kBluetoothLowEnergy:
-      discovery = std::make_unique<U2fBleDiscovery>();
+      discovery = std::make_unique<FidoBleDiscovery>();
       break;
   }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_frames.h"
+#include "device/fido/fido_ble_frames.h"
 
 #include <vector>
 
@@ -21,33 +21,32 @@ std::vector<uint8_t> GetSomeData(size_t size) {
 
 namespace device {
 
-TEST(U2fBleFramesTest, InitializationFragment) {
+TEST(FidoBleFramesTest, InitializationFragment) {
   const std::vector<uint8_t> data = GetSomeData(25);
   constexpr uint16_t kDataLength = 21123;
 
-  U2fBleFrameInitializationFragment fragment(
+  FidoBleFrameInitializationFragment fragment(
       FidoBleDeviceCommand::kMsg, kDataLength, base::make_span(data));
-
   std::vector<uint8_t> buffer;
   const size_t binary_size = fragment.Serialize(&buffer);
   EXPECT_EQ(buffer.size(), binary_size);
 
   EXPECT_EQ(data.size() + 3, binary_size);
 
-  U2fBleFrameInitializationFragment parsed_fragment;
+  FidoBleFrameInitializationFragment parsed_fragment;
   ASSERT_TRUE(
-      U2fBleFrameInitializationFragment::Parse(buffer, &parsed_fragment));
+      FidoBleFrameInitializationFragment::Parse(buffer, &parsed_fragment));
 
   EXPECT_EQ(kDataLength, parsed_fragment.data_length());
   EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
   EXPECT_EQ(FidoBleDeviceCommand::kMsg, parsed_fragment.command());
 }
 
-TEST(U2fBleFramesTest, ContinuationFragment) {
+TEST(FidoBleFramesTest, ContinuationFragment) {
   const auto data = GetSomeData(25);
   constexpr uint8_t kSequence = 61;
 
-  U2fBleFrameContinuationFragment fragment(base::make_span(data), kSequence);
+  FidoBleFrameContinuationFragment fragment(base::make_span(data), kSequence);
 
   std::vector<uint8_t> buffer;
   const size_t binary_size = fragment.Serialize(&buffer);
@@ -55,19 +54,20 @@ TEST(U2fBleFramesTest, ContinuationFragment) {
 
   EXPECT_EQ(data.size() + 1, binary_size);
 
-  U2fBleFrameContinuationFragment parsed_fragment;
-  ASSERT_TRUE(U2fBleFrameContinuationFragment::Parse(buffer, &parsed_fragment));
+  FidoBleFrameContinuationFragment parsed_fragment;
+  ASSERT_TRUE(
+      FidoBleFrameContinuationFragment::Parse(buffer, &parsed_fragment));
 
   EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
   EXPECT_EQ(kSequence, parsed_fragment.sequence());
 }
 
-TEST(U2fBleFramesTest, SplitAndAssemble) {
+TEST(FidoBleFramesTest, SplitAndAssemble) {
   for (size_t size : {0,  1,  16, 17, 18, 20, 21, 22, 35,  36,
                       37, 39, 40, 41, 54, 55, 56, 60, 100, 65535}) {
     SCOPED_TRACE(size);
 
-    U2fBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(size));
+    FidoBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(size));
 
     auto fragments = frame.ToFragments(20);
 
@@ -75,7 +75,7 @@ TEST(U2fBleFramesTest, SplitAndAssemble) {
     EXPECT_EQ(frame.data().size(),
               static_cast<size_t>(fragments.first.data_length()));
 
-    U2fBleFrameAssembler assembler(fragments.first);
+    FidoBleFrameAssembler assembler(fragments.first);
     while (!fragments.second.empty()) {
       ASSERT_TRUE(assembler.AddFragment(fragments.second.front()));
       fragments.second.pop();
@@ -90,16 +90,16 @@ TEST(U2fBleFramesTest, SplitAndAssemble) {
   }
 }
 
-TEST(U2fBleFramesTest, FrameAssemblerError) {
-  U2fBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(30));
+TEST(FidoBleFramesTest, FrameAssemblerError) {
+  FidoBleFrame frame(FidoBleDeviceCommand::kPing, GetSomeData(30));
 
   auto fragments = frame.ToFragments(20);
   ASSERT_EQ(1u, fragments.second.size());
 
   fragments.second.front() =
-      U2fBleFrameContinuationFragment(fragments.second.front().fragment(), 51);
+      FidoBleFrameContinuationFragment(fragments.second.front().fragment(), 51);
 
-  U2fBleFrameAssembler assembler(fragments.first);
+  FidoBleFrameAssembler assembler(fragments.first);
   EXPECT_FALSE(assembler.IsDone());
   EXPECT_FALSE(assembler.GetFrame());
   EXPECT_FALSE(assembler.AddFragment(fragments.second.front()));
@@ -107,35 +107,35 @@ TEST(U2fBleFramesTest, FrameAssemblerError) {
   EXPECT_FALSE(assembler.GetFrame());
 }
 
-TEST(U2fBleFramesTest, FrameGettersAndValidity) {
+TEST(FidoBleFramesTest, FrameGettersAndValidity) {
   {
-    U2fBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
-                      std::vector<uint8_t>(2));
+    FidoBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
+                       std::vector<uint8_t>(2));
     EXPECT_FALSE(frame.IsValid());
   }
   {
-    U2fBleFrame frame(FidoBleDeviceCommand::kError, {});
+    FidoBleFrame frame(FidoBleDeviceCommand::kError, {});
     EXPECT_FALSE(frame.IsValid());
   }
 
-  for (auto code : {U2fBleFrame::KeepaliveCode::TUP_NEEDED,
-                    U2fBleFrame::KeepaliveCode::PROCESSING}) {
-    U2fBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
-                      std::vector<uint8_t>(1, static_cast<uint8_t>(code)));
+  for (auto code : {FidoBleFrame::KeepaliveCode::TUP_NEEDED,
+                    FidoBleFrame::KeepaliveCode::PROCESSING}) {
+    FidoBleFrame frame(FidoBleDeviceCommand::kKeepAlive,
+                       std::vector<uint8_t>(1, static_cast<uint8_t>(code)));
     EXPECT_TRUE(frame.IsValid());
     EXPECT_EQ(code, frame.GetKeepaliveCode());
   }
 
   for (auto code : {
-           U2fBleFrame::ErrorCode::INVALID_CMD,
-           U2fBleFrame::ErrorCode::INVALID_PAR,
-           U2fBleFrame::ErrorCode::INVALID_SEQ,
-           U2fBleFrame::ErrorCode::INVALID_LEN,
-           U2fBleFrame::ErrorCode::REQ_TIMEOUT, U2fBleFrame::ErrorCode::NA_1,
-           U2fBleFrame::ErrorCode::NA_2, U2fBleFrame::ErrorCode::NA_3,
+           FidoBleFrame::ErrorCode::INVALID_CMD,
+           FidoBleFrame::ErrorCode::INVALID_PAR,
+           FidoBleFrame::ErrorCode::INVALID_SEQ,
+           FidoBleFrame::ErrorCode::INVALID_LEN,
+           FidoBleFrame::ErrorCode::REQ_TIMEOUT, FidoBleFrame::ErrorCode::NA_1,
+           FidoBleFrame::ErrorCode::NA_2, FidoBleFrame::ErrorCode::NA_3,
        }) {
-    U2fBleFrame frame(FidoBleDeviceCommand::kError,
-                      {static_cast<uint8_t>(code)});
+    FidoBleFrame frame(FidoBleDeviceCommand::kError,
+                       {static_cast<uint8_t>(code)});
     EXPECT_TRUE(frame.IsValid());
     EXPECT_EQ(code, frame.GetErrorCode());
   }

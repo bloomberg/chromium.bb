@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_connection.h"
+#include "device/fido/fido_ble_connection.h"
 
 #include <utility>
 
@@ -81,7 +81,7 @@ class TestConnectionStatusCallback {
     return status_;
   }
 
-  U2fBleConnection::ConnectionStatusCallback GetCallback() {
+  FidoBleConnection::ConnectionStatusCallback GetCallback() {
     return base::BindRepeating(&TestConnectionStatusCallback::OnStatus,
                                base::Unretained(this));
   }
@@ -104,7 +104,7 @@ class TestReadCallback {
     return value_;
   }
 
-  U2fBleConnection::ReadCallback GetCallback() {
+  FidoBleConnection::ReadCallback GetCallback() {
     return base::BindRepeating(&TestReadCallback::OnRead,
                                base::Unretained(this));
   }
@@ -127,7 +127,7 @@ class TestReadControlPointLengthCallback {
     return value_;
   }
 
-  U2fBleConnection::ControlPointLengthCallback GetCallback() {
+  FidoBleConnection::ControlPointLengthCallback GetCallback() {
     return base::BindOnce(
         &TestReadControlPointLengthCallback::OnReadControlPointLength,
         base::Unretained(this));
@@ -141,25 +141,25 @@ class TestReadControlPointLengthCallback {
 class TestReadServiceRevisionsCallback {
  public:
   void OnReadServiceRevisions(
-      std::set<U2fBleConnection::ServiceRevision> revisions) {
+      std::set<FidoBleConnection::ServiceRevision> revisions) {
     revisions_ = std::move(revisions);
     run_loop_->Quit();
   }
 
-  const std::set<U2fBleConnection::ServiceRevision>& WaitForResult() {
+  const std::set<FidoBleConnection::ServiceRevision>& WaitForResult() {
     run_loop_->Run();
     run_loop_.emplace();
     return revisions_;
   }
 
-  U2fBleConnection::ServiceRevisionsCallback GetCallback() {
+  FidoBleConnection::ServiceRevisionsCallback GetCallback() {
     return base::BindOnce(
         &TestReadServiceRevisionsCallback::OnReadServiceRevisions,
         base::Unretained(this));
   }
 
  private:
-  std::set<U2fBleConnection::ServiceRevision> revisions_;
+  std::set<FidoBleConnection::ServiceRevision> revisions_;
   base::Optional<base::RunLoop> run_loop_{base::in_place};
 };
 
@@ -176,7 +176,7 @@ class TestWriteCallback {
     return success_;
   }
 
-  U2fBleConnection::WriteCallback GetCallback() {
+  FidoBleConnection::WriteCallback GetCallback() {
     return base::BindOnce(&TestWriteCallback::OnWrite, base::Unretained(this));
   }
 
@@ -187,9 +187,9 @@ class TestWriteCallback {
 
 }  // namespace
 
-class U2fBleConnectionTest : public ::testing::Test {
+class FidoBleConnectionTest : public ::testing::Test {
  public:
-  U2fBleConnectionTest() {
+  FidoBleConnectionTest() {
     ON_CALL(*adapter_, GetDevice(_))
         .WillByDefault(Invoke([this](const std::string& address) {
           return GetMockDevice(adapter_.get(), address);
@@ -424,14 +424,14 @@ class U2fBleConnectionTest : public ::testing::Test {
   MockBluetoothGattNotifySession* notify_session_;
 };
 
-TEST_F(U2fBleConnectionTest, Address) {
+TEST_F(FidoBleConnectionTest, Address) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   auto connect_do_nothing = [](bool) {};
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              base::BindRepeating(connect_do_nothing),
-                              base::BindRepeating(read_do_nothing));
+  FidoBleConnection connection(device_address,
+                               base::BindRepeating(connect_do_nothing),
+                               base::BindRepeating(read_do_nothing));
   connection.Connect();
   EXPECT_EQ(device_address, connection.address());
   AddU2Device(device_address);
@@ -440,40 +440,40 @@ TEST_F(U2fBleConnectionTest, Address) {
   EXPECT_EQ("new_device_address", connection.address());
 }
 
-TEST_F(U2fBleConnectionTest, DeviceNotPresent) {
+TEST_F(FidoBleConnectionTest, DeviceNotPresent) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   auto do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_FALSE(result);
 }
 
-TEST_F(U2fBleConnectionTest, PreConnected) {
+TEST_F(FidoBleConnectionTest, PreConnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
 
   auto do_nothing = [](std::vector<uint8_t>) {};
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(do_nothing));
   connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 }
 
-TEST_F(U2fBleConnectionTest, PostConnected) {
+TEST_F(FidoBleConnectionTest, PostConnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   auto do_nothing = [](std::vector<uint8_t>) {};
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_FALSE(result);
@@ -484,16 +484,16 @@ TEST_F(U2fBleConnectionTest, PostConnected) {
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 }
 
-TEST_F(U2fBleConnectionTest, DeviceDisconnect) {
+TEST_F(FidoBleConnectionTest, DeviceDisconnect) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
 
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto do_nothing = [](std::vector<uint8_t>) {};
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
@@ -503,16 +503,16 @@ TEST_F(U2fBleConnectionTest, DeviceDisconnect) {
   EXPECT_FALSE(result);
 }
 
-TEST_F(U2fBleConnectionTest, ReadStatusNotifications) {
+TEST_F(FidoBleConnectionTest, ReadStatusNotifications) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   TestReadCallback read_callback;
 
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              read_callback.GetCallback());
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               read_callback.GetCallback());
   connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
@@ -525,16 +525,16 @@ TEST_F(U2fBleConnectionTest, ReadStatusNotifications) {
   EXPECT_EQ(payload, read_callback.WaitForResult());
 }
 
-TEST_F(U2fBleConnectionTest, ReadControlPointLength) {
+TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(read_do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(read_do_nothing));
   connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
@@ -562,16 +562,16 @@ TEST_F(U2fBleConnectionTest, ReadControlPointLength) {
   EXPECT_EQ(base::nullopt, length_callback.WaitForResult());
 }
 
-TEST_F(U2fBleConnectionTest, ReadServiceRevisions) {
+TEST_F(FidoBleConnectionTest, ReadServiceRevisions) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(read_do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(read_do_nothing));
   connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
@@ -590,19 +590,19 @@ TEST_F(U2fBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_0));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_0));
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.1"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_1));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1));
 
   SetNextReadServiceRevisionResponse(true, ToByteVector("1.2"));
   SetNextReadServiceRevisionBitfieldResponse(false, {});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   // Version 1.3 currently does not exist, so this should be treated as an
   // error.
@@ -620,36 +620,36 @@ TEST_F(U2fBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionBitfieldResponse(true, {0x80});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_1));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1));
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0x40});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_1,
-                          U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
+                          FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   // All bits except the first two should be ignored.
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xFF});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_1,
-                          U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
+                          FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   // All bytes except the first one should be ignored.
   SetNextReadServiceRevisionResponse(false, {});
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0, 0xFF});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_1,
-                          U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_1,
+                          FidoBleConnection::ServiceRevision::VERSION_1_2));
 
   // The combination of a service revision string and bitfield should be
   // supported as well.
@@ -657,21 +657,21 @@ TEST_F(U2fBleConnectionTest, ReadServiceRevisions) {
   SetNextReadServiceRevisionBitfieldResponse(true, {0xC0});
   connection.ReadServiceRevisions(revisions_callback.GetCallback());
   EXPECT_THAT(revisions_callback.WaitForResult(),
-              ElementsAre(U2fBleConnection::ServiceRevision::VERSION_1_0,
-                          U2fBleConnection::ServiceRevision::VERSION_1_1,
-                          U2fBleConnection::ServiceRevision::VERSION_1_2));
+              ElementsAre(FidoBleConnection::ServiceRevision::VERSION_1_0,
+                          FidoBleConnection::ServiceRevision::VERSION_1_1,
+                          FidoBleConnection::ServiceRevision::VERSION_1_2));
 }
 
-TEST_F(U2fBleConnectionTest, WriteControlPoint) {
+TEST_F(FidoBleConnectionTest, WriteControlPoint) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(read_do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(read_do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
@@ -688,16 +688,16 @@ TEST_F(U2fBleConnectionTest, WriteControlPoint) {
   EXPECT_TRUE(result);
 }
 
-TEST_F(U2fBleConnectionTest, WriteServiceRevision) {
+TEST_F(FidoBleConnectionTest, WriteServiceRevision) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto read_do_nothing = [](std::vector<uint8_t>) {};
 
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(read_do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(read_do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
@@ -706,7 +706,7 @@ TEST_F(U2fBleConnectionTest, WriteServiceRevision) {
   TestWriteCallback write_callback;
   SetNextWriteServiceRevisionResponse(false);
   connection.WriteServiceRevision(
-      U2fBleConnection::ServiceRevision::VERSION_1_1,
+      FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.GetCallback());
   result = write_callback.WaitForResult();
   EXPECT_FALSE(result);
@@ -714,7 +714,7 @@ TEST_F(U2fBleConnectionTest, WriteServiceRevision) {
   // Expect a successful write of version 1.1.
   SetNextWriteServiceRevisionResponse(true);
   connection.WriteServiceRevision(
-      U2fBleConnection::ServiceRevision::VERSION_1_1,
+      FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.GetCallback());
   result = write_callback.WaitForResult();
   EXPECT_TRUE(result);
@@ -722,29 +722,29 @@ TEST_F(U2fBleConnectionTest, WriteServiceRevision) {
   // Expect a successful write of version 1.2.
   SetNextWriteServiceRevisionResponse(true);
   connection.WriteServiceRevision(
-      U2fBleConnection::ServiceRevision::VERSION_1_2,
+      FidoBleConnection::ServiceRevision::VERSION_1_2,
       write_callback.GetCallback());
   result = write_callback.WaitForResult();
   EXPECT_TRUE(result);
 
   // Writing version 1.0 to the bitfield is not intended, so this should fail.
   connection.WriteServiceRevision(
-      U2fBleConnection::ServiceRevision::VERSION_1_0,
+      FidoBleConnection::ServiceRevision::VERSION_1_0,
       write_callback.GetCallback());
   result = write_callback.WaitForResult();
   EXPECT_FALSE(result);
 }
 
-TEST_F(U2fBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
+TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
   TestConnectionStatusCallback connection_status_callback;
 
   AddU2Device(device_address);
   SetupConnectingU2fDevice(device_address);
   auto do_nothing = [](std::vector<uint8_t>) {};
-  U2fBleConnection connection(device_address,
-                              connection_status_callback.GetCallback(),
-                              base::BindRepeating(do_nothing));
+  FidoBleConnection connection(device_address,
+                               connection_status_callback.GetCallback(),
+                               base::BindRepeating(do_nothing));
   connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
@@ -765,7 +765,7 @@ TEST_F(U2fBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   // Writes should always fail on a disconnected device.
   TestWriteCallback write_callback;
   connection.WriteServiceRevision(
-      U2fBleConnection::ServiceRevision::VERSION_1_1,
+      FidoBleConnection::ServiceRevision::VERSION_1_1,
       write_callback.GetCallback());
   result = write_callback.WaitForResult();
   EXPECT_FALSE(result);
