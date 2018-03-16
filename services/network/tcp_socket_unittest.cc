@@ -477,8 +477,7 @@ TEST_F(TCPSocketTest, CannotConnectToWrongInterface) {
   }
 }
 
-// TODO(xunjieli): This test is flaky on MacOS crbug.com/821224.
-TEST_F(TCPSocketTest, DISABLED_ServerReceivesMultipleAccept) {
+TEST_F(TCPSocketTest, ServerReceivesMultipleAccept) {
   uint32_t backlog = 10;
   TestServer server;
   server.Start(backlog);
@@ -496,6 +495,7 @@ TEST_F(TCPSocketTest, DISABLED_ServerReceivesMultipleAccept) {
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, callback.WaitForResult());
 
   // After handling incoming connections, all callbacks should now complete.
+  std::vector<mojom::TCPConnectedSocketPtr> client_sockets;
   for (size_t i = 0; i < backlog; ++i) {
     TestTCPConnectedSocketObserver observer;
     mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
@@ -506,6 +506,7 @@ TEST_F(TCPSocketTest, DISABLED_ServerReceivesMultipleAccept) {
                   mojo::MakeRequest(&client_socket), observer.GetObserverPtr(),
                   base::nullopt /*local_addr*/, server.server_addr(),
                   &client_socket_receive_handle, &client_socket_send_handle));
+    client_sockets.push_back(std::move(client_socket));
   }
   for (const auto& callback : accept_callbacks) {
     EXPECT_EQ(net::OK, callback->WaitForResult());
