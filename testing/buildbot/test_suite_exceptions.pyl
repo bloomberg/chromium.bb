@@ -2520,7 +2520,7 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'swarming': {
-          'shards': 4,
+          'shards': 8,
         }
       },
       'Linux TSan Tests': {
