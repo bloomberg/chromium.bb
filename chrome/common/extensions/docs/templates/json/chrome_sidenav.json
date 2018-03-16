@@ -517,6 +517,10 @@
                 "href": "/extensions/overview"
               },
               {
+                "title": "Design User Interface",
+                "href": "/extensions/user_interface"
+              },
+              {
                 "title": "Extension Quality Guidelines FAQ",
                 "href": "/extensions/single_purpose"
               },
