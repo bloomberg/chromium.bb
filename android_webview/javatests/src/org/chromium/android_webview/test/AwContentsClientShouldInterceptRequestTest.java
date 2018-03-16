@@ -874,13 +874,14 @@ public class AwContentsClientShouldInterceptRequestTest {
                 mAwContents, pageHtml, "text/html", false, baseUrl, null);
         mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
         Assert.assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
-        if (!mShouldInterceptRequestHelper.getUrls().get(0).equals(imageUrl)) {
-            // With PlzNavigate, data URLs are intercepted so wait for the next request.
-            // See https://codereview.chromium.org/2235303002/.
-            callCount = mShouldInterceptRequestHelper.getCallCount();
-            mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
-            Assert.assertEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(1));
-        }
+
+        // With PlzNavigate, data URLs are intercepted. See
+        // https://codereview.chromium.org/2235303002/.
+        // TODO(boliu): Not checking the URL yet. It's the empty data URL which should be fixed in
+        // crbug.com/669885.
+        Assert.assertNotEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        mShouldInterceptRequestHelper.waitForCallback(callCount + 1);
+        Assert.assertEquals(imageUrl, mShouldInterceptRequestHelper.getUrls().get(1));
 
         Map<String, String> headers =
                 mShouldInterceptRequestHelper.getRequestsForUrl(imageUrl).requestHeaders;
