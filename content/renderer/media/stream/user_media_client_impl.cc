@@ -125,7 +125,7 @@ void UserMediaClientImpl::RequestUserMedia(
   // Save histogram data so we can see how much GetUserMedia is used.
   // The histogram counts the number of calls to the JS API
   // webGetUserMedia.
-  UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kGetUserMedia);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!web_request.IsNull());
   DCHECK(web_request.Audio() || web_request.Video());

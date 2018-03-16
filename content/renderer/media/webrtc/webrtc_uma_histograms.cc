@@ -19,9 +19,11 @@ void LogUserMediaRequestResult(MediaStreamRequestResult result) {
                             NUM_MEDIA_REQUEST_RESULTS);
 }
 
-void UpdateWebRTCMethodCount(JavaScriptAPIName api_name) {
-  DVLOG(3) << "Incrementing WebRTC.webkitApiCount for " << api_name;
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCount", api_name, INVALID_NAME);
+void UpdateWebRTCMethodCount(blink::WebRTCAPIName api_name) {
+  DVLOG(3) << "Incrementing WebRTC.webkitApiCount for "
+           << static_cast<int>(api_name);
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCount", api_name,
+                            blink::WebRTCAPIName::kInvalidName);
   PerSessionWebRTCAPIMetrics::GetInstance()->LogUsageOnlyOnce(api_name);
 }
 
@@ -50,16 +52,18 @@ PerSessionWebRTCAPIMetrics::PerSessionWebRTCAPIMetrics() : num_streams_(0) {
   ResetUsage();
 }
 
-void PerSessionWebRTCAPIMetrics::LogUsage(JavaScriptAPIName api_name) {
-  DVLOG(3) << "Incrementing WebRTC.webkitApiCountPerSession for " << api_name;
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCountPerSession",
-                            api_name, INVALID_NAME);
+void PerSessionWebRTCAPIMetrics::LogUsage(blink::WebRTCAPIName api_name) {
+  DVLOG(3) << "Incrementing WebRTC.webkitApiCountPerSession for "
+           << static_cast<int>(api_name);
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCountPerSession", api_name,
+                            blink::WebRTCAPIName::kInvalidName);
 }
 
-void PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce(JavaScriptAPIName api_name) {
+void PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce(
+    blink::WebRTCAPIName api_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!has_used_api_[api_name]) {
-    has_used_api_[api_name] = true;
+  if (!has_used_api_[static_cast<int>(api_name)]) {
+    has_used_api_[static_cast<int>(api_name)] = true;
     LogUsage(api_name);
   }
 }

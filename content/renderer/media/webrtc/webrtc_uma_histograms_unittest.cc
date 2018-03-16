@@ -17,63 +17,67 @@ class MockPerSessionWebRTCAPIMetrics : public PerSessionWebRTCAPIMetrics {
 
   using PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce;
 
-  MOCK_METHOD1(LogUsage, void(JavaScriptAPIName));
+  MOCK_METHOD1(LogUsage, void(blink::WebRTCAPIName));
 };
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingGetUserMedia) {
   MockPerSessionWebRTCAPIMetrics metrics;
   EXPECT_CALL(metrics, LogUsage(_)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_GET_USER_MEDIA);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kGetUserMedia);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, CallOngoingGetUserMedia) {
   MockPerSessionWebRTCAPIMetrics metrics;
   metrics.IncrementStreamCounter();
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_GET_USER_MEDIA)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_GET_USER_MEDIA);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kGetUserMedia)).Times(1);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kGetUserMedia);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingGetMediaDevices) {
   MockPerSessionWebRTCAPIMetrics metrics;
   EXPECT_CALL(metrics, LogUsage(_)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_GET_MEDIA_DEVICES);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kEnumerateDevices);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, CallOngoingGetMediaDevices) {
   MockPerSessionWebRTCAPIMetrics metrics;
   metrics.IncrementStreamCounter();
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_GET_MEDIA_DEVICES)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_GET_MEDIA_DEVICES);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kEnumerateDevices))
+      .Times(1);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kEnumerateDevices);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingRTCPeerConnection) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_RTC_PEER_CONNECTION));
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection));
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_RTC_PEER_CONNECTION)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
+      .Times(1);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, BeforeAfterCallMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_RTC_PEER_CONNECTION)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
+      .Times(1);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
   metrics.IncrementStreamCounter();
   metrics.IncrementStreamCounter();
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  EXPECT_CALL(metrics, LogUsage(WEBKIT_RTC_PEER_CONNECTION)).Times(1);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
-  metrics.LogUsageOnlyOnce(WEBKIT_RTC_PEER_CONNECTION);
+  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
+      .Times(1);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
 }
 
 }  // namespace content

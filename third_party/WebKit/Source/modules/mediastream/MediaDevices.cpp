@@ -21,6 +21,7 @@
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -81,6 +82,7 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() = default;
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
+  Platform::Current()->UpdateWebRTCAPICount(WebRTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
       ToDocument(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
