@@ -5,11 +5,7 @@
 #include "services/shape_detection/detection_utils_mac.h"
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/shared_memory.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "services/shape_detection/barcode_detection_impl.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 namespace shape_detection {
