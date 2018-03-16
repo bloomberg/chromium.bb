@@ -102,8 +102,12 @@ int ChunkedDataPipeUploadDataStream::ReadInternal(net::IOBuffer* buf,
   // The pipe was closed. If the size isn't known yet, could be a success or a
   // failure.
   if (!size_) {
+    // Need to keep the buffer around because its presence is used to indicate
+    // that there's a pending UploadDataStream read.
     buf_ = buf;
     buf_len_ = buf_len;
+
+    handle_watcher_.Cancel();
     data_pipe_.reset();
     return net::ERR_IO_PENDING;
   }
