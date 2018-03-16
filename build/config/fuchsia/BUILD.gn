@@ -55,5 +55,9 @@ config("compiler") {
     "-Wl,--as-needed",
   ]
 
+  # TODO(crbug.com/821951): Clang enables SafeStack by default when targeting
+  # Fuchsia, but it breaks some tests, notably in V8.
+  cflags += [ "-fno-sanitize=safe-stack" ]
+
   libs = [ "zircon" ]
 }
