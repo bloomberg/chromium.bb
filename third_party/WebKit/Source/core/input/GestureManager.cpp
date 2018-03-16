@@ -21,7 +21,11 @@
 #include "public/public_features.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+#include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/style/ComputedStyle.h"
 #include "public/platform/unhandled_tap_notifier.mojom-blink.h"
 #include "public/web/WebNode.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -310,7 +314,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
         frame_->GetPage()->GetVisualViewport().RootFrameToViewport(
             tapped_position);
     ShowUnhandledTapUIIfNeeded(dom_tree_changed, style_changed, tapped_node,
-                               tapped_position_in_viewport);
+                               tapped_element, tapped_position_in_viewport);
   }
   return event_result;
 }
@@ -447,9 +451,11 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     bool dom_tree_changed,
     bool style_changed,
     Node* tapped_node,
+    Element* tapped_element,
     const IntPoint& tapped_position_in_viewport) {
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   WebNode web_node(tapped_node);
+  // TODO(donnd): roll in ML-identified signals for suppression once identified.
   bool should_trigger = !dom_tree_changed && !style_changed &&
                         tapped_node->IsTextNode() &&
                         !web_node.IsContentEditable() &&
@@ -457,12 +463,29 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
   // Renderer-side trigger-filtering to minimize messaging.
   // The Browser may do additional trigger-filtering.
   if (should_trigger) {
-    WebPoint point(tapped_position_in_viewport.X(),
-                   tapped_position_in_viewport.Y());
-    auto tapped_info = mojom::blink::UnhandledTapInfo::New(point);
+    // Start setting up the Mojo interface connection.
     mojom::blink::UnhandledTapNotifierPtr provider;
     frame_->Client()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&provider));
+
+    // Extract text run-length.
+    int text_run_length = 0;
+    if (tapped_element)
+      text_run_length = tapped_element->textContent().length();
+
+    // Compute the style of the tapped node to extract text characteristics.
+    const ComputedStyle* style = tapped_node->EnsureComputedStyle();
+    int font_size = 0;
+    if (style)
+      font_size = style->FontSize();
+    // TODO(donnd): get the text color and style and return,
+    // e.g. style->GetFontWeight() to return bold.  Need italic, color, etc.
+
+    // Notify the Browser.
+    WebPoint point(tapped_position_in_viewport.X(),
+                   tapped_position_in_viewport.Y());
+    auto tapped_info =
+        mojom::blink::UnhandledTapInfo::New(point, font_size, text_run_length);
     provider->ShowUnhandledTapUIIfNeeded(std::move(tapped_info));
   }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)

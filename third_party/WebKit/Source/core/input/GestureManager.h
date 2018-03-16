@@ -64,6 +64,7 @@ class CORE_EXPORT GestureManager
   void ShowUnhandledTapUIIfNeeded(bool dom_tree_changed,
                                   bool style_changed,
                                   Node* tapped_node,
+                                  Element* tapped_element,
                                   const IntPoint& tapped_position_in_viewport);
 
   // NOTE: If adding a new field to this class please ensure that it is
