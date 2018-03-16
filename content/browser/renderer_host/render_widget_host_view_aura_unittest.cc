@@ -6003,6 +6003,43 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_NE(id1, id2);
 }
 
+// If a tab was resized while it's hidden, drop the fallback so next time it's
+// visible we show blank.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       DropFallbackIfResizedWhileHidden) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->Show();
+  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
+  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  view_->Hide();
+  view_->SetSize(gfx::Size(54, 32));
+  view_->Show();
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+}
+
+// If a tab is hidden and shown without being resized in the meantime, the
+// fallback SurfaceId has to be preserved.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       DontDropFallbackIfNotResizedWhileHidden) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->Show();
+  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
+  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  view_->Hide();
+  view_->Show();
+  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+}
+
 // This class provides functionality to test a RenderWidgetHostViewAura
 // instance which has been hooked up to a test RenderViewHost instance and
 // a WebContents instance.
