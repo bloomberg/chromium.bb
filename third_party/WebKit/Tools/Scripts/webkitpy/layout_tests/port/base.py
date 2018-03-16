@@ -428,6 +428,10 @@ class Port(object):
         """
         cmd = [self._path_to_driver(), '--check-layout-test-sys-deps']
 
+        additional_flags = self.get_option('additional_driver_flag', [])
+        if additional_flags:
+            cmd.append(additional_flags[0])
+
         local_error = ScriptError()
 
         def error_handler(script_error):
