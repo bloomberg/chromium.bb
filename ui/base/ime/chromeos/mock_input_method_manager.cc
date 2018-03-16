@@ -103,6 +103,14 @@ MockInputMethodManager::State::GetAllowedInputMethods() {
   return allowed_input_method_ids_;
 }
 
+void MockInputMethodManager::State::EnableInputView() {}
+
+void MockInputMethodManager::State::DisableInputView() {}
+
+const GURL& MockInputMethodManager::State::GetInputViewUrl() const {
+  return GURL::EmptyGURL();
+}
+
 MockInputMethodManager::State::~State() {}
 
 MockInputMethodManager::MockInputMethodManager()

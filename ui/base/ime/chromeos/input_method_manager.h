@@ -231,6 +231,15 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     // are allowed.
     virtual const std::vector<std::string>& GetAllowedInputMethods() = 0;
 
+    // Methods related to custom input view of the input method.
+    // Enables custom input view of the active input method.
+    virtual void EnableInputView() = 0;
+    // Disables custom input view of the active input method.
+    // The fallback system input view will be used.
+    virtual void DisableInputView() = 0;
+    // Returns the URL of the input view of the active input method.
+    virtual const GURL& GetInputViewUrl() const = 0;
+
    protected:
     friend base::RefCounted<InputMethodManager::State>;
 

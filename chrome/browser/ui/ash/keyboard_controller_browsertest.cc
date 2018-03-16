@@ -8,6 +8,7 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -19,7 +20,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/keyboard/content/keyboard_constants.h"
-#include "ui/keyboard/content/keyboard_content_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_test_util.h"
@@ -37,6 +37,11 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   void SetUp() override {
     ui::SetUpInputMethodFactoryForTesting();
     InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(base::nullopt);
+    InProcessBrowserTest::TearDown();
   }
 
   // Ensure that the virtual keyboard is enabled.
@@ -67,7 +72,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
 
   void MockEnableIMEInDifferentExtension(const std::string& url,
                                          const gfx::Rect& init_bounds) {
-    keyboard::SetOverrideContentUrl(GURL(url));
+    ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(GURL(url));
     keyboard::KeyboardController::GetInstance()->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.

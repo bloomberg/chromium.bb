@@ -36,7 +36,6 @@
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/keyboard/content/keyboard_content_util.h"
 
 namespace chromeos {
 
@@ -160,6 +159,11 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     candidate_window_controller_ = NULL;
     keyboard_ = NULL;
     manager_.reset();
+  }
+
+  scoped_refptr<InputMethodManagerImpl::StateImpl> GetActiveIMEState() {
+    return scoped_refptr<InputMethodManagerImpl::StateImpl>(
+        manager_->state_.get());
   }
 
  protected:
@@ -1264,12 +1268,13 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest) {
 }
 
 TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
+  InitComponentExtension();
   const GURL inputview_url(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
       "compact.qwerty&name=keyboard_us");
-  keyboard::SetOverrideContentUrl(inputview_url);
-  EXPECT_EQ(inputview_url, keyboard::GetOverrideContentUrl());
+  GetActiveIMEState()->input_view_url = inputview_url;
+  EXPECT_EQ(inputview_url, GetActiveIMEState()->GetInputViewUrl());
 
   // Override the keyboard url ref with 'emoji'.
   const GURL overridden_url_emoji(
@@ -1277,35 +1282,36 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
       "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
       "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardUrlRef("emoji");
-  EXPECT_EQ(overridden_url_emoji, keyboard::GetOverrideContentUrl());
+  EXPECT_EQ(overridden_url_emoji, GetActiveIMEState()->GetInputViewUrl());
 
   // Override the keyboard url ref with 'hwt'.
-  keyboard::SetOverrideContentUrl(inputview_url);
+  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_hwt(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.hwt&language=en-US&passwordLayout="
       "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardUrlRef("hwt");
-  EXPECT_EQ(overridden_url_hwt, keyboard::GetOverrideContentUrl());
+  EXPECT_EQ(overridden_url_hwt, GetActiveIMEState()->GetInputViewUrl());
 
   // Override the keyboard url ref with 'voice'.
-  keyboard::SetOverrideContentUrl(inputview_url);
+  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_voice(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.voice&language=en-US"
       "&passwordLayout=us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardUrlRef("voice");
-  EXPECT_EQ(overridden_url_voice, keyboard::GetOverrideContentUrl());
+  EXPECT_EQ(overridden_url_voice, GetActiveIMEState()->GetInputViewUrl());
 }
 
 TEST_F(InputMethodManagerImplTest, OverrideDefaultKeyboardUrlRef) {
+  InitComponentExtension();
   const GURL default_url("chrome://inputview.html");
-  keyboard::SetOverrideContentUrl(default_url);
+  GetActiveIMEState()->input_view_url = default_url;
 
-  EXPECT_EQ(default_url, keyboard::GetOverrideContentUrl());
+  EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
 
   manager_->OverrideKeyboardUrlRef("emoji");
-  EXPECT_EQ(default_url, keyboard::GetOverrideContentUrl());
+  EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
 }
 
 TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsValid) {
