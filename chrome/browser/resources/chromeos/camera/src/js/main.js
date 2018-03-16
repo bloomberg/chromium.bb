@@ -206,20 +206,57 @@ camera.Camera.prototype = {
  * Starts the app by initializing views and showing the camera view.
  */
 camera.Camera.prototype.start = function() {
-  // Initialize all views, and then start the app.
-  Promise.all([
-      new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
-      new Promise(this.albumView_.initialize.bind(this.albumView_)),
-      new Promise(this.browserView_.initialize.bind(this.browserView_))]).
-    then(function() {
-      this.tooltipManager_.initialize();
-      this.viewsStack_.push(this.cameraView_);
-      camera.util.makeElementsUnfocusableByMouse();
-      camera.util.setAriaAttributes();
-    }.bind(this)).
-    catch(function(error) {
-      console.error('Failed to initialize the Camera app.', error);
-    });
+  var initAllViews = function() {
+    // Initialize all views, and then start the app.
+    Promise.all([
+        new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
+        new Promise(this.albumView_.initialize.bind(this.albumView_)),
+        new Promise(this.browserView_.initialize.bind(this.browserView_))]).
+      then(function() {
+        this.tooltipManager_.initialize();
+        this.viewsStack_.push(this.cameraView_);
+        camera.util.makeElementsUnfocusableByMouse();
+        camera.util.setAriaAttributes();
+      }.bind(this)).
+      catch(function(error) {
+        console.error('Failed to initialize the Camera app.', error);
+        this.onError_('view-failure', 'App initialize failed.');
+      });
+  }.bind(this);
+
+  camera.models.FileSystem.initialize(function() {
+    var onFailure = function() {
+      this.onError_('migration-failure', 'Migration failed.');
+    }.bind(this);
+
+    var promptMigrate = function() {
+      this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
+        type: camera.views.Dialog.Type.ALERT,
+        message: 'Start migration'
+      }, function(result) {
+        if (!result.isPositive) {
+          chrome.app.window.current().close();
+          return;
+        }
+        camera.models.FileSystem.migratePictures(initAllViews, onFailure);
+      });
+    }.bind(this);
+
+    camera.models.FileSystem.needMigration(function() {
+      // Show the prompt dialog for pictures migration.
+      if (!camera.models.FileSystem.ackMigratePictures) {
+        promptMigrate();
+      } else {
+        camera.models.FileSystem.migratePictures(initAllViews, onFailure);
+      }
+    }, function() {
+      initAllViews();
+    }, function(error) {
+      this.onError_('filesystem-failure', error);
+    }.bind(this));
+  }.bind(this), function(error) {
+    this.onError_('filesystem-failure', error);
+  }.bind(this));
 };
 
 /**

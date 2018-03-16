@@ -126,6 +126,10 @@ camera.views.GalleryBase.prototype.renderPictures_ = function() {
  * @protected
  */
 camera.views.GalleryBase.prototype.exportSelection = function() {
+  // Exporting is no longer applicable if the model uses the external file system.
+  if (this.model.useExternalFs)
+    return;
+
   var selectedIndexes = this.selectedIndexes;
   if (!selectedIndexes.length)
     return;

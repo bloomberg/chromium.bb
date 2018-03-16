@@ -168,6 +168,14 @@ camera.util.isChromeVersionAbove = function(minVersion) {
   return (match ? parseInt(match[2], 10) : 0) >= minVersion;
 };
 
+/*
+ * Checks if the user is using a Chrome OS device.
+ * @return {boolean} Whether it is a Chrome OS device or not.
+ */
+camera.util.isChromeOS = function() {
+  return navigator.appVersion.indexOf('CrOS') !== -1;
+};
+
 /**
  * Sets localized aria attributes for TTS on the entire document. Uses the
  * dedicated i18n-aria-label attribute as a strings identifier. If it is not

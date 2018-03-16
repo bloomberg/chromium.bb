@@ -100,6 +100,7 @@ SRC_RESOURCES= \
 	src/js/background.js \
 	src/js/main.js \
 	src/js/models/gallery.js \
+	src/js/models/file_system.js \
 	src/js/router.js \
 	src/js/scrollbar.js \
 	src/js/test.js \
