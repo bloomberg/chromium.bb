@@ -6332,11 +6332,7 @@ class CompositedSelectionBoundsTest
     blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(), expected_result.Get(0));
     ASSERT_TRUE(layer_owner_node_for_start);
-    EXPECT_EQ(layer_owner_node_for_start->GetLayoutObject()
-                  ->EnclosingLayer()
-                  ->EnclosingLayerForPaintInvalidation()
-                  ->GetCompositedLayerMapping()
-                  ->MainGraphicsLayer()
+    EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_start)
                   ->PlatformLayer()
                   ->Id(),
               select_start->layer_id);
@@ -6351,11 +6347,7 @@ class CompositedSelectionBoundsTest
         expected_result.Get(context, 5).ToLocalChecked());
 
     ASSERT_TRUE(layer_owner_node_for_end);
-    EXPECT_EQ(layer_owner_node_for_end->GetLayoutObject()
-                  ->EnclosingLayer()
-                  ->EnclosingLayerForPaintInvalidation()
-                  ->GetCompositedLayerMapping()
-                  ->MainGraphicsLayer()
+    EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_end)
                   ->PlatformLayer()
                   ->Id(),
               select_end->layer_id);
@@ -6405,6 +6397,18 @@ class CompositedSelectionBoundsTest
     va_end(aux_files);
 
     RunTest(test_file);
+  }
+
+  GraphicsLayer* GetExpectedLayerForSelection(blink::Node* node) const {
+    CompositedLayerMapping* clm = node->GetLayoutObject()
+                                      ->EnclosingLayer()
+                                      ->EnclosingLayerForPaintInvalidation()
+                                      ->GetCompositedLayerMapping();
+
+    // If the Node is a scroller, the selection will be relative to its
+    // scrolling contents layer.
+    return clm->ScrollingContentsLayer() ? clm->ScrollingContentsLayer()
+                                         : clm->MainGraphicsLayer();
   }
 
   CompositedSelectionBoundsTestWebViewClient fake_selection_web_view_client_;
