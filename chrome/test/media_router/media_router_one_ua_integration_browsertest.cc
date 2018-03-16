@@ -99,6 +99,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
   RunFailToSendMessageTest();
 }
 
+// TODO(crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
                        ReconnectSession) {
   RunReconnectSessionTest();
