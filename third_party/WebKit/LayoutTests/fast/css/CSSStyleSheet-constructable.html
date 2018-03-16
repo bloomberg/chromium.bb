@@ -2,6 +2,7 @@
 <!-- TODO(rakina): move to WPT once spec is finalized -->
 <script src = '../../resources/testharness.js'></script>
 <script src = '../../resources/testharnessreport.js'></script>
+<style>dummy {}</style>
 
 <section id="firstSection">
   <div>
@@ -37,6 +38,10 @@ const redShadowSpan = secondDiv.children[1];
 const blueShadowSpan = secondDiv.children[2];
 const whiteShadowSpan = secondDiv.children[3];
 const yellowShadowSpan = secondDiv.children[4];
+
+test(() => {
+  assert_equals(document.moreStyleSheets.length, 0);
+}, "document.moreStyleSheets should initially have length 0.");
 
 test(() => {
   // Style sheets can be created
@@ -283,4 +288,3 @@ test(() => {
   assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
 }, 'Constructed stylesheet can be used and modified in multiple Documents');
 </script>
-

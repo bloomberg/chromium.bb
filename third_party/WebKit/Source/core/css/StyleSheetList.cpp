@@ -31,6 +31,11 @@ namespace blink {
 
 using namespace HTMLNames;
 
+StyleSheetList* StyleSheetList::Create() {
+  DCHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
+  return new StyleSheetList();
+}
+
 StyleSheetList* StyleSheetList::Create(
     const HeapVector<Member<CSSStyleSheet>>& style_sheet_vector,
     ExceptionState& exception_state) {
@@ -38,7 +43,6 @@ StyleSheetList* StyleSheetList::Create(
     exception_state.ThrowTypeError("Illegal constructor");
     return nullptr;
   }
-
   return new StyleSheetList(style_sheet_vector);
 }
 
