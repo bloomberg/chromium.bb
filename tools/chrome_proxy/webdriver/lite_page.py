@@ -209,8 +209,8 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
 
       # Need to force lite page so target page doesn't fallback to Lo-Fi
-      # Set exp=alt1 to force Lite-page response.
-      test_driver.AddChromeArg('--data-reduction-proxy-experiment=alt1')
+      # Set exp=alt6 to force Lite-page response.
+      test_driver.AddChromeArg('--data-reduction-proxy-experiment=alt6')
 
       # This page is long and has many media resources.
       test_driver.LoadURL('http://check.googlezip.net/metrics/index.html')
