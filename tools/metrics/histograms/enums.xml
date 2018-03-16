@@ -30301,6 +30301,53 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="subresource and used"/>
 </enum>
 
+<enum name="NetReportingHeaderEndpointGroupOutcome">
+  <int value="0" label="Discarded: not a dictionary"/>
+  <int value="1" label="Discarded: group not a string"/>
+  <int value="2" label="Discarded: TTL missing"/>
+  <int value="3" label="Discarded: TTL not an integer"/>
+  <int value="4" label="Discarded: TTL negative"/>
+  <int value="5" label="Discarded: endpoints missing"/>
+  <int value="6" label="Discarded: endpoints not a list"/>
+  <int value="7" label="Parsed"/>
+</enum>
+
+<enum name="NetReportingHeaderEndpointOutcome">
+  <int value="0" label="Discarded: not a dictionary"/>
+  <int value="1" label="Discarded: URL missing"/>
+  <int value="2" label="Discarded: URL not a string"/>
+  <int value="3" label="Discarded: URL invalid"/>
+  <int value="4" label="Discarded: URL insecure"/>
+  <int value="5" label="Discarded: priority not an integer"/>
+  <int value="6" label="Discarded: weight not an integer"/>
+  <int value="7" label="Discarded: weight not positive"/>
+  <int value="8" label="Removed (max-age = 0)"/>
+  <int value="9" label="Set rejected by delegate (max-age &gt; 0)"/>
+  <int value="10" label="Set (max-age &gt; 0)"/>
+</enum>
+
+<enum name="NetReportingHeaderOutcome">
+  <int value="0" label="Discarded: no ReportingService"/>
+  <int value="1" label="Discarded: invalid SSLInfo"/>
+  <int value="2" label="Discarded: cert status error"/>
+  <int value="3" label="Discarded: JSON too big"/>
+  <int value="4" label="Discarded: JSON invalid"/>
+  <int value="5" label="Parsed"/>
+</enum>
+
+<enum name="NetReportingReportOutcome">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Discarded: no URLRequestContext"/>
+  <int value="2" label="Discarded: no ReportingService"/>
+  <int value="3" label="Erased: failed"/>
+  <int value="4" label="Erased: expired"/>
+  <int value="5" label="Erased: evicted"/>
+  <int value="6" label="Erased: network changed"/>
+  <int value="7" label="Erased: browsing data removed"/>
+  <int value="8" label="Erased: Reporting shut down"/>
+  <int value="9" label="Delivered"/>
+</enum>
+
 <enum name="NetTrustAnchors">
 <!-- Generated from net/data/ssl/root_stores/root_stores.json.
 Called by update_net_trust_anchors.py.-->
@@ -37953,6 +38000,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ReportingHeaderEndpointGroupOutcome">
+  <obsolete>
+    Moved to NetReportingHeaderEndpointGroupOutcome.
+  </obsolete>
   <int value="0" label="Discarded: not a dictionary"/>
   <int value="1" label="Discarded: group not a string"/>
   <int value="2" label="Discarded: TTL missing"/>
@@ -37964,6 +38014,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ReportingHeaderEndpointOutcome">
+  <obsolete>
+    Moved to NetReportingHeaderEndpointOutcome.
+  </obsolete>
   <int value="0" label="Discarded: not a dictionary"/>
   <int value="1" label="Discarded: endpoint missing (obsolete)"/>
   <int value="2" label="Discarded: endpoint not a string (obsolete)"/>
@@ -37986,6 +38039,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ReportingHeaderOutcome">
+  <obsolete>
+    Moved to NetReportingHeaderOutcome.
+  </obsolete>
   <int value="0" label="Discarded: no ReportingService"/>
   <int value="1" label="Discarded: invalid SSLInfo"/>
   <int value="2" label="Discarded: cert status error"/>
@@ -37995,6 +38051,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ReportingReportOutcome">
+  <obsolete>
+    Moved to NetReportingReportOutcome.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Discarded: no URLRequestContext"/>
   <int value="2" label="Discarded: no ReportingService"/>
