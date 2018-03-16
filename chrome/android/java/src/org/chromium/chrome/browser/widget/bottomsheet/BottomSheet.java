@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
@@ -277,9 +276,6 @@ public class BottomSheet
     /** A delegate for when the action bar starts showing. */
     private ViewShiftingActionBarDelegate mActionBarDelegate;
 
-    /** Whether or not the back button was used to enter the tab switcher. */
-    private boolean mBackButtonDismissesChrome;
-
     /** Whether {@link #destroy()} has been called. **/
     private boolean mIsDestroyed;
 
@@ -461,24 +457,12 @@ public class BottomSheet
      * @return True if the sheet handled the back press.
      */
     public boolean handleBackPress() {
-        Tab tab = getActiveTab();
-        boolean consumeEvent = false;
-
-        if (!isSheetOpen() && tab != null && !tab.canGoBack() && !isInOverviewMode()
-                && tab.getLaunchType() == TabLaunchType.FROM_CHROME_UI) {
-            mBackButtonDismissesChrome = true;
-
-            setSheetState(SHEET_STATE_HALF, true);
-            return true;
-        } else if (isSheetOpen() && !mBackButtonDismissesChrome) {
-            consumeEvent = true;
-        }
-
-        if (getSheetState() != SHEET_STATE_PEEK) {
+        if (isSheetOpen()) {
             setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.BACK_PRESS);
+            return true;
         }
 
-        return consumeEvent;
+        return false;
     }
 
     /**
@@ -1029,7 +1013,6 @@ public class BottomSheet
     private void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsSheetOpen) return;
         mBottomSheetContentContainer.setVisibility(View.INVISIBLE);
-        mBackButtonDismissesChrome = false;
         mIsSheetOpen = false;
 
         // Update the browser controls since they are permanently shown while the sheet is open.
