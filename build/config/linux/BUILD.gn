@@ -25,6 +25,10 @@ config("runtime_library") {
   if (is_chromeos) {
     defines = [ "OS_CHROMEOS" ]
   }
+
+  if (current_cpu == "mipsel") {
+    libs = [ "atomic" ]
+  }
 }
 
 config("x11") {
