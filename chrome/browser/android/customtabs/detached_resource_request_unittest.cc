@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
@@ -167,6 +168,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 };
 
 TEST_F(DetachedResourceRequestTest, Simple) {
+  base::HistogramTester histogram_tester;
   base::RunLoop request_completion_waiter;
   base::RunLoop server_request_waiter;
   HttpRequest::HeaderMap headers;
@@ -189,9 +191,12 @@ TEST_F(DetachedResourceRequestTest, Simple) {
   server_request_waiter.Run();
   EXPECT_EQ(site_for_cookies.spec(), headers["referer"]);
   request_completion_waiter.Run();
+  histogram_tester.ExpectTotalCount(
+      "CustomTabs.DetachedResourceRequest.Duration.Success", 1);
 }
 
 TEST_F(DetachedResourceRequestTest, SimpleFailure) {
+  base::HistogramTester histogram_tester;
   base::RunLoop request_waiter;
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/unknown-url"));
@@ -206,6 +211,8 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
           },
           request_waiter.QuitClosure()));
   request_waiter.Run();
+  histogram_tester.ExpectTotalCount(
+      "CustomTabs.DetachedResourceRequest.Duration.Failure", 1);
 }
 
 TEST_F(DetachedResourceRequestTest, MultipleRequests) {
