@@ -45,10 +45,6 @@ const char kAshEnableCursorMotionBlur[] = "ash-enable-cursor-motion-blur";
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
 
-// Enables the new overview ui.
-// TODO(sammiequon): Remove this once the feature is launched. crbug.com/782330.
-const char kAshEnableNewOverviewUi[] = "ash-enable-new-overview-ui";
-
 // Enable the Night Light feature.
 const char kAshEnableNightLight[] = "ash-enable-night-light";
 

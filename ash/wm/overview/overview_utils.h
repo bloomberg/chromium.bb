@@ -36,11 +36,6 @@ bool IsNewOverviewAnimationsEnabled();
 // obsolete. See https://crbug.com/782320.
 bool IsNewOverviewUi();
 
-// Resets the stored value so that the next IsNewOverviewAnimations and
-// IsNewOverviewUi call will query the command line arguments again.
-ASH_EXPORT void ResetCachedOverviewAnimationsValueForTesting();
-ASH_EXPORT void ResetCachedOverviewUiValueForTesting();
-
 // Creates and returns a background translucent widget parented in
 // |root_window|'s default container and having |background_color|.
 // When |border_thickness| is non-zero, a border is created having
