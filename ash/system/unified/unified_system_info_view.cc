@@ -100,6 +100,10 @@ class BatteryView : public views::View, public PowerStatus::Observer {
   BatteryView();
   ~BatteryView() override;
 
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
+
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
 
@@ -140,6 +144,14 @@ BatteryView::BatteryView()
 
 BatteryView::~BatteryView() {
   PowerStatus::Get()->RemoveObserver(this);
+}
+
+void BatteryView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
+void BatteryView::ChildVisibilityChanged(views::View* child) {
+  PreferredSizeChanged();
 }
 
 void BatteryView::OnPowerStatusChanged() {
@@ -269,5 +281,13 @@ UnifiedSystemInfoView::UnifiedSystemInfoView()
 }
 
 UnifiedSystemInfoView::~UnifiedSystemInfoView() = default;
+
+void UnifiedSystemInfoView::ChildVisibilityChanged(views::View* child) {
+  Layout();
+}
+
+void UnifiedSystemInfoView::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
+}
 
 }  // namespace ash
