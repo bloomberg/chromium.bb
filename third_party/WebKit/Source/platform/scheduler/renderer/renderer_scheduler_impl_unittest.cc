@@ -23,7 +23,7 @@
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -292,7 +292,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     }
     Initialize(std::make_unique<RendererSchedulerImplForTest>(
-        CreateTaskQueueManagerForTest(
+        TaskQueueManagerForTest::Create(
             message_loop_.get(),
             message_loop_ ? message_loop_->task_runner() : mock_task_runner_,
             &clock_),
@@ -1895,7 +1895,7 @@ class RendererSchedulerImplWithMockSchedulerTest
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     mock_scheduler_ = new RendererSchedulerImplForTest(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     Initialize(base::WrapUnique(mock_scheduler_));
   }
@@ -4229,7 +4229,7 @@ class RendererSchedulerImplWithInitalVirtualTimeTest
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     }
     Initialize(std::make_unique<RendererSchedulerImplForTest>(
-        CreateTaskQueueManagerForTest(
+        TaskQueueManagerForTest::Create(
             message_loop_.get(),
             message_loop_ ? message_loop_->task_runner() : mock_task_runner_,
             &clock_),

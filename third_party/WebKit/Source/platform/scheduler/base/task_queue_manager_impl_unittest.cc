@@ -29,6 +29,7 @@
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -43,46 +44,7 @@ using ::testing::_;
 using blink::scheduler::internal::EnqueueOrder;
 
 namespace blink {
-
 namespace scheduler {
-// To avoid symbol collisions in jumbo builds.
-namespace task_queue_manager_unittest {
-
-class TaskQueueManagerForTest : public TaskQueueManagerImpl {
- public:
-  explicit TaskQueueManagerForTest(
-      std::unique_ptr<internal::ThreadController> thread_controller)
-      : TaskQueueManagerImpl(std::move(thread_controller)) {}
-
-  using TaskQueueManagerImpl::ActiveQueuesCount;
-  using TaskQueueManagerImpl::QueuesToShutdownCount;
-  using TaskQueueManagerImpl::QueuesToDeleteCount;
-};
-
-class ThreadControllerForTest : public internal::ThreadControllerImpl {
- public:
-  ThreadControllerForTest(
-      base::MessageLoop* message_loop,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::TickClock* time_source)
-      : ThreadControllerImpl(message_loop,
-                             std::move(task_runner),
-                             time_source) {}
-
-  ~ThreadControllerForTest() override = default;
-
-  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override {
-    if (!message_loop_)
-      return;
-    ThreadControllerImpl::AddNestingObserver(observer);
-  }
-  void RemoveNestingObserver(
-      base::RunLoop::NestingObserver* observer) override {
-    if (!message_loop_)
-      return;
-    ThreadControllerImpl::RemoveNestingObserver(observer);
-  }
-};
 
 class TaskQueueManagerTest : public ::testing::Test {
  public:
@@ -111,9 +73,8 @@ class TaskQueueManagerTest : public ::testing::Test {
     test_task_runner_ =
         base::WrapRefCounted(new cc::OrderedSimpleTaskRunner(&now_src_, false));
 
-    manager_ = std::make_unique<TaskQueueManagerForTest>(
-        std::make_unique<ThreadControllerForTest>(
-            nullptr, test_task_runner_.get(), &now_src_));
+    manager_ = TaskQueueManagerForTest::Create(nullptr, test_task_runner_.get(),
+                                               &now_src_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -124,10 +85,8 @@ class TaskQueueManagerTest : public ::testing::Test {
     original_message_loop_task_runner_ = message_loop_->task_runner();
     // A null clock triggers some assertions.
     now_src_.Advance(base::TimeDelta::FromMicroseconds(1000));
-    manager_ = std::make_unique<TaskQueueManagerForTest>(
-        std::make_unique<ThreadControllerForTest>(
-            message_loop_.get(), GetSingleThreadTaskRunnerForTesting(),
-            &now_src_));
+    manager_ = TaskQueueManagerForTest::Create(
+        message_loop_.get(), GetSingleThreadTaskRunnerForTesting(), &now_src_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -151,8 +110,7 @@ class TaskQueueManagerTest : public ::testing::Test {
   void RunUntilIdle(base::RepeatingClosure per_run_time_callback) {
     for (;;) {
       // Advance time if we've run out of immediate work to do.
-      if (manager_->main_thread_only()
-              .selector.AllEnabledWorkQueuesAreEmpty()) {
+      if (!manager_->HasImmediateWork()) {
         base::TimeTicks run_time;
         if (manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time)) {
           now_src_.SetNowTicks(run_time);
@@ -202,10 +160,9 @@ TEST_F(TaskQueueManagerTest,
   // pointer to this object to read out how many times Now was called.
   TestCountUsesTimeSource test_count_uses_time_source;
 
-  manager_ = std::make_unique<TaskQueueManagerForTest>(
-      std::make_unique<ThreadControllerForTest>(
-          nullptr, GetSingleThreadTaskRunnerForTesting(),
-          &test_count_uses_time_source));
+  manager_ = TaskQueueManagerForTest::Create(
+      nullptr, GetSingleThreadTaskRunnerForTesting(),
+      &test_count_uses_time_source);
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -231,10 +188,9 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
   // pointer to this object to read out how many times Now was called.
   TestCountUsesTimeSource test_count_uses_time_source;
 
-  manager_ = std::make_unique<TaskQueueManagerForTest>(
-      std::make_unique<ThreadControllerForTest>(message_loop_.get(),
-                                                message_loop_->task_runner(),
-                                                &test_count_uses_time_source));
+  manager_ = TaskQueueManagerForTest::Create(message_loop_.get(),
+                                             message_loop_->task_runner(),
+                                             &test_count_uses_time_source);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   runners_.push_back(CreateTaskQueue());
@@ -3200,9 +3156,9 @@ TEST_F(TaskQueueManagerTest, DefaultTaskRunnerSupport) {
   scoped_refptr<base::SingleThreadTaskRunner> custom_task_runner =
       base::MakeRefCounted<base::TestSimpleTaskRunner>();
   {
-    std::unique_ptr<TaskQueueManagerForTest> manager(
-        new TaskQueueManagerForTest(std::make_unique<ThreadControllerForTest>(
-            &message_loop, message_loop.task_runner(), nullptr)));
+    std::unique_ptr<TaskQueueManagerForTest> manager =
+        TaskQueueManagerForTest::Create(&message_loop,
+                                        message_loop.task_runner(), nullptr);
     manager->SetDefaultTaskRunner(custom_task_runner);
     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
   }
@@ -3352,6 +3308,5 @@ TEST_F(TaskQueueManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
   test_executed.Wait();
 }
 
-}  // namespace task_queue_manager_unittest
 }  // namespace scheduler
 }  // namespace blink

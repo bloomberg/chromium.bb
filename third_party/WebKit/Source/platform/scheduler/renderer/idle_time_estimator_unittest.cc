@@ -11,7 +11,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +44,7 @@ class IdleTimeEstimatorTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     manager_ =
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_);
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_);
     compositor_task_queue_ =
         manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("test_tq"));
     estimator_.reset(

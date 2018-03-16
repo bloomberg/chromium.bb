@@ -9,7 +9,6 @@
 #include "platform/WaitableEvent.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/scheduler/child/webthread_base.h"
@@ -42,14 +41,15 @@ TestingPlatformSupportWithMockScheduler::
 TestingPlatformSupportWithMockScheduler::
     TestingPlatformSupportWithMockScheduler(const Config& config)
     : TestingPlatformSupport(config),
-      mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
-      scheduler_(new scheduler::RendererSchedulerImpl(
-          scheduler::CreateTaskQueueManagerForTest(nullptr,
-                                                   mock_task_runner_,
-                                                   &clock_),
-          base::nullopt)),
-      thread_(scheduler_->CreateMainThread()) {
+      mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)) {
   DCHECK(IsMainThread());
+  std::unique_ptr<scheduler::TaskQueueManagerForTest> task_queue_manager =
+      scheduler::TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,
+                                                 &clock_);
+  task_queue_manager_ = task_queue_manager.get();
+  scheduler_ = std::make_unique<scheduler::RendererSchedulerImpl>(
+      std::move(task_queue_manager), base::nullopt);
+  thread_ = scheduler_->CreateMainThread();
   // Set the work batch size to one so RunPendingTasks behaves as expected.
   scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
 
@@ -102,16 +102,12 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
   const base::TimeTicks deadline =
       clock_.NowTicks() + base::TimeDelta::FromSecondsD(seconds);
 
-  scheduler::TaskQueueManager* task_queue_manager =
-      scheduler_->GetSchedulerHelperForTesting()
-          ->GetTaskQueueManagerForTesting();
-
   for (;;) {
     // If we've run out of immediate work then fast forward to the next delayed
     // task, but don't pass |deadline|.
-    if (!task_queue_manager->HasImmediateWorkForTesting()) {
+    if (!task_queue_manager_->HasImmediateWork()) {
       base::TimeTicks next_delayed_task;
-      if (!task_queue_manager->GetRealTimeDomain()->NextScheduledRunTime(
+      if (!task_queue_manager_->GetRealTimeDomain()->NextScheduledRunTime(
               &next_delayed_task) ||
           next_delayed_task > deadline) {
         break;

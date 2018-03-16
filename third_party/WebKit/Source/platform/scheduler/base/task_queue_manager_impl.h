@@ -45,10 +45,6 @@ class TaskQueueImpl;
 class ThreadController;
 }  // namespace internal
 
-namespace task_queue_manager_unittest {
-class TaskQueueManagerTest;
-}  // namespace task_queue_manager_unittest
-
 class LazyNow;
 class RealTimeDomain;
 class TaskQueue;
@@ -106,8 +102,6 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void SetWorkBatchSize(int work_batch_size) override;
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
-  size_t GetNumberOfPendingTasks() const override;
-  bool HasImmediateWorkForTesting() const override;
 
   // Implementation of SequencedTaskSource:
   base::Optional<base::PendingTask> TakeTask() override;
@@ -156,22 +150,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
       std::unique_ptr<internal::ThreadController> controller);
 
   friend class internal::TaskQueueImpl;
-  friend class task_queue_manager_unittest::TaskQueueManagerTest;
-
- protected:
-  // Protected functions for testing.
-  size_t ActiveQueuesCount() { return main_thread_only().active_queues.size(); }
-
-  size_t QueuesToShutdownCount() {
-    TakeQueuesToGracefullyShutdownFromHelper();
-    return main_thread_only().queues_to_gracefully_shutdown.size();
-  }
-
-  size_t QueuesToDeleteCount() {
-    return main_thread_only().queues_to_delete.size();
-  }
-
-  void SetRandomSeed(uint64_t seed);
+  friend class TaskQueueManagerForTest;
 
  private:
   enum class ProcessTaskResult {

@@ -17,7 +17,7 @@
 #include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +40,7 @@ class PageSchedulerImplTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_.reset(new RendererSchedulerImpl(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(
         nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
