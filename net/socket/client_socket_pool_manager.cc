@@ -185,7 +185,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
           origin_host_port, session->http_auth_cache(),
           session->http_auth_handler_factory(), session->spdy_session_pool(),
           session->quic_stream_factory(), proxy_server.is_trusted_proxy(),
-          force_tunnel || using_ssl);
+          force_tunnel || using_ssl,
+          NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
       DCHECK(proxy_info.is_socks());
       char socks_version;

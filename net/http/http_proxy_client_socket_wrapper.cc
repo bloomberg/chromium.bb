@@ -51,6 +51,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     QuicStreamFactory* quic_stream_factory,
     bool is_trusted_proxy,
     bool tunnel,
+    const NetworkTrafficAnnotationTag& traffic_annotation,
     const NetLogWithSource& net_log)
     : next_state_(STATE_NONE),
       group_name_(group_name),
@@ -82,7 +83,8 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
                  : nullptr),
       net_log_(NetLogWithSource::Make(
           net_log.net_log(),
-          NetLogSourceType::PROXY_CLIENT_SOCKET_WRAPPER)) {
+          NetLogSourceType::PROXY_CLIENT_SOCKET_WRAPPER)),
+      traffic_annotation_(traffic_annotation) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       net_log.source().ToEventParametersCallback());
   // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
@@ -570,7 +572,7 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
   transport_socket_.reset(new HttpProxyClientSocket(
       std::move(transport_socket_handle_), user_agent_, endpoint_,
       http_auth_controller_.get(), tunnel_, using_spdy_, negotiated_protocol_,
-      ssl_params_.get() != nullptr));
+      ssl_params_.get() != nullptr, traffic_annotation_));
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }
@@ -608,14 +610,13 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  // TODO(https://crbug.com/656607): Add proper annotation here.
   return spdy_stream_request_.StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
       GURL("https://" + endpoint_.ToString()), priority_, initial_socket_tag_,
       spdy_session->net_log(),
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      traffic_annotation_);
 }
 
 int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStreamComplete(int result) {

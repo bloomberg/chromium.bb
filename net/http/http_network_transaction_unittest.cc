@@ -4616,6 +4616,8 @@ class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& /*net_log*/) override {
     *results = ProxyInfo();
+    results->set_traffic_annotation(
+        MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     if (url.path() == "/socks4") {
       results->UsePacString("SOCKS " + ProxyHostPortPairAsString());
       return OK;

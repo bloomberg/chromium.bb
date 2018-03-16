@@ -75,6 +75,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       QuicStreamFactory* quic_stream_factory,
       bool is_trusted_proxy,
       bool tunnel,
+      const NetworkTrafficAnnotationTag& traffic_annotation,
       const NetLogWithSource& net_log);
 
   // On destruction Disconnect() is called.
@@ -227,6 +228,9 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   NetErrorDetails quic_net_error_details_;
 
   base::OneShotTimer connect_timer_;
+
+  // Network traffic annotation for handshaking and setup.
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   // Time when the connection to the proxy was started.
   base::TimeTicks connect_start_time_;

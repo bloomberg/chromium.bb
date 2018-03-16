@@ -11,6 +11,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -29,7 +30,8 @@ TEST(HttpProxyClientSocketTest, Tag) {
   // non-owning pointer to it.
   connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
   HttpProxyClientSocket socket(std::move(connection), "", HostPortPair(),
-                               nullptr, false, false, NextProto(), false);
+                               nullptr, false, false, NextProto(), false,
+                               TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)

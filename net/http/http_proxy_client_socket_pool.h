@@ -23,6 +23,7 @@
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/chromium/spdy_session.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -57,7 +58,8 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       SpdySessionPool* spdy_session_pool,
       QuicStreamFactory* quic_stream_factory,
       bool is_trusted_proxy,
-      bool tunnel);
+      bool tunnel,
+      const NetworkTrafficAnnotationTag traffic_annotation);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
@@ -81,6 +83,9 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const HostResolver::RequestInfo& destination() const;
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
+  const NetworkTrafficAnnotationTag traffic_annotation() const {
+    return traffic_annotation_;
+  }
 
  private:
   friend class base::RefCounted<HttpProxySocketParams>;
@@ -97,6 +102,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
   const bool is_trusted_proxy_;
   const bool tunnel_;
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);
 };
