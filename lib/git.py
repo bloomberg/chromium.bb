@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import collections
+import datetime
 import errno
 import hashlib
 import os
@@ -850,6 +851,33 @@ def Clone(git_repo, git_url, branch=None):
   if branch:
     cmd += ['-b', branch]
   RunGit(git_repo, cmd)
+
+
+def ShallowFetch(git_repo, git_url, sparse_checkout=None):
+  """Fetch a shallow git repository.
+
+  Args:
+    git_repo: Path of the git repo.
+    git_url: Url to fetch the git repository from.
+    sparse_checkout: List of file paths to fetch.
+  """
+  Init(git_repo)
+  RunGit(git_repo, ['remote', 'add', 'origin', git_url])
+  if sparse_checkout is not None:
+    assert isinstance(sparse_checkout, list)
+    RunGit(git_repo, ['config', 'core.sparsecheckout', 'true'])
+    osutils.WriteFile(os.path.join(git_repo, '.git/info/sparse-checkout'),
+                      '\n'.join(sparse_checkout))
+
+  utcnow = datetime.datetime.utcnow
+  start = utcnow()
+  # Only fetch TOT git metadata without revision history.
+  RunGit(git_repo, ['fetch', '--depth=1'],
+         print_cmd=True, redirect_stderr=True, capture_output=False)
+  # Pull the files in sparse_checkout.
+  RunGit(git_repo, ['pull', 'origin', 'master'],
+         print_cmd=True, redirect_stderr=True, capture_output=False)
+  logging.info('ShallowFetch completed in %s.', utcnow() - start)
 
 
 def GetProjectUserEmail(git_repo):

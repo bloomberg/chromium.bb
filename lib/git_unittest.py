@@ -15,6 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import patch_unittest
 
@@ -138,6 +139,26 @@ class GitWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     # Should have created the git repo directory, if it didn't exist.
     self.assertExists(self.fake_git_dir)
     self.assertCommandContains(['clone', url, self.fake_git_dir])
+
+  def testShallowFetch(self):
+    url = 'http://happy/git/repo'
+
+    sparse_checkout = os.path.join(self.fake_git_dir,
+                                   '.git', 'info', 'sparse-checkout')
+    osutils.SafeMakedirs(os.path.dirname(sparse_checkout))
+
+    git.ShallowFetch(self.fake_git_dir, url,
+                     sparse_checkout=['dir1/file1', 'dir2/file2'])
+
+    # Should have created the git repo directory, if it didn't exist.
+    self.assertExists(self.fake_git_dir)
+    self.assertCommandContains(['init'])
+    self.assertCommandContains(['config', 'core.sparsecheckout', 'true'])
+    self.assertCommandContains(['remote', 'add', 'origin', url])
+    self.assertCommandContains(['fetch', '--depth=1'])
+    self.assertCommandContains(['pull', 'origin', 'master'])
+    self.assertEquals(osutils.ReadFile(sparse_checkout),
+                      'dir1/file1\ndir2/file2')
 
   def testAddPath(self):
     git.AddPath(self.fake_path)

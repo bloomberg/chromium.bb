@@ -3,12 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Update the CHROMEOS_LKGM file in a chromium repository.
-
-Note: this borrows heavily from cros_best_revision.py. TODO(stevenjb) Remove
-cros_best_revision.py once this replaces it and the Chrome LKGM builder is
-turned down.
-"""
+"""Update the CHROMEOS_LKGM file in a chromium repository."""
 
 from __future__ import print_function
 
@@ -39,55 +34,49 @@ class ChromeLKGMCommitter(object):
   _COMMIT_MSG_TEMPLATE = ('Automated Commit: New LKGM version '
                           '%(version)s for chromeos.\n\nBUG=762641')
 
-  def __init__(self, checkout_dir, lkgm, dryrun, user_email):
-    self._checkout_dir = checkout_dir
+  def __init__(self, args):
+    self._checkout_dir = args.workdir
     # Strip any chrome branch from the lkgm version.
-    self._lkgm = manifest_version.VersionInfo(lkgm).VersionString()
-    self._dryrun = dryrun
-    self._git_committer_args = ['-c', 'user.email=%s' % user_email,
-                                '-c', 'user.name=%s' % user_email]
+    self._lkgm = manifest_version.VersionInfo(args.lkgm).VersionString()
+    self._dryrun = args.dryrun
+    self._git_committer_args = ['-c', 'user.email=%s' % args.user_email,
+                                '-c', 'user.name=%s' % args.user_email]
     self._commit_msg = ''
     self._old_lkgm = None
 
-    logging.info('lkgm=%s', lkgm)
-    logging.info('user_email=%s', user_email)
-    logging.info('checkout_dir=%s', checkout_dir)
-
-  def Run(self):
-    try:
-      self.CheckoutChromeLKGM()
-      self.CommitNewLKGM()
-      self.UploadNewLKGM()
-    except LKGMNotCommitted as e:
-      # TODO(stevenjb): Do not catch exceptions (i.e. fail) once this works.
-      logging.warning('LKGM Commit failed: %r' % e)
-    finally:
-      self.Cleanup()
-
-  def CheckoutChromeLKGM(self):
-    """Checkout CHROMEOS_LKGM file for chrome into tmp checkout dir."""
-    # TODO(stevenjb): if checkout_dir exists, use 'fetch --depth 1' and
-    # 'checkout -f origin/master' instead of 'clone --depth 1'.
-    self.Cleanup()
-
-    cros_build_lib.RunCommand(
-        ['git', 'clone', '--depth', '1', constants.CHROMIUM_GOB_URL,
-         self._checkout_dir])
-
-    cros_build_lib.RunCommand(
-        ['git', 'branch', '-D', 'lkgm-roll'], cwd=self._checkout_dir,
-        error_code_ok=True)
-    cros_build_lib.RunCommand(
-        ['git', 'checkout', '-b', 'lkgm-roll', 'origin/master'],
-        cwd=self._checkout_dir)
-
-    self._old_lkgm = osutils.ReadFile(
-        os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM))
-
-  def CommitNewLKGM(self):
-    """Commits the new LKGM file using our template commit message."""
     if not self._lkgm:
       raise LKGMNotValid('LKGM not provided.')
+
+    logging.info('lkgm=%s', args.lkgm)
+    logging.info('user_email=%s', args.user_email)
+    logging.info('checkout_dir=%s', args.workdir)
+
+  def __del__(self):
+    self.Cleanup()
+
+  def Run(self):
+    self.Cleanup()
+    self.CheckoutChrome()
+    self.UpdateLKGM()
+    self.CommitNewLKGM()
+    self.UploadNewLKGM()
+
+  def CheckoutChrome(self):
+    """Checks out chrome into tmp checkout_dir."""
+    git.ShallowFetch(self._checkout_dir, constants.CHROMIUM_GOB_URL,
+                     sparse_checkout=['codereview.settings',
+                                      constants.PATH_TO_CHROME_LKGM])
+    git.CreateBranch(self._checkout_dir, 'lkgm-roll',
+                     branch_point='origin/master')
+
+  @property
+  def lkgm_file(self):
+    return os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM)
+
+  def UpdateLKGM(self):
+    """Updates the LKGM file with the new version."""
+    self._old_lkgm = osutils.ReadFile(
+        os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM))
 
     lv = distutils.version.LooseVersion
     if self._old_lkgm is not None and not lv(self._lkgm) > lv(self._old_lkgm):
@@ -95,17 +84,17 @@ class ChromeLKGMCommitter(object):
           'LKGM version (%s) is not newer than current version (%s).' %
           (self._lkgm, self._old_lkgm))
 
-    logging.info('Committing LKGM version: %s (was %s),',
+    logging.info('Updating LKGM version: %s (was %s),',
                  self._lkgm, self._old_lkgm)
+    osutils.WriteFile(self.lkgm_file, self._lkgm)
+
+  def CommitNewLKGM(self):
+    """Commits the new LKGM file using our template commit message."""
     self._commit_msg = self._COMMIT_MSG_TEMPLATE % dict(version=self._lkgm)
-    checkout_dir = self._checkout_dir
     try:
-      # Overwrite the lkgm file and commit it.
-      file_path = os.path.join(checkout_dir, constants.PATH_TO_CHROME_LKGM)
-      osutils.WriteFile(file_path, self._lkgm)
-      git.AddPath(file_path)
+      git.AddPath(self.lkgm_file)
       commit_args = ['commit', '-m', self._commit_msg]
-      git.RunGit(checkout_dir, self._git_committer_args + commit_args,
+      git.RunGit(self._checkout_dir, self._git_committer_args + commit_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted(
@@ -141,21 +130,25 @@ class ChromeLKGMCommitter(object):
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # Log the change for debugging.
-      cros_build_lib.RunCommand(['git', 'log', '--pretty=full'],
-                                cwd=self._checkout_dir)
+      git.RunGit(self._checkout_dir, ['--no-pager', 'log', '--pretty=full'],
+                 capture_output=False)
       raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
 
     logging.info('LKGM submitted to CQ.')
 
   def Cleanup(self):
     """Remove chrome checkout."""
-    osutils.RmDir(self._checkout_dir, ignore_missing=True)
+    if hasattr(self, '_checkout_dir'):
+      osutils.RmDir(self._checkout_dir, ignore_missing=True)
 
 def GetArgs(argv):
-  """Returns parsed command line args.
+  """Returns a dictionary of parsed args.
 
   Args:
-    argv: command line.
+    argv: raw command line.
+
+  Returns:
+    Dictionary of parsed args.
   """
   parser = commandline.ArgumentParser(usage=__doc__, caching=True)
   parser.add_argument('--dryrun', action='store_true', default=False,
@@ -172,9 +165,5 @@ def GetArgs(argv):
   return parser.parse_args(argv)
 
 def main(argv):
-  args = GetArgs(argv)
-  committer = ChromeLKGMCommitter(args.workdir, lkgm=args.lkgm,
-                                  dryrun=args.dryrun,
-                                  user_email=args.user_email)
-  committer.Run()
+  ChromeLKGMCommitter(GetArgs(argv)).Run()
   return 0
