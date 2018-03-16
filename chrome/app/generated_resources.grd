@@ -1908,11 +1908,11 @@ are declared in build/common.gypi.
 
       <!-- Ambient badge -->
       <if expr="is_android">
-        <message name="IDS_AMBIENT_BADGE_INSTALL" desc="String for the ambient badge promoting an app installation" formatter_data="android_java">
-          Add to Home screen
+        <message name="IDS_AMBIENT_BADGE_INSTALL" desc="String for the ambient badge promoting an app installation">
+          Add <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> to Home screen
         </message>
-        <message name="IDS_AMBIENT_BADGE_OPEN" desc="String for the ambient badge promoting opening an installed app" formatter_data="android_java">
-          Open in app
+        <message name="IDS_AMBIENT_BADGE_OPEN" desc="String for the ambient badge promoting opening an installed app">
+          Open <ph name="APP_NAME">$1<ex>Google Maps</ex></ph>
         </message>
       </if>
       <!-- Bookmark app bubble -->

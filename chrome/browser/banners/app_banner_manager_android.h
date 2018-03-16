@@ -123,6 +123,9 @@ class AppBannerManagerAndroid
                                        const GURL& url,
                                        const std::string& id);
 
+  // Returns the appropriate app name based on whether we have a native/web app.
+  const base::string16 GetAppNameForAmbientBadge() const;
+
   // Shows the ambient badge if the current page advertises a native app or is
   // a PWA.
   void ShowAmbientBadge(bool is_installed);

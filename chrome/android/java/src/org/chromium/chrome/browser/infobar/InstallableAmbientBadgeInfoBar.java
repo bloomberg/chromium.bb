@@ -32,15 +32,17 @@ import org.chromium.webapk.lib.client.WebApkValidator;
  * An ambient infobar to tell the user that the current site they are visiting is a PWA.
  */
 public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnClickListener {
+    private String mMessageText;
     private String mUrl;
     private boolean mIsInstalled;
     private boolean mIsHiding;
 
     @CalledByNative
-    private static InfoBar show(
-            int enumeratedIconId, Bitmap iconBitmap, String url, boolean isInstalled) {
+    private static InfoBar show(int enumeratedIconId, Bitmap iconBitmap, String messageText,
+            String url, boolean isInstalled) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmap, url, isInstalled);
+        return new InstallableAmbientBadgeInfoBar(
+                drawableId, iconBitmap, messageText, url, isInstalled);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
         TextView prompt = new AccessibleTextView(getContext());
 
         Resources res = layout.getResources();
-        prompt.setText(mIsInstalled ? R.string.ambient_badge_open : R.string.ambient_badge_install);
+        prompt.setText(mMessageText);
         prompt.setTextSize(TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.infobar_text_size));
         prompt.setTextColor(ApiCompatibilityUtils.getColor(res, R.color.google_blue_700));
         prompt.setGravity(Gravity.CENTER_VERTICAL);
@@ -104,11 +106,13 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
      * Creates the infobar.
      * @param iconDrawableId    Drawable ID corresponding to the icon that the infobar will show.
      * @param iconBitmap        Bitmap of the icon to display in the infobar.
+     * @param messageText       String to display
      * @param isInstalled       Whether the associated app is installed.
      */
-    private InstallableAmbientBadgeInfoBar(
-            int iconDrawableId, Bitmap iconBitmap, String url, boolean isInstalled) {
+    private InstallableAmbientBadgeInfoBar(int iconDrawableId, Bitmap iconBitmap,
+            String messageText, String url, boolean isInstalled) {
         super(iconDrawableId, iconBitmap, null);
+        mMessageText = messageText;
         mUrl = url;
         mIsInstalled = isInstalled;
     }
