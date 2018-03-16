@@ -38,6 +38,7 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #include <xf86drm.h>
 
@@ -877,30 +878,32 @@ main(int argc, char **argv)
 	struct window *window;
 	int opts = 0;
 	int import_format = DRM_FORMAT_XRGB8888;
-	int ret = 0, i = 0;
+	int c, option_index, ret = 0;
 
-	if (argc > 1) {
-		static const char import_mode[] = "--import-immediate=";
-		static const char format[] = "--import-format=";
-		static const char y_inverted[] = "--y-inverted=";
-		for (i = 1; i < argc; i++) {
-			if (!strncmp(argv[i], import_mode,
-				     sizeof(import_mode) - 1)) {
-				if (is_true(argv[i] + sizeof(import_mode) - 1))
-					opts |= OPT_IMMEDIATE;
-			}
-			else if (!strncmp(argv[i], format, sizeof(format) - 1)) {
-				import_format = parse_import_format(argv[i]
-							+ sizeof(format) - 1);
-			}
-			else if (!strncmp(argv[i], y_inverted,
-					  sizeof(y_inverted) - 1)) {
-				if (is_true(argv[i] + sizeof(y_inverted) - 1))
-					opts |= OPT_Y_INVERTED;
-			}
-			else {
-				print_usage_and_exit();
-			}
+	static struct option long_options[] = {
+		{"import-format",    required_argument, 0,  'f' },
+		{"import-immediate", required_argument, 0,  'i' },
+		{"y-inverted",       required_argument, 0,  'y' },
+		{"help",             no_argument      , 0,  'h' },
+		{0, 0, 0, 0}
+	};
+
+	while ((c = getopt_long(argc, argv, "hf:i:y:",
+				  long_options, &option_index)) != -1) {
+		switch (c) {
+		case 'f':
+			import_format = parse_import_format(optarg);
+			break;
+		case 'i':
+			if (is_true(optarg))
+				opts |= OPT_IMMEDIATE;
+			break;
+		case 'y':
+			if (is_true(optarg))
+				opts |= OPT_Y_INVERTED;
+			break;
+		default:
+			print_usage_and_exit();
 		}
 	}
 
