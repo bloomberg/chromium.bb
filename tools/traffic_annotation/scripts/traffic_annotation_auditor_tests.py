@@ -9,14 +9,13 @@
 import os
 import argparse
 import sys
-import subprocess
 
 from annotation_tools import NetworkTrafficAnnotationTools
 
 # If this test starts failing, please set TEST_IS_ENABLED to "False" and file a
 # bug to get this reenabled, and cc the people listed in
 # //tools/traffic_annotation/OWNERS.
-TEST_IS_ENABLED = True
+TEST_IS_ENABLED = False
 
 
 class TrafficAnnotationTestsChecker():
@@ -44,13 +43,6 @@ class TrafficAnnotationTestsChecker():
       print(stderr_text)
     return return_code
 
-# TODO(rhalavati): Remove this code.
-def RunDiagnostics(build_path):
-  subprocess.call(["ls", os.path.join(build_path, "gen")])
-  print("---")
-  subprocess.call(["ls", os.path.join(build_path,
-                                      "gen/net/data/ssl/certificates")])
-
 
 def main():
   if not TEST_IS_ENABLED:
@@ -65,9 +57,6 @@ def main():
            'found.')
 
   args = parser.parse_args()
-  RunDiagnostics(args.build_path)
-  return 0
-
   checker = TrafficAnnotationTestsChecker(args.build_path)
   return checker.RunAllTests()
 
