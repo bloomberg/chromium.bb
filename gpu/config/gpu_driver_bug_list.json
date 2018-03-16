@@ -2863,6 +2863,23 @@
       "features": [
         "init_gl_position_in_vertex_shader"
       ]
+    },
+    {
+      "id": 265,
+      "cr_bugs": [811661],
+      "description": "Crash in glQueryCounter() in VMware driver",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x15ad",
+      "device_id": ["0x0405"],
+      "features": [
+        "disable_timestamp_queries"
+      ],
+      "disabled_extensions": [
+        "GL_EXT_disjoint_timer_query",
+        "GL_EXT_disjoint_timer_query_webgl2"
+      ]
     }
   ]
 }
