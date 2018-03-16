@@ -105,94 +105,6 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-// Vends data pipes to read a Blob. It stays alive until all Mojo connections
-// close.
-class DataPipeGetter : public network::mojom::DataPipeGetter {
- public:
-  DataPipeGetter(blink::mojom::BlobPtr blob,
-                 network::mojom::DataPipeGetterRequest request) {
-    // If a sync XHR is doing the upload, then the main thread will be blocked.
-    // So we must bind on a background thread, otherwise the methods below will
-    // never be called and the process will hang.
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::TaskPriority::USER_VISIBLE,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DataPipeGetter::BindInternal, base::Unretained(this),
-                       blob.PassInterface(), std::move(request)));
-  }
-  ~DataPipeGetter() override = default;
-
- private:
-  class BlobReaderClient : public blink::mojom::BlobReaderClient {
-   public:
-    explicit BlobReaderClient(ReadCallback callback)
-        : callback_(std::move(callback)) {
-      DCHECK(!callback_.is_null());
-    }
-    ~BlobReaderClient() override = default;
-
-    // blink::mojom::BlobReaderClient implementation:
-    void OnCalculatedSize(uint64_t total_size,
-                          uint64_t expected_content_size) override {
-      // Check if null since it's conceivable OnComplete() was already called
-      // with error.
-      if (!callback_.is_null())
-        std::move(callback_).Run(net::OK, total_size);
-    }
-    void OnComplete(int32_t status, uint64_t data_length) override {
-      // Check if null since OnCalculatedSize() may have already been called
-      // and an error occurred later.
-      if (!callback_.is_null() && status != net::OK) {
-        // On error, signal failure immediately. On success, OnCalculatedSize()
-        // is guaranteed to be called, and the result will be signaled from
-        // there.
-        std::move(callback_).Run(status, 0);
-      }
-    }
-
-   private:
-    ReadCallback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(BlobReaderClient);
-  };
-
-  void BindInternal(blink::mojom::BlobPtrInfo blob,
-                    network::mojom::DataPipeGetterRequest request) {
-    bindings_.set_connection_error_handler(base::BindRepeating(
-        &DataPipeGetter::OnConnectionError, base::Unretained(this)));
-    bindings_.AddBinding(this, std::move(request));
-    blob_.Bind(std::move(blob));
-  }
-
-  void OnConnectionError() {
-    if (bindings_.empty())
-      delete this;
-  }
-
-  // network::mojom::DataPipeGetter implementation:
-  void Read(mojo::ScopedDataPipeProducerHandle handle,
-            ReadCallback callback) override {
-    blink::mojom::BlobReaderClientPtr blob_reader_client_ptr;
-    mojo::MakeStrongBinding(
-        std::make_unique<BlobReaderClient>(std::move(callback)),
-        mojo::MakeRequest(&blob_reader_client_ptr));
-    blob_->ReadAll(std::move(handle), std::move(blob_reader_client_ptr));
-  }
-
-  void Clone(network::mojom::DataPipeGetterRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  blink::mojom::BlobPtr blob_;
-  mojo::BindingSet<network::mojom::DataPipeGetter> bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataPipeGetter);
-};
-
 }  // namespace
 
 ResourceType WebURLRequestContextToResourceType(
@@ -480,9 +392,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
                                         blink::mojom::Blob::Version_));
 
           network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-          // Object deletes itself.
-          new DataPipeGetter(std::move(blob_ptr),
-                             MakeRequest(&data_pipe_getter_ptr));
+          blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
 
           request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
         } else {

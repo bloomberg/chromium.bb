@@ -47,6 +47,11 @@ class MockBlob : public blink::mojom::Blob {
                             std::move(request));
   }
 
+  void AsDataPipeGetter(
+      network::mojom::DataPipeGetterRequest request) override {
+    NOTREACHED();
+  }
+
   void ReadRange(uint64_t offset,
                  uint64_t size,
                  mojo::ScopedDataPipeProducerHandle,

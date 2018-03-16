@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 
 // Interface that can be implemented to be informed of certain information while
@@ -29,6 +30,9 @@ interface BlobReaderClient {
 interface Blob {
   // Creates a copy of this Blob reference.
   Clone(Blob& blob);
+
+  // Creates a reference to this Blob as a DataPipeGetter.
+  AsDataPipeGetter(network.mojom.DataPipeGetter& data_pipe_getter);
 
   // Causes the entire contents of this blob to be written into the given data
   // pipe. An optional BlobReaderClient will be informed of the result of the

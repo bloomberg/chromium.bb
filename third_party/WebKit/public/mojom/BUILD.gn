@@ -38,6 +38,10 @@ mojom("mojom_platform") {
     "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
+
+    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
+    # get fixed.
+    "//services/network/public/mojom:data_pipe_interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
