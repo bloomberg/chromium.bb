@@ -67,7 +67,7 @@ weston-nested-client
 weston-presentation-shm
 weston-resizor
 weston-scaler
-weston-simple-dmabuf-intel
+weston-simple-dmabuf-drm
 weston-simple-dmabuf-v4l
 weston-simple-egl
 weston-simple-shm
