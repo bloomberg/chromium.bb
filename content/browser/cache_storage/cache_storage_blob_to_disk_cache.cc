@@ -19,7 +19,9 @@ namespace content {
 const int CacheStorageBlobToDiskCache::kBufferSize = 1024 * 512;
 
 CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
-    : handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+    : handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      base::SequencedTaskRunnerHandle::Get()),
       client_binding_(this),
       weak_ptr_factory_(this) {}
 

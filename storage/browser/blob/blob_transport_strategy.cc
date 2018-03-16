@@ -103,7 +103,9 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
                             const BlobStorageLimits& limits)
       : BlobTransportStrategy(builder, std::move(result_callback)),
         limits_(limits),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {}
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                 base::SequencedTaskRunnerHandle::Get()) {}
 
   void AddBytesElement(blink::mojom::DataElementBytes* bytes,
                        const blink::mojom::BytesProviderPtr& data) override {

@@ -1284,7 +1284,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
   // Wait on handle 1 using a SimpleWatcher.
   {
     base::RunLoop run_loop;
-    SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                          base::SequencedTaskRunnerHandle::Get());
     watcher.Watch(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                   base::Bind(
                       [](base::RunLoop* loop, MojoResult result) {

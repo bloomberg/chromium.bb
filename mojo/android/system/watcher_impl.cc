@@ -23,7 +23,10 @@ namespace {
 
 class WatcherImpl {
  public:
-  WatcherImpl() : watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC) {}
+  WatcherImpl()
+      : watcher_(FROM_HERE,
+                 SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                 base::SequencedTaskRunnerHandle::Get()) {}
 
   ~WatcherImpl() = default;
 

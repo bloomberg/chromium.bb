@@ -21,7 +21,9 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
       : meta_data_(std::move(meta_data)),
         bytes_sent_(0),
         handle_(std::move(handle)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                 base::SequencedTaskRunnerHandle::Get()),
         weak_factory_(this) {}
 
   void Start(base::OnceCallback<void(bool /* success */)> callback) {
@@ -82,7 +84,9 @@ ServiceWorkerInstalledScriptReader::ServiceWorkerInstalledScriptReader(
     Client* client)
     : reader_(std::move(reader)),
       client_(client),
-      body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      body_watcher_(FROM_HERE,
+                    mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                    base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
 ServiceWorkerInstalledScriptReader::~ServiceWorkerInstalledScriptReader() {}

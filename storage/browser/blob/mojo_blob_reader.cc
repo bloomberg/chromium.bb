@@ -25,9 +25,11 @@ MojoBlobReader::MojoBlobReader(const BlobDataHandle* handle,
       byte_range_(range),
       blob_reader_(handle->CreateReader()),
       writable_handle_watcher_(FROM_HERE,
-                               mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+                               mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                               base::SequencedTaskRunnerHandle::Get()),
       peer_closed_handle_watcher_(FROM_HERE,
-                                  mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+                                  mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                                  base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobReader", this, "uuid", handle->uuid());
   DCHECK(delegate_);

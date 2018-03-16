@@ -488,6 +488,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
   explicit FetchDataLoaderAsDataPipe(
       mojo::ScopedDataPipeProducerHandle out_data_pipe)
       : out_data_pipe_(std::move(out_data_pipe)),
+        // TODO(hajimehoshi): Pass a per-frame task runner to SimpleWatcher
+        // constructor.
         data_pipe_watcher_(FROM_HERE,
                            mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
   ~FetchDataLoaderAsDataPipe() override {}

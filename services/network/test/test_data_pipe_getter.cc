@@ -37,7 +37,8 @@ void TestDataPipeGetter::Read(mojo::ScopedDataPipeProducerHandle pipe,
   write_position_ = 0;
   pipe_ = std::move(pipe);
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
-      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+      base::SequencedTaskRunnerHandle::Get());
   handle_watcher_->Watch(
       pipe_.get(),
       // Don't bother watching for close - rely on read pipes for errors.

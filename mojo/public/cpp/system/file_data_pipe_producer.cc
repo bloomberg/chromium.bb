@@ -107,7 +107,8 @@ class FileDataPipeProducer::FileSequenceState
       // If we didn't nail it all on the first transaction attempt, setup a
       // watcher and complete the read asynchronously.
       watcher_ = std::make_unique<SimpleWatcher>(
-          FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC);
+          FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC,
+          base::SequencedTaskRunnerHandle::Get());
       watcher_->Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                       MOJO_WATCH_CONDITION_SATISFIED,
                       base::Bind(&FileSequenceState::OnHandleReady, this));

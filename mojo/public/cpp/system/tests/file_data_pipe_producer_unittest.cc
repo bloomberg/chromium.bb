@@ -35,7 +35,9 @@ class DataPipeReader {
       : consumer_handle_(std::move(consumer_handle)),
         read_size_(read_size),
         on_read_done_(std::move(on_read_done)),
-        watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC) {
+        watcher_(FROM_HERE,
+                 SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                 base::SequencedTaskRunnerHandle::Get()) {
     watcher_.Watch(
         consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
         MOJO_WATCH_CONDITION_SATISFIED,

@@ -104,7 +104,9 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
       rdh_(rdh),
       binding_(this, std::move(mojo_request)),
       url_loader_options_(url_loader_options),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      base::SequencedTaskRunnerHandle::Get()),
       url_loader_client_(std::move(url_loader_client)),
       weak_factory_(this) {
   DCHECK(IsResourceTypeFrame(resource_type) ||

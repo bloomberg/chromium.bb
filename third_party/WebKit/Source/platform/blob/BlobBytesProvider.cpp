@@ -24,7 +24,9 @@ class BlobBytesStreamer {
                     mojo::ScopedDataPipeProducerHandle pipe)
       : data_(std::move(data)),
         pipe_(std::move(pipe)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                 base::SequencedTaskRunnerHandle::Get()) {
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                    WTF::BindRepeating(&BlobBytesStreamer::OnWritable,
                                       WTF::Unretained(this)));

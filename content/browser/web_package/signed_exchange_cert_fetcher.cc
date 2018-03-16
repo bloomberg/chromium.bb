@@ -328,7 +328,8 @@ void SignedExchangeCertFetcher::OnStartLoadingResponseBody(
                "SignedExchangeCertFetcher::OnStartLoadingResponseBody");
   body_ = std::move(body);
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
-      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+      base::SequencedTaskRunnerHandle::Get());
   handle_watcher_->Watch(
       body_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(&SignedExchangeCertFetcher::OnHandleReady,

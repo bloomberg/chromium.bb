@@ -20,7 +20,9 @@ ChunkedDataPipeUploadDataStream::ChunkedDataPipeUploadDataStream(
                             resource_request_body->identifier()),
       resource_request_body_(std::move(resource_request_body)),
       chunked_data_pipe_getter_(std::move(chunked_data_pipe_getter)),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      base::SequencedTaskRunnerHandle::Get()) {
   chunked_data_pipe_getter_.set_connection_error_handler(
       base::BindOnce(&ChunkedDataPipeUploadDataStream::OnDataPipeGetterClosed,
                      base::Unretained(this)));

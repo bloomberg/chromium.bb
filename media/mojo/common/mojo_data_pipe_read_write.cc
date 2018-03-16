@@ -24,7 +24,9 @@ bool IsPipeReadWriteError(MojoResult result) {
 MojoDataPipeReader::MojoDataPipeReader(
     mojo::ScopedDataPipeConsumerHandle consumer_handle)
     : consumer_handle_(std::move(consumer_handle)),
-      pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
+      pipe_watcher_(FROM_HERE,
+                    mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                    base::SequencedTaskRunnerHandle::Get()) {
   DVLOG(1) << __func__;
 
   MojoResult result = pipe_watcher_.Watch(
@@ -137,7 +139,9 @@ void MojoDataPipeReader::Close() {
 MojoDataPipeWriter::MojoDataPipeWriter(
     mojo::ScopedDataPipeProducerHandle producer_handle)
     : producer_handle_(std::move(producer_handle)),
-      pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
+      pipe_watcher_(FROM_HERE,
+                    mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                    base::SequencedTaskRunnerHandle::Get()) {
   DVLOG(1) << __func__;
 
   MojoResult result =

@@ -177,7 +177,9 @@ AppCacheUpdateJob::UpdateURLLoaderRequest::UpdateURLLoaderRequest(
       loader_factory_getter_(loader_factory_getter),
       client_binding_(this),
       buffer_size_(buffer_size),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      base::SequencedTaskRunnerHandle::Get()),
       read_requested_(false) {
   request_.url = url;
   request_.method = "GET";
