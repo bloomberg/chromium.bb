@@ -404,8 +404,7 @@ TEST_F(TrafficAnnotationAuditorTest, GetReservedIDsCoverage) {
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
       NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
       NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
-      MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code,
-      NO_TRAFFIC_ANNOTATION_BUG_656607.unique_id_hash_code};
+      MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code};
 
   std::map<int, std::string> reserved_words =
       TrafficAnnotationAuditor::GetReservedIDsMap();

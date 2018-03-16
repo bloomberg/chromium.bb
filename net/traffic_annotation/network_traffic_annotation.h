@@ -298,12 +298,6 @@ struct MutablePartialNetworkTrafficAnnotationTag {
   net::DefineNetworkTrafficAnnotation( \
       "missing", "Function called without traffic annotation.")
 
-// TODO(crbug.com/656607): Remove this temporary tag which is only used during
-// refactoring.
-#define NO_TRAFFIC_ANNOTATION_BUG_656607                  \
-  net::DefineNetworkTrafficAnnotation("undefined-656607", \
-                                      "Temporary tag for crbug.com/656607.")
-
 #undef COMPUTE_STRING_HASH
 
 #endif  // NET_TRAFFIC_ANNOTATION_NETWORK_TRAFFIC_ANNOTATION_H_
