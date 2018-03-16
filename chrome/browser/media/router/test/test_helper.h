@@ -126,6 +126,12 @@ class MockDialMediaSinkService : public DialMediaSinkService {
                void(const OnSinksDiscoveredCallback&,
                     const OnDialSinkAddedCallback&));
   MOCK_METHOD0(OnUserGesture, void());
+  MOCK_METHOD2(StartMonitoringAvailableSinksForApp,
+               DialMediaSinkService::SinkQueryByAppSubscription(
+                   const std::string&,
+                   const SinkQueryByAppCallback&));
+  MOCK_METHOD1(GetCachedAvailableSinks,
+               std::vector<MediaSinkInternal>(const std::string& app_name));
 };
 
 class MockCastMediaSinkService : public CastMediaSinkService {

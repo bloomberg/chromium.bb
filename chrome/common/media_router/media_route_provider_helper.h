@@ -16,6 +16,7 @@ enum MediaRouteProviderId {
   EXTENSION,
   WIRED_DISPLAY,
   CAST,
+  DIAL,
   UNKNOWN  // New values must be added above this value.
 };
 

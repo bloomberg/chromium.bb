@@ -113,6 +113,10 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                            TestOnDialAppInfoAvailableWithAlreadyAvailableSinks);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            TestFetchDialAppInfoWithCachedAppInfo);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
+                           TestStartAfterStopMonitoringForApp);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
+                           TestFetchDialAppInfoWithDiscoveryOnlySink);
 
   // DialRegistry::Observer implementation
   void OnDialDeviceEvent(const DialRegistry::DeviceList& devices) override;
@@ -136,7 +140,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Invokes |available_sinks_updated_callback_| with |app_name| and current
   // available sinks for |app_name|.
-  void MaybeNotifySinkObservers(const std::string& app_name);
+  void NotifySinkObservers(const std::string& app_name);
 
   // Queries app status of |app_name| on |dial_sink|.
   void FetchAppInfoForSink(const MediaSinkInternal& dial_sink,
@@ -184,10 +188,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   // Map of app status, keyed by <sink id:app name>.
   base::flat_map<std::string, SinkAppStatus> app_statuses_;
-
-  // Map of last known available sinks for a specific app, keyed by app name.
-  base::flat_map<std::string, base::flat_set<MediaSinkInternal>>
-      last_known_available_sinks_;
 
   // Set of registered app names.
   base::flat_set<std::string> registered_apps_;

@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
+#include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 #include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 
 namespace content {
@@ -111,6 +112,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void InitializeExtensionMediaRouteProviderProxy();
   void InitializeWiredDisplayMediaRouteProvider();
   void InitializeCastMediaRouteProvider();
+  void InitializeDialMediaRouteProvider();
 
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
@@ -134,6 +136,9 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // MediaRouteProvider for casting to Cast devices.
   std::unique_ptr<CastMediaRouteProvider, base::OnTaskRunnerDeleter>
       cast_provider_;
+
+  // MediaRouteProvider for DIAL.
+  std::unique_ptr<DialMediaRouteProvider> dial_provider_;
 
   DualMediaSinkService* media_sink_service_;
   DualMediaSinkService::Subscription media_sink_service_subscription_;

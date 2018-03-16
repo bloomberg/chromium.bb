@@ -57,6 +57,10 @@ class DualMediaSinkService {
     return current_sinks_;
   }
 
+  DialMediaSinkService* dial_media_sink_service() {
+    return dial_media_sink_service_.get();
+  }
+
   // Adds |callback| to be notified when the list of discovered sinks changes.
   // The caller is responsible for destroying the returned Subscription when it
   // no longer wishes to receive updates.
@@ -68,8 +72,6 @@ class DualMediaSinkService {
   // Starts mDNS discovery on |cast_media_sink_service_| if it is not already
   // started.
   virtual void StartMdnsDiscovery();
-  virtual void RegisterMediaSinksObserver(MediaSinksObserver* observer);
-  virtual void UnregisterMediaSinksObserver(MediaSinksObserver* observer);
 
  protected:
   // Used by tests.

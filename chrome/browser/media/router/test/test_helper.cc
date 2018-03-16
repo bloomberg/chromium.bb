@@ -89,7 +89,8 @@ MediaSinkInternal CreateDialSink(int num) {
   net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
 
   media_router::MediaSink sink(unique_id, friendly_name,
-                               media_router::SinkIconType::GENERIC);
+                               media_router::SinkIconType::GENERIC,
+                               MediaRouteProviderId::EXTENSION);
   media_router::DialSinkExtraData extra_data;
   extra_data.ip_address = ip_endpoint.address();
   extra_data.model_name = base::StringPrintf("model name %d", num);

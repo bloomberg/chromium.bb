@@ -16,6 +16,8 @@ const char* ProviderIdToString(MediaRouteProviderId provider_id) {
       return "WIRED_DISPLAY";
     case CAST:
       return "CAST";
+    case DIAL:
+      return "DIAL";
     case UNKNOWN:
       return "UNKNOWN";
   }
