@@ -103,6 +103,10 @@ FONT_FILES = [
     [['/usr/share/doc/ttf-mscorefonts-installer/'], 'READ_ME!.gz', MS_TRUETYPE_FONTS_PACKAGE],
 
     # Other fonts: Arabic, CJK, Indic, Thai, etc.
+    [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Bold.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Arimo-BoldItalic.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Italic.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'DejaVuSans.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Garuda.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Lohit-Devanagari.ttf', None],
@@ -111,6 +115,10 @@ FONT_FILES = [
     [[CONTENT_SHELL_FONTS_DIR], 'MuktiNarrow.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansKhmer-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansCJKjp-Regular.otf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Bold.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Tinos-BoldItalic.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Italic.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Regular.ttf', None],
 ]
 
 
