@@ -28,6 +28,7 @@ class WindowTree;
 
 namespace aura {
 
+class EmbedRoot;
 class Window;
 class WindowManagerDelegate;
 class WindowMus;
@@ -66,6 +67,10 @@ class WindowTreeClientPrivate {
 
   void CallOnConnect();
 
+  // Simulates the EmbedRoot receiving the token from the WindowTree and then
+  // the WindowTree calling OnEmbedFromToken().
+  void CallOnEmbedFromToken(EmbedRoot* embed_root);
+
   WindowTreeHostMusInitParams CallCreateInitParamsForNewDisplay();
 
   // Sets the WindowTree.
@@ -87,6 +92,8 @@ class WindowTreeClientPrivate {
   void WaitForInitialDisplays();
 
  private:
+  ui::mojom::WindowDataPtr CreateWindowDataForEmbed();
+
   WindowTreeClient* tree_client_impl_;
   uint16_t next_window_id_ = 1u;
 

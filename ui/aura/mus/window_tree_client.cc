@@ -366,8 +366,7 @@ void WindowTreeClient::Embed(Window* window,
 void WindowTreeClient::ScheduleEmbed(
     ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  tree_->ScheduleEmbed(std::move(client),
-                       base::AdaptCallbackForRepeating(std::move(callback)));
+  tree_->ScheduleEmbed(std::move(client), std::move(callback));
 }
 
 void WindowTreeClient::EmbedUsingToken(

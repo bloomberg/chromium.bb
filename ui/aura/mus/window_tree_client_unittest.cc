@@ -27,6 +27,8 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/client_surface_embedder.h"
+#include "ui/aura/mus/embed_root.h"
+#include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
@@ -2964,6 +2966,35 @@ TEST_F(WindowTreeClientWmTestHighDPI, ObservedPointerEvents) {
   EXPECT_EQ(gfx::ConvertPointToDIP(device_scale_factor * ui_scale_factor,
                                    root_location_pixels),
             last_event->root_location());
+}
+
+namespace {
+
+class TestEmbedRootDelegate : public EmbedRootDelegate {
+ public:
+  TestEmbedRootDelegate() = default;
+  ~TestEmbedRootDelegate() override = default;
+
+  // EmbedRootDelegate:
+  void OnEmbedTokenAvailable(const base::UnguessableToken& token) override {}
+  void OnEmbed(Window* window) override {}
+  void OnUnembed() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestEmbedRootDelegate);
+};
+
+}  // namespace
+
+// Verifies we don't crash when focus changes to a window in an EmbedRoot.
+TEST_F(WindowTreeClientClientTest, ChangeFocusInEmbedRootWindow) {
+  TestEmbedRootDelegate embed_root_delegate;
+  std::unique_ptr<EmbedRoot> embed_root =
+      window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
+  WindowTreeClientPrivate(window_tree_client_impl())
+      .CallOnEmbedFromToken(embed_root.get());
+  ASSERT_TRUE(embed_root->window());
+  window_tree_client()->OnWindowFocused(server_id(embed_root->window()));
 }
 
 }  // namespace aura
