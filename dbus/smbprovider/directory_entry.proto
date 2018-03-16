@@ -55,6 +55,10 @@ message DirectoryEntryListProto { repeated DirectoryEntryProto entries = 1; }
 message MountOptionsProto {
   // Path of the share to be mounted. (e.g. "smb://qnap/testshare")
   optional string path = 1;
+
+  // Authentication parameters.
+  optional string workgroup = 2;
+  optional string username = 3;
 }
 
 // Used for passing inputs into SmbProvider.Unmount().
