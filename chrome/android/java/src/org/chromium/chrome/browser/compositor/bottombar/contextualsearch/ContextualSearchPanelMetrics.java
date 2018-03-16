@@ -144,7 +144,9 @@ public class ContextualSearchPanelMetrics {
                         mWasSearchContentViewSeen, wasAnySuppressionHeuristicSatisfied);
                 ContextualSearchUma.logSelectionLengthResultsSeen(
                         mWasSearchContentViewSeen, mSelectionLength);
+                ContextualSearchUma.logTapResultsSeen(mWasSearchContentViewSeen);
             }
+            ContextualSearchUma.logAllResultsSeen(mWasSearchContentViewSeen);
 
             // Notifications to Feature Engagement.
             ContextualSearchIPH.doSearchFinishedNotifications(profile, mWasSearchContentViewSeen,
