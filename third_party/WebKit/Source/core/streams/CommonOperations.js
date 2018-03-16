@@ -144,11 +144,7 @@
     return Number_isFinite(v) && v >= 0;
   }
 
-  function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
-    if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(binding.streamErrors.sizeNotAFunction);
-    }
-
+  function ValidateAndNormalizeHighWaterMark(highWaterMark) {
     highWaterMark = Number(highWaterMark);
     if (Number_isNaN(highWaterMark)) {
       throw new RangeError(binding.streamErrors.invalidHWM);
@@ -156,8 +152,35 @@
     if (highWaterMark < 0) {
       throw new RangeError(binding.streamErrors.invalidHWM);
     }
+    return highWaterMark;
+  }
+
+  // TODO(ricea): Remove this once all its callers have been updated to use
+  // ValidateAndNormalizeHighWaterMark instead.
+  function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
+    if (size !== undefined && typeof size !== 'function') {
+      throw new TypeError(binding.streamErrors.sizeNotAFunction);
+    }
+
+    highWaterMark = ValidateAndNormalizeHighWaterMark(highWaterMark);
 
     return {size, highWaterMark};
+  }
+
+
+  // Unlike the version in the standard, this implementation returns the
+  // original function as-is if it is set. This means users of the return value
+  // need to be careful to explicitly set |this| when calling it.
+  function MakeSizeAlgorithmFromSizeFunction(size) {
+    if (size === undefined) {
+      return () => 1;
+    }
+
+    if (typeof size !== 'function') {
+      throw new TypeError(binding.streamErrors.sizeNotAFunction);
+    }
+
+    return size;
   }
 
   //
@@ -173,6 +196,7 @@
         `${name} must be a function or undefined`;
   const Promise_resolve = Promise.resolve.bind(Promise);
   const Promise_reject = Promise.reject.bind(Promise);
+  const Function_bind = v8.uncurryThis(global.Function.prototype.bind);
 
   function resolveMethod(O, P, nameForError) {
     const method = O[P];
@@ -182,6 +206,58 @@
     }
 
     return method;
+  }
+
+  function CreateAlgorithmFromUnderlyingMethod(
+      underlyingObject, methodName, algoArgCount, methodNameForError) {
+    // assert(underlyingObject !== undefined,
+    //        'underlyingObject is not undefined.');
+    // assert(IsPropertyKey(methodName),
+    //        '! IsPropertyKey(methodName) is true.');
+    // assert(algoArgCount === 0 || algoArgCount === 1,
+    //        'algoArgCount is 0 or 1.');
+    // assert(typeof methodNameForError === 'string',
+    //        'methodNameForError is a string');
+    const method = resolveMethod(underlyingObject, methodName,
+                                 methodNameForError);
+    // The implementation uses bound functions rather than lambdas where
+    // possible to give the compiler the maximum opportunity to optimise.
+    if (method === undefined) {
+      return () => Promise_resolve();
+    }
+
+    if (algoArgCount === 0) {
+      return Function_bind(PromiseCall0, undefined, method, underlyingObject);
+    }
+
+    return Function_bind(PromiseCall1, undefined, method, underlyingObject);
+  }
+
+  function CreateAlgorithmFromUnderlyingMethodPassingController(
+      underlyingObject, methodName,  algoArgCount, controller,
+      methodNameForError) {
+    // assert(underlyingObject !== undefined,
+    //        'underlyingObject is not undefined.');
+    // assert(IsPropertyKey(methodName),
+    //        '! IsPropertyKey(methodName) is true.');
+    // assert(algoArgCount === 0 || algoArgCount === 1,
+    //        'algoArgCount is 0 or 1.');
+    // assert(typeof controller === 'object'
+    //       'controller is an object');
+    // assert(typeof methodNameForError === 'string',
+    //        'methodNameForError is a string');
+    const method = resolveMethod(underlyingObject, methodName,
+                                 methodNameForError);
+    if (method === undefined) {
+      return () => Promise_resolve();
+    }
+
+    if (algoArgCount === 0) {
+      return Function_bind(PromiseCall1, undefined, method, underlyingObject,
+                           controller);
+    }
+
+    return arg => PromiseCall2(method, underlyingObject, arg, controller);
   }
 
   // Modified from InvokeOrNoop in spec. Takes 1 argument.
@@ -194,21 +270,7 @@
     return callFunction(method, O, arg0);
   }
 
-  // Modified from PromiseInvokeOrNoop in spec. Version with no arguments.
-  function PromiseCallOrNoop0(O, P, nameForError) {
-    try {
-      const method = resolveMethod(O, P, nameForError);
-      if (method === undefined) {
-        return Promise_resolve();
-      }
-
-      return Promise_resolve(callFunction(method, O));
-    } catch (e) {
-      return Promise_reject(e);
-    }
-  }
-
-  // Modified from PromiseInvokeOrNoop in spec. Version with 1 argument.
+  // Modified from PromiseInvokeOrNoop in spec. Takes 1 argument.
   function PromiseCallOrNoop1(O, P, arg0, nameForError) {
     try {
       return Promise_resolve(CallOrNoop1(O, P, arg0, nameForError));
@@ -217,15 +279,37 @@
     }
   }
 
-  // Modified from PromiseInvokeOrNoop in spec. Version with 2 arguments.
-  function PromiseCallOrNoop2(O, P, arg0, arg1, nameForError) {
+  function PromiseCall0(F, V) {
+    // assert(typeof F === 'function',
+    //        'IsCallable(F) is true.');
+    // assert(V !== undefined,
+    //        'V is not undefined.');
     try {
-      const method = resolveMethod(O, P, nameForError);
-      if (method === undefined) {
-        return Promise_resolve();
-      }
+      return Promise_resolve(callFunction(F, V));
+    } catch (e) {
+      return Promise_reject(e);
+    }
+  }
 
-      return Promise_resolve(callFunction(method, O, arg0, arg1));
+  function PromiseCall1(F, V, arg0) {
+    // assert(typeof F === 'function',
+    //        'IsCallable(F) is true.');
+    // assert(V !== undefined,
+    //        'V is not undefined.');
+    try {
+      return Promise_resolve(callFunction(F, V, arg0));
+    } catch (e) {
+      return Promise_reject(e);
+    }
+  }
+
+  function PromiseCall2(F, V, arg0, arg1) {
+    // assert(typeof F === 'function',
+    //        'IsCallable(F) is true.');
+    // assert(V !== undefined,
+    //        'V is not undefined.');
+    try {
+      return Promise_resolve(callFunction(F, V, arg0, arg1));
     } catch (e) {
       return Promise_reject(e);
     }
@@ -239,14 +323,16 @@
     resolvePromise,
     markPromiseAsHandled,
     promiseState,
+    CreateAlgorithmFromUnderlyingMethod,
+    CreateAlgorithmFromUnderlyingMethodPassingController,
     DequeueValue,
     EnqueueValueWithSize,
     PeekQueueValue,
     ResetQueue,
+    ValidateAndNormalizeHighWaterMark,
     ValidateAndNormalizeQueuingStrategy,
+    MakeSizeAlgorithmFromSizeFunction,
     CallOrNoop1,
-    PromiseCallOrNoop0,
     PromiseCallOrNoop1,
-    PromiseCallOrNoop2
   };
 });

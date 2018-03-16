@@ -16,6 +16,8 @@
 
   // TODO(ricea): Optimise [[closeRequest]] and [[inFlightCloseRequest]] into a
   // single slot + a flag to say which one is set at the moment.
+  const _abortAlgorithm = v8.createPrivateSymbol('[[abortAlgorithm]]');
+  const _closeAlgorithm = v8.createPrivateSymbol('[[closeAlgorithm]]');
   const _closeRequest = v8.createPrivateSymbol('[[closeRequest]]');
   const _inFlightWriteRequest =
         v8.createPrivateSymbol('[[inFlightWriteRequest]]');
@@ -38,8 +40,9 @@
         v8.createPrivateSymbol('[[controlledWritableStream]]');
   const _started = v8.createPrivateSymbol('[[started]]');
   const _strategyHWM = v8.createPrivateSymbol('[[strategyHWM]]');
-  const _strategySize = v8.createPrivateSymbol('[[strategySize]]');
-  const _underlyingSink = v8.createPrivateSymbol('[[underlyingSink]]');
+  const _strategySizeAlgorithm =
+        v8.createPrivateSymbol('[[strategySizeAlgorithm]]');
+  const _writeAlgorithm = v8.createPrivateSymbol('[[writeAlgorithm]]');
 
   // Numeric encodings of stream states. Stored in the _stateAndFlags slot.
   const WRITABLE = 0;
@@ -58,6 +61,7 @@
   // section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
   const defineProperty = global.Object.defineProperty;
+  const ObjectCreate = global.Object.create;
 
   const Function_call = v8.uncurryThis(global.Function.prototype.call);
 
@@ -80,22 +84,21 @@
     resolvePromise,
     markPromiseAsHandled,
     promiseState,
+    CreateAlgorithmFromUnderlyingMethod,
+    CreateAlgorithmFromUnderlyingMethodPassingController,
     DequeueValue,
     EnqueueValueWithSize,
+    MakeSizeAlgorithmFromSizeFunction,
     PeekQueueValue,
     ResetQueue,
-    ValidateAndNormalizeQueuingStrategy,
+    ValidateAndNormalizeHighWaterMark,
     CallOrNoop1,
-    PromiseCallOrNoop0,
-    PromiseCallOrNoop1,
-    PromiseCallOrNoop2
   } = binding.streamOperations;
 
   // User-visible strings.
   const streamErrors = binding.streamErrors;
   const errAbortLockedStream =
         'Cannot abort a writable stream that is locked to a writer';
-  const errStreamAborting = 'The stream is in the process of being aborted';
   const errWriterLockReleasedPrefix =
         'This writable stream writer has been released and cannot be ';
   const errCloseCloseRequestedStream = 'Cannot close a writable stream that ' +
@@ -132,24 +135,21 @@
   }
 
   class WritableStream {
-    constructor(underlyingSink = {}, {size, highWaterMark = 1} = {}) {
-      this[_stateAndFlags] = WRITABLE;
-      this[_storedError] = undefined;
-      this[_writer] = undefined;
-      this[_writableStreamController] = undefined;
-      this[_inFlightWriteRequest] = undefined;
-      this[_closeRequest] = undefined;
-      this[_inFlightCloseRequest] = undefined;
-      this[_pendingAbortRequest] = undefined;
-      this[_writeRequests] = new binding.SimpleQueue();
+    constructor(underlyingSink = {}, strategy = {}) {
+      InitializeWritableStream(this);
       const type = underlyingSink.type;
+      const size = strategy.size;
+      let highWaterMark = strategy.highWaterMark;
       if (type !== undefined) {
         throw new RangeError(streamErrors.invalidType);
       }
-      this[_writableStreamController] = new WritableStreamDefaultController(
-          this, underlyingSink, size, highWaterMark);
-      WritableStreamDefaultControllerStartSteps(
-          this[_writableStreamController]);
+      const sizeAlgorithm = MakeSizeAlgorithmFromSizeFunction(size);
+      if (highWaterMark === undefined) {
+        highWaterMark = 1;
+      }
+      highWaterMark = ValidateAndNormalizeHighWaterMark(highWaterMark);
+      SetUpWritableStreamDefaultControllerFromUnderlyingSink(
+          this, underlyingSink, highWaterMark, sizeAlgorithm);
     }
 
     get locked() {
@@ -177,10 +177,44 @@
     }
   }
 
+  const WritableStream_prototype = WritableStream.prototype;
+
   // General Writable Stream Abstract Operations
 
   function AcquireWritableStreamDefaultWriter(stream) {
     return new WritableStreamDefaultWriter(stream);
+  }
+
+  function CreateWritableStream(
+      startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm,
+      highWaterMark, sizeAlgorithm) {
+    if (highWaterMark === undefined) {
+      highWaterMark = 1;
+    }
+    if (sizeAlgorithm === undefined) {
+      sizeAlgorithm = () => 1;
+    }
+    // assert(IsNonNegativeNumber(highWaterMark),
+    // '! IsNonNegativeNumber(_highWaterMark_) is *true*.')
+    const stream = ObjectCreate(WritableStream_prototype);
+    InitializeWritableStream(stream);
+    const controller = ObjectCreate(WritableStreamDefaultController_prototype);
+    SetUpWritableStreamDefaultController(
+        stream, controller, startAlgorithm, writeAlgorithm, closeAlgorithm,
+        abortAlgorithm, highWaterMark, sizeAlgorithm);
+    return stream;
+  }
+
+  function InitializeWritableStream(stream) {
+    stream[_stateAndFlags] = WRITABLE;
+    stream[_storedError] = undefined;
+    stream[_writer] = undefined;
+    stream[_writableStreamController] = undefined;
+    stream[_inFlightWriteRequest] = undefined;
+    stream[_closeRequest] = undefined;
+    stream[_inFlightCloseRequest] = undefined;
+    stream[_pendingAbortRequest] = undefined;
+    stream[_writeRequests] = new binding.SimpleQueue();
   }
 
   function IsWritableStream(x) {
@@ -195,15 +229,11 @@
 
   function WritableStreamAbort(stream, reason) {
     const state = stream[_stateAndFlags] & STATE_MASK;
-    if (state === CLOSED) {
+    if (state === CLOSED || state === ERRORED) {
       return Promise_resolve(undefined);
     }
-    if (state === ERRORED) {
-      return Promise_reject(stream[_storedError]);
-    }
-    const error = new TypeError(errStreamAborting);
     if (stream[_pendingAbortRequest] !== undefined) {
-      return Promise_reject(error);
+      return stream[_pendingAbortRequest].promise;
     }
 
     // assert(state === WRITABLE || state === ERRORING,
@@ -218,7 +248,7 @@
     stream[_pendingAbortRequest] = {promise, reason, wasAlreadyErroring};
 
     if (!wasAlreadyErroring) {
-      WritableStreamStartErroring(stream, error);
+      WritableStreamStartErroring(stream, reason);
     }
     return promise;
   }
@@ -759,27 +789,8 @@
   }
 
   class WritableStreamDefaultController {
-    constructor(stream, underlyingSink, size, highWaterMark) {
-      if (!IsWritableStream(stream)) {
-        throw new TypeError(streamErrors.illegalConstructor);
-      }
-      if (stream[_writableStreamController] !== undefined) {
-        throw new TypeError(streamErrors.illegalConstructor);
-      }
-      this[_controlledWritableStream] = stream;
-      this[_underlyingSink] = underlyingSink;
-      // These are just initialised to avoid triggering the assert() in
-      // ResetQueue. They are overwritten by ResetQueue().
-      this[_queue] = undefined;
-      this[_queueTotalSize] = undefined;
-      ResetQueue(this);
-      this[_started] = false;
-      const normalizedStrategy =
-            ValidateAndNormalizeQueuingStrategy(size, highWaterMark);
-      this[_strategySize] = normalizedStrategy.size;
-      this[_strategyHWM] = normalizedStrategy.highWaterMark;
-      const backpressure = WritableStreamDefaultControllerGetBackpressure(this);
-      WritableStreamUpdateBackpressure(stream, backpressure);
+    constructor() {
+      throw new TypeError(streamErrors.illegalConstructor);
     }
 
     error(e) {
@@ -795,24 +806,52 @@
     }
   }
 
+  const WritableStreamDefaultController_prototype =
+        WritableStreamDefaultController.prototype;
+
   // Writable Stream Default Controller Internal Methods
 
   // TODO(ricea): Virtual dispatch via V8 Private Symbols seems to be difficult
   // or impossible, so use static dispatch for now. This will have to be fixed
   // when adding a byte controller.
   function WritableStreamDefaultControllerAbortSteps(controller, reason) {
-    return PromiseCallOrNoop1(controller[_underlyingSink], 'abort', reason,
-                              'underlyingSink.abort');
+    return controller[_abortAlgorithm](reason);
   }
 
   function WritableStreamDefaultControllerErrorSteps(controller) {
     ResetQueue(controller);
   }
 
-  function WritableStreamDefaultControllerStartSteps(controller) {
-    const startResult = CallOrNoop1(controller[_underlyingSink], 'start',
-                                    controller, 'underlyingSink.start');
-    const stream = controller[_controlledWritableStream];
+  // Writable Stream Default Controller Abstract Operations
+
+  function IsWritableStreamDefaultController(x) {
+    return hasOwnPropertyNoThrow(x, _controlledWritableStream);
+  }
+
+  function SetUpWritableStreamDefaultController(
+      stream, controller, startAlgorithm, writeAlgorithm, closeAlgorithm,
+      abortAlgorithm, highWaterMark, sizeAlgorithm) {
+    // assert(IsWritableStream(stream), '! IsWritableStream(_stream_) is
+    // *true*.');
+    // assert(stream[_writableStreamController] === undefined,
+    //        '_stream_.[[writableStreamController]] is *undefined*.');
+    controller[_controlledWritableStream] = stream;
+    stream[_writableStreamController] = controller;
+    // These are just initialised to avoid triggering the assert() in
+    // ResetQueue. They are overwritten by ResetQueue().
+    controller[_queue] = undefined;
+    controller[_queueTotalSize] = undefined;
+    ResetQueue(controller);
+    controller[_started] = false;
+    controller[_strategySizeAlgorithm] = sizeAlgorithm;
+    controller[_strategyHWM] = highWaterMark;
+    controller[_writeAlgorithm] = writeAlgorithm;
+    controller[_closeAlgorithm] = closeAlgorithm;
+    controller[_abortAlgorithm] = abortAlgorithm;
+    const backpressure =
+          WritableStreamDefaultControllerGetBackpressure(controller);
+    WritableStreamUpdateBackpressure(stream, backpressure);
+    const startResult = startAlgorithm();
     const startPromise = Promise_resolve(startResult);
     thenPromise(
         startPromise,
@@ -832,10 +871,23 @@
         });
   }
 
-  // Writable Stream Default Controller Abstract Operations
-
-  function IsWritableStreamDefaultController(x) {
-    return hasOwnPropertyNoThrow(x, _underlyingSink);
+  function SetUpWritableStreamDefaultControllerFromUnderlyingSink(
+      stream, underlyingSink, highWaterMark, sizeAlgorithm) {
+    // assert(underlyingSink !== undefined, '_underlyingSink_ is not ' +
+    // '*undefined*.');
+    const controller = ObjectCreate(WritableStreamDefaultController_prototype);
+    const startAlgorithm =
+          () => CallOrNoop1(underlyingSink, 'start', controller,
+                            'underlyingSink.start');
+    const writeAlgorithm = CreateAlgorithmFromUnderlyingMethodPassingController(
+        underlyingSink, 'write', 1, controller, 'underlyingSink.write');
+    const closeAlgorithm = CreateAlgorithmFromUnderlyingMethod(
+        underlyingSink, 'close', 0, 'underlyingSink.close');
+    const abortAlgorithm = CreateAlgorithmFromUnderlyingMethod(
+        underlyingSink, 'abort', 1, 'underlyingSink.abort');
+    SetUpWritableStreamDefaultController(stream, controller, startAlgorithm,
+        writeAlgorithm, closeAlgorithm, abortAlgorithm, highWaterMark,
+        sizeAlgorithm);
   }
 
   function WritableStreamDefaultControllerClose(controller) {
@@ -844,18 +896,15 @@
   }
 
   function WritableStreamDefaultControllerGetChunkSize(controller, chunk) {
-    const strategySize = controller[_strategySize];
-    if (strategySize === undefined) {
-      return 1;
-    }
-    let value;
     try {
-      value = Function_call(strategySize, undefined, chunk);
+      // Unlike other algorithms, strategySizeAlgorithm isn't indirected, so we
+      // need to be careful with the |this| value.
+      return Function_call(controller[_strategySizeAlgorithm], undefined,
+                           chunk);
     } catch (e) {
       WritableStreamDefaultControllerErrorIfNeeded(controller, e);
       return 1;
     }
-    return value;
   }
 
   function WritableStreamDefaultControllerGetDesiredSize(controller) {
@@ -922,9 +971,7 @@
     DequeueValue(controller);
     // assert(controller[_queue].length === 0,
     //        'controller.[[queue]] is empty.');
-    const sinkClosePromise =
-          PromiseCallOrNoop0(controller[_underlyingSink], 'close',
-                             'underlyingSink.close');
+    const sinkClosePromise = controller[_closeAlgorithm]();
     thenPromise(
         sinkClosePromise, () => WritableStreamFinishInFlightClose(stream),
         reason => WritableStreamFinishInFlightCloseWithError(stream, reason));
@@ -933,9 +980,7 @@
   function WritableStreamDefaultControllerProcessWrite(controller, chunk) {
     const stream = controller[_controlledWritableStream];
     WritableStreamMarkFirstWriteRequestInFlight(stream);
-    const sinkWritePromise = PromiseCallOrNoop2(
-        controller[_underlyingSink], 'write', chunk, controller,
-        'underlyingSink.write');
+    const sinkWritePromise = controller[_writeAlgorithm](chunk);
     thenPromise(
         sinkWritePromise,
         () => {
@@ -1005,6 +1050,7 @@
   binding.getWritableStreamStoredError = getWritableStreamStoredError;
 
   // Exports for TransformStream
+  binding.CreateWritableStream = CreateWritableStream;
   binding.WritableStream = WritableStream;
   binding.WritableStreamDefaultControllerErrorIfNeeded =
       WritableStreamDefaultControllerErrorIfNeeded;
