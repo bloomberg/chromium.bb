@@ -36,7 +36,6 @@
 namespace content {
 class CursorManager;
 class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
@@ -345,7 +344,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
 
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   // Returns true when we can do SurfaceHitTesting for the event type.
@@ -434,10 +432,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
-
-  // The associated Model.  Can be NULL if Destroy() is called when
-  // someone (other than superview) has retained |cocoa_view_|.
-  RenderWidgetHostImpl* render_widget_host_;
 
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;

@@ -60,7 +60,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 }
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
-    : rwh_(RenderWidgetHostImpl::From(rwh)),
+    : RenderWidgetHostViewBase(rwh),
       is_showing_(false),
       is_occluded_(false),
       did_swap_compositor_frame_(false),
@@ -80,7 +80,7 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
   }
 #endif
 
-  rwh_->SetView(this);
+  host()->SetView(this);
 
 #if defined(USE_AURA)
   window_.reset(new aura::Window(
@@ -197,11 +197,6 @@ bool TestRenderWidgetHostView::LockMouse() {
 }
 
 void TestRenderWidgetHostView::UnlockMouse() {
-}
-
-RenderWidgetHostImpl* TestRenderWidgetHostView::GetRenderWidgetHostImpl()
-    const {
-  return rwh_;
 }
 
 viz::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {

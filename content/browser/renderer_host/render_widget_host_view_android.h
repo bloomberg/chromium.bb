@@ -50,7 +50,6 @@ namespace content {
 class GestureListenerManager;
 class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
-class RenderWidgetHostImpl;
 class SelectionPopupController;
 class SynchronousCompositorHost;
 class SynchronousCompositorClient;
@@ -170,7 +169,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnDidNavigateMainFrameToNewPage() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void SetWantsAnimateOnlyBeginFrames() override;
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
@@ -391,9 +389,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void OnFocusInternal();
   void LostFocusInternal();
-
-  // The model object.
-  RenderWidgetHostImpl* host_;
 
   // The begin frame source being observed.  Null if none.
   viz::BeginFrameSource* begin_frame_source_;

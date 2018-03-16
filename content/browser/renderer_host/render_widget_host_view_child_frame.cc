@@ -65,7 +65,7 @@ RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
 
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
-    : host_(RenderWidgetHostImpl::From(widget_host)),
+    : RenderWidgetHostViewBase(widget_host),
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
@@ -104,7 +104,7 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
 
 void RenderWidgetHostViewChildFrame::Init() {
   RegisterFrameSinkId();
-  host_->SetView(this);
+  host()->SetView(this);
   GetTextInputManager();
 }
 
@@ -225,7 +225,7 @@ void RenderWidgetHostViewChildFrame::SetBounds(const gfx::Rect& rect) {
   // Resizing happens in CrossProcessFrameConnector for child frames.
   if (rect != last_screen_rect_) {
     last_screen_rect_ = rect;
-    host_->SendScreenRects();
+    host()->SendScreenRects();
   }
 }
 
@@ -242,29 +242,29 @@ bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
-  if (!host_->is_hidden())
+  if (!host()->is_hidden())
     return;
 
   if (!CanBecomeVisible())
     return;
 
-  host_->WasShown(ui::LatencyInfo());
+  host()->WasShown(ui::LatencyInfo());
 
   if (frame_connector_)
     frame_connector_->SetVisibilityForChildViews(true);
 }
 
 void RenderWidgetHostViewChildFrame::Hide() {
-  if (host_->is_hidden())
+  if (host()->is_hidden())
     return;
-  host_->WasHidden();
+  host()->WasHidden();
 
   if (frame_connector_)
     frame_connector_->SetVisibilityForChildViews(false);
 }
 
 bool RenderWidgetHostViewChildFrame::IsShowing() {
-  return !host_->is_hidden();
+  return !host()->is_hidden();
 }
 
 gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
@@ -301,12 +301,13 @@ gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
   // is that Blink ends up using the visual viewport to calculate things like
   // window.innerWidth/innerHeight for main frames, and a guest is considered
   // to be a main frame.  This should be cleaned up eventually.
-  bool is_guest = BrowserPluginGuest::IsGuest(RenderViewHostImpl::From(host_));
+  bool is_guest = BrowserPluginGuest::IsGuest(RenderViewHostImpl::From(host()));
   if (frame_connector_ && !is_guest) {
     // An auto-resize set by the top-level frame overrides what would be
     // reported by embedding RenderWidgetHostViews.
-    if (host_->delegate() && !host_->delegate()->GetAutoResizeSize().IsEmpty())
-      return host_->delegate()->GetAutoResizeSize();
+    if (host()->delegate() &&
+        !host()->delegate()->GetAutoResizeSize().IsEmpty())
+      return host()->delegate()->GetAutoResizeSize();
 
     RenderWidgetHostView* parent_view =
         frame_connector_->GetParentRenderWidgetHostView();
@@ -342,7 +343,7 @@ void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
 
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
-  host_->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+  host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
 }
 
 SkColor RenderWidgetHostViewChildFrame::background_color() const {
@@ -379,7 +380,7 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   // inner/outer WebContents, only subframe's RenderWidgetHostView can be a
   // RenderWidgetHostViewChildFrame which do not get a SetIsLoading() call.
   if (GuestMode::IsCrossProcessFrameGuest(
-          WebContents::FromRenderViewHost(RenderViewHost::From(host_))))
+          WebContents::FromRenderViewHost(RenderViewHost::From(host()))))
     return;
 
   NOTREACHED();
@@ -407,8 +408,8 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // RenderWidgetHostInputEventRouter afterwards.
   NotifyObserversAboutShutdown();
 
-  host_->SetView(nullptr);
-  host_ = nullptr;
+  host()->SetView(nullptr);
+  RenderWidgetHostViewBase::Destroy();
 
   delete this;
 }
@@ -426,18 +427,19 @@ RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
 
 void RenderWidgetHostViewChildFrame::RegisterFrameSinkId() {
   // If Destroy() has been called before we get here, host_ may be null.
-  if (host_ && host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+  if (host() && host()->delegate() &&
+      host()->delegate()->GetInputEventRouter()) {
     RenderWidgetHostInputEventRouter* router =
-        host_->delegate()->GetInputEventRouter();
+        host()->delegate()->GetInputEventRouter();
     if (!router->is_registered(frame_sink_id_))
       router->AddFrameSinkIdOwner(frame_sink_id_, this);
   }
 }
 
 void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
-  DCHECK(host_);
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->RemoveFrameSinkIdOwner(
+  DCHECK(host());
+  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    host()->delegate()->GetInputEventRouter()->RemoveFrameSinkIdOwner(
         frame_sink_id_);
     DetachFromTouchSelectionClientManagerIfNecessary();
   }
@@ -446,23 +448,24 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
     const gfx::Rect& compositor_visible_rect) {
-  if (host_) {
-    host_->Send(new ViewMsg_SetViewportIntersection(
-        host_->GetRoutingID(), viewport_intersection, compositor_visible_rect));
+  if (host()) {
+    host()->Send(new ViewMsg_SetViewportIntersection(host()->GetRoutingID(),
+                                                     viewport_intersection,
+                                                     compositor_visible_rect));
   }
 }
 
 void RenderWidgetHostViewChildFrame::SetIsInert() {
-  if (host_ && frame_connector_) {
-    host_->Send(new ViewMsg_SetIsInert(host_->GetRoutingID(),
-                                       frame_connector_->IsInert()));
+  if (host() && frame_connector_) {
+    host()->Send(new ViewMsg_SetIsInert(host()->GetRoutingID(),
+                                        frame_connector_->IsInert()));
   }
 }
 
 void RenderWidgetHostViewChildFrame::UpdateRenderThrottlingStatus() {
-  if (host_ && frame_connector_) {
-    host_->Send(new ViewMsg_UpdateRenderThrottlingStatus(
-        host_->GetRoutingID(), frame_connector_->IsThrottled(),
+  if (host() && frame_connector_) {
+    host()->Send(new ViewMsg_UpdateRenderThrottlingStatus(
+        host()->GetRoutingID(), frame_connector_->IsThrottled(),
         frame_connector_->IsSubtreeThrottled()));
   }
 }
@@ -681,21 +684,16 @@ bool RenderWidgetHostViewChildFrame::LockMouse() {
 }
 
 void RenderWidgetHostViewChildFrame::UnlockMouse() {
-  if (host_->delegate() && host_->delegate()->HasMouseLock(host_) &&
+  if (host()->delegate() && host()->delegate()->HasMouseLock(host()) &&
       frame_connector_)
     frame_connector_->UnlockMouse();
 }
 
 bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
-  if (!host_->delegate())
+  if (!host()->delegate())
     return false;
 
-  return host_->delegate()->HasMouseLock(host_);
-}
-
-RenderWidgetHostImpl* RenderWidgetHostViewChildFrame::GetRenderWidgetHostImpl()
-    const {
-  return host_;
+  return host()->delegate()->HasMouseLock(host());
 }
 
 viz::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
@@ -1025,7 +1023,7 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
     GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                           frame_sink_id_);
   }
-  if (host_->needs_begin_frames())
+  if (host()->needs_begin_frames())
     support_->SetNeedsBeginFrame(true);
 }
 
@@ -1099,9 +1097,9 @@ void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {
-  if (host_->auto_resize_enabled()) {
-    host_->DidAllocateLocalSurfaceIdForAutoResize(
-        host_->last_auto_resize_request_number());
+  if (host()->auto_resize_enabled()) {
+    host()->DidAllocateLocalSurfaceIdForAutoResize(
+        host()->last_auto_resize_request_number());
   }
 }
 

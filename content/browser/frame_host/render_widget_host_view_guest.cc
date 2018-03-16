@@ -143,7 +143,7 @@ void RenderWidgetHostViewGuest::Show() {
   // first place: http://crbug.com/273089.
   //
   // |guest_| is NULL during test.
-  if ((guest_ && guest_->is_in_destruction()) || !host_->is_hidden())
+  if ((guest_ && guest_->is_in_destruction()) || !host()->is_hidden())
     return;
   // Make sure the size of this view matches the size of the WebContentsView.
   // The two sizes may fall out of sync if we switch RenderWidgetHostViews,
@@ -157,14 +157,14 @@ void RenderWidgetHostViewGuest::Show() {
     if (last_received_local_surface_id_.is_valid())
       SendSurfaceInfoToEmbedder();
   }
-  host_->WasShown(ui::LatencyInfo());
+  host()->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewGuest::Hide() {
   // |guest_| is NULL during test.
-  if ((guest_ && guest_->is_in_destruction()) || host_->is_hidden())
+  if ((guest_ && guest_->is_in_destruction()) || host()->is_hidden())
     return;
-  host_->WasHidden();
+  host()->WasHidden();
 }
 
 void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
@@ -178,7 +178,7 @@ void RenderWidgetHostViewGuest::Focus() {
   // InterstitialPages are not WebContents, and so BrowserPluginGuest does not
   // have direct access to the interstitial page's RenderWidgetHost.
   if (guest_)
-    guest_->SetFocus(host_, true, blink::kWebFocusTypeNone);
+    guest_->SetFocus(host(), true, blink::kWebFocusTypeNone);
 }
 
 bool RenderWidgetHostViewGuest::HasFocus() const {
@@ -732,19 +732,19 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     rescaled_event.wheel_ticks_x /= current_device_scale_factor();
     rescaled_event.wheel_ticks_y /= current_device_scale_factor();
     ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    host_->ForwardWheelEventWithLatencyInfo(rescaled_event, latency_info);
+    host()->ForwardWheelEventWithLatencyInfo(rescaled_event, latency_info);
     return;
   }
 
-  ScopedInputScaleDisabler disable(host_, current_device_scale_factor());
+  ScopedInputScaleDisabler disable(host(), current_device_scale_factor());
   if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
-    host_->ForwardMouseEvent(*static_cast<const blink::WebMouseEvent*>(event));
+    host()->ForwardMouseEvent(*static_cast<const blink::WebMouseEvent*>(event));
     return;
   }
 
   if (event->GetType() == blink::WebInputEvent::kMouseWheel) {
     ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    host_->ForwardWheelEventWithLatencyInfo(
+    host()->ForwardWheelEventWithLatencyInfo(
         *static_cast<const blink::WebMouseWheelEvent*>(event), latency_info);
     return;
   }
@@ -752,7 +752,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   if (blink::WebInputEvent::IsKeyboardEventType(event->GetType())) {
     NativeWebKeyboardEvent keyboard_event(
         *static_cast<const blink::WebKeyboardEvent*>(event), GetNativeView());
-    host_->ForwardKeyboardEvent(keyboard_event);
+    host()->ForwardKeyboardEvent(keyboard_event);
     return;
   }
 
@@ -762,7 +762,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
       embedder->GetView()->Focus();
     }
     ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
-    host_->ForwardTouchEventWithLatencyInfo(
+    host()->ForwardTouchEventWithLatencyInfo(
         *static_cast<const blink::WebTouchEvent*>(event), latency_info);
     return;
   }
@@ -784,7 +784,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
             blink::WebGestureEvent::kMomentumPhase) {
       return;
     }
-    host_->ForwardGestureEvent(gesture_event);
+    host()->ForwardGestureEvent(gesture_event);
     return;
   }
 }

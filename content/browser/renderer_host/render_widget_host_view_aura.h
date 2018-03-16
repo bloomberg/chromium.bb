@@ -74,7 +74,6 @@ class CursorManager;
 class DelegatedFrameHost;
 class DelegatedFrameHostClient;
 class RenderFrameHostImpl;
-class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class TouchSelectionControllerClientAura;
 
@@ -179,7 +178,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
@@ -522,9 +520,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Applies background color without notifying the RenderWidget about
   // opaqueness changes.
   void UpdateBackgroundColorFromRenderer(SkColor color);
-
-  // The model object.
-  RenderWidgetHostImpl* const host_;
 
   const bool is_mus_browser_plugin_guest_;
 

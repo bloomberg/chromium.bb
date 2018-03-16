@@ -42,7 +42,7 @@ void FrameConnectorDelegate::UpdateResizeParams(
   view_->SetFrameSinkId(surface_id.frame_sink_id());
 #endif  // defined(USE_AURA)
 
-  RenderWidgetHostImpl* render_widget_host = view_->GetRenderWidgetHostImpl();
+  RenderWidgetHostImpl* render_widget_host = view_->host();
   DCHECK(render_widget_host);
 
   if (render_widget_host->auto_resize_enabled()) {

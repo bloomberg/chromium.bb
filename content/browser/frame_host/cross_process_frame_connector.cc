@@ -76,11 +76,9 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     // be called during nested WebContents destruction. See
     // https://crbug.com/644306.
     if (is_scroll_bubbling_ && GetParentRenderWidgetHostView() &&
-        GetParentRenderWidgetHostView()
-            ->GetRenderWidgetHostImpl()
-            ->delegate()) {
+        GetParentRenderWidgetHostView()->host()->delegate()) {
       GetParentRenderWidgetHostView()
-          ->GetRenderWidgetHostImpl()
+          ->host()
           ->delegate()
           ->GetInputEventRouter()
           ->CancelScrollBubbling(view_);
@@ -211,8 +209,7 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   if (!parent_view)
     return;
 
-  auto* event_router =
-      parent_view->GetRenderWidgetHostImpl()->delegate()->GetInputEventRouter();
+  auto* event_router = parent_view->host()->delegate()->GetInputEventRouter();
 
   gfx::Vector2d offset_from_parent =
       screen_space_rect_in_dip_.OffsetFromOrigin();
@@ -316,13 +313,11 @@ void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
   if (frame_proxy_in_parent_renderer_->frame_tree_node()
           ->render_manager()
           ->ForInnerDelegate()) {
-    view_->GetRenderWidgetHostImpl()
-        ->delegate()
-        ->OnRenderFrameProxyVisibilityChanged(visible);
+    view_->host()->delegate()->OnRenderFrameProxyVisibilityChanged(visible);
     return;
   }
 
-  if (visible && !view_->GetRenderWidgetHostImpl()->delegate()->IsHidden()) {
+  if (visible && !view_->host()->delegate()->IsHidden()) {
     view_->Show();
   } else if (!visible) {
     view_->Hide();

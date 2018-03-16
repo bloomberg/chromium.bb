@@ -198,10 +198,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   RenderWidgetHostViewBase* target = nullptr;
   bool needs_transform_point = true;
   if (root_view->IsMouseLocked()) {
-    target = root_view->GetRenderWidgetHostImpl()
-                 ->delegate()
-                 ->GetMouseLockWidget()
-                 ->GetView();
+    target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
 
   constexpr int mouse_button_modifiers =
@@ -247,10 +244,7 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   RenderWidgetHostViewBase* target = nullptr;
   gfx::PointF transformed_point;
   if (root_view->IsMouseLocked()) {
-    target = root_view->GetRenderWidgetHostImpl()
-                 ->delegate()
-                 ->GetMouseLockWidget()
-                 ->GetView();
+    target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
     if (!TransformPointToTargetCoordSpace(
             root_view, target, event.PositionInWidget(), &transformed_point,
             viz::EventSource::MOUSE)) {
