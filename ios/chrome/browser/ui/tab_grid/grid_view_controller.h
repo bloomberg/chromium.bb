@@ -40,6 +40,8 @@
 @property(nonatomic, strong) UIView* emptyStateView;
 // Returns YES if the grid has no items.
 @property(nonatomic, readonly, getter=isGridEmpty) BOOL gridEmpty;
+// The number of items in the grid. Not all of the items may be visible.
+@property(nonatomic, readonly) NSUInteger itemCount;
 // The visual look of the grid.
 @property(nonatomic, assign) GridTheme theme;
 // Delegate is informed of user interactions in the grid UI.

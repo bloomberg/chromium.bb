@@ -30,11 +30,11 @@
 // Setting this property will *not* update the selected page.
 @property(nonatomic, assign) CGFloat sliderPosition;
 
-// Text displayed next to the incognito and inside the regular tabs icons. The
-// available space for text is small -- no wider than two numerals. Text wider
-// than this will be clipped.
-@property(nonatomic, copy) NSString* incognitoText;
-@property(nonatomic, copy) NSString* regularText;
+// The numbers that the control should display in the appropriate sections.
+// Numbers less than 1 are not displayed.
+// Numbers greated than 99 are displayed as ':-)'.
+@property(nonatomic, assign) NSUInteger incognitoTabCount;
+@property(nonatomic, assign) NSUInteger regularTabCount;
 
 // Create and return a new instance of this control. This is the preferred way
 // to create instances of this class.

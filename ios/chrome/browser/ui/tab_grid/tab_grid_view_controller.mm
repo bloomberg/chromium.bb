@@ -427,6 +427,11 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:topToolbar];
   self.topToolbar = topToolbar;
+  // Configure and initialize the page control.
+  [self.topToolbar.pageControl addTarget:self
+                                  action:@selector(pageControlChanged:)
+                        forControlEvents:UIControlEventValueChanged];
+  [self updatePageControlItemCounts];
   NSArray* constraints = @[
     [topToolbar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [topToolbar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
@@ -550,12 +555,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self.newTabButton addTarget:self
                         action:@selector(newTabButtonTapped:)
               forControlEvents:UIControlEventTouchUpInside];
-  [self.topToolbar.pageControl addTarget:self
-                                  action:@selector(pageControlChanged:)
-                        forControlEvents:UIControlEventValueChanged];
-  // TODO(crbug.com/804501): Use the actual live tab counts.
-  self.topToolbar.pageControl.regularText = @"5";
-  self.topToolbar.pageControl.incognitoText = @"0";
   [self configureButtonsForCurrentPage];
 }
 
@@ -619,6 +618,13 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   }
 }
 
+- (void)updatePageControlItemCounts {
+  self.topToolbar.pageControl.incognitoTabCount =
+      self.incognitoTabsViewController.itemCount;
+  self.topToolbar.pageControl.regularTabCount =
+      self.regularTabsViewController.itemCount;
+}
+
 // Translates the toolbar views offscreen and then animates them back in using
 // the transition coordinator. Transitions are preferred here since they don't
 // interact with the layout system at all.
@@ -677,6 +683,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate closeItemAtIndex:index];
   }
+  [self updatePageControlItemCounts];
 }
 
 - (void)lastItemWasClosedInGridViewController:
@@ -687,6 +694,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 - (void)firstItemWasAddedInGridViewController:
     (GridViewController*)gridViewController {
   [self configureButtonsForCurrentPage];
+  [self updatePageControlItemCounts];
 }
 
 #pragma mark - Control actions
@@ -723,6 +731,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       // No-op. It is invalid to call insert new tab on remote tabs.
       break;
   }
+  [self updatePageControlItemCounts];
 }
 
 - (void)pageControlChanged:(id)sender {
