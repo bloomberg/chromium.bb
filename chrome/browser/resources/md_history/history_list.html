@@ -74,7 +74,7 @@
     </template>
 
     <template is="cr-lazy-render" id="sharedMenu">
-      <dialog is="cr-action-menu">
+      <cr-action-menu>
         <button id="menuMoreButton" slot="item" class="dropdown-item"
             hidden="[[!canSearchMoreFromSite_(
                 searchedTerm, actionMenuModel_.item.domain)]]"
@@ -86,7 +86,7 @@
             on-click="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}
         </button>
-      </dialog>
+      </cr-action-menu>
     </template>
   </template>
   <script src="chrome://history/history_list.js"></script>

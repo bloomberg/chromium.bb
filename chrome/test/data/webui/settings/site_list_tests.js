@@ -297,7 +297,7 @@ suite('SiteList', function() {
 
   /** Closes the action menu. */
   function closeActionMenu() {
-    const menu = testElement.$$('dialog[is=cr-action-menu]');
+    const menu = testElement.$$('cr-action-menu');
     if (menu.open)
       menu.close();
   }
@@ -307,7 +307,7 @@ suite('SiteList', function() {
    * @param {Array<string>} items The items expected to show in the menu.
    */
   function assertMenu(items) {
-    const menu = testElement.$$('dialog[is=cr-action-menu]');
+    const menu = testElement.$$('cr-action-menu');
     assertTrue(!!menu);
     const menuItems = menu.querySelectorAll('button:not([hidden])');
     assertEquals(items.length, menuItems.length);
@@ -422,7 +422,7 @@ suite('SiteList', function() {
     setUpCategory(
         settings.ContentSettingsTypes.GEOLOCATION,
         settings.ContentSetting.ALLOW, prefsGeolocation);
-    const actionMenu = testElement.$$('dialog[is=cr-action-menu]');
+    const actionMenu = testElement.$$('cr-action-menu');
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           Polymer.dom.flush();  // Populates action menu.
@@ -669,7 +669,7 @@ suite('SiteList', function() {
 
       openActionMenu(0);
       assertMenu(['Allow', 'Block', 'Edit', 'Remove'], testElement);
-      const menu = testElement.$$('dialog[is=cr-action-menu]');
+      const menu = testElement.$$('cr-action-menu');
       assertTrue(menu.open);
       const edit = testElement.$.edit;
       assertTrue(!!edit);

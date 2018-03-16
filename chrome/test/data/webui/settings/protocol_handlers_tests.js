@@ -148,7 +148,7 @@ suite('ProtocolHandlers', function() {
       const menuButtons = testElement.root.querySelectorAll(
           'paper-icon-button-light.icon-more-vert');
       assertEquals(3, menuButtons.length);
-      const dialog = testElement.$$('dialog[is=cr-action-menu]');
+      const dialog = testElement.$$('cr-action-menu');
       return Promise.all([[0, 0], [1, 0], [1, 1]].map((indices, menuIndex) => {
         const protocolIndex = indices[0];
         const handlerIndex = indices[1];
@@ -182,8 +182,7 @@ suite('ProtocolHandlers', function() {
     return testButtonFlow('defaultButton', 'setProtocolDefault').then(() => {
       const menuButtons = testElement.root.querySelectorAll(
           'paper-icon-button-light.icon-more-vert');
-      const closeMenu = () =>
-          testElement.$$('dialog[is=cr-action-menu]').close();
+      const closeMenu = () => testElement.$$('cr-action-menu').close();
       MockInteractions.tap(menuButtons[0].querySelector('button'));
       assertTrue(testElement.$.defaultButton.hidden);
       closeMenu();

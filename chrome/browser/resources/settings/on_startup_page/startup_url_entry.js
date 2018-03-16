@@ -43,7 +43,7 @@ Polymer({
 
   /** @private */
   onRemoveTap_: function() {
-    this.$$('dialog[is=cr-action-menu]').close();
+    this.$$('cr-action-menu').close();
     settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
         this.model.modelIndex);
   },
@@ -54,7 +54,7 @@ Polymer({
    */
   onEditTap_: function(e) {
     e.preventDefault();
-    this.$$('dialog[is=cr-action-menu]').close();
+    this.$$('cr-action-menu').close();
     this.fire(settings.EDIT_STARTUP_URL_EVENT, {
       model: this.model,
       anchor: this.$$('#dots'),

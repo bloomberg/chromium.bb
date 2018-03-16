@@ -362,8 +362,7 @@ Polymer({
   onEditTap_: function() {
     // Close action menu without resetting |this.actionMenuSite_| since it is
     // bound to the dialog.
-    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
-        .close();
+    /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu')).close();
     this.showEditExceptionDialog_ = true;
   },
 
@@ -422,7 +421,7 @@ Polymer({
         Polymer.dom(/** @type {!Event} */ (e)).localTarget);
 
     this.actionMenuSite_ = e.model.item;
-    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+    /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(this.activeDialogAnchor_);
   },
 
@@ -430,8 +429,8 @@ Polymer({
   closeActionMenu_: function() {
     this.actionMenuSite_ = null;
     this.activeDialogAnchor_ = null;
-    const actionMenu = /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]'));
+    const actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
     if (actionMenu.open)
       actionMenu.close();
   },

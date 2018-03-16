@@ -45,15 +45,15 @@
         margin-top: 4px;
       }
 
-      dialog[is='cr-action-menu'].complex .dropdown-item {
+      cr-action-menu.complex .dropdown-item {
         min-height: 36px;
       }
 
-      dialog[is='cr-action-menu']:not(.complex) hr {
+      cr-action-menu:not(.complex) hr {
         display: none;
       }
 
-      dialog[is='cr-action-menu'].complex hr {
+      cr-action-menu.complex hr {
         /* Override user-agent border and margin. */
         border: none;
         /* TODO(michaelpg): Update to whatever variable is used for the darker,
@@ -266,7 +266,7 @@
         </iron-collapse>
 </if>
         <template is="cr-lazy-render" id="menu">
-          <dialog is="cr-action-menu"
+          <cr-action-menu
               class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
             <paper-checkbox id="uiLanguageItem" slot="item"
@@ -312,7 +312,7 @@
                 hidden="[[!detailLanguage_.removable]]">
               $i18n{removeLanguage}
             </button>
-          </dialog>
+          </cr-action-menu>
         </template>
       </neon-animatable>
 <if expr="chromeos">

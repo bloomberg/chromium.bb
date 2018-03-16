@@ -55,7 +55,7 @@ Polymer({
    * @private
    */
   onRemoveTap_: function() {
-    this.$$('dialog[is=cr-action-menu]').close();
+    this.$$('cr-action-menu').close();
 
     const item = this.actionMenuModel_;
     this.browserProxy.removeUsbDevice(
@@ -71,7 +71,7 @@ Polymer({
    */
   showMenu_: function(event) {
     this.actionMenuModel_ = event.model.item;
-    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+    /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (event)).localTarget));
