@@ -143,7 +143,7 @@ std::string DisplaySnapshot::ToString() const {
 
 // static
 gfx::BufferFormat DisplaySnapshot::PrimaryFormat() {
-  return gfx::BufferFormat::BGRA_8888;
+  return gfx::BufferFormat::BGRX_8888;
 }
 
 }  // namespace display
