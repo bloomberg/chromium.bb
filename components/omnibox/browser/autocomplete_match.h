@@ -194,6 +194,10 @@ struct AutocompleteMatch {
       TemplateURLService* template_url_service,
       const base::string16& keyword,
       const std::string& host);
+  static const TemplateURL* GetTemplateURLWithKeyword(
+      const TemplateURLService* template_url_service,
+      const base::string16& keyword,
+      const std::string& host);
 
   // Returns |url| altered by stripping off "www.", converting https protocol
   // to http, and stripping excess query parameters.  These conversions are
@@ -212,7 +216,7 @@ struct AutocompleteMatch {
   // seems to matter to the user.
   static GURL GURLToStrippedGURL(const GURL& url,
                                  const AutocompleteInput& input,
-                                 TemplateURLService* template_url_service,
+                                 const TemplateURLService* template_url_service,
                                  const base::string16& keyword);
 
   // Sets the |match_in_scheme|, |match_in_subdomain|, and |match_after_host|

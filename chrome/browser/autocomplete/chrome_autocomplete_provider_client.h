@@ -76,7 +76,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   bool StrippedURLsAreEqual(const GURL& url1,
                             const GURL& url2,
-                            const AutocompleteInput* input);
+                            const AutocompleteInput* input) const;
 
  private:
   Profile* profile_;

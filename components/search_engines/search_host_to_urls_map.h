@@ -34,7 +34,7 @@ class SearchHostToURLsMap {
            const SearchTermsData& search_terms_data);
 
   // Removes the TemplateURL from the lookup.
-  void Remove(TemplateURL* template_url);
+  void Remove(const TemplateURL* template_url);
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs

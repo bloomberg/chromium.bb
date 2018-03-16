@@ -393,11 +393,11 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
 bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
     const GURL& url1,
     const GURL& url2,
-    const AutocompleteInput* input) {
+    const AutocompleteInput* input) const {
   AutocompleteInput empty_input;
   if (!input)
     input = &empty_input;
-  TemplateURLService* template_url_service = GetTemplateURLService();
+  const TemplateURLService* template_url_service = GetTemplateURLService();
   return AutocompleteMatch::GURLToStrippedGURL(url1, AutocompleteInput(),
                                                template_url_service,
                                                base::string16()) ==

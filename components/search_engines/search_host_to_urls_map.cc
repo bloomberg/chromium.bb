@@ -36,7 +36,7 @@ void SearchHostToURLsMap::Add(TemplateURL* template_url,
   host_to_urls_map_[url.host()].insert(template_url);
 }
 
-void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
+void SearchHostToURLsMap::Remove(const TemplateURL* template_url) {
   DCHECK(initialized_);
   DCHECK(template_url);
   DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, template_url->type());
@@ -45,7 +45,8 @@ void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
   auto set_with_url =
       std::find_if(host_to_urls_map_.begin(), host_to_urls_map_.end(),
                    [&](std::pair<const std::string, TemplateURLSet>& entry) {
-                     return entry.second.erase(template_url);
+                     return entry.second.erase(
+                         const_cast<TemplateURL*>(template_url));
                    });
 
   if (set_with_url != host_to_urls_map_.end() && set_with_url->second.empty())
