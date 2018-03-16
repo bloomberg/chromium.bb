@@ -484,6 +484,9 @@ class ChromeDriver(object):
   def MaximizeWindow(self):
     self.ExecuteCommand(Command.MAXIMIZE_WINDOW, {'windowHandle': 'current'})
 
+  def MinimizeWindow(self):
+    return self.ExecuteCommand(Command.MINIMIZE_WINDOW, {'windowHandle': 'current'})
+
   def FullScreenWindow(self):
     self.ExecuteCommand(Command.FULLSCREEN_WINDOW)
 
