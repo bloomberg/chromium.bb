@@ -2375,7 +2375,7 @@ test("unit_tests") {
     "../browser/metrics/thread_watcher_android_unittest.cc",
     "../browser/metrics/thread_watcher_unittest.cc",
     "../browser/mod_pagespeed/mod_pagespeed_metrics_unittest.cc",
-    "../browser/net/chrome_http_user_agent_settings_unittest.cc",
+    "../browser/net/chrome_accept_language_settings_unittest.cc",
     "../browser/net/chrome_network_delegate_unittest.cc",
     "../browser/net/dns_probe_runner_unittest.cc",
     "../browser/net/dns_probe_service_unittest.cc",

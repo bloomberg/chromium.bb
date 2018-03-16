@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/chrome_http_user_agent_settings.h"
+#include "chrome/browser/net/chrome_accept_language_settings.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,7 +115,7 @@ void ProfileNetworkContextService::UpdateAcceptLanguage() {
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
-  return ChromeHttpUserAgentSettings::ComputeAcceptLanguageFromPref(
+  return chrome_accept_language_settings::ComputeAcceptLanguageFromPref(
       pref_accept_language_.GetValue());
 }
 
