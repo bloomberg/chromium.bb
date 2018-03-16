@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1945 tests; 1940 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1957 tests; 1937 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface object
@@ -1629,22 +1629,34 @@ PASS EventTarget interface: document.createComment("abc") must inherit property 
 PASS EventTarget interface: calling removeEventListener(DOMString, EventListener, [object Object],[object Object]) on document.createComment("abc") with too few arguments must throw TypeError
 PASS EventTarget interface: document.createComment("abc") must inherit property "dispatchEvent(Event)" with the proper type
 PASS EventTarget interface: calling dispatchEvent(Event) on document.createComment("abc") with too few arguments must throw TypeError
-PASS Range interface: existence and properties of interface object
+FAIL AbstractRange interface: existence and properties of interface object assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface object length assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface object name assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface: existence and properties of interface prototype object assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+FAIL AbstractRange interface: attribute startContainer assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+PASS Unscopable handled correctly for startContainer property on AbstractRange
+FAIL AbstractRange interface: attribute startOffset assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+PASS Unscopable handled correctly for startOffset property on AbstractRange
+FAIL AbstractRange interface: attribute endContainer assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+PASS Unscopable handled correctly for endContainer property on AbstractRange
+FAIL AbstractRange interface: attribute endOffset assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+PASS Unscopable handled correctly for endOffset property on AbstractRange
+FAIL AbstractRange interface: attribute collapsed assert_own_property: self does not have own property "AbstractRange" expected property "AbstractRange" missing
+PASS Unscopable handled correctly for collapsed property on AbstractRange
+FAIL StaticRange interface: existence and properties of interface object assert_own_property: should inherit from AbstractRange, but self has no such property expected property "AbstractRange" missing
+PASS StaticRange interface object length
+PASS StaticRange interface object name
+FAIL StaticRange interface: existence and properties of interface prototype object assert_own_property: should inherit from AbstractRange, but self has no such property expected property "AbstractRange" missing
+PASS StaticRange interface: existence and properties of interface prototype object's "constructor" property
+PASS StaticRange interface: existence and properties of interface prototype object's @@unscopables property
+FAIL Range interface: existence and properties of interface object assert_own_property: should inherit from AbstractRange, but self has no such property expected property "AbstractRange" missing
 PASS Range interface object length
 PASS Range interface object name
-PASS Range interface: existence and properties of interface prototype object
+FAIL Range interface: existence and properties of interface prototype object assert_own_property: should inherit from AbstractRange, but self has no such property expected property "AbstractRange" missing
 PASS Range interface: existence and properties of interface prototype object's "constructor" property
 PASS Range interface: existence and properties of interface prototype object's @@unscopables property
-PASS Range interface: attribute startContainer
-PASS Unscopable handled correctly for startContainer property on Range
-PASS Range interface: attribute startOffset
-PASS Unscopable handled correctly for startOffset property on Range
-PASS Range interface: attribute endContainer
-PASS Unscopable handled correctly for endContainer property on Range
-PASS Range interface: attribute endOffset
-PASS Unscopable handled correctly for endOffset property on Range
-PASS Range interface: attribute collapsed
-PASS Unscopable handled correctly for collapsed property on Range
 PASS Range interface: attribute commonAncestorContainer
 PASS Unscopable handled correctly for commonAncestorContainer property on Range
 PASS Range interface: operation setStart(Node, unsigned long)
@@ -1698,11 +1710,6 @@ PASS Unscopable handled correctly for intersectsNode(Node) on Range
 PASS Range interface: stringifier
 PASS Range must be primary interface of document.createRange()
 PASS Stringification of document.createRange()
-PASS Range interface: document.createRange() must inherit property "startContainer" with the proper type
-PASS Range interface: document.createRange() must inherit property "startOffset" with the proper type
-PASS Range interface: document.createRange() must inherit property "endContainer" with the proper type
-PASS Range interface: document.createRange() must inherit property "endOffset" with the proper type
-PASS Range interface: document.createRange() must inherit property "collapsed" with the proper type
 PASS Range interface: document.createRange() must inherit property "commonAncestorContainer" with the proper type
 PASS Range interface: document.createRange() must inherit property "setStart(Node, unsigned long)" with the proper type
 PASS Range interface: calling setStart(Node, unsigned long) on document.createRange() with too few arguments must throw TypeError
@@ -1743,13 +1750,13 @@ PASS Range interface: document.createRange() must inherit property "comparePoint
 PASS Range interface: calling comparePoint(Node, unsigned long) on document.createRange() with too few arguments must throw TypeError
 PASS Range interface: document.createRange() must inherit property "intersectsNode(Node)" with the proper type
 PASS Range interface: calling intersectsNode(Node) on document.createRange() with too few arguments must throw TypeError
+PASS AbstractRange interface: document.createRange() must inherit property "startContainer" with the proper type
+PASS AbstractRange interface: document.createRange() must inherit property "startOffset" with the proper type
+PASS AbstractRange interface: document.createRange() must inherit property "endContainer" with the proper type
+PASS AbstractRange interface: document.createRange() must inherit property "endOffset" with the proper type
+PASS AbstractRange interface: document.createRange() must inherit property "collapsed" with the proper type
 PASS Range must be primary interface of detachedRange
 PASS Stringification of detachedRange
-PASS Range interface: detachedRange must inherit property "startContainer" with the proper type
-PASS Range interface: detachedRange must inherit property "startOffset" with the proper type
-PASS Range interface: detachedRange must inherit property "endContainer" with the proper type
-PASS Range interface: detachedRange must inherit property "endOffset" with the proper type
-PASS Range interface: detachedRange must inherit property "collapsed" with the proper type
 PASS Range interface: detachedRange must inherit property "commonAncestorContainer" with the proper type
 PASS Range interface: detachedRange must inherit property "setStart(Node, unsigned long)" with the proper type
 PASS Range interface: calling setStart(Node, unsigned long) on detachedRange with too few arguments must throw TypeError
@@ -1790,6 +1797,11 @@ PASS Range interface: detachedRange must inherit property "comparePoint(Node, un
 PASS Range interface: calling comparePoint(Node, unsigned long) on detachedRange with too few arguments must throw TypeError
 PASS Range interface: detachedRange must inherit property "intersectsNode(Node)" with the proper type
 PASS Range interface: calling intersectsNode(Node) on detachedRange with too few arguments must throw TypeError
+PASS AbstractRange interface: detachedRange must inherit property "startContainer" with the proper type
+PASS AbstractRange interface: detachedRange must inherit property "startOffset" with the proper type
+PASS AbstractRange interface: detachedRange must inherit property "endContainer" with the proper type
+PASS AbstractRange interface: detachedRange must inherit property "endOffset" with the proper type
+PASS AbstractRange interface: detachedRange must inherit property "collapsed" with the proper type
 PASS NodeIterator interface: existence and properties of interface object
 PASS NodeIterator interface object length
 PASS NodeIterator interface object name

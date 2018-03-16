@@ -1,0 +1,74 @@
+This is a testharness.js-based test.
+Found 70 tests; 17 PASS, 53 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL Allows setting the delay to a positive number anim.effect.updateTiming is not a function
+FAIL Allows setting the delay to a negative number anim.effect.updateTiming is not a function
+FAIL Allows setting the delay of an animation in progress: positive delay that causes the animation to be no longer in-effect anim.effect.updateTiming is not a function
+FAIL Allows setting the delay of an animation in progress: negative delay that seeks into the active interval anim.effect.updateTiming is not a function
+FAIL Allows setting the delay of an animation in progress: large negative delay that causes the animation to be finished anim.effect.updateTiming is not a function
+PASS Throws when setting invalid delay value: NaN
+PASS Throws when setting invalid delay value: Infinity
+PASS Throws when setting invalid delay value: -Infinity
+FAIL Allows setting the endDelay to a positive number anim.effect.updateTiming is not a function
+FAIL Allows setting the endDelay to a negative number anim.effect.updateTiming is not a function
+PASS Throws when setting the endDelay to infinity
+PASS Throws when setting the endDelay to negative infinity
+FAIL Allows setting the fill to 'none' anim.effect.updateTiming is not a function
+FAIL Allows setting the fill to 'forwards' anim.effect.updateTiming is not a function
+FAIL Allows setting the fill to 'backwards' anim.effect.updateTiming is not a function
+FAIL Allows setting the fill to 'both' anim.effect.updateTiming is not a function
+FAIL Allows setting the iterationStart of an animation in progress: backwards-filling anim.effect.updateTiming is not a function
+FAIL Allows setting the iterationStart of an animation in progress: active phase anim.effect.updateTiming is not a function
+FAIL Allows setting the iterationStart of an animation in progress: forwards-filling anim.effect.updateTiming is not a function
+PASS Throws when setting invalid iterationStart value: -1
+PASS Throws when setting invalid iterationStart value: NaN
+PASS Throws when setting invalid iterationStart value: Infinity
+PASS Throws when setting invalid iterationStart value: -Infinity
+FAIL Allows setting iterations to a double value anim.effect.updateTiming is not a function
+FAIL Allows setting iterations to infinity anim.effect.updateTiming is not a function
+PASS Throws when setting invalid iterations value: -1
+PASS Throws when setting invalid iterations value: -Infinity
+PASS Throws when setting invalid iterations value: NaN
+FAIL Allows setting the iterations of an animation in progress anim.effect.updateTiming is not a function
+FAIL Allows setting the duration to 123.45 anim.effect.updateTiming is not a function
+FAIL Allows setting the duration to auto anim.effect.updateTiming is not a function
+FAIL Allows setting the duration to Infinity anim.effect.updateTiming is not a function
+PASS Throws when setting invalid duration: -1
+PASS Throws when setting invalid duration: NaN
+PASS Throws when setting invalid duration: -Infinity
+PASS Throws when setting invalid duration: "abc"
+PASS Throws when setting invalid duration: "100"
+FAIL Allows setting the duration of an animation in progress anim.effect.getTiming is not a function
+FAIL Allows setting the duration of an animation in progress such that the the start and current time do not change promise_test: Unhandled rejection with value: object "TypeError: anim.effect.updateTiming is not a function"
+FAIL Allows setting the direction to each of the possible keywords anim.effect.updateTiming is not a function
+FAIL Allows setting the direction of an animation in progress from 'normal' to 'reverse' anim.effect.updateTiming is not a function
+FAIL Allows setting the direction of an animation in progress from 'normal' to 'reverse' while at start of active interval anim.effect.updateTiming is not a function
+FAIL Allows setting the direction of an animation in progress from 'normal' to 'reverse' while filling backwards anim.effect.updateTiming is not a function
+FAIL Allows setting the direction of an animation in progress from 'normal' to 'alternate' anim.effect.updateTiming is not a function
+FAIL Allows setting the direction of an animation in progress from 'alternate' to 'alternate-reverse' anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a step-start function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a steps(1, start) function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a steps(2, start) function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a step-end function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a steps(1) function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a steps(1, end) function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a steps(2, end) function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a frames function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a linear function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a ease function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a ease-in function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a ease-in-out function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a ease-out function anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a easing function which produces values greater than 1 anim.effect.updateTiming is not a function
+FAIL Allows setting the easing to a easing function which produces values less than 1 anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'ease' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'linear' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'ease-in' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'ease-out' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'ease-in-out' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'cubic-bezier(0.1, 5, 0.23, 0)' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'steps(3, start)' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'steps(3)' anim.effect.updateTiming is not a function
+FAIL Updates the specified value when setting the easing to 'frames(3)' anim.effect.updateTiming is not a function
+FAIL Allows setting the easing of an animation in progress anim.effect.updateTiming is not a function
+Harness: the test ran to completion.
+

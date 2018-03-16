@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Copied KeyframeEffect has the same target
+PASS Copied KeyframeEffect has the same keyframes
+PASS Copied KeyframeEffect has the same KeyframeEffectOptions
+FAIL Copied KeyframeEffect has the same timing content effect.getTiming is not a function
+Harness: the test ran to completion.
+

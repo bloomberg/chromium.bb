@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Animated style is cleared after calling Animation.cancel()
+FAIL After cancelling an animation, it can still be seeked animation.effect.updateTiming is not a function
+PASS After cancelling an animation, it can still be re-used
+Harness: the test ran to completion.
+
