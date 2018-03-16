@@ -1,6 +1,8 @@
 {
+  // Aliases for event interface names. They can be used for
+  // document.createEvent() argument.
+  // https://dom.spec.whatwg.org/#dom-document-createevent
   data: [
-    // Aliases
     {
       name: "WebKitAnimationEvent",
       ImplementedAs: "AnimationEvent",
