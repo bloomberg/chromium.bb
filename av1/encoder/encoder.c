@@ -354,12 +354,6 @@ static void setup_frame(AV1_COMP *cpi) {
 
   cm->prev_frame = get_prev_frame(cm);
   cpi->vaq_refresh = 0;
-
-  if (cm->prev_frame)
-    cm->last_frame_seg_map = cm->prev_frame->seg_map;
-  else
-    cm->last_frame_seg_map = NULL;
-  cm->current_frame_seg_map = cm->cur_frame->seg_map;
 }
 
 static void enc_setup_mi(AV1_COMMON *cm) {
@@ -549,9 +543,6 @@ static void save_coding_context(AV1_COMP *cpi) {
   av1_copy(cc->nmv_costs, cpi->nmv_costs);
   av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
 
-  av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
-  av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
-
   cc->fc = *cm->fc;
 }
 
@@ -564,9 +555,6 @@ static void restore_coding_context(AV1_COMP *cpi) {
   av1_copy(cpi->td.mb.nmv_vec_cost, cc->nmv_vec_cost);
   av1_copy(cpi->nmv_costs, cc->nmv_costs);
   av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
-
-  av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
-  av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
 
   *cm->fc = cc->fc;
 }

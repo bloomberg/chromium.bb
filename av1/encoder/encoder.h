@@ -51,11 +51,6 @@ typedef struct {
   int nmv_costs[2][MV_VALS];
   int nmv_costs_hp[2][MV_VALS];
 
-  // 0 = Intra, Last, GF, ARF
-  int8_t last_ref_lf_deltas[TOTAL_REFS_PER_FRAME];
-  // 0 = ZERO_MV, MV
-  int8_t last_mode_lf_deltas[MAX_MODE_LF_DELTAS];
-
   FRAME_CONTEXT fc;
 } CODING_CONTEXT;
 

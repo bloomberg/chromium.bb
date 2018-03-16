@@ -78,6 +78,8 @@ extern "C" {
 #define II_WEDGE_IDX_ENTROPY_CODING 0
 #endif
 
+#define MAX_MODE_LF_DELTAS 2
+
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
   DIST,
 } COMPOUND_DIST_WEIGHT_MODE;

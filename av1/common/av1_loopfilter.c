@@ -655,7 +655,6 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
 
   // init limits for given sharpness
   update_sharpness(lfi, lf->sharpness_level);
-  lf->last_sharpness_level = lf->sharpness_level;
 
   // init hev threshold const vectors
   for (lvl = 0; lvl <= MAX_LOOP_FILTER; lvl++)
@@ -672,11 +671,8 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
   struct loopfilter *const lf = &cm->lf;
   const struct segmentation *const seg = &cm->seg;
 
-  // update limits if sharpness has changed
-  if (lf->last_sharpness_level != lf->sharpness_level) {
-    update_sharpness(lfi, lf->sharpness_level);
-    lf->last_sharpness_level = lf->sharpness_level;
-  }
+  // update sharpness limits
+  update_sharpness(lfi, lf->sharpness_level);
 
   for (seg_id = 0; seg_id < MAX_SEGMENTS; seg_id++) {
     for (int dir = 0; dir < 2; ++dir) {
