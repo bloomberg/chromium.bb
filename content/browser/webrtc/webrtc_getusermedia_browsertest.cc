@@ -259,16 +259,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaAndClone();");
 }
 
-// http://crbug.com/803516 : Flaky on Linux debug
-#if defined(OS_LINUX) && !defined(NDEBUG)
-#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
-  DISABLED_RenderVideoTrackInMultipleTagsAndPause
-#else
-#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
-  RenderVideoTrackInMultipleTagsAndPause
-#endif
+// TODO(crbug.com/803516) : Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_RenderVideoTrackInMultipleTagsAndPause) {
+                       DISABLED_RenderVideoTrackInMultipleTagsAndPause) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
