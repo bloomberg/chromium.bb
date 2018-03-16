@@ -27,13 +27,11 @@ void ExpectNotTraced() {
 }
 
 const char* SignOfInt(int value) {
-  if (value > 0) {
+  if (value > 0)
     return "positive";
-  } else if (value < 0) {
+  if (value < 0)
     return "negative";
-  } else {
-    return "zero";
-  }
+  return "zero";
 }
 
 class TraceableStateForTest
@@ -86,10 +84,10 @@ TEST(TracingHelperTest, TraceableStateOperators) {
   x = 1;
   EXPECT_EQ(0, y - x);
   EXPECT_EQ(2, x + y);
-  EXPECT_TRUE(x == y);
+  EXPECT_EQ(x, y);
   EXPECT_FALSE(x != y);
-  EXPECT_TRUE((x + y) != 3);
-  EXPECT_TRUE((2 - y + 1 + x) == 3);
+  EXPECT_NE(x + y, 3);
+  EXPECT_EQ(2 - y + 1 + x, 3);
   x = 3;
   y = 2;
   int z = x = y;

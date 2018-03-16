@@ -93,13 +93,11 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
   if (long_idle_period_duration >=
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
-    if (!idle_queue_->HasTaskToRunImmediately()) {
+    if (!idle_queue_->HasTaskToRunImmediately())
       return IdlePeriodState::kInLongIdlePeriodPaused;
-    } else if (long_idle_period_duration == max_long_idle_period_duration) {
+    if (long_idle_period_duration == max_long_idle_period_duration)
       return IdlePeriodState::kInLongIdlePeriodWithMaxDeadline;
-    } else {
-      return IdlePeriodState::kInLongIdlePeriod;
-    }
+    return IdlePeriodState::kInLongIdlePeriod;
   } else {
     // If we can't start the idle period yet then try again after wake-up.
     *next_long_idle_period_delay_out = base::TimeDelta::FromMilliseconds(

@@ -15,5 +15,5 @@ void PollableThreadSafeFlag::SetWhileLocked(bool value) {
 }
 
 bool PollableThreadSafeFlag::IsSet() const {
-  return base::subtle::Acquire_Load(&flag_) != false;
+  return base::subtle::Acquire_Load(&flag_);
 }

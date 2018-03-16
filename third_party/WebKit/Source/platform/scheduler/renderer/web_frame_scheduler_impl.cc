@@ -462,9 +462,10 @@ void WebFrameSchedulerImpl::AsValueInto(
     state->SetString("loading_control_task_queue",
                      PointerToString(loading_control_task_queue_.get()));
   }
-  if (throttleable_task_queue_)
+  if (throttleable_task_queue_) {
     state->SetString("throttleable_task_queue",
                      PointerToString(throttleable_task_queue_.get()));
+  }
   if (deferrable_task_queue_) {
     state->SetString("deferrable_task_queue",
                      PointerToString(deferrable_task_queue_.get()));
