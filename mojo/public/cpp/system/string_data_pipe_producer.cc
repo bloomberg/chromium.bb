@@ -58,7 +58,9 @@ MojoResult WriteDataToProducerHandle(DataPipeProducerHandle producer,
 StringDataPipeProducer::StringDataPipeProducer(
     ScopedDataPipeProducerHandle producer)
     : producer_(std::move(producer)),
-      watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      watcher_(FROM_HERE,
+               SimpleWatcher::ArmingPolicy::AUTOMATIC,
+               base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
 StringDataPipeProducer::~StringDataPipeProducer() = default;

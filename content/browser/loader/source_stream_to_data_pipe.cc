@@ -17,7 +17,8 @@ SourceStreamToDataPipe::SourceStreamToDataPipe(
       dest_(std::move(dest)),
       completion_callback_(std::move(completion_callback)),
       writable_handle_watcher_(FROM_HERE,
-                               mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+                               mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                               base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   writable_handle_watcher_.Watch(
       dest_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,

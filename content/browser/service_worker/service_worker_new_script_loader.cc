@@ -40,7 +40,9 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       resource_type_(static_cast<ResourceType>(resource_request.resource_type)),
       version_(version),
       network_client_binding_(this),
-      network_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      network_watcher_(FROM_HERE,
+                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                       base::SequencedTaskRunnerHandle::Get()),
       client_(std::move(client)),
       weak_factory_(this) {
   // ServiceWorkerNewScriptLoader is used for fetching the service worker main

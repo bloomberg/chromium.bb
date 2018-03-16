@@ -98,7 +98,8 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
     std::move(callback).Run(net::OK, upload_string_.length());
     upload_body_pipe_ = std::move(pipe);
     handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
-        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
+        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+        base::SequencedTaskRunnerHandle::Get());
     handle_watcher_->Watch(
         upload_body_pipe_.get(),
         // Don't bother watching for close - rely on read pipes for errors.
@@ -395,7 +396,8 @@ class BodyReader {
     DCHECK(!body_data_pipe_.is_valid());
     body_data_pipe_ = std::move(body_data_pipe);
     handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
-        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
+        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+        base::SequencedTaskRunnerHandle::Get());
     handle_watcher_->Watch(
         body_data_pipe_.get(),
         MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,

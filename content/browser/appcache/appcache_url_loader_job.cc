@@ -145,7 +145,8 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
       is_fallback_(false),
       binding_(this),
       writable_handle_watcher_(FROM_HERE,
-                               mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+                               mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                               base::SequencedTaskRunnerHandle::Get()),
       loader_callback_(std::move(loader_callback)),
       appcache_request_(appcache_request->GetWeakPtr()),
       is_main_resource_load_(IsResourceTypeFrame(static_cast<ResourceType>(

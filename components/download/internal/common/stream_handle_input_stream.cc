@@ -33,7 +33,8 @@ void StreamHandleInputStream::Initialize() {
       &StreamHandleInputStream::OnStreamCompleted, base::Unretained(this),
       mojom::NetworkRequestStatus::USER_CANCELED));
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
-      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+      base::SequencedTaskRunnerHandle::Get());
 }
 
 bool StreamHandleInputStream::IsEmpty() {

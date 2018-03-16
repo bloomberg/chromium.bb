@@ -1981,9 +1981,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
         },
         &run_loop, &count);
     SimpleWatcher producer_watcher(FROM_HERE,
-                                   SimpleWatcher::ArmingPolicy::AUTOMATIC);
+                                   SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                                   base::SequencedTaskRunnerHandle::Get());
     SimpleWatcher consumer_watcher(FROM_HERE,
-                                   SimpleWatcher::ArmingPolicy::AUTOMATIC);
+                                   SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                                   base::SequencedTaskRunnerHandle::Get());
     producer_watcher.Watch(Handle(producers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                            callback);
     consumer_watcher.Watch(Handle(consumers[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,

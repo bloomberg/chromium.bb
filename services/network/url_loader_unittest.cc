@@ -436,7 +436,8 @@ class URLLoaderTest : public testing::Test {
       // If no data has been received yet, spin the message loop until it has.
       if (rv == MOJO_RESULT_SHOULD_WAIT) {
         mojo::SimpleWatcher watcher(
-            FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+            FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+            base::SequencedTaskRunnerHandle::Get());
         base::RunLoop run_loop;
 
         watcher.Watch(

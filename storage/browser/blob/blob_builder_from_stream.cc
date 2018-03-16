@@ -38,7 +38,8 @@ void RunCallbackWhenDataPipeReady(
     mojo::ScopedDataPipeConsumerHandle pipe,
     base::OnceCallback<void(mojo::ScopedDataPipeConsumerHandle)> callback) {
   auto watcher = std::make_unique<mojo::SimpleWatcher>(
-      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+      base::SequencedTaskRunnerHandle::Get());
   auto* watcher_ptr = watcher.get();
   auto raw_pipe = pipe.get();
   watcher_ptr->Watch(
@@ -55,7 +56,9 @@ class DataPipeConsumerHelper {
   DataPipeConsumerHelper(mojo::ScopedDataPipeConsumerHandle pipe,
                          uint64_t max_bytes_to_read)
       : pipe_(std::move(pipe)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                 base::SequencedTaskRunnerHandle::Get()),
         max_bytes_to_read_(max_bytes_to_read) {
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                    MOJO_WATCH_CONDITION_SATISFIED,

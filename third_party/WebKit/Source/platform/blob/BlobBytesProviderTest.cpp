@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace blink {
 
@@ -309,8 +310,9 @@ TEST_F(BlobBytesProviderTest, RequestAsStream) {
 
   Vector<uint8_t> received_data;
   base::RunLoop loop;
-  mojo::SimpleWatcher watcher(FROM_HERE,
-                              mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+  mojo::SimpleWatcher watcher(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+      blink::scheduler::GetSequencedTaskRunnerForTesting());
   watcher.Watch(
       pipe.consumer_handle.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(

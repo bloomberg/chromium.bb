@@ -17,7 +17,9 @@ DataPipeDrainer::DataPipeDrainer(Client* client,
                                  mojo::ScopedDataPipeConsumerHandle source)
     : client_(client),
       source_(std::move(source)),
-      handle_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      handle_watcher_(FROM_HERE,
+                      SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                      base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(client_);
   handle_watcher_.Watch(
