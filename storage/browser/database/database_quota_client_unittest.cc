@@ -58,14 +58,14 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   bool GetAllOriginIdentifiers(
       std::vector<std::string>* origins_identifiers) override {
-    for (auto& iter : mock_origin_infos_)
-      origins_identifiers->push_back(iter.second.GetOriginIdentifier());
+    for (const auto& origin_info : mock_origin_infos_)
+      origins_identifiers->push_back(origin_info.second.GetOriginIdentifier());
     return true;
   }
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) override {
-    for (auto& iter : mock_origin_infos_)
-      origins_info->push_back(OriginInfo(iter.second));
+    for (const auto& origin_info : mock_origin_infos_)
+      origins_info->push_back(OriginInfo(origin_info.second));
     return true;
   }
 
