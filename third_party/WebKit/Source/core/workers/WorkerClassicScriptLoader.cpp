@@ -25,7 +25,7 @@
  *
  */
 
-#include "core/workers/WorkerScriptLoader.h"
+#include "core/workers/WorkerClassicScriptLoader.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -48,19 +48,19 @@
 
 namespace blink {
 
-WorkerScriptLoader::WorkerScriptLoader()
+WorkerClassicScriptLoader::WorkerClassicScriptLoader()
     : response_address_space_(mojom::IPAddressSpace::kPublic) {}
 
-WorkerScriptLoader::~WorkerScriptLoader() {
+WorkerClassicScriptLoader::~WorkerClassicScriptLoader() {
   // If |m_threadableLoader| is still working, we have to cancel it here.
-  // Otherwise WorkerScriptLoader::didFail() of the deleted |this| will be
-  // called from DocumentThreadableLoader::notifyFinished() when the frame
-  // will be destroyed.
+  // Otherwise didFail() of the deleted |this| will be called from
+  // DocumentThreadableLoader::notifyFinished() when the frame will be
+  // destroyed.
   if (need_to_cancel_)
     Cancel();
 }
 
-void WorkerScriptLoader::LoadSynchronously(
+void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
     WebURLRequest::RequestContext request_context,
@@ -87,7 +87,7 @@ void WorkerScriptLoader::LoadSynchronously(
       resource_loader_options);
 }
 
-void WorkerScriptLoader::LoadAsynchronously(
+void WorkerClassicScriptLoader::LoadAsynchronously(
     ExecutionContext& execution_context,
     const KURL& url,
     WebURLRequest::RequestContext request_context,
@@ -118,7 +118,7 @@ void WorkerScriptLoader::LoadAsynchronously(
   // to this object, while some of the callchain assumes that the client and
   // loader wouldn't be deleted within callbacks.
   // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
-  scoped_refptr<WorkerScriptLoader> protect(this);
+  scoped_refptr<WorkerClassicScriptLoader> protect(this);
   need_to_cancel_ = true;
   threadable_loader_ = ThreadableLoader::Create(
       execution_context, this, options, resource_loader_options);
@@ -127,12 +127,12 @@ void WorkerScriptLoader::LoadAsynchronously(
     NotifyFinished();
 }
 
-const KURL& WorkerScriptLoader::ResponseURL() const {
+const KURL& WorkerClassicScriptLoader::ResponseURL() const {
   DCHECK(!Failed());
   return response_url_;
 }
 
-void WorkerScriptLoader::DidReceiveResponse(
+void WorkerClassicScriptLoader::DidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
@@ -166,7 +166,7 @@ void WorkerScriptLoader::DidReceiveResponse(
     std::move(response_callback_).Run();
 }
 
-void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
+void WorkerClassicScriptLoader::DidReceiveData(const char* data, unsigned len) {
   if (failed_)
     return;
 
@@ -183,12 +183,14 @@ void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
   source_text_.Append(decoder_->Decode(data, len));
 }
 
-void WorkerScriptLoader::DidReceiveCachedMetadata(const char* data, int size) {
+void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
+                                                         int size) {
   cached_metadata_ = std::make_unique<Vector<char>>(size);
   memcpy(cached_metadata_->data(), data, size);
 }
 
-void WorkerScriptLoader::DidFinishLoading(unsigned long identifier, double) {
+void WorkerClassicScriptLoader::DidFinishLoading(unsigned long identifier,
+                                                 double) {
   need_to_cancel_ = false;
   if (!failed_ && decoder_)
     source_text_.Append(decoder_->Flush());
@@ -196,29 +198,29 @@ void WorkerScriptLoader::DidFinishLoading(unsigned long identifier, double) {
   NotifyFinished();
 }
 
-void WorkerScriptLoader::DidFail(const ResourceError& error) {
+void WorkerClassicScriptLoader::DidFail(const ResourceError& error) {
   need_to_cancel_ = false;
   canceled_ = error.IsCancellation();
   NotifyError();
 }
 
-void WorkerScriptLoader::DidFailRedirectCheck() {
+void WorkerClassicScriptLoader::DidFailRedirectCheck() {
   // When didFailRedirectCheck() is called, the ResourceLoader for the script
   // is not canceled yet. So we don't reset |m_needToCancel| here.
   NotifyError();
 }
 
-void WorkerScriptLoader::Cancel() {
+void WorkerClassicScriptLoader::Cancel() {
   need_to_cancel_ = false;
   if (threadable_loader_)
     threadable_loader_->Cancel();
 }
 
-String WorkerScriptLoader::SourceText() {
+String WorkerClassicScriptLoader::SourceText() {
   return source_text_.ToString();
 }
 
-void WorkerScriptLoader::NotifyError() {
+void WorkerClassicScriptLoader::NotifyError() {
   failed_ = true;
   // notifyError() could be called before ThreadableLoader::create() returns
   // e.g. from didFail(), and in that case m_threadableLoader is not yet set
@@ -230,14 +232,14 @@ void WorkerScriptLoader::NotifyError() {
     NotifyFinished();
 }
 
-void WorkerScriptLoader::NotifyFinished() {
+void WorkerClassicScriptLoader::NotifyFinished() {
   if (!finished_callback_)
     return;
 
   std::move(finished_callback_).Run();
 }
 
-void WorkerScriptLoader::ProcessContentSecurityPolicy(
+void WorkerClassicScriptLoader::ProcessContentSecurityPolicy(
     const ResourceResponse& response) {
   // Per http://www.w3.org/TR/CSP2/#processing-model-workers, if the Worker's
   // URL is not a GUID, then it grabs its CSP from the response headers

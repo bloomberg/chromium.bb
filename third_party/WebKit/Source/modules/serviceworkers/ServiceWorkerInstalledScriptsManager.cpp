@@ -38,7 +38,7 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(
     return ScriptStatus::kFailed;
   }
 
-  // This is from WorkerScriptLoader::DidReceiveData.
+  // This is from WorkerClassicScriptLoader::DidReceiveData.
   std::unique_ptr<TextResourceDecoder> decoder =
       TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent,
