@@ -89,6 +89,8 @@ class SVGPatternElement final : public SVGElement,
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
+  const SVGPatternElement* ReferencedElement() const;
+
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   bool SelfHasRelativeLengths() const override;

@@ -188,11 +188,8 @@ void SVGGradientElement::CollectCommonAttributes(
 
 const SVGGradientElement* SVGGradientElement::ReferencedElement() const {
   // Respect xlink:href, take attributes from referenced element.
-  Element* referenced_element =
-      TargetElementFromIRIString(HrefString(), GetTreeScope());
-  if (!referenced_element || !IsSVGGradientElement(*referenced_element))
-    return nullptr;
-  return ToSVGGradientElement(referenced_element);
+  return ToSVGGradientElementOrNull(
+      TargetElementFromIRIString(HrefString(), GetTreeScope()));
 }
 
 Vector<Gradient::ColorStop> SVGGradientElement::BuildStops() const {
