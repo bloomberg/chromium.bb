@@ -82,13 +82,6 @@ static bool TokenExitsForeignContent(const CompactHTMLToken& token) {
            token.GetAttributeItem(sizeAttr)));
 }
 
-static bool TokenExitsSVG(const CompactHTMLToken& token) {
-  // FIXME: It's very fragile that we special case foreignObject here to be
-  // case-insensitive.
-  return DeprecatedEqualIgnoringCase(token.Data(),
-                                     SVGNames::foreignObjectTag.LocalName());
-}
-
 static bool TokenExitsMath(const CompactHTMLToken& token) {
   // FIXME: This is copied from HTMLElementStack::isMathMLTextIntegrationPoint
   // and changed to use threadSafeMatch.
@@ -148,10 +141,10 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       namespace_stack_.push_back(kMathML);
     if (InForeignContent() && TokenExitsForeignContent(token))
       namespace_stack_.pop_back();
-    if ((namespace_stack_.back() == SVG && TokenExitsSVG(token)) ||
-        (namespace_stack_.back() == kMathML && TokenExitsMath(token)))
+    if (IsHTMLIntegrationPointForStartTag(token) ||
+        (namespace_stack_.back() == kMathML && TokenExitsMath(token))) {
       namespace_stack_.push_back(HTML);
-    if (!InForeignContent()) {
+    } else if (!InForeignContent()) {
       // FIXME: This is just a copy of Tokenizer::updateStateFor which uses
       // threadSafeMatches.
       if (ThreadSafeMatch(tag_name, textareaTag) ||
@@ -203,8 +196,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
          ThreadSafeMatch(tag_name, SVGNames::svgTag)) ||
         (namespace_stack_.back() == kMathML &&
          ThreadSafeMatch(tag_name, MathMLNames::mathTag)) ||
-        (namespace_stack_.Contains(SVG) && namespace_stack_.back() == HTML &&
-         TokenExitsSVG(token)) ||
+        IsHTMLIntegrationPointForEndTag(token) ||
         (namespace_stack_.Contains(kMathML) &&
          namespace_stack_.back() == HTML && TokenExitsMath(token))) {
       namespace_stack_.pop_back();
@@ -224,6 +216,61 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
   tokenizer->SetForceNullCharacterReplacement(InForeignContent());
   tokenizer->SetShouldAllowCDATA(InForeignContent());
   return simulated_token;
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
+    const CompactHTMLToken& token) const {
+  DCHECK(token.GetType() == HTMLToken::kStartTag) << token.GetType();
+
+  Namespace tokens_ns = namespace_stack_.back();
+  const String& tag_name = token.Data();
+  if (tokens_ns == kMathML) {
+    if (!ThreadSafeMatch(tag_name, MathMLNames::annotation_xmlTag))
+      return false;
+    if (auto* encoding = token.GetAttributeItem(MathMLNames::encodingAttr)) {
+      return EqualIgnoringASCIICase(encoding->Value(), "text/html") ||
+             EqualIgnoringASCIICase(encoding->Value(), "application/xhtml+xml");
+    }
+  } else if (tokens_ns == SVG) {
+    // FIXME: It's very fragile that we special case foreignObject here to be
+    // case-insensitive.
+    if (DeprecatedEqualIgnoringCase(tag_name,
+                                    SVGNames::foreignObjectTag.LocalName()))
+      return true;
+    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
+           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+  }
+  return false;
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
+    const CompactHTMLToken& token) const {
+  if (token.GetType() != HTMLToken::kEndTag)
+    return false;
+
+  // If it's inside an HTML integration point, the top namespace is
+  // HTML, and its next namespace is not HTML.
+  if (namespace_stack_.back() != HTML)
+    return false;
+  if (namespace_stack_.size() < 2)
+    return false;
+  Namespace tokens_ns = namespace_stack_[namespace_stack_.size() - 2];
+
+  const String& tag_name = token.Data();
+  if (tokens_ns == kMathML)
+    return ThreadSafeMatch(tag_name, MathMLNames::annotation_xmlTag);
+  if (tokens_ns == SVG) {
+    // FIXME: It's very fragile that we special case foreignObject here to be
+    // case-insensitive.
+    if (DeprecatedEqualIgnoringCase(tag_name,
+                                    SVGNames::foreignObjectTag.LocalName()))
+      return true;
+    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
+           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+  }
+  return false;
 }
 
 }  // namespace blink

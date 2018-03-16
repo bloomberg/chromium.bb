@@ -64,6 +64,8 @@ class CORE_EXPORT HTMLTreeBuilderSimulator {
 
  private:
   bool InForeignContent() const { return namespace_stack_.back() != HTML; }
+  bool IsHTMLIntegrationPointForStartTag(const CompactHTMLToken&) const;
+  bool IsHTMLIntegrationPointForEndTag(const CompactHTMLToken&) const;
 
   HTMLParserOptions options_;
   State namespace_stack_;
