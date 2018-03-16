@@ -48,7 +48,7 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
-#include "ui/keyboard/content/keyboard_content_util.h"
+#include "ui/keyboard/content/keyboard_constants.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace chromeos {
@@ -129,6 +129,7 @@ void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
   menu_activated = other.menu_activated;
   allowed_keyboard_layout_input_method_ids =
       other.allowed_keyboard_layout_input_method_ids;
+  input_view_url = other.input_view_url;
 }
 
 bool InputMethodManagerImpl::StateImpl::IsActive() const {
@@ -166,6 +167,7 @@ std::string InputMethodManagerImpl::StateImpl::Dump() const {
     os << " '" << it->first << "' => '" << it->second.id() << "',\n";
   }
   os << "pending_input_method_id: '" << pending_input_method_id << "'\n";
+  os << "input_view_url: '" << input_view_url << "'\n";
 
   return os.str();
 }
@@ -819,6 +821,18 @@ bool InputMethodManagerImpl::StateImpl::InputMethodIsActivated(
   return base::ContainsValue(active_input_method_ids, input_method_id);
 }
 
+void InputMethodManagerImpl::StateImpl::EnableInputView() {
+  input_view_url = current_input_method.input_view_url();
+}
+
+void InputMethodManagerImpl::StateImpl::DisableInputView() {
+  input_view_url = GURL();
+}
+
+const GURL& InputMethodManagerImpl::StateImpl::GetInputViewUrl() const {
+  return input_view_url;
+}
+
 // ------------------------ InputMethodManagerImpl
 bool InputMethodManagerImpl::IsLoginKeyboard(
     const std::string& layout) const {
@@ -1060,7 +1074,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   } else {
     // If no engine to enable, cancel the virtual keyboard url override so that
     // it can use the fallback system virtual keyboard UI.
-    keyboard::SetOverrideContentUrl(GURL());
+    state_->DisableInputView();
     keyboard::KeyboardController* keyboard_controller =
         keyboard::KeyboardController::GetInstance();
     if (keyboard_controller)
@@ -1247,13 +1261,7 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
 }
 
 void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
-  GURL input_view_url;
-  if (GetActiveIMEState()) {
-    input_view_url =
-        GetActiveIMEState()->GetCurrentInputMethod().input_view_url();
-  }
-  GURL url = input_view_url.is_empty() ? keyboard::GetOverrideContentUrl()
-                                       : input_view_url;
+  GURL url = state_->GetInputViewUrl();
 
   // If fails to find ref or tag "id" in the ref, it means the current IME is
   // not system IME, and we don't support show emoji, handwriting or voice
@@ -1269,7 +1277,7 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   if (keyset.empty()) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
-    keyboard::SetOverrideContentUrl(input_view_url);
+    state_->input_view_url = state_->current_input_method.input_view_url();
     keyboard::KeyboardController* keyboard_controller =
         keyboard::KeyboardController::GetInstance();
     if (keyboard_controller)
@@ -1291,7 +1299,7 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
 
   GURL::Replacements replacements;
   replacements.SetRefStr(overridden_ref);
-  keyboard::SetOverrideContentUrl(url.ReplaceComponents(replacements));
+  state_->input_view_url = url.ReplaceComponents(replacements);
 
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();

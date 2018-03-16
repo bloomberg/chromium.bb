@@ -43,16 +43,10 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
  public:
   class TestApi {
    public:
-    explicit TestApi(ChromeKeyboardUI* ui) : ui_(ui) {}
-
-    const content::WebContents* keyboard_contents() const {
-      return ui_->keyboard_contents_.get();
-    }
+    static void SetOverrideVirtualKeyboardUrl(base::Optional<GURL> url);
 
    private:
-    ChromeKeyboardUI* ui_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
+    DISALLOW_IMPLICIT_CONSTRUCTORS(TestApi);
   };
 
   explicit ChromeKeyboardUI(content::BrowserContext* context);

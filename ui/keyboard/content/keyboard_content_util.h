@@ -7,21 +7,11 @@
 
 #include <stddef.h>
 
-#include "base/strings/string16.h"
 #include "ui/keyboard/keyboard_export.h"
-
-class GURL;
 
 struct GritResourceMap;
 
 namespace keyboard {
-
-// Sets the override content url.
-// This is used by for input view for extension IMEs.
-KEYBOARD_EXPORT void SetOverrideContentUrl(const GURL& url);
-
-// Gets the override content url.
-KEYBOARD_EXPORT const GURL& GetOverrideContentUrl();
 
 // Get the list of keyboard resources. |size| is populated with the number of
 // resources in the returned array.

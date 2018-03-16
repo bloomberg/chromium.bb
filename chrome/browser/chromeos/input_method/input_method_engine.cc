@@ -31,7 +31,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/keyboard/content/keyboard_content_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 using input_method::InputMethodEngineBase;
@@ -225,10 +224,9 @@ void InputMethodEngine::HideInputView() {
 }
 
 void InputMethodEngine::EnableInputView() {
-  keyboard::SetOverrideContentUrl(input_method::InputMethodManager::Get()
-                                      ->GetActiveIMEState()
-                                      ->GetCurrentInputMethod()
-                                      .input_view_url());
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->EnableInputView();
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)

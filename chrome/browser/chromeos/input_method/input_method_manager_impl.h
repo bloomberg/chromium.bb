@@ -111,6 +111,9 @@ class InputMethodManagerImpl : public InputMethodManager,
     bool SetAllowedInputMethods(
         const std::vector<std::string>& new_allowed_input_method_ids) override;
     const std::vector<std::string>& GetAllowedInputMethods() override;
+    void EnableInputView() override;
+    void DisableInputView() override;
+    const GURL& GetInputViewUrl() const override;
 
     // ------------------------- Data members.
     Profile* const profile;
@@ -139,6 +142,10 @@ class InputMethodManagerImpl : public InputMethodManager,
 
     // True if the opt-in IME menu is activated.
     bool menu_activated;
+
+    // The URL of the input view of the active ime with parameters (e.g. layout,
+    // keyset).
+    GURL input_view_url;
 
    protected:
     friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;

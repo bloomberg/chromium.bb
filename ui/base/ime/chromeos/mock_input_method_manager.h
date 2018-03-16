@@ -57,6 +57,9 @@ class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
     bool SetAllowedInputMethods(
         const std::vector<std::string>& new_allowed_input_method_ids) override;
     const std::vector<std::string>& GetAllowedInputMethods() override;
+    void EnableInputView() override;
+    void DisableInputView() override;
+    const GURL& GetInputViewUrl() const override;
 
     // The active input method ids cache (actually default only)
     std::vector<std::string> active_input_method_ids;

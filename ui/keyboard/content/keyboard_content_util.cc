@@ -4,27 +4,11 @@
 
 #include "ui/keyboard/content/keyboard_content_util.h"
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "ui/keyboard/grit/keyboard_resources.h"
 #include "ui/keyboard/grit/keyboard_resources_map.h"
-#include "url/gurl.h"
 
 namespace keyboard {
-namespace {
-
-base::LazyInstance<GURL>::DestructorAtExit g_override_content_url =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-void SetOverrideContentUrl(const GURL& url) {
-  g_override_content_url.Get() = url;
-}
-
-const GURL& GetOverrideContentUrl() {
-  return g_override_content_url.Get();
-}
 
 const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   // This looks a lot like the contents of a resource map; however it is

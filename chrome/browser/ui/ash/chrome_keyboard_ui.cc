@@ -39,12 +39,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/keyboard/content/keyboard_constants.h"
-#include "ui/keyboard/content/keyboard_content_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -55,6 +55,8 @@
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
 namespace {
+
+base::Optional<GURL> g_override_virtual_keyboard_url;
 
 class WindowBoundsChangeObserver : public aura::WindowObserver {
  public:
@@ -248,6 +250,11 @@ class AshKeyboardControllerObserver
 
 }  // namespace
 
+void ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(
+    base::Optional<GURL> url) {
+  g_override_virtual_keyboard_url = url;
+}
+
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
     : browser_context_(context),
       default_url_(keyboard::kKeyboardURL),
@@ -436,12 +443,18 @@ void ChromeKeyboardUI::LoadContents(const GURL& url) {
 }
 
 const GURL& ChromeKeyboardUI::GetVirtualKeyboardUrl() {
-  if (keyboard::IsInputViewEnabled()) {
-    const GURL& override_url = keyboard::GetOverrideContentUrl();
-    return override_url.is_valid() ? override_url : default_url_;
-  } else {
+  if (g_override_virtual_keyboard_url.has_value())
+    return g_override_virtual_keyboard_url.value();
+
+  chromeos::input_method::InputMethodManager* ime_manager =
+      chromeos::input_method::InputMethodManager::Get();
+  if (!keyboard::IsInputViewEnabled() || !ime_manager ||
+      !ime_manager->GetActiveIMEState())
     return default_url_;
-  }
+
+  const GURL& input_view_url =
+      ime_manager->GetActiveIMEState()->GetInputViewUrl();
+  return input_view_url.is_valid() ? input_view_url : default_url_;
 }
 
 bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
