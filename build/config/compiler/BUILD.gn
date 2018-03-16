@@ -1968,8 +1968,11 @@ config("symbols") {
       cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
     }
 
-    if (is_win_fastlink) {
-      assert(!use_lld, "is_win_fastlink=true cannot be used with use_lld=true.")
+    if (is_win_fastlink && !use_lld) {
+      # TODO(hans): is_win_fastlink=true is incompatible with use_lld. However,
+      # some developers might have enabled it manually, so to ease the
+      # transition to lld, just ignore it rather than asserting. Eventually we
+      # want to assert instead.
 
       # Tell VS 2015+ to create a PDB that references debug
       # information in .obj and .lib files instead of copying
@@ -1982,7 +1985,7 @@ config("symbols") {
     if (is_clang) {
       # /DEBUG:FASTLINK requires every object file to have standalone debug
       # information.
-      if (is_win_fastlink) {
+      if (is_win_fastlink && !use_lld) {
         cflags += [ "-fstandalone-debug" ]
       } else {
         cflags += [ "-fno-standalone-debug" ]
