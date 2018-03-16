@@ -226,6 +226,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'blitframebuffer-srgb-and-linear-drawbuffers.html',
         ['win', 'nvidia', 'opengl'], bug=2355) # ANGLE bug ID
 
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_points.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_lines.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_triangles.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
+
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd', 'd3d11'], bug=483282) # owner:jmadill
