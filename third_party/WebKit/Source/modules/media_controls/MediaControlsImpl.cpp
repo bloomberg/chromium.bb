@@ -243,8 +243,6 @@ class MediaControlsImpl::MediaControlsResizeObserverDelegate final
 };
 
 // Observes changes to the HTMLMediaElement attributes that affect controls.
-// Currently only observes the disableRemotePlayback and disablePictureInPicture
-// attributes.
 class MediaControlsImpl::MediaElementMutationCallback
     : public MutationObserver::Delegate {
  public:
@@ -253,9 +251,9 @@ class MediaControlsImpl::MediaElementMutationCallback
     MutationObserverInit init;
     init.setAttributeOldValue(true);
     init.setAttributes(true);
-    init.setAttributeFilter(
-        {HTMLNames::disableremoteplaybackAttr.ToString(),
-         HTMLNames::disablepictureinpictureAttr.ToString()});
+    init.setAttributeFilter({HTMLNames::disableremoteplaybackAttr.ToString(),
+                             HTMLNames::disablepictureinpictureAttr.ToString(),
+                             HTMLNames::posterAttr.ToString()});
     observer_->observe(&controls_->MediaElement(), init, ASSERT_NO_EXCEPTION);
   }
 
@@ -274,8 +272,9 @@ class MediaControlsImpl::MediaElementMutationCallback
         continue;
 
       if (record->attributeName() ==
-          HTMLNames::disableremoteplaybackAttr.ToString())
+          HTMLNames::disableremoteplaybackAttr.ToString()) {
         controls_->RefreshCastButtonVisibilityWithoutUpdate();
+      }
 
       if (record->attributeName() ==
               HTMLNames::disablepictureinpictureAttr.ToString() &&
@@ -283,6 +282,9 @@ class MediaControlsImpl::MediaElementMutationCallback
         controls_->picture_in_picture_button_->SetIsWanted(
             ShouldShowPictureInPictureButton(controls_->MediaElement()));
       }
+
+      if (record->attributeName() == HTMLNames::posterAttr.ToString())
+        controls_->UpdateCSSClassFromState();
 
       BatchedControlUpdate batch(controls_);
     }
