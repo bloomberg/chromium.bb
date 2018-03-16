@@ -19,7 +19,7 @@ bool operator==(const LocalCaretRect& rect1, const LocalCaretRect& rect2) {
 }
 
 std::ostream& operator<<(std::ostream& out, const LocalCaretRect& caret_rect) {
-  return out << "layout_object = " << caret_rect.layout_object->GetNode()
+  return out << "layout_object = " << caret_rect.layout_object
              << ", rect = " << caret_rect.rect;
 }
 
