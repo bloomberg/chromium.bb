@@ -3388,8 +3388,3 @@ crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Ti
 
 # Sheriff 2018-03-08
 crbug.com/731518 [ Win Linux Mac ] webaudio/DynamicsCompressor/dynamicscompressor-clear-internal-state.html [ Failure Pass ]
-
-# LayoutGeometryMap DCHECK with nested sticky and scroll offset
-crbug.com/821216 compositing/overflow/mixed-composited-nested-sticky.html [ Crash Pass ]
-crbug.com/821216 virtual/prefer_compositing_to_lcd_text/compositing/overflow/mixed-composited-nested-sticky.html [ Crash Pass ]
-crbug.com/821216 virtual/disable-spv175/compositing/overflow/mixed-composited-nested-sticky.html [ Crash Pass ]

@@ -1028,7 +1028,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
-  void UpdateLayerPositionRecursive();
+  enum UpdateLayerPositionBehavior { AllLayers, OnlyStickyLayers };
+  void UpdateLayerPositionRecursive(UpdateLayerPositionBehavior = AllLayers);
 
   void SetNextSibling(PaintLayer* next) { next_ = next; }
   void SetPreviousSibling(PaintLayer* prev) { previous_ = prev; }
