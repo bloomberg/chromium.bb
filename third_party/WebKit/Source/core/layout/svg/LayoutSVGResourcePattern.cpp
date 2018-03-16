@@ -136,18 +136,13 @@ SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
     const FloatRect& object_bounding_box) {
   ClearInvalidationMask();
 
-  SVGPatternElement* pattern_element = ToSVGPatternElement(GetElement());
-  if (!pattern_element)
-    return SVGPaintServer::Invalid();
-
   // Validate pattern DOM state before building the actual
   // pattern. This should avoid tearing down the pattern we're
   // currently working on. Preferably the state validation should have
   // no side-effects though.
   if (should_collect_pattern_attributes_) {
-    pattern_element->SynchronizeAnimatedSVGAttribute(AnyQName());
-
     attributes_wrapper_->Set(PatternAttributes());
+    SVGPatternElement* pattern_element = ToSVGPatternElement(GetElement());
     pattern_element->CollectPatternAttributes(MutableAttributes());
     should_collect_pattern_attributes_ = false;
   }

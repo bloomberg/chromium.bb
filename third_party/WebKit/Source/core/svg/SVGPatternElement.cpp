@@ -148,46 +148,56 @@ LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGResourcePattern(this);
 }
 
-static void SetPatternAttributes(const SVGPatternElement* element,
+static void SetPatternAttributes(const SVGPatternElement& element,
                                  PatternAttributes& attributes) {
-  if (!attributes.HasX() && element->x()->IsSpecified())
-    attributes.SetX(element->x()->CurrentValue());
+  element.SynchronizeAnimatedSVGAttribute(AnyQName());
 
-  if (!attributes.HasY() && element->y()->IsSpecified())
-    attributes.SetY(element->y()->CurrentValue());
+  if (!attributes.HasX() && element.x()->IsSpecified())
+    attributes.SetX(element.x()->CurrentValue());
 
-  if (!attributes.HasWidth() && element->width()->IsSpecified())
-    attributes.SetWidth(element->width()->CurrentValue());
+  if (!attributes.HasY() && element.y()->IsSpecified())
+    attributes.SetY(element.y()->CurrentValue());
 
-  if (!attributes.HasHeight() && element->height()->IsSpecified())
-    attributes.SetHeight(element->height()->CurrentValue());
+  if (!attributes.HasWidth() && element.width()->IsSpecified())
+    attributes.SetWidth(element.width()->CurrentValue());
 
-  if (!attributes.HasViewBox() && element->HasValidViewBox())
-    attributes.SetViewBox(element->viewBox()->CurrentValue()->Value());
+  if (!attributes.HasHeight() && element.height()->IsSpecified())
+    attributes.SetHeight(element.height()->CurrentValue());
+
+  if (!attributes.HasViewBox() && element.HasValidViewBox())
+    attributes.SetViewBox(element.viewBox()->CurrentValue()->Value());
 
   if (!attributes.HasPreserveAspectRatio() &&
-      element->preserveAspectRatio()->IsSpecified())
+      element.preserveAspectRatio()->IsSpecified()) {
     attributes.SetPreserveAspectRatio(
-        element->preserveAspectRatio()->CurrentValue());
+        element.preserveAspectRatio()->CurrentValue());
+  }
 
-  if (!attributes.HasPatternUnits() && element->patternUnits()->IsSpecified())
+  if (!attributes.HasPatternUnits() && element.patternUnits()->IsSpecified()) {
     attributes.SetPatternUnits(
-        element->patternUnits()->CurrentValue()->EnumValue());
+        element.patternUnits()->CurrentValue()->EnumValue());
+  }
 
   if (!attributes.HasPatternContentUnits() &&
-      element->patternContentUnits()->IsSpecified())
+      element.patternContentUnits()->IsSpecified()) {
     attributes.SetPatternContentUnits(
-        element->patternContentUnits()->CurrentValue()->EnumValue());
+        element.patternContentUnits()->CurrentValue()->EnumValue());
+  }
 
   if (!attributes.HasPatternTransform() &&
-      element->HasTransform(SVGElement::kExcludeMotionTransform)) {
+      element.HasTransform(SVGElement::kExcludeMotionTransform)) {
     attributes.SetPatternTransform(
-        element->CalculateTransform(SVGElement::kExcludeMotionTransform));
+        element.CalculateTransform(SVGElement::kExcludeMotionTransform));
   }
 
   if (!attributes.HasPatternContentElement() &&
-      ElementTraversal::FirstWithin(*element))
-    attributes.SetPatternContentElement(element);
+      ElementTraversal::FirstWithin(element))
+    attributes.SetPatternContentElement(&element);
+}
+
+const SVGPatternElement* SVGPatternElement::ReferencedElement() const {
+  return ToSVGPatternElementOrNull(
+      TargetElementFromIRIString(HrefString(), GetTreeScope()));
 }
 
 void SVGPatternElement::CollectPatternAttributes(
@@ -196,19 +206,16 @@ void SVGPatternElement::CollectPatternAttributes(
   const SVGPatternElement* current = this;
 
   while (true) {
-    SetPatternAttributes(current, attributes);
+    SetPatternAttributes(*current, attributes);
     processed_patterns.insert(current);
 
-    // Respect xlink:href, take attributes from referenced element
-    Node* ref_node = SVGURIReference::TargetElementFromIRIString(
-        current->HrefString(), GetTreeScope());
+    // If (xlink:)href links to another SVGPatternElement, allow attributes
+    // from that element to override values this pattern didn't set.
+    current = current->ReferencedElement();
 
     // Only consider attached SVG pattern elements.
-    if (!IsSVGPatternElement(ref_node) || !ref_node->GetLayoutObject())
+    if (!current || !current->GetLayoutObject())
       break;
-
-    current = ToSVGPatternElement(ref_node);
-
     // Cycle detection
     if (processed_patterns.Contains(current))
       break;
