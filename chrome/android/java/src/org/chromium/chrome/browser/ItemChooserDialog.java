@@ -12,6 +12,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
@@ -29,7 +30,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -226,7 +226,7 @@ public class ItemChooserDialog {
                     addToDescriptionsMap(oldItem.mDescription);
                 }
 
-                if (!ApiCompatibilityUtils.objectEquals(icon, oldItem.mIcon)) {
+                if (!ObjectsCompat.equals(icon, oldItem.mIcon)) {
                     oldItem.mIcon = icon;
                     oldItem.mIconDescription = iconDescription;
                 }

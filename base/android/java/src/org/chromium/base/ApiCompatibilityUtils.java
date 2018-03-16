@@ -700,15 +700,6 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     *  Null-safe equivalent of {@code a.equals(b)}.
-     *
-     *  @see Objects#equals(Object, Object)
-     */
-    public static boolean objectEquals(Object a, Object b) {
-        return (a == null) ? (b == null) : a.equals(b);
-    }
-
-    /**
      * Disables the Smart Select {@link TextClassifier} for the given {@link TextView} instance.
      * @param textView The {@link TextView} that should have its classifier disabled.
      */
