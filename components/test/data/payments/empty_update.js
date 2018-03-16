@@ -23,7 +23,7 @@ function buy() {  // eslint-disable-line no-unused-vars
     };
 
     var request = new PaymentRequest(
-        [{supportedMethods: ['basic-card']}], details, {requestShipping: true});
+        [{supportedMethods: 'basic-card'}], details, {requestShipping: true});
 
     request.addEventListener('shippingaddresschange', function(evt) {
       evt.updateWith({});

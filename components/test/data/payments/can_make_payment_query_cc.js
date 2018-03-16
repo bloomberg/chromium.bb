@@ -10,7 +10,7 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
-        [{supportedMethods: ['visa']}],
+        [{supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()
         .then(function(result) {
@@ -30,7 +30,10 @@ function buy() {  // eslint-disable-line no-unused-vars
 function other_buy() {  // eslint-disable-line no-unused-vars, camelcase
   try {
     var request = new PaymentRequest(
-        [{supportedMethods: ['mastercard']}],
+        [{
+          supportedMethods: 'basic-card',
+          data: {supportedNetworks: ['mastercard']},
+        }],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
     request.canMakePayment()
         .then(function(result) {

@@ -85,7 +85,7 @@ const char kRequestEmailPage[] =
       performAction:grey_tap()];
 
   // Test that the card details were sent to the merchant.
-  [self waitForWebViewContainingTexts:{"\"methodName\": \"visa\"",
+  [self waitForWebViewContainingTexts:{"\"methodName\": \"basic-card\"",
                                        "\"details\": {",
                                        "\"cardNumber\": \"4111111111111111\"",
                                        "\"cardSecurityCode\": \"123\"",

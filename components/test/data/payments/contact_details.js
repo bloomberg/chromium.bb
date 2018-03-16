@@ -12,7 +12,13 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'amex', 'visa']}],
+        [
+          {supportedMethods: 'https://bobpay.com'},
+          {
+            supportedMethods: 'basic-card',
+            data: {supportedNetworks: ['amex', 'visa']},
+          },
+        ],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}}, {
           requestPayerName: true,
           requestPayerEmail: true,

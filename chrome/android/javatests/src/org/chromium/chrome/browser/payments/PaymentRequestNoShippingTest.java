@@ -109,7 +109,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa", "123"});
+                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123"});
     }
 
     /** Click [PAY], type in "123" into the CVC dialog, then submit the payment. */
@@ -130,7 +130,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa", "123"});
+                new String[] {"Jon Doe", "4111111111111111", "12", "2050", "basic-card", "123"});
     }
 
     /** Attempt to add an invalid credit card number and cancel payment. */

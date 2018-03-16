@@ -33,7 +33,8 @@ function ccBuy() {  // eslint-disable-line no-unused-vars
     };
     request = new PaymentRequest(
         [{
-          supportedMethods: ['visa'],
+          supportedMethods: 'basic-card',
+          data: {supportedNetworks: ['visa']},
         }],
         {
           total: {
@@ -84,7 +85,7 @@ function androidPayBuy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
         [{
-          supportedMethods: ['https://android.com/pay'],
+          supportedMethods: 'https://android.com/pay',
         }],
         {
           total: {
@@ -130,7 +131,7 @@ function androidPaySkipUiBuy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
         [{
-          supportedMethods: ['https://android.com/pay'],
+          supportedMethods: 'https://android.com/pay',
         }],
         {
           total: {
@@ -164,7 +165,7 @@ function noSupported() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
         [{
-          supportedMethods: ['https://randompay.com'],
+          supportedMethods: 'https://randompay.com',
         }],
         {
           total: {
@@ -208,9 +209,12 @@ function noSupported() {  // eslint-disable-line no-unused-vars
 function cardsAndBobPayBuy() {  // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{
-          supportedMethods: ['visa', 'https://bobpay.com'],
-        }],
+        [
+          {supportedMethods: 'basic-card', data: {supportedNetworks: ['visa']}},
+          {
+            supportedMethods: 'https://bobpay.com',
+          },
+        ],
         {
           total: {
             label: 'Total',
@@ -236,8 +240,9 @@ function cardsAndBobPayBuy() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(resp.methodName + '<br>' +
-                      JSON.stringify(resp.details, undefined, 2));
+                print(
+                    resp.methodName + '<br>' +
+                    JSON.stringify(resp.details, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -257,10 +262,18 @@ function cardsAndBobPayBuy() {  // eslint-disable-line no-unused-vars
 function contactInfoBuy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
-        [{supportedMethods: ['https://bobpay.com', 'amex', 'visa']}],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}},
-        {requestPayerName: true, requestPayerEmail: true,
-         requestPayerPhone: true})
+        [
+          {supportedMethods: 'https://bobpay.com'},
+          {
+            supportedMethods: 'basic-card',
+            data: {supportedNetworks: ['amex', 'visa']},
+          },
+        ],
+        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}}, {
+          requestPayerName: true,
+          requestPayerEmail: true,
+          requestPayerPhone: true,
+        })
         .show()
         .then(function(resp) {
           resp.complete('success')

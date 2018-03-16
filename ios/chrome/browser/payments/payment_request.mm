@@ -399,7 +399,7 @@ PaymentRequest::CreateAndAddAutofillPaymentInstrument(
   // the name of the network directly.
   std::string method_name = basic_card_issuer_network;
   if (basic_card_specified_networks_.count(basic_card_issuer_network)) {
-    method_name = "basic_card";
+    method_name = "basic-card";
   }
 
   // The total number of card types: credit, debit, prepaid, unknown.

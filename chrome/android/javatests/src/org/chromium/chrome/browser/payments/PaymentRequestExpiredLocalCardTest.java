@@ -73,8 +73,8 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
                 new String[] {"11", "26", "123"}, mRule.getReadyToUnmask());
         mRule.clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"Jon Doe", "4111111111111111", "11", "2026",
-                "visa", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "freeShippingOption"});
+                "basic-card", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US",
+                "en", "freeShippingOption"});
     }
 
     /**
