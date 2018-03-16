@@ -33,6 +33,18 @@ mojom::HitTestRegionListPtr HitTestDataProviderDrawQuad::GetHitTestData(
 
     for (const DrawQuad* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
+
+        // Skip the quad if the FrameSinkId between fallback and primary is not
+        // the same, because we don't know which FrameSinkId would be used to
+        // draw this quad.
+        if (surface_quad->fallback_surface_id.has_value() &&
+            surface_quad->fallback_surface_id->frame_sink_id() !=
+                surface_quad->primary_surface_id.frame_sink_id()) {
+          continue;
+        }
+
         // Skip the quad if the transform is not invertible (i.e. it will not
         // be able to receive events).
         gfx::Transform target_to_quad_transform;
@@ -41,12 +53,9 @@ mojom::HitTestRegionListPtr HitTestDataProviderDrawQuad::GetHitTestData(
           continue;
         }
 
-        const SurfaceDrawQuad* surface_quad =
-            SurfaceDrawQuad::MaterialCast(quad);
         auto hit_test_region = mojom::HitTestRegion::New();
-        const SurfaceId& surface_id = surface_quad->primary_surface_id;
-        hit_test_region->frame_sink_id = surface_id.frame_sink_id();
-        hit_test_region->local_surface_id = surface_id.local_surface_id();
+        hit_test_region->frame_sink_id =
+            surface_quad->primary_surface_id.frame_sink_id();
         hit_test_region->flags = mojom::kHitTestMouse | mojom::kHitTestTouch |
                                  mojom::kHitTestChildSurface;
         if (should_ask_for_child_region_)

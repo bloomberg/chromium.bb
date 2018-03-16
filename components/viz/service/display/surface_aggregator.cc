@@ -91,6 +91,7 @@ SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
 SurfaceAggregator::~SurfaceAggregator() {
   // Notify client of all surfaces being removed.
   contained_surfaces_.clear();
+  contained_frame_sinks_.clear();
   ProcessAddedAndRemovedSurfaces();
 }
 
@@ -843,6 +844,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     return gfx::Rect();
 
   contained_surfaces_[surface->surface_id()] = surface->GetActiveFrameIndex();
+  contained_frame_sinks_[surface->surface_id().frame_sink_id()] =
+      std::max(surface->surface_id().local_surface_id(),
+               contained_frame_sinks_[surface->surface_id().frame_sink_id()]);
   if (!surface->HasActiveFrame())
     return gfx::Rect();
 
@@ -1148,6 +1152,9 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
+  contained_frame_sinks_[surface_id.frame_sink_id()] =
+      std::max(surface_id.local_surface_id(),
+               contained_frame_sinks_[surface_id.frame_sink_id()]);
 
   if (!surface->HasActiveFrame())
     return {};
@@ -1200,6 +1207,8 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   ProcessAddedAndRemovedSurfaces();
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();
+  contained_frame_sinks_.swap(previous_contained_frame_sinks_);
+  contained_frame_sinks_.clear();
 
   for (auto it : previous_contained_surfaces_) {
     Surface* surface = manager_->GetSurfaceForId(it.first);

@@ -39,6 +39,7 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
+#include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
@@ -5909,12 +5910,16 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
                                std::move(hit_test_region_list));
 
-  const viz::mojom::HitTestRegionList* active_hit_test_region_list =
+  viz::TestLatestLocalSurfaceIdLookupDelegate delegate;
+  delegate.SetSurfaceIdMap(
+      viz::SurfaceId(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId));
+  viz::FrameSinkManagerImpl* frame_sink_manager =
       view_->GetDelegatedFrameHost()
           ->GetCompositorFrameSinkSupportForTesting()
-          ->frame_sink_manager()
-          ->hit_test_manager()
-          ->GetActiveHitTestRegionList(surface_id);
+          ->frame_sink_manager();
+  const viz::mojom::HitTestRegionList* active_hit_test_region_list =
+      frame_sink_manager->hit_test_manager()->GetActiveHitTestRegionList(
+          &delegate, surface_id.frame_sink_id());
   EXPECT_EQ(active_hit_test_region_list->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(active_hit_test_region_list->bounds, view_rect);
 }

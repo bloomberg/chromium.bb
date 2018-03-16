@@ -19,6 +19,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -53,7 +54,8 @@ class VIZ_SERVICE_EXPORT DisplayObserver {
 // surface IDs used to draw into the display and deciding when to draw.
 class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
                                    public OutputSurfaceClient,
-                                   public ContextLostObserver {
+                                   public ContextLostObserver,
+                                   public LatestLocalSurfaceIdLookupDelegate {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -107,6 +109,10 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void DidReceivePresentationFeedback(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) override;
+
+  // LatestLocalSurfaceIdLookupDelegate implementation.
+  LocalSurfaceId GetSurfaceAtAggregation(
+      const FrameSinkId& frame_sink_id) const override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

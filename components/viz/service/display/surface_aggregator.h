@@ -33,6 +33,7 @@ class SurfaceManager;
 class VIZ_SERVICE_EXPORT SurfaceAggregator {
  public:
   using SurfaceIndexMap = base::flat_map<SurfaceId, uint64_t>;
+  using FrameSinkIdMap = base::flat_map<FrameSinkId, LocalSurfaceId>;
 
   SurfaceAggregator(SurfaceManager* manager,
                     cc::DisplayResourceProvider* provider,
@@ -41,8 +42,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   CompositorFrame Aggregate(const SurfaceId& surface_id);
   void ReleaseResources(const SurfaceId& surface_id);
-  SurfaceIndexMap& previous_contained_surfaces() {
+  const SurfaceIndexMap& previous_contained_surfaces() const {
     return previous_contained_surfaces_;
+  }
+  const FrameSinkIdMap& previous_contained_frame_sinks() const {
+    return previous_contained_frame_sinks_;
   }
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
@@ -231,6 +235,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // that time.
   SurfaceIndexMap previous_contained_surfaces_;
   SurfaceIndexMap contained_surfaces_;
+  FrameSinkIdMap previous_contained_frame_sinks_;
+  FrameSinkIdMap contained_frame_sinks_;
 
   // After surface validation, every Surface in this set is valid.
   base::flat_set<SurfaceId> valid_surfaces_;

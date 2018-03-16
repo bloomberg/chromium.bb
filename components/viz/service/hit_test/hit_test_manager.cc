@@ -5,7 +5,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
-#include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
+#include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
 
 namespace viz {
 
@@ -19,56 +19,6 @@ HitTestManager::HitTestManager(SurfaceManager* surface_manager)
     : surface_manager_(surface_manager) {}
 
 HitTestManager::~HitTestManager() = default;
-
-void HitTestManager::SubmitHitTestRegionList(
-    const SurfaceId& surface_id,
-    const uint64_t frame_index,
-    mojom::HitTestRegionListPtr hit_test_region_list) {
-  if (!ValidateHitTestRegionList(surface_id, hit_test_region_list))
-    return;
-  // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
-  // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
-  // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.
-  hit_test_region_lists_[surface_id][frame_index] =
-      std::move(hit_test_region_list);
-}
-
-bool HitTestManager::ValidateHitTestRegionList(
-    const SurfaceId& surface_id,
-    const mojom::HitTestRegionListPtr& hit_test_region_list) {
-  if (!hit_test_region_list)
-    return false;
-  if (hit_test_region_list->regions.size() > kMaxRegionsPerSurface)
-    return false;
-  for (auto& region : hit_test_region_list->regions) {
-    if (!ValidateHitTestRegion(surface_id, region))
-      return false;
-  }
-  return true;
-}
-
-bool HitTestManager::ValidateHitTestRegion(
-    const SurfaceId& surface_id,
-    const mojom::HitTestRegionPtr& hit_test_region) {
-  // If client_id is 0 then use the client_id that
-  // matches the compositor frame.
-  if (hit_test_region->frame_sink_id.client_id() == 0) {
-    hit_test_region->frame_sink_id =
-        FrameSinkId(surface_id.frame_sink_id().client_id(),
-                    hit_test_region->frame_sink_id.sink_id());
-  }
-  // TODO(gklassen): Verify that this client is allowed to submit hit test
-  // data for the region associated with this |frame_sink_id|.
-  // TODO(gklassen): Ensure that |region->frame_sink_id| is a child of
-  // |frame_sink_id|.
-  if (hit_test_region->flags & mojom::kHitTestChildSurface) {
-    if (!hit_test_region->local_surface_id.has_value() ||
-        !hit_test_region->local_surface_id->is_valid()) {
-      return false;
-    }
-  }
-  return true;
-}
 
 bool HitTestManager::OnSurfaceDamaged(const SurfaceId& surface_id,
                                       const BeginFrameAck& ack) {
@@ -101,8 +51,31 @@ void HitTestManager::OnSurfaceActivated(
   }
 }
 
+void HitTestManager::SubmitHitTestRegionList(
+    const SurfaceId& surface_id,
+    const uint64_t frame_index,
+    mojom::HitTestRegionListPtr hit_test_region_list) {
+  if (!ValidateHitTestRegionList(surface_id, hit_test_region_list))
+    return;
+  // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
+  // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
+  // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.
+  hit_test_region_lists_[surface_id][frame_index] =
+      std::move(hit_test_region_list);
+}
+
 const mojom::HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
-    const SurfaceId& surface_id) const {
+    LatestLocalSurfaceIdLookupDelegate* delegate,
+    const FrameSinkId& frame_sink_id) const {
+  if (!delegate)
+    return nullptr;
+
+  LocalSurfaceId local_surface_id =
+      delegate->GetSurfaceAtAggregation(frame_sink_id);
+  if (!local_surface_id.is_valid())
+    return nullptr;
+
+  SurfaceId surface_id(frame_sink_id, local_surface_id);
   auto search = hit_test_region_lists_.find(surface_id);
   if (search == hit_test_region_lists_.end())
     return nullptr;
@@ -117,6 +90,25 @@ const mojom::HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
     return nullptr;
 
   return search2->second.get();
+}
+
+bool HitTestManager::ValidateHitTestRegionList(
+    const SurfaceId& surface_id,
+    const mojom::HitTestRegionListPtr& hit_test_region_list) {
+  if (!hit_test_region_list)
+    return false;
+  if (hit_test_region_list->regions.size() > kMaxRegionsPerSurface)
+    return false;
+  for (auto& region : hit_test_region_list->regions) {
+    // TODO(gklassen): Ensure that |region->frame_sink_id| is a child of
+    // |frame_sink_id|.
+    if (region->frame_sink_id.client_id() == 0) {
+      region->frame_sink_id =
+          FrameSinkId(surface_id.frame_sink_id().client_id(),
+                      region->frame_sink_id.sink_id());
+    }
+  }
+  return true;
 }
 
 }  // namespace viz

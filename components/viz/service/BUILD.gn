@@ -139,6 +139,7 @@ viz_component("service") {
     "hit_test/hit_test_aggregator_delegate.h",
     "hit_test/hit_test_manager.cc",
     "hit_test/hit_test_manager.h",
+    "surfaces/latest_local_surface_id_lookup_delegate.h",
     "surfaces/surface.cc",
     "surfaces/surface.h",
     "surfaces/surface_client.h",

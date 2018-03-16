@@ -50,7 +50,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
   frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
                                                frame_sink_id);
   display_->Initialize(this, frame_sink_manager->surface_manager());
-  support_->SetUpHitTest();
+  support_->SetUpHitTest(display_.get());
 }
 
 RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {

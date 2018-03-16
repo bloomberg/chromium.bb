@@ -22,13 +22,10 @@ viz::mojom::HitTestRegionPtr CreateHitTestRegion(const aura::Window* window,
   hit_test_region->frame_sink_id = window->GetFrameSinkId();
   // Checking |layer| may not be correct, since the actual layer that embeds
   // the surface may be a descendent of |layer|, instead of |layer| itself.
-  if (window->IsEmbeddingClient()) {
-    DCHECK(window->GetLocalSurfaceId().is_valid());
-    hit_test_region->local_surface_id = window->GetLocalSurfaceId();
+  if (window->IsEmbeddingClient())
     hit_test_region->flags = flags | viz::mojom::kHitTestChildSurface;
-  } else {
+  else
     hit_test_region->flags = flags | viz::mojom::kHitTestMine;
-  }
   hit_test_region->rect = rect;
   hit_test_region->transform = layer->transform();
 

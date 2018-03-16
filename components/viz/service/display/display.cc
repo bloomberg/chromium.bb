@@ -547,6 +547,16 @@ const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;
 }
 
+LocalSurfaceId Display::GetSurfaceAtAggregation(
+    const FrameSinkId& frame_sink_id) const {
+  if (!aggregator_)
+    return LocalSurfaceId();
+  auto it = aggregator_->previous_contained_frame_sinks().find(frame_sink_id);
+  if (it == aggregator_->previous_contained_frame_sinks().end())
+    return LocalSurfaceId();
+  return it->second;
+}
+
 void Display::ForceImmediateDrawAndSwapIfPossible() {
   if (scheduler_)
     scheduler_->ForceImmediateSwapIfPossible();

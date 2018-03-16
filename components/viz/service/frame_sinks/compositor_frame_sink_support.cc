@@ -70,11 +70,12 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   DCHECK(capture_clients_.empty());
 }
 
-void CompositorFrameSinkSupport::SetUpHitTest() {
+void CompositorFrameSinkSupport::SetUpHitTest(
+    LatestLocalSurfaceIdLookupDelegate* local_surface_id_lookup_delegate) {
   DCHECK(is_root_);
   hit_test_aggregator_ = std::make_unique<HitTestAggregator>(
       frame_sink_manager_->hit_test_manager(), frame_sink_manager_,
-      frame_sink_id_);
+      local_surface_id_lookup_delegate, frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::SetAggregatedDamageCallbackForTesting(

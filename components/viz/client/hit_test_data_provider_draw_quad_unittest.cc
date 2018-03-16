@@ -37,7 +37,9 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
     const gfx::Rect& rect,
     const gfx::Rect& child_rect,
     const gfx::Transform& render_pass_transform,
-    const gfx::Transform& shared_state_transform) {
+    const gfx::Transform& shared_state_transform,
+    const base::Optional<SurfaceId>& fallback_child_surface_id =
+        base::nullopt) {
   auto pass = RenderPass::Create();
   pass->SetNew(1, rect, rect, render_pass_transform);
 
@@ -47,7 +49,7 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
 
   auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad->SetNew(pass->shared_quad_state_list.back(), child_rect,
-                       child_rect, child_surface_id, base::nullopt,
+                       child_rect, child_surface_id, fallback_child_surface_id,
                        SK_ColorWHITE, false);
 
   return pass;
@@ -98,8 +100,6 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderer) {
   EXPECT_EQ(1u, hit_test_region_list->regions.size());
   EXPECT_EQ(child_surface_id.frame_sink_id(),
             hit_test_region_list->regions[0]->frame_sink_id);
-  EXPECT_EQ(child_surface_id.local_surface_id(),
-            hit_test_region_list->regions[0]->local_surface_id);
   EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch |
                 mojom::kHitTestChildSurface | mojom::kHitTestAsk,
             hit_test_region_list->regions[0]->flags);
@@ -113,9 +113,10 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderer) {
             hit_test_region_list->regions[0]->transform);
 }
 
-// Test to ensure that we skip regions with a non-invertible transform when
-// preparing hit-test data.
-TEST(HitTestDataProviderDrawQuad, HitTestDataInvertibleTransform) {
+// Test to ensure that we skip regions with non-invertible transforms and with
+// updated FrameSinkId between fallback and primary when preparing for hit-test
+// data.
+TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   std::unique_ptr<HitTestDataProvider> hit_test_data_provider =
       std::make_unique<HitTestDataProviderDrawQuad>(
           true /* should_ask_for_child_region */);
@@ -149,12 +150,20 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataInvertibleTransform) {
       not_invertible_transform);
   pass_list.push_back(std::move(pass2));
 
-  // A render pass and its draw quad both have invertible transforms
+  // A render pass and its draw quad both have invertible transforms.
   SurfaceId child_surface_id3 = CreateChildSurfaceId(4);
   auto pass3 = CreateRenderPassWithChildSurface(
       child_surface_id3, kFrameRect, child_rect, invertible_transform,
       invertible_transform);
   pass_list.push_back(std::move(pass3));
+
+  // The draw quad's FrameSinkId changed between fallback and primary.
+  SurfaceId child_surface_id4 = CreateChildSurfaceId(5);
+  SurfaceId fallback_child_surface_id4 = CreateChildSurfaceId(6);
+  auto pass4 = CreateRenderPassWithChildSurface(
+      child_surface_id4, kFrameRect, child_rect, invertible_transform,
+      invertible_transform, fallback_child_surface_id4);
+  pass_list.push_back(std::move(pass4));
 
   auto compositor_frame =
       CompositorFrameBuilder().SetRenderPassList(std::move(pass_list)).Build();
@@ -166,8 +175,6 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataInvertibleTransform) {
   EXPECT_EQ(1u, hit_test_region_list->regions.size());
   EXPECT_EQ(child_surface_id3.frame_sink_id(),
             hit_test_region_list->regions[0]->frame_sink_id);
-  EXPECT_EQ(child_surface_id3.local_surface_id(),
-            hit_test_region_list->regions[0]->local_surface_id);
 }
 
 }  // namespace viz
