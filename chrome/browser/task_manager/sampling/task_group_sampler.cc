@@ -77,8 +77,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
         on_cpu_refresh_callback_);
   }
 
-  if (TaskManagerObserver::IsResourceRefreshEnabled(
-          REFRESH_TYPE_MEMORY_NON_MEMORY_INSTRUMENTATION, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_DETAILS,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
@@ -131,47 +131,13 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
   MemoryUsageStats memory_usage;
-#if defined(OS_MACOSX)
-  size_t private_bytes = 0;
-  size_t shared_bytes = 0;
-  size_t resident_bytes = 0;
-  if (process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes,
-                                       &resident_bytes, nullptr)) {
-    memory_usage.private_bytes = static_cast<int64_t>(private_bytes);
-    memory_usage.shared_bytes = static_cast<int64_t>(shared_bytes);
-    memory_usage.physical_bytes = resident_bytes;
-  }
-#else
-  // Refreshing the physical/private/shared memory at one shot.
-  base::WorkingSetKBytes ws_usage;
-  if (process_metrics_->GetWorkingSetKBytes(&ws_usage)) {
-    memory_usage.private_bytes = static_cast<int64_t>(ws_usage.priv * 1024);
-    memory_usage.shared_bytes = static_cast<int64_t>(ws_usage.shared * 1024);
-#if defined(OS_LINUX)
-    // On Linux private memory is also resident. Just use it.
-    memory_usage.physical_bytes = memory_usage.private_bytes;
-#else
-    PROCESS_MEMORY_COUNTERS pmc;
-    if (::GetProcessMemoryInfo(process_.Handle(), &pmc, sizeof(pmc))) {
-      memory_usage.physical_bytes = static_cast<int64_t>(pmc.WorkingSetSize);
-    } else {
-      memory_usage.physical_bytes = 0;
-    }
-
-    // Memory = working_set.private which is working set minus shareable. This
-    // avoids the unpredictable counting that occurs when calculating memory as
-    // working set minus shared (renderer code counted when one tab is open and
-    // not counted when two or more are open) and it is much more efficient to
-    // calculate on Windows.
-    memory_usage.physical_bytes -=
-        static_cast<int64_t>(ws_usage.shareable * 1024);
-#endif  // defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
+  base::WorkingSetKBytes ws_usage;
+  if (process_metrics_->GetWorkingSetKBytes(&ws_usage)) {
     memory_usage.swapped_bytes = ws_usage.swapped * 1024;
-#endif  // defined(OS_CHROMEOS)
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_CHROMEOS)
 
   return memory_usage;
 }

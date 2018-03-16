@@ -114,11 +114,11 @@ TEST_F(TaskGroupTest, SyncRefresh) {
 }
 
 // Some fields are refreshed on a per-TaskGroup basis, but require asynchronous
-// work (e.g. on another thread) to complete. Memory is such a field, so verify
+// work (e.g. on another thread) to complete. Cpu is such a field, so verify
 // that it is correctly reported as requiring background calculations.
 TEST_F(TaskGroupTest, AsyncRefresh) {
   task_group_.Refresh(gpu::VideoMemoryUsageStats(), base::TimeDelta(),
-                      REFRESH_TYPE_MEMORY);
+                      REFRESH_TYPE_CPU);
   EXPECT_FALSE(task_group_.AreBackgroundCalculationsDone());
 
   ASSERT_FALSE(background_refresh_complete_);

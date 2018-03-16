@@ -24,9 +24,6 @@ namespace task_manager {
 // Wraps the memory usage stats values together so that it can be sent between
 // the UI and the worker threads.
 struct MemoryUsageStats {
-  int64_t private_bytes = -1;
-  int64_t shared_bytes = -1;
-  int64_t physical_bytes = -1;
 #if defined(OS_CHROMEOS)
   int64_t swapped_bytes = -1;
 #endif
