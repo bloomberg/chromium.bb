@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop.h"
@@ -66,10 +67,16 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // set to SHOW_ON_RIPPLE highlight behavior.
   void SetAutoHighlightModeForPlatform();
 
+  const base::Optional<int>& hover_highlight_fade_duration_ms() const {
+    return hover_highlight_fade_duration_ms_;
+  }
+
   // InkDrop:
   void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
+  void SetHoverHighlightFadeDurationMs(int duration_ms) override;
+  void UseDefaultHoverHighlightFadeDuration() override;
   void SnapToActivated() override;
   void SnapToHidden() override;
   void SetHovered(bool is_hovered) override;
@@ -305,6 +312,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // The current state object that handles all inputs that affect the visibility
   // of the |highlight_|.
   std::unique_ptr<HighlightState> highlight_state_;
+
+  // Overrides the default hover highlight fade durations when set.
+  base::Optional<int> hover_highlight_fade_duration_ms_;
 
   // Used to ensure highlight state transitions are not triggered when exiting
   // the current state.

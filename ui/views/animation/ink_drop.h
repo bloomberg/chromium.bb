@@ -36,6 +36,14 @@ class VIEWS_EXPORT InkDrop {
   // Animates from the current InkDropState to |ink_drop_state|.
   virtual void AnimateToState(InkDropState ink_drop_state) = 0;
 
+  // Sets hover highlight fade animations to last for |duration_ms|
+  // milliseconds.
+  virtual void SetHoverHighlightFadeDurationMs(int duration_ms) = 0;
+
+  // Clears any set hover highlight fade durations and uses the default
+  // durations instead.
+  virtual void UseDefaultHoverHighlightFadeDuration() = 0;
+
   // Immediately snaps the InkDropState to ACTIVATED and HIDDEN specifically.
   // These are more specific implementations of the non-existent
   // SnapToState(InkDropState) function are the only ones available because they

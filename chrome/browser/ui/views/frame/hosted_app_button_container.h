@@ -66,7 +66,12 @@ class HostedAppButtonContainer : public views::View,
 
     AppMenu* menu() { return menu_.get(); }
 
+    // Fades the menu button highlight on and off.
+    void StartHighlightAnimation(base::TimeDelta duration);
+
    private:
+    void FadeHighlightOff();
+
     // The containing browser view.
     BrowserView* browser_view_;
 
@@ -75,6 +80,8 @@ class HostedAppButtonContainer : public views::View,
     // menu should be listed later.
     std::unique_ptr<HostedAppMenuModel> menu_model_;
     std::unique_ptr<AppMenu> menu_;
+
+    base::OneShotTimer highlight_off_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
   };

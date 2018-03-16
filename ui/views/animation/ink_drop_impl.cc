@@ -171,11 +171,15 @@ void InkDropImpl::NoAutoHighlightHiddenState::Enter() {
 }
 
 void InkDropImpl::NoAutoHighlightHiddenState::ShowOnHoverChanged() {
-  HandleHoverAndFocusChangeChanges(kHighlightFadeInOnHoverChangeDurationMs);
+  HandleHoverAndFocusChangeChanges(
+      GetInkDrop()->hover_highlight_fade_duration_ms().value_or(
+          kHighlightFadeInOnHoverChangeDurationMs));
 }
 
 void InkDropImpl::NoAutoHighlightHiddenState::OnHoverChanged() {
-  HandleHoverAndFocusChangeChanges(kHighlightFadeInOnHoverChangeDurationMs);
+  HandleHoverAndFocusChangeChanges(
+      GetInkDrop()->hover_highlight_fade_duration_ms().value_or(
+          kHighlightFadeInOnHoverChangeDurationMs));
 }
 
 void InkDropImpl::NoAutoHighlightHiddenState::ShowOnFocusChanged() {
@@ -216,11 +220,15 @@ void InkDropImpl::NoAutoHighlightVisibleState::Enter() {
 }
 
 void InkDropImpl::NoAutoHighlightVisibleState::ShowOnHoverChanged() {
-  HandleHoverAndFocusChangeChanges(kHighlightFadeOutOnHoverChangeDurationMs);
+  HandleHoverAndFocusChangeChanges(
+      GetInkDrop()->hover_highlight_fade_duration_ms().value_or(
+          kHighlightFadeOutOnHoverChangeDurationMs));
 }
 
 void InkDropImpl::NoAutoHighlightVisibleState::OnHoverChanged() {
-  HandleHoverAndFocusChangeChanges(kHighlightFadeOutOnHoverChangeDurationMs);
+  HandleHoverAndFocusChangeChanges(
+      GetInkDrop()->hover_highlight_fade_duration_ms().value_or(
+          kHighlightFadeOutOnHoverChangeDurationMs));
 }
 
 void InkDropImpl::NoAutoHighlightVisibleState::ShowOnFocusChanged() {
@@ -645,6 +653,14 @@ void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
   ink_drop_ripple_->AnimateToState(ink_drop_state);
+}
+
+void InkDropImpl::SetHoverHighlightFadeDurationMs(int duration_ms) {
+  hover_highlight_fade_duration_ms_ = duration_ms;
+}
+
+void InkDropImpl::UseDefaultHoverHighlightFadeDuration() {
+  hover_highlight_fade_duration_ms_.reset();
 }
 
 void InkDropImpl::SnapToActivated() {
