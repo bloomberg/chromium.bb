@@ -126,6 +126,7 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -320,6 +321,14 @@ public class CustomTabActivityTest {
         bundle.putString(CustomTabsIntent.KEY_DESCRIPTION, description);
         bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
         bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
+        return bundle;
+    }
+
+    private Bundle makeUpdateVisualsBundle(int id, Bitmap icon, String description) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(CustomTabsIntent.KEY_ID, id);
+        bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
+        bundle.putString(CustomTabsIntent.KEY_DESCRIPTION, description);
         return bundle;
     }
 
@@ -964,6 +973,18 @@ public class CustomTabActivityTest {
         onFinished1.waitForCallback("Pending Intent was not sent.");
         Assert.assertThat(onFinished1.getCallbackIntent().getDataString(), equalTo(mTestPage));
         Assert.assertNull(onFinished2.getCallbackIntent());
+
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        int id = toolbarItems.get(0).getInt(CustomTabsIntent.KEY_ID);
+        Bundle updateActionButtonBundle =
+                makeUpdateVisualsBundle(id, expectedIcon2, "Bestest testest");
+        Bundle updateVisualsBundle = new Bundle();
+        updateVisualsBundle.putParcelableArrayList(CustomTabsIntent.EXTRA_TOOLBAR_ITEMS,
+                new ArrayList<>(Arrays.asList(updateActionButtonBundle)));
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        Assert.assertTrue(connection.updateVisuals(token, updateVisualsBundle));
+
+        Assert.assertEquals("Bestest testest", actionButton.getContentDescription());
     }
 
     /**

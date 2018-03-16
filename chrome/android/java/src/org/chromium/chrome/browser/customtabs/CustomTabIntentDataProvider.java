@@ -411,7 +411,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      */
     public int getCustomToolbarButtonIndexForId(int id) {
         for (int i = 0; i < mToolbarButtons.size(); i++) {
-            if (mToolbarButtons.get(i).getId() == i) return i;
+            if (mToolbarButtons.get(i).getId() == id) return i;
         }
         return -1;
     }
