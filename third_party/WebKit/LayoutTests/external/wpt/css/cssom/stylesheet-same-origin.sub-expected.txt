@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS Origin-clean check in cross-origin CSSOM Stylesheets
-PASS Origin-clean check in same-origin CSSOM Stylesheets
-FAIL Origin-clean check in data:css CSSOM Stylesheets Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules
-Harness: the test ran to completion.
-

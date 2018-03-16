@@ -677,7 +677,7 @@ bool ImageResource::IsAccessAllowed(
   if (PassesAccessControlCheck(*security_origin))
     return true;
 
-  return !security_origin->TaintsCanvas(GetResponse().Url());
+  return security_origin->CanReadContent(GetResponse().Url());
 }
 
 ImageResourceContent* ImageResource::GetContent() {
