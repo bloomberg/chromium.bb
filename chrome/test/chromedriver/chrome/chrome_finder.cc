@@ -47,13 +47,16 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
 }
 #elif defined(OS_LINUX)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
-  locations->push_back(base::FilePath("/opt/google/chrome"));
-  locations->push_back(base::FilePath("/usr/local/bin"));
+  // TODO: Respect users' PATH variables.
+  // Until then, we use an approximation of the most common defaults.
   locations->push_back(base::FilePath("/usr/local/sbin"));
-  locations->push_back(base::FilePath("/usr/bin"));
+  locations->push_back(base::FilePath("/usr/local/bin"));
   locations->push_back(base::FilePath("/usr/sbin"));
-  locations->push_back(base::FilePath("/bin"));
+  locations->push_back(base::FilePath("/usr/bin"));
   locations->push_back(base::FilePath("/sbin"));
+  locations->push_back(base::FilePath("/bin"));
+  // Lastly, try the default installation location.
+  locations->push_back(base::FilePath("/opt/google/chrome"));
 }
 #elif defined(OS_ANDROID)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
