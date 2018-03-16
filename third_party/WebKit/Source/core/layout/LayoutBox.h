@@ -1242,7 +1242,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // See README.md for an explanation of scroll origin.
   virtual IntSize OriginAdjustmentForScrollbars() const;
-  IntSize ScrolledContentOffset() const;
+  virtual IntSize ScrolledContentOffset() const;
 
   // Maps from scrolling contents space to box space and apply overflow
   // clip if needed. Returns true if no clipping applied or the flattened quad

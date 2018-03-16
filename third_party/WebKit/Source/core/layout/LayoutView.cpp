@@ -918,6 +918,12 @@ LayoutRect LayoutView::DebugRect() const {
   return rect;
 }
 
+IntSize LayoutView::ScrolledContentOffset() const {
+  DCHECK(HasOverflowClip());
+  // FIXME: Return DoubleSize here. crbug.com/414283.
+  return GetScrollableArea()->ScrollOffsetInt();
+}
+
 bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
   bool relayout_children = LayoutBlockFlow::UpdateLogicalWidthAndColumnWidth();
   // When we're printing, the size of LayoutView is changed outside of layout,

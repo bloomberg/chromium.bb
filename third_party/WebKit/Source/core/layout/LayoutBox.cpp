@@ -1218,11 +1218,10 @@ IntSize LayoutBox::ScrolledContentOffset() const {
   DCHECK(HasLayer());
   // FIXME: Return DoubleSize here. crbug.com/414283.
   PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  IntSize result =
-      scrollable_area->ScrollOffsetInt() + OriginAdjustmentForScrollbars();
-  if (IsHorizontalWritingMode() &&
-      ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    result.Expand(-VerticalScrollbarWidth(), 0);
+  if (!UNLIKELY(HasFlippedBlocksWritingMode()))
+    return scrollable_area->ScrollOffsetInt();
+  IntSize result = scrollable_area->ScrollOffsetInt();
+  result.Expand(VerticalScrollbarWidth(), 0);
   return result;
 }
 

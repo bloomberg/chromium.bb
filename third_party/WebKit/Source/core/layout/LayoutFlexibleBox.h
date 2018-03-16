@@ -64,7 +64,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
-  IntSize OriginAdjustmentForScrollbars() const override;
+  IntSize OriginAdjustmentForScrollbars() const final;
+  IntSize ScrolledContentOffset() const final;
   bool HasTopOverflow() const override;
   bool HasLeftOverflow() const override;
 
