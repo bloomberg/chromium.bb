@@ -790,6 +790,14 @@ jboolean OfflinePageBridge::IsOfflinePage(
              web_contents) != nullptr;
 }
 
+jboolean OfflinePageBridge::IsInPrivateDirectory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_file_path) {
+  base::FilePath file_path(ConvertJavaStringToUTF8(env, j_file_path));
+  return offline_page_model_->IsArchiveInInternalDir(file_path);
+}
+
 ScopedJavaLocalRef<jobject> OfflinePageBridge::GetOfflinePage(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

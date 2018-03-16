@@ -367,17 +367,9 @@ public class OfflinePageUtils {
         }
 
         OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(tab.getWebContents());
-        // Bail if there is no offline page or sharing is not enabled.
-        if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
-
-        // If we share a page with a content URI, it will not have a file path.
-        // We cannot share it without a file path, so return false. That will give other
-        // sharing methods a chance to run.
         String offlinePath = offlinePage.getFilePath();
-        if (offlinePath.isEmpty()) {
-            Log.w(TAG, "Tried to share a page with no path.");
-            return false;
-        }
+
+        if (!isOfflinePageShareable(offlinePageBridge, offlinePage)) return false;
 
         final String tabTitle = tab.getTitle();
         final String tabUrl = tab.getUrl();
@@ -397,6 +389,31 @@ public class OfflinePageUtils {
             }
         };
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        return true;
+    }
+
+    /**
+     * Check to see if the offline page is sharable.
+     * @param offlinePage Page to check for sharability.
+     * @return true if this page can be shared.
+     */
+    public static boolean isOfflinePageShareable(
+            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage) {
+        // Return false if there is no offline page or sharing is not enabled.
+        if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
+
+        // We cannot share a file without a file path, so return false.
+        // TODO(petewil) Allow sharing if there is a content or file URI, even if there is no path.
+        // https://crbug.com/817608
+        String offlinePath = offlinePage.getFilePath();
+        if (offlinePath.isEmpty()) {
+            Log.w(TAG, "Tried to share a page with no path.");
+            return false;
+        }
+
+        // If the page is not in a public location, we cannot share it.
+        if (offlinePageBridge.isInPrivateDirectory(offlinePath)) return false;
 
         return true;
     }

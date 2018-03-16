@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.app.Activity;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -14,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -22,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -45,13 +51,27 @@ public class OfflinePageUtilsTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
+    private static final String TAG = "OfflinePageUtilsTest";
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
     private static final ClientId BOOKMARK_ID =
             new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "1234");
+    private static final ClientId ASYNC_ID =
+            new ClientId(OfflinePageBridge.ASYNC_NAMESPACE, "5678");
+    private static final String SHARED_URI = "http://127.0.0.1/chrome/test/data/android/about.html";
+    private static final String EMPTY_PATH = "";
+    private static final String CACHE_SUBDIR = "/Offline Pages/archives";
+    private static final String NEW_FILE = "/newfile.mhtml";
+    private static final String TITLE = "My web page";
+    private static final String PAGE_ID = "42";
+    private static final long OFFLINE_ID = 42;
+    private static final long FILE_SIZE = 65535;
+    private static final String REQUEST_ORIGIN = "";
 
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;
+    private String mTestPage;
+    private boolean mServerTurnedOn = false;
 
     @Before
     public void setUp() throws Exception {
@@ -84,11 +104,26 @@ public class OfflinePageUtilsTest {
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mServerTurnedOn = true;
     }
 
     @After
     public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
+        turnOffServer();
+    }
+
+    Activity activity() {
+        return mActivityTestRule.getActivity();
+    }
+
+    /** We must turn off the server only once, since stopAndDestroyServer() assumes the server is
+     * on, and will wait indefinitely for it, timing out the unit test otherwise.
+     */
+    public void turnOffServer() throws Exception {
+        if (mServerTurnedOn) {
+            mTestServer.stopAndDestroyServer();
+            mServerTurnedOn = false;
+        }
     }
 
     /**
@@ -138,6 +173,29 @@ public class OfflinePageUtilsTest {
         }
     }
 
+    /**
+     * Share callback to be used by tests.  So that we can wait for the callback, it
+     * takes a param of a semaphore to clear when the callback is finally called.
+     */
+    class TestShareCallback implements Callback<ShareParams> {
+        private Semaphore mSemaphore;
+        private String mUri;
+
+        public TestShareCallback(Semaphore semaphore) {
+            mSemaphore = semaphore;
+        }
+
+        @Override
+        public void onResult(ShareParams shareParams) {
+            mUri = shareParams.getUrl();
+            mSemaphore.release();
+        }
+
+        public String getSharedUri() {
+            return mUri;
+        }
+    }
+
     @Test
     @SmallTest
     @DisabledTest(message = "crbug.com/786237")
@@ -147,7 +205,7 @@ public class OfflinePageUtilsTest {
         final MockSnackbarController mockSnackbarController = new MockSnackbarController();
 
         // Save an offline page.
-        loadPageAndSave();
+        loadPageAndSave(BOOKMARK_ID);
 
         // With network disconnected, loading an online URL will result in loading an offline page.
         // Note that this will create a SnackbarController when the page loads, but we use our own
@@ -194,23 +252,151 @@ public class OfflinePageUtilsTest {
         Assert.assertTrue(mockSnackbarController.getDismissed());
     }
 
-    private void loadPageAndSave() throws Exception {
-        String testUrl = mTestServer.getURL(TEST_PAGE);
-        mActivityTestRule.loadUrl(testUrl);
-        savePage(SavePageResult.SUCCESS, testUrl);
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({"enable-features=OfflinePagesSharing"})
+    @CommandLineFlags.Add({"disable-features=OfflinePagesSharing"})
+    // This tests that the offline page can't be shared if the sharing flag turned off.
+    public void testDoNotShareOfflinePageWhenFeatureDisabled() throws Exception {
+        loadOfflinePage(ASYNC_ID);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                boolean shared =
+                        OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+                                mActivityTestRule.getActivity().getActivityTab(), null);
+                // Since the sharing flag is off, we do not share the page.  This allows
+                // normal URL-as-text sharing mechanisms to proceed.
+                Assert.assertFalse(shared);
+            }
+        });
     }
 
-    // TODO(petewil): This is borrowed from OfflinePageBridge test.  We should refactor
-    // to some common test code (including the setup).  crbug.com/705100.
-    private void savePage(final int expectedResult, final String expectedUrl)
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
+    public void testSharePublicOfflinePage() throws Exception {
+        loadOfflinePage(ASYNC_ID);
+        final Semaphore semaphore = new Semaphore(0);
+        final TestShareCallback shareCallback = new TestShareCallback(semaphore);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                boolean shared =
+                        OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+                                mActivityTestRule.getActivity().getActivityTab(), shareCallback);
+                // Attempt to share a public page should pass the initial checks and return true,
+                // which means the callback will be called.
+                Assert.assertTrue(shared);
+            }
+        });
+
+        // Wait for share callback to get called.
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Assert that URI is what we expected.
+        String foundUri = shareCallback.getSharedUri();
+        Uri uri = Uri.parse(foundUri);
+        String uriPath = uri.getPath();
+        Assert.assertEquals(TEST_PAGE, uriPath);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
+    public void testSharePrivateOfflinePage() throws Exception {
+        loadOfflinePage(BOOKMARK_ID);
+        final Semaphore semaphore = new Semaphore(0);
+        final TestShareCallback shareCallback = new TestShareCallback(semaphore);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                boolean shared =
+                        OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+                                mActivityTestRule.getActivity().getActivityTab(), shareCallback);
+                // The attempt to share a page from our private internal directory should fail.
+                Assert.assertFalse(shared);
+            }
+        });
+    }
+
+    // Checks on the UI thread if an offline path corresponds to a sharable file.
+    private void checkIfOfflinePageIsSharable(final String filePath, boolean sharable) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OfflinePageItem privateOfflinePageItem = new OfflinePageItem(SHARED_URI, OFFLINE_ID,
+                        OfflinePageBridge.ASYNC_NAMESPACE, PAGE_ID, TITLE, filePath, FILE_SIZE, 0,
+                        0, 0, REQUEST_ORIGIN);
+                OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(
+                        mActivityTestRule.getActivity().getActivityTab().getProfile());
+
+                boolean isSharable = OfflinePageUtils.isOfflinePageShareable(
+                        offlinePageBridge, privateOfflinePageItem);
+                Assert.assertEquals(sharable, isSharable);
+            }
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testIsOfflinePageSharable() throws Exception {
+        // This test needs the sharing command line flag turned on. so we do not override the
+        // default.
+        final String privatePath = activity().getApplicationContext().getCacheDir().getPath();
+        final String publicPath = Environment.getExternalStorageDirectory().getPath();
+
+        // Check that an offline page item in the private directory is not sharable.
+        final String fullPrivatePath = privatePath + CACHE_SUBDIR + NEW_FILE;
+        checkIfOfflinePageIsSharable(fullPrivatePath, false);
+
+        // Check that an offline page item with no file path is not sharable.
+        checkIfOfflinePageIsSharable("", false);
+
+        // Check that a public offline page item with a file path is sharable.
+        final String fullPublicPath = publicPath + NEW_FILE;
+        checkIfOfflinePageIsSharable(fullPublicPath, true);
+    }
+
+    private void loadPageAndSave(ClientId clientId) throws Exception {
+        mTestPage = mTestServer.getURL(TEST_PAGE);
+        mActivityTestRule.loadUrl(mTestPage);
+        savePage(SavePageResult.SUCCESS, mTestPage, clientId);
+    }
+
+    // Utility to load an offline page into the current tab.
+    private void loadOfflinePage(ClientId clientId) throws Exception {
+        // Start by loading a normal page, and saving an offline copy.
+        loadPageAndSave(clientId);
+
+        // Change the state to offline by shutting down the server and simulating the network being
+        // turned off.
+        turnOffServer();
+        // Turning off the network must be done on the UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                NetworkChangeNotifier.forceConnectivityState(false);
+            }
+        });
+
+        // Reload the page, which will cause the offline version to be loaded, since we are
+        // now "offline".
+        mActivityTestRule.loadUrl(mTestPage);
+    }
+
+    // Save an offline copy of the current page in the tab.
+    private void savePage(final int expectedResult, final String expectedUrl, ClientId clientId)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mOfflinePageBridge.savePage(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        BOOKMARK_ID, new SavePageCallback() {
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(), clientId,
+                        new SavePageCallback() {
                             @Override
                             public void onSavePageDone(
                                     int savePageResult, String url, long offlineId) {
