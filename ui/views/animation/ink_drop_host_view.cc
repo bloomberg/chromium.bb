@@ -298,12 +298,9 @@ InkDrop* InkDropHostView::GetInkDrop() {
 }
 
 void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
-// Layer masks don't work on Windows. See crbug.com/713359
-#if !defined(OS_WIN)
   ink_drop_mask_ = CreateInkDropMask();
   if (ink_drop_mask_)
     ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
-#endif
 }
 
 void InkDropHostView::ResetInkDropMask() {
