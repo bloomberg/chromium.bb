@@ -136,7 +136,7 @@ void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
 
   if (should_route_event) {
     RenderWidgetHostImpl* host = host_view_->GetRenderWidgetHostImpl();
-    if (!host)
+    if (!host || !host->delegate() || !host->delegate()->GetInputEventRouter())
       return;
 
     host->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
