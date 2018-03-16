@@ -261,25 +261,6 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
   ASSERT_EQ(1U, output_frames_.size());
 }
 
-// Verify current behavior for 0 byte frames. FFmpegVideoDecoder simply ignores
-// the 0 byte frames.
-TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
-  Initialize();
-
-  scoped_refptr<DecoderBuffer> zero_byte_buffer = new DecoderBuffer(0);
-
-  InputBuffers input_buffers;
-  input_buffers.push_back(i_frame_buffer_);
-  input_buffers.push_back(zero_byte_buffer);
-  input_buffers.push_back(i_frame_buffer_);
-  input_buffers.push_back(end_of_stream_buffer_);
-
-  DecodeStatus status = DecodeMultipleFrames(input_buffers);
-
-  EXPECT_EQ(DecodeStatus::OK, status);
-  ASSERT_EQ(2U, output_frames_.size());
-}
-
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   Initialize();
 

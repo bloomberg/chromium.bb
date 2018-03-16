@@ -335,12 +335,8 @@ bool FFmpegVideoDecoder::FFmpegDecode(
     packet.data = const_cast<uint8_t*>(buffer->data());
     packet.size = buffer->data_size();
 
-    // Starting in M60, the decoder generates an error if an empty buffer is
-    // provided. Since we're not at EOS and there is no data available in the
-    // current buffer, simply return and let the caller provide more data.
-    // crbug.com/663438 has more context on 0-byte buffers.
-    if (!packet.size)
-      return true;
+    DCHECK(packet.data);
+    DCHECK_GT(packet.size, 0);
 
     // Let FFmpeg handle presentation timestamp reordering.
     codec_context_->reordered_opaque = buffer->timestamp().InMicroseconds();
