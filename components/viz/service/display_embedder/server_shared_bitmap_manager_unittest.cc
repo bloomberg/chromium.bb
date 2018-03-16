@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,7 @@ TEST_F(ServerSharedBitmapManagerTest, TestCreate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(
-      SharedBitmap::SizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
+      ResourceSizes::MaybeSizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
@@ -94,7 +95,7 @@ TEST_F(ServerSharedBitmapManagerTest, ServiceDestroyed) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(
-      SharedBitmap::SizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
+      ResourceSizes::MaybeSizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
@@ -130,7 +131,7 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(
-      SharedBitmap::SizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
+      ResourceSizes::MaybeSizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
@@ -166,7 +167,7 @@ TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
   EXPECT_TRUE(
-      SharedBitmap::SizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
+      ResourceSizes::MaybeSizeInBytes(bitmap_size, RGBA_8888, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);

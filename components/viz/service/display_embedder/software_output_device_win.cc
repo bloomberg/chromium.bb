@@ -6,7 +6,7 @@
 
 #include "base/debug/alias.h"
 #include "base/memory/shared_memory.h"
-#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/internal_constants.h"
@@ -55,7 +55,7 @@ base::SharedMemory* OutputDeviceBacking::GetSharedMemory(
     return backing_.get();
   size_t expected_byte_size = GetMaxByteSize();
   size_t required_size;
-  if (!SharedBitmap::SizeInBytes(size, RGBA_8888, &required_size))
+  if (!ResourceSizes::MaybeSizeInBytes(size, RGBA_8888, &required_size))
     return nullptr;
   if (required_size > expected_byte_size)
     return nullptr;
@@ -73,8 +73,8 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   size_t max_size = 1;
   for (const SoftwareOutputDeviceWin* device : devices_) {
     size_t current_size;
-    if (!SharedBitmap::SizeInBytes(device->viewport_pixel_size(), RGBA_8888,
-                                   &current_size))
+    if (!ResourceSizes::MaybeSizeInBytes(device->viewport_pixel_size(),
+                                         RGBA_8888, &current_size))
       continue;
     if (current_size > kMaxBitmapSizeBytes)
       continue;

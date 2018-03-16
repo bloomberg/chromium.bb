@@ -15,12 +15,12 @@
 #include "cc/base/math_util.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/layer_tree_resource_provider.h"
-#include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
@@ -738,7 +738,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         // by software.
         video_renderer_->Copy(video_frame, &canvas, media::Context3D());
       } else {
-        size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
+        size_t bytes_per_row = viz::ResourceSizes::CheckedWidthInBytes<size_t>(
             video_frame->coded_size().width(), viz::ResourceFormat::RGBA_8888);
         size_t needed_size = bytes_per_row * video_frame->coded_size().height();
         if (upload_pixels_.size() < needed_size)
@@ -819,8 +819,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // |resource_size_pixels| is the size of the destination resource.
     const gfx::Size resource_size_pixels = plane_resource.resource_size();
 
-    const size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
-        resource_size_pixels.width(), plane_resource_format);
+    const size_t bytes_per_row =
+        viz::ResourceSizes::CheckedWidthInBytes<size_t>(
+            resource_size_pixels.width(), plane_resource_format);
     // Use 4-byte row alignment (OpenGL default) for upload performance.
     // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
     const size_t upload_image_stride =

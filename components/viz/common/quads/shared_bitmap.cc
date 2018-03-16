@@ -32,60 +32,6 @@ SharedBitmapId SharedBitmap::GenerateId() {
   return id;
 }
 
-// static
-bool SharedBitmap::SizeInBytes(const gfx::Size& size,
-                               ResourceFormat format,
-                               size_t* size_in_bytes) {
-  DCHECK(IsBitmapFormatSupported(format));
-  if (size.IsEmpty())
-    return false;
-  DCHECK_EQ(0, BitsPerPixel(format) % 8);
-  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
-  s *= size.width();
-  s *= size.height();
-  if (!s.IsValid())
-    return false;
-  *size_in_bytes = s.ValueOrDie();
-  return true;
-}
-
-// static
-size_t SharedBitmap::CheckedSizeInBytes(const gfx::Size& size,
-                                        ResourceFormat format) {
-  DCHECK(IsBitmapFormatSupported(format));
-  CHECK(!size.IsEmpty());
-  DCHECK_EQ(0, BitsPerPixel(format) % 8);
-  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
-  s *= size.width();
-  s *= size.height();
-  return s.ValueOrDie();
-}
-
-// static
-size_t SharedBitmap::UncheckedSizeInBytes(const gfx::Size& size,
-                                          ResourceFormat format) {
-  DCHECK(IsBitmapFormatSupported(format));
-  DCHECK(VerifySizeInBytes(size, format));
-  DCHECK_EQ(0, BitsPerPixel(format) % 8);
-  size_t s = BitsPerPixel(format) / 8;
-  s *= size.width();
-  s *= size.height();
-  return s;
-}
-
-// static
-bool SharedBitmap::VerifySizeInBytes(const gfx::Size& size,
-                                     ResourceFormat format) {
-  DCHECK(IsBitmapFormatSupported(format));
-  if (size.IsEmpty())
-    return false;
-  DCHECK_EQ(0, BitsPerPixel(format) % 8);
-  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
-  s *= size.width();
-  s *= size.height();
-  return s.IsValid();
-}
-
 base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(
     const SharedBitmapId& bitmap_id) {
   auto bitmap_id_hex = base::HexEncode(bitmap_id.name, sizeof(bitmap_id.name));

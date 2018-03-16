@@ -23,8 +23,8 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -226,11 +226,16 @@ bool ResourceProvider::OnMemoryDump(
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
 
-    uint64_t total_bytes = ResourceUtil::UncheckedSizeInBytesAligned<size_t>(
-        resource.size, resource.format);
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    static_cast<uint64_t>(total_bytes));
+    // Texture resources may not come with a size, in which case don't report
+    // one.
+    if (!resource.size.IsEmpty()) {
+      uint64_t total_bytes =
+          viz::ResourceSizes::UncheckedSizeInBytesAligned<size_t>(
+              resource.size, resource.format);
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      static_cast<uint64_t>(total_bytes));
+    }
 
     // Resources may be shared across processes and require a shared GUID to
     // prevent double counting the memory.

@@ -51,21 +51,6 @@ class VIZ_COMMON_EXPORT SharedBitmap {
   // use via shared memory. Otherwise, this returns empty.
   virtual base::UnguessableToken GetCrossProcessGUID() const = 0;
 
-  // Returns true if the size is valid and false otherwise.
-  static bool SizeInBytes(const gfx::Size& size,
-                          ResourceFormat format,
-                          size_t* size_in_bytes);
-  // Dies with a CRASH() if the size can not be represented as a positive number
-  // of bytes.
-  static size_t CheckedSizeInBytes(const gfx::Size& size,
-                                   ResourceFormat format);
-  // Returns the size in bytes but may overflow or return 0. Only do this for
-  // sizes that have already been checked.
-  static size_t UncheckedSizeInBytes(const gfx::Size& size,
-                                     ResourceFormat format);
-  // Returns true if the size is valid and false otherwise.
-  static bool VerifySizeInBytes(const gfx::Size& size, ResourceFormat format);
-
   static SharedBitmapId GenerateId();
 
  private:

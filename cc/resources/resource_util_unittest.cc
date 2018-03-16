@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "cc/resources/resource_util.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -24,14 +24,14 @@ class ResourceUtilTest : public testing::Test {
  public:
   void TestVerifyWidthInBytes(int width, const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      EXPECT_TRUE(ResourceUtil::VerifyWidthInBytes<size_t>(
+      EXPECT_TRUE(viz::ResourceSizes::VerifyWidthInBytes<size_t>(
           width, test_formats[i].format));
     }
   }
 
   void TestCheckedWidthInBytes(int width, const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::CheckedWidthInBytes<size_t>(
+      size_t bytes = viz::ResourceSizes::CheckedWidthInBytes<size_t>(
           width, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes);
     }
@@ -39,7 +39,7 @@ class ResourceUtilTest : public testing::Test {
 
   void TestUncheckedWidthInBytes(int width, const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::UncheckedWidthInBytes<size_t>(
+      size_t bytes = viz::ResourceSizes::UncheckedWidthInBytes<size_t>(
           width, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes);
     }
@@ -48,7 +48,7 @@ class ResourceUtilTest : public testing::Test {
   void TestUncheckedWidthInBytesAligned(int width,
                                         const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::UncheckedWidthInBytesAligned<size_t>(
+      size_t bytes = viz::ResourceSizes::UncheckedWidthInBytesAligned<size_t>(
           width, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes_aligned);
     }
@@ -57,7 +57,7 @@ class ResourceUtilTest : public testing::Test {
   void TestVerifySizeInBytes(const gfx::Size& size,
                              const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      EXPECT_TRUE(ResourceUtil::VerifySizeInBytes<size_t>(
+      EXPECT_TRUE(viz::ResourceSizes::VerifySizeInBytes<size_t>(
           size, test_formats[i].format));
     }
   }
@@ -65,7 +65,7 @@ class ResourceUtilTest : public testing::Test {
   void TestCheckedSizeInBytes(const gfx::Size& size,
                               const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::CheckedSizeInBytes<size_t>(
+      size_t bytes = viz::ResourceSizes::CheckedSizeInBytes<size_t>(
           size, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes);
     }
@@ -74,7 +74,7 @@ class ResourceUtilTest : public testing::Test {
   void TestUncheckedSizeInBytes(const gfx::Size& size,
                                 const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::UncheckedSizeInBytes<size_t>(
+      size_t bytes = viz::ResourceSizes::UncheckedSizeInBytes<size_t>(
           size, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes);
     }
@@ -83,7 +83,7 @@ class ResourceUtilTest : public testing::Test {
   void TestUncheckedSizeInBytesAligned(const gfx::Size& size,
                                        const TestFormat* test_formats) {
     for (int i = 0; i < kTestFormats; ++i) {
-      size_t bytes = ResourceUtil::UncheckedSizeInBytesAligned<size_t>(
+      size_t bytes = viz::ResourceSizes::UncheckedSizeInBytesAligned<size_t>(
           size, test_formats[i].format);
       EXPECT_EQ(bytes, test_formats[i].expected_bytes_aligned);
     }
@@ -153,18 +153,18 @@ TEST_F(ResourceUtilTest, SizeInBytes) {
 TEST_F(ResourceUtilTest, WidthInBytesOverflow) {
   int width = 10;
   // 10 * 16 = 160 bits, overflows in char, but fits in unsigned char.
-  EXPECT_FALSE(
-      ResourceUtil::VerifyWidthInBytes<signed char>(width, viz::RGBA_4444));
-  EXPECT_TRUE(
-      ResourceUtil::VerifyWidthInBytes<unsigned char>(width, viz::RGBA_4444));
+  EXPECT_FALSE(viz::ResourceSizes::VerifyWidthInBytes<signed char>(
+      width, viz::RGBA_4444));
+  EXPECT_TRUE(viz::ResourceSizes::VerifyWidthInBytes<unsigned char>(
+      width, viz::RGBA_4444));
 }
 
 TEST_F(ResourceUtilTest, SizeInBytesOverflow) {
   gfx::Size size(10, 10);
   // 10 * 16 * 10 = 1600 bits, overflows in char, but fits in int.
   EXPECT_FALSE(
-      ResourceUtil::VerifySizeInBytes<signed char>(size, viz::RGBA_4444));
-  EXPECT_TRUE(ResourceUtil::VerifySizeInBytes<int>(size, viz::RGBA_4444));
+      viz::ResourceSizes::VerifySizeInBytes<signed char>(size, viz::RGBA_4444));
+  EXPECT_TRUE(viz::ResourceSizes::VerifySizeInBytes<int>(size, viz::RGBA_4444));
 }
 
 }  // namespace

@@ -9,8 +9,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/memory.h"
 #include "build/build_config.h"
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,7 +57,7 @@ std::unique_ptr<base::SharedMemory> AllocateMappedBitmap(
     ResourceFormat format) {
   DCHECK(IsBitmapFormatSupported(format));
   size_t bytes = 0;
-  if (!SharedBitmap::SizeInBytes(size, format, &bytes)) {
+  if (!ResourceSizes::MaybeSizeInBytes(size, format, &bytes)) {
     DLOG(ERROR) << "AllocateMappedBitmap with size that overflows";
     CollectMemoryUsageAndDie(size, format, std::numeric_limits<int>::max());
   }

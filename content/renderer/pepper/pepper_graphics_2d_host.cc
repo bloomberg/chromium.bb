@@ -20,6 +20,7 @@
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -766,9 +767,9 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   if (!shared_bitmap)
     return false;
   void* src = image_data_->Map();
-  memcpy(
-      shared_bitmap->pixels(), src,
-      viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size, viz::RGBA_8888));
+  memcpy(shared_bitmap->pixels(), src,
+         viz::ResourceSizes::CheckedSizeInBytes<size_t>(pixel_image_size,
+                                                        viz::RGBA_8888));
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -86,7 +87,7 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::AllocateSharedBitmap(
   DCHECK(IsBitmapFormatSupported(format));
   base::AutoLock lock(lock_);
   size_t bitmap_size;
-  if (!SharedBitmap::SizeInBytes(size, format, &bitmap_size))
+  if (!ResourceSizes::MaybeSizeInBytes(size, format, &bitmap_size))
     return nullptr;
 
   scoped_refptr<BitmapData> data(new BitmapData(bitmap_size));
@@ -112,7 +113,7 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
   BitmapData* data = it->second.get();
 
   size_t bitmap_size;
-  if (!SharedBitmap::SizeInBytes(size, format, &bitmap_size) ||
+  if (!ResourceSizes::MaybeSizeInBytes(size, format, &bitmap_size) ||
       bitmap_size > data->buffer_size)
     return nullptr;
 

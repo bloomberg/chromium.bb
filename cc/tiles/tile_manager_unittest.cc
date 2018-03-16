@@ -18,7 +18,6 @@
 #include "cc/raster/raster_source.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/resources/resource_pool.h"
-#include "cc/resources/resource_util.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
@@ -40,6 +39,7 @@
 #include "cc/tiles/tile_priority.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1370,8 +1370,9 @@ TEST_F(TileManagerTilePriorityQueueTest,
             host_impl()->resource_provider()->best_texture_format());
 
   ManagedMemoryPolicy policy = host_impl()->ActualManagedMemoryPolicy();
-  policy.bytes_limit_when_visible = ResourceUtil::UncheckedSizeInBytes<size_t>(
-      gfx::Size(256, 256), viz::RGBA_8888);
+  policy.bytes_limit_when_visible =
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(gfx::Size(256, 256),
+                                                       viz::RGBA_8888);
   host_impl()->SetMemoryPolicy(policy);
 
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
@@ -1543,9 +1544,9 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
     if (!resource.software_backing()) {
       auto backing = std::make_unique<TestSoftwareBacking>();
       backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
-      backing->pixels =
-          std::make_unique<uint32_t[]>(viz::SharedBitmap::CheckedSizeInBytes(
-              resource.size(), viz::RGBA_8888));
+      backing->pixels = std::make_unique<uint32_t[]>(
+          viz::ResourceSizes::CheckedSizeInBytes<size_t>(resource.size(),
+                                                         viz::RGBA_8888));
       resource.set_software_backing(std::move(backing));
     }
     auto* backing =
