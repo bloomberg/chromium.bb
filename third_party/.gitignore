@@ -122,6 +122,7 @@
 /llvm
 /llvm-allocated-type
 /llvm-bootstrap
+/llvm-bootstrap-install
 /llvm-build
 /llvm-build-tools
 /lss
