@@ -1009,11 +1009,11 @@ class AndroidJUnitBaseClass(unittest.TestCase):
           'public class IncorrectTest extends TestCase {',
           '}',
         ]),
-        MockAffectedFile('IncorrectTestWithInterface.java', [
+        MockAffectedFile('IncorrectWithInterfaceTest.java', [
           'public class Test implements X extends BaseClass {',
           '}',
         ]),
-        MockAffectedFile('IncorrectTestMultiLine.java', [
+        MockAffectedFile('IncorrectMultiLineTest.java', [
           'public class Test implements X, Y, Z',
           '        extends TestBase {',
           '}',
@@ -1029,11 +1029,11 @@ class AndroidJUnitBaseClass(unittest.TestCase):
                      % (3, len(msgs[0].items), msgs[0].items))
     self.assertTrue('IncorrectTest.java:1' in msgs[0].items,
                     'IncorrectTest not found in errors')
-    self.assertTrue('IncorrectTestWithInterface.java:1'
+    self.assertTrue('IncorrectWithInterfaceTest.java:1'
                     in msgs[0].items,
-                    'IncorrectTestWithInterface not found in errors')
-    self.assertTrue('IncorrectTestMultiLine.java:2' in msgs[0].items,
-                    'IncorrectTestMultiLine not found in errors')
+                    'IncorrectWithInterfaceTest not found in errors')
+    self.assertTrue('IncorrectMultiLineTest.java:2' in msgs[0].items,
+                    'IncorrectMultiLineTest not found in errors')
 
 class LogUsageTest(unittest.TestCase):
 
@@ -1486,6 +1486,39 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('some/ios/file.mm' in errors[0].message)
     self.assertTrue('another/ios_file.mm' in errors[0].message)
     self.assertTrue('some/mac/file.mm' not in errors[0].message)
+
+
+class NoProductionCodeUsingTestOnlyFunctions(unittest.TestCase):
+  def testTruePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', ['foo_for_testing();']),
+      MockFile('some/path/foo.mm', ['FooForTesting();']),
+      MockFile('some/path/foo.cxx', ['FooForTests();']),
+      MockFile('some/path/foo.cpp', ['foo_for_test();']),
+    ]
+
+    results = PRESUBMIT._CheckNoProductionCodeUsingTestOnlyFunctions(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(4, len(results[0].items))
+    self.assertTrue('foo.cc' in results[0].items[0])
+    self.assertTrue('foo.mm' in results[0].items[1])
+    self.assertTrue('foo.cxx' in results[0].items[2])
+    self.assertTrue('foo.cpp' in results[0].items[3])
+
+  def testFalsePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.h', ['foo_for_testing();']),
+      MockFile('some/path/foo.mm', ['FooForTesting() {']),
+      MockFile('some/path/foo.cc', ['::FooForTests();']),
+      MockFile('some/path/foo.cpp', ['// foo_for_test();']),
+    ]
+
+    results = PRESUBMIT._CheckNoProductionCodeUsingTestOnlyFunctions(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
 
 
 if __name__ == '__main__':
