@@ -231,11 +231,7 @@ struct ToV8Traits<T, true> {
   static bool TryConvertToV8(v8::Isolate* isolate,
                              T input,
                              v8::Local<v8::Value>* output) {
-    auto maybe = ConvertToV8(isolate->GetCurrentContext(), input);
-    if (maybe.IsEmpty())
-      return false;
-    *output = maybe.ToLocalChecked();
-    return true;
+    return ConvertToV8(isolate, input).ToLocal(output);
   }
 };
 
