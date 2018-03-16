@@ -4360,7 +4360,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                        ? &cm->buffer_pool->frame_bufs[last_fb_buf_idx]
                        : NULL;
 
-  cm->use_prev_frame_mvs &= frame_can_use_prev_frame_mvs(cm);
+  cm->use_prev_frame_mvs &= frame_might_use_prev_frame_mvs(cm);
 #if CONFIG_SEGMENT_PRED_LAST
   if (cm->prev_frame) cm->last_frame_seg_map = cm->prev_frame->seg_map;
   cm->current_frame_seg_map = cm->cur_frame->seg_map;

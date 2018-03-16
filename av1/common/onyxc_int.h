@@ -663,13 +663,6 @@ static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
          !frame_is_intra_only(cm);
 }
 
-// Returns 1 if this frame really can use MVs from some previous frame.
-static INLINE int frame_can_use_prev_frame_mvs(const AV1_COMMON *cm) {
-  return (frame_might_use_prev_frame_mvs(cm) && cm->prev_frame &&
-          !cm->prev_frame->intra_only && cm->width == cm->prev_frame->width &&
-          cm->height == cm->prev_frame->height);
-}
-
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   const int buf_rows = buf->mi_rows;
   const int buf_cols = buf->mi_cols;
