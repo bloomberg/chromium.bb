@@ -80,7 +80,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                        const ui::LatencyInfo& latency);
 
   void BubbleScrollEvent(RenderWidgetHostViewBase* target_view,
-                         const blink::WebGestureEvent& event);
+                         const blink::WebGestureEvent& event,
+                         const RenderWidgetHostViewBase* resending_view);
   void CancelScrollBubbling(RenderWidgetHostViewBase* target_view);
 
   void AddFrameSinkIdOwner(const viz::FrameSinkId& id,

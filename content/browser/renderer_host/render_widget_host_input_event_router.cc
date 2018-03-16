@@ -730,7 +730,8 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 
 void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     RenderWidgetHostViewBase* target_view,
-    const blink::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event,
+    const RenderWidgetHostViewBase* resending_view) {
   DCHECK(target_view);
   DCHECK((target_view->wheel_scroll_latching_enabled() &&
           event.GetType() == blink::WebInputEvent::kGestureScrollBegin) ||
@@ -777,6 +778,10 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
         return;
       }
     }
+
+    // Speculative CHECK for https://crbug.com/818214
+    // TODO(818214): Remove once the cause of the hang is identified.
+    CHECK_NE(resending_view, bubbling_gesture_scroll_target_.target);
 
     bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
                                                                 latency_info);
