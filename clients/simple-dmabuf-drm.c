@@ -62,6 +62,7 @@ struct buffer;
 
 /* Possible options that affect the displayed image */
 #define OPT_Y_INVERTED 1  /* contents has y axis inverted */
+#define OPT_IMMEDIATE  2  /* create wl_buffer immediately */
 
 
 struct display {
@@ -756,7 +757,7 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 static struct display *
-create_display(int is_immediate, int format)
+create_display(int opts, int format)
 {
 	struct display *display;
 	const char *extensions;
@@ -769,7 +770,7 @@ create_display(int is_immediate, int format)
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
 
-	display->req_dmabuf_immediate = is_immediate;
+	display->req_dmabuf_immediate = opts & OPT_IMMEDIATE;
 	display->req_dmabuf_modifiers = (format == DRM_FORMAT_NV12);
 
 	/*
@@ -874,7 +875,6 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display *display;
 	struct window *window;
-	int is_immediate = 0;
 	int opts = 0;
 	int import_format = DRM_FORMAT_XRGB8888;
 	int ret = 0, i = 0;
@@ -886,8 +886,8 @@ main(int argc, char **argv)
 		for (i = 1; i < argc; i++) {
 			if (!strncmp(argv[i], import_mode,
 				     sizeof(import_mode) - 1)) {
-				is_immediate = is_true(argv[i]
-							+ sizeof(import_mode) - 1);
+				if (is_true(argv[i] + sizeof(import_mode) - 1))
+					opts |= OPT_IMMEDIATE;
 			}
 			else if (!strncmp(argv[i], format, sizeof(format) - 1)) {
 				import_format = parse_import_format(argv[i]
@@ -904,7 +904,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	display = create_display(is_immediate, import_format);
+	display = create_display(opts, import_format);
 	window = create_window(display, 256, 256, import_format, opts);
 	if (!window)
 		return 1;
