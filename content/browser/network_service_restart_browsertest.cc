@@ -555,8 +555,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure the factory returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
+// TODO(crbug.com/822891): Disabled since flaky.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       BrowserIOFactoryAfterStoragePartitionGone) {
+                       DISABLED_BrowserIOFactoryAfterStoragePartitionGone) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);
