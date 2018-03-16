@@ -20,6 +20,7 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 
 namespace extensions {

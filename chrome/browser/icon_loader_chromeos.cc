@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/media_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"

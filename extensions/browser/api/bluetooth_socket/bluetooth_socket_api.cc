@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"

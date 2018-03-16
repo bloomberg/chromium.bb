@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/browser/metrics/thread_watcher.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 

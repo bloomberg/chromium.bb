@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"

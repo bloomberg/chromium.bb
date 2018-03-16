@@ -5,6 +5,7 @@
 #include "extensions/browser/api/system_network/system_network_api.h"
 
 #include "base/task_scheduler/post_task.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 const char kNetworkListError[] = "Network lookup failed or unsupported";

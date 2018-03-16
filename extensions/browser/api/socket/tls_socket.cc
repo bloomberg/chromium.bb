@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"

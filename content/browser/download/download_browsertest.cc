@@ -41,6 +41,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_paths.h"

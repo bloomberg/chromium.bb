@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 #include "base/file_descriptor_posix.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 

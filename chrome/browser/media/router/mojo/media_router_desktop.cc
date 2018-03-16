@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "components/cast_channel/cast_socket_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #if defined(OS_WIN)
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"

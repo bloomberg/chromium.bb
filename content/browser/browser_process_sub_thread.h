@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 namespace base {

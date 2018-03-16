@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
+#include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 

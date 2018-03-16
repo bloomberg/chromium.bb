@@ -15,6 +15,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/speech/audio_buffer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_system.h"

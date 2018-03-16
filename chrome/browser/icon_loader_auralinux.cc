@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/mime_util_xdg.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 // static

@@ -14,6 +14,7 @@
 #include "base/task_runner.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/download_item.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 

@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 
 using guest_view::GuestViewBase;

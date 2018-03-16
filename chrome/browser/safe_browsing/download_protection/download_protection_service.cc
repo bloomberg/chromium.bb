@@ -21,6 +21,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"

@@ -25,6 +25,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context.h"

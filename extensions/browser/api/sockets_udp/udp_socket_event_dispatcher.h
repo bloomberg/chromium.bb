@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 
