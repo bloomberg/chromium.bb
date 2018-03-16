@@ -537,6 +537,7 @@ void WindowSelector::AddItem(aura::Window* window) {
   // this will be need to updated.
   TabletModeWindowState::UpdateWindowPosition(wm::GetWindowState(window));
   grid->AddItem(window);
+  ++num_items_;
 
   // Transfer focus from |window| to the text widget, to match the behavior of
   // entering overview mode in the beginning.
@@ -555,6 +556,7 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
     if (grid->GetWindowSelectorItemContaining(item->GetWindow())) {
       grid->RemoveItem(item);
+      --num_items_;
       if (grid->empty())
         OnGridEmpty(grid.get());
       break;
