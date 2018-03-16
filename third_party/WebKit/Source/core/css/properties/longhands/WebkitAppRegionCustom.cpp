@@ -16,6 +16,8 @@ const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node*,
     bool allow_visited_style) const {
+  if (style.DraggableRegionMode() == EDraggableRegionMode::kNone)
+    return CSSIdentifierValue::Create(CSSValueNone);
   return CSSIdentifierValue::Create(style.DraggableRegionMode() ==
                                             EDraggableRegionMode::kDrag
                                         ? CSSValueDrag

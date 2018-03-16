@@ -751,7 +751,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueVisible || value_id == CSSValueHidden ||
              value_id == CSSValueCollapse;
     case CSSPropertyWebkitAppRegion:
-      return value_id >= CSSValueDrag && value_id <= CSSValueNoDrag;
+      return (value_id >= CSSValueDrag && value_id <= CSSValueNoDrag) ||
+             value_id == CSSValueNone;
     case CSSPropertyWebkitAppearance:
       return (value_id >= CSSValueCheckbox && value_id <= CSSValueTextarea) ||
              value_id == CSSValueNone;
