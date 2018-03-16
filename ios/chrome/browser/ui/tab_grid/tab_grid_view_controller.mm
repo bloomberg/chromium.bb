@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
-#import "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
@@ -14,6 +13,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -371,6 +371,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 // Adds the remote tabs view controller as a contained view controller, and
 // sets constraints.
 - (void)setupRemoteTabsViewController {
+  // TODO(crbug.com/804588) : Create remote tabs.
   UIView* contentView = self.scrollContentView;
   UIViewController* viewController = self.remoteTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -401,7 +402,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   UILabel* topLabel = [[UILabel alloc] init];
   topLabel.translatesAutoresizingMaskIntoConstraints = NO;
   topLabel.text = l10n_util::GetNSString(titleStringID);
-  topLabel.textColor = [UIColor whiteColor];
+  topLabel.textColor = UIColorFromRGB(kTabGridEmptyStateTitleTextColor);
   topLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
   topLabel.adjustsFontForContentSizeCategory = YES;
   topLabel.numberOfLines = 0;
@@ -410,7 +411,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   UILabel* bottomLabel = [[UILabel alloc] init];
   bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
   bottomLabel.text = l10n_util::GetNSString(bodyStringID);
-  bottomLabel.textColor = [UIColor whiteColor];
+  bottomLabel.textColor = UIColorFromRGB(kTabGridEmptyStateBodyTextColor);
   bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   bottomLabel.adjustsFontForContentSizeCategory = YES;
   bottomLabel.numberOfLines = 0;
@@ -526,8 +527,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       self.topToolbar.trailingButton.hidden = YES;
       self.bottomToolbar.hidden = NO;
       self.floatingButton.hidden = YES;
-      self.doneButton = self.bottomToolbar.leadingButton;
-      self.closeAllButton = self.bottomToolbar.trailingButton;
+      self.doneButton = self.bottomToolbar.trailingButton;
+      self.closeAllButton = self.bottomToolbar.leadingButton;
       self.newTabButton = self.bottomToolbar.centerButton;
       break;
     case TabGridConfigurationFloatingButton:
@@ -557,6 +558,12 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self.closeAllButton
       setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON)
       forState:UIControlStateNormal];
+  self.doneButton.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  self.closeAllButton.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  self.doneButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+  self.closeAllButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
