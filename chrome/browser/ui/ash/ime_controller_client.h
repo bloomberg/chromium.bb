@@ -42,6 +42,8 @@ class ImeControllerClient
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
   void SetCapsLockEnabled(bool caps_enabled) override;
+  void OverrideKeyboardKeyset(ash::mojom::ImeKeyset keyset,
+                              OverrideKeyboardKeysetCallback callback) override;
 
   // chromeos::input_method::InputMethodManager::Observer:
   void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,

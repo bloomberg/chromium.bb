@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
@@ -119,6 +120,9 @@ class TestInputMethodManager : public MockInputMethodManager {
   void ActivateInputMethodMenuItem(const std::string& key) override {
     last_activate_menu_item_key_ = key;
   }
+  void OverrideKeyboardUrlRef(const std::string& key_set) override {
+    keyboard_url_ref_ = key_set;
+  }
 
   InputMethodUtil* GetInputMethodUtil() override { return &util_; }
   scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
@@ -131,6 +135,7 @@ class TestInputMethodManager : public MockInputMethodManager {
   int add_menu_observer_count_ = 0;
   int remove_menu_observer_count_ = 0;
   std::string last_activate_menu_item_key_;
+  std::string keyboard_url_ref_;
   FakeInputMethodDelegate delegate_;
   InputMethodUtil util_;
 
@@ -313,6 +318,17 @@ TEST_F(ImeControllerClientTest, ActivateImeMenuItem) {
   ImeControllerClient client(&input_method_manager_);
   client.ActivateImeMenuItem("key1");
   EXPECT_EQ("key1", input_method_manager_.last_activate_menu_item_key_);
+}
+
+TEST_F(ImeControllerClientTest, OverrideKeyboardKeyset) {
+  ImeControllerClient client(&input_method_manager_);
+  bool callback_called = false;
+  client.OverrideKeyboardKeyset(
+      ash::mojom::ImeKeyset::kEmoji,
+      base::BindLambdaForTesting(
+          [&callback_called]() { callback_called = true; }));
+  EXPECT_EQ("emoji", input_method_manager_.keyboard_url_ref_);
+  EXPECT_TRUE(callback_called);
 }
 
 }  // namespace

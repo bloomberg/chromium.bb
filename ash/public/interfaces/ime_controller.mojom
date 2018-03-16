@@ -41,6 +41,16 @@ interface ImeController {
                                    bool is_voice_enabled);
 };
 
+// Used by the virtual keyboard to represent different key layouts for
+// different purposes. 'kNone' represents the default key layout.
+// Used in UMA, so this enum should not be reordered.
+enum ImeKeyset {
+  kNone = 0,
+  kEmoji = 1,
+  kHandwriting = 2,
+  kVoice = 3,
+};
+
 // Interface for ash to send input method requests to its client (e.g. Chrome).
 interface ImeControllerClient {
   // Switches to the next input method. Does nothing if only one input method
@@ -70,4 +80,9 @@ interface ImeControllerClient {
   // TODO(crbug/759435): Ideally this interaction should only be to disable the
   // caps lock.
   SetCapsLockEnabled(bool enabled);
+
+  // Overrides the keyboard keyset (emoji, handwriting or voice). If keyset is
+  // 'kNone', we switch to the default keyset. Because this is asynchronous,
+  // any code that needs the keyset to be updated first must use the callback.
+  OverrideKeyboardKeyset(ImeKeyset keyset) => ();
 };

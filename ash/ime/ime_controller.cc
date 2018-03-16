@@ -154,6 +154,17 @@ void ImeController::SetCapsLockEnabled(bool caps_enabled) {
     client_->SetCapsLockEnabled(caps_enabled);
 }
 
+void ImeController::OverrideKeyboardKeyset(ash::mojom::ImeKeyset keyset) {
+  OverrideKeyboardKeyset(keyset, base::DoNothing());
+}
+
+void ImeController::OverrideKeyboardKeyset(
+    ash::mojom::ImeKeyset keyset,
+    mojom::ImeControllerClient::OverrideKeyboardKeysetCallback callback) {
+  if (client_)
+    client_->OverrideKeyboardKeyset(keyset, std::move(callback));
+}
+
 void ImeController::FlushMojoForTesting() {
   client_.FlushForTesting();
 }
