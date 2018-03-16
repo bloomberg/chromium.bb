@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/chrome_http_user_agent_settings.h"
+#include "chrome/browser/net/chrome_accept_language_settings.h"
+
+#include <unordered_set>
 
 #include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_util.h"
 
+namespace chrome_accept_language_settings {
 namespace {
 
 // Helper class that builds the list of languages for the Accept-Language
@@ -57,24 +56,7 @@ std::string GetBaseLanguageCode(const std::string& language_code) {
 
 }  // namespace
 
-ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
-  last_pref_accept_language_ = *pref_accept_language_;
-  last_http_accept_language_ =
-      ComputeAcceptLanguageFromPref(last_pref_accept_language_);
-
-  pref_accept_language_.MoveToThread(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
-}
-
-ChromeHttpUserAgentSettings::~ChromeHttpUserAgentSettings() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-}
-
-std::string ChromeHttpUserAgentSettings::ComputeAcceptLanguageFromPref(
-    const std::string& language_pref) {
+std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
   std::string accept_languages_str =
       base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
           ? ExpandLanguageList(language_pref)
@@ -82,8 +64,7 @@ std::string ChromeHttpUserAgentSettings::ComputeAcceptLanguageFromPref(
   return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 
-std::string ChromeHttpUserAgentSettings::ExpandLanguageList(
-    const std::string& language_prefs) {
+std::string ExpandLanguageList(const std::string& language_prefs) {
   const std::vector<std::string> languages = base::SplitString(
       language_prefs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
@@ -111,26 +92,4 @@ std::string ChromeHttpUserAgentSettings::ExpandLanguageList(
   return builder.GetString();
 }
 
-void ChromeHttpUserAgentSettings::CleanupOnUIThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  pref_accept_language_.Destroy();
-}
-
-std::string ChromeHttpUserAgentSettings::GetAcceptLanguage() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::string new_pref_accept_language = *pref_accept_language_;
-
-  if (new_pref_accept_language != last_pref_accept_language_) {
-    last_http_accept_language_ =
-        ComputeAcceptLanguageFromPref(new_pref_accept_language);
-    last_pref_accept_language_ = new_pref_accept_language;
-  }
-
-  return last_http_accept_language_;
-}
-
-std::string ChromeHttpUserAgentSettings::GetUserAgent() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return ::GetUserAgent();
-}
-
+}  // namespace chrome_accept_language_settings
