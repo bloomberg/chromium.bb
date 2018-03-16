@@ -649,6 +649,10 @@ void LocationBarView::Layout() {
   omnibox_view_->SetBoundsRect(location_bounds);
 }
 
+void LocationBarView::OnThemeChanged() {
+  tint_ = GetTintForProfile(profile());
+}
+
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   RefreshLocationIcon();
   RefreshClearAllButtonIcon();
