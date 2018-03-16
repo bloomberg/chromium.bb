@@ -184,10 +184,9 @@ bool MainChannelClient::Initialize(std::unique_ptr<SourceLocation> location,
   return true;
 }
 
-bool MainChannelClient::Connect(
-    const KURL& url,
-    const String& protocol,
-    network::mojom::blink::WebSocketPtr socket_ptr) {
+bool MainChannelClient::Connect(const KURL& url,
+                                const String& protocol,
+                                mojom::blink::WebSocketPtr socket_ptr) {
   DCHECK(IsMainThread());
   if (!main_channel_)
     return false;
@@ -383,7 +382,7 @@ void Bridge::ConnectOnMainThread(
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     const KURL& url,
     const String& protocol,
-    network::mojom::blink::WebSocketPtrInfo socket_ptr_info,
+    mojom::blink::WebSocketPtrInfo socket_ptr_info,
     WebSocketChannelSyncHelper* sync_helper) {
   DCHECK(IsMainThread());
   DCHECK(!main_channel_client_);
@@ -413,7 +412,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   // document and so can make requests using that context. In the case of
   // https://crbug.com/760708 for example this is necessary to apply the user's
   // SSL interstitial decision to WebSocket connections from the worker.
-  network::mojom::blink::WebSocketPtrInfo socket_ptr_info;
+  mojom::blink::WebSocketPtrInfo socket_ptr_info;
   if (!worker_global_scope_->IsDedicatedWorkerGlobalScope()) {
     worker_global_scope_->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&socket_ptr_info));

@@ -46,7 +46,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
 
 namespace blink {
 
@@ -115,7 +115,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
     bool Connect(const KURL&,
                  const String& protocol,
-                 network::mojom::blink::WebSocketPtr);
+                 mojom::blink::WebSocketPtr);
     void SendTextAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBlob(scoped_refptr<BlobDataHandle>);
@@ -182,7 +182,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,
-                             network::mojom::blink::WebSocketPtrInfo,
+                             mojom::blink::WebSocketPtrInfo,
                              WebSocketChannelSyncHelper*);
 
     // Returns null when |disconnect| has already been called.

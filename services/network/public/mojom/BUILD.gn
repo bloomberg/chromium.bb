@@ -73,7 +73,6 @@ mojom("mojom") {
     "tcp_socket.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
-    "websocket.mojom",
   ]
 
   public_deps = [

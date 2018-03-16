@@ -200,10 +200,9 @@ DocumentWebSocketChannel::~DocumentWebSocketChannel() {
   DCHECK(!blob_loader_);
 }
 
-bool DocumentWebSocketChannel::Connect(
-    const KURL& url,
-    const String& protocol,
-    network::mojom::blink::WebSocketPtr socket_ptr) {
+bool DocumentWebSocketChannel::Connect(const KURL& url,
+                                       const String& protocol,
+                                       mojom::blink::WebSocketPtr socket_ptr) {
   NETWORK_DVLOG(1) << this << " Connect()";
   if (!handle_)
     return false;
@@ -287,7 +286,7 @@ bool DocumentWebSocketChannel::Connect(
 
 bool DocumentWebSocketChannel::Connect(const KURL& url,
                                        const String& protocol) {
-  network::mojom::blink::WebSocketPtr socket_ptr;
+  mojom::blink::WebSocketPtr socket_ptr;
   auto socket_request = mojo::MakeRequest(&socket_ptr);
   if (GetDocument() && GetDocument()->GetFrame()) {
     GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(

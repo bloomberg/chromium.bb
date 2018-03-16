@@ -34,8 +34,7 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
     websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::Initialize(
-    network::mojom::blink::WebSocketPtr websocket) {
+void WebSocketHandleImpl::Initialize(mojom::blink::WebSocketPtr websocket) {
   NETWORK_DVLOG(1) << this << " initialize(...)";
 
   DCHECK(!websocket_);
@@ -58,7 +57,7 @@ void WebSocketHandleImpl::Connect(const KURL& url,
   DCHECK(client);
   client_ = client;
 
-  network::mojom::blink::WebSocketClientPtr client_proxy;
+  mojom::blink::WebSocketClientPtr client_proxy;
   client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner));
   websocket_->AddChannelRequest(
       url, protocols, site_for_cookies,
@@ -72,16 +71,16 @@ void WebSocketHandleImpl::Send(bool fin,
                                size_t size) {
   DCHECK(websocket_);
 
-  network::mojom::blink::WebSocketMessageType type_to_pass;
+  mojom::blink::WebSocketMessageType type_to_pass;
   switch (type) {
     case WebSocketHandle::kMessageTypeContinuation:
-      type_to_pass = network::mojom::blink::WebSocketMessageType::CONTINUATION;
+      type_to_pass = mojom::blink::WebSocketMessageType::CONTINUATION;
       break;
     case WebSocketHandle::kMessageTypeText:
-      type_to_pass = network::mojom::blink::WebSocketMessageType::TEXT;
+      type_to_pass = mojom::blink::WebSocketMessageType::TEXT;
       break;
     case WebSocketHandle::kMessageTypeBinary:
-      type_to_pass = network::mojom::blink::WebSocketMessageType::BINARY;
+      type_to_pass = mojom::blink::WebSocketMessageType::BINARY;
       break;
     default:
       NOTREACHED();
@@ -125,8 +124,7 @@ void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
   // Our connection to the WebSocket was dropped. This could be due to
   // exceeding the maximum number of concurrent websockets from this process.
   String failure_message;
-  if (custom_reason ==
-      network::mojom::blink::WebSocket::kInsufficientResources) {
+  if (custom_reason == mojom::blink::WebSocket::kInsufficientResources) {
     failure_message =
         description.empty()
             ? "Insufficient resources"
@@ -151,14 +149,14 @@ void WebSocketHandleImpl::OnFailChannel(const String& message) {
 }
 
 void WebSocketHandleImpl::OnStartOpeningHandshake(
-    network::mojom::blink::WebSocketHandshakeRequestPtr request) {
+    mojom::blink::WebSocketHandshakeRequestPtr request) {
   NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
                    << request->url.GetString() << ")";
 
   scoped_refptr<WebSocketHandshakeRequest> request_to_pass =
       WebSocketHandshakeRequest::Create(request->url);
   for (size_t i = 0; i < request->headers.size(); ++i) {
-    const network::mojom::blink::HttpHeaderPtr& header = request->headers[i];
+    const mojom::blink::HttpHeaderPtr& header = request->headers[i];
     request_to_pass->AddHeaderField(AtomicString(header->name),
                                     AtomicString(header->value));
   }
@@ -167,7 +165,7 @@ void WebSocketHandleImpl::OnStartOpeningHandshake(
 }
 
 void WebSocketHandleImpl::OnFinishOpeningHandshake(
-    network::mojom::blink::WebSocketHandshakeResponsePtr response) {
+    mojom::blink::WebSocketHandshakeResponsePtr response) {
   NETWORK_DVLOG(1) << this << " OnFinishOpeningHandshake("
                    << response->url.GetString() << ")";
 
@@ -175,7 +173,7 @@ void WebSocketHandleImpl::OnFinishOpeningHandshake(
   response_to_pass.SetStatusCode(response->status_code);
   response_to_pass.SetStatusText(response->status_text);
   for (size_t i = 0; i < response->headers.size(); ++i) {
-    const network::mojom::blink::HttpHeaderPtr& header = response->headers[i];
+    const mojom::blink::HttpHeaderPtr& header = response->headers[i];
     response_to_pass.AddHeaderField(AtomicString(header->name),
                                     AtomicString(header->value));
   }
@@ -195,10 +193,9 @@ void WebSocketHandleImpl::OnAddChannelResponse(const String& protocol,
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnDataFrame(
-    bool fin,
-    network::mojom::blink::WebSocketMessageType type,
-    const Vector<uint8_t>& data) {
+void WebSocketHandleImpl::OnDataFrame(bool fin,
+                                      mojom::blink::WebSocketMessageType type,
+                                      const Vector<uint8_t>& data) {
   NETWORK_DVLOG(1) << this << " OnDataFrame(" << fin << ", " << type << ", "
                    << "(data size = " << data.size() << "))";
   if (!client_)
@@ -207,13 +204,13 @@ void WebSocketHandleImpl::OnDataFrame(
   WebSocketHandle::MessageType type_to_pass =
       WebSocketHandle::kMessageTypeContinuation;
   switch (type) {
-    case network::mojom::blink::WebSocketMessageType::CONTINUATION:
+    case mojom::blink::WebSocketMessageType::CONTINUATION:
       type_to_pass = WebSocketHandle::kMessageTypeContinuation;
       break;
-    case network::mojom::blink::WebSocketMessageType::TEXT:
+    case mojom::blink::WebSocketMessageType::TEXT:
       type_to_pass = WebSocketHandle::kMessageTypeText;
       break;
-    case network::mojom::blink::WebSocketMessageType::BINARY:
+    case mojom::blink::WebSocketMessageType::BINARY:
       type_to_pass = WebSocketHandle::kMessageTypeBinary;
       break;
   }

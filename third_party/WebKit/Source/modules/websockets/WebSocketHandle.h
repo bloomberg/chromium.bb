@@ -35,7 +35,7 @@
 #include "base/single_thread_task_runner.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
-#include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ class WebSocketHandle {
 
   virtual ~WebSocketHandle() = default;
 
-  virtual void Initialize(network::mojom::blink::WebSocketPtr) = 0;
+  virtual void Initialize(mojom::blink::WebSocketPtr) = 0;
   virtual void Connect(const KURL&,
                        const Vector<String>& protocols,
                        const KURL& site_for_cookies,
