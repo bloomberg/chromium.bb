@@ -21,7 +21,10 @@
 #include "content/common/media/media_devices.h"
 #include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+
+using blink::mojom::VideoInputDeviceCapabilitiesPtr;
 
 namespace media {
 class AudioSystem;
@@ -55,7 +58,8 @@ class CONTENT_EXPORT MediaDevicesManager
   using EnumerationCallback =
       base::Callback<void(const MediaDeviceEnumeration&)>;
   using EnumerateDevicesCallback =
-      base::OnceCallback<void(const std::vector<MediaDeviceInfoArray>&)>;
+      base::OnceCallback<void(const std::vector<MediaDeviceInfoArray>&,
+                              std::vector<VideoInputDeviceCapabilitiesPtr>)>;
 
   MediaDevicesManager(
       media::AudioSystem* audio_system,
@@ -83,6 +87,7 @@ class CONTENT_EXPORT MediaDevicesManager
                         int render_frame_id,
                         const std::string& group_id_salt_base,
                         const BoolDeviceTypes& requested_types,
+                        bool request_video_input_capabilities,
                         EnumerateDevicesCallback callback);
 
   uint32_t SubscribeDeviceChangeNotifications(
@@ -107,6 +112,13 @@ class CONTENT_EXPORT MediaDevicesManager
   // This function is only called in response to physical audio/video device
   // changes.
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
+
+  // Returns the supported video formats for the given |device_id|.
+  // If |try_in_use_first| is true and the device is being used, only the format
+  // in use is returned. Otherwise, all formats supported by the device are
+  // returned.
+  media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id,
+                                                  bool try_in_use_first);
 
   // TODO(guidou): Remove this function once content::GetMediaDeviceIDForHMAC
   // is rewritten to receive devices via a callback.
@@ -169,11 +181,13 @@ class CONTENT_EXPORT MediaDevicesManager
       int render_frame_id,
       const std::string& group_id_salt_base,
       const BoolDeviceTypes& requested_types,
+      bool request_video_input_capabilities,
       EnumerateDevicesCallback callback,
       const std::pair<std::string, url::Origin>& salt_and_origin);
   void OnPermissionsCheckDone(
       const std::string& group_id_salt_base,
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
+      bool request_video_input_capabilities,
       EnumerateDevicesCallback callback,
       const std::string& device_id_salt,
       const url::Origin& security_origin,
@@ -181,11 +195,15 @@ class CONTENT_EXPORT MediaDevicesManager
   void OnDevicesEnumerated(
       const std::string& group_id_salt_base,
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
+      bool request_video_input_capabilities,
       EnumerateDevicesCallback callback,
       const std::string& device_id_salt,
       const url::Origin& security_origin,
       const MediaDevicesManager::BoolDeviceTypes& has_permissions,
       const MediaDeviceEnumeration& enumeration);
+
+  std::vector<VideoInputDeviceCapabilitiesPtr> ComputeVideoInputCapabilities(
+      const MediaDeviceInfoArray& device_infos);
 
   // Helpers to issue low-level device enumerations.
   void DoEnumerateDevices(MediaDeviceType type);

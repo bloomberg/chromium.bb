@@ -37,6 +37,17 @@ namespace content {
 
 namespace {
 
+// Resolutions used if the source doesn't support capability enumeration.
+struct {
+  uint16_t width;
+  uint16_t height;
+} const kFallbackVideoResolutions[] = {{1920, 1080}, {1280, 720}, {960, 720},
+                                       {640, 480},   {640, 360},  {320, 240},
+                                       {320, 180}};
+
+// Frame rates for sources with no support for capability enumeration.
+const uint16_t kFallbackVideoFrameRates[] = {30, 60};
+
 // Private helper method to generate a string for the log message that lists the
 // human readable names of |devices|.
 std::string GetLogMessageString(MediaDeviceType device_type,
@@ -258,6 +269,7 @@ void MediaDevicesManager::EnumerateDevices(
     int render_frame_id,
     const std::string& group_id_salt_base,
     const BoolDeviceTypes& requested_types,
+    bool request_video_input_capabilities,
     EnumerateDevicesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -268,7 +280,7 @@ void MediaDevicesManager::EnumerateDevices(
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, group_id_salt_base, requested_types,
-                     std::move(callback)));
+                     request_video_input_capabilities, std::move(callback)));
 }
 
 uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
@@ -387,6 +399,45 @@ void MediaDevicesManager::OnDevicesChanged(
   }
 }
 
+media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
+    const std::string& device_id,
+    bool try_in_use_first) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media::VideoCaptureFormats formats;
+
+  if (try_in_use_first) {
+    base::Optional<media::VideoCaptureFormat> format =
+        video_capture_manager_->GetDeviceFormatInUse(MEDIA_DEVICE_VIDEO_CAPTURE,
+                                                     device_id);
+    if (format.has_value()) {
+      formats.push_back(format.value());
+      return formats;
+    }
+  }
+
+  video_capture_manager_->GetDeviceSupportedFormats(device_id, &formats);
+  // Remove formats that have zero resolution.
+  formats.erase(std::remove_if(formats.begin(), formats.end(),
+                               [](const media::VideoCaptureFormat& format) {
+                                 return format.frame_size.GetArea() <= 0;
+                               }),
+                formats.end());
+
+  // If the device does not report any valid format, use a fallback list of
+  // standard formats.
+  if (formats.empty()) {
+    for (const auto& resolution : kFallbackVideoResolutions) {
+      for (const auto frame_rate : kFallbackVideoFrameRates) {
+        formats.push_back(media::VideoCaptureFormat(
+            gfx::Size(resolution.width, resolution.height), frame_rate,
+            media::PIXEL_FORMAT_I420));
+      }
+    }
+  }
+
+  return formats;
+}
+
 MediaDeviceInfoArray MediaDevicesManager::GetCachedDeviceInfo(
     MediaDeviceType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -411,6 +462,7 @@ void MediaDevicesManager::CheckPermissionsForEnumerateDevices(
     int render_frame_id,
     const std::string& group_id_salt_base,
     const BoolDeviceTypes& requested_types,
+    bool request_video_input_capabilities,
     EnumerateDevicesCallback callback,
     const std::pair<std::string, url::Origin>& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -418,13 +470,15 @@ void MediaDevicesManager::CheckPermissionsForEnumerateDevices(
       requested_types, render_process_id, render_frame_id,
       base::BindOnce(&MediaDevicesManager::OnPermissionsCheckDone,
                      weak_factory_.GetWeakPtr(), group_id_salt_base,
-                     requested_types, std::move(callback),
-                     salt_and_origin.first, salt_and_origin.second));
+                     requested_types, request_video_input_capabilities,
+                     std::move(callback), salt_and_origin.first,
+                     salt_and_origin.second));
 }
 
 void MediaDevicesManager::OnPermissionsCheckDone(
     const std::string& group_id_salt_base,
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
+    bool request_video_input_capabilities,
     EnumerateDevicesCallback callback,
     const std::string& device_id_salt,
     const url::Origin& security_origin,
@@ -434,13 +488,15 @@ void MediaDevicesManager::OnPermissionsCheckDone(
       requested_types,
       base::BindRepeating(&MediaDevicesManager::OnDevicesEnumerated,
                           weak_factory_.GetWeakPtr(), group_id_salt_base,
-                          requested_types, base::Passed(&callback),
-                          device_id_salt, security_origin, has_permissions));
+                          requested_types, request_video_input_capabilities,
+                          base::Passed(&callback), device_id_salt,
+                          security_origin, has_permissions));
 }
 
 void MediaDevicesManager::OnDevicesEnumerated(
     const std::string& group_id_salt_base,
     const MediaDevicesManager::BoolDeviceTypes& requested_types,
+    bool request_video_input_capabilities,
     EnumerateDevicesCallback callback,
     const std::string& device_id_salt,
     const url::Origin& security_origin,
@@ -448,6 +504,9 @@ void MediaDevicesManager::OnDevicesEnumerated(
     const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::string group_id_salt = group_id_salt_base + device_id_salt;
+  const bool video_input_capabilities_requested =
+      has_permissions[MEDIA_DEVICE_TYPE_VIDEO_INPUT] &&
+      request_video_input_capabilities;
 
   MediaDeviceInfoArray video_device_infos =
       enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
@@ -461,16 +520,55 @@ void MediaDevicesManager::OnDevicesEnumerated(
     if (!requested_types[i])
       continue;
 
-    const MediaDeviceInfoArray& device_infos =
-        i == MEDIA_DEVICE_TYPE_VIDEO_INPUT ? video_device_infos
-                                           : enumeration[i];
-    for (const auto& device_info : device_infos) {
-      result[i].push_back(TranslateMediaDeviceInfo(
-          has_permissions[i], device_id_salt, group_id_salt, security_origin,
-          device_info));
+    if (i == MEDIA_DEVICE_TYPE_VIDEO_INPUT) {
+      for (const auto& device_info : video_device_infos) {
+        MediaDeviceInfo translated_device_info = TranslateMediaDeviceInfo(
+            has_permissions[i], device_id_salt, group_id_salt, security_origin,
+            device_info);
+        if (video_input_capabilities_requested)
+          translated_device_info.video_facing = device_info.video_facing;
+        result[i].push_back(translated_device_info);
+      }
+    } else {
+      for (const auto& device_info : enumeration[i]) {
+        result[i].push_back(TranslateMediaDeviceInfo(
+            has_permissions[i], device_id_salt, group_id_salt, security_origin,
+            device_info));
+      }
     }
   }
-  std::move(callback).Run(result);
+
+  std::move(callback).Run(
+      std::move(result),
+      video_input_capabilities_requested
+          ? ComputeVideoInputCapabilities(result[MEDIA_DEVICE_TYPE_VIDEO_INPUT])
+          : std::vector<VideoInputDeviceCapabilitiesPtr>());
+}
+
+std::vector<VideoInputDeviceCapabilitiesPtr>
+MediaDevicesManager::ComputeVideoInputCapabilities(
+    const MediaDeviceInfoArray& device_infos) {
+  std::vector<VideoInputDeviceCapabilitiesPtr> video_input_capabilities;
+  for (const auto& device_info : device_infos) {
+    VideoInputDeviceCapabilitiesPtr capabilities =
+        blink::mojom::VideoInputDeviceCapabilities::New();
+    capabilities->device_id = device_info.device_id;
+    capabilities->formats = GetVideoInputFormats(device_info.device_id,
+                                                 false /* try_in_use_first */);
+    capabilities->facing_mode = device_info.video_facing;
+#if defined(OS_ANDROID)
+    // On Android, the facing mode is not available in the |facing| field,
+    // but is available as part of the label.
+    // TODO(guidou): Remove this code once the |facing| field is supported
+    // on Android. See http://crbug.com/672856.
+    if (device_info.label.find("front") != std::string::npos)
+      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_USER;
+    else if (device_info.label.find("back") != std::string::npos)
+      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+#endif
+    video_input_capabilities.push_back(std::move(capabilities));
+  }
+  return video_input_capabilities;
 }
 
 void MediaDevicesManager::DoEnumerateDevices(MediaDeviceType type) {

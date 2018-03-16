@@ -6,6 +6,7 @@
 #define InputDeviceInfo_h
 
 #include "modules/mediastream/MediaDeviceInfo.h"
+#include "public/platform/WebMediaStreamSource.h"
 
 namespace blink {
 
@@ -20,6 +21,8 @@ class InputDeviceInfo final : public MediaDeviceInfo {
                                  const String& group_id,
                                  MediaDeviceType);
 
+  void SetVideoInputCapabilities(mojom::blink::VideoInputDeviceCapabilitiesPtr);
+
   void getCapabilities(MediaTrackCapabilities&);
 
  private:
@@ -27,6 +30,8 @@ class InputDeviceInfo final : public MediaDeviceInfo {
                   const String& label,
                   const String& group_id,
                   MediaDeviceType);
+
+  WebMediaStreamSource::Capabilities platform_capabilities_;
 };
 
 }  // namespace blink

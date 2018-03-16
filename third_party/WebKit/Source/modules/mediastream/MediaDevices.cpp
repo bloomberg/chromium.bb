@@ -95,6 +95,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
 
   GetDispatcherHost(frame)->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
+      true /* request_video_input_capabilities */,
       WTF::Bind(&MediaDevices::DevicesEnumerated, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
@@ -252,7 +253,9 @@ void MediaDevices::Dispose() {
 
 void MediaDevices::DevicesEnumerated(
     ScriptPromiseResolver* resolver,
-    Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration) {
+    Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration,
+    Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
+        video_input_capabilities) {
   if (!requests_.Contains(resolver))
     return;
 
@@ -266,16 +269,31 @@ void MediaDevices::DevicesEnumerated(
   DCHECK_EQ(static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
             enumeration.size());
 
+  if (!video_input_capabilities.IsEmpty()) {
+    DCHECK_EQ(
+        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
+            .size(),
+        video_input_capabilities.size());
+  }
+
   MediaDeviceInfoVector media_devices;
   for (size_t i = 0;
        i < static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES); ++i) {
-    for (const auto& device_info : enumeration[i]) {
+    for (size_t j = 0; j < enumeration[i].size(); ++j) {
       MediaDeviceType device_type = static_cast<MediaDeviceType>(i);
+      mojom::blink::MediaDeviceInfoPtr device_info =
+          std::move(enumeration[i][j]);
       if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == MediaDeviceType::MEDIA_VIDEO_INPUT) {
-        media_devices.push_back(
+        InputDeviceInfo* input_device_info =
             InputDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type));
+                                    device_info->group_id, device_type);
+        if (device_type == MediaDeviceType::MEDIA_VIDEO_INPUT &&
+            !video_input_capabilities.IsEmpty()) {
+          input_device_info->SetVideoInputCapabilities(
+              std::move(video_input_capabilities[j]));
+        }
+        media_devices.push_back(input_device_info);
       } else {
         media_devices.push_back(
             MediaDeviceInfo::Create(device_info->device_id, device_info->label,

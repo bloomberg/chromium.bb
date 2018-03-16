@@ -27,18 +27,6 @@
 namespace content {
 namespace {
 
-media::VideoFacingMode GetVideoFacingMode(
-    const blink::WebMediaStreamTrack::FacingMode facing_mode) {
-  switch (facing_mode) {
-    case blink::WebMediaStreamTrack::FacingMode::kUser:
-      return media::MEDIA_VIDEO_FACING_USER;
-    case blink::WebMediaStreamTrack::FacingMode::kEnvironment:
-      return media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    default:
-      return media::MEDIA_VIDEO_FACING_NONE;
-  }
-}
-
 void RequestFailed(blink::WebApplyConstraintsRequest request,
                    const blink::WebString& constraint,
                    const blink::WebString& message) {
@@ -257,10 +245,9 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
       blink::mojom::VideoInputDeviceCapabilities::New();
   device_capabilities->device_id =
       current_request_.Track().Source().Id().Ascii();
-  device_capabilities->facing_mode = GetVideoFacingMode(
-      GetCurrentVideoSource()
-          ? ToWebFacingMode(GetCurrentVideoSource()->device().video_facing)
-          : blink::WebMediaStreamTrack::FacingMode::kNone);
+  device_capabilities->facing_mode =
+      GetCurrentVideoSource() ? GetCurrentVideoSource()->device().video_facing
+                              : media::MEDIA_VIDEO_FACING_NONE;
   device_capabilities->formats = std::move(formats);
 
   DCHECK(video_source_->GetCurrentCaptureParams());
