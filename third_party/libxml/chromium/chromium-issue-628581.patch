@@ -71,7 +71,7 @@ index 53a6b7f0c961..e3136123dca6 100644
  	unsigned long oldnbent = ctxt->nbentities;
  	xmlChar *rep;
  
-+	ent->guard = XML_ENTITY_BEING_CHECKED;
++        ent->guard = XML_ENTITY_BEING_CHECKED;
  	ent->checked = 1;
  
          ++ctxt->depth;
@@ -79,10 +79,10 @@ index 53a6b7f0c961..e3136123dca6 100644
  				  XML_SUBSTITUTE_REF, 0, 0, 0);
          --ctxt->depth;
 +        ent->guard = XML_ENTITY_NOT_BEING_CHECKED;
- 	if ((rep == NULL) || (ctxt->errNo == XML_ERR_ENTITY_LOOP)) {
+ 	if (ctxt->errNo == XML_ERR_ENTITY_LOOP) {
  	    ent->content[0] = 0;
  	}
-@@ -7105,23 +7111,28 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
+@@ -7329,23 +7335,28 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
  	 * if its replacement text matches the production labeled
  	 * content.
  	 */
@@ -128,7 +128,7 @@ index 53a6b7f0c961..e3136123dca6 100644
  
  	/*
  	 * Store the number of entities needing parsing for this entity
-@@ -7229,23 +7240,29 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
+@@ -7448,23 +7459,29 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
  	    else
  		user_data = ctxt->userData;
  
