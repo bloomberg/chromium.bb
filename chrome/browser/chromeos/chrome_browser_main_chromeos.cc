@@ -294,13 +294,13 @@ class DBusPreEarlyInit {
   DBusPreEarlyInit() {
     SystemSaltGetter::Initialize();
 
+    // Initialize DBusThreadManager for the browser.
+    DBusThreadManager::Initialize(DBusThreadManager::kAll);
+
     // Initialize the device settings service so that we'll take actions per
     // signals sent from the session manager. This needs to happen before
     // g_browser_process initializes BrowserPolicyConnector.
     DeviceSettingsService::Initialize();
-
-    // Initialize DBusThreadManager for the browser.
-    DBusThreadManager::Initialize(DBusThreadManager::kAll);
   }
 
   ~DBusPreEarlyInit() {
