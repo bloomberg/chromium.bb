@@ -160,4 +160,53 @@ TEST_F(SignedExchangeHeaderParserTest, OpenQuoteAtEnd) {
   EXPECT_FALSE(signatures.has_value());
 }
 
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_None) {
+  const char content_type[] = "application/signed-exchange";
+  base::Optional<std::string> version;
+  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+  EXPECT_FALSE(version);
+}
+
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_NoneWithSemicolon) {
+  const char content_type[] = "application/signed-exchange;";
+  base::Optional<std::string> version;
+  EXPECT_FALSE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+}
+
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_EmptyString) {
+  const char content_type[] = "application/signed-exchange;v=";
+  base::Optional<std::string> version;
+  EXPECT_FALSE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+}
+
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_Simple) {
+  const char content_type[] = "application/signed-exchange;v=b0";
+  base::Optional<std::string> version;
+  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+  ASSERT_TRUE(version);
+  EXPECT_EQ(*version, "b0");
+}
+
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_SimpleWithSpace) {
+  const char content_type[] = "application/signed-exchange; v=b0";
+  base::Optional<std::string> version;
+  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+  ASSERT_TRUE(version);
+  EXPECT_EQ(*version, "b0");
+}
+
+TEST_F(SignedExchangeHeaderParserTest, VersionParam_SimpleWithDoublequotes) {
+  const char content_type[] = "application/signed-exchange;v=\"b0\"";
+  base::Optional<std::string> version;
+  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
+      content_type, &version));
+  ASSERT_TRUE(version);
+  EXPECT_EQ(*version, "b0");
+}
+
 }  // namespace content

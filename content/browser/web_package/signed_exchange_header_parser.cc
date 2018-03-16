@@ -188,6 +188,7 @@ class StructuredHeaderParser {
 
 }  // namespace
 
+// static
 base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
 SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -277,6 +278,25 @@ SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "SignedExchangeHeaderParser::ParseSignature");
   return signatures;
+}
+
+// static
+bool SignedExchangeHeaderParser::GetVersionParamFromContentType(
+    base::StringPiece content_type,
+    base::Optional<std::string>* version_param) {
+  DCHECK(version_param);
+  StructuredHeaderParser parser(content_type);
+  ParameterisedLabel parameterised_label;
+  parser.ParseParameterisedLabel(&parameterised_label);
+  if (!parser.ParsedSuccessfully())
+    return false;
+  const auto it = parameterised_label.params.find("v");
+  if (it == parameterised_label.params.end()) {
+    *version_param = base::nullopt;
+  } else {
+    *version_param = it->second;
+  }
+  return true;
 }
 
 SignedExchangeHeaderParser::Signature::Signature() = default;

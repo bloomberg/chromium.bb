@@ -64,6 +64,7 @@ void SignedExchangeHandler::SetVerificationTimeForTesting(
 }
 
 SignedExchangeHandler::SignedExchangeHandler(
+    std::string content_type,
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
     url::Origin request_initiator,
@@ -81,12 +82,32 @@ SignedExchangeHandler::SignedExchangeHandler(
           net::NetLogSourceType::CERT_VERIFIER_JOB)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeHandler::SignedExchangeHandler");
+
+  base::Optional<std::string> content_type_version_param;
+  if (!SignedExchangeHeaderParser::GetVersionParamFromContentType(
+          content_type, &content_type_version_param) ||
+      !content_type_version_param || *content_type_version_param != "b0") {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
+                                  weak_factory_.GetWeakPtr(), net::ERR_FAILED));
+    TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "SignedExchangeHandler::SignedExchangeHandler", "error",
+                     "Unsupported version of the content type. Currentry "
+                     "content type must be "
+                     "\"application/signed-exchange;v=b0\".",
+                     "content-type", content_type);
+    return;
+  }
 
   // Triggering the read (asynchronously) for the encoded header length.
   SetupBuffers(SignedExchangeHeader::kEncodedHeaderLengthInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
+  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "SignedExchangeCertFetcher::SignedExchangeHandler");
 }
 
 SignedExchangeHandler::~SignedExchangeHandler() = default;

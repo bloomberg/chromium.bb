@@ -93,6 +93,12 @@ WebPackageLoader::WebPackageLoader(
       request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
+
+  // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
+  // checks "v=" parameter.
+  original_response.headers->EnumerateHeader(nullptr, "content-type",
+                                             &content_type_);
+
   url_loader_.Bind(std::move(endpoints->url_loader));
 
   if (url_loader_options_ &
@@ -170,7 +176,7 @@ void WebPackageLoader::OnStartLoadingResponseBody(
   }
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
-      std::make_unique<DataPipeToSourceStream>(std::move(body)),
+      content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(request_initiator_), std::move(url_loader_factory_),

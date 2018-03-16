@@ -218,6 +218,35 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   EXPECT_EQ(original_fingerprint, fingerprint);
 }
 
+IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
+                       InvalidContentType) {
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/htxg/wildcard_example.org.public.pem.msg");
+
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/htxg/test.example.org_test_invalid_content_type.htxg");
+
+  NavigationFailureObserver failure_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(failure_observer.did_fail());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
 IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/htxg/404.msg");

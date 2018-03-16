@@ -133,6 +133,8 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   base::Optional<net::SSLInfo> ssl_info_;
 
+  std::string content_type_;
+
   base::WeakPtrFactory<WebPackageLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPackageLoader);
