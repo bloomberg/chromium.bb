@@ -300,6 +300,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testTouchSingleTapElement',
         # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
         'ChromeDriverSiteIsolation.testCanClickOOPIF',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
+        'ChromeDriverTest.testTouchScrollElement',
     ]
 )
 
