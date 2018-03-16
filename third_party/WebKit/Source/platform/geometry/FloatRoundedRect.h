@@ -73,7 +73,10 @@ class PLATFORM_EXPORT FloatRoundedRect {
     const FloatSize& BottomLeft() const { return bottom_left_; }
     const FloatSize& BottomRight() const { return bottom_right_; }
 
-    bool IsZero() const;
+    bool IsZero() const {
+      return top_left_.IsZero() && top_right_.IsZero() &&
+             bottom_left_.IsZero() && bottom_right_.IsZero();
+    }
 
     void Scale(float factor);
     // Multiply all radii by |factor| and floor the result to the nearest
