@@ -212,14 +212,16 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   // Calls back into |this| and depends on |shelf_view_|.
   background_animator_.AddObserver(this);
   background_animator_.AddObserver(delegate_view_);
-
-  // Sets initial session state to make sure the UI is properly shown.
-  OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
 }
 
 ShelfWidget::~ShelfWidget() {
   // Must call Shutdown() before destruction.
   DCHECK(!status_area_widget_);
+}
+
+void ShelfWidget::Initialize() {
+  // Sets initial session state to make sure the UI is properly shown.
+  OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
 }
 
 void ShelfWidget::Shutdown() {
