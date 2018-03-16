@@ -524,7 +524,7 @@
       {
         "name": "highlight",
         "type": "function",
-        "description": "Highlights the given tabs.",
+        "description": "Highlights the given tabs and focuses on the first of group. Will appear to do nothing if specified tab is currently active.",
         "parameters": [
           {
             "type": "object",
