@@ -1278,7 +1278,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     if (motion_field_projection(cm, LAST2_FRAME, 2)) --ref_stamp;
 }
 
-#if CONFIG_EXT_WARPED_MOTION
 static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,
                                   int row_offset, int sign_r, int col_offset,
                                   int sign_c) {
@@ -1480,106 +1479,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
   return np;
 }
-#else
-void calc_projection_samples(MB_MODE_INFO *const mbmi, int x, int y,
-                             int *pts_inref) {
-  pts_inref[0] = (x * 8) + mbmi->mv[0].as_mv.col;
-  pts_inref[1] = (y * 8) + mbmi->mv[0].as_mv.row;
-}
-
-// Note: Samples returned are at 1/8-pel precision
-// Sample are the neighbor block center point's coordinates relative to the
-// left-top pixel of current block.
-int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-                int *pts, int *pts_inref) {
-  MB_MODE_INFO *const mbmi0 = &(xd->mi[0]->mbmi);
-  int ref_frame = mbmi0->ref_frame[0];
-  int up_available = xd->up_available;
-  int left_available = xd->left_available;
-  int i, mi_step, np = 0;
-
-  // scan the above row
-  if (up_available) {
-    for (i = 0; i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col); i += mi_step) {
-      int mi_row_offset = -1;
-      int mi_col_offset = i;
-
-      MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-      MB_MODE_INFO *mbmi = &mi->mbmi;
-
-      mi_step = AOMMIN(xd->n8_w, mi_size_wide[mbmi->sb_type]);
-
-      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
-        int bw = block_size_wide[mbmi->sb_type];
-        int bh = block_size_high[mbmi->sb_type];
-        int x = i * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1;
-        int y = -AOMMAX(bh, MI_SIZE) / 2 - 1;
-
-        pts[0] = (x * 8);
-        pts[1] = (y * 8);
-        calc_projection_samples(mbmi, x, y, pts_inref);
-        pts += 2;
-        pts_inref += 2;
-        np++;
-        if (np >= LEAST_SQUARES_SAMPLES_MAX) return LEAST_SQUARES_SAMPLES_MAX;
-      }
-    }
-  }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
-
-  // scan the left column
-  if (left_available) {
-    for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
-      int mi_row_offset = i;
-      int mi_col_offset = -1;
-
-      MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-      MB_MODE_INFO *mbmi = &mi->mbmi;
-
-      mi_step = AOMMIN(xd->n8_h, mi_size_high[mbmi->sb_type]);
-
-      if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
-        int bw = block_size_wide[mbmi->sb_type];
-        int bh = block_size_high[mbmi->sb_type];
-        int x = -AOMMAX(bw, MI_SIZE) / 2 - 1;
-        int y = i * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1;
-
-        pts[0] = (x * 8);
-        pts[1] = (y * 8);
-        calc_projection_samples(mbmi, x, y, pts_inref);
-        pts += 2;
-        pts_inref += 2;
-        np++;
-        if (np >= LEAST_SQUARES_SAMPLES_MAX) return LEAST_SQUARES_SAMPLES_MAX;
-      }
-    }
-  }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
-
-  if (left_available && up_available) {
-    int mi_row_offset = -1;
-    int mi_col_offset = -1;
-
-    MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
-    MB_MODE_INFO *mbmi = &mi->mbmi;
-
-    if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE_FRAME) {
-      int bw = block_size_wide[mbmi->sb_type];
-      int bh = block_size_high[mbmi->sb_type];
-      int x = -AOMMAX(bw, MI_SIZE) / 2 - 1;
-      int y = -AOMMAX(bh, MI_SIZE) / 2 - 1;
-
-      pts[0] = (x * 8);
-      pts[1] = (y * 8);
-      calc_projection_samples(mbmi, x, y, pts_inref);
-      np++;
-    }
-  }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
-
-  return np;
-}
-#endif  // CONFIG_EXT_WARPED_MOTION
 
 void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   cm->is_skip_mode_allowed = 0;

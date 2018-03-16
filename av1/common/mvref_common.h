@@ -364,9 +364,7 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                            int_mv *near_mv);
 #endif
 
-#if CONFIG_EXT_WARPED_MOTION
 int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize);
-#endif  // CONFIG_EXT_WARPED_MOTION
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
                 int *pts, int *pts_inref);
 

@@ -6864,24 +6864,16 @@ static int64_t motion_mode_rd(
   uint8_t best_blk_skip[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE];
   int interintra_allowed =
       cm->allow_interintra_compound && is_interintra_allowed(mbmi);
-#if CONFIG_EXT_WARPED_MOTION
   int pts0[SAMPLES_ARRAY_SIZE], pts_inref0[SAMPLES_ARRAY_SIZE];
   int total_samples;
-#else
-  int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-#endif  // CONFIG_EXT_WARPED_MOTION
 
   (void)rate_mv;
 
   av1_invalid_rd_stats(&best_rd_stats);
 
   aom_clear_system_state();
-#if CONFIG_EXT_WARPED_MOTION
   mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
   total_samples = mbmi->num_proj_ref[0];
-#else
-  mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
-#endif  // CONFIG_EXT_WARPED_MOTION
   rate2_nocoeff = rd_stats->rate;
   base_mbmi = *mbmi;
   MOTION_MODE last_motion_mode_allowed =
@@ -6936,15 +6928,12 @@ static int64_t motion_mode_rd(
 
     // Local warped motion mode
     if (mbmi->motion_mode == WARPED_CAUSAL) {
-#if CONFIG_EXT_WARPED_MOTION
       int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-#endif  // CONFIG_EXT_WARPED_MOTION
       mbmi->motion_mode = WARPED_CAUSAL;
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
       mbmi->interp_filters = av1_broadcast_interp_filter(
           av1_unswitchable_filter(cm->interp_filter));
 
-#if CONFIG_EXT_WARPED_MOTION
       memcpy(pts, pts0, total_samples * 2 * sizeof(*pts0));
       memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
       // Select the samples according to motion vector difference
@@ -6952,7 +6941,6 @@ static int64_t motion_mode_rd(
         mbmi->num_proj_ref[0] = selectSamples(
             &mbmi->mv[0].as_mv, pts, pts_inref, mbmi->num_proj_ref[0], bsize);
       }
-#endif  // CONFIG_EXT_WARPED_MOTION
 
       if (!find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
                            mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
@@ -6962,16 +6950,11 @@ static int64_t motion_mode_rd(
           int tmp_rate_mv = 0;
           const int_mv mv0 = mbmi->mv[0];
           const WarpedMotionParams wm_params0 = mbmi->wm_params[0];
-#if CONFIG_EXT_WARPED_MOTION
           int num_proj_ref0 = mbmi->num_proj_ref[0];
 
           // Refine MV in a small range.
           av1_refine_warped_mv(cpi, x, bsize, mi_row, mi_col, pts0, pts_inref0,
                                total_samples);
-#else
-          // Refine MV in a small range.
-          av1_refine_warped_mv(cpi, x, bsize, mi_row, mi_col, pts, pts_inref);
-#endif  // CONFIG_EXT_WARPED_MOTION
 
           // Keep the refined MV and WM parameters.
           if (mv0.as_int != mbmi->mv[0].as_int) {
@@ -6996,9 +6979,7 @@ static int64_t motion_mode_rd(
             // Restore the old MV and WM parameters.
             mbmi->mv[0] = mv0;
             mbmi->wm_params[0] = wm_params0;
-#if CONFIG_EXT_WARPED_MOTION
             mbmi->num_proj_ref[0] = num_proj_ref0;
-#endif  // CONFIG_EXT_WARPED_MOTION
           }
         }
 
@@ -10010,12 +9991,10 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   if (is_motion_variation_allowed_bsize(bsize) && !has_second_ref(mbmi)) {
     int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
-#if CONFIG_EXT_WARPED_MOTION
     // Select the samples according to motion vector difference
     if (mbmi->num_proj_ref[0] > 1)
       mbmi->num_proj_ref[0] = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
                                             mbmi->num_proj_ref[0], bsize);
-#endif  // CONFIG_EXT_WARPED_MOTION
   }
 
   set_default_interp_filters(mbmi, cm->interp_filter);
