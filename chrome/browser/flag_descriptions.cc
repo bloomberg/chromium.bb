@@ -2998,10 +2998,6 @@ const char kAshDisableSmoothScreenRotationName[] =
 const char kAshDisableSmoothScreenRotationDescription[] =
     "Disable smooth rotation animations.";
 
-const char kAshDisableTrilinearFilteringName[] = "Disable trilinear filtering.";
-const char kAshDisableTrilinearFilteringDescription[] =
-    "Disable trilinear filtering.";
-
 const char kAshEnableDisplayMoveWindowAccelsName[] =
     "Enable shortcuts for moving window between displays.";
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =
@@ -3030,6 +3026,10 @@ const char kAshEnablePersistentWindowBoundsName[] =
     "Enable persistent window bounds in multi-displays scenario.";
 const char kAshEnablePersistentWindowBoundsDescription[] =
     "Enable persistent window bounds in multi-displays scenario.";
+
+const char kAshEnableTrilinearFilteringName[] = "Enable trilinear filtering.";
+const char kAshEnableTrilinearFilteringDescription[] =
+    "Enable trilinear filtering.";
 
 const char kAshShelfColorName[] = "Shelf color in Chrome OS system UI";
 const char kAshShelfColorDescription[] =

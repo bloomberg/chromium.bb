@@ -25863,6 +25863,7 @@ from previous Chrome versions.
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
   <int value="-1594298767" label="FullscreenToolbarReveal:enabled"/>
   <int value="-1586642651" label="MaterialDesignExtensions:disabled"/>
+  <int value="-1584944853" label="TrilinearFiltering:enabled"/>
   <int value="-1583728573" label="AutofillCreditCardSigninPromo:disabled"/>
   <int value="-1581724231" label="ModalPermissionPrompts:enabled"/>
   <int value="-1580376019" label="ShowAllDialogsWithViewsToolkit:enabled"/>
@@ -26684,6 +26685,7 @@ from previous Chrome versions.
   <int value="460475728" label="wake-on-wifi-packet"/>
   <int value="464226051" label="CrOSComponent:enabled"/>
   <int value="466248382" label="disable-push-api-background-mode"/>
+  <int value="468665559" label="TrilinearFiltering:disabled"/>
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
@@ -27282,7 +27284,6 @@ from previous Chrome versions.
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
-  <int value="1907859249" label="ash-disable-trilinear-filtering"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
   <int value="1913263516" label="OculusVR:enabled"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>

@@ -28,9 +28,6 @@ const char kAshDisableSmoothScreenRotation[] =
 // Disables the split view on tablet mode.
 const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
 
-// Disables the trilinear filtering for overview and window cycle list.
-const char kAshDisableTrilinearFiltering[] = "ash-disable-trilinear-filtering";
-
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
@@ -160,13 +157,6 @@ bool IsNightLightEnabled() {
 bool IsSidebarEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshSidebarEnabled);
-}
-
-bool IsTrilinearFilteringEnabled() {
-  static bool use_trilinear_filtering =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTrilinearFiltering);
-  return use_trilinear_filtering;
 }
 
 bool IsUsingViewsLogin() {

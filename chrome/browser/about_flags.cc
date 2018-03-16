@@ -3671,10 +3671,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kArrayPrototypeValues)},
 
 #if defined(OS_CHROMEOS)
-    {"ash-disable-trilinear-filtering",
-     flag_descriptions::kAshDisableTrilinearFilteringName,
-     flag_descriptions::kAshDisableTrilinearFilteringDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableTrilinearFiltering)},
+    {"ash-enable-trilinear-filtering",
+     flag_descriptions::kAshEnableTrilinearFilteringName,
+     flag_descriptions::kAshEnableTrilinearFilteringDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTrilinearFiltering)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

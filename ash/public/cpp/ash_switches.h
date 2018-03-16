@@ -22,7 +22,6 @@ ASH_PUBLIC_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableLoginDimAndBlur[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableSmoothScreenRotation[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTabletSplitView[];
-ASH_PUBLIC_EXPORT extern const char kAshDisableTrilinearFiltering[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTouchExplorationMode[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableCursorMotionBlur[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableV1AppBackButton[];
