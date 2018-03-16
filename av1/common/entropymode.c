@@ -1165,23 +1165,12 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
 }
 
 void av1_setup_frame_contexts(AV1_COMMON *cm) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   // Store the frame context into a special slot (not associated with any
   // reference buffer), so that we can set up cm->pre_fc correctly later
   // This function must ONLY be called when cm->fc has been initialized with
   // default probs, either by av1_setup_past_independence or after manually
   // initializing them
   cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
-#else
-  if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
-      cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
-    // Reset all frame contexts.
-    for (int i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-  } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
-    // Reset only the frame context specified in the frame header.
-    cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-  }
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 }
 
 void av1_setup_past_independence(AV1_COMMON *cm) {
@@ -1222,7 +1211,4 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   if (frame_is_intra_only(cm) && cm->prev_mip)
     memset(cm->prev_mip, 0,
            cm->mi_stride * cm->mi_rows * sizeof(*cm->prev_mip));
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  cm->frame_context_idx = 0;
-#endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
 }

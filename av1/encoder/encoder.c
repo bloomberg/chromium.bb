@@ -306,18 +306,14 @@ static void setup_frame(AV1_COMP *cpi) {
   if (cm->prev_frame) cm->last_frame_seg_map = cm->prev_frame->seg_map;
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
 #endif
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   cm->primary_ref_frame = PRIMARY_REF_NONE;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     for (int i = 0; i < REF_FRAMES; i++) {
       cm->fb_of_context_type[i] = -1;
     }
     cm->fb_of_context_type[REGULAR_FRAME] =
         get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
-#endif
   } else if (!cm->large_scale_tile) {
     // for large scale tile we leave the default PRIMARY_REF_NONE
     const GF_GROUP *gf_group = &cpi->twopass.gf_group;
@@ -333,7 +329,6 @@ static void setup_frame(AV1_COMP *cpi) {
       cm->frame_context_idx = BRF_FRAME;
     else
       cm->frame_context_idx = REGULAR_FRAME;
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     int wanted_fb = cm->fb_of_context_type[cm->frame_context_idx];
     for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
       int fb = get_ref_frame_map_idx(cpi, ref_frame);
@@ -341,7 +336,6 @@ static void setup_frame(AV1_COMP *cpi) {
         cm->primary_ref_frame = ref_frame - LAST_FRAME;
       }
     }
-#endif
   }
 
   if (cm->frame_type == KEY_FRAME) {
@@ -350,13 +344,8 @@ static void setup_frame(AV1_COMP *cpi) {
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
     set_use_reference_buffer(cm, 0);
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-#else
-    cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   } else {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
         cm->frame_refs[cm->primary_ref_frame].idx < 0) {
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
@@ -369,10 +358,6 @@ static void setup_frame(AV1_COMP *cpi) {
       cm->pre_fc =
           &cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
     }
-#else
-    *cm->fc = cm->frame_contexts[cm->frame_context_idx];
-    cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
     av1_zero(cpi->interp_filter_selected[0]);
   }
 
@@ -2476,10 +2461,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (oxcf->large_scale_tile)
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
-#endif
-
   if (x->palette_buffer == NULL) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
@@ -4476,15 +4457,12 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
-    }
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    else if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-             cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+    } else if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
+               cm->frame_refs[cm->primary_ref_frame].idx < 0) {
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
       av1_default_coef_probs(cm);
       cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
     }
-#endif
 
     // Variance adaptive and in frame q adjustment experiments are mutually
     // exclusive.
@@ -5051,21 +5029,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     // The alternate reference frame cannot be active for a key frame.
     cpi->rc.source_alt_ref_active = 0;
-
     cm->error_resilient_mode = oxcf->error_resilient_mode;
-
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    // By default, encoder assumes decoder can use prev_mi.
-    if (cm->error_resilient_mode) {
-      cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
-      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
-    } else if (cm->intra_only) {
-      // Only reset the current context.
-      cm->reset_frame_context = RESET_FRAME_CONTEXT_CURRENT;
-    }
-    if (cpi->oxcf.large_scale_tile)
-      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
-#endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
   if (cpi->oxcf.mtu == 0) {
     cm->num_tg = cpi->oxcf.num_tile_groups;
@@ -5848,10 +5812,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   else
     cpi->multi_arf_allowed = 0;
 
-// Normal defaults
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
-#endif
+  // Normal defaults
   cm->refresh_frame_context =
       (oxcf->error_resilient_mode || oxcf->frame_parallel_decoding_mode)
           ? REFRESH_FRAME_CONTEXT_DISABLED
@@ -6180,12 +6141,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif
 
   if (!cm->large_scale_tile) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
-#else
-    if (!cm->error_resilient_mode)
-      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
 
 #define EXT_TILE_DEBUG 0

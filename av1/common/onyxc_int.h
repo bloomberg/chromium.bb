@@ -69,18 +69,11 @@ extern "C" {
 #define FRAME_ID_LENGTH 15
 #define DELTA_FRAME_ID_LENGTH 14
 
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 #define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
 // Extra frame context which is always kept at default values
 #define FRAME_CONTEXT_DEFAULTS (FRAME_CONTEXTS - 1)
 #define PRIMARY_REF_BITS 3
 #define PRIMARY_REF_NONE 7
-#else
-
-#define FRAME_CONTEXTS_LOG2 3
-
-#define FRAME_CONTEXTS (1 << FRAME_CONTEXTS_LOG2)
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
 #define NUM_PING_PONG_BUFFERS 2
 
@@ -95,14 +88,6 @@ typedef enum {
   REFERENCE_MODE_SELECT = 2,
   REFERENCE_MODES = 3,
 } REFERENCE_MODE;
-
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-typedef enum {
-  RESET_FRAME_CONTEXT_NONE = 0,
-  RESET_FRAME_CONTEXT_CURRENT = 1,
-  RESET_FRAME_CONTEXT_ALL = 2,
-} RESET_FRAME_CONTEXT_MODE;
-#endif
 
 typedef enum {
   /**
@@ -326,11 +311,6 @@ typedef struct AV1Common {
   int allow_interintra_compound;
   int allow_masked_compound;
 
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  // Flag signaling which frame contexts should be reset to default values.
-  RESET_FRAME_CONTEXT_MODE reset_frame_context;
-#endif
-
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
   // MODE_INFO (8-pixel) units.
   int MBs;
@@ -461,10 +441,8 @@ typedef struct AV1Common {
   FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
   FRAME_CONTEXT *pre_fc;          // Context referenced in this frame
   unsigned int frame_context_idx; /* Context to use/update */
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
-#endif
   FRAME_COUNTS counts;
 
   unsigned int frame_offset;

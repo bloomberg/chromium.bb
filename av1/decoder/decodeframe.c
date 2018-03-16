@@ -2604,10 +2604,6 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
     pbi->need_resync = 0;
   }
 
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
-#endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-
   cm->cur_frame->intra_only = 1;
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -2815,9 +2811,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
 #endif  // CONFIG_FRAME_REFS_SIGNALING
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   cm->primary_ref_frame = PRIMARY_REF_NONE;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
 #if CONFIG_EXPLICIT_ORDER_HINT
   cm->frame_offset =
@@ -2892,28 +2886,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
 
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-// The only way to reset all frame contexts to their default values is with a
-// keyframe.
-#else
-    if (cm->error_resilient_mode) {
-      cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
-    } else {
-      if (cm->intra_only) {
-        cm->reset_frame_context = aom_rb_read_bit(rb)
-                                      ? RESET_FRAME_CONTEXT_ALL
-                                      : RESET_FRAME_CONTEXT_CURRENT;
-      } else {
-        cm->reset_frame_context = aom_rb_read_bit(rb)
-                                      ? RESET_FRAME_CONTEXT_CURRENT
-                                      : RESET_FRAME_CONTEXT_NONE;
-        if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT)
-          cm->reset_frame_context = aom_rb_read_bit(rb)
-                                        ? RESET_FRAME_CONTEXT_ALL
-                                        : RESET_FRAME_CONTEXT_CURRENT;
-      }
-    }
-#endif
 
     if (cm->intra_only) {
 #if CONFIG_FILM_GRAIN
@@ -3102,11 +3074,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
   }
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  // This flag will be overridden by the call to av1_setup_past_independence
-  // below, forcing the use of context 0 for those frame types.
-  cm->frame_context_idx = aom_rb_read_literal(rb, FRAME_CONTEXTS_LOG2);
-#else
   if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
     cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
     if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
@@ -3116,7 +3083,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                          "frame context is unavailable.");
     }
   }
-#endif
 
   // Generate next_ref_frame_map.
   lock_buffer_pool(pool);
@@ -3168,9 +3134,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
     av1_setup_frame_contexts(cm);
-  }
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  else if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
+  } else if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // The default coefficient CDFs depend on base_qindex. So, in order to
     // ensure that we don't depend on the frame decoding order, we explicitly
     // reset the coefficient CDFs with the value of base_qindex for this frame.
@@ -3178,7 +3142,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     av1_default_coef_probs(cm);
     cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
   }
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   setup_segmentation(cm, rb);
 
@@ -3436,17 +3399,9 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
     *p_data_end = data + aom_rb_bytes_read(&rb);
 #if CONFIG_FWD_KF
     if (cm->reset_decoder_state) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
       // Use the default frame context values.
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
       cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-#else
-      // NOTE: cm->frame_context_idx has been set to zero in
-      //       av1_setup_past_independence().
-      assert(cm->frame_context_idx == 0);
-      *cm->fc = cm->frame_contexts[cm->frame_context_idx];
-      cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
       if (!cm->fc->initialized)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Uninitialized entropy context.");
@@ -3464,7 +3419,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   av1_setup_motion_field(cm);
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y, num_planes);
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // use the default frame context values
     *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
@@ -3473,10 +3427,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
     *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
     cm->pre_fc = &cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
   }
-#else
-  *cm->fc = cm->frame_contexts[cm->frame_context_idx];
-  cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Uninitialized entropy context.");
@@ -3580,11 +3530,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   // Non frame parallel update frame context here.
   if (!cm->large_scale_tile) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
-#else
-    if (!cm->error_resilient_mode)
-      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif
   }
 }
