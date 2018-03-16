@@ -82,6 +82,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                                     animated:animated
                               scrollPosition:UICollectionViewScrollPositionTop];
+  // Update the delegate, in case it wasn't set when |items| was populated.
+  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 }
 
 #pragma mark - Public
@@ -103,10 +105,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)isGridEmpty {
   return self.items.count == 0;
-}
-
-- (NSUInteger)itemCount {
-  return self.items.count;
 }
 
 - (BOOL)isSelectedCellVisible {
@@ -205,6 +203,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                                     animated:YES
                               scrollPosition:UICollectionViewScrollPositionTop];
+  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 }
 
 - (void)insertItem:(GridItem*)item
@@ -216,6 +215,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   if (![self isViewVisible]) {
     performDataSourceUpdates();
+    [self.delegate gridViewController:self didChangeItemCount:self.items.count];
     return;
   }
   auto performAllUpdates = ^{
@@ -228,9 +228,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
-    if (self.items.count == 1) {
-      [self.delegate firstItemWasAddedInGridViewController:self];
-    }
+    [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
   [self.collectionView performBatchUpdates:performAllUpdates
                                 completion:completion];
@@ -244,6 +242,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   if (![self isViewVisible]) {
     performDataSourceUpdates();
+    [self.delegate gridViewController:self didChangeItemCount:self.items.count];
     return;
   }
   auto performAllUpdates = ^{
@@ -258,8 +257,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                  scrollPosition:UICollectionViewScrollPositionNone];
     } else {
       self.collectionView.backgroundView.hidden = NO;
-      [self.delegate lastItemWasClosedInGridViewController:self];
     }
+    [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
   [self.collectionView performBatchUpdates:performAllUpdates
                                 completion:completion];
