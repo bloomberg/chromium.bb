@@ -28,7 +28,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -293,9 +292,6 @@ public class BottomSheet
     /** Whether or not scroll events are currently being blocked for the 'velocity' swipe logic. */
     private boolean mVelocityLogicBlockSwipe;
 
-    /** Whether the swipe velocity for the toolbar was recorded. */
-    private boolean mIsSwipeVelocityRecorded;
-
     /** The speed of the swipe the last time the sheet was opened. */
     private long mLastSheetOpenMicrosPerDp;
 
@@ -385,12 +381,8 @@ public class BottomSheet
             return true;
         }
 
-        boolean shouldRecordHistogram = initialEvent != currentEvent;
-
         if (currentEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            mIsSwipeVelocityRecorded = false;
             mVelocityLogicBlockSwipe = false;
-            shouldRecordHistogram = false;
         }
 
         float scrollDistanceDp = MathUtils.distance(initialEvent.getX(), initialEvent.getY(),
@@ -421,34 +413,14 @@ public class BottomSheet
             double dpPerMs = scrollDistanceDp / (double) timeDeltaMs;
 
             if (dpPerMs < SHEET_SWIPE_MIN_DP_PER_MS) {
-                if (shouldRecordHistogram && !mIsSwipeVelocityRecorded) {
-                    recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Fail",
-                            (int) mLastSheetOpenMicrosPerDp);
-                    mIsSwipeVelocityRecorded = true;
-                }
                 mVelocityLogicBlockSwipe = true;
                 return false;
             }
 
-            if (shouldRecordHistogram && !mIsSwipeVelocityRecorded) {
-                recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Success",
-                        (int) mLastSheetOpenMicrosPerDp);
-                mIsSwipeVelocityRecorded = true;
-            }
             return true;
         }
 
         return currentEvent.getRawX() > startX && currentEvent.getRawX() < endX;
-    }
-
-    /**
-     * Record swipe velocity in microseconds per dp. This histogram will record between 0 and 20k
-     * microseconds with 50 buckets.
-     * @param name The name of the histogram.
-     * @param microsPerDp The microseconds per dp being recorded.
-     */
-    private void recordSwipeVelocity(String name, int microsPerDp) {
-        RecordHistogram.recordCustomCountHistogram(name, microsPerDp, 1, 60000, 50);
     }
 
     /**
@@ -469,47 +441,6 @@ public class BottomSheet
 
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
         mIsTouchEnabled = true;
-
-        // An observer for recording metrics.
-        this.addObserver(new EmptyBottomSheetObserver() {
-            /**
-             * Whether or not the velocity of the swipe to open the sheet should be recorded. This
-             * will only be true if the sheet was opened by swipe.
-             */
-            private boolean mShouldRecordSwipeVelocity;
-
-            @Override
-            public void onSheetOpened(@StateChangeReason int reason) {
-                mShouldRecordSwipeVelocity = reason == StateChangeReason.SWIPE;
-            }
-
-            @Override
-            public void onSheetClosed(@StateChangeReason int reason) {
-                boolean shouldRecordClose = reason == StateChangeReason.SWIPE
-                        || reason == StateChangeReason.BACK_PRESS
-                        || reason == StateChangeReason.TAP_SCRIM;
-                if (mShouldRecordSwipeVelocity && shouldRecordClose) {
-                    recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.NoNavigation",
-                            (int) mLastSheetOpenMicrosPerDp);
-                }
-                mShouldRecordSwipeVelocity = false;
-            }
-
-            @Override
-            public void onLoadUrl(String url) {
-                recordVelocityForNavigation();
-            }
-
-            /**
-             * Record the velocity for the last sheet-open event.
-             */
-            private void recordVelocityForNavigation() {
-                if (!mShouldRecordSwipeVelocity) return;
-                recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Navigation",
-                        (int) mLastSheetOpenMicrosPerDp);
-                mShouldRecordSwipeVelocity = false;
-            }
-        });
     }
 
     /**
