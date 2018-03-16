@@ -8105,7 +8105,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
       // during luma RDO, so we can store reconstructed luma values
       memcpy(x->blk_skip[0], ctx->blk_skip[0],
              sizeof(uint8_t) * ctx->num_4x4_blk);
-      av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y, x->optimize,
+      av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y,
+                                   cpi->optimize_seg_arr[mbmi->segment_id],
                                    mi_row, mi_col);
       xd->cfl.store_y = 0;
     }

@@ -104,8 +104,10 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
   const int eob = p->eobs[block];
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+  const int segment_id = xd->mi[0]->mbmi.segment_id;
 
-  if (eob == 0 || !mb->optimize || xd->lossless[xd->mi[0]->mbmi.segment_id]) {
+  if (eob == 0 || !cpi->optimize_seg_arr[segment_id] ||
+      xd->lossless[segment_id]) {
     *rate_cost = av1_cost_skip_txb(mb, &txb_ctx, plane, tx_size);
     return eob;
   }
@@ -260,6 +262,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   const uint8_t disable_txk_check = args->enable_optimize_b;
   if (plane == 0 && p->eobs[block] == 0) {
     if (disable_txk_check) {
+      // TODO(angiebird): Turn this on to detect potential rd bug
+      // assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
       xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
     } else {
       assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
@@ -415,8 +419,13 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  struct encode_b_args arg = { cpi,  x,    &ctx,       &mbmi->skip,
-                               NULL, NULL, x->optimize };
+  struct encode_b_args arg = { cpi,
+                               x,
+                               &ctx,
+                               &mbmi->skip,
+                               NULL,
+                               NULL,
+                               cpi->optimize_seg_arr[mbmi->segment_id] };
   int plane;
 
   mbmi->skip = 1;

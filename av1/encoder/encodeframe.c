@@ -4324,9 +4324,13 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                       cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
     if (xd->lossless[i]) cpi->has_lossless_segment = 1;
     xd->qindex[i] = qindex;
+    if (xd->lossless[i]) {
+      cpi->optimize_seg_arr[i] = 0;
+    } else {
+      cpi->optimize_seg_arr[i] = cpi->optimize_speed_feature;
+    }
   }
   cm->all_lossless = all_lossless(cm, xd);
-  if (!cm->seg.enabled && xd->lossless[0]) x->optimize = 0;
 
   cm->tx_mode = select_tx_mode(cpi);
 
@@ -4737,8 +4741,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     xd->cfl.store_y = 1;
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
-      av1_encode_intra_block_plane(cpi, x, bsize, plane, x->optimize, mi_row,
-                                   mi_col);
+      av1_encode_intra_block_plane(cpi, x, bsize, plane,
+                                   cpi->optimize_seg_arr[mbmi->segment_id],
+                                   mi_row, mi_col);
     }
 
     // If there is at least one lossless segment, force the skip for intra block

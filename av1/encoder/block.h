@@ -301,8 +301,6 @@ struct macroblock {
   int sgrproj_restore_cost[2];
   int intrabc_cost[2];
 
-  int optimize;
-
   // Used to store sub partition's choices.
   MV pred_mv[TOTAL_REFS_PER_FRAME];
 
