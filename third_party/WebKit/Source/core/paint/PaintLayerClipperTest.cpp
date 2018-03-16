@@ -864,4 +864,56 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorParent) {
   EXPECT_EQ(LayoutRect(0, 0, 200, 300), layer_bounds);
 }
 
+class PaintLayerClipperTestParameterized
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedRootLayerScrollingForTest,
+      public PaintLayerClipperTest {
+ public:
+  PaintLayerClipperTestParameterized()
+      : ScopedRootLayerScrollingForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintLayerClipperTestParameterized,
+                        ::testing::Bool());
+
+TEST_P(PaintLayerClipperTestParameterized, FixedLayerClipRectInDocumentSpace) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="position:fixed; left:100px; top:200px; width:300px; height:400px; overflow:hidden;">
+      <div id="target" style="position:relative;"></div>
+    </div>
+    <div style="height:3000px;"></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* target_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+
+  {
+    ClipRect clip_rect;
+    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
+                             kAbsoluteClipRectsIgnoringViewportClip,
+                             kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    EXPECT_EQ(LayoutRect(100, 200, 300, 400), clip_rect.Rect());
+  }
+
+  GetDocument().domWindow()->scrollTo(0, 50);
+
+  {
+    ClipRect clip_rect;
+    target_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .CalculateBackgroundClipRect(
+            ClipRectsContext(GetDocument().GetLayoutView()->Layer(),
+                             kAbsoluteClipRectsIgnoringViewportClip,
+                             kIgnorePlatformOverlayScrollbarSize,
+                             kIgnoreOverflowClipAndScroll),
+            clip_rect);
+    EXPECT_EQ(LayoutRect(100, 250, 300, 400), clip_rect.Rect());
+  }
+}
+
 }  // namespace blink

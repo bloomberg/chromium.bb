@@ -635,7 +635,7 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
   if (parent_clip_rects->Fixed() &&
       &context.root_layer->GetLayoutObject() == layout_view &&
       output != LayoutRect(LayoutRect::InfiniteIntRect()))
-    output.Move(LayoutSize(layout_view->GetFrameView()->GetScrollOffset()));
+    output.Move(LayoutSize(layout_view->OffsetForFixedPosition()));
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,
