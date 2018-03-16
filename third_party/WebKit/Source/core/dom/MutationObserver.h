@@ -95,7 +95,10 @@ class CORE_EXPORT MutationObserver final
     virtual void Deliver(const MutationRecordVector& records,
                          MutationObserver&) = 0;
     virtual void Trace(blink::Visitor* visitor) {}
-    virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {}
+    void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {}
+    const char* NameInHeapSnapshot() const override {
+      return "MutationObserver::Delegate";
+    }
   };
 
   class CORE_EXPORT V8DelegateImpl;

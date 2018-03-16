@@ -49,6 +49,10 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     Supplement<WorkerClients>::TraceWrappers(visitor);
   }
 
+  const char* NameInHeapSnapshot() const override {
+    return "ServiceWorkerContainerClient";
+  }
+
  private:
   std::unique_ptr<WebServiceWorkerProvider> provider_;
 };

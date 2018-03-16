@@ -34,7 +34,10 @@ class CORE_EXPORT ScriptedIdleTaskController
   ~ScriptedIdleTaskController();
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "ScriptedIdleTaskController";
+  }
 
   using CallbackId = int;
 
@@ -45,6 +48,7 @@ class CORE_EXPORT ScriptedIdleTaskController
    public:
     virtual void Trace(blink::Visitor* visitor) {}
     virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {}
+    const char* NameInHeapSnapshot() const override { return "IdleTask"; }
     virtual ~IdleTask() = default;
     virtual void invoke(IdleDeadline*) = 0;
   };

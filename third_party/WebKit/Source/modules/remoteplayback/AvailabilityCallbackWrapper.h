@@ -33,7 +33,10 @@ class AvailabilityCallbackWrapper final
   void Run(RemotePlayback*, bool new_availability);
 
   virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "AvailabilityCallbackWrapper";
+  }
 
  private:
   // Only one of these callbacks must be set.

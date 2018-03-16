@@ -28,6 +28,9 @@ class MODULES_EXPORT AnimatorDefinition final
   ~AnimatorDefinition();
   void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "AnimatorDefinition";
+  }
 
   v8::Local<v8::Function> ConstructorLocal(v8::Isolate*);
   v8::Local<v8::Function> AnimateLocal(v8::Isolate*);

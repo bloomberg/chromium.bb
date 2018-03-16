@@ -250,6 +250,7 @@ class HandleContainer
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(handle_.Cast<v8::Value>());
   }
+  const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
 
   void SetValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
     handle_.Set(isolate, string);
@@ -472,10 +473,12 @@ class Base : public blink::GarbageCollected<Base>,
     return new Base(wrapper_in_base, wrapper_in_mixin);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(wrapper_in_base_);
     Mixin::TraceWrappers(visitor);
   }
+
+  const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
 
  protected:
   Base(DeathAwareScriptWrappable* wrapper_in_base,

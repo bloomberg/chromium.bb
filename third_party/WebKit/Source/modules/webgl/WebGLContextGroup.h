@@ -63,7 +63,10 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(contexts_); }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "WebGLContextGroup";
+  }
 
  private:
   friend class WebGLObject;

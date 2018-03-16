@@ -59,7 +59,10 @@ class V8NodeFilterCondition final
 
   ~V8NodeFilterCondition();
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "V8NodeFilterCondition";
+  }
 
   unsigned acceptNode(Node*, ExceptionState&);
   v8::Local<v8::Value> Callback(v8::Isolate* isolate) const {

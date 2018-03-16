@@ -31,6 +31,9 @@ class PLATFORM_EXPORT CallbackFunctionBase
 
   virtual void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override {
+    return "CallbackFunctionBase";
+  }
 
   v8::Isolate* GetIsolate() const {
     return callback_relevant_script_state_->GetIsolate();

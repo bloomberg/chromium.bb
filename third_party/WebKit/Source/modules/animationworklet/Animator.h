@@ -29,6 +29,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   ~Animator();
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  const char* NameInHeapSnapshot() const override { return "Animator"; }
 
   // Returns true if it successfully invoked animate callback in JS. It receives
   // latest state coming from |AnimationHost| as input and fills
