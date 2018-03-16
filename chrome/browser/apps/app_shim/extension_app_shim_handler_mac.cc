@@ -43,6 +43,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/base/cocoa/focus_window_set.h"
+#include "ui/base/ui_base_features.h"
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
@@ -97,6 +98,11 @@ bool FocusWindows(const AppWindowList& windows) {
 bool FocusHostedAppWindows(std::set<Browser*>& browsers) {
   if (browsers.empty())
     return false;
+
+  // If the NSWindows for the app are in the app shim process, then don't steal
+  // focus from the app shim.
+  if (features::HostWindowsInAppShimProcess())
+    return true;
 
   std::set<gfx::NativeWindow> native_windows;
   for (const Browser* browser : browsers)

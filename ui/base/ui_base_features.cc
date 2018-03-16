@@ -76,7 +76,17 @@ bool IsMusEnabled() {
 #endif
 }
 
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+#if defined(OS_MACOSX)
+// When enabled, the NSWindows for apps will be created in the app's process,
+// and will forward input to the browser process.
+const base::Feature kHostWindowsInAppShimProcess{
+    "HostWindowsInAppShimProcess", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool HostWindowsInAppShimProcess() {
+  return base::FeatureList::IsEnabled(kHostWindowsInAppShimProcess);
+}
+
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
 // Causes Views browser builds to use Views browser windows by default rather
 // than Cocoa browser windows.
 const base::Feature kViewsBrowserWindows{"ViewsBrowserWindows",
@@ -87,6 +97,7 @@ const base::Feature kViewsBrowserWindows{"ViewsBrowserWindows",
 bool IsViewsBrowserCocoa() {
   return !base::FeatureList::IsEnabled(kViewsBrowserWindows);
 }
-#endif  //  defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
+#endif  //  defined(OS_MACOSX)
 
 }  // namespace features
