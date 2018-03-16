@@ -364,6 +364,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
                                ? AllocateFrameSinkIdForGuestViewHack()
                                : host_->GetFrameSinkId()),
       weak_ptr_factory_(this) {
+  if (!is_mus_browser_plugin_guest_)
+    CreateDelegatedFrameHostClient();
   if (!is_guest_view_hack_)
     host_->SetView(this);
 
@@ -395,9 +397,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
   if (is_mus_browser_plugin_guest_)
     return;
-
-  CreateDelegatedFrameHostClient();
-
   CreateAuraWindow(aura::client::WINDOW_TYPE_CONTROL);
 
   if (parent_view)
@@ -411,7 +410,6 @@ void RenderWidgetHostViewAura::InitAsPopup(
     const gfx::Rect& bounds_in_screen) {
   // Popups never have |is_mus_browser_plugin_guest_| set to true.
   DCHECK(!is_mus_browser_plugin_guest_);
-  CreateDelegatedFrameHostClient();
 
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
@@ -463,7 +461,6 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   // |is_mus_browser_plugin_guest_| is always false.
   DCHECK(!is_mus_browser_plugin_guest_);
   is_fullscreen_ = true;
-  CreateDelegatedFrameHostClient();
   CreateAuraWindow(aura::client::WINDOW_TYPE_NORMAL);
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
 
@@ -863,16 +860,6 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
   legacy_window_destroyed_ = true;
 }
 #endif
-
-void RenderWidgetHostViewAura::CreateCompositorFrameSink(
-    CreateCompositorFrameSinkCallback callback) {
-  // DelegatedFrameHost registers the FrameSinkId, so we need to wait
-  // for that to be created before creating a CompositorFrameSink.
-  if (delegated_frame_host_)
-    std::move(callback).Run(frame_sink_id_);
-  else
-    create_frame_sink_callback_ = std::move(callback);
-}
 
 void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
@@ -1883,26 +1870,14 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   if (!frame_sink_id_.is_valid())
     return;
 
-  // Tests may set |delegated_frame_host_client_|.
-  if (!delegated_frame_host_client_) {
-    delegated_frame_host_client_ =
-        std::make_unique<DelegatedFrameHostClientAura>(this);
-  }
-
+  delegated_frame_host_client_ =
+      std::make_unique<DelegatedFrameHostClientAura>(this);
   const bool enable_viz =
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
       features::IsSurfaceSynchronizationEnabled(), enable_viz,
       false /* should_register_frame_sink_id */);
-  if (!create_frame_sink_callback_.is_null())
-    std::move(create_frame_sink_callback_).Run(frame_sink_id_);
-
-  if (renderer_compositor_frame_sink_) {
-    delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
-        renderer_compositor_frame_sink_);
-  }
-  UpdateNeedsBeginFramesInternal();
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.

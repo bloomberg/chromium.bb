@@ -490,10 +490,16 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         is_guest_view_hack_(false) {}
 
   static void InstallDelegatedFrameHostClient(
-      RenderWidgetHostViewAura* render_widget_host_view,
+      RenderWidgetHostViewAura* view,
       std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client) {
-    render_widget_host_view->delegated_frame_host_client_ =
-        std::move(delegated_frame_host_client);
+    view->delegated_frame_host_client_ = std::move(delegated_frame_host_client);
+    const bool enable_viz =
+        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+    view->delegated_frame_host_ = nullptr;
+    view->delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
+        view->frame_sink_id_, view->delegated_frame_host_client_.get(),
+        features::IsSurfaceSynchronizationEnabled(), enable_viz,
+        false /* should_register_frame_sink_id */);
   }
 
   void SetUpEnvironment() {

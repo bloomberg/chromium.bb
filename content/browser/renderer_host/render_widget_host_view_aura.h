@@ -168,8 +168,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void CreateCompositorFrameSink(
-      CreateCompositorFrameSinkCallback callback) override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
@@ -653,11 +651,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::unique_ptr<CursorManager> cursor_manager_;
   int tab_show_sequence_ = 0;
-
-  // Stashes a request to create a CompositorFrameSink if it arrives before
-  // DelegatedFrameHost is created. This is only used with VizDisplayCompositor
-  // feature.
-  CreateCompositorFrameSinkCallback create_frame_sink_callback_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

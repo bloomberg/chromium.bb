@@ -481,10 +481,8 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   if (view) {
     view_ = view->GetWeakPtr();
     if (enable_viz_) {
-      if (!create_frame_sink_callback_.is_null()) {
-        view_->CreateCompositorFrameSink(
-            std::move(create_frame_sink_callback_));
-      }
+      if (!create_frame_sink_callback_.is_null())
+        std::move(create_frame_sink_callback_).Run(view_->GetFrameSinkId());
     } else {
       if (renderer_compositor_frame_sink_.is_bound()) {
         view->DidCreateNewRendererCompositorFrameSink(
@@ -2701,7 +2699,7 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
           std::move(compositor_frame_sink_client));
 
       if (view_)
-        view_->CreateCompositorFrameSink(std::move(callback));
+        std::move(callback).Run(view_->GetFrameSinkId());
       else
         create_frame_sink_callback_ = std::move(callback);
 

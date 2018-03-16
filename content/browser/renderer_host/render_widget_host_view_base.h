@@ -242,13 +242,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
-  // This method is called by RenderWidgetHostImpl when the renderer has
-  // requested a CompositorFrameSink. The callback takes a FrameSinkId and
-  // fullfills the request. The default implementation will immediately run the
-  // callback with GetFrameSinkId().
-  virtual void CreateCompositorFrameSink(
-      CreateCompositorFrameSinkCallback callback);
-
   // This method is called by RenderWidgetHostImpl when a new
   // RendererCompositorFrameSink is created in the renderer. The view is
   // expected not to return resources belonging to the old
