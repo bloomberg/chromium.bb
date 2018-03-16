@@ -33,7 +33,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/loading_predictor_observer.h"
@@ -513,9 +512,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-
-  chrome_http_user_agent_settings_.reset(
-      new ChromeHttpUserAgentSettings(pref_service));
 
   // These members are used only for sign in, which is not enabled
   // in incognito mode.  So no need to initialize them.
@@ -1063,8 +1059,6 @@ void ProfileIOData::Init(
   std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
       std::make_unique<network::URLRequestContextBuilderMojo>();
 
-  builder->set_shared_http_user_agent_settings(
-      chrome_http_user_agent_settings_.get());
   builder->set_ssl_config_service(profile_params_->ssl_config_service);
 
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
@@ -1438,8 +1432,6 @@ void ProfileIOData::ShutdownOnUIThread(
   network_prediction_options_.Destroy();
   if (ct_policy_manager_)
     ct_policy_manager_->Shutdown();
-  if (chrome_http_user_agent_settings_)
-    chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();
 #if BUILDFLAG(ENABLE_PLUGINS)
   always_open_pdf_externally_.Destroy();

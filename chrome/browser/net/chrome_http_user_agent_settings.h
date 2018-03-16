@@ -23,6 +23,11 @@ class ChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
   // Must be called on the IO thread.
   ~ChromeHttpUserAgentSettings() override;
 
+  // Given the language setting in the Prefs::kAcceptLanguages setting, returns
+  // the appropriate value of Accept-Language header to send.
+  static std::string ComputeAcceptLanguageFromPref(
+      const std::string& language_pref);
+
   // Adds the base language if a corresponding language+region code is present.
   static std::string ExpandLanguageList(const std::string& language_prefs);
 

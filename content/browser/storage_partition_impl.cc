@@ -708,23 +708,19 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 }
 
 network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
-  // Create the NetworkContext as needed, when the network service is disabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (network_context_)
-      return network_context_.get();
-    DCHECK(!network_context_owner_);
-    network_context_owner_ = std::make_unique<NetworkContextOwner>();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&NetworkContextOwner::Initialize,
-                       base::Unretained(network_context_owner_.get()),
-                       MakeRequest(&network_context_), url_request_context_));
-    return network_context_.get();
-  }
-
   if (!network_context_.is_bound() || network_context_.encountered_error()) {
     network_context_ = GetContentClient()->browser()->CreateNetworkContext(
         browser_context_, is_in_memory_, relative_partition_path_);
+    if (!network_context_) {
+      DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+      DCHECK(!network_context_owner_);
+      network_context_owner_ = std::make_unique<NetworkContextOwner>();
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&NetworkContextOwner::Initialize,
+                         base::Unretained(network_context_owner_.get()),
+                         MakeRequest(&network_context_), url_request_context_));
+    }
   }
   return network_context_.get();
 }

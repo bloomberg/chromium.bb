@@ -36,8 +36,9 @@ URLRequestContextOwner URLRequestContextBuilderMojo::Create(
     mojom::NetworkContextParams* params,
     bool quic_disabled,
     net::NetLog* net_log) {
-  return NetworkContext::ApplyContextParamsToBuilder(this, params,
-                                                     quic_disabled, net_log);
+  return NetworkContext::ApplyContextParamsToBuilder(
+      this, params, quic_disabled, net_log,
+      nullptr /* out_static_user_agent_settings */);
 }
 
 std::unique_ptr<net::ProxyResolutionService>

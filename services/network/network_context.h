@@ -28,6 +28,7 @@
 
 namespace net {
 class CertVerifier;
+class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
 
@@ -111,6 +112,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                       ClearHttpCacheCallback callback) override;
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
+  void SetAcceptLanguage(const std::string& new_accept_language) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
   void CreateTCPServerSocket(
@@ -141,12 +143,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void DisableQuic();
 
   // Applies the values in |network_context_params| to |builder|, and builds
-  // the URLRequestContext.
+  // the URLRequestContext. If |out_http_user_agent_settings| is non-null, it
+  // will be set to point to StaticHttpUserAgentSettings owned by the
+  // URLRequestContext.
   static URLRequestContextOwner ApplyContextParamsToBuilder(
       URLRequestContextBuilderMojo* builder,
       mojom::NetworkContextParams* network_context_params,
       bool quic_disabled,
-      net::NetLog* net_log);
+      net::NetLog* net_log,
+      net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
  private:
   // Constructor only used in tests.
@@ -188,6 +193,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
 
   int current_resource_scheduler_client_id_ = 0;
+
+  // Owned by the URLRequestContext
+  net::StaticHttpUserAgentSettings* user_agent_settings_ = nullptr;
 
   // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
   constexpr static bool enable_resource_scheduler_ = true;

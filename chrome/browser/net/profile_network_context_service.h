@@ -61,6 +61,14 @@ class ProfileNetworkContextService : public KeyedService {
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();
 
+  // Forwards changes to |pref_accept_language_| to the NetworkContext, after
+  // formatting them as appropriate.
+  void UpdateAcceptLanguage();
+
+  // Computes appropriate value of Accept-Language header based on
+  // |pref_accept_language_|
+  std::string ComputeAcceptLanguage() const;
+
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams();
@@ -80,6 +88,7 @@ class ProfileNetworkContextService : public KeyedService {
   network::mojom::NetworkContextRequest profile_io_data_context_request_;
 
   BooleanPrefMember quic_allowed_;
+  StringPrefMember pref_accept_language_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };
