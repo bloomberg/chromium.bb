@@ -143,17 +143,12 @@ void NativeViewHostAura::RemovedFromWidget() {
 }
 
 bool NativeViewHostAura::SetCornerRadius(int corner_radius) {
-#if defined(OS_WIN)
-  // Layer masks don't work on Windows. See crbug.com/713359
-  return false;
-#else
   mask_ = views::Painter::CreatePaintedLayer(
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
                                                   corner_radius));
   mask_->layer()->SetFillsBoundsOpaquely(false);
   InstallMask();
   return true;
-#endif
 }
 
 void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
