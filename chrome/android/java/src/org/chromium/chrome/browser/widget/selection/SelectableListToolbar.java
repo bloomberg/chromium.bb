@@ -30,7 +30,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.ActionModeController;
@@ -76,23 +75,6 @@ public class SelectableListToolbar<E>
         void onEndSearch();
     }
 
-    /**
-     * An interface to observe events on this toolbar.
-     */
-    public interface SelectableListToolbarObserver {
-        /**
-         * A notification that the theme color of the toolbar has changed.
-         * @param isLightTheme Whether or not the toolbar is using a light theme. When this
-         *                     parameter is true, it indicates that dark drawables should be used.
-         */
-        void onThemeColorChanged(boolean isLightTheme);
-
-        /**
-         * A notification that search mode has been activated for this toolbar.
-         */
-        void onStartSearch();
-    }
-
     /** No navigation button is displayed. **/
     public static final int NAVIGATION_BUTTON_NONE = 0;
     /** Button to open the DrawerLayout. Only valid if mDrawerLayout is set. **/
@@ -101,9 +83,6 @@ public class SelectableListToolbar<E>
     public static final int NAVIGATION_BUTTON_BACK = 2;
     /** Button to clear the selection. **/
     public static final int NAVIGATION_BUTTON_SELECTION_BACK = 3;
-
-    /** An observer list for this toolbar. */
-    private final ObserverList<SelectableListToolbarObserver> mObservers = new ObserverList<>();
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
@@ -115,7 +94,6 @@ public class SelectableListToolbar<E>
     private EditText mSearchEditText;
     private TintedImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
-    private boolean mIsLightTheme = true;
     private boolean mSelectableListHasItems;
     private boolean mIsVrEnabled = false;
 
@@ -158,7 +136,6 @@ public class SelectableListToolbar<E>
     void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-        mObservers.clear();
         UiUtils.hideKeyboard(mSearchEditText);
         VrShellDelegate.unregisterVrModeObserver(this);
     }
@@ -430,7 +407,6 @@ public class SelectableListToolbar<E>
         mSelectionDelegate.clearSelection();
 
         showSearchViewInternal();
-        for (SelectableListToolbarObserver o : mObservers) o.onStartSearch();
 
         mSearchEditText.requestFocus();
         UiUtils.showKeyboard(mSearchEditText);
@@ -563,20 +539,6 @@ public class SelectableListToolbar<E>
     }
 
     /**
-     * @return Whether or not the toolbar is currently using a light theme.
-     */
-    public boolean isLightTheme() {
-        return mIsLightTheme;
-    }
-
-    /**
-     * @param observer The observer to add to this toolbar.
-     */
-    public void addObserver(SelectableListToolbarObserver observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
      */
     private void initActionBarDrawerToggle() {
@@ -606,7 +568,6 @@ public class SelectableListToolbar<E>
         mNumberRollView.setVisibility(View.GONE);
         mNumberRollView.setNumber(0, false);
 
-        onThemeChanged(true);
         updateDisplayStyleIfNecessary();
     }
 
@@ -623,7 +584,6 @@ public class SelectableListToolbar<E>
 
         if (mIsSearching) UiUtils.hideKeyboard(mSearchEditText);
 
-        onThemeChanged(false);
         updateDisplayStyleIfNecessary();
     }
 
@@ -640,7 +600,6 @@ public class SelectableListToolbar<E>
             setBackgroundColor(mSearchBackgroundColor);
         }
 
-        onThemeChanged(true);
         updateDisplayStyleIfNecessary();
     }
 
@@ -658,15 +617,6 @@ public class SelectableListToolbar<E>
         mNumberRollView.setVisibility(View.VISIBLE);
         if (!wasSelectionEnabled) mNumberRollView.setNumber(0, false);
         mNumberRollView.setNumber(selectedItems.size(), true);
-    }
-
-    /**
-     * Update internal state and notify observers that the theme color changed.
-     * @param isLightTheme Whether or not the theme color is light.
-     */
-    private void onThemeChanged(boolean isLightTheme) {
-        mIsLightTheme = isLightTheme;
-        for (SelectableListToolbarObserver o : mObservers) o.onThemeColorChanged(isLightTheme);
     }
 
     private void updateDisplayStyleIfNecessary() {
