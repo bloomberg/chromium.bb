@@ -105,7 +105,7 @@ config("compiler") {
     ldflags = [ "/PROFILE" ]
   } else {
     if (!is_debug && !is_component_build) {
-      if (is_win_fastlink) {
+      if (is_win_fastlink && !use_lld) {
         # /PROFILE implies the following linker flags. Therefore if we are
         # skipping /PROFILE because it is incompatible with /DEBUG:FASTLINK
         # we should explicitly add these flags in order to avoid unintended
