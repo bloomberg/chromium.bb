@@ -59,6 +59,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -99,7 +100,7 @@ const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
 
 // Implementation of TestContentBrowserClient that overrides
 // AllowRenderingMhtmlOverHttp() and allows consumers to set a value.
-class DownloadTestContentBrowserClient : public ContentBrowserClient {
+class DownloadTestContentBrowserClient : public TestContentBrowserClient {
  public:
   DownloadTestContentBrowserClient() = default;
 
@@ -109,6 +110,10 @@ class DownloadTestContentBrowserClient : public ContentBrowserClient {
 
   void set_allowed_rendering_mhtml_over_http(bool allowed) {
     allowed_rendering_mhtml_over_http_ = allowed;
+  }
+
+  base::FilePath GetDefaultDownloadDirectory() override {
+    return base::FilePath();
   }
 
  private:

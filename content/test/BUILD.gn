@@ -372,7 +372,10 @@ jumbo_static_library("test_support") {
       "mock_google_streaming_server.cc",
       "mock_google_streaming_server.h",
     ]
-    deps += [ "//mojo/android:libsystem_java" ]
+    deps += [
+      "//content/shell:android_shell_descriptors",
+      "//mojo/android:libsystem_java",
+    ]
   }
 
   if (enable_plugins) {

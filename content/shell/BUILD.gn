@@ -37,10 +37,19 @@ config("content_shell_lib_warnings") {
   }
 }
 
-static_library("content_shell_lib") {
+source_set("android_shell_descriptors") {
   testonly = true
   sources = [
     "android/shell_descriptors.h",
+  ]
+  public_deps = [
+    "//content/public/common:content_descriptors",
+  ]
+}
+
+static_library("content_shell_lib") {
+  testonly = true
+  sources = [
     "android/shell_manager.cc",
     "android/shell_manager.h",
     "app/blink_test_platform_support.h",
@@ -209,6 +218,8 @@ static_library("content_shell_lib") {
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
 
   public_deps = [
+    ":android_shell_descriptors",
+
     # This exposes all public content APIs.
     "//content/public/app:both",
     "//content/public/browser",
