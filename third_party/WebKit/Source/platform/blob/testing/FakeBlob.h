@@ -16,6 +16,7 @@ class FakeBlob : public mojom::blink::Blob {
   explicit FakeBlob(const String& uuid);
 
   void Clone(mojom::blink::BlobRequest) override;
+  void AsDataPipeGetter(network::mojom::blink::DataPipeGetterRequest) override;
   void ReadRange(uint64_t offset,
                  uint64_t length,
                  mojo::ScopedDataPipeProducerHandle,

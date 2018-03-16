@@ -15,6 +15,11 @@ void FakeBlob::Clone(mojom::blink::BlobRequest request) {
                           std::move(request));
 }
 
+void FakeBlob::AsDataPipeGetter(
+    network::mojom::blink::DataPipeGetterRequest request) {
+  NOTREACHED();
+}
+
 void FakeBlob::ReadRange(uint64_t offset,
                          uint64_t length,
                          mojo::ScopedDataPipeProducerHandle,
