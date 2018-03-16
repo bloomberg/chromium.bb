@@ -45,6 +45,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -470,6 +471,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
+  // Flaky with NavigationMojoResponse. See https://crbug.com/822650.
+  if (content::IsNavigationMojoResponseEnabled())
+    return;
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restrictions")) << message_;
 }
 
