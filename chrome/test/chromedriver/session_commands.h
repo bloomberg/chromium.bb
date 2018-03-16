@@ -157,6 +157,10 @@ Status ExecuteMaximizeWindow(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value);
 
+Status ExecuteMinimizeWindow(Session* session,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value);
+
 Status ExecuteFullScreenWindow(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value);
