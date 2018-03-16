@@ -20,6 +20,10 @@ class Window;
 class WindowTreeClient;
 class WindowTreeHost;
 
+namespace client {
+class FocusClient;
+}
+
 // EmbedRoot represents a secondary embedding from the perspective of the
 // embedded client. More specifically an EmbedRoot allows a remote client to
 // embed this client in one of the remote client's Windows.
@@ -41,6 +45,7 @@ class AURA_EXPORT EmbedRoot {
 
  private:
   friend class WindowTreeClient;
+  friend class WindowTreeClientPrivate;
 
   EmbedRoot(WindowTreeClient* window_tree_client,
             EmbedRootDelegate* delegate,
@@ -60,6 +65,8 @@ class AURA_EXPORT EmbedRoot {
   EmbedRootDelegate* delegate_;
 
   base::UnguessableToken token_;
+
+  std::unique_ptr<client::FocusClient> focus_client_;
 
   std::unique_ptr<WindowTreeHost> window_tree_host_;
 

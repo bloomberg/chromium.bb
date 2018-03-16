@@ -27,7 +27,7 @@ namespace client {
 class FocusClient;
 }
 
-// FocusSynchronizer is resonsible for keeping focus in sync between aura
+// FocusSynchronizer is responsible for keeping focus in sync between aura
 // and the mus server. FocusSynchronizer may be configured in two distinct
 // ways:
 // . SetSingletonFocusClient(). Use this when a single FocusClient is shared
