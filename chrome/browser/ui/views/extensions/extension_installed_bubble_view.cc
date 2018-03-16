@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -77,13 +78,14 @@ views::Label* CreateLabel(const base::string16& text) {
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
                                   Browser* browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* reference_view = nullptr;
-
-#if defined(OS_MACOSX)
+// The Cocoa browser always needs to use an anchor point.
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return nullptr;
 #endif
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* reference_view = nullptr;
 
   switch (controller->anchor_position()) {
     case ExtensionInstalledBubble::ANCHOR_ACTION: {
@@ -109,10 +111,12 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
     return browser_view->button_provider()->GetAppMenuButton();
   return reference_view;
 }
-#else
+#else  // OS_MACOSX && !MAC_VIEWS_BROWSER
+// Always use an anchor point in non-Views Mac builds. This needs a separate
+// implementation because non-Views Mac builds can't even reference BrowserView.
 views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
                                   Browser* browser) {
-  return nullptr;  // Always use the anchor point.
+  return nullptr;
 }
 #endif
 
@@ -387,6 +391,13 @@ void ExtensionInstalledBubbleUi::OnWidgetClosing(views::Widget* widget) {
 
 // Views (BrowserView) specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  // Cocoa browser windows can always show the bubble - no need to check for an
+  // animation.
+  // TODO(ellyjones): Is that actually true?
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return true;
+#endif
   if (anchor_position() == ANCHOR_ACTION) {
     BrowserActionsContainer* container =
         BrowserView::GetBrowserViewForBrowser(browser())
@@ -399,6 +410,11 @@ bool ExtensionInstalledBubble::ShouldShow() {
 
 gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
     gfx::NativeWindow window) const {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  DCHECK(views_mode_controller::IsViewsBrowserCocoa());
+  return bubble_anchor_util::GetExtensionInstalledAnchorPointCocoa(window,
+                                                                   this);
+#endif
   NOTREACHED();  // There is always an anchor view.
   return gfx::Point();
 }
