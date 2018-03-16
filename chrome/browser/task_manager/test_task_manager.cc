@@ -42,18 +42,6 @@ int64_t TestTaskManager::GetMemoryFootprintUsage(TaskId task_id) const {
   return -1;
 }
 
-int64_t TestTaskManager::GetPhysicalMemoryUsage(TaskId task_id) const {
-  return -1;
-}
-
-int64_t TestTaskManager::GetPrivateMemoryUsage(TaskId task_id) const {
-  return -1;
-}
-
-int64_t TestTaskManager::GetSharedMemoryUsage(TaskId task_id) const {
-  return -1;
-}
-
 int64_t TestTaskManager::GetSwappedMemoryUsage(TaskId task_id) const {
   return -1;
 }

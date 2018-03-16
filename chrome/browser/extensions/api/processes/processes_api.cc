@@ -276,11 +276,11 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
                     &process);
 
     if (has_on_updated_with_memory_listeners) {
-      // Append the private memory usage to the process data.
-      const int64_t private_memory =
-          observed_task_manager()->GetPrivateMemoryUsage(task_id);
-      process.private_memory.reset(new double(static_cast<double>(
-          private_memory)));
+      // Append the memory footprint to the process data.
+      const int64_t memory_footprint =
+          observed_task_manager()->GetMemoryFootprintUsage(task_id);
+      process.private_memory =
+          std::make_unique<double>(static_cast<double>(memory_footprint));
     }
 
     // Store each process indexed by the string version of its ChildProcessHost
@@ -376,8 +376,10 @@ void ProcessesEventRouter::UpdateRefreshTypesFlagsBasedOnListeners() {
   if (HasEventListeners(api::processes::OnUpdated::kEventName))
     refresh_types |= on_updated_types;
 
-  if (HasEventListeners(api::processes::OnUpdatedWithMemory::kEventName))
-    refresh_types |= (on_updated_types | task_manager::REFRESH_TYPE_MEMORY);
+  if (HasEventListeners(api::processes::OnUpdatedWithMemory::kEventName)) {
+    refresh_types |=
+        (on_updated_types | task_manager::REFRESH_TYPE_MEMORY_FOOTPRINT);
+  }
 
   SetRefreshTypesFlags(refresh_types);
 }
@@ -581,7 +583,7 @@ ExtensionFunction::ResponseAction ProcessesGetProcessInfoFunction::Run() {
 
   include_memory_ = params->include_memory;
   if (include_memory_)
-    AddRefreshType(task_manager::REFRESH_TYPE_MEMORY);
+    AddRefreshType(task_manager::REFRESH_TYPE_MEMORY_FOOTPRINT);
 
   // Keep this object alive until the first of either OnTasksRefreshed() or
   // OnTasksRefreshedWithBackgroundCalculations() is received depending on
@@ -663,11 +665,11 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
                     &process);
 
     if (include_memory_) {
-      // Append the private memory usage to the process data.
-      const int64_t private_memory =
-          observed_task_manager()->GetPrivateMemoryUsage(task_id);
-      process.private_memory.reset(new double(static_cast<double>(
-          private_memory)));
+      // Append the memory footprint to the process data.
+      const int64_t memory_footprint =
+          observed_task_manager()->GetMemoryFootprintUsage(task_id);
+      process.private_memory =
+          std::make_unique<double>(static_cast<double>(memory_footprint));
     }
 
     // Store each process indexed by the string version of its

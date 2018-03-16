@@ -142,7 +142,6 @@ struct ProcessData {
   ProcessData(ProcessData&&) = default;
 
   int64_t hard_fault_count;
-  int64_t physical_bytes;
   base::Time start_time;
   base::TimeDelta cpu_time;
   std::vector<ThreadData> threads;
@@ -249,9 +248,8 @@ SharedSampler::SharedSampler(
 SharedSampler::~SharedSampler() {}
 
 int64_t SharedSampler::GetSupportedFlags() const {
-  return REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY |
-         REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
-         REFRESH_TYPE_HARD_FAULTS;
+  return REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_START_TIME |
+         REFRESH_TYPE_CPU_TIME | REFRESH_TYPE_HARD_FAULTS;
 }
 
 void SharedSampler::RegisterCallback(
@@ -414,8 +412,6 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
         // recent snapshot.
         ProcessData process_data;
         process_data.hard_fault_count = pi->HardFaultCount;
-        process_data.physical_bytes =
-            static_cast<int64_t>(pi->WorkingSetPrivateSize);
         process_data.start_time = ConvertTicksToTime(pi->CreateTime);
         process_data.cpu_time =
             ConvertTicksToTimeDelta(pi->KernelTime + pi->UserTime);
@@ -502,7 +498,6 @@ SharedSampler::AllSamplingResults SharedSampler::MakeResultsFromTwoSnapshots(
         static_cast<int>(round(hard_faults_delta / time_delta));
     result.data.idle_wakeups_per_second =
         static_cast<int>(round(idle_wakeups_delta / time_delta));
-    result.data.physical_bytes = process.physical_bytes;
     result.data.start_time = process.start_time;
     result.data.cpu_time = process.cpu_time;
     results.push_back(result);
@@ -522,7 +517,6 @@ SharedSampler::AllSamplingResults SharedSampler::MakeResultsFromSnapshot(
     // ProcessMetrics::CalculateIdleWakeupsPerSecond implementation.
     result.data.hard_faults_per_second = 0;
     result.data.idle_wakeups_per_second = 0;
-    result.data.physical_bytes = pair.second.physical_bytes;
     result.data.start_time = pair.second.start_time;
     result.data.cpu_time = pair.second.cpu_time;
     results.push_back(result);

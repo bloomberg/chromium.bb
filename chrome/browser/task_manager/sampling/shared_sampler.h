@@ -42,7 +42,6 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
     base::TimeDelta cpu_time;
     int64_t hard_faults_per_second;
     int idle_wakeups_per_second;
-    int64_t physical_bytes;
     base::Time start_time;
   };
   using OnSamplingCompleteCallback =

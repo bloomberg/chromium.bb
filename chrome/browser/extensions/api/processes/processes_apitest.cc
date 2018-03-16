@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(ProcessesApiTest, ProcessesApiListeners) {
       task_manager::TaskManagerInterface::GetTaskManager();
   EXPECT_EQ(2, GetListenersCount());
   EXPECT_TRUE(task_manager->IsResourceRefreshEnabled(
-      task_manager::REFRESH_TYPE_MEMORY));
+      task_manager::REFRESH_TYPE_MEMORY_FOOTPRINT));
 
   // Unload the extensions and make sure the listeners count is updated.
   UnloadExtension(extension2->id());
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ProcessesApiTest, OnUpdatedWithMemoryRefreshTypes) {
   EXPECT_FALSE(event_router->HasEventListener(
       extensions::api::processes::OnUpdated::kEventName));
   EXPECT_TRUE(task_manager->IsResourceRefreshEnabled(
-      task_manager::REFRESH_TYPE_MEMORY));
+      task_manager::REFRESH_TYPE_MEMORY_FOOTPRINT));
 
   // Despite the fact that there are no onUpdated listeners, refresh types for
   // CPU, Network, SQLite, V8 memory, and webcache stats should be enabled.

@@ -53,10 +53,10 @@ class ResourceReporter : public task_manager::TaskManagerObserver,
     // percentage [0.0, 100.0].
     double cpu_percent;
 
-    // The physical memory usage of the task from the most recent task manager
+    // The memory footprint of the task from the most recent task manager
     // refresh in bytes. It doesn't include shared memory. A value of -1 is
     // invalid and means that the memory usage measurement for this task is not
-    // ready yet. See TaskManagerInterface::GetPhysicalMemoryUsage().
+    // ready yet. See TaskManagerInterface::GetMemoryFootprintUsage().
     int64_t memory_bytes;
 
     // True if the task is running on a process at background priority.

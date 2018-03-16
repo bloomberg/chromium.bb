@@ -110,8 +110,6 @@ class ResourceChangeObserver {
         return "Process ID";
       case ColumnSpecifier::MEMORY_FOOTPRINT:
         return "Memory Footprint";
-      case ColumnSpecifier::PHYSICAL_MEMORY:
-        return "Physical Memory";
       case ColumnSpecifier::V8_MEMORY:
         return "V8 Memory";
       case ColumnSpecifier::V8_MEMORY_USED:

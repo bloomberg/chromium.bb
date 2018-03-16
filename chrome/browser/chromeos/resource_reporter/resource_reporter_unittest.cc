@@ -76,7 +76,7 @@ class DummyTaskManager : public task_manager::TestTaskManager {
     return tasks_.at(task_id)->cpu_percent *
            base::SysInfo::NumberOfProcessors();
   }
-  int64_t GetPhysicalMemoryUsage(TaskId task_id) const override {
+  int64_t GetMemoryFootprintUsage(TaskId task_id) const override {
     return tasks_.at(task_id)->memory_bytes;
   }
   const std::string& GetTaskNameForRappor(TaskId task_id) const override {

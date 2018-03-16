@@ -25,7 +25,8 @@ using TaskIdList = std::vector<TaskId>;
 enum RefreshType {
   REFRESH_TYPE_NONE = 0,
   REFRESH_TYPE_CPU = 1,
-  REFRESH_TYPE_PHYSICAL_MEMORY = 1 << 1,
+
+  // Memory details currently only includes "swapped memory" on CrOS.
   REFRESH_TYPE_MEMORY_DETAILS = 1 << 2,
   REFRESH_TYPE_GPU_MEMORY = 1 << 3,
   REFRESH_TYPE_V8_MEMORY = 1 << 4,
@@ -52,12 +53,6 @@ enum RefreshType {
   REFRESH_TYPE_KEEPALIVE_COUNT = 1 << 16,
   REFRESH_TYPE_MEMORY_FOOTPRINT = 1 << 17,
   REFRESH_TYPE_HARD_FAULTS = 1 << 18,
-
-  REFRESH_TYPE_MEMORY = REFRESH_TYPE_PHYSICAL_MEMORY |
-                        REFRESH_TYPE_MEMORY_FOOTPRINT |
-                        REFRESH_TYPE_MEMORY_DETAILS,
-  REFRESH_TYPE_MEMORY_NON_MEMORY_INSTRUMENTATION =
-      REFRESH_TYPE_PHYSICAL_MEMORY | REFRESH_TYPE_MEMORY_DETAILS,
 };
 
 // Defines the interface for observers of the task manager.

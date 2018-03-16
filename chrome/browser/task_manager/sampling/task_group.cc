@@ -28,8 +28,7 @@ namespace {
 
 // A mask for the refresh types that are done in the background thread.
 const int kBackgroundRefreshTypesMask =
-    REFRESH_TYPE_CPU | REFRESH_TYPE_PHYSICAL_MEMORY |
-    REFRESH_TYPE_MEMORY_DETAILS | REFRESH_TYPE_IDLE_WAKEUPS |
+    REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY_DETAILS | REFRESH_TYPE_IDLE_WAKEUPS |
 #if defined(OS_WIN)
     REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
 #endif  // defined(OS_WIN)
@@ -307,15 +306,8 @@ void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
 void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-#if defined(OS_WIN)
-  memory_usage_.private_bytes = memory_usage.private_bytes;
-  memory_usage_.shared_bytes = memory_usage.shared_bytes;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY_DETAILS);
-#else
   memory_usage_ = memory_usage;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PHYSICAL_MEMORY |
-                                  REFRESH_TYPE_MEMORY_DETAILS);
-#endif // OS_WIN
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY_DETAILS);
 }
 
 void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {
@@ -345,7 +337,6 @@ void TaskGroup::OnSamplerRefreshDone(
     idle_wakeups_per_second_ = results->idle_wakeups_per_second;
 #if defined(OS_WIN)
     hard_faults_per_second_ = results->hard_faults_per_second;
-    memory_usage_.physical_bytes = results->physical_bytes;
 #endif
     start_time_ = results->start_time;
   } else {
@@ -353,7 +344,6 @@ void TaskGroup::OnSamplerRefreshDone(
     idle_wakeups_per_second_ = -1;
 #if defined(OS_WIN)
     hard_faults_per_second_ = 0;
-    memory_usage_.physical_bytes = -1;
 #endif
     start_time_ = base::Time();
   }
