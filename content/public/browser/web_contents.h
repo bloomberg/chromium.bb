@@ -31,6 +31,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -299,10 +300,11 @@ class WebContents : public PageNavigator,
   virtual RenderWidgetHostView* GetTopLevelRenderWidgetHostView() = 0;
 
   // Request a one-time snapshot of the accessibility tree without changing
-  // the accessibility mode.
+  // the accessibility mode. |ax_mode| is the accessibility mode to use.
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
-  virtual void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) = 0;
+  virtual void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
+                                     ui::AXMode ax_mode) = 0;
 
   // Causes the current page to be closed, including running its onunload event
   // handler.
