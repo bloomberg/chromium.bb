@@ -633,6 +633,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
+
+  // Clear settings.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 // Ensure that when the JavaScript is blocked, persisted client hints are not
@@ -753,6 +757,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
+
+  // Clear settings.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 // Ensure that when the cookies is blocked, client hints are not attached to the
@@ -809,6 +817,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
+
+  // Clear settings.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 // Check the client hints for the given URL in an incognito window.
