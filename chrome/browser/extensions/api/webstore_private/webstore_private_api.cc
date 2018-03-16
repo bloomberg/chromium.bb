@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -496,9 +496,8 @@ WebstorePrivateEnableAppLauncherFunction::
 
 ExtensionFunction::ResponseAction
 WebstorePrivateEnableAppLauncherFunction::Run() {
-  AppListService* app_list_service = AppListService::Get();
-  app_list_service->EnableAppList(chrome_details_.GetProfile(),
-                                  AppListService::ENABLE_VIA_WEBSTORE_LINK);
+  // TODO(crbug.com/822900): Check if this API is still in use and whether we
+  // can remove it.
   return RespondNow(NoArguments());
 }
 

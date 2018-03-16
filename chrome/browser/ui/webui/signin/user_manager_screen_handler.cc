@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -167,8 +166,8 @@ void UrlHashHelper::OnBrowserRemoved(Browser* browser) {
 
 void UrlHashHelper::ExecuteUrlHash() {
   if (hash_ == profiles::kUserManagerSelectProfileAppLauncher) {
-    AppListService* app_list_service = AppListService::Get();
-    app_list_service->ShowForProfile(profile_);
+    // TODO(crbug/821659): Clean up the desktop UserManager webui.
+    NOTIMPLEMENTED();
     return;
   }
 

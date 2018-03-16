@@ -36,7 +36,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -373,9 +372,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 
   DCHECK(profile);
   profile_ = profile;
-
-  if (AppListService::HandleLaunchCommandLine(command_line_, profile))
-    return true;
 
   if (command_line_.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
