@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -725,15 +726,13 @@ void MockClientSocketFactory::ResetNextMockIndexes() {
 std::unique_ptr<DatagramClientSocket>
 MockClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
-    const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLogSource& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
   std::unique_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
   if (bind_type == DatagramSocket::RANDOM_BIND)
-    socket->set_source_port(
-        static_cast<uint16_t>(rand_int_cb.Run(1025, 65535)));
+    socket->set_source_port(static_cast<uint16_t>(base::RandInt(1025, 65535)));
   udp_client_socket_ports_.push_back(socket->source_port());
   return std::move(socket);
 }
@@ -1924,12 +1923,11 @@ MockTaggingClientSocketFactory::CreateTransportClientSocket(
 std::unique_ptr<DatagramClientSocket>
 MockTaggingClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
-    const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLogSource& source) {
   std::unique_ptr<DatagramClientSocket> socket(
-      MockClientSocketFactory::CreateDatagramClientSocket(
-          bind_type, rand_int_cb, net_log, source));
+      MockClientSocketFactory::CreateDatagramClientSocket(bind_type, net_log,
+                                                          source));
   udp_socket_ = static_cast<MockUDPClientSocket*>(socket.get());
   return socket;
 }

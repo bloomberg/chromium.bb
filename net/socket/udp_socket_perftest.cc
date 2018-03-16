@@ -105,9 +105,8 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   // Setup the client.
   IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
-  std::unique_ptr<UDPClientSocket> client(
-      new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
-                          nullptr, NetLogSource()));
+  std::unique_ptr<UDPClientSocket> client(new UDPClientSocket(
+      DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource()));
   if (use_nonblocking_io)
     client->UseNonBlockingIO();
   rv = client->Connect(server_address);

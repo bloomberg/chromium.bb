@@ -12,10 +12,8 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/rand_callback.h"
 #include "net/log/net_log.h"
 #include "net/socket/udp_socket.h"
 
@@ -31,10 +29,9 @@ const uint32_t kMaxPacketSize = kMaxReadSize - 1;
 class SocketWrapperImpl : public UDPSocket::SocketWrapper {
  public:
   SocketWrapperImpl(net::DatagramSocket::BindType bind_type,
-                    const net::RandIntCallback& rand_int_cb,
                     net::NetLog* net_log,
                     const net::NetLogSource& source)
-      : socket_(bind_type, rand_int_cb, net_log, source) {}
+      : socket_(bind_type, net_log, source) {}
   ~SocketWrapperImpl() override {}
 
   int Connect(const net::IPEndPoint& remote_addr,
@@ -286,9 +283,8 @@ void UDPSocket::Close() {
 
 std::unique_ptr<UDPSocket::SocketWrapper> UDPSocket::CreateSocketWrapper()
     const {
-  return std::make_unique<SocketWrapperImpl>(
-      net::DatagramSocket::RANDOM_BIND, base::BindRepeating(&base::RandInt),
-      net_log_, net::NetLogSource());
+  return std::make_unique<SocketWrapperImpl>(net::DatagramSocket::RANDOM_BIND,
+                                             nullptr, net::NetLogSource());
 }
 
 bool UDPSocket::IsConnectedOrBound() const {

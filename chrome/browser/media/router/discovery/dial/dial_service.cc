@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
@@ -182,9 +181,8 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
   DCHECK(!socket_);
   DCHECK(bind_ip_address.IsIPv4());
 
-  net::RandIntCallback rand_cb = base::Bind(&base::RandInt);
   socket_ = std::make_unique<UDPSocket>(net::DatagramSocket::RANDOM_BIND,
-                                        rand_cb, net_log, net::NetLogSource());
+                                        net_log, net::NetLogSource());
 
   // 0 means bind a random port
   net::IPEndPoint address(bind_ip_address, 0);

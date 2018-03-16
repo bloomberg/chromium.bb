@@ -229,7 +229,6 @@ class TestSocketFactory : public MockClientSocketFactory {
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLogSource& source) override {
     if (fail_next_socket_) {
@@ -238,9 +237,7 @@ class TestSocketFactory : public MockClientSocketFactory {
           new FailingUDPClientSocket(&empty_data_, net_log));
     }
     SocketDataProvider* data_provider = mock_data().GetNext();
-    std::unique_ptr<TestUDPClientSocket> socket(
-        new TestUDPClientSocket(this, data_provider, net_log));
-    return std::move(socket);
+    return std::make_unique<TestUDPClientSocket>(this, data_provider, net_log);
   }
 
   void OnConnect(const IPEndPoint& endpoint) {

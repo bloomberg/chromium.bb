@@ -4,7 +4,6 @@
 
 #include "net/quic/chromium/quic_connectivity_probing_manager.h"
 
-#include "base/rand_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/log/test_net_log.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -84,8 +83,7 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
     socket_factory_.AddSocketDataProvider(socket_data_.get());
     // Create a connected socket for probing.
     socket_ = socket_factory_.CreateDatagramClientSocket(
-        DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt), &net_log_,
-        NetLogSource());
+        DatagramSocket::DEFAULT_BIND, &net_log_, NetLogSource());
     EXPECT_THAT(socket_->Connect(kIpEndPoint), IsOk());
     IPEndPoint self_address;
     socket_->GetLocalAddress(&self_address);

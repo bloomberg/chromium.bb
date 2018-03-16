@@ -74,8 +74,8 @@ std::unique_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(
   std::unique_ptr<DatagramClientSocket> socket;
 
   NetLogSource no_source;
-  socket = socket_factory_->CreateDatagramClientSocket(
-      kBindType, rand_int_callback_, net_log_, no_source);
+  socket = socket_factory_->CreateDatagramClientSocket(kBindType, net_log_,
+                                                       no_source);
 
   if (socket.get()) {
     int rv = socket->Connect((*nameservers_)[server_index]);

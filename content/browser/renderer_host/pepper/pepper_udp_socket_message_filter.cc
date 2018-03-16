@@ -20,7 +20,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_socket.h"
 #include "ppapi/c/pp_errors.h"
@@ -399,9 +398,8 @@ void PepperUDPSocketMessageFilter::DoBind(
     return;
   }
 
-  std::unique_ptr<net::UDPSocket> socket(
-      new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                         net::RandIntCallback(), nullptr, net::NetLogSource()));
+  auto socket = std::make_unique<net::UDPSocket>(
+      net::DatagramSocket::DEFAULT_BIND, nullptr, net::NetLogSource());
 
   net::IPAddressBytes address;
   uint16_t port;

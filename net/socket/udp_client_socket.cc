@@ -11,10 +11,9 @@
 namespace net {
 
 UDPClientSocket::UDPClientSocket(DatagramSocket::BindType bind_type,
-                                 const RandIntCallback& rand_int_cb,
                                  net::NetLog* net_log,
                                  const net::NetLogSource& source)
-    : socket_(bind_type, rand_int_cb, net_log, source),
+    : socket_(bind_type, net_log, source),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle) {}
 
 UDPClientSocket::~UDPClientSocket() = default;

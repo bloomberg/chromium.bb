@@ -192,7 +192,6 @@ const guardid_t kSocketFdGuard = 0xD712BC0BC9A4EAD4;
 }  // namespace
 
 UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
-                               const RandIntCallback& rand_int_cb,
                                net::NetLog* net_log,
                                const net::NetLogSource& source)
     : socket_(kInvalidSocket),
@@ -203,7 +202,6 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       multicast_interface_(0),
       multicast_time_to_live_(1),
       bind_type_(bind_type),
-      rand_int_cb_(rand_int_cb),
       read_socket_watcher_(FROM_HERE),
       write_socket_watcher_(FROM_HERE),
       read_watcher_(this),
@@ -216,8 +214,6 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       experimental_recv_optimization_enabled_(false) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       source.ToEventParametersCallback());
-  if (bind_type == DatagramSocket::RANDOM_BIND)
-    DCHECK(!rand_int_cb.is_null());
 }
 
 UDPSocketPosix::~UDPSocketPosix() {
@@ -973,14 +969,14 @@ int UDPSocketPosix::DoBind(const IPEndPoint& address) {
 }
 
 int UDPSocketPosix::RandomBind(const IPAddress& address) {
-  DCHECK(bind_type_ == DatagramSocket::RANDOM_BIND && !rand_int_cb_.is_null());
+  DCHECK_EQ(bind_type_, DatagramSocket::RANDOM_BIND);
 
   for (int i = 0; i < kBindRetries; ++i) {
-    int rv = DoBind(IPEndPoint(address,
-                               rand_int_cb_.Run(kPortStart, kPortEnd)));
+    int rv = DoBind(IPEndPoint(address, base::RandInt(kPortStart, kPortEnd)));
     if (rv != ERR_ADDRESS_IN_USE)
       return rv;
   }
+
   return DoBind(IPEndPoint(address, 0));
 }
 

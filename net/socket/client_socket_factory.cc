@@ -40,11 +40,10 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
-      const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLogSource& source) override {
     return std::unique_ptr<DatagramClientSocket>(
-        new UDPClientSocket(bind_type, rand_int_cb, net_log, source));
+        new UDPClientSocket(bind_type, net_log, source));
   }
 
   std::unique_ptr<StreamSocket> CreateTransportClientSocket(

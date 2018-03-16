@@ -5,13 +5,12 @@
 #include "net/socket/udp_server_socket.h"
 
 #include "net/base/net_errors.h"
-#include "net/base/rand_callback.h"
 
 namespace net {
 
 UDPServerSocket::UDPServerSocket(net::NetLog* net_log,
                                  const net::NetLogSource& source)
-    : socket_(DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log, source),
+    : socket_(DatagramSocket::DEFAULT_BIND, net_log, source),
       allow_address_reuse_(false),
       allow_broadcast_(false) {}
 
