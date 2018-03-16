@@ -85,7 +85,6 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
-import org.chromium.content_public.common.BrowserSideNavigationPolicy;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
@@ -605,30 +604,11 @@ public class AwContents implements SmartClipProvider {
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-            final String url = navigationParams.url;
-            boolean ignoreNavigation = false;
-            // Disable old path for sending shouldoverrideurlloadings for popups when
-            // plznavigate is enabled. The callback will come through NavigatorRequest.
-            if (!BrowserSideNavigationPolicy.isBrowserSideNavigationEnabled()
-                    && mDeferredShouldOverrideUrlLoadingIsPendingForPopup) {
-                mDeferredShouldOverrideUrlLoadingIsPendingForPopup = false;
-                // If this is used for all navigations in future, cases for application initiated
-                // load, redirect and backforward should also be filtered out.
-                if (!navigationParams.isPost) {
-                    ignoreNavigation = mContentsClient.shouldIgnoreNavigation(
-                            mContext, url, navigationParams.isMainFrame,
-                            navigationParams.hasUserGesture
-                            || navigationParams.hasUserGestureCarryover,
-                            navigationParams.isRedirect);
-                }
-            }
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
-            if (!ignoreNavigation) {
-                mContentsClient.getCallbackHelper().postOnPageStarted(url);
-            }
-            return ignoreNavigation;
+            mContentsClient.getCallbackHelper().postOnPageStarted(navigationParams.url);
+            return false;
         }
     }
 
@@ -1762,13 +1742,6 @@ public class AwContents implements SmartClipProvider {
         if (!mHasRequestedVisitedHistoryFromClient) {
             mHasRequestedVisitedHistoryFromClient = true;
             requestVisitedHistoryFromClient();
-        }
-
-        if (!BrowserSideNavigationPolicy.isBrowserSideNavigationEnabled()
-                && params.getLoadUrlType() == LoadURLType.DATA && params.getBaseUrl() != null) {
-            // Data loads with a base url will be resolved in Blink, and not cause an onPageStarted
-            // event to be sent. Sending the callback directly from here.
-            mContentsClient.getCallbackHelper().postOnPageStarted(params.getBaseUrl());
         }
     }
 
