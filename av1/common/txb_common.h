@@ -671,8 +671,4 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
 
 void av1_init_lv_map(AV1_COMMON *cm);
 
-void av1_get_base_level_counts(const uint8_t *const levels,
-                               const int level_minus_1, const int width,
-                               const int height, uint8_t *const level_counts);
-
 #endif  // AV1_COMMON_TXB_COMMON_H_

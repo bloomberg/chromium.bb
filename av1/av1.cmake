@@ -372,10 +372,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/txb_common.c"
     "${AOM_ROOT}/av1/common/txb_common.h")
 
-set(AOM_AV1_COMMON_INTRIN_SSE2
-    ${AOM_AV1_COMMON_INTRIN_SSE2}
-    "${AOM_ROOT}/av1/common/x86/txb_sse2.c")
-
 set(AOM_AV1_DECODER_SOURCES
     ${AOM_AV1_DECODER_SOURCES}
     "${AOM_ROOT}/av1/decoder/decodetxb.c"

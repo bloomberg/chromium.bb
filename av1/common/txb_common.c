@@ -235,35 +235,3 @@ void av1_init_lv_map(AV1_COMMON *cm) {
 const int16_t k_eob_group_start[12] = { 0,  1,  2,  3,   5,   9,
                                         17, 33, 65, 129, 257, 513 };
 const int16_t k_eob_offset_bits[12] = { 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
-// Note: because of the SSE2 optimization, levels[] must be in the range [0,
-// 127], inclusive.
-void av1_get_base_level_counts(const uint8_t *const levels,
-                               const int level_minus_1, const int width,
-                               const int height, uint8_t *const level_counts) {
-  const int stride = width + TX_PAD_HOR;
-
-  for (int row = 0; row < height; ++row) {
-    for (int col = 0; col < width; ++col) {
-      level_counts[row * width + col] =
-          get_level_count(levels, stride, row, col, level_minus_1,
-                          base_ref_offset, BASE_CONTEXT_POSITION_NUM);
-    }
-  }
-}
-
-// Note: because of the SSE2 optimization, levels[] must be in the range [0,
-// 127], inclusive.
-void av1_get_br_level_counts_c(const uint8_t *const levels, const int width,
-                               const int height, uint8_t *const level_counts) {
-  const int stride = width + TX_PAD_HOR;
-  const int level_minus_1 = NUM_BASE_LEVELS;
-
-  for (int row = 0; row < height; ++row) {
-    for (int col = 0; col < width; ++col) {
-      level_counts[row * width + col] =
-          get_level_count(levels, stride, row, col, level_minus_1,
-                          br_ref_offset, BR_CONTEXT_POSITION_NUM);
-    }
-  }
-}
