@@ -445,7 +445,8 @@ static aom_codec_err_t validate_img(aom_codec_alg_priv_t *ctx,
     case AOM_IMG_FMT_I42016: break;
     case AOM_IMG_FMT_I444:
     case AOM_IMG_FMT_I44416:
-      if (ctx->cfg.g_profile == (unsigned int)PROFILE_0) {
+      if (ctx->cfg.g_profile == (unsigned int)PROFILE_0 &&
+          !ctx->cfg.monochrome) {
         ERROR("Invalid image format. I444 images not supported in profile.");
       }
       break;

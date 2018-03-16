@@ -2045,8 +2045,10 @@ int main(int argc, const char **argv_) {
           case 0:
             if (input.bit_depth < 12 && (input.fmt == AOM_IMG_FMT_I444 ||
                                          input.fmt == AOM_IMG_FMT_I44416)) {
-              stream->config.cfg.g_profile = 1;
-              profile_updated = 1;
+              if (!stream->config.cfg.monochrome) {
+                stream->config.cfg.g_profile = 1;
+                profile_updated = 1;
+              }
             } else if (input.bit_depth == 12 || input.fmt == AOM_IMG_FMT_I422 ||
                        input.fmt == AOM_IMG_FMT_I42216) {
               stream->config.cfg.g_profile = 2;
