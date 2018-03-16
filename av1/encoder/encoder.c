@@ -4940,7 +4940,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->use_ref_frame_mvs = !cpi->oxcf.disable_tempmv &&
                           frame_might_use_prev_frame_mvs(cm) &&
                           cm->seq_params.enable_order_hint;
-  cm->use_prev_frame_mvs = cm->use_ref_frame_mvs;
 
   // Reset the frame packet stamp index.
   if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;

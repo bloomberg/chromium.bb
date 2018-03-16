@@ -3030,7 +3030,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
               ? &cm->buffer_pool
                      ->frame_bufs[cm->frame_refs[LAST_FRAME - LAST_FRAME].idx]
               : NULL;
-      cm->use_prev_frame_mvs = cm->use_ref_frame_mvs;
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
         av1_setup_scale_factors_for_frame(
