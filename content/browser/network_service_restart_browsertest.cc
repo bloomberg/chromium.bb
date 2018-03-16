@@ -42,6 +42,19 @@ network::mojom::NetworkContextPtr CreateNetworkContext() {
   return network_context;
 }
 
+network::SimpleURLLoader::BodyAsStringCallback RunOnUIThread(
+    network::SimpleURLLoader::BodyAsStringCallback ui_callback) {
+  return base::BindOnce(
+      [](network::SimpleURLLoader::BodyAsStringCallback callback,
+         std::unique_ptr<std::string> response_body) {
+        DCHECK_CURRENTLY_ON(BrowserThread::IO);
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(std::move(callback), std::move(response_body)));
+      },
+      std::move(ui_callback));
+}
+
 int LoadBasicRequestOnIOThread(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& url) {
@@ -49,9 +62,9 @@ int LoadBasicRequestOnIOThread(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
 
+  // |simple_loader_helper| lives on UI thread and shouldn't be accessed on
+  // other threads.
   SimpleURLLoaderTestHelper simple_loader_helper;
-  // Wait for callback on UI thread to avoid nesting IO message loops.
-  simple_loader_helper.SetRunLoopQuitThread(BrowserThread::UI);
 
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -69,7 +82,7 @@ int LoadBasicRequestOnIOThread(
           },
           base::Unretained(simple_loader.get()),
           base::Unretained(url_loader_factory),
-          simple_loader_helper.GetCallback()));
+          RunOnUIThread(simple_loader_helper.GetCallback())));
 
   simple_loader_helper.WaitForCallback();
   return simple_loader->NetError();
@@ -398,11 +411,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure the factory returned from
 // |URLLoaderFactoryGetter::GetNetworkFactory()| doesn't crash if
 // it's called after the StoragePartition is deleted.
-// TODO(crbug.com/822585): Disabled since flaky on at least Linux ASAN and
-// Android.
-IN_PROC_BROWSER_TEST_F(
-    NetworkServiceRestartBrowserTest,
-    DISABLED_BrowserIOSharedFactoryAfterStoragePartitionGone) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       BrowserIOSharedFactoryAfterStoragePartitionGone) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);
