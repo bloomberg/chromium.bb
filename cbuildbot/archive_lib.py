@@ -17,8 +17,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
-def GetBaseUploadURI(config, archive_base=None, bot_id=None,
-                     remote_trybot=False):
+def GetBaseUploadURI(config, archive_base=None, bot_id=None):
   """Get the base URL where artifacts from this builder are uploaded.
 
   Each build run stores its artifacts in a subdirectory of the base URI.
@@ -31,9 +30,6 @@ def GetBaseUploadURI(config, archive_base=None, bot_id=None,
       builders are uploaded. If not specified, we use the default archive
       bucket.
     bot_id: The bot ID to archive files under.
-    remote_trybot: Whether this is a remote trybot run. This is used to
-      make sure that uploads from remote trybot runs do not conflict with
-      uploads from production builders.
 
   Returns:
     Google Storage URI (i.e. 'gs://...') under which all archived files
@@ -41,14 +37,16 @@ def GetBaseUploadURI(config, archive_base=None, bot_id=None,
       through GS has no real directories.
   """
   if not bot_id:
-    bot_id = config.GetBotId(remote_trybot=remote_trybot)
+    bot_id = config.name
 
   if archive_base:
-    return '%s/%s' % (archive_base, bot_id)
-  elif remote_trybot or config.gs_path == config_lib.GS_PATH_DEFAULT:
-    return '%s/%s' % (config_lib.GetConfig().params.ARCHIVE_URL, bot_id)
+    gs_base = archive_base
+  elif config.gs_path == config_lib.GS_PATH_DEFAULT:
+    gs_base = config_lib.GetConfig().params.ARCHIVE_URL
   else:
-    return config.gs_path
+    gs_base = config.gs_path
+
+  return os.path.join(gs_base, bot_id)
 
 
 def GetUploadACL(config):
@@ -116,8 +114,7 @@ class Archive(object):
     base_upload_url = GetBaseUploadURI(
         self._config,
         archive_base=self._options.archive_base,
-        bot_id=self.bot_id,
-        remote_trybot=self._options.remote_trybot)
+        bot_id=self.bot_id)
     return '%s/%s' % (base_upload_url, self.version)
 
   @property

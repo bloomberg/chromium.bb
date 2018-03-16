@@ -46,6 +46,7 @@ DEFAULT_CONFIG = config_lib.BuildConfig(
     child_configs=[config_lib.BuildConfig(name='foo'),
                    config_lib.BuildConfig(name='bar'),
                   ],
+    gs_path=config_lib.GS_PATH_DEFAULT
 )
 
 
@@ -95,46 +96,25 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
     """Test GetBaseUploadURI with archive_base and no bot_id."""
     return archive_lib.GetBaseUploadURI(self.cfg, *args, **kwargs)
 
-  def testArchiveBaseRemoteTrybotFalse(self):
+  def testArchiveBase(self):
     expected_result = '%s/%s' % (self.ARCHIVE_BASE, DEFAULT_BOT_NAME)
-    result = self._GetBaseUploadURI(archive_base=self.ARCHIVE_BASE,
-                                    remote_trybot=False)
+    result = self._GetBaseUploadURI(archive_base=self.ARCHIVE_BASE)
     self.assertEqual(expected_result, result)
 
-  def testArchiveBaseRemoteTrybotTrue(self):
-    expected_result = '%s/trybot-%s' % (self.ARCHIVE_BASE, DEFAULT_BOT_NAME)
-    result = self._GetBaseUploadURI(archive_base=self.ARCHIVE_BASE,
-                                    remote_trybot=True)
-    self.assertEqual(expected_result, result)
-
-  def testArchiveBaseBotIdRemoteTrybotFalse(self):
+  def testArchiveBaseBotId(self):
     expected_result = '%s/%s' % (self.ARCHIVE_BASE, self.BOT_ID)
     result = self._GetBaseUploadURI(archive_base=self.ARCHIVE_BASE,
-                                    bot_id=self.BOT_ID, remote_trybot=False)
+                                    bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)
 
-  def testArchiveBaseBotIdRemoteTrybotTrue(self):
-    expected_result = '%s/%s' % (self.ARCHIVE_BASE, self.BOT_ID)
-    result = self._GetBaseUploadURI(archive_base=self.ARCHIVE_BASE,
-                                    bot_id=self.BOT_ID, remote_trybot=True)
-    self.assertEqual(expected_result, result)
-
-  def testRemoteTrybotTrue(self):
-    """Test GetBaseUploadURI with no archive base but remote_trybot is True."""
-    expected_result = ('%s/trybot-%s' %
-                       (config_lib.GetConfig().params.ARCHIVE_URL,
-                        DEFAULT_BOT_NAME))
-    result = self._GetBaseUploadURI(remote_trybot=True)
-    self.assertEqual(expected_result, result)
-
-  def testBotIdRemoteTrybotTrue(self):
+  def testBotId(self):
     expected_result = ('%s/%s' %
                        (config_lib.GetConfig().params.ARCHIVE_URL,
                         self.BOT_ID))
-    result = self._GetBaseUploadURI(bot_id=self.BOT_ID, remote_trybot=True)
+    result = self._GetBaseUploadURI(bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)
 
-  def testDefaultGSPathRemoteTrybotFalse(self):
+  def testDefaultGSPath(self):
     """Test GetBaseUploadURI with default gs_path value in config."""
     self.cfg = _ExtendDefaultConfig(gs_path=config_lib.GS_PATH_DEFAULT)
 
@@ -142,14 +122,14 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
     expected_result = ('%s/%s' %
                        (config_lib.GetConfig().params.ARCHIVE_URL,
                         DEFAULT_BOT_NAME))
-    result = self._GetBaseUploadURI(remote_trybot=False)
+    result = self._GetBaseUploadURI()
     self.assertEqual(expected_result, result)
 
     # Test with bot_id.
     expected_result = ('%s/%s' %
                        (config_lib.GetConfig().params.ARCHIVE_URL,
                         self.BOT_ID))
-    result = self._GetBaseUploadURI(bot_id=self.BOT_ID, remote_trybot=False)
+    result = self._GetBaseUploadURI(bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)
 
   def testOverrideGSPath(self):
@@ -157,13 +137,13 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
     self.cfg = _ExtendDefaultConfig(gs_path='gs://funkytown/foo/bar')
 
     # Test without bot_id.
-    expected_result = self.cfg.gs_path
-    result = self._GetBaseUploadURI(remote_trybot=False)
+    expected_result = 'gs://funkytown/foo/bar/TheCoolBot'
+    result = self._GetBaseUploadURI()
     self.assertEqual(expected_result, result)
 
     # Test with bot_id.
-    expected_result = self.cfg.gs_path
-    result = self._GetBaseUploadURI(bot_id=self.BOT_ID, remote_trybot=False)
+    expected_result = 'gs://funkytown/foo/bar/TheNewBotId'
+    result = self._GetBaseUploadURI(bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)
 
 

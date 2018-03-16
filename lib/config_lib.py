@@ -257,18 +257,6 @@ class BuildConfig(AttrDict):
   See DefaultSettings for details on known configurations, and their
   documentation.
   """
-  def GetBotId(self, remote_trybot=False):
-    """Get the 'bot id' of a particular bot.
-
-    The bot id is used to specify the subdirectory where artifacts are stored
-    in Google Storage. To avoid conflicts between remote trybots and regular
-    bots, we add a 'trybot-' prefix to any remote trybot runs.
-
-    Args:
-      remote_trybot: Whether this run is a remote trybot run.
-    """
-    return 'trybot-%s' % self.name if remote_trybot else self.name
-
   def deepcopy(self):
     """Create a deep copy of this object.
 

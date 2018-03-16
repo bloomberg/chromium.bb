@@ -640,7 +640,7 @@ class _BuilderRunBase(object):
   @property
   def bot_id(self):
     """Return the bot_id for this run."""
-    return self.config.GetBotId(remote_trybot=self.options.remote_trybot)
+    return self.config.name
 
   @property
   def attrs(self):
