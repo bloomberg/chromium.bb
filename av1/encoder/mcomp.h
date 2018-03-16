@@ -21,9 +21,9 @@ extern "C" {
 
 // The maximum number of steps in a step search given the largest
 // allowed initial step
-#define MAX_MVSEARCH_STEPS 12
+#define MAX_MVSEARCH_STEPS 11
 // Max full pel mv specified in the unit of full pixel
-// Enable the use of motion vector in range [-2047, 2047].
+// Enable the use of motion vector in range [-1023, 1023].
 #define MAX_FULL_PEL_VAL ((1 << (MAX_MVSEARCH_STEPS - 1)) - 1)
 // Maximum size of the first step in full pel units
 #define MAX_FIRST_STEP (1 << (MAX_MVSEARCH_STEPS - 1))
@@ -73,6 +73,13 @@ int av1_refining_search_sad(struct macroblock *x, struct mv *ref_mv,
                             int sad_per_bit, int distance,
                             const aom_variance_fn_ptr_t *fn_ptr,
                             const struct mv *center_mv);
+
+// Runs sequence of diamond searches in smaller steps for RD.
+int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
+                           MV *mvp_full, int step_param, int sadpb,
+                           int further_steps, int do_refine, int *cost_list,
+                           const aom_variance_fn_ptr_t *fn_ptr,
+                           const MV *ref_mv, MV *dst_mv);
 
 // Perform integral projection based motion estimation.
 unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,

@@ -364,7 +364,7 @@ static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
 
-  int step_param = 4;
+  int step_param = 3;
   int further_steps = (MAX_MVSEARCH_STEPS - 1) - step_param;
   const int sr = get_search_range(cpi);
   step_param += sr;

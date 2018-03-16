@@ -1009,7 +1009,7 @@ static INLINE int is_mv_in(const MvLimits *mv_limits, const MV *mv) {
     }                                                                     \
   }
 
-#define MAX_PATTERN_SCALES 12
+#define MAX_PATTERN_SCALES 11
 #define MAX_PATTERN_CANDIDATES 8  // max number of canddiates per scale
 #define PATTERN_CANDIDATES_REF 3  // number of refinement candidates
 
@@ -1115,7 +1115,7 @@ static int pattern_search(
     const MV candidates[MAX_PATTERN_SCALES][MAX_PATTERN_CANDIDATES]) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   static const int search_param_to_steps[MAX_MVSEARCH_STEPS] = {
-    11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0,
+    10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0,
   };
   int i, s, t;
   const struct buf_2d *const what = &x->plane[0].src;
@@ -1428,9 +1428,8 @@ int av1_hex_search(MACROBLOCK *x, MV *start_mv, int search_param,
                    const MV *center_mv) {
   // First scale has 8-closest points, the rest have 6 points in hex shape
   // at increasing scales
-  static const int hex_num_candidates[MAX_PATTERN_SCALES] = {
-    8, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
-  };
+  static const int hex_num_candidates[MAX_PATTERN_SCALES] = { 8, 6, 6, 6, 6, 6,
+                                                              6, 6, 6, 6, 6 };
   // Note that the largest candidate step at each scale is 2^scale
   /* clang-format off */
   static const MV hex_candidates[MAX_PATTERN_SCALES][MAX_PATTERN_CANDIDATES] = {
@@ -1452,8 +1451,6 @@ int av1_hex_search(MACROBLOCK *x, MV *start_mv, int search_param,
       { -512, 0 } },
     { { -512, -1024 }, { 512, -1024 }, { 1024, 0 }, { 512, 1024 },
       { -512, 1024 }, { -1024, 0 } },
-    { { -1024, -2048 }, { 1024, -2048 }, { 2048, 0 }, { 1024, 2048 },
-      { -1024, 2048 }, { -2048, 0 } },
   };
   /* clang-format on */
   return pattern_search(x, start_mv, search_param, sad_per_bit, do_init_search,
@@ -1468,7 +1465,7 @@ static int bigdia_search(MACROBLOCK *x, MV *start_mv, int search_param,
   // First scale has 4-closest points, the rest have 8 points in diamond
   // shape at increasing scales
   static const int bigdia_num_candidates[MAX_PATTERN_SCALES] = {
-    4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
   };
   // Note that the largest candidate step at each scale is 2^scale
   /* clang-format off */
@@ -1495,8 +1492,6 @@ static int bigdia_search(MACROBLOCK *x, MV *start_mv, int search_param,
           { 0, 512 }, { -256, 256 }, { -512, 0 } },
         { { -512, -512 }, { 0, -1024 }, { 512, -512 }, { 1024, 0 },
           { 512, 512 }, { 0, 1024 }, { -512, 512 }, { -1024, 0 } },
-        { { -1024, -1024 }, { 0, -2048 }, { 1024, -1024 }, { 2048, 0 },
-          { 1024, 1024 }, { 0, 2048 }, { -1024, 1024 }, { -2048, 0 } },
       };
   /* clang-format on */
   return pattern_search(x, start_mv, search_param, sad_per_bit, do_init_search,
@@ -1510,7 +1505,7 @@ static int square_search(MACROBLOCK *x, MV *start_mv, int search_param,
                          const MV *center_mv) {
   // All scales have 8 closest points in square shape
   static const int square_num_candidates[MAX_PATTERN_SCALES] = {
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
   };
   // Note that the largest candidate step at each scale is 2^scale
   /* clang-format off */
@@ -1538,8 +1533,6 @@ static int square_search(MACROBLOCK *x, MV *start_mv, int search_param,
           { 0, 512 }, { -512, 512 }, { -512, 0 } },
         { { -1024, -1024 }, { 0, -1024 }, { 1024, -1024 }, { 1024, 0 },
           { 1024, 1024 }, { 0, 1024 }, { -1024, 1024 }, { -1024, 0 } },
-        { { -2048, -2048 }, { 0, -2048 }, { 2048, -2048 }, { 2048, 0 },
-          { 2048, 2048 }, { 0, 2048 }, { -2048, 2048 }, { -2048, 0 } },
       };
   /* clang-format on */
   return pattern_search(x, start_mv, search_param, sad_per_bit, do_init_search,
