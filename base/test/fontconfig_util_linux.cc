@@ -34,6 +34,99 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
   <dir>/usr/share/fonts/opentype/ipafont-mincho</dir>
   <dir>/usr/share/fonts/truetype/msttcorefonts</dir>
 
+  <!-- The rejectfont element is used to exclude entire directories.  Then
+       acceptfont can be used to add specific fonts back.  Use this feature to
+       whitelist specific fonts from msttcorefonts while we transition to using
+       our own fonts. -->
+  <selectfont>
+    <rejectfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/*</glob>
+    </rejectfont>
+
+    <!-- Do not add more fonts to this list. -->
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf</glob>
+    </acceptfont>
+    <acceptfont>
+      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf</glob>
+    </acceptfont>
+  </selectfont>
+
   <!-- Default properties. -->
   <match target="font">
     <edit name="embeddedbitmap" mode="append_last">

@@ -140,30 +140,30 @@ cols=1000 clientWidth=7017
 
 Andale Mono
 input
-size=1 clientWidth=8
-size=2 clientWidth=16
-size=3 clientWidth=24
-size=4 clientWidth=32
-size=5 clientWidth=40
+size=1 clientWidth=35
+size=2 clientWidth=40
+size=3 clientWidth=45
+size=4 clientWidth=50
+size=5 clientWidth=55
 size=10 clientWidth=80
-size=20 clientWidth=160
-size=50 clientWidth=400
-size=100 clientWidth=800
-size=500 clientWidth=4000
-size=1000 clientWidth=8000
+size=20 clientWidth=130
+size=50 clientWidth=280
+size=100 clientWidth=530
+size=500 clientWidth=2530
+size=1000 clientWidth=5030
 
 textarea
-cols=1 clientWidth=25
-cols=2 clientWidth=33
-cols=3 clientWidth=41
-cols=4 clientWidth=49
-cols=5 clientWidth=57
-cols=10 clientWidth=97
-cols=20 clientWidth=177
-cols=50 clientWidth=417
-cols=100 clientWidth=817
-cols=500 clientWidth=4017
-cols=1000 clientWidth=8017
+cols=1 clientWidth=22
+cols=2 clientWidth=27
+cols=3 clientWidth=32
+cols=4 clientWidth=37
+cols=5 clientWidth=42
+cols=10 clientWidth=67
+cols=20 clientWidth=117
+cols=50 clientWidth=267
+cols=100 clientWidth=517
+cols=500 clientWidth=2517
+cols=1000 clientWidth=5017
 
 Arial
 input
@@ -356,30 +356,30 @@ cols=1000 clientWidth=7017
 
 Webdings
 input
-size=1 clientWidth=13
-size=2 clientWidth=26
-size=3 clientWidth=39
-size=4 clientWidth=52
-size=5 clientWidth=65
-size=10 clientWidth=130
-size=20 clientWidth=260
-size=50 clientWidth=650
-size=100 clientWidth=1300
-size=500 clientWidth=6500
-size=1000 clientWidth=13000
+size=1 clientWidth=35
+size=2 clientWidth=40
+size=3 clientWidth=45
+size=4 clientWidth=50
+size=5 clientWidth=55
+size=10 clientWidth=80
+size=20 clientWidth=130
+size=50 clientWidth=280
+size=100 clientWidth=530
+size=500 clientWidth=2530
+size=1000 clientWidth=5030
 
 textarea
-cols=1 clientWidth=30
-cols=2 clientWidth=43
-cols=3 clientWidth=56
-cols=4 clientWidth=69
-cols=5 clientWidth=82
-cols=10 clientWidth=147
-cols=20 clientWidth=277
-cols=50 clientWidth=667
-cols=100 clientWidth=1317
-cols=500 clientWidth=6517
-cols=1000 clientWidth=13017
+cols=1 clientWidth=22
+cols=2 clientWidth=27
+cols=3 clientWidth=32
+cols=4 clientWidth=37
+cols=5 clientWidth=42
+cols=10 clientWidth=67
+cols=20 clientWidth=117
+cols=50 clientWidth=267
+cols=100 clientWidth=517
+cols=500 clientWidth=2517
+cols=1000 clientWidth=5017
 
 PASS successfullyParsed is true
 
