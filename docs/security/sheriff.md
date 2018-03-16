@@ -128,8 +128,8 @@ information, add the **Needs-Feedback** label and wait for 24 hours for a respon
 
 #### Step 1. Reproduce legitimate-sounding issues.
 
-If you can't reproduce the issue, ask for help on IRC (#chrome-security), or
-find an area owner to help.
+If you can't reproduce the issue, ask for help on IRC (#chrome-security) or the
+Chrome Security chat, or find an area owner to help.
 
 Tips for reproducing bugs:
 
@@ -198,6 +198,13 @@ upstream project, the OS, or some other dependency.
 * For vulnerabilities in services Chrome uses (e.g. Omaha, Chrome Web Store,
 SafeBrowsing), make sure the affected team is informed and has access to the
 necessary bugs.
+
+##### Labeling For Chrome On iOS
+
+* Reproduce using iOS device, desktop Safari, or [Browserstack](http://browserstack.com/)
+* Assign severity, impact, milestone, and component labels
+* CC Apple friends (if you don't know who they are, ping awhalley@)
+* Label **ExternalDependency**
 
 ### Find An Owner To Fix The Bug
 
