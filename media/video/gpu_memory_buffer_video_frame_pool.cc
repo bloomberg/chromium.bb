@@ -1001,7 +1001,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
   // TODO(dcastagna): As soon as the context lost is dealt with in media,
   // make sure that we won't execute this callback (use a weak pointer to
   // the old context).
-
   gpu::gles2::GLES2Interface* gles2 = gpu_factories->ContextGL();
   if (!gles2)
     return;
