@@ -75,6 +75,14 @@ class PLATFORM_EXPORT TaskQueueImpl {
     base::TimeTicks time;
     int sequence_num;
 
+    bool operator!=(const DelayedWakeUp& other) const {
+      return time != other.time || other.sequence_num != sequence_num;
+    }
+
+    bool operator==(const DelayedWakeUp& other) const {
+      return !(*this != other);
+    }
+
     bool operator<=(const DelayedWakeUp& other) const {
       if (time == other.time) {
         // Debug gcc builds can compare an element against itself.
@@ -166,6 +174,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   size_t GetNumberOfPendingTasks() const;
   bool HasTaskToRunImmediately() const;
   base::Optional<base::TimeTicks> GetNextScheduledWakeUp();
+  base::Optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
   void SetQueuePriority(TaskQueue::QueuePriority priority);
   TaskQueue::QueuePriority GetQueuePriority() const;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
@@ -200,14 +209,6 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void NotifyWillProcessTask(const base::PendingTask& pending_task);
   void NotifyDidProcessTask(const base::PendingTask& pending_task);
 
-  // Called by TimeDomain when the wake-up for this queue has changed.
-  // There is only one wake-up, new wake-up cancels any previous wake-ups.
-  // If |scheduled_time_domain_wake_up| is base::nullopt then the wake-up
-  // has been cancelled.
-  // Must be called from the main thread.
-  void SetScheduledTimeDomainWakeUp(
-      base::Optional<base::TimeTicks> scheduled_time_domain_wake_up);
-
   // Check for available tasks in immediate work queues.
   // Used to check if we need to generate notifications about delayed work.
   bool HasPendingImmediateWork();
@@ -229,13 +230,9 @@ class PLATFORM_EXPORT TaskQueueImpl {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. Returns the subsequent wake-up that is required, if
-  // any. Must be called from the main thread.
-  base::Optional<DelayedWakeUp> WakeUpForDelayedWork(LazyNow* lazy_now);
-
-  base::Optional<base::TimeTicks> scheduled_time_domain_wake_up() const {
-    return main_thread_only().scheduled_time_domain_wake_up;
-  }
+  // |delayed_work_queue|.
+  // Must be called from the main thread.
+  void WakeUpForDelayedWork(LazyNow* lazy_now);
 
   HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
 
@@ -296,6 +293,9 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // constructed due to not having TaskQueue.
   void SetQueueEnabledForTest(bool enabled);
 
+ protected:
+  void SetDelayedWakeUpForTesting(base::Optional<DelayedWakeUp> wake_up);
+
  private:
   friend class WorkQueue;
   friend class WorkQueueTest;
@@ -340,9 +340,11 @@ class PLATFORM_EXPORT TaskQueueImpl {
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
     base::Optional<base::TimeTicks> delayed_fence;
-    base::Optional<base::TimeTicks> scheduled_time_domain_wake_up;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
+    // Last reported wake up, used only in UpdateWakeUp to avoid
+    // excessive calls.
+    base::Optional<DelayedWakeUp> scheduled_wake_up;
     // If false, queue will be disabled. Used only for tests.
     bool is_enabled_for_test;
   };
@@ -392,7 +394,9 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void EnableOrDisableWithSelector(bool enable);
 
   // Schedules delayed work on time domain and calls the observer.
-  void ScheduleDelayedWorkInTimeDomain(base::TimeTicks now);
+  void UpdateDelayedWakeUp(LazyNow* lazy_now);
+  void UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
+                               base::Optional<DelayedWakeUp> wake_up);
 
   // Activate a delayed fence if a time has come.
   void ActivateDelayedFenceIfNeeded(base::TimeTicks now);
