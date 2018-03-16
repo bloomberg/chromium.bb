@@ -260,7 +260,8 @@ void SystemTray::CreateItems() {
   AddTrayItem(base::WrapUnique(tray_enterprise_));
   tray_supervised_user_ = new TraySupervisedUser(this);
   AddTrayItem(base::WrapUnique(tray_supervised_user_));
-  AddTrayItem(std::make_unique<TrayIME>(this));
+  tray_ime_ = new TrayIME(this);
+  AddTrayItem(base::WrapUnique(tray_ime_));
   tray_accessibility_ = new TrayAccessibility(this);
   AddTrayItem(base::WrapUnique(tray_accessibility_));
   tray_tracing_ = new TrayTracing(this);
@@ -412,6 +413,10 @@ TrayBluetooth* SystemTray::GetTrayBluetooth() const {
 
 TrayAccessibility* SystemTray::GetTrayAccessibility() const {
   return tray_accessibility_;
+}
+
+TrayIME* SystemTray::GetTrayIME() const {
+  return tray_ime_;
 }
 
 void SystemTray::CanSwitchAwayFromActiveUser(
