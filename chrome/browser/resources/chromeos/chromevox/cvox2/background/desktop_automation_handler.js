@@ -192,11 +192,6 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged: function(evt) {
-    if (evt.target.activeDescendant) {
-      this.onActiveDescendantChanged(evt);
-      return;
-    }
-
     if (evt.target.state.editable)
       return;
     this.onEventIfInRange(evt);
@@ -306,8 +301,6 @@ DesktopAutomationHandler.prototype = {
           .withBraille(curRange, curRange, Output.EventType.NAVIGATE)
           .go();
     }
-
-    this.onActiveDescendantChanged(evt);
   },
 
   /**
@@ -434,6 +427,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onValueChanged: function(evt) {
+    // Skip root web areas.
+    if (evt.target.role == RoleType.ROOT_WEB_AREA)
+      return;
+
     // Skip all unfocused text fields.
     if (!evt.target.state[StateType.FOCUSED] &&
         evt.target.state[StateType.EDITABLE])
