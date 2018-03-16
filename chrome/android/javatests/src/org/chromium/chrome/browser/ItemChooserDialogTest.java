@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.test.filters.LargeTest;
+import android.support.v4.util.ObjectsCompat;
 import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -65,7 +65,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         mTestDrawable2 = getNewTestDrawable();
         mTestDrawableDescription2 = "icon2 description";
 
-        Assert.assertFalse(ApiCompatibilityUtils.objectEquals(mTestDrawable1, mTestDrawable2));
+        Assert.assertFalse(ObjectsCompat.equals(mTestDrawable1, mTestDrawable2));
     }
 
     // ItemChooserDialog.ItemSelectedCallback:

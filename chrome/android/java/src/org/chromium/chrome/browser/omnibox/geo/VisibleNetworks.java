@@ -5,8 +5,7 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.support.annotation.IntDef;
-
-import org.chromium.base.ApiCompatibilityUtils;
+import android.support.v4.util.ObjectsCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -101,10 +100,10 @@ class VisibleNetworks {
             return false;
         }
         VisibleNetworks that = (VisibleNetworks) object;
-        return ApiCompatibilityUtils.objectEquals(mConnectedWifi, that.connectedWifi())
-                && ApiCompatibilityUtils.objectEquals(mConnectedCell, that.connectedCell())
-                && ApiCompatibilityUtils.objectEquals(mAllVisibleWifis, that.allVisibleWifis())
-                && ApiCompatibilityUtils.objectEquals(mAllVisibleCells, that.allVisibleCells());
+        return ObjectsCompat.equals(mConnectedWifi, that.connectedWifi())
+                && ObjectsCompat.equals(mConnectedCell, that.connectedCell())
+                && ObjectsCompat.equals(mAllVisibleWifis, that.allVisibleWifis())
+                && ObjectsCompat.equals(mAllVisibleCells, that.allVisibleCells());
     }
 
     private static int objectsHashCode(Object o) {
@@ -193,8 +192,8 @@ class VisibleNetworks {
             }
 
             VisibleWifi that = (VisibleWifi) object;
-            return ApiCompatibilityUtils.objectEquals(mSsid, that.ssid())
-                    && ApiCompatibilityUtils.objectEquals(mBssid, that.bssid());
+            return ObjectsCompat.equals(mSsid, that.ssid())
+                    && ObjectsCompat.equals(mBssid, that.bssid());
         }
 
         @Override
@@ -367,19 +366,14 @@ class VisibleNetworks {
                 return false;
             }
             VisibleCell that = (VisibleCell) object;
-            return ApiCompatibilityUtils.objectEquals(mRadioType, that.radioType())
-                    && ApiCompatibilityUtils.objectEquals(mCellId, that.cellId())
-                    && ApiCompatibilityUtils.objectEquals(
-                               mLocationAreaCode, that.locationAreaCode())
-                    && ApiCompatibilityUtils.objectEquals(
-                               mMobileCountryCode, that.mobileCountryCode())
-                    && ApiCompatibilityUtils.objectEquals(
-                               mMobileNetworkCode, that.mobileNetworkCode())
-                    && ApiCompatibilityUtils.objectEquals(
-                               mPrimaryScramblingCode, that.primaryScramblingCode())
-                    && ApiCompatibilityUtils.objectEquals(mPhysicalCellId, that.physicalCellId())
-                    && ApiCompatibilityUtils.objectEquals(
-                               mTrackingAreaCode, that.trackingAreaCode());
+            return ObjectsCompat.equals(mRadioType, that.radioType())
+                    && ObjectsCompat.equals(mCellId, that.cellId())
+                    && ObjectsCompat.equals(mLocationAreaCode, that.locationAreaCode())
+                    && ObjectsCompat.equals(mMobileCountryCode, that.mobileCountryCode())
+                    && ObjectsCompat.equals(mMobileNetworkCode, that.mobileNetworkCode())
+                    && ObjectsCompat.equals(mPrimaryScramblingCode, that.primaryScramblingCode())
+                    && ObjectsCompat.equals(mPhysicalCellId, that.physicalCellId())
+                    && ObjectsCompat.equals(mTrackingAreaCode, that.trackingAreaCode());
         }
 
         @Override

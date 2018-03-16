@@ -14,6 +14,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v4.util.ObjectsCompat;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -805,7 +806,7 @@ public class GeolocationHeader {
         // Select the extra visible cell.
         if (visibleCells != null) {
             for (VisibleCell candidateCell : visibleCells) {
-                if (ApiCompatibilityUtils.objectEquals(connectedCell, candidateCell)) {
+                if (ObjectsCompat.equals(connectedCell, candidateCell)) {
                     // Do not include this candidate cell, since its already the connected one.
                     continue;
                 }
@@ -821,7 +822,7 @@ public class GeolocationHeader {
                     // Do not include this candidate wifi.
                     continue;
                 }
-                if (ApiCompatibilityUtils.objectEquals(connectedWifi, candidateWifi)) {
+                if (ObjectsCompat.equals(connectedWifi, candidateWifi)) {
                     // Replace the connected, since the candidate will have level. This is because
                     // the android APIs exposing connected WIFI do not expose level, while the ones
                     // exposing visible wifis expose level.
