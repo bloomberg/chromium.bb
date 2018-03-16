@@ -161,9 +161,10 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-static size_t get_obu_length_field_size(const uint8_t *data) {
+static size_t get_obu_length_field_size(const uint8_t *data, size_t data_sz) {
+  const size_t max_bytes = AOMMIN(sizeof(uint64_t), data_sz);
   size_t length_field_size = 1;
-  for (size_t i = 0; i < sizeof(uint64_t) && (data[i] & 0x80); ++i) {
+  for (size_t i = 0; i < max_bytes && (data[i] & 0x80); ++i) {
     ++length_field_size;
   }
   return length_field_size;
@@ -175,7 +176,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
                                                 int *is_intra_only) {
   int intra_only_flag = 0;
 
-  if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
+  if (data + data_sz <= data || data_sz < 1) return AOM_CODEC_INVALID_PARAM;
 
   si->w = 0;
   si->h = 0;
@@ -191,7 +192,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 #if CONFIG_OBU_SIZE_AFTER_HEADER
   struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
 #else
-  const size_t length_field_size = get_obu_length_field_size(data);
+  const size_t length_field_size = get_obu_length_field_size(data, data_sz);
   struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
                                     NULL, NULL };
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
@@ -204,7 +205,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
 #if CONFIG_OBU_SIZE_AFTER_HEADER
   // One byte has been consumed by the OBU header.
-  rb.bit_offset += get_obu_length_field_size(data + 1);
+  rb.bit_offset += get_obu_length_field_size(data + 1, data_sz - 1);
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
   // This check is disabled because existing behavior is depended upon by
