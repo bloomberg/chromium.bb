@@ -92,6 +92,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   [_alertCoordinator executeCancelHandler];
   [_alertCoordinator stop];
   if (_navigationController) {
+    [_navigationController settingsWillBeDismissed];
     _navigationController = nil;
     [[_delegate presentingViewController] dismissViewControllerAnimated:NO
                                                              completion:nil];
@@ -414,6 +415,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseClearDataPolicy:shouldClearData];
   };
+  [_navigationController settingsWillBeDismissed];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
 }
@@ -431,6 +433,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     strongSelf->_navigationController = nil;
     [[strongSelf delegate] didChooseCancel];
   };
+  [_navigationController settingsWillBeDismissed];
   [[_delegate presentingViewController] dismissViewControllerAnimated:YES
                                                            completion:block];
 }

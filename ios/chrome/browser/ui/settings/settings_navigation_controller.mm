@@ -289,13 +289,6 @@ initWithRootViewController:(UIViewController*)rootViewController
   return self;
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-  if (self.isBeingDismissed) {
-    [self settingsWillBeDismissed];
-  }
-}
-
 - (void)settingsWillBeDismissed {
   // Notify all controllers that settings are about to be dismissed.
   for (UIViewController* controller in [self viewControllers]) {
