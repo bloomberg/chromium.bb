@@ -142,6 +142,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->reduce_inter_modes = 1;
 
   if (speed >= 1) {
+    sf->gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->selective_ref_frame = 1;
     sf->tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_init_depth_sqr = 1;
@@ -158,6 +159,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 2) {
+    sf->gm_erroradv_type = GM_ERRORADV_TR_2;
     sf->tx_size_search_method = USE_FAST_RD;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
@@ -399,6 +401,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   else
     sf->optimize_coefficients = FULL_TRELLIS_OPT;
 #endif  // DISABLE_TRELLISQ_SEARCH
+  sf->gm_erroradv_type = GM_ERRORADV_TR_0;
   sf->mv.reduce_first_step_size = 0;
   sf->coeff_prob_appx_step = 1;
   sf->mv.auto_mv_step_size = 0;

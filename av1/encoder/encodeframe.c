@@ -4345,7 +4345,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           if (!is_enough_erroradvantage(
                   (double)best_warp_error / ref_frame_error,
                   gm_get_params_cost(&cm->global_motion[frame], ref_params,
-                                     cm->allow_high_precision_mv))) {
+                                     cm->allow_high_precision_mv),
+                  cpi->sf.gm_erroradv_type)) {
             cm->global_motion[frame] = default_warp_params;
           }
           if (cm->global_motion[frame].wmtype != IDENTITY) break;

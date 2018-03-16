@@ -24,7 +24,8 @@ extern "C" {
 
 void convert_model_to_params(const double *params, WarpedMotionParams *model);
 
-int is_enough_erroradvantage(double erroradv, int params_cost);
+int is_enough_erroradvantage(double best_erroradvantage, int params_cost,
+                             int erroradv_type);
 
 // Returns the av1_warp_error between "dst" and the result of applying the
 // motion params that result from fine-tuning "wm" to "ref". Note that "wm" is

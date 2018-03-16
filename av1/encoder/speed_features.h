@@ -279,6 +279,12 @@ typedef enum {
 } GM_SEARCH_TYPE;
 
 typedef enum {
+  GM_ERRORADV_TR_0,
+  GM_ERRORADV_TR_1,
+  GM_ERRORADV_TR_2,
+} GM_ERRORADV_TYPE;
+
+typedef enum {
   NO_TRELLIS_OPT,         // No trellis optimization
   FULL_TRELLIS_OPT,       // Trellis optimization in all stages
   FINAL_PASS_TRELLIS_OPT  // Trellis optimization in only the final encode pass
@@ -299,6 +305,9 @@ typedef struct SPEED_FEATURES {
 
   // Trellis (dynamic programming) optimization of quantized values
   TRELLIS_OPT_TYPE optimize_coefficients;
+
+  // Global motion warp error threshold
+  GM_ERRORADV_TYPE gm_erroradv_type;
 
   // Always set to 0. If on it enables 0 cost background transmission
   // (except for the initial transmission of the segmentation). The feature is

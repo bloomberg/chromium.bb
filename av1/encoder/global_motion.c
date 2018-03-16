@@ -32,11 +32,21 @@
 // Border over which to compute the global motion
 #define ERRORADV_BORDER 0
 
-#define ERRORADV_MAX_THRESH 0.995
+#define ERRORADV_MAX_THRESH_0 0.75
+#define ERRORADV_MAX_THRESH_1 0.70
+#define ERRORADV_MAX_THRESH_2 0.65
 #define ERRORADV_COST_PRODUCT_THRESH 26000
 
-int is_enough_erroradvantage(double best_erroradvantage, int params_cost) {
-  return best_erroradvantage < ERRORADV_MAX_THRESH &&
+int is_enough_erroradvantage(double best_erroradvantage, int params_cost,
+                             int erroradv_type) {
+  double erroradv_tr = 0;
+  switch (erroradv_type) {
+    case GM_ERRORADV_TR_0: erroradv_tr = ERRORADV_MAX_THRESH_0; break;
+    case GM_ERRORADV_TR_1: erroradv_tr = ERRORADV_MAX_THRESH_1; break;
+    case GM_ERRORADV_TR_2: erroradv_tr = ERRORADV_MAX_THRESH_2; break;
+    default: assert(0 && "Invalid ERRORADV Type"); return 0;
+  }
+  return best_erroradvantage < erroradv_tr &&
          best_erroradvantage * params_cost < ERRORADV_COST_PRODUCT_THRESH;
 }
 
