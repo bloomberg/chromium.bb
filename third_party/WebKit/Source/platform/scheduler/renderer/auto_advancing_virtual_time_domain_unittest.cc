@@ -10,7 +10,7 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
 
     scheduler_helper_.reset(new WorkerSchedulerHelper(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         nullptr));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);

@@ -19,7 +19,7 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -196,19 +196,21 @@ class BaseIdleHelperTest : public ::testing::Test {
       : mock_task_runner_(
             message_loop ? nullptr
                          : new cc::OrderedSimpleTaskRunner(&clock_, false)),
-        message_loop_(message_loop),
-        scheduler_helper_(new WorkerSchedulerHelper(
-            CreateTaskQueueManagerForTest(
-                message_loop,
-                message_loop ? message_loop->task_runner() : mock_task_runner_,
-                &clock_),
-            nullptr)),
-        idle_helper_(new IdleHelperForTest(
-            scheduler_helper_.get(),
-            required_quiescence_duration_before_long_idle_period,
-            scheduler_helper_->NewTaskQueue(TaskQueue::Spec("idle_test")))),
-        default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()),
-        idle_task_runner_(idle_helper_->IdleTaskRunner()) {
+        message_loop_(message_loop) {
+    std::unique_ptr<TaskQueueManager> task_queue_manager =
+        TaskQueueManagerForTest::Create(
+            message_loop,
+            message_loop ? message_loop->task_runner() : mock_task_runner_,
+            &clock_);
+    task_queue_manager_ = task_queue_manager.get();
+    scheduler_helper_ = std::make_unique<WorkerSchedulerHelper>(
+        std::move(task_queue_manager), nullptr);
+    idle_helper_ = std::make_unique<IdleHelperForTest>(
+        scheduler_helper_.get(),
+        required_quiescence_duration_before_long_idle_period,
+        scheduler_helper_->NewTaskQueue(TaskQueue::Spec("idle_test")));
+    default_task_runner_ = scheduler_helper_->DefaultWorkerTaskQueue();
+    idle_task_runner_ = idle_helper_->IdleTaskRunner();
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -236,6 +238,8 @@ class BaseIdleHelperTest : public ::testing::Test {
       base::RunLoop().RunUntilIdle();
     }
   }
+
+  TaskQueueManager* task_queue_manager() const { return task_queue_manager_; }
 
   void RunUntilIdle() {
     // Only one of mock_task_runner_ or message_loop_ should be set.
@@ -304,6 +308,7 @@ class BaseIdleHelperTest : public ::testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
+  TaskQueueManager* task_queue_manager_;  // Owned by scheduler_helper_.
   std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
@@ -316,10 +321,6 @@ class IdleHelperTest : public BaseIdleHelperTest {
   IdleHelperTest() : BaseIdleHelperTest(nullptr, base::TimeDelta()) {}
 
   ~IdleHelperTest() override = default;
-
-  TaskQueueManager* task_queue_manager() const {
-    return scheduler_helper_->GetTaskQueueManagerForTesting();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdleHelperTest);
@@ -426,10 +427,6 @@ class IdleHelperTestWithIdlePeriodObserver : public BaseIdleHelperTest {
 
   void SetUp() override {
     // Don't set expectations on IdleHelper::Delegate.
-  }
-
-  TaskQueueManager* task_queue_manager() const {
-    return scheduler_helper_->GetTaskQueueManagerForTesting();
   }
 
   void ExpectIdlePeriodStartsButNeverEnds() {

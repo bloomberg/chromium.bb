@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/test/simple_test_tick_clock.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebThread.h"
@@ -68,6 +69,8 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
+  scheduler::TaskQueueManagerForTest*
+      task_queue_manager_;  // Owned by scheduler_.
   std::unique_ptr<WebThread> thread_;
 };
 

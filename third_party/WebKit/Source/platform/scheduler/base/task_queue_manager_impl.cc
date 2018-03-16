@@ -525,13 +525,6 @@ LazyNow TaskQueueManagerImpl::CreateLazyNow() const {
   return LazyNow(controller_->GetClock());
 }
 
-size_t TaskQueueManagerImpl::GetNumberOfPendingTasks() const {
-  size_t task_count = 0;
-  for (auto& queue : main_thread_only().active_queues)
-    task_count += queue->GetNumberOfPendingTasks();
-  return task_count;
-}
-
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManagerImpl::AsValueWithSelectorResult(
     bool should_run,
@@ -583,10 +576,6 @@ void TaskQueueManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   // Only schedule DoWork if there's something to do.
   if (queue->HasTaskToRunImmediately() && !queue->BlockedByFence())
     MaybeScheduleImmediateWork(FROM_HERE);
-}
-
-bool TaskQueueManagerImpl::HasImmediateWorkForTesting() const {
-  return !main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
 }
 
 void TaskQueueManagerImpl::SweepCanceledDelayedTasks() {
@@ -649,10 +638,6 @@ bool TaskQueueManagerImpl::ShouldRecordCPUTimeForTask() {
          main_thread_only().uniform_distribution(
              main_thread_only().random_generator) <
              kSamplingRateForRecordingCPUTime;
-}
-
-void TaskQueueManagerImpl::SetRandomSeed(uint64_t value) {
-  main_thread_only().random_generator.seed(value);
 }
 
 MSVC_DISABLE_OPTIMIZE()

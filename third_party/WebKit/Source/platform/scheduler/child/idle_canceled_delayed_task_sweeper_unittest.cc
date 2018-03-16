@@ -12,7 +12,7 @@
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -33,7 +33,9 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
   IdleCanceledDelayedTaskSweeperTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
         scheduler_helper_(new MainThreadSchedulerHelper(
-            CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+            TaskQueueManagerForTest::Create(nullptr,
+                                            mock_task_runner_,
+                                            &clock_),
             nullptr)),
         idle_helper_(
             new IdleHelper(scheduler_helper_.get(),

@@ -11,9 +11,9 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/scheduler/test/fake_page_scheduler.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/common/page/launching_process_state.h"
@@ -36,7 +36,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<RendererSchedulerImpl>(
-        CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }

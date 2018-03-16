@@ -12,25 +12,14 @@
 #include "platform/scheduler/base/task_queue_manager_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/lazy_thread_controller_for_test.h"
+#include "platform/scheduler/test/task_queue_manager_for_test.h"
 
 namespace blink {
 namespace scheduler {
 
-namespace {
-
-// TODO(kraynov): Use CreateTaskQueueManagerForTest instead.
-class TaskQueueManagerForRendererSchedulerTest : public TaskQueueManagerImpl {
- public:
-  explicit TaskQueueManagerForRendererSchedulerTest(
-      std::unique_ptr<internal::ThreadController> thread_controller)
-      : TaskQueueManagerImpl(std::move(thread_controller)) {}
-};
-
-}  // namespace
-
 std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests() {
   return std::make_unique<scheduler::RendererSchedulerImpl>(
-      std::make_unique<TaskQueueManagerForRendererSchedulerTest>(
+      std::make_unique<TaskQueueManagerForTest>(
           std::make_unique<LazyThreadControllerForTest>()),
       base::nullopt);
 }

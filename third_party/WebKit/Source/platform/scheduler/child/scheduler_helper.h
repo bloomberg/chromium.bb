@@ -84,11 +84,8 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void UnregisterTimeDomain(TimeDomain* time_domain);
   bool GetAndClearSystemIsQuiescentBit();
 
-  size_t GetNumberOfPendingTasks() const;
-
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
-  TaskQueueManager* GetTaskQueueManagerForTesting();
 
  protected:
   void InitDefaultQueues(scoped_refptr<TaskQueue> default_task_queue,

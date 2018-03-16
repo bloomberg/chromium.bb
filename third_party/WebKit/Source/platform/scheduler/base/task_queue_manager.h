@@ -81,14 +81,6 @@ class PLATFORM_EXPORT TaskQueueManager {
   virtual void EnableCrashKeys(const char* file_name_crash_key,
                                const char* function_name_crash_key) = 0;
 
-  // Return number of pending tasks in task queues.
-  // TODO(kraynov): Remove test-only method.
-  virtual size_t GetNumberOfPendingTasks() const = 0;
-
-  // Returns true if there is a task that could be executed immediately.
-  // TODO(kraynov): Remove test-only method.
-  virtual bool HasImmediateWorkForTesting() const = 0;
-
   // Creates a task queue with the given type, |spec| and args. Must be called
   // on the thread this class was created on.
   // TODO(altimin): TaskQueueManager should not create TaskQueues.

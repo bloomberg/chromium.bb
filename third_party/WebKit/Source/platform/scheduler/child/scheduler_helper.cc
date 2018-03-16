@@ -39,19 +39,10 @@ void SchedulerHelper::Shutdown() {
   task_queue_manager_.reset();
 }
 
-size_t SchedulerHelper::GetNumberOfPendingTasks() const {
-  return task_queue_manager_->GetNumberOfPendingTasks();
-}
-
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   CheckOnValidThread();
   DCHECK(task_queue_manager_.get());
   task_queue_manager_->SetWorkBatchSize(work_batch_size);
-}
-
-TaskQueueManager* SchedulerHelper::GetTaskQueueManagerForTesting() {
-  CheckOnValidThread();
-  return task_queue_manager_.get();
 }
 
 bool SchedulerHelper::GetAndClearSystemIsQuiescentBit() {

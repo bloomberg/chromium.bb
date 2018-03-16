@@ -158,8 +158,6 @@ jumbo_source_set("test_support") {
 
   sources = [
     "base/test_task_time_observer.h",
-    "test/create_task_queue_manager_for_test.cc",
-    "test/create_task_queue_manager_for_test.h",
     "test/fake_page_scheduler.h",
     "test/fake_renderer_scheduler.cc",
     "test/fake_task_runner.cc",
@@ -168,6 +166,8 @@ jumbo_source_set("test_support") {
     "test/lazy_thread_controller_for_test.cc",
     "test/lazy_thread_controller_for_test.h",
     "test/renderer_scheduler_test_support.cc",
+    "test/task_queue_manager_for_test.cc",
+    "test/task_queue_manager_for_test.h",
     "test/test_task_queue.cc",
     "test/test_task_queue.h",
   ]
