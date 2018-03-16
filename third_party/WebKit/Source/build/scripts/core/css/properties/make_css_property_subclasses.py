@@ -71,7 +71,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def generate_property_h_builder(self, property_classname, property_filename, property_):
         @template_expander.use_jinja(
-            'core/css/properties/templates/CSSPropertySubclass.h.tmpl',
+            'core/css/properties/templates/css_property_subclass.h.tmpl',
             template_cache=self.template_cache)
         def generate_property_h():
             return {
@@ -85,7 +85,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def generate_property_cpp_builder(self, property_filename, property_):
         @template_expander.use_jinja(
-            'core/css/properties/templates/CSSPropertySubclass.cpp.tmpl',
+            'core/css/properties/templates/css_property_subclass.cc.tmpl',
             template_cache=self.template_cache)
         def generate_property_cpp():
             return {

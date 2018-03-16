@@ -29,7 +29,7 @@ css_properties_files =
 
 make_event_factory_files = scripts_for_json5_files + [
                              "$_scripts_dir/make_event_factory.py",
-                             "$_scripts_dir/templates/EventFactory.cpp.tmpl",
+                             "$_scripts_dir/templates/event_factory.cc.tmpl",
                            ]
 
 make_names_files = scripts_for_json5_files + [

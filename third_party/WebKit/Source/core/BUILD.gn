@@ -553,8 +553,8 @@ css_properties("make_core_generated_css_longhand_property_classes") {
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
   other_inputs = [
-    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",
-    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.cpp.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property_subclass.cc.tmpl",
   ]
   outputs = [
     "$blink_core_output_dir/css/properties/longhands/align_content.h",
@@ -1020,9 +1020,7 @@ css_properties("make_core_generated_css_shorthand_property_classes") {
   script =
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
-  other_inputs = [
-    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",
-  ]
+  other_inputs = [ "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/css/properties/shorthands/animation.h",
     "$blink_core_output_dir/css/properties/shorthands/background.h",
