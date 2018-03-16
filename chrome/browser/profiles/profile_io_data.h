@@ -40,7 +40,6 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_owner.h"
 
-class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class ChromeURLRequestContextGetter;
 class ChromeExpectCTReporter;
@@ -647,9 +646,6 @@ class ProfileIOData {
 
   mutable std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
       loading_predictor_observer_;
-
-  mutable std::unique_ptr<ChromeHttpUserAgentSettings>
-      chrome_http_user_agent_settings_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Is NULL if switches::kDisableExtensionsHttpThrottling is on.

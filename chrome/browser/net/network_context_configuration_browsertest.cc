@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -20,7 +21,9 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
@@ -295,26 +298,24 @@ class NetworkContextConfigurationBrowserTest
     controllable_http_response_->WaitForRequest();
   }
 
- private:
-  void SimulateNetworkServiceCrashIfNecessary() {
-    if (GetParam().network_service_state != NetworkServiceState::kRestarted)
-      return;
-
-    // Make sure |network_context()| is working as expected. Use '/echoheader'
-    // instead of '/echo' to avoid a disk_cache bug.
-    // See https://crbug.com/792255.
-    int net_error = content::LoadBasicRequest(
-        network_context(), embedded_test_server()->GetURL("/echoheader"));
-    // The error code could be |net::ERR_PROXY_CONNECTION_FAILED| if the test is
-    // using 'bad_server.pac'.
-    EXPECT_TRUE(net_error == net::OK ||
-                net_error == net::ERR_PROXY_CONNECTION_FAILED);
-
-    // Crash the NetworkService process. Existing interfaces should receive
-    // error notifications at some point.
-    content::SimulateNetworkServiceCrash();
-    // Flush the interface to make sure the error notification was received.
-    FlushNetworkInterface();
+  bool FetchHeaderEcho(const std::string& header_name,
+                       std::string* header_value_out) {
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = embedded_test_server()->GetURL(
+        base::StrCat({"/echoheader?", header_name}));
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
+    if (simple_loader_helper.response_body()) {
+      *header_value_out = *simple_loader_helper.response_body();
+      return true;
+    }
+    return false;
   }
 
   void FlushNetworkInterface() {
@@ -335,6 +336,28 @@ class NetworkContextConfigurationBrowserTest
             ->FlushNetworkInterfaceForTesting();
         break;
     }
+  }
+
+ private:
+  void SimulateNetworkServiceCrashIfNecessary() {
+    if (GetParam().network_service_state != NetworkServiceState::kRestarted)
+      return;
+
+    // Make sure |network_context()| is working as expected. Use '/echoheader'
+    // instead of '/echo' to avoid a disk_cache bug.
+    // See https://crbug.com/792255.
+    int net_error = content::LoadBasicRequest(
+        network_context(), embedded_test_server()->GetURL("/echoheader"));
+    // The error code could be |net::ERR_PROXY_CONNECTION_FAILED| if the test is
+    // using 'bad_server.pac'.
+    EXPECT_TRUE(net_error == net::OK ||
+                net_error == net::ERR_PROXY_CONNECTION_FAILED);
+
+    // Crash the NetworkService process. Existing interfaces should receive
+    // error notifications at some point.
+    content::SimulateNetworkServiceCrash();
+    // Flush the interface to make sure the error notification was received.
+    FlushNetworkInterface();
   }
 
   Browser* incognito_ = nullptr;
@@ -561,6 +584,44 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        ShutdownWithLiveRequest) {
   MakeLongLivedRequestThatHangsUntilShutdown();
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       UserAgentAndLanguagePrefs) {
+  // System network context isn't associated with any profile, so changing the
+  // language settings in the default one doesn't affect what it sends.
+  bool system =
+      (GetParam().network_context_type == NetworkContextType::kSystem);
+  const char kDefaultAcceptLanguage[] = "en-us,en";
+
+  std::string accept_language, user_agent;
+  // Check default.
+  ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language));
+  EXPECT_EQ(system ? kDefaultAcceptLanguage : "en-US,en;q=0.9",
+            accept_language);
+  ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent));
+  EXPECT_EQ(::GetUserAgent(), user_agent);
+
+  // Now change the profile a different language, and see if the headers
+  // get updated.
+  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages, "uk");
+  FlushNetworkInterface();
+  std::string accept_language2, user_agent2;
+  ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language2));
+  EXPECT_EQ(system ? kDefaultAcceptLanguage : "uk", accept_language2);
+  ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent2));
+  EXPECT_EQ(::GetUserAgent(), user_agent2);
+
+  // Try a more complicated one, with multiple languages.
+  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
+                                              "uk, en_US");
+  FlushNetworkInterface();
+  std::string accept_language3, user_agent3;
+  ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language3));
+  EXPECT_EQ(system ? kDefaultAcceptLanguage : "uk,en_US;q=0.9",
+            accept_language3);
+  ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent3));
+  EXPECT_EQ(::GetUserAgent(), user_agent3);
 }
 
 class NetworkContextConfigurationFixedPortBrowserTest

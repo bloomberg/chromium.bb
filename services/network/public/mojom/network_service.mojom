@@ -36,6 +36,10 @@ struct NetworkContextParams {
   // The user agent string.
   string user_agent;
 
+  // String to send as the Accept-Language header. This can be changed later
+  // by calling SetAcceptLanguage on the NetworkContext.
+  string? accept_language;
+
   // Whether Brotli content-encoding should be enabled for HTTPS responses.
   bool enable_brotli = true;
 
@@ -184,6 +188,9 @@ interface NetworkContext {
   // Passing null NetworkConditions disables the throttling.
   // TODO(caseq): get rid of header, make profile_id part of ResourceRequest.
   SetNetworkConditions(string profile_id, NetworkConditions? conditions);
+
+  // Updates the Accept-Language header to be used for requests.
+  SetAcceptLanguage(string new_accept_language);
 
   // Creates a UDP socket. Caller can supply a |receiver| interface pointer
   // to listen for incoming datagrams. A null |receiver| is acceptable if caller

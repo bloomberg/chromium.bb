@@ -61,13 +61,8 @@ ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
   last_pref_accept_language_ = *pref_accept_language_;
-
-  const std::string accept_languages_str =
-      base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
-          ? ExpandLanguageList(last_pref_accept_language_)
-          : last_pref_accept_language_;
   last_http_accept_language_ =
-      net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
+      ComputeAcceptLanguageFromPref(last_pref_accept_language_);
 
   pref_accept_language_.MoveToThread(
       content::BrowserThread::GetTaskRunnerForThread(
@@ -76,6 +71,15 @@ ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
 
 ChromeHttpUserAgentSettings::~ChromeHttpUserAgentSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
+
+std::string ChromeHttpUserAgentSettings::ComputeAcceptLanguageFromPref(
+    const std::string& language_pref) {
+  std::string accept_languages_str =
+      base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
+          ? ExpandLanguageList(language_pref)
+          : language_pref;
+  return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 
 std::string ChromeHttpUserAgentSettings::ExpandLanguageList(
@@ -117,12 +121,8 @@ std::string ChromeHttpUserAgentSettings::GetAcceptLanguage() const {
   std::string new_pref_accept_language = *pref_accept_language_;
 
   if (new_pref_accept_language != last_pref_accept_language_) {
-    const std::string accept_languages_str =
-        base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
-            ? ExpandLanguageList(new_pref_accept_language)
-            : new_pref_accept_language;
     last_http_accept_language_ =
-        net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
+        ComputeAcceptLanguageFromPref(new_pref_accept_language);
     last_pref_accept_language_ = new_pref_accept_language;
   }
 

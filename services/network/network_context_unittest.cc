@@ -44,6 +44,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -159,6 +160,44 @@ TEST_F(NetworkContextTest, DisableQuic) {
                    ->GetSession()
                    ->params()
                    .enable_quic);
+}
+
+TEST_F(NetworkContextTest, UserAgentAndLanguage) {
+  const char kUserAgent[] = "Chromium Unit Test";
+  const char kAcceptLanguage[] = "en-US,en;q=0.9,uk;q=0.8";
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  params->user_agent = kUserAgent;
+  // Not setting accept_language, to test the default.
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(params));
+  EXPECT_EQ(kUserAgent, network_context->GetURLRequestContext()
+                            ->http_user_agent_settings()
+                            ->GetUserAgent());
+  EXPECT_EQ("en-us,en", network_context->GetURLRequestContext()
+                            ->http_user_agent_settings()
+                            ->GetAcceptLanguage());
+
+  // Change accept-language.
+  network_context->SetAcceptLanguage(kAcceptLanguage);
+  EXPECT_EQ(kUserAgent, network_context->GetURLRequestContext()
+                            ->http_user_agent_settings()
+                            ->GetUserAgent());
+  EXPECT_EQ(kAcceptLanguage, network_context->GetURLRequestContext()
+                                 ->http_user_agent_settings()
+                                 ->GetAcceptLanguage());
+
+  // Create with custom accept-language configured.
+  params = CreateContextParams();
+  params->user_agent = kUserAgent;
+  params->accept_language = kAcceptLanguage;
+  std::unique_ptr<NetworkContext> network_context2 =
+      CreateContextWithParams(std::move(params));
+  EXPECT_EQ(kUserAgent, network_context2->GetURLRequestContext()
+                            ->http_user_agent_settings()
+                            ->GetUserAgent());
+  EXPECT_EQ(kAcceptLanguage, network_context2->GetURLRequestContext()
+                                 ->http_user_agent_settings()
+                                 ->GetAcceptLanguage());
 }
 
 TEST_F(NetworkContextTest, EnableBrotli) {

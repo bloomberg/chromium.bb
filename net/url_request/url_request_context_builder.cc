@@ -198,7 +198,6 @@ URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 URLRequestContextBuilder::URLRequestContextBuilder()
     : enable_brotli_(false),
       network_quality_estimator_(nullptr),
-      shared_http_user_agent_settings_(nullptr),
       data_enabled_(false),
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
       file_enabled_(false),
@@ -254,18 +253,17 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
 
 void URLRequestContextBuilder::set_accept_language(
     const std::string& accept_language) {
-  DCHECK(!shared_http_user_agent_settings_);
+  DCHECK(!http_user_agent_settings_);
   accept_language_ = accept_language;
 }
 void URLRequestContextBuilder::set_user_agent(const std::string& user_agent) {
-  DCHECK(!shared_http_user_agent_settings_);
+  DCHECK(!http_user_agent_settings_);
   user_agent_ = user_agent;
 }
-void URLRequestContextBuilder::set_shared_http_user_agent_settings(
-    HttpUserAgentSettings* shared_http_user_agent_settings) {
-  DCHECK(accept_language_.empty());
-  DCHECK(user_agent_.empty());
-  shared_http_user_agent_settings_ = shared_http_user_agent_settings;
+
+void URLRequestContextBuilder::set_http_user_agent_settings(
+    std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings) {
+  http_user_agent_settings_ = std::move(http_user_agent_settings);
 }
 
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
@@ -396,8 +394,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   context->set_enable_brotli(enable_brotli_);
   context->set_network_quality_estimator(network_quality_estimator_);
 
-  if (shared_http_user_agent_settings_) {
-    context->set_http_user_agent_settings(shared_http_user_agent_settings_);
+  if (http_user_agent_settings_) {
+    storage->set_http_user_agent_settings(std::move(http_user_agent_settings_));
   } else {
     storage->set_http_user_agent_settings(
         std::make_unique<StaticHttpUserAgentSettings>(accept_language_,

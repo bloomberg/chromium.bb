@@ -137,8 +137,13 @@ void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {
 }
 
 void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
-  DCHECK(network_service_network_context_);
-  network_service_network_context_.FlushForTesting();
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK(io_thread_network_context_);
+    io_thread_network_context_.FlushForTesting();
+  } else {
+    DCHECK(network_service_network_context_);
+    network_service_network_context_.FlushForTesting();
+  }
   if (url_loader_factory_)
     url_loader_factory_.FlushForTesting();
 }

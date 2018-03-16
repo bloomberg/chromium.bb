@@ -37,6 +37,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/http_server_properties_pref_delegate.h"
@@ -120,7 +121,7 @@ NetworkContext::NetworkContext(
       socket_factory_(network_service_->net_log()) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
-      network_service->net_log());
+      network_service->net_log(), &user_agent_settings_);
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
   network_service_->RegisterNetworkContext(this);
@@ -259,8 +260,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         command_line->GetSwitchValueASCII(switches::kHostResolverRules));
     builder.set_host_resolver(std::move(remapped_host_resolver));
   }
-  builder.set_accept_language("en-us,en");
-  builder.set_user_agent(network_context_params->user_agent);
 
   // The cookie configuration is in this method, which is only used by the
   // network process, and not ApplyContextParamsToBuilder which is used by the
@@ -321,16 +320,29 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   return ApplyContextParamsToBuilder(
       &builder, network_context_params,
       network_service_ ? network_service_->quic_disabled() : false,
-      network_service_ ? network_service_->net_log() : nullptr);
+      network_service_ ? network_service_->net_log() : nullptr,
+      &user_agent_settings_);
 }
 
 URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     URLRequestContextBuilderMojo* builder,
     mojom::NetworkContextParams* network_context_params,
     bool quic_disabled,
-    net::NetLog* net_log) {
+    net::NetLog* net_log,
+    net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
+
+  std::string accept_language = network_context_params->accept_language
+                                    ? *network_context_params->accept_language
+                                    : "en-us,en";
+  std::unique_ptr<net::StaticHttpUserAgentSettings> user_agent_settings =
+      std::make_unique<net::StaticHttpUserAgentSettings>(
+          accept_language, network_context_params->user_agent);
+  // Borrow an alias for future use before giving the builder ownership.
+  if (out_http_user_agent_settings)
+    *out_http_user_agent_settings = user_agent_settings.get();
+  builder->set_http_user_agent_settings(std::move(user_agent_settings));
 
   builder->set_enable_brotli(network_context_params->enable_brotli);
   if (network_context_params->context_name)
@@ -488,6 +500,13 @@ void NetworkContext::SetNetworkConditions(
   }
   ThrottlingController::SetConditions(profile_id,
                                       std::move(network_conditions));
+}
+
+void NetworkContext::SetAcceptLanguage(const std::string& new_accept_language) {
+  // This may only be called on NetworkContexts created with a constructor that
+  // calls ApplyContextParamsToBuilder.
+  DCHECK(user_agent_settings_);
+  user_agent_settings_->set_accept_language(new_accept_language);
 }
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,

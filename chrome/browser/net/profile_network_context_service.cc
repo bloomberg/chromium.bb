@@ -12,10 +12,12 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_features.h"
@@ -34,6 +37,10 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       prefs::kQuicAllowed, profile->GetPrefs(),
       base::Bind(&ProfileNetworkContextService::DisableQuicIfNotAllowed,
                  base::Unretained(this)));
+  pref_accept_language_.Init(
+      prefs::kAcceptLanguages, profile->GetPrefs(),
+      base::BindRepeating(&ProfileNetworkContextService::UpdateAcceptLanguage,
+                          base::Unretained(this)));
   // The system context must be initialized before any other network contexts.
   // TODO(mmenke): Figure out a way to enforce this.
   g_browser_process->system_network_context_manager()->GetContext();
@@ -101,6 +108,17 @@ void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
   g_browser_process->system_network_context_manager()->DisableQuic();
 }
 
+void ProfileNetworkContextService::UpdateAcceptLanguage() {
+  content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetNetworkContext()
+      ->SetAcceptLanguage(ComputeAcceptLanguage());
+}
+
+std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
+  return ChromeHttpUserAgentSettings::ComputeAcceptLanguageFromPref(
+      pref_accept_language_.GetValue());
+}
+
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
@@ -112,6 +130,8 @@ ProfileNetworkContextService::CreateMainNetworkContextParams() {
       CreateDefaultNetworkContextParams();
 
   network_context_params->context_name = std::string("main");
+
+  network_context_params->accept_language = ComputeAcceptLanguage();
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
