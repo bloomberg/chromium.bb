@@ -41,13 +41,19 @@ UI_BASE_EXPORT extern const base::Feature kMus;
 // TODO(sky): rename this to IsWindowServiceEnabled().
 UI_BASE_EXPORT bool IsMusEnabled();
 
-#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+#if defined(OS_MACOSX)
+// Returns true if the NSWindows for apps will be created in the app's process,
+// and will forward input to the browser process.
+UI_BASE_EXPORT bool HostWindowsInAppShimProcess();
+
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
 UI_BASE_EXPORT extern const base::Feature kViewsBrowserWindows;
 
 // Returns whether a Views-capable browser build should use the Cocoa browser
 // UI.
 UI_BASE_EXPORT bool IsViewsBrowserCocoa();
-#endif  //  defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
+#endif  //  defined(OS_MACOSX)
 
 }  // namespace features
 
