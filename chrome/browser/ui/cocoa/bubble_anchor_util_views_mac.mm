@@ -6,13 +6,16 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
-#include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/rect.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -62,6 +65,15 @@ gfx::Point GetExtensionInstalledAnchorPointCocoa(
   // Convert to screen coordinates.
   arrow_point = ui::ConvertPointFromWindowToScreen(window, arrow_point);
   return gfx::ScreenPointFromNSPoint(arrow_point);
+}
+
+gfx::Rect GetAppMenuAnchorRectCocoa(Browser* browser) {
+  NSWindow* window = browser->window()->GetNativeWindow();
+  BrowserWindowController* bwc = BrowserWindowControllerForWindow(window);
+  NSPoint point = [[bwc toolbarController] appMenuBubblePoint];
+  return gfx::Rect(gfx::ScreenPointFromNSPoint(
+                       ui::ConvertPointFromWindowToScreen(window, point)),
+                   gfx::Size());
 }
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)

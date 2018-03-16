@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -44,6 +46,11 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
+#endif
 
 using views::GridLayout;
 
@@ -75,6 +82,35 @@ bool DoesSupportConsentCheck() {
 #endif
 }
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+// Returns the app menu view, except when the browser window is Cocoa; Cocoa
+// browser windows always have a null anchor view and use GetBubbleAnchorRect()
+// instead.
+views::View* GetBubbleAnchorView(Browser* browser) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return nullptr;
+#endif
+  return BrowserView::GetBrowserViewForBrowser(browser)
+      ->button_provider()
+      ->GetAppMenuButton();
+}
+#else  // OS_MACOSX && !MAC_VIEWS_BROWSER
+views::View* GetBubbleAnchorView(Browser* browser) {
+  return nullptr;
+}
+#endif
+
+gfx::Rect GetBubbleAnchorRect(Browser* browser) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
+#elif defined(OS_MACOSX)
+  return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
+#endif
+  return gfx::Rect();
+}
+
 }  // namespace
 
 // A helper class that listens to browser removal event.
@@ -104,6 +140,11 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 
 // static
 bool SessionCrashedBubble::Show(Browser* browser) {
+#if defined(OS_MACOSX)
+  if (!chrome::ShowAllDialogsWithViewsToolkit())
+    return false;
+#endif
+
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
     return true;
@@ -120,14 +161,6 @@ bool SessionCrashedBubble::Show(Browser* browser) {
         base::Bind(&SessionCrashedBubbleView::ShowForReal,
                    base::Passed(&browser_observer)));
   } else {
-#if defined(OS_MACOSX)
-    // SessionCrashedBubbleView doesn't support being hosted by a Cocoa browser
-    // window, so return false here so StartupBrowserCreator will fall back to
-    // the infobar.
-    // TODO(ellyjones): Make SessionCrashedBubbleView support a Cocoa host.
-    if (views_mode_controller::IsViewsBrowserCocoa())
-      return false;
-#endif
     SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
   }
   return true;
@@ -152,11 +185,9 @@ void SessionCrashedBubbleView::ShowForReal(
     return;
   }
 
-  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
-                                 ->button_provider()
-                                 ->GetAppMenuButton();
-  SessionCrashedBubbleView* crash_bubble =
-      new SessionCrashedBubbleView(anchor_view, browser, offer_uma_optin);
+  SessionCrashedBubbleView* crash_bubble = new SessionCrashedBubbleView(
+      GetBubbleAnchorView(browser), GetBubbleAnchorRect(browser), browser,
+      offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
@@ -165,6 +196,7 @@ void SessionCrashedBubbleView::ShowForReal(
 }
 
 SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
+                                                   const gfx::Rect& anchor_rect,
                                                    Browser* browser,
                                                    bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
@@ -174,6 +206,12 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       ignored_(true) {
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
+
+  if (!anchor_view) {
+    SetAnchorRect(anchor_rect);
+    set_parent_window(
+        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
+  }
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {
