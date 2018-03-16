@@ -28,6 +28,7 @@ class STORAGE_EXPORT BlobEntry {
  public:
   using TransportAllowedCallback = base::OnceCallback<
       void(BlobStatus, std::vector<BlobMemoryController::FileCreationInfo>)>;
+  using BuildAbortedCallback = base::OnceClosure;
 
   // Records a copy from a referenced blob. Copies happen after referenced blobs
   // are complete & quota for the copies is granted.
@@ -60,14 +61,17 @@ class STORAGE_EXPORT BlobEntry {
                   size_t num_building_dependent_blobs);
     ~BuildingState();
 
-    // Cancels pending memory or file requests.
-    void CancelRequests();
+    // Cancels pending memory or file requests, and calls aborted callback if it
+    // is set.
+    void CancelRequestsAndAbort();
 
     const bool transport_items_present;
     // We can have trasnport data that's either populated or unpopulated. If we
     // need population, this is populated.
     TransportAllowedCallback transport_allowed_callback;
     std::vector<ShareableBlobDataItem*> transport_items;
+
+    BuildAbortedCallback build_aborted_callback;
 
     // Stores all blobs that we're depending on for building. This keeps the
     // blobs alive while we build our blob.

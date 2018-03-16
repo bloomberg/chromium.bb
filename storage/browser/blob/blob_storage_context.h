@@ -48,6 +48,7 @@ class STORAGE_EXPORT BlobStorageContext
     : public base::trace_event::MemoryDumpProvider {
  public:
   using TransportAllowedCallback = BlobEntry::TransportAllowedCallback;
+  using BuildAbortedCallback = BlobEntry::BuildAbortedCallback;
 
   // Initializes the context without disk support.
   BlobStorageContext();
@@ -115,7 +116,8 @@ class STORAGE_EXPORT BlobStorageContext
   std::unique_ptr<BlobDataHandle> AddFutureBlob(
       const std::string& uuid,
       const std::string& content_type,
-      const std::string& content_disposition);
+      const std::string& content_disposition,
+      BuildAbortedCallback build_aborted_callback);
 
   // Same as BuildBlob, but for a blob that was previously registered by calling
   // AddFutureBlob.

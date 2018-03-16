@@ -40,13 +40,13 @@ BlobEntry::BuildingState::~BuildingState() {
   DCHECK(!transport_quota_request);
 }
 
-void BlobEntry::BuildingState::CancelRequests() {
-  if (copy_quota_request) {
+void BlobEntry::BuildingState::CancelRequestsAndAbort() {
+  if (copy_quota_request)
     copy_quota_request->Cancel();
-  }
-  if (transport_quota_request) {
+  if (transport_quota_request)
     transport_quota_request->Cancel();
-  }
+  if (build_aborted_callback)
+    std::move(build_aborted_callback).Run();
 }
 
 BlobEntry::BlobEntry(const std::string& content_type,
