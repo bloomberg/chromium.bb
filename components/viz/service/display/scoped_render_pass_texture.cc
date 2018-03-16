@@ -67,6 +67,7 @@ ScopedRenderPassTexture::ScopedRenderPassTexture(
   mipmap_ = other.mipmap_;
   color_space_ = other.color_space_;
   gl_id_ = other.gl_id_;
+  mipmap_state_ = other.mipmap_state_;
 
   // When being moved, other will no longer hold this gl_id_.
   other.gl_id_ = 0;
@@ -81,6 +82,7 @@ ScopedRenderPassTexture& ScopedRenderPassTexture::operator=(
     mipmap_ = other.mipmap_;
     color_space_ = other.color_space_;
     gl_id_ = other.gl_id_;
+    mipmap_state_ = other.mipmap_state_;
 
     // When being moved, other will no longer hold this gl_id_.
     other.gl_id_ = 0;
