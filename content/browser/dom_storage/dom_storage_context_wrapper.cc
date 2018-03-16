@@ -396,6 +396,7 @@ void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
 scoped_refptr<SessionStorageNamespaceImpl>
 DOMStorageContextWrapper::MaybeGetExistingNamespace(
     const std::string& namespace_id) const {
+  base::AutoLock lock(alive_namespaces_lock_);
   auto it = alive_namespaces_.find(namespace_id);
   return (it != alive_namespaces_.end()) ? it->second : nullptr;
 }
@@ -403,12 +404,14 @@ DOMStorageContextWrapper::MaybeGetExistingNamespace(
 void DOMStorageContextWrapper::AddNamespace(
     const std::string& namespace_id,
     SessionStorageNamespaceImpl* session_namespace) {
+  base::AutoLock lock(alive_namespaces_lock_);
   DCHECK(alive_namespaces_.find(namespace_id) == alive_namespaces_.end());
   alive_namespaces_[namespace_id] = session_namespace;
 }
 
 void DOMStorageContextWrapper::RemoveNamespace(
     const std::string& namespace_id) {
+  base::AutoLock lock(alive_namespaces_lock_);
   DCHECK(alive_namespaces_.find(namespace_id) != alive_namespaces_.end());
   alive_namespaces_.erase(namespace_id);
 }
