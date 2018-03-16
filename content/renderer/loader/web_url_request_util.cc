@@ -25,7 +25,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -444,19 +443,12 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(
   return GetRequestBodyForWebHTTPBody(request.HttpBody());
 }
 
-void GetBlobRegistry(blink::mojom::BlobRegistryRequest request) {
-  ChildThreadImpl::current()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, std::move(request));
-}
-
 scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
     const blink::WebHTTPBody& httpBody) {
   scoped_refptr<network::ResourceRequestBody> request_body =
       new network::ResourceRequestBody();
   size_t i = 0;
   WebHTTPBody::Element element;
-  // TODO(jam): cache this somewhere so we don't request it each time?
-  blink::mojom::BlobRegistryPtr blob_registry;
   while (httpBody.ElementAt(i++, element)) {
     switch (element.type) {
       case WebHTTPBody::Element::kTypeData:
@@ -482,24 +474,10 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         break;
       case WebHTTPBody::Element::kTypeBlob: {
         if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-          if (!blob_registry.is_bound()) {
-            if (ChildThreadImpl::current()) {
-              ChildThreadImpl::current()->GetConnector()->BindInterface(
-                  mojom::kBrowserServiceName, MakeRequest(&blob_registry));
-            } else {
-              // TODO(sammc): We should use per-frame / per-worker
-              // InterfaceProvider instead (crbug.com/734210).
-              blink::Platform::Current()
-                  ->MainThread()
-                  ->GetTaskRunner()
-                  ->PostTask(FROM_HERE,
-                             base::BindOnce(&GetBlobRegistry,
-                                            MakeRequest(&blob_registry)));
-            }
-          }
-          blink::mojom::BlobPtr blob_ptr;
-          blob_registry->GetBlobFromUUID(MakeRequest(&blob_ptr),
-                                         element.blob_uuid.Utf8());
+          DCHECK(element.optional_blob_handle.is_valid());
+          blink::mojom::BlobPtr blob_ptr(
+              blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
+                                        blink::mojom::Blob::Version_));
 
           network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
           // Object deletes itself.

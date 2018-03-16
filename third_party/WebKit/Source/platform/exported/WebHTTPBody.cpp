@@ -86,6 +86,12 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
     case FormDataElement::kEncodedBlob:
       result.type = Element::kTypeBlob;
       result.blob_uuid = element.blob_uuid_;
+      if (element.optional_blob_data_handle_) {
+        result.optional_blob_handle =
+            element.optional_blob_data_handle_->CloneBlobPtr()
+                .PassInterface()
+                .PassHandle();
+      }
       break;
     case FormDataElement::kDataPipe:
       result.type = Element::kTypeDataPipe;
