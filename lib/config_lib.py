@@ -33,21 +33,18 @@ CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
 DISPLAY_LABEL_PRECQ = 'pre_cq'
 DISPLAY_LABEL_TRYJOB = 'tryjob'
-DISPLAY_LABEL_INCREMENATAL = 'incremental'
-DISPLAY_LABEL_FULL = 'full'
-DISPLAY_LABEL_INFORMATIONAL = 'informational'
 
-# These are the build groups against which tryjobs can be run. All other
-# groups MUST be production builds.
+# These are the build groups against which tryjobs can be directly run. All
+# other groups MUST be production builds (ie: use their -tryjob instead)
 # TODO: crbug.com/776955 Make the above statement true.
 TRYJOB_DISPLAY_LABEL = {
     DISPLAY_LABEL_PRECQ,
     DISPLAY_LABEL_TRYJOB,
-    DISPLAY_LABEL_INCREMENATAL,
-    DISPLAY_LABEL_FULL,
-    DISPLAY_LABEL_INFORMATIONAL,
 }
 
+DISPLAY_LABEL_INCREMENATAL = 'incremental'
+DISPLAY_LABEL_FULL = 'full'
+DISPLAY_LABEL_INFORMATIONAL = 'informational'
 DISPLAY_LABEL_CQ = 'cq'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
@@ -62,6 +59,9 @@ DISPLAY_LABEL_UNKNOWN_PRODUCTION = 'production_tryjob'
 
 # This list of constants should be kept in sync with GoldenEye code.
 ALL_DISPLAY_LABEL = TRYJOB_DISPLAY_LABEL | {
+    DISPLAY_LABEL_INCREMENATAL,
+    DISPLAY_LABEL_FULL,
+    DISPLAY_LABEL_INFORMATIONAL,
     DISPLAY_LABEL_CQ,
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
