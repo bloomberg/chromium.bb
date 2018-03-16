@@ -52,6 +52,33 @@ ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
           state, NativeId::kColorId_ResultsTableNormalBackground,
           NativeId::kColorId_ResultsTableHoveredBackground,
           NativeId::kColorId_ResultsTableSelectedBackground);
+    case OmniboxPart::TEXT_DEFAULT:
+      return NormalHoveredSelected(state,
+                                   NativeId::kColorId_ResultsTableNormalText,
+                                   NativeId::kColorId_ResultsTableHoveredText,
+                                   NativeId::kColorId_ResultsTableSelectedText);
+    case OmniboxPart::TEXT_DIMMED:
+      return NormalHoveredSelected(
+          state, NativeId::kColorId_ResultsTableNormalDimmedText,
+          NativeId::kColorId_ResultsTableHoveredDimmedText,
+          NativeId::kColorId_ResultsTableSelectedDimmedText);
+    case OmniboxPart::TEXT_NEGATIVE:
+      return NormalHoveredSelected(
+          state, NativeId::kColorId_ResultsTableNegativeText,
+          NativeId::kColorId_ResultsTableNegativeHoveredText,
+          NativeId::kColorId_ResultsTableNegativeSelectedText);
+    case OmniboxPart::TEXT_POSITIVE:
+      return NormalHoveredSelected(
+          state, NativeId::kColorId_ResultsTablePositiveText,
+          NativeId::kColorId_ResultsTablePositiveHoveredText,
+          NativeId::kColorId_ResultsTablePositiveSelectedText);
+    case OmniboxPart::TEXT_URL:
+      return NormalHoveredSelected(state,
+                                   NativeId::kColorId_ResultsTableNormalUrl,
+                                   NativeId::kColorId_ResultsTableHoveredUrl,
+                                   NativeId::kColorId_ResultsTableSelectedUrl);
+
+    case OmniboxPart::TEXT_INVISIBLE:
     case OmniboxPart::RESULTS_SEPARATOR:
       NOTREACHED();
       break;
@@ -62,6 +89,9 @@ ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
 SkColor GetLegacyColor(OmniboxPart part,
                        OmniboxTint tint,
                        OmniboxPartState state) {
+  if (part == OmniboxPart::TEXT_INVISIBLE)
+    return SK_ColorTRANSPARENT;
+
   ui::NativeTheme* native_theme = nullptr;
 #if defined(USE_AURA)
   if (tint == OmniboxTint::DARK)
@@ -104,6 +134,15 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // The dark base color doesn't appear in the MD2 spec, just Chrome's.
       return dark ? SkColorSetARGB(0x6e, 0x16, 0x17, 0x1a)   // 43% alpha.
                   : SkColorSetA(gfx::kGoogleGrey900, 0x24);  // 14% alpha.
+
+    // TODO(tapted): Add these.
+    case OmniboxPart::TEXT_DEFAULT:
+    case OmniboxPart::TEXT_DIMMED:
+    case OmniboxPart::TEXT_INVISIBLE:
+    case OmniboxPart::TEXT_NEGATIVE:
+    case OmniboxPart::TEXT_POSITIVE:
+    case OmniboxPart::TEXT_URL:
+      return GetLegacyColor(part, tint, state);
   }
   return gfx::kPlaceholderColor;
 }

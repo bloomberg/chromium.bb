@@ -11,6 +11,14 @@
 enum class OmniboxPart {
   RESULTS_BACKGROUND,  // Background of the results dropdown.
   RESULTS_SEPARATOR,   // Separator between the input row and the results rows.
+
+  // Text styles.
+  TEXT_DEFAULT,
+  TEXT_DIMMED,
+  TEXT_INVISIBLE,
+  TEXT_NEGATIVE,
+  TEXT_POSITIVE,
+  TEXT_URL,
 };
 
 // The tint of the omnibox theme. E.g. Incognito may use a DARK tint. NATIVE is

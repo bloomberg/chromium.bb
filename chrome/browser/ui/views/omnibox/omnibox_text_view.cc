@@ -12,21 +12,18 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
-#include "ui/native_theme/native_theme.h"
-
-using ui::NativeTheme;
 
 namespace {
 
 struct TextStyle {
   ui::ResourceBundle::FontStyle font;
-  ui::NativeTheme::ColorId
-      colors[OmniboxResultView::ResultViewState::NUM_STATES];
+  OmniboxPart part;
   gfx::BaselineStyle baseline;
 };
 
@@ -46,59 +43,32 @@ struct TextStyle {
 TextStyle GetTextStyle(int type) {
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
-      return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
               gfx::SUPERIOR};
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTableNegativeText,
-               NativeTheme::kColorId_ResultsTableNegativeHoveredText,
-               NativeTheme::kColorId_ResultsTableNegativeSelectedText},
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_NEGATIVE,
               gfx::INFERIOR};
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTablePositiveText,
-               NativeTheme::kColorId_ResultsTablePositiveHoveredText,
-               NativeTheme::kColorId_ResultsTablePositiveSelectedText},
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_POSITIVE,
               gfx::INFERIOR};
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      return {ui::ResourceBundle::BaseFont,
-              {NativeTheme::kColorId_ResultsTableNormalText,
-               NativeTheme::kColorId_ResultsTableHoveredText,
-               NativeTheme::kColorId_ResultsTableSelectedText},
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DEFAULT,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont,
-              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      return {ui::ResourceBundle::LargeFont,
-              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
               gfx::INFERIOR};
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont,
-              {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-               NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-               NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::SUGGESTION:  // Fall through.
     default:
-      return {ui::ResourceBundle::BaseFont,
-              {NativeTheme::kColorId_ResultsTableNormalText,
-               NativeTheme::kColorId_ResultsTableHoveredText,
-               NativeTheme::kColorId_ResultsTableSelectedText},
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DEFAULT,
               gfx::NORMAL_BASELINE};
   }
 }
@@ -168,18 +138,16 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateClassifiedRenderText(
     if (classifications[i].style & ACMatchClassification::MATCH)
       render_text->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
 
-    OmniboxResultView::ColorKind color_kind = OmniboxResultView::TEXT;
+    OmniboxPart part = OmniboxPart::TEXT_DEFAULT;
     if (classifications[i].style & ACMatchClassification::URL) {
-      color_kind = OmniboxResultView::URL;
+      part = OmniboxPart::TEXT_URL;
       render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
     } else if (classifications[i].style & ACMatchClassification::DIM) {
-      color_kind = OmniboxResultView::DIMMED_TEXT;
+      part = OmniboxPart::TEXT_DIMMED;
     } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      color_kind = OmniboxResultView::INVISIBLE_TEXT;
+      part = OmniboxPart::TEXT_INVISIBLE;
     }
-    render_text->ApplyColor(
-        result_view_->GetColor(result_view_->GetState(), color_kind),
-        current_range);
+    render_text->ApplyColor(result_view_->GetColor(part), current_range);
   }
   return render_text;
 }
@@ -192,8 +160,7 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OmniboxTextView::Dim() {
-  render_text_->SetColor(result_view_->GetColor(
-      result_view_->GetState(), OmniboxResultView::DIMMED_TEXT));
+  render_text_->SetColor(result_view_->GetColor(OmniboxPart::TEXT_DIMMED));
 }
 
 void OmniboxTextView::SetText(const base::string16& text,
@@ -294,9 +261,7 @@ void OmniboxTextView::AppendTextHelper(gfx::RenderText* destination,
   // one RenderText.  Maybe with destination->SetFontList(...).
   destination->ApplyWeight(
       is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL, range);
-  destination->ApplyColor(GetNativeTheme()->GetSystemColor(
-                              text_style.colors[result_view_->GetState()]),
-                          range);
+  destination->ApplyColor(result_view_->GetColor(text_style.part), range);
   destination->ApplyBaselineStyle(text_style.baseline, range);
 }
 

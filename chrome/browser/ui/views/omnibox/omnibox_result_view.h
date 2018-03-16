@@ -22,6 +22,7 @@
 #include "ui/views/view.h"
 
 class OmniboxPopupContentsView;
+enum class OmniboxPart;
 enum class OmniboxPartState;
 enum class OmniboxTint;
 
@@ -36,30 +37,13 @@ class OmniboxTextView;
 class OmniboxResultView : public views::View,
                           private gfx::AnimationDelegate {
  public:
-  // Keep these ordered from least dominant (normal) to most dominant
-  // (selected).
-  // TODO(tapted): Remove these: replace with OmniboxPartState.
-  enum ResultViewState {
-    NORMAL = 0,
-    HOVERED,
-    SELECTED,
-    NUM_STATES
-  };
-
-  enum ColorKind {
-    TEXT,
-    DIMMED_TEXT,
-    URL,
-    INVISIBLE_TEXT,
-    NUM_KINDS
-  };
-
   OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
                     const gfx::FontList& font_list);
   ~OmniboxResultView() override;
 
-  SkColor GetColor(ResultViewState state, ColorKind kind) const;
+  // Helper to get the color for |part| using the current state and tint.
+  SkColor GetColor(OmniboxPart part) const;
 
   // Updates the match used to paint the contents of this result view. We copy
   // the match so that we can continue to paint the last result even after the
@@ -73,7 +57,6 @@ class OmniboxResultView : public views::View,
   // Invoked when this result view has been selected.
   void OnSelected();
 
-  ResultViewState GetState() const;
   OmniboxPartState GetThemeState() const;
   OmniboxTint GetTint() const;
 
@@ -121,6 +104,9 @@ class OmniboxResultView : public views::View,
 
   // Sets the hovered state of this result.
   void SetHovered(bool hovered);
+
+  // Whether |this| matches the model's selected index.
+  bool IsSelected() const;
 
   // views::View:
   void Layout() override;

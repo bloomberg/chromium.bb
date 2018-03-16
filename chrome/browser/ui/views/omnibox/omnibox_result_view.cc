@@ -48,9 +48,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
-
-using ui::NativeTheme;
 
 namespace {
 
@@ -67,33 +64,6 @@ static const int kVerticalPadding = 4;
 // appropriate font to the beginning of the description, then reducing
 // the additional padding here to zero).
 static const int kAnswerIconToTextPadding = 2;
-
-// A mapping from OmniboxResultView's ResultViewState/ColorKind types to
-// NativeTheme colors.
-struct TranslationTable {
-  ui::NativeTheme::ColorId id;
-  OmniboxResultView::ResultViewState state;
-  OmniboxResultView::ColorKind kind;
-} static const kTranslationTable[] = {
-  { NativeTheme::kColorId_ResultsTableNormalText,
-    OmniboxResultView::NORMAL, OmniboxResultView::TEXT },
-  { NativeTheme::kColorId_ResultsTableHoveredText,
-    OmniboxResultView::HOVERED, OmniboxResultView::TEXT },
-  { NativeTheme::kColorId_ResultsTableSelectedText,
-    OmniboxResultView::SELECTED, OmniboxResultView::TEXT },
-  { NativeTheme::kColorId_ResultsTableNormalDimmedText,
-    OmniboxResultView::NORMAL, OmniboxResultView::DIMMED_TEXT },
-  { NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-    OmniboxResultView::HOVERED, OmniboxResultView::DIMMED_TEXT },
-  { NativeTheme::kColorId_ResultsTableSelectedDimmedText,
-    OmniboxResultView::SELECTED, OmniboxResultView::DIMMED_TEXT },
-  { NativeTheme::kColorId_ResultsTableNormalUrl,
-    OmniboxResultView::NORMAL, OmniboxResultView::URL },
-  { NativeTheme::kColorId_ResultsTableHoveredUrl,
-    OmniboxResultView::HOVERED, OmniboxResultView::URL },
-  { NativeTheme::kColorId_ResultsTableSelectedUrl,
-    OmniboxResultView::SELECTED, OmniboxResultView::URL },
-};
 
 // Whether to use the two-line layout.
 bool IsTwoLineLayout() {
@@ -171,20 +141,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
 
 OmniboxResultView::~OmniboxResultView() {}
 
-SkColor OmniboxResultView::GetColor(
-    ResultViewState state,
-    ColorKind kind) const {
-  if (kind == INVISIBLE_TEXT)
-    return SK_ColorTRANSPARENT;
-  for (size_t i = 0; i < arraysize(kTranslationTable); ++i) {
-    if (kTranslationTable[i].state == state &&
-        kTranslationTable[i].kind == kind) {
-      return GetNativeTheme()->GetSystemColor(kTranslationTable[i].id);
-    }
-  }
-
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
+  return GetOmniboxColor(part, GetTint(), GetThemeState());
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -217,12 +175,12 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 }
 
 void OmniboxResultView::Invalidate() {
-  const ResultViewState state = GetState();
-  if (state == NORMAL) {
+  // TODO(tapted): Consider using background()->SetNativeControlColor() and
+  // always have a background.
+  if (GetThemeState() == OmniboxPartState::NORMAL) {
     SetBackground(nullptr);
   } else {
-    SkColor color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint(),
-                                    GetThemeState());
+    SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
     SetBackground(CreateBackgroundWithColor(color));
   }
 
@@ -266,7 +224,7 @@ void OmniboxResultView::Invalidate() {
 }
 
 void OmniboxResultView::OnSelected() {
-  DCHECK_EQ(SELECTED, GetState());
+  DCHECK(IsSelected());
 
   // The text is also accessible via text/value change events in the omnibox but
   // this selection event allows the screen reader to get more details about the
@@ -274,14 +232,8 @@ void OmniboxResultView::OnSelected() {
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
-OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
-  if (model_->IsSelectedIndex(model_index_))
-    return SELECTED;
-  return is_hovered_ ? HOVERED : NORMAL;
-}
-
 OmniboxPartState OmniboxResultView::GetThemeState() const {
-  if (model_->IsSelectedIndex(model_index_)) {
+  if (IsSelected()) {
     return is_hovered_ ? OmniboxPartState::HOVERED_AND_SELECTED
                        : OmniboxPartState::SELECTED;
   }
@@ -322,7 +274,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     // When the drag enters or remains within the bounds of this view, either
     // set the state to be selected or hovered, depending on the mouse button.
     if (event.IsOnlyLeftMouseButton()) {
-      if (GetState() != SELECTED)
+      if (!IsSelected())
         model_->SetSelectedLine(model_index_);
       if (tab_switch_button_ && tab_switch_button_->parent()) {
         gfx::Point point_in_child_coords(event.location());
@@ -377,16 +329,10 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                              model_->child_count());
 
   node_data->AddState(ax::mojom::State::kSelectable);
-  switch (GetState()) {
-    case SELECTED:
-      node_data->AddState(ax::mojom::State::kSelected);
-      break;
-    case HOVERED:
-      node_data->AddState(ax::mojom::State::kHovered);
-      break;
-    default:
-      break;
-  }
+  if (IsSelected())
+    node_data->AddState(ax::mojom::State::kSelected);
+  if (is_hovered_)
+    node_data->AddState(ax::mojom::State::kHovered);
 }
 
 gfx::Size OmniboxResultView::CalculatePreferredSize() const {
@@ -429,8 +375,8 @@ gfx::Image OmniboxResultView::GetIcon() const {
 
 SkColor OmniboxResultView::GetVectorIconColor() const {
   // For selected rows, paint the icon the same color as the text.
-  SkColor color = GetColor(GetState(), TEXT);
-  if (GetState() != SELECTED)
+  SkColor color = GetColor(OmniboxPart::TEXT_DEFAULT);
+  if (!IsSelected())
     color = color_utils::DeriveDefaultIconColor(color);
   return color;
 }
@@ -479,6 +425,10 @@ void OmniboxResultView::SetHovered(bool hovered) {
     Invalidate();
     SchedulePaint();
   }
+}
+
+bool OmniboxResultView::IsSelected() const {
+  return model_->IsSelectedIndex(model_index_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
