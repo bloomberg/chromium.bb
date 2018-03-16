@@ -60,6 +60,10 @@
 extern const unsigned nv12_tiled[];
 struct buffer;
 
+/* Possible options that affect the displayed image */
+#define OPT_Y_INVERTED 1  /* contents has y axis inverted */
+
+
 struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
@@ -394,11 +398,11 @@ static const struct zwp_linux_buffer_params_v1_listener params_listener = {
 
 static int
 create_dmabuf_buffer(struct display *display, struct buffer *buffer,
-		     int width, int height, int format)
+		     int width, int height, int format, uint32_t opts)
 {
 	struct zwp_linux_buffer_params_v1 *params;
 	uint64_t modifier = 0;
-	uint32_t flags;
+	uint32_t flags = 0;
 	struct drm_device *drm_dev;
 
 	if (!drm_connect(buffer)) {
@@ -449,7 +453,8 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 	 * correct height to the compositor.
 	 */
 	buffer->height = height;
-	flags = 0;
+	if (opts & OPT_Y_INVERTED)
+		flags |= ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
 
 	params = zwp_linux_dmabuf_v1_create_params(display->dmabuf);
 	zwp_linux_buffer_params_v1_add(params,
@@ -532,7 +537,8 @@ static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
 };
 
 static struct window *
-create_window(struct display *display, int width, int height, int format)
+create_window(struct display *display, int width, int height, int format,
+	      uint32_t opts)
 {
 	struct window *window;
 	int i;
@@ -581,7 +587,7 @@ create_window(struct display *display, int width, int height, int format)
 
 	for (i = 0; i < NUM_BUFFERS; ++i) {
 		ret = create_dmabuf_buffer(display, &window->buffers[i],
-		                               width, height, format);
+		                               width, height, format, opts);
 
 		if (ret < 0)
 			return NULL;
@@ -829,13 +835,15 @@ print_usage_and_exit(void)
 	printf("usage flags:\n"
 		"\t'--import-immediate=<>'\n\t\t0 to import dmabuf via roundtrip,"
 		"\n\t\t1 to enable import without roundtrip\n"
+		"\t'--y-inverted=<>'\n\t\t0 to not pass Y_INVERTED flag,"
+		"\n\t\t1 to pass Y_INVERTED flag\n"
 		"\t'--import-format=<>'\n\t\tXRGB to import dmabuf as XRGB8888,"
 		"\n\t\tNV12 to import as multi plane NV12 with tiling modifier\n");
 	exit(0);
 }
 
 static int
-is_import_mode_immediate(const char* c)
+is_true(const char* c)
 {
 	if (!strcmp(c, "1"))
 		return 1;
@@ -867,21 +875,28 @@ main(int argc, char **argv)
 	struct display *display;
 	struct window *window;
 	int is_immediate = 0;
+	int opts = 0;
 	int import_format = DRM_FORMAT_XRGB8888;
 	int ret = 0, i = 0;
 
 	if (argc > 1) {
 		static const char import_mode[] = "--import-immediate=";
 		static const char format[] = "--import-format=";
+		static const char y_inverted[] = "--y-inverted=";
 		for (i = 1; i < argc; i++) {
 			if (!strncmp(argv[i], import_mode,
 				     sizeof(import_mode) - 1)) {
-				is_immediate = is_import_mode_immediate(argv[i]
+				is_immediate = is_true(argv[i]
 							+ sizeof(import_mode) - 1);
 			}
 			else if (!strncmp(argv[i], format, sizeof(format) - 1)) {
 				import_format = parse_import_format(argv[i]
 							+ sizeof(format) - 1);
+			}
+			else if (!strncmp(argv[i], y_inverted,
+					  sizeof(y_inverted) - 1)) {
+				if (is_true(argv[i] + sizeof(y_inverted) - 1))
+					opts |= OPT_Y_INVERTED;
 			}
 			else {
 				print_usage_and_exit();
@@ -890,7 +905,7 @@ main(int argc, char **argv)
 	}
 
 	display = create_display(is_immediate, import_format);
-	window = create_window(display, 256, 256, import_format);
+	window = create_window(display, 256, 256, import_format, opts);
 	if (!window)
 		return 1;
 
