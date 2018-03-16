@@ -4,81 +4,91 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Height of the toolbar.
-const CGFloat kToolbarHeight = 52.0f;
-}  // namespace
 
 @implementation TabGridTopToolbar
 @synthesize leadingButton = _leadingButton;
 @synthesize trailingButton = _trailingButton;
 @synthesize pageControl = _pageControl;
 
-- (instancetype)init {
-  if (self = [super initWithFrame:CGRectZero]) {
-    UIVisualEffect* blurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-    UIVisualEffectView* toolbar =
-        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:toolbar];
-
-    UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-    leadingButton.titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-    leadingButton.tintColor = [UIColor whiteColor];
-
-    // The segmented control has an intrinsic size.
-    TabGridPageControl* pageControl = [[TabGridPageControl alloc] init];
-    pageControl.translatesAutoresizingMaskIntoConstraints = NO;
-
-    UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-    trailingButton.titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    trailingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-    trailingButton.tintColor = [UIColor whiteColor];
-
-    [toolbar.contentView addSubview:leadingButton];
-    [toolbar.contentView addSubview:trailingButton];
-    [toolbar.contentView addSubview:pageControl];
-    _leadingButton = leadingButton;
-    _trailingButton = trailingButton;
-    _pageControl = pageControl;
-
-    NSArray* constraints = @[
-      [toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [toolbar.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-      [toolbar.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-      [toolbar.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-      [leadingButton.heightAnchor constraintEqualToConstant:kToolbarHeight],
-      [leadingButton.leadingAnchor
-          constraintEqualToAnchor:toolbar.layoutMarginsGuide.leadingAnchor],
-      [leadingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
-      [pageControl.centerXAnchor constraintEqualToAnchor:toolbar.centerXAnchor],
-      [pageControl.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor
-                                               constant:-7.0f],
-      [trailingButton.heightAnchor constraintEqualToConstant:kToolbarHeight],
-      [trailingButton.trailingAnchor
-          constraintEqualToAnchor:toolbar.layoutMarginsGuide.trailingAnchor],
-      [trailingButton.bottomAnchor
-          constraintEqualToAnchor:toolbar.bottomAnchor],
-    ];
-    [NSLayoutConstraint activateConstraints:constraints];
-  }
-  return self;
-}
+#pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kToolbarHeight);
+  return CGSizeMake(UIViewNoIntrinsicMetric, kTabGridTopToolbarHeight);
+}
+
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  // The first time this moves to a superview, perform the view setup.
+  if (newSuperview && self.subviews.count == 0) {
+    [self setupViews];
+  }
+}
+
+#pragma mark - Private
+
+- (void)setupViews {
+  self.layoutMargins = UIEdgeInsetsMake(0, kTabGridToolbarHorizontalInset, 0,
+                                        kTabGridToolbarHorizontalInset);
+
+  UIVisualEffect* blurEffect =
+      [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+  UIVisualEffectView* toolbar =
+      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:toolbar];
+
+  UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+  leadingButton.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+  leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+
+  // The segmented control has an intrinsic size.
+  TabGridPageControl* pageControl = [[TabGridPageControl alloc] init];
+  pageControl.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+  trailingButton.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  trailingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+  trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+
+  [toolbar.contentView addSubview:leadingButton];
+  [toolbar.contentView addSubview:trailingButton];
+  [toolbar.contentView addSubview:pageControl];
+  _leadingButton = leadingButton;
+  _trailingButton = trailingButton;
+  _pageControl = pageControl;
+
+  NSArray* constraints = @[
+    [toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [toolbar.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [toolbar.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [toolbar.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [leadingButton.heightAnchor
+        constraintEqualToConstant:kTabGridTopToolbarHeight],
+    [leadingButton.leadingAnchor
+        constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+    [leadingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
+    [pageControl.centerXAnchor constraintEqualToAnchor:toolbar.centerXAnchor],
+    [pageControl.centerYAnchor
+        constraintEqualToAnchor:toolbar.bottomAnchor
+                       constant:-kTabGridTopToolbarHeight / 2.0f],
+    [trailingButton.heightAnchor
+        constraintEqualToConstant:kTabGridTopToolbarHeight],
+    [trailingButton.trailingAnchor
+        constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+    [trailingButton.bottomAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
 }
 
 @end

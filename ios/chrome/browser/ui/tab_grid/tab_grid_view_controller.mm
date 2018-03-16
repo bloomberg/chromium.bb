@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -418,10 +419,12 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   NSArray* constraints = @[
     [topLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [topLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
-    [topLabel.bottomAnchor constraintEqualToAnchor:view.centerYAnchor
-                                          constant:-10.0f],
-    [bottomLabel.topAnchor constraintEqualToAnchor:view.centerYAnchor
-                                          constant:10.0f],
+    [topLabel.bottomAnchor
+        constraintEqualToAnchor:view.centerYAnchor
+                       constant:-kTabGridEmptyStateVerticalMargin / 2.0f],
+    [bottomLabel.topAnchor
+        constraintEqualToAnchor:view.centerYAnchor
+                       constant:kTabGridEmptyStateVerticalMargin / 2.0f],
     [bottomLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [bottomLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
   ];

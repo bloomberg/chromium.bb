@@ -15,15 +15,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Height of the top bar containing the icon, title, and close button.
-const CGFloat kTopBarHeight = 28.0f;
-// Width and height of the icon.
-const CGFloat kIconDiameter = 20.0f;
-// Width of selection border.
-const CGFloat kBorderWidth = 6.0f;
-}  // namespace
-
 @interface GridCell ()
 // Visual components of the cell.
 @property(nonatomic, weak) UIView* topBar;
@@ -57,7 +48,7 @@ const CGFloat kBorderWidth = 6.0f;
   if (self) {
     [self setupSelectedBackgroundView];
     UIView* contentView = self.contentView;
-    contentView.layer.cornerRadius = 11.0f;
+    contentView.layer.cornerRadius = kGridCellCornerRadius;
     contentView.layer.masksToBounds = YES;
     UIView* topBar = [self setupTopBar];
     TopAlignedImageView* snapshotView = [[TopAlignedImageView alloc] init];
@@ -71,7 +62,7 @@ const CGFloat kBorderWidth = 6.0f;
       [topBar.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
       [topBar.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor],
-      [topBar.heightAnchor constraintEqualToConstant:kTopBarHeight],
+      [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight],
       [snapshotView.topAnchor constraintEqualToAnchor:topBar.bottomAnchor],
       [snapshotView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor],
@@ -177,7 +168,7 @@ const CGFloat kBorderWidth = 6.0f;
   UIImageView* iconView = [[UIImageView alloc] init];
   iconView.translatesAutoresizingMaskIntoConstraints = NO;
   iconView.contentMode = UIViewContentModeScaleAspectFill;
-  iconView.layer.cornerRadius = 4.0f;
+  iconView.layer.cornerRadius = kGridCellIconCornerRadius;
   iconView.layer.masksToBounds = YES;
 
   UILabel* titleLabel = [[UILabel alloc] init];
@@ -203,19 +194,22 @@ const CGFloat kBorderWidth = 6.0f;
   _closeButton = closeButton;
 
   NSArray* constraints = @[
-    [iconView.leadingAnchor constraintEqualToAnchor:topBar.leadingAnchor
-                                           constant:4.0f],
+    [iconView.leadingAnchor
+        constraintEqualToAnchor:topBar.leadingAnchor
+                       constant:kGridCellHeaderLeadingInset],
     [iconView.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
-    [iconView.widthAnchor constraintEqualToConstant:kIconDiameter],
-    [iconView.heightAnchor constraintEqualToConstant:kIconDiameter],
-    [titleLabel.leadingAnchor constraintEqualToAnchor:iconView.trailingAnchor
-                                             constant:4.0f],
+    [iconView.widthAnchor constraintEqualToConstant:kGridCellIconDiameter],
+    [iconView.heightAnchor constraintEqualToConstant:kGridCellIconDiameter],
+    [titleLabel.leadingAnchor
+        constraintEqualToAnchor:iconView.trailingAnchor
+                       constant:kGridCellHeaderLeadingInset],
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [closeButton.leadingAnchor
         constraintEqualToAnchor:titleLabel.trailingAnchor],
     [closeButton.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
-    [closeButton.trailingAnchor constraintEqualToAnchor:topBar.trailingAnchor
-                                               constant:-6.0f],
+    [closeButton.trailingAnchor
+        constraintEqualToAnchor:topBar.trailingAnchor
+                       constant:-kGridCellHeaderTrailingInset],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
   [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow
@@ -232,27 +226,34 @@ const CGFloat kBorderWidth = 6.0f;
 // selected.
 - (void)setupSelectedBackgroundView {
   self.selectedBackgroundView = [[UIView alloc] init];
-  self.selectedBackgroundView.backgroundColor = [UIColor blackColor];
+  self.selectedBackgroundView.backgroundColor =
+      UIColorFromRGB(kGridBackgroundColor);
   UIView* border = [[UIView alloc] init];
   border.translatesAutoresizingMaskIntoConstraints = NO;
-  border.backgroundColor = [UIColor blackColor];
-  border.layer.cornerRadius = 17.0f;
-  border.layer.borderWidth = 4.0f;
+  border.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+  border.layer.cornerRadius = kGridCellCornerRadius +
+                              kGridCellSelectionRingGapWidth +
+                              kGridCellSelectionRingTintWidth;
+  border.layer.borderWidth = kGridCellSelectionRingTintWidth;
   [self.selectedBackgroundView addSubview:border];
   _border = border;
   [NSLayoutConstraint activateConstraints:@[
     [border.topAnchor
         constraintEqualToAnchor:self.selectedBackgroundView.topAnchor
-                       constant:-kBorderWidth],
+                       constant:-kGridCellSelectionRingTintWidth -
+                                kGridCellSelectionRingGapWidth],
     [border.leadingAnchor
         constraintEqualToAnchor:self.selectedBackgroundView.leadingAnchor
-                       constant:-kBorderWidth],
+                       constant:-kGridCellSelectionRingTintWidth -
+                                kGridCellSelectionRingGapWidth],
     [border.trailingAnchor
         constraintEqualToAnchor:self.selectedBackgroundView.trailingAnchor
-                       constant:kBorderWidth],
+                       constant:kGridCellSelectionRingTintWidth +
+                                kGridCellSelectionRingGapWidth],
     [border.bottomAnchor
         constraintEqualToAnchor:self.selectedBackgroundView.bottomAnchor
-                       constant:kBorderWidth]
+                       constant:kGridCellSelectionRingTintWidth +
+                                kGridCellSelectionRingGapWidth]
   ]];
 }
 
