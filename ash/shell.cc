@@ -818,6 +818,7 @@ Shell::~Shell() {
   shelf_window_watcher_.reset();
 
   // Removes itself as an observer of |pref_service_|.
+  // TODO(jamescook): Uses tablet_mode_controller_. Add separate shutdown pass.
   shelf_controller_.reset();
 
   // NightLightController depends on the PrefService as well as the window tree
