@@ -95,6 +95,19 @@ camera.views.Browser.prototype = {
 };
 
 /**
+ * @override
+ */
+camera.views.Browser.prototype.initialize = function(callback) {
+  camera.views.GalleryBase.prototype.initialize.call(this, function() {
+    // Hide export-button if using external file system.
+    if (camera.models.FileSystem.externalFs) {
+      document.querySelector('#browser-export').hidden = true;
+    }
+    callback();
+  }.bind(this));
+};
+
+/**
  * Enters the view. Assumes, that the arguments may be provided.
  * @param {Object=} opt_arguments Arguments for the browser.
  * @override
@@ -313,20 +326,26 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
     video.src = url;
   }.bind(this);
 
+  var updateDomPicture = function(domPicture) {
+    var wrapper = domPicture.element;
+    var picture = domPicture.picture;
+    if (domPicture == selectedPicture) {
+      picture.pictureURL(function(url) {
+        if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
+          updateVideo(wrapper, url);
+        } else {
+          updateImage(wrapper, url);
+        }
+      });
+    } else {
+      // Show thumbnails for both unselected still and motion pictures.
+      updateImage(wrapper, picture.thumbnailURL);
+    }
+  }
+
   var updateResolutions = function() {
     for (var index = 0; index < this.pictures.length; index++) {
-      var wrapper = this.pictures[index].element;
-      var picture = this.pictures[index].picture;
-      if (this.pictures[index] == selectedPicture) {
-        if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
-          updateVideo(wrapper, picture.pictureURL);
-        } else {
-          updateImage(wrapper, picture.pictureURL);
-        }
-      } else {
-        // Show thumbnails for both unselected still and motion pictures.
-        updateImage(wrapper, picture.thumbnailURL);
-      }
+      updateDomPicture(this.pictures[index]);
     }
   }.bind(this);
 
@@ -493,4 +512,3 @@ camera.views.Browser.prototype.updateElementSize = function(wrapper) {
 camera.views.Browser.prototype.ariaListNode = function() {
   return document.querySelector('#browser');
 };
-

@@ -83,6 +83,19 @@ camera.views.Album.prototype = {
 };
 
 /**
+ * @override
+ */
+camera.views.Album.prototype.initialize = function(callback) {
+  camera.views.GalleryBase.prototype.initialize.call(this, function() {
+    // Hide export-button if using external file system.
+    if (camera.models.FileSystem.externalFs) {
+      document.querySelector('#album-export').hidden = true;
+    }
+    callback();
+  }.bind(this));
+};
+
+/**
  * Enters the view.
  * @override
  */
@@ -519,4 +532,3 @@ camera.views.Album.prototype.updateElementSize = function(wrapper) {
 camera.views.Album.prototype.ariaListNode = function() {
   return document.querySelector('#album');
 };
-

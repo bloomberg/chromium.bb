@@ -26,24 +26,6 @@ camera.models.Gallery = function() {
   this.pictures_ = [];
 
   /**
-   * @type {FileSystem}
-   * @private
-   */
-  this.fileSystem_ = null;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.lastDateSecond_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.sameSecondCount_ = 0;
-
-  /**
    * @type {Array.<camera.models.Gallery.Observer>}
    * @private
    */
@@ -52,6 +34,30 @@ camera.models.Gallery = function() {
   // End of properties, seal the object.
   Object.seal(this);
 };
+
+/**
+ * The prefix of image files.
+ *
+ * @type {string}
+ * @const
+ */
+camera.models.Gallery.IMAGE_PREFIX = 'IMG_';
+
+/**
+ * The prefix of video files.
+ *
+ * @type {string}
+ * @const
+ */
+camera.models.Gallery.VIDEO_PREFIX = 'VID_';
+
+/**
+ * The prefix of thumbnail files.
+ *
+ * @type {string}
+ * @const
+ */
+camera.models.Gallery.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
  * Picture types.
@@ -112,9 +118,6 @@ camera.models.Gallery.Picture.prototype = {
   get thumbnailURL() {
     return this.thumbnailEntry_.toURL();
   },
-  get pictureURL() {
-    return this.pictureEntry_.toURL();
-  },
   get thumbnailEntry() {
     return this.thumbnailEntry_;
   },
@@ -124,6 +127,14 @@ camera.models.Gallery.Picture.prototype = {
   get pictureType() {
     return this.pictureType_;
   }
+};
+
+/**
+ * Creates and returns an URL for a picture.
+ * @param {function(string)} onSuccess Success callback with the url as a string.
+ */
+camera.models.Gallery.Picture.prototype.pictureURL = function(onSuccess) {
+  camera.models.FileSystem.pictureURL(this.pictureEntry_, onSuccess);
 };
 
 /**
@@ -184,7 +195,7 @@ camera.models.Gallery.prototype = {
    */
   get pictures() {
     return this.pictures_;
-  }
+  },
 };
 
 /**
@@ -195,17 +206,11 @@ camera.models.Gallery.prototype = {
  * @private
  */
 camera.models.Gallery.prototype.initialize_ = function(onSuccess, onFailure) {
-  webkitRequestFileSystem(window.PERSISTENT,
-      768 * 1024 * 1024 /* 768MB */,
-      function(inFileSystem) {
-        this.fileSystem_ = inFileSystem;
-        this.loadStoredPictures_(onSuccess, onFailure);
-      }.bind(this),
-      function() {
-        // TODO(mtomasz): Add error handling.
-        console.error('Unable to initialize the file system.');
-        onFailure();
-      });
+  camera.models.FileSystem.getEntries(
+      function(pictureEntries, thumbnailEntries) {
+    this.loadStoredPictures_(
+        pictureEntries, thumbnailEntries, onSuccess, onFailure);
+  }.bind(this), onFailure);
 };
 
 /**
@@ -226,47 +231,39 @@ camera.models.Gallery.prototype.removeObserver = function(observer) {
 };
 
 /**
- * Loads the pictures from the internal storage and adds them to the internal
- * list.
- *
+ * Loads the pictures from the storages and adds them to the picture list.
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  * @private
  */
 camera.models.Gallery.prototype.loadStoredPictures_ = function(
-    onSuccess, onFailure) {
-  var dirReader = this.fileSystem_.root.createReader();
-  var entries = [];
+    pictureEntries, thumbnailEntries, onSuccess, onFailure) {
   var queue = new camera.util.Queue();
+  var entriesByName = {};
+  for (var index = 0; index < thumbnailEntries.length; index++) {
+    entriesByName[thumbnailEntries[index].name] = thumbnailEntries[index];
+  }
 
-  var onScanFinished = function() {
-    var entriesByName = {};
-    for (var index = 0; index < entries.length; index++) {
-      entriesByName[entries[index].name] = entries[index];
+  for (var index = pictureEntries.length - 1; index >= 0; index--) {
+    var entry = pictureEntries[index];
+    if (!entry.name) {
+      console.warn('TODO(mtomasz): Temporary fix for a strange issue.');
+      continue;
     }
-    for (var index = entries.length - 1; index >= 0; index--) {
-      var entry = entries[index];
-      if (!entry.name) {
-        console.warn('TODO(mtomasz): Temporary fix for a strange issue.');
-        continue;
-      }
-      if (entry.name.indexOf('thumb-') === 0)
-        continue;
-      var type = (entry.name.indexOf('VID_') === 0) ?
-          camera.models.Gallery.PictureType.MOTION :
-          camera.models.Gallery.PictureType.STILL;
-      queue.run(function(entry, callback) {
-        var thumbnailName = 'thumb-' + entry.name;
-        if (type == camera.models.Gallery.PictureType.MOTION) {
-          thumbnailName = (thumbnailName.substr(0, thumbnailName.lastIndexOf('.')) ||
-              thumbnailName) + '.jpg';
-        }
-        var thumbnailEntry = entriesByName[thumbnailName];
-        // No thumbnail, most probably pictures taken by the old Camera App.
-        // So, create the thumbnail now.
-        if (!thumbnailEntry) {
-          this.createThumbnail_(entry.toURL(), type, function(thumbnailBlob) {
-            this.savePictureToFile_(
+
+    var type = (entry.name.indexOf(camera.models.Gallery.VIDEO_PREFIX) === 0) ?
+        camera.models.Gallery.PictureType.MOTION :
+        camera.models.Gallery.PictureType.STILL;
+    queue.run(function(entry, callback) {
+      var thumbnailName = camera.models.Gallery.getThumbnailName(entry.name);
+      var thumbnailEntry = entriesByName[thumbnailName];
+      // No thumbnail, most probably pictures taken by the old Camera App.
+      // So, create the thumbnail now.
+      if (!thumbnailEntry) {
+        camera.models.FileSystem.pictureURL(entry, function(url) {
+          this.createThumbnail_(url, type,
+              function(thumbnailBlob) {
+            camera.models.FileSystem.saveThumbnail(
                 thumbnailName,
                 thumbnailBlob,
                 function(recreatedThumbnailEntry) {
@@ -285,38 +282,26 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
             console.warn('Unable to recreate the thumbnail.');
             callback();
           });
-        } else {
-          // The thumbnail is available.
-          this.pictures_.push(new camera.models.Gallery.Picture(
-              thumbnailEntry, entry, type));
-          callback();
-        }
-      }.bind(this, entry));
-    }
-    queue.run(function(callback) {
-      this.sortPictures_();
-      onSuccess();
-      callback();
-    }.bind(this));
-  }.bind(this);
-
-  var readEntries = function() {
-    dirReader.readEntries(function(inEntries) {
-      if (inEntries.length == 0) {
-        onScanFinished();
-        return;
+        }.bind(this));
+      } else {
+        // The thumbnail is available.
+        this.pictures_.push(new camera.models.Gallery.Picture(
+            thumbnailEntry, entry, type));
+        callback();
       }
-      entries = entries.concat(Array.prototype.slice.call(inEntries));
-      readEntries();
-    }, onFailure);
-  };
+    }.bind(this, entry));
+  }
 
-  readEntries();
+  queue.run(function(callback) {
+    this.sortPictures_();
+    onSuccess();
+    callback();
+  }.bind(this));
 };
 
 /**
  * Deletes the picture with the specified index by removing it from DOM and
- * removing from the internal storage.
+ * removing from the storage.
  *
  * @param {camera.models.Gallery.Picture} picture Picture to be deleted.
  * @param {function()} onSuccess Success callback.
@@ -353,34 +338,6 @@ camera.models.Gallery.prototype.exportPicture = function(
     picture.pictureEntry.copyTo(
         directory, fileEntry.name, onSuccess, onFailure);
   }, onFailure);
-};
-
-/**
- * Saves the picture to the passed file name in the internal storage.
- *
- * @param {string} fileName Name of the file in the internal storage.
- * @param {Blob} blob Data of the picture to be saved.
- * @param {function(FileEntry)} onSuccess Success callback with the entry of
- *     the saved picture.
- * @param {function(FileError)} onFailure Failure callback.
- * @private
- */
-camera.models.Gallery.prototype.savePictureToFile_ = function(
-    fileName, blob, onSuccess, onFailure) {
-  this.fileSystem_.root.getFile(
-      fileName,
-      {create: true},
-      function(fileEntry) {
-        fileEntry.createWriter(function(fileWriter) {
-          fileWriter.onwriteend = function() {
-            onSuccess(fileEntry);
-          }.bind(this);
-          fileWriter.onerror = onFailure;
-          fileWriter.write(blob);
-        }.bind(this),
-        onFailure);
-      }.bind(this),
-      onFailure);
 };
 
 /**
@@ -447,19 +404,13 @@ camera.models.Gallery.prototype.sortPictures_ = function() {
         return parseInt(str, 10);
       };
 
-      var match;
-      if (!filename.startsWith('VID_') && !filename.startsWith('IMG_')) {
-        // Early pictures are in legacy filename format (crrev.com/c/310064).
-        match = filename.match(/(\d+).(?:\d+)/);
-        return match ? new Date(num(match[1])) : null;
-      }
-      // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss_n'.jpg.
-      match = filename.match(
-          /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d+))?/);
+      var fileName = camera.models.Gallery.regulateFileName(filename);
+      // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss (n)'.jpg.
+      var match = fileName.match(
+          /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/);
       return match ? new Date(num(match[1]), num(match[2]) - 1, num(match[3]),
           num(match[4]), num(match[5]), num(match[6]),
           match[7] ? num(match[7]) : 0) : null;
-
     };
 
     var dateA = parseDate(a.pictureEntry.name);
@@ -478,10 +429,11 @@ camera.models.Gallery.prototype.sortPictures_ = function() {
  * Generates a file name base for the picture.
  *
  * @param {camera.models.Gallery.PictureType} type Type of the picture.
+ * @param {int} time Timestamp of the picture in millisecond.
  * @return {string} File name base.
  * @private
  */
-camera.models.Gallery.prototype.generateFileNameBase_ = function(type) {
+camera.models.Gallery.generateFileNameBase_ = function(type, time) {
   function pad(n) {
     if (n < 10)
       n = '0' + n;
@@ -490,22 +442,11 @@ camera.models.Gallery.prototype.generateFileNameBase_ = function(type) {
 
   // File name base will be formatted as IMG_yyyyMMdd_HHmmss.
   var prefix = (type == camera.models.Gallery.PictureType.MOTION) ?
-      'VID_' : 'IMG_';
-  var now = new Date();
+      camera.models.Gallery.VIDEO_PREFIX : camera.models.Gallery.IMAGE_PREFIX;
+  var now = new Date(time);
   var result = prefix + now.getFullYear() + pad(now.getMonth() + 1) +
       pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
       pad(now.getSeconds());
-
-  // If the last name was generated for the same second,
-  // _1, _2, etc will be appended to the name.
-  var dateSecond = Math.floor(now.getTime() / 1000);
-  if (dateSecond == this.lastDateSecond_) {
-      this.sameSecondCount_++;
-      result += "_" + this.sameSecondCount_;
-  } else {
-      this.lastDateSecond_ = dateSecond;
-      this.sameSecondCount_ = 0;
-  }
 
   return result;
 };
@@ -517,9 +458,52 @@ camera.models.Gallery.prototype.generateFileNameBase_ = function(type) {
  * @return {string} File name extension.
  * @private
  */
-camera.models.Gallery.prototype.generateFileNameExt_ = function(type) {
+camera.models.Gallery.generateFileNameExt_ = function(type) {
   return (type == camera.models.Gallery.PictureType.MOTION) ?
       '.webm' : '.jpg';
+};
+
+/**
+ * Regulates the file name to the desired format if it's a legacy file name.
+ *
+ * @param {string} filename File name to be regulated.
+ * @return {string} File name in the desired format.
+ */
+camera.models.Gallery.regulateFileName = function(filename) {
+  if (!filename.startsWith(camera.models.Gallery.VIDEO_PREFIX) &&
+      !filename.startsWith(camera.models.Gallery.IMAGE_PREFIX)) {
+    // Early pictures are in legacy filename format (crrev.com/c/310064).
+    var match = filename.match(/(\d+).(?:\d+)/);
+    if (match) {
+      var type = camera.models.Gallery.PictureType.STILL;
+      return camera.models.Gallery.generateFileNameBase_(type, parseInt(match[1], 10)) +
+             camera.models.Gallery.generateFileNameExt_(type);
+    }
+  } else {
+    var match = filename.match(/(\w{3}_\d{8}_\d{6})(?:_(\d+))(\..+)?$/);
+    if (match && match[2]) {
+      filename = match[1] + ' (' + match[2] + ')' + match[3];
+    }
+  }
+  return filename;
+};
+
+/**
+ * Generates thumbnail name according to the file name.
+ *
+ * @param {string} filename File name.
+ * @return {string} Thumbnail name.
+ */
+camera.models.Gallery.getThumbnailName = function(filename) {
+  var type = (filename.indexOf(camera.models.Gallery.VIDEO_PREFIX) === 0) ?
+      camera.models.Gallery.PictureType.MOTION :
+      camera.models.Gallery.PictureType.STILL;
+  var thumbnailName = camera.models.Gallery.THUMBNAIL_PREFIX + filename;
+  if (type == camera.models.Gallery.PictureType.MOTION) {
+    thumbnailName = (thumbnailName.substr(0, thumbnailName.lastIndexOf('.')) ||
+        thumbnailName) + '.jpg';
+  }
+  return thumbnailName;
 };
 
 /**
@@ -532,31 +516,24 @@ camera.models.Gallery.prototype.generateFileNameExt_ = function(type) {
  */
 camera.models.Gallery.prototype.addPicture = function(
     blob, type, onFailure) {
-  this.createThumbnail_(
-      URL.createObjectURL(blob), type, function(thumbnailBlob) {
-    // Save the thumbnail as well as the full screen resolution picture.
-    var fileNameBase = this.generateFileNameBase_(type);
+  var fileNameBase = camera.models.Gallery.generateFileNameBase_(type, Date.now());
 
-    this.savePictureToFile_(
-        'thumb-' + fileNameBase + '.jpg',
-        thumbnailBlob,
-        function(thumbnailEntry) {
-          this.savePictureToFile_(
-            fileNameBase + this.generateFileNameExt_(type),
-            blob,
-            function(pictureEntry) {
-              var picture = new camera.models.Gallery.Picture(
-                  thumbnailEntry, pictureEntry, type);
-              this.pictures_.push(picture);
-              // Notify observers.
-              for (var i = 0; i < this.observers_.length; i++) {
-                this.observers_[i].onPictureAdded(picture);
-              }
-            }.bind(this),
-            // TODO(mtomasz): Remove the thumbnail on error.
-            onFailure);
-        }.bind(this),
-        onFailure);
+  camera.models.FileSystem.savePicture(
+      fileNameBase + camera.models.Gallery.generateFileNameExt_(type),
+      blob, function(pictureEntry) {
+    this.createThumbnail_(
+        URL.createObjectURL(blob), type, function(thumbnailBlob) {
+      camera.models.FileSystem.saveThumbnail(
+          camera.models.Gallery.getThumbnailName(pictureEntry.name),
+          thumbnailBlob, function(thumbnailEntry) {
+        var picture = new camera.models.Gallery.Picture(
+            thumbnailEntry, pictureEntry, type);
+        this.pictures_.push(picture);
+        // Notify observers.
+        for (var i = 0; i < this.observers_.length; i++) {
+          this.observers_[i].onPictureAdded(picture);
+        }
+      }.bind(this), onFailure);
+    }.bind(this), onFailure);
   }.bind(this), onFailure);
 };
-
