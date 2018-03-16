@@ -33,8 +33,6 @@
 
 namespace WTF {
 
-class PrintStream;
-
 // This is a space-efficient, resizeable bitvector class. In the common case it
 // occupies one word, but if necessary, it will inflate this one word to point
 // to a single chunk of out-of-line allocated storage to store an arbitrary
@@ -155,8 +153,6 @@ class WTF_EXPORT BitVector {
     else
       Clear(bit);
   }
-
-  void Dump(PrintStream& out);
 
  private:
   static unsigned BitsInPointer() { return sizeof(void*) << 3; }
