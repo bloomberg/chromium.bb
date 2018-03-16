@@ -26,3 +26,7 @@
 -keep class android.support.v4.content.ContextCompat {
   *;
 }
+
+# Need test classes to be in the main dex because test listing does not
+# load secondary dex on Dalvik devices.
+-keep @**.RunWith class * {}

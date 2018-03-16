@@ -79,6 +79,10 @@ def main(args):
   main_dex_list_cmd = [
     'java', '-cp', dx_jar,
     'com.android.multidex.MainDexListBuilder',
+    # This workaround significantly increases main dex size and doesn't seem to
+    # be needed by Chrome. See comment in the source:
+    # https://android.googlesource.com/platform/dalvik/+/master/dx/src/com/android/multidex/MainDexListBuilder.java
+    '--disable-annotation-resolution-workaround',
   ]
 
   input_paths = list(args.paths)

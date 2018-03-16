@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -24,6 +25,12 @@ class TestContentBrowserClient : public ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
+#if defined(OS_ANDROID)
+  void GetAdditionalMappedFilesForChildProcess(
+      const base::CommandLine& command_line,
+      int child_process_id,
+      content::PosixFileDescriptorInfo* mappings) override;
+#endif  // defined(OS_ANDROID)
 
  private:
   // Temporary directory for GetDefaultDownloadDirectory.
