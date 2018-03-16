@@ -343,8 +343,9 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     """Test that firmware versions are extracted correctly for unibuilds."""
 
     def _HookRunCommand(rc):
-      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host'),
+      rc.AddCmdResult(partial_mock.In('list-models'),
                       output='reef\npyro\nelectro')
+      rc.AddCmdResult(partial_mock.In('get'), output='key-123')
       rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
                       output='''
 Model:        reef
@@ -393,6 +394,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
                         reef['main-readwrite-firmware-version'])
       self.assertEquals('reef_v1.1.5909-bd1f0c9',
                         reef['ec-firmware-version'])
+      self.assertEquals('key-123', reef['key-id'])
 
       self.assertIn('pyro', board_metadata['models'])
       self.assertIn('electro', board_metadata['models'])

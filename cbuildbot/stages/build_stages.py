@@ -524,9 +524,20 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             ec = fw_versions.ec_rw or fw_versions.ec
             main_ro = fw_versions.main
             main_rw = fw_versions.main_rw
+
+            # Get the firmware key-id for the current board.
+            key_id_list = commands.RunCrosConfigHost(
+                self._build_root,
+                self._current_board,
+                ['get', '/firmware', 'key-id'])
+            key_id = None
+            if len(key_id_list) == 1:
+              key_id = key_id_list[0]
+
             models_data[model] = {'main-readonly-firmware-version': main_ro,
                                   'main-readwrite-firmware-version': main_rw,
-                                  'ec-firmware-version': ec}
+                                  'ec-firmware-version': ec,
+                                  'key-id': key_id}
         if models_data:
           self._run.attrs.metadata.UpdateBoardDictWithDict(
               self._current_board, {'models': models_data})
