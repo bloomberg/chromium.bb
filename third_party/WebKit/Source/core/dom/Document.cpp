@@ -2881,6 +2881,21 @@ ScriptableDocumentParser* Document::GetScriptableDocumentParser() const {
   return Parser() ? Parser()->AsScriptableDocumentParser() : nullptr;
 }
 
+void Document::SetPrinting(PrintingState state) {
+  bool was_printing = Printing();
+  printing_ = state;
+  bool is_printing = Printing();
+
+  // Changing the state of Printing() can change whether layout objects are
+  // created for iframes. As such, we need to do a full reattach. See
+  // LayoutView::CanHaveChildren.
+  // https://crbug.com/819327.
+  if ((was_printing != is_printing) && documentElement() && GetFrame() &&
+      !GetFrame()->IsMainFrame()) {
+    documentElement()->LazyReattachIfAttached();
+  }
+}
+
 void Document::open(Document* entered_document,
                     ExceptionState& exception_state) {
   if (ImportLoader()) {

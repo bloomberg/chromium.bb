@@ -709,7 +709,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool FinishingOrIsPrinting() {
     return printing_ == kPrinting || printing_ == kFinishingPrinting;
   }
-  void SetPrinting(PrintingState state) { printing_ = state; }
+  void SetPrinting(PrintingState);
 
   bool PaginatedForScreen() const { return paginated_for_screen_; }
   void SetPaginatedForScreen(bool p) { paginated_for_screen_ = p; }
