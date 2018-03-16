@@ -10,7 +10,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
@@ -42,6 +43,11 @@
 #include "sandbox/mac/seatbelt_extension.h"
 #endif  // defined(OS_MACOSX)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_ANDROID)
+#include "content/browser/media/android/media_player_renderer.h"
+#include "media/mojo/services/mojo_renderer_service.h"  // nogncheck
+#endif
 
 namespace content {
 
@@ -145,12 +151,21 @@ void MediaInterfaceProxy::CreateVideoDecoder(
 }
 
 void MediaInterfaceProxy::CreateRenderer(
-    const std::string& audio_device_id,
+    media::mojom::HostedRendererType type,
+    const std::string& type_specific_id,
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_ANDROID)
+  if (type == media::mojom::HostedRendererType::kMediaPlayer) {
+    CreateMediaPlayerRenderer(std::move(request));
+    return;
+  }
+#endif
+
   InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
-    factory->CreateRenderer(audio_device_id, std::move(request));
+    factory->CreateRenderer(type, type_specific_id, std::move(request));
 }
 
 void MediaInterfaceProxy::CreateCdm(
@@ -354,5 +369,26 @@ void MediaInterfaceProxy::CreateCdmProxyInternal(
     factory->CreateCdmProxy(cdm_guid, std::move(request));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_ANDROID)
+void MediaInterfaceProxy::CreateMediaPlayerRenderer(
+    media::mojom::RendererRequest request) {
+  auto renderer = std::make_unique<MediaPlayerRenderer>(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      static_cast<RenderFrameHostImpl*>(render_frame_host_)
+          ->delegate()
+          ->GetAsWebContents());
+
+  // base::Unretained is safe here because the lifetime of the MediaPlayerRender
+  // is tied to the lifetime of the MojoRendererService.
+  media::MojoRendererService::InitiateSurfaceRequestCB surface_request_cb =
+      base::BindRepeating(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
+                          base::Unretained(renderer.get()));
+
+  media::MojoRendererService::Create(std::move(renderer), surface_request_cb,
+                                     std::move(request));
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content

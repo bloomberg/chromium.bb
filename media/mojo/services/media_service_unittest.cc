@@ -122,8 +122,9 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
-    interface_factory_->CreateRenderer(std::string(),
-                                       mojo::MakeRequest(&renderer_));
+    interface_factory_->CreateRenderer(
+        media::mojom::HostedRendererType::kDefault, std::string(),
+        mojo::MakeRequest(&renderer_));
 
     video_stream_.set_video_decoder_config(video_config);
 

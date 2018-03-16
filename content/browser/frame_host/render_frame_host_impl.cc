@@ -164,11 +164,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/frame_host/render_frame_host_android.h"
-#include "content/browser/media/android/media_player_renderer.h"
 #include "content/public/browser/android/java_interfaces.h"
-#include "media/base/audio_renderer_sink.h"
-#include "media/base/video_renderer_sink.h"
-#include "media/mojo/services/mojo_renderer_service.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -402,27 +398,6 @@ void RenderFrameHost::AllowDataUrlNavigationForAndroidWebView() {
 // static
 bool RenderFrameHost::IsDataUrlNavigationAllowedForAndroidWebView() {
   return g_allow_data_url_navigation;
-}
-
-void CreateMediaPlayerRenderer(int process_id,
-                               int routing_id,
-                               RenderFrameHostDelegate* delegate,
-                               media::mojom::RendererRequest request) {
-  std::unique_ptr<MediaPlayerRenderer> renderer =
-      std::make_unique<MediaPlayerRenderer>(process_id, routing_id,
-                                            delegate->GetAsWebContents());
-
-  // base::Unretained is safe here because the lifetime of the MediaPlayerRender
-  // is tied to the lifetime of the MojoRendererService.
-  media::MojoRendererService::InitiateSurfaceRequestCB surface_request_cb =
-      base::Bind(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
-                 base::Unretained(renderer.get()));
-
-  media::MojoRendererService::Create(
-      nullptr,  // CDMs are not supported.
-      nullptr,  // Manages its own audio_sink.
-      nullptr,  // Does not use video_sink. See StreamTextureWrapper instead.
-      std::move(renderer), surface_request_cb, std::move(request));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -3128,13 +3103,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
-
-#if defined(OS_ANDROID)
-  // Creates a MojoRendererService, passing it a MediaPlayerRender.
-  registry_->AddInterface<media::mojom::Renderer>(
-      base::Bind(&content::CreateMediaPlayerRenderer, GetProcess()->GetID(),
-                 GetRoutingID(), delegate_));
-#endif  // defined(OS_ANDROID)
 
   registry_->AddInterface(base::Bind(
       base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
