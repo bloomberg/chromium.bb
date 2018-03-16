@@ -997,7 +997,9 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   ASSERT_NE(suggestions, nullptr);
   UiElement* suggestion = suggestions->children().front().get();
   ASSERT_NE(suggestion, nullptr);
-  EXPECT_CALL(*browser_, Navigate(gurl)).Times(1);
+  EXPECT_CALL(*browser_,
+              Navigate(gurl, NavigationMethod::kOmniboxSuggestionSelected))
+      .Times(1);
   suggestion->OnHoverEnter({0, 0});
   suggestion->OnButtonDown({0, 0});
   suggestion->OnButtonUp({0, 0});

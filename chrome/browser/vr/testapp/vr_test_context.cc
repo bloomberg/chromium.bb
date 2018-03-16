@@ -459,7 +459,7 @@ void VrTestContext::SetVoiceSearchActive(bool active) {
 void VrTestContext::ExitPresent() {}
 void VrTestContext::ExitFullscreen() {}
 
-void VrTestContext::Navigate(GURL gurl) {
+void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
   ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
                      &toolbar::kHttpIcon, base::string16(), true, false);
   ui_->SetToolbarState(state);

@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
+#include "chrome/browser/vr/ui_browser_interface.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -118,7 +119,7 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
   void RecordVoiceSearchStarted();
-  void RecordUrlRequestedByVoice(GURL url);
+  void RecordUrlRequested(GURL url, NavigationMethod method);
 
  private:
   SessionMetricsHelper(content::WebContents* contents,
@@ -165,7 +166,8 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   bool is_vr_enabled_ = false;
   bool started_with_autopresentation_ = false;
 
-  GURL url_requested_by_voice_;
+  GURL last_requested_url_;
+  NavigationMethod last_url_request_method_;
 
   int num_videos_playing_ = 0;
   int num_session_navigation_ = 0;

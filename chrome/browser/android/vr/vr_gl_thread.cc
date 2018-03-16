@@ -209,10 +209,11 @@ void VrGLThread::OnContentPaused(bool enabled) {
       base::BindOnce(&VrShell::OnContentPaused, weak_vr_shell_, enabled));
 }
 
-void VrGLThread::Navigate(GURL gurl) {
+void VrGLThread::Navigate(GURL gurl, NavigationMethod method) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::Navigate, weak_vr_shell_, gurl));
+      FROM_HERE,
+      base::BindOnce(&VrShell::Navigate, weak_vr_shell_, gurl, method));
 }
 
 void VrGLThread::NavigateBack() {

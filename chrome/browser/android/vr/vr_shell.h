@@ -21,6 +21,7 @@
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
@@ -122,7 +123,7 @@ class VrShell : device::GvrGamepadDataProvider,
                     jboolean incognito,
                     jint id);
   void OnContentPaused(bool paused);
-  void Navigate(GURL url);
+  void Navigate(GURL url, NavigationMethod method);
   void NavigateBack();
   void ExitCct();
   void CloseHostedDialog();

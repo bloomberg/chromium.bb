@@ -79,7 +79,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
   void ExitFullscreen() override;
-  void Navigate(GURL gurl) override;
+  void Navigate(GURL gurl, NavigationMethod method) override;
   void NavigateBack() override;
   void ExitCct() override;
   void CloseHostedDialog() override;

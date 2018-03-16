@@ -331,8 +331,18 @@ void VrShell::OnContentPaused(bool paused) {
     device->Focus();
 }
 
-void VrShell::Navigate(GURL url) {
+void VrShell::Navigate(GURL url, NavigationMethod method) {
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  // Record metrics.
+  if (method == NavigationMethod::kOmniboxSuggestionSelected ||
+      method == NavigationMethod::kOmniboxUrlEntry) {
+    SessionMetricsHelper* metrics_helper =
+        SessionMetricsHelper::FromWebContents(web_contents_);
+    if (metrics_helper)
+      metrics_helper->RecordUrlRequested(url, method);
+  }
+
   Java_VrShellImpl_loadUrl(
       env, j_vr_shell_,
       base::android::ConvertUTF8ToJavaString(env, url.spec()));
@@ -1016,7 +1026,7 @@ void VrShell::OnVoiceResults(const base::string16& result) {
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
   if (metrics_helper && input_was_url)
-    metrics_helper->RecordUrlRequestedByVoice(url);
+    metrics_helper->RecordUrlRequested(url, NavigationMethod::kVoiceSearch);
 
   Java_VrShellImpl_loadUrl(
       env, j_vr_shell_,
