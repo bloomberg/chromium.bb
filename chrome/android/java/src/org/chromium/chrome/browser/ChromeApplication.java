@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
  * Basic application functionality that should be shared among all browser applications that use
  * chrome layer.
  */
-@MainDex
 public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
@@ -57,15 +56,19 @@ public class ChromeApplication extends Application {
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        UmaUtils.recordMainEntryPointTime();
+        boolean browserProcess = ContextUtils.isMainProcess();
+        if (browserProcess) {
+            UmaUtils.recordMainEntryPointTime();
+        }
         super.attachBaseContext(context);
         checkAppBeingReplaced();
-        if (BuildConfig.IS_MULTIDEX_ENABLED) {
-            ChromiumMultiDexInstaller.install(this);
-        }
         ContextUtils.initApplicationContext(this);
 
-        if (ContextUtils.isMainProcess()) {
+        if (browserProcess) {
+            if (BuildConfig.IS_MULTIDEX_ENABLED) {
+                ChromiumMultiDexInstaller.install(this);
+            }
+
             // Renderers and GPU process have command line passed to them via IPC
             // (see ChildProcessService.java).
             Supplier<Boolean> shouldUseDebugFlags = new Supplier<Boolean>() {
@@ -115,6 +118,7 @@ public class ChromeApplication extends Application {
         }
     }
 
+    @MainDex
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
@@ -158,6 +162,7 @@ public class ChromeApplication extends Application {
     /**
      * @return The DiscardableReferencePool for the application.
      */
+    @MainDex
     public DiscardableReferencePool getReferencePool() {
         ThreadUtils.assertOnUiThread();
         if (mReferencePool == null) {

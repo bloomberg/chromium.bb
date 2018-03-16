@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Proguard flags for what to keep through proguarding when multidex is
-# enabled. Not used during main dex list determination.
-
+# When multidex is enabled, need to keep the @MainDex annotation so that it
+# can be used to create the main dex list.
 -keepattributes *Annotations*
 -keep @interface org.chromium.base.annotations.MainDex
--keep @**.MainDex class * {
-  *;
+
+# Keep the members only if the class is kept. Also required for the annotation
+# itself to be kept, which is necessary for main dex list processing.
+-keepclassmembers,allowobfuscation class * {
+  @**.MainDex *;
 }

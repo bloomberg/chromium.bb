@@ -63,15 +63,12 @@ def main(args):
       os.path.join(args.android_sdk_tools, 'lib', 'shrinkedAndroid.jar'))
   dx_jar = os.path.abspath(
       os.path.join(args.android_sdk_tools, 'lib', 'dx.jar'))
-  rules_file = os.path.abspath(
-      os.path.join(args.android_sdk_tools, 'mainDexClasses.rules'))
 
   proguard_cmd = [
     'java', '-jar', args.proguard_path,
     '-forceprocessing',
     '-dontwarn', '-dontoptimize', '-dontobfuscate', '-dontpreverify',
     '-libraryjars', shrinked_android_jar,
-    '-include', rules_file,
   ]
   for m in args.main_dex_rules_paths:
     proguard_cmd.extend(['-include', m])
@@ -89,7 +86,6 @@ def main(args):
   input_paths += [
     shrinked_android_jar,
     dx_jar,
-    rules_file,
   ]
   input_paths += args.main_dex_rules_paths
 
