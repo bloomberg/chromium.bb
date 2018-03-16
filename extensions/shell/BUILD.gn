@@ -41,7 +41,6 @@ source_set("app_shell_lib") {
     "//base",
     "//components/feedback",
     "//components/guest_view/browser",
-    "//components/guest_view/common",
     "//components/guest_view/renderer",
     "//components/keep_alive_registry",
     "//components/keyed_service/content:content",
@@ -49,13 +48,15 @@ source_set("app_shell_lib") {
     "//components/network_session_configurator/common",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/storage_monitor",
     "//components/update_client",
     "//components/user_prefs",
-    "//components/web_cache/renderer",
+    "//components/version_info",
     "//content",
     "//content/shell:content_shell_lib",
     "//device/base",
     "//device/bluetooth",
+    "//device/usb",
     "//extensions:extensions_resources",
     "//extensions:shell_and_test_pak",
     "//extensions/browser",
@@ -68,12 +69,10 @@ source_set("app_shell_lib") {
     "//extensions/shell/common/api",
     "//extensions/shell/common/api:api_registration",
     "//extensions/shell/common/api:extensions_features",
-    "//skia",
+    "//google_apis",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld_3/src/src:cld_3",
     "//ui/base",
     "//ui/base/ime",
-    "//v8",
   ]
 
   # TODO(michaelpg): remove Mac support and always use aura.
@@ -84,7 +83,7 @@ source_set("app_shell_lib") {
     ]
 
     if (use_x11) {
-      deps += [ "//ui/events" ]
+      deps += [ "//ui/events/devices/x11" ]
     }
   }
 
@@ -201,6 +200,9 @@ source_set("app_shell_lib") {
       "//ui/wm",
       "//ui/wm/public",
     ]
+    if (is_chromeos) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 
   if (is_desktop_linux) {
@@ -221,7 +223,6 @@ source_set("app_shell_lib") {
   if (is_chromeos) {
     sources += [
       "browser/api/vpn_provider/vpn_service_factory.cc",
-      "browser/api/vpn_provider/vpn_service_factory.h",
       "browser/shell_screen.cc",
       "browser/shell_screen.h",
     ]
@@ -244,6 +245,7 @@ source_set("app_shell_lib") {
       "//components/nacl/loader",
       "//components/nacl/renderer",
       "//components/nacl/renderer/plugin:nacl_trusted_plugin",
+      "//ppapi/shared_impl:shared_impl",
     ]
 
     if (is_linux) {
@@ -266,6 +268,7 @@ if (is_mac) {
     deps = [
       ":app_shell_framework_bundle_data",
       "//build/config:exe_and_shlib_deps",
+      "//content/public/app:both",
       "//extensions:shell_and_test_pak",
     ]
     ldflags = [
@@ -286,12 +289,14 @@ if (is_mac) {
       ":app_shell_lib",
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
+      "//content/public/app:both",
       "//extensions:shell_and_test_pak",
     ]
 
     if (is_win) {
       configs += [ "//build/config/win:windowed" ]
       configs -= [ "//build/config/win:console" ]
+      deps += [ "//sandbox/win:sandbox" ]
     }
   }
 }
@@ -322,14 +327,21 @@ test("app_shell_unittests") {
     "//apps",
     "//base",
     "//base/test:test_support",
+    "//components/crx_file",
     "//components/feedback",
     "//components/keep_alive_registry",
+    "//components/prefs",
+    "//components/user_prefs",
     "//content/test:test_support",
     "//extensions:shell_and_test_pak",
     "//extensions:test_support",
     "//extensions/browser",
     "//extensions/common",
+    "//extensions/common/api",
+    "//extensions/shell/browser/system_logs",
+    "//google_apis",
     "//testing/gtest",
+    "//ui/gl:test_support",
   ]
 
   data_deps = [
@@ -359,7 +371,10 @@ test("app_shell_unittests") {
       "browser/shell_audio_controller_chromeos_unittest.cc",
       "browser/shell_screen_unittest.cc",
     ]
-    deps += [ "//chromeos:test_support_without_gmock" ]
+    deps += [
+      "//chromeos",
+      "//chromeos:test_support_without_gmock",
+    ]
   }
 
   if (enable_nacl) {
@@ -417,6 +432,7 @@ if (is_mac) {
     ]
     deps = [
       ":app_shell_framework_resources",
+      "//content/public/app:both",
     ]
     ldflags = [ "-Wl,-install_name,@rpath/Frameworks/App Shell Framework.framework/App Shell Framework" ]
     if (is_component_build) {
@@ -437,6 +453,7 @@ if (is_mac) {
     deps = [
       ":app_shell_framework+link",
       "//build/config:exe_and_shlib_deps",
+      "//content/public/app:both",
     ]
     ldflags = [
       "-rpath",
