@@ -1081,8 +1081,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
 // Test that a web frame can't navigate a proxy for an extension frame to a
 // blob/filesystem extension URL.  See https://crbug.com/656752.
+// Disabled due to flake, see http://crbug.com/822635.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       NestedURLNavigationsViaProxyBlocked) {
+                       DISABLED_NestedURLNavigationsViaProxyBlocked) {
   // Create a simple extension without a background page.
   const Extension* extension = CreateExtension("Extension", false);
   embedded_test_server()->ServeFilesFromDirectory(extension->path());
