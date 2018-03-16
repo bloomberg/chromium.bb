@@ -82,8 +82,8 @@ class MockWebSocketHandle : public WebSocketHandle {
 
   ~MockWebSocketHandle() override = default;
 
-  MOCK_METHOD1(DoInitialize, void(network::mojom::blink::WebSocketPtr*));
-  void Initialize(network::mojom::blink::WebSocketPtr websocket) override {
+  MOCK_METHOD1(DoInitialize, void(mojom::blink::WebSocketPtr*));
+  void Initialize(mojom::blink::WebSocketPtr websocket) override {
     DoInitialize(&websocket);
   }
 

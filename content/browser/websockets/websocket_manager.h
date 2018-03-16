@@ -30,15 +30,14 @@ class CONTENT_EXPORT WebSocketManager
   // Called on the UI thread: create a websocket for a frame.
   static void CreateWebSocketForFrame(int process_id,
                                       int frame_id,
-                                      network::mojom::WebSocketRequest request);
+                                      blink::mojom::WebSocketRequest request);
 
   // Called on the UI thread: create a websocket for a worker. Web workers of
   // any type (dedicated, shared, service worker) do not have a frame.
-  static void CreateWebSocketWithOrigin(
-      int process_id,
-      url::Origin origin,
-      network::mojom::WebSocketRequest request,
-      int frame_id = MSG_ROUTING_NONE);
+  static void CreateWebSocketWithOrigin(int process_id,
+                                        url::Origin origin,
+                                        blink::mojom::WebSocketRequest request,
+                                        int frame_id = MSG_ROUTING_NONE);
 
   // net::URLRequestContextGetterObserver implementation.
   void OnContextShuttingDown() override;
@@ -55,14 +54,14 @@ class CONTENT_EXPORT WebSocketManager
   ~WebSocketManager() override;
   void DoCreateWebSocket(int frame_id,
                          url::Origin origin,
-                         network::mojom::WebSocketRequest request);
+                         blink::mojom::WebSocketRequest request);
   base::TimeDelta CalculateDelay() const;
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
   virtual WebSocketImpl* CreateWebSocketImpl(
       WebSocketImpl::Delegate* delegate,
-      network::mojom::WebSocketRequest request,
+      blink::mojom::WebSocketRequest request,
       int child_id,
       int frame_id,
       url::Origin origin,

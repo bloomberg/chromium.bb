@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/mojom/websocket.mojom.h"
+#include "third_party/WebKit/public/platform/modules/websockets/websocket.mojom.h"
 #include "url/origin.h"
 
 class GURL;
@@ -29,7 +29,7 @@ class WebSocketChannel;
 namespace content {
 
 // Host of net::WebSocketChannel.
-class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
+class CONTENT_EXPORT WebSocketImpl : public blink::mojom::WebSocket {
  public:
   class Delegate {
    public:
@@ -41,7 +41,7 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
   };
 
   WebSocketImpl(Delegate* delegate,
-                network::mojom::WebSocketRequest request,
+                blink::mojom::WebSocketRequest request,
                 int child_id,
                 int frame_id,
                 url::Origin origin,
@@ -52,14 +52,14 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
   // This function is virtual for testing.
   virtual void GoAway();
 
-  // network::mojom::WebSocket methods:
+  // blink::mojom::WebSocket methods:
   void AddChannelRequest(const GURL& url,
                          const std::vector<std::string>& requested_protocols,
                          const GURL& site_for_cookies,
                          const std::string& user_agent_override,
-                         network::mojom::WebSocketClientPtr client) override;
+                         blink::mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
-                 network::mojom::WebSocketMessageType type,
+                 blink::mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
   void SendFlowControl(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
@@ -77,9 +77,9 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
                   const std::string& user_agent_override);
 
   Delegate* delegate_;
-  mojo::Binding<network::mojom::WebSocket> binding_;
+  mojo::Binding<blink::mojom::WebSocket> binding_;
 
-  network::mojom::WebSocketClientPtr client_;
+  blink::mojom::WebSocketClientPtr client_;
 
   // The channel we use to send events to the network.
   std::unique_ptr<net::WebSocketChannel> channel_;
