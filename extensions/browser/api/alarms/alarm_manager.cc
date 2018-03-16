@@ -20,6 +20,7 @@
 #include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/api/alarms.h"
@@ -230,6 +231,11 @@ void AlarmManager::SetClockForTesting(base::Clock* clock) {
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<AlarmManager>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
+
+template <>
+void BrowserContextKeyedAPIFactory<AlarmManager>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionRegistryFactory::GetInstance());
+}
 
 // static
 BrowserContextKeyedAPIFactory<AlarmManager>*
