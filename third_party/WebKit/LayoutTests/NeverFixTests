@@ -275,8 +275,7 @@ crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
 crbug.com/642912 http/tests/wasm/ [ WontFix ]
 
 # These tests require audio codecs which are generally not available;
-# these tests can still be run manually with --skiped=ignore.
-webaudio/codec-tests/mp3 [ WontFix ]
+# these tests can still be run manually with --skipped=ignore.
 webaudio/codec-tests/aac [ WontFix ]
 
 # WPT for CSS cascade
