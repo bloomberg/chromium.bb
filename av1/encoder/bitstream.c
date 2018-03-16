@@ -2147,22 +2147,19 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   aom_wb_write_bit(wb, seg->enabled);
   if (!seg->enabled) return;
 
-  // Segmentation map
-  if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
-    aom_wb_write_bit(wb, seg->update_map);
-  } else {
+  // Write update flags
+  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     assert(seg->update_map == 1);
-  }
-  if (seg->update_map) {
-    // Select the coding strategy (temporal or spatial)
-    if (!cm->error_resilient_mode) av1_choose_segmap_coding_method(cm, xd);
-
-    // Write out the chosen coding method.
-    if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
+    seg->temporal_update = 0;
+    assert(seg->update_data == 1);
+  } else {
+    aom_wb_write_bit(wb, seg->update_map);
+    if (seg->update_map) {
+      // Select the coding strategy (temporal or spatial)
+      av1_choose_segmap_coding_method(cm, xd);
       aom_wb_write_bit(wb, seg->temporal_update);
-    } else {
-      assert(seg->temporal_update == 0);
     }
+    aom_wb_write_bit(wb, seg->update_data);
   }
 
 #if !CONFIG_SEGMENT_PRED_LAST && CONFIG_SPATIAL_SEGMENTATION
@@ -2170,7 +2167,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 
   // Segmentation data
-  aom_wb_write_bit(wb, seg->update_data);
   if (seg->update_data) {
     for (i = 0; i < MAX_SEGMENTS; i++) {
       for (j = 0; j < SEG_LVL_MAX; j++) {

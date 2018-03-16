@@ -830,6 +830,9 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #if CONFIG_SEGMENT_PRED_LAST
     if (cm->cur_frame->seg_map)
       memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
+
+    memset(seg, 0, sizeof(*seg));
+    segfeatures_copy(&cm->cur_frame->seg, seg);
 #endif  // CONFIG_SEGMENT_PRED_LAST
     return;
   }
@@ -842,18 +845,20 @@ static void setup_segmentation(AV1_COMMON *const cm,
     cm->last_frame_seg_map = NULL;
   }
 #endif
-  // Segmentation map update
+  // Read update flags
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+    // These frames can't use previous frames, so must signal map + features
     seg->update_map = 1;
+    seg->temporal_update = 0;
+    seg->update_data = 1;
   } else {
     seg->update_map = aom_rb_read_bit(rb);
-  }
-  if (seg->update_map) {
-    if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
-      seg->temporal_update = 0;
-    } else {
+    if (seg->update_map) {
       seg->temporal_update = aom_rb_read_bit(rb);
+    } else {
+      seg->temporal_update = 0;
     }
+    seg->update_data = aom_rb_read_bit(rb);
   }
 
 #if !CONFIG_SEGMENT_PRED_LAST && CONFIG_SPATIAL_SEGMENTATION
@@ -861,7 +866,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #endif
 
   // Segmentation data update
-  seg->update_data = aom_rb_read_bit(rb);
   if (seg->update_data) {
     av1_clearall_segfeatures(seg);
 
