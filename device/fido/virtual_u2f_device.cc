@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "crypto/ec_private_key.h"
@@ -81,6 +84,13 @@ void AppendTo(std::vector<uint8_t>* dst, const T& src) {
   dst->insert(dst->end(), std::begin(src), std::end(src));
 }
 
+// Returns an error response with the given status.
+base::Optional<std::vector<uint8_t>> ErrorStatus(
+    apdu::ApduResponse::Status status) {
+  return apdu::ApduResponse(std::vector<uint8_t>(), status)
+      .GetEncodedResponse();
+}
+
 }  // namespace
 
 VirtualU2fDevice::RegistrationData::RegistrationData() = default;
@@ -125,40 +135,41 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
                                       DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = apdu::ApduCommand::CreateFromMessage(command);
+
+  base::Optional<std::vector<uint8_t>> response;
+
   switch (parsed_command->ins()) {
     case base::strict_cast<uint8_t>(U2fApduInstruction::kVersion):
       break;
     case base::strict_cast<uint8_t>(U2fApduInstruction::kRegister):
-      DoRegister(parsed_command->ins(), parsed_command->p1(),
-                 parsed_command->p2(), parsed_command->data(), std::move(cb));
+      response = DoRegister(parsed_command->ins(), parsed_command->p1(),
+                            parsed_command->p2(), parsed_command->data());
       break;
     case base::strict_cast<uint8_t>(U2fApduInstruction::kSign):
-      DoSign(parsed_command->ins(), parsed_command->p1(), parsed_command->p2(),
-             parsed_command->data(), std::move(cb));
+      response = DoSign(parsed_command->ins(), parsed_command->p1(),
+                        parsed_command->p2(), parsed_command->data());
       break;
     default:
-      std::move(cb).Run(
-          apdu::ApduResponse(std::vector<uint8_t>(),
-                             apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED)
-              .GetEncodedResponse());
+      response = ErrorStatus(apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED);
   }
+
+  // Call |callback| via the |MessageLoop| because |AuthenticatorImpl| doesn't
+  // support callback hairpinning.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
 }
 
 base::WeakPtr<U2fDevice> VirtualU2fDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void VirtualU2fDevice::DoRegister(uint8_t ins,
-                                  uint8_t p1,
-                                  uint8_t p2,
-                                  base::span<const uint8_t> data,
-                                  DeviceCallback cb) {
+base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
+    uint8_t ins,
+    uint8_t p1,
+    uint8_t p2,
+    base::span<const uint8_t> data) {
   if (data.size() != 64) {
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_LENGTH)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
   }
 
   // For now we ignore P1 here. Spec says it should always be 0, and TUP is
@@ -219,24 +230,20 @@ void VirtualU2fDevice::DoRegister(uint8_t ins,
                   std::vector<uint8_t>(app_id_hash.begin(), app_id_hash.end()),
                   1);
 
-  std::move(cb).Run(apdu::ApduResponse(std::move(response),
-                                       apdu::ApduResponse::Status::SW_NO_ERROR)
-                        .GetEncodedResponse());
+  return apdu::ApduResponse(std::move(response),
+                            apdu::ApduResponse::Status::SW_NO_ERROR)
+      .GetEncodedResponse();
 }
 
-void VirtualU2fDevice::DoSign(uint8_t ins,
-                              uint8_t p1,
-                              uint8_t p2,
-                              base::span<const uint8_t> data,
-                              DeviceCallback cb) {
+base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
+    uint8_t ins,
+    uint8_t p1,
+    uint8_t p2,
+    base::span<const uint8_t> data) {
   if (!(p1 == kP1CheckOnly || p1 == kP1TupRequiredConsumed ||
         p1 == kP1IndividualAttestation) ||
       p2 != 0) {
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_DATA)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 
   auto challenge_param = data.first(32);
@@ -245,18 +252,10 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
   if (key_handle_length != 32) {
     // Our own keyhandles are always 32 bytes long, if the request has something
     // else then we already know it is not ours.
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_DATA)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
   if (data.size() != 32 + 32 + 1 + key_handle_length) {
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_LENGTH)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
   }
   auto key_handle = data.last(key_handle_length);
 
@@ -265,11 +264,7 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
       std::vector<uint8_t>(key_handle.cbegin(), key_handle.cend()));
 
   if (it == registrations_.end()) {
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_DATA)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 
   base::span<const uint8_t> registered_app_id_hash =
@@ -277,11 +272,7 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
   if (app_id_hash != registered_app_id_hash) {
     // It's important this error looks identical to the previous one, as
     // tokens should not reveal the existence of keyHandles to unrelated appIds.
-    std::move(cb).Run(
-        apdu::ApduResponse(std::vector<uint8_t>(),
-                           apdu::ApduResponse::Status::SW_WRONG_DATA)
-            .GetEncodedResponse());
-    return;
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 
   auto& registration = it->second;
@@ -312,9 +303,9 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
   // Add signature for full response.
   AppendTo(&response, sig);
 
-  std::move(cb).Run(apdu::ApduResponse(std::move(response),
-                                       apdu::ApduResponse::Status::SW_NO_ERROR)
-                        .GetEncodedResponse());
+  return apdu::ApduResponse(std::move(response),
+                            apdu::ApduResponse::Status::SW_NO_ERROR)
+      .GetEncodedResponse();
 }
 
 }  // namespace device
