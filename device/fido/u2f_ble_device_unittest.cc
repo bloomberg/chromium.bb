@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/bluetooth_test.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/mock_u2f_ble_connection.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"

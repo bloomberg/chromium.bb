@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FAKE_U2F_DISCOVERY_H_
-#define DEVICE_FIDO_FAKE_U2F_DISCOVERY_H_
+#ifndef DEVICE_FIDO_FAKE_FIDO_DISCOVERY_H_
+#define DEVICE_FIDO_FAKE_FIDO_DISCOVERY_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "device/fido/u2f_discovery.h"
+#include "device/fido/fido_discovery.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
@@ -21,19 +21,20 @@ class Connector;
 namespace device {
 namespace test {
 
-// Fake U2F discovery simulating the behavior of the production implementations,
-// and can be used to feed U2fRequests with fake/mock U2F devices.
+// Fake FIDO discovery simulating the behavior of the production
+// implementations, and can be used to feed U2fRequests with fake/mock FIDO
+// devices.
 //
-// Most often this class is used together with ScopedFakeU2fDiscoveryFactory:
+// Most often this class is used together with ScopedFakeFidoDiscoveryFactory:
 //
-//   ScopedFakeU2fDiscoveryFactory factory;
+//   ScopedFakeFidoDiscoveryFactory factory;
 //   auto* fake_hid_discovery = factory.ForgeNextHidDiscovery();
 //   auto* fake_ble_discovery = factory.ForgeNextBleDiscovery();
 //
 //   // Run the production code that will eventually call:
-//   //// U2fDiscovery::Create(U2fTransportProtocol::kUsbHumanInterfaceDevice)
+//   //// FidoDiscovery::Create(U2fTransportProtocol::kUsbHumanInterfaceDevice)
 //   //// hid_instance->Start();
-//   //// U2fDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy)
+//   //// FidoDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy)
 //   //// ble_instance->Start();
 //
 //   // Wait, i.e. spin the message loop until the fake discoveries are started.
@@ -41,14 +42,14 @@ namespace test {
 //   fake_ble_discovery->WaitForCallToStart();
 //
 //   // Add devices to be discovered immediately.
-//   fake_hid_discovery->AddDevice(std::make_unique<MockU2fDevice>(...));
+//   fake_hid_discovery->AddDevice(std::make_unique<MockFidoDevice>(...));
 //
 //   // Start discoveries (HID succeeds, BLE fails).
 //   fake_hid_discovery->SimulateStart(true /* success */);
 //   fake_ble_discovery->SimulateStart(false /* success */);
 //
 //   // Add devices discovered after doing some heavy lifting.
-//   fake_hid_discovery->AddDevice(std::make_unique<MockU2fDevice>(...));
+//   fake_hid_discovery->AddDevice(std::make_unique<MockFidoDevice>(...));
 //
 //   // Run the production code that will eventually stop the discovery.
 //   //// hid_instance->Stop();
@@ -57,8 +58,8 @@ namespace test {
 //   // the discovery starting successfully.
 //   fake_hid_discovery->WaitForCallToStopAndSimulateSuccess();
 //
-class FakeU2fDiscovery : public U2fDiscovery,
-                         public base::SupportsWeakPtr<FakeU2fDiscovery> {
+class FakeFidoDiscovery : public FidoDiscovery,
+                          public base::SupportsWeakPtr<FakeFidoDiscovery> {
  public:
   enum class StartStopMode {
     // SimulateStarted()/SimualteStopped() needs to be called manually after the
@@ -69,9 +70,9 @@ class FakeU2fDiscovery : public U2fDiscovery,
     kAutomatic
   };
 
-  explicit FakeU2fDiscovery(U2fTransportProtocol transport,
-                            StartStopMode mode = StartStopMode::kManual);
-  ~FakeU2fDiscovery() override;
+  explicit FakeFidoDiscovery(U2fTransportProtocol transport,
+                             StartStopMode mode = StartStopMode::kManual);
+  ~FakeFidoDiscovery() override;
 
   // Blocks until start/stop is requested.
   void WaitForCallToStart();
@@ -91,10 +92,10 @@ class FakeU2fDiscovery : public U2fDiscovery,
 
   // Tests are to directly call Add/RemoveDevice to simulate adding/removing
   // devices. Observers are automatically notified.
-  using U2fDiscovery::AddDevice;
-  using U2fDiscovery::RemoveDevice;
+  using FidoDiscovery::AddDevice;
+  using FidoDiscovery::RemoveDevice;
 
-  // U2fDiscovery:
+  // FidoDiscovery:
   U2fTransportProtocol GetTransportProtocol() const override;
   void Start() override;
   void Stop() override;
@@ -111,43 +112,43 @@ class FakeU2fDiscovery : public U2fDiscovery,
   base::OnceClosure start_called_callback_;
   base::OnceClosure stop_called_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeU2fDiscovery);
+  DISALLOW_COPY_AND_ASSIGN(FakeFidoDiscovery);
 };
 
-// Overrides U2fDiscovery::Create to construct FakeU2fDiscoveries while this
+// Overrides FidoDiscovery::Create to construct FakeFidoDiscoveries while this
 // instance is in scope.
-class ScopedFakeU2fDiscoveryFactory
-    : public ::device::internal::ScopedU2fDiscoveryFactory {
+class ScopedFakeFidoDiscoveryFactory
+    : public ::device::internal::ScopedFidoDiscoveryFactory {
  public:
-  using StartStopMode = FakeU2fDiscovery::StartStopMode;
+  using StartStopMode = FakeFidoDiscovery::StartStopMode;
 
-  ScopedFakeU2fDiscoveryFactory();
-  ~ScopedFakeU2fDiscoveryFactory();
+  ScopedFakeFidoDiscoveryFactory();
+  ~ScopedFakeFidoDiscoveryFactory();
 
   // Constructs a fake BLE/HID discovery to be returned from the next call to
-  // U2fDiscovery::Create. Returns a raw pointer to the fake so that tests can
+  // FidoDiscovery::Create. Returns a raw pointer to the fake so that tests can
   // set it up according to taste.
   //
   // It is an error not to call the relevant method prior to a call to
-  // U2fDiscovery::Create with the respective transport.
-  FakeU2fDiscovery* ForgeNextHidDiscovery(
+  // FidoDiscovery::Create with the respective transport.
+  FakeFidoDiscovery* ForgeNextHidDiscovery(
       StartStopMode mode = StartStopMode::kManual);
-  FakeU2fDiscovery* ForgeNextBleDiscovery(
+  FakeFidoDiscovery* ForgeNextBleDiscovery(
       StartStopMode mode = StartStopMode::kManual);
 
  protected:
-  std::unique_ptr<U2fDiscovery> CreateU2fDiscovery(
+  std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
       U2fTransportProtocol transport,
       ::service_manager::Connector* connector) override;
 
  private:
-  std::unique_ptr<FakeU2fDiscovery> next_hid_discovery_;
-  std::unique_ptr<FakeU2fDiscovery> next_ble_discovery_;
+  std::unique_ptr<FakeFidoDiscovery> next_hid_discovery_;
+  std::unique_ptr<FakeFidoDiscovery> next_ble_discovery_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedFakeU2fDiscoveryFactory);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeFidoDiscoveryFactory);
 };
 
 }  // namespace test
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FAKE_U2F_DISCOVERY_H_
+#endif  // DEVICE_FIDO_FAKE_FIDO_DISCOVERY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_DISCOVERY_H_
-#define DEVICE_FIDO_U2F_DISCOVERY_H_
+#ifndef DEVICE_FIDO_FIDO_DISCOVERY_H_
+#define DEVICE_FIDO_FIDO_DISCOVERY_H_
 
 #include <functional>
 #include <map>
@@ -24,21 +24,22 @@ class Connector;
 
 namespace device {
 
-class U2fDevice;
+class FidoDevice;
 
 namespace internal {
-class ScopedU2fDiscoveryFactory;
+class ScopedFidoDiscoveryFactory;
 }
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
  public:
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
    public:
     virtual ~Observer();
-    virtual void DiscoveryStarted(U2fDiscovery* discovery, bool success) = 0;
-    virtual void DiscoveryStopped(U2fDiscovery* discovery, bool success) = 0;
-    virtual void DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) = 0;
-    virtual void DeviceRemoved(U2fDiscovery* discovery, U2fDevice* device) = 0;
+    virtual void DiscoveryStarted(FidoDiscovery* discovery, bool success) = 0;
+    virtual void DiscoveryStopped(FidoDiscovery* discovery, bool success) = 0;
+    virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
+    virtual void DeviceRemoved(FidoDiscovery* discovery,
+                               FidoDevice* device) = 0;
   };
 
   // Factory function to construct an instance that discovers authenticators on
@@ -46,11 +47,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
   //
   // U2fTransportProtocol::kUsbHumanInterfaceDevice requires specifying a valid
   // |connector| on Desktop, and is not valid on Android.
-  static std::unique_ptr<U2fDiscovery> Create(
+  static std::unique_ptr<FidoDiscovery> Create(
       U2fTransportProtocol transport,
       ::service_manager::Connector* connector);
 
-  virtual ~U2fDiscovery();
+  virtual ~FidoDiscovery();
 
   virtual U2fTransportProtocol GetTransportProtocol() const = 0;
   virtual void Start() = 0;
@@ -61,66 +62,66 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
 
   void NotifyDiscoveryStarted(bool success);
   void NotifyDiscoveryStopped(bool success);
-  void NotifyDeviceAdded(U2fDevice* device);
-  void NotifyDeviceRemoved(U2fDevice* device);
+  void NotifyDeviceAdded(FidoDevice* device);
+  void NotifyDeviceRemoved(FidoDevice* device);
 
-  std::vector<U2fDevice*> GetDevices();
-  std::vector<const U2fDevice*> GetDevices() const;
+  std::vector<FidoDevice*> GetDevices();
+  std::vector<const FidoDevice*> GetDevices() const;
 
-  U2fDevice* GetDevice(base::StringPiece device_id);
-  const U2fDevice* GetDevice(base::StringPiece device_id) const;
+  FidoDevice* GetDevice(base::StringPiece device_id);
+  const FidoDevice* GetDevice(base::StringPiece device_id) const;
 
  protected:
-  U2fDiscovery();
+  FidoDiscovery();
 
-  virtual bool AddDevice(std::unique_ptr<U2fDevice> device);
+  virtual bool AddDevice(std::unique_ptr<FidoDevice> device);
   virtual bool RemoveDevice(base::StringPiece device_id);
 
-  std::map<std::string, std::unique_ptr<U2fDevice>, std::less<>> devices_;
+  std::map<std::string, std::unique_ptr<FidoDevice>, std::less<>> devices_;
   base::ObserverList<Observer> observers_;
 
  private:
-  friend class internal::ScopedU2fDiscoveryFactory;
+  friend class internal::ScopedFidoDiscoveryFactory;
 
   // Factory function can be overridden by tests to construct fakes.
   using FactoryFuncPtr = decltype(&Create);
   static FactoryFuncPtr g_factory_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fDiscovery);
+  DISALLOW_COPY_AND_ASSIGN(FidoDiscovery);
 };
 
 namespace internal {
 
-// Base class for a scoped override of U2fDiscovery::Create, used in unit tests,
-// layout tests, and when running with the Web Authn Testing API enabled.
+// Base class for a scoped override of FidoDiscovery::Create, used in unit
+// tests, layout tests, and when running with the Web Authn Testing API enabled.
 //
 // While there is a subclass instance in scope, calls to the factory method will
-// be hijacked such that the derived class's CreateU2fDiscovery method will be
+// be hijacked such that the derived class's CreateFidoDiscovery method will be
 // invoked instead.
-class COMPONENT_EXPORT(DEVICE_FIDO) ScopedU2fDiscoveryFactory {
+class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
  public:
-  ScopedU2fDiscoveryFactory();
-  ~ScopedU2fDiscoveryFactory();
+  ScopedFidoDiscoveryFactory();
+  ~ScopedFidoDiscoveryFactory();
 
  protected:
-  virtual std::unique_ptr<U2fDiscovery> CreateU2fDiscovery(
+  virtual std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
       U2fTransportProtocol transport,
       ::service_manager::Connector* connector) = 0;
 
  private:
-  static std::unique_ptr<U2fDiscovery>
-  ForwardCreateU2fDiscoveryToCurrentFactory(
+  static std::unique_ptr<FidoDiscovery>
+  ForwardCreateFidoDiscoveryToCurrentFactory(
       U2fTransportProtocol transport,
       ::service_manager::Connector* connector);
 
-  static ScopedU2fDiscoveryFactory* g_current_factory;
-  ScopedU2fDiscoveryFactory* original_factory_;
-  U2fDiscovery::FactoryFuncPtr original_factory_func_;
+  static ScopedFidoDiscoveryFactory* g_current_factory;
+  ScopedFidoDiscoveryFactory* original_factory_;
+  FidoDiscovery::FactoryFuncPtr original_factory_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedU2fDiscoveryFactory);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFidoDiscoveryFactory);
 };
 
 }  // namespace internal
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_DISCOVERY_H_
+#endif  // DEVICE_FIDO_FIDO_DISCOVERY_H_

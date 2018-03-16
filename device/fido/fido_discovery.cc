@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_discovery.h"
+#include "device/fido/fido_discovery.h"
 
 #include <utility>
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "device/fido/fido_device.h"
 #include "device/fido/u2f_ble_discovery.h"
-#include "device/fido/u2f_device.h"
 
 // HID is not supported on Android.
 #if !defined(OS_ANDROID)
-#include "device/fido/u2f_hid_discovery.h"
+#include "device/fido/fido_hid_discovery.h"
 #endif  // !defined(OS_ANDROID)
 
 namespace device {
 
 namespace {
 
-std::unique_ptr<U2fDiscovery> CreateU2fDiscoveryImpl(
+std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
     U2fTransportProtocol transport,
     service_manager::Connector* connector) {
-  std::unique_ptr<U2fDiscovery> discovery;
+  std::unique_ptr<FidoDiscovery> discovery;
   switch (transport) {
     case U2fTransportProtocol::kUsbHumanInterfaceDevice:
 #if !defined(OS_ANDROID)
       DCHECK(connector);
-      discovery = std::make_unique<U2fHidDiscovery>(connector);
+      discovery = std::make_unique<FidoHidDiscovery>(connector);
 #else
       NOTREACHED() << "USB HID not supported on Android.";
 #endif  // !defined(OS_ANDROID)
@@ -45,77 +45,78 @@ std::unique_ptr<U2fDiscovery> CreateU2fDiscoveryImpl(
 
 }  // namespace
 
-U2fDiscovery::Observer::~Observer() = default;
+FidoDiscovery::Observer::~Observer() = default;
 
 // static
-U2fDiscovery::FactoryFuncPtr U2fDiscovery::g_factory_func_ =
-    &CreateU2fDiscoveryImpl;
+FidoDiscovery::FactoryFuncPtr FidoDiscovery::g_factory_func_ =
+    &CreateFidoDiscoveryImpl;
 
 // static
-std::unique_ptr<U2fDiscovery> U2fDiscovery::Create(
+std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
     U2fTransportProtocol transport,
     service_manager::Connector* connector) {
   return (*g_factory_func_)(transport, connector);
 }
 
-U2fDiscovery::U2fDiscovery() = default;
-U2fDiscovery::~U2fDiscovery() = default;
+FidoDiscovery::FidoDiscovery() = default;
 
-void U2fDiscovery::AddObserver(Observer* observer) {
+FidoDiscovery::~FidoDiscovery() = default;
+
+void FidoDiscovery::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void U2fDiscovery::RemoveObserver(Observer* observer) {
+void FidoDiscovery::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void U2fDiscovery::NotifyDiscoveryStarted(bool success) {
+void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
   for (auto& observer : observers_)
     observer.DiscoveryStarted(this, success);
 }
 
-void U2fDiscovery::NotifyDiscoveryStopped(bool success) {
+void FidoDiscovery::NotifyDiscoveryStopped(bool success) {
   for (auto& observer : observers_)
     observer.DiscoveryStopped(this, success);
 }
 
-void U2fDiscovery::NotifyDeviceAdded(U2fDevice* device) {
+void FidoDiscovery::NotifyDeviceAdded(FidoDevice* device) {
   for (auto& observer : observers_)
     observer.DeviceAdded(this, device);
 }
 
-void U2fDiscovery::NotifyDeviceRemoved(U2fDevice* device) {
+void FidoDiscovery::NotifyDeviceRemoved(FidoDevice* device) {
   for (auto& observer : observers_)
     observer.DeviceRemoved(this, device);
 }
 
-std::vector<U2fDevice*> U2fDiscovery::GetDevices() {
-  std::vector<U2fDevice*> devices;
+std::vector<FidoDevice*> FidoDiscovery::GetDevices() {
+  std::vector<FidoDevice*> devices;
   devices.reserve(devices_.size());
   for (const auto& device : devices_)
     devices.push_back(device.second.get());
   return devices;
 }
 
-std::vector<const U2fDevice*> U2fDiscovery::GetDevices() const {
-  std::vector<const U2fDevice*> devices;
+std::vector<const FidoDevice*> FidoDiscovery::GetDevices() const {
+  std::vector<const FidoDevice*> devices;
   devices.reserve(devices_.size());
   for (const auto& device : devices_)
     devices.push_back(device.second.get());
   return devices;
 }
 
-U2fDevice* U2fDiscovery::GetDevice(base::StringPiece device_id) {
-  return const_cast<U2fDevice*>(
-      static_cast<const U2fDiscovery*>(this)->GetDevice(device_id));
+FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) {
+  return const_cast<FidoDevice*>(
+      static_cast<const FidoDiscovery*>(this)->GetDevice(device_id));
 }
 
-const U2fDevice* U2fDiscovery::GetDevice(base::StringPiece device_id) const {
+const FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) const {
   auto found = devices_.find(device_id);
   return found != devices_.end() ? found->second.get() : nullptr;
 }
 
-bool U2fDiscovery::AddDevice(std::unique_ptr<U2fDevice> device) {
+bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   std::string device_id = device->GetId();
   const auto result = devices_.emplace(std::move(device_id), std::move(device));
   if (result.second)
@@ -123,7 +124,7 @@ bool U2fDiscovery::AddDevice(std::unique_ptr<U2fDevice> device) {
   return result.second;
 }
 
-bool U2fDiscovery::RemoveDevice(base::StringPiece device_id) {
+bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {
   auto found = devices_.find(device_id);
   if (found == devices_.end())
     return false;
@@ -134,33 +135,33 @@ bool U2fDiscovery::RemoveDevice(base::StringPiece device_id) {
   return true;
 }
 
-// ScopedU2fDiscoveryFactory -------------------------------------------------
+// ScopedFidoDiscoveryFactory -------------------------------------------------
 
 namespace internal {
 
-ScopedU2fDiscoveryFactory::ScopedU2fDiscoveryFactory() {
+ScopedFidoDiscoveryFactory::ScopedFidoDiscoveryFactory() {
   original_factory_ = std::exchange(g_current_factory, this);
   original_factory_func_ =
-      std::exchange(U2fDiscovery::g_factory_func_,
-                    &ForwardCreateU2fDiscoveryToCurrentFactory);
+      std::exchange(FidoDiscovery::g_factory_func_,
+                    &ForwardCreateFidoDiscoveryToCurrentFactory);
 }
 
-ScopedU2fDiscoveryFactory::~ScopedU2fDiscoveryFactory() {
+ScopedFidoDiscoveryFactory::~ScopedFidoDiscoveryFactory() {
   g_current_factory = original_factory_;
-  U2fDiscovery::g_factory_func_ = original_factory_func_;
+  FidoDiscovery::g_factory_func_ = original_factory_func_;
 }
 
 // static
-std::unique_ptr<U2fDiscovery>
-ScopedU2fDiscoveryFactory::ForwardCreateU2fDiscoveryToCurrentFactory(
+std::unique_ptr<FidoDiscovery>
+ScopedFidoDiscoveryFactory::ForwardCreateFidoDiscoveryToCurrentFactory(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {
   DCHECK(g_current_factory);
-  return g_current_factory->CreateU2fDiscovery(transport, connector);
+  return g_current_factory->CreateFidoDiscovery(transport, connector);
 }
 
 // static
-ScopedU2fDiscoveryFactory* ScopedU2fDiscoveryFactory::g_current_factory =
+ScopedFidoDiscoveryFactory* ScopedFidoDiscoveryFactory::g_current_factory =
     nullptr;
 
 }  // namespace internal

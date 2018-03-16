@@ -14,8 +14,8 @@
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_hid_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_hid_device.h"
 #include "device/fido/u2f_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -91,23 +91,23 @@ device::mojom::HidDeviceInfoPtr TestHidDevice() {
   return hid_device;
 }
 
-class U2fDeviceEnumerateCallbackReceiver
+class FidoDeviceEnumerateCallbackReceiver
     : public test::TestCallbackReceiver<std::vector<mojom::HidDeviceInfoPtr>> {
  public:
-  explicit U2fDeviceEnumerateCallbackReceiver(
+  explicit FidoDeviceEnumerateCallbackReceiver(
       device::mojom::HidManager* hid_manager)
       : hid_manager_(hid_manager) {}
-  ~U2fDeviceEnumerateCallbackReceiver() = default;
+  ~FidoDeviceEnumerateCallbackReceiver() = default;
 
-  std::vector<std::unique_ptr<U2fHidDevice>> TakeReturnedDevicesFiltered() {
-    std::vector<std::unique_ptr<U2fHidDevice>> filtered_results;
+  std::vector<std::unique_ptr<FidoHidDevice>> TakeReturnedDevicesFiltered() {
+    std::vector<std::unique_ptr<FidoHidDevice>> filtered_results;
     std::vector<mojom::HidDeviceInfoPtr> results;
     std::tie(results) = TakeResult();
     for (auto& device_info : results) {
       HidDeviceFilter filter;
       filter.SetUsagePage(0xf1d0);
       if (filter.Matches(*device_info)) {
-        filtered_results.push_back(std::make_unique<U2fHidDevice>(
+        filtered_results.push_back(std::make_unique<FidoHidDevice>(
             std::move(device_info), hid_manager_));
       }
     }
@@ -117,7 +117,7 @@ class U2fDeviceEnumerateCallbackReceiver
  private:
   device::mojom::HidManager* hid_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fDeviceEnumerateCallbackReceiver);
+  DISALLOW_COPY_AND_ASSIGN(FidoDeviceEnumerateCallbackReceiver);
 };
 
 using TestDeviceCallbackReceiver =
@@ -125,9 +125,9 @@ using TestDeviceCallbackReceiver =
 
 }  // namespace
 
-class U2fHidDeviceTest : public ::testing::Test {
+class FidoHidDeviceTest : public ::testing::Test {
  public:
-  U2fHidDeviceTest()
+  FidoHidDeviceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
@@ -142,21 +142,21 @@ class U2fHidDeviceTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
+TEST_F(FidoHidDeviceTest, TestConnectionFailure) {
   // Setup and enumerate mock device.
-  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   auto hid_device = TestHidDevice();
   fake_hid_manager_->AddDevice(std::move(hid_device));
   hid_manager_->GetDevices(receiver.callback());
   receiver.WaitForCallback();
 
-  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
       receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
   // Put device in IDLE state.
-  device->state_ = U2fDevice::State::kReady;
+  device->state_ = FidoDevice::State::kReady;
 
   // Manually delete connection.
   device->connection_ = nullptr;
@@ -172,23 +172,23 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_3.callback());
 
-  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
   EXPECT_FALSE(std::get<0>(*receiver_1.result()));
   EXPECT_FALSE(std::get<0>(*receiver_2.result()));
   EXPECT_FALSE(std::get<0>(*receiver_3.result()));
 }
 
-TEST_F(U2fHidDeviceTest, TestDeviceError) {
+TEST_F(FidoHidDeviceTest, TestDeviceError) {
   // Setup and enumerate mock device.
-  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
 
   auto hid_device = TestHidDevice();
   fake_hid_manager_->AddDevice(std::move(hid_device));
   hid_manager_->GetDevices(receiver.callback());
   receiver.WaitForCallback();
 
-  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
       receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
@@ -196,15 +196,14 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
 
   // Mock connection where writes always fail.
   FakeHidConnection::mock_connection_error_ = true;
-  device->state_ = U2fDevice::State::kReady;
+  device->state_ = FidoDevice::State::kReady;
 
   TestDeviceCallbackReceiver receiver_0;
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_0.callback());
   EXPECT_FALSE(std::get<0>(*receiver_0.result()));
-  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
-  // Add pending transactions manually and ensure they are processed.
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
   device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
@@ -217,13 +216,13 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
                          receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;
 
-  EXPECT_EQ(U2fDevice::State::kDeviceError, device->state_);
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
   EXPECT_FALSE(std::get<0>(*receiver_1.result()));
   EXPECT_FALSE(std::get<0>(*receiver_2.result()));
   EXPECT_FALSE(std::get<0>(*receiver_3.result()));
 }
 
-TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
+TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
   const std::vector<uint8_t> kIncorrectNonce = {0x00, 0x00, 0x00, 0x00,
                                                 0x00, 0x00, 0x00, 0x00};
 
@@ -283,13 +282,12 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
   fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
                                                std::move(connection_client));
 
-  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   hid_manager_->GetDevices(receiver.callback());
   receiver.WaitForCallback();
 
-  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
       receiver.TakeReturnedDevicesFiltered();
-
   ASSERT_EQ(1u, u2f_devices.size());
   auto& device = u2f_devices.front();
 

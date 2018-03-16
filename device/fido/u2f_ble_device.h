@@ -18,15 +18,15 @@
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_device.h"
 #include "device/fido/u2f_ble_connection.h"
 #include "device/fido/u2f_ble_transaction.h"
-#include "device/fido/u2f_device.h"
 
 namespace device {
 
 class U2fBleFrame;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public FidoDevice {
  public:
   using FrameCallback = U2fBleTransaction::FrameCallback;
   explicit U2fBleDevice(std::string address);
@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
   void SendPing(std::vector<uint8_t> data, DeviceCallback callback);
   static std::string GetId(base::StringPiece address);
 
-  // U2fDevice:
+  // FidoDevice:
   void TryWink(WinkCallback callback) override;
   std::string GetId() const override;
 
@@ -46,10 +46,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
   U2fBleConnection::ReadCallback GetReadCallbackForTesting();
 
  protected:
-  // U2fDevice:
+  // FidoDevice:
   void DeviceTransact(std::vector<uint8_t> command,
                       DeviceCallback callback) override;
-  base::WeakPtr<U2fDevice> GetWeakPtr() override;
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
   void Transition();

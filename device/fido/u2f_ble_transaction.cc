@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_ble_connection.h"
-#include "device/fido/u2f_device.h"
 
 namespace device {
 

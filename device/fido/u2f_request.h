@@ -18,8 +18,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_device.h"
-#include "device/fido/u2f_discovery.h"
+#include "device/fido/fido_device.h"
+#include "device/fido/fido_discovery.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
@@ -28,7 +28,8 @@ class Connector;
 
 namespace device {
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
+    : public FidoDiscovery::Observer {
  public:
   using VersionCallback = base::OnceCallback<void(ProtocolVersion version)>;
 
@@ -75,11 +76,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
   // Starts sign, register, and version request transaction on
   // |current_device_|.
   void InitiateDeviceTransaction(base::Optional<std::vector<uint8_t>> cmd,
-                                 U2fDevice::DeviceCallback callback);
+                                 FidoDevice::DeviceCallback callback);
   // Callback function to U2F version request. If non-legacy version request
   // fails, retry with legacy version request.
   void OnDeviceVersionRequest(VersionCallback callback,
-                              base::WeakPtr<U2fDevice> device,
+                              base::WeakPtr<FidoDevice> device,
                               bool legacy,
                               base::Optional<std::vector<uint8_t>> response);
 
@@ -93,11 +94,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
   // gets popped and becomes the new |current_device_|. Once all |devices_| are
   // exhausted, |attempted_devices_| get moved into |devices_| and
   // |current_device_| is reset.
-  U2fDevice* current_device_ = nullptr;
-  std::list<U2fDevice*> devices_;
-  std::list<U2fDevice*> attempted_devices_;
+  FidoDevice* current_device_ = nullptr;
+  std::list<FidoDevice*> devices_;
+  std::list<FidoDevice*> attempted_devices_;
   State state_;
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries_;
+  std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
   std::vector<uint8_t> application_parameter_;
   std::vector<uint8_t> challenge_digest_;
   std::vector<std::vector<uint8_t>> registered_keys_;
@@ -111,11 +112,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveriesWithFailures);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestLegacyVersionRequest);
 
-  // U2fDiscovery::Observer
-  void DiscoveryStarted(U2fDiscovery* discovery, bool success) override;
-  void DiscoveryStopped(U2fDiscovery* discovery, bool success) override;
-  void DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) override;
-  void DeviceRemoved(U2fDiscovery* discovery, U2fDevice* device) override;
+  // FidoDiscovery::Observer
+  void DiscoveryStarted(FidoDiscovery* discovery, bool success) override;
+  void DiscoveryStopped(FidoDiscovery* discovery, bool success) override;
+  void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) override;
+  void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) override;
 
   void IterateDevice();
   void OnWaitComplete();

@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/fido/u2f_discovery.h"
+#include "device/fido/fido_discovery.h"
 
 namespace device {
 
@@ -21,13 +21,13 @@ class BluetoothDiscoverySession;
 class BluetoothUUID;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDiscovery
-    : public U2fDiscovery,
+    : public FidoDiscovery,
       BluetoothAdapter::Observer {
  public:
   U2fBleDiscovery();
   ~U2fBleDiscovery() override;
 
-  // U2fDiscovery:
+  // FidoDiscovery:
   U2fTransportProtocol GetTransportProtocol() const override;
   void Start() override;
   void Stop() override;

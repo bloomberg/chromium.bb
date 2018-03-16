@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_MOCK_U2F_DEVICE_H_
-#define DEVICE_FIDO_MOCK_U2F_DEVICE_H_
+#ifndef DEVICE_FIDO_MOCK_FIDO_DEVICE_H_
+#define DEVICE_FIDO_MOCK_FIDO_DEVICE_H_
 
 #include <stdint.h>
 
@@ -12,15 +12,15 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/fido/u2f_device.h"
+#include "device/fido/fido_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 
-class MockU2fDevice : public U2fDevice {
+class MockFidoDevice : public FidoDevice {
  public:
-  MockU2fDevice();
-  ~MockU2fDevice() override;
+  MockFidoDevice();
+  ~MockFidoDevice() override;
 
   // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
@@ -36,7 +36,7 @@ class MockU2fDevice : public U2fDevice {
                void(const std::vector<uint8_t>& command, DeviceCallback& cb));
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
 
-  base::WeakPtr<U2fDevice> GetWeakPtr() override;
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
   static void NotSatisfied(const std::vector<uint8_t>& command,
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,
@@ -52,11 +52,11 @@ class MockU2fDevice : public U2fDevice {
   static void WinkDoNothing(WinkCallback& cb);
 
  private:
-  base::WeakPtrFactory<U2fDevice> weak_factory_;
+  base::WeakPtrFactory<FidoDevice> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockU2fDevice);
+  DISALLOW_COPY_AND_ASSIGN(MockFidoDevice);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_MOCK_U2F_DEVICE_H_
+#endif  // DEVICE_FIDO_MOCK_FIDO_DEVICE_H_

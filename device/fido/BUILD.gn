@@ -39,6 +39,10 @@ component("fido") {
     "fido_ble_uuids.h",
     "fido_constants.cc",
     "fido_constants.h",
+    "fido_device.cc",
+    "fido_device.h",
+    "fido_discovery.cc",
+    "fido_discovery.h",
     "fido_hid_message.cc",
     "fido_hid_message.h",
     "fido_hid_packet.cc",
@@ -69,10 +73,6 @@ component("fido") {
     "u2f_ble_frames.h",
     "u2f_ble_transaction.cc",
     "u2f_ble_transaction.h",
-    "u2f_device.cc",
-    "u2f_device.h",
-    "u2f_discovery.cc",
-    "u2f_discovery.h",
     "u2f_parsing_utils.cc",
     "u2f_parsing_utils.h",
     "u2f_register.cc",
@@ -108,10 +108,10 @@ component("fido") {
   # HID is not supported on Android.
   if (!is_android) {
     sources += [
-      "u2f_hid_device.cc",
-      "u2f_hid_device.h",
-      "u2f_hid_discovery.cc",
-      "u2f_hid_discovery.h",
+      "fido_hid_device.cc",
+      "fido_hid_device.h",
+      "fido_hid_discovery.cc",
+      "fido_hid_discovery.h",
     ]
 
     deps += [
@@ -125,12 +125,12 @@ source_set("mocks") {
   testonly = true
 
   sources = [
+    "mock_fido_device.cc",
+    "mock_fido_device.h",
+    "mock_fido_discovery_observer.cc",
+    "mock_fido_discovery_observer.h",
     "mock_u2f_ble_connection.cc",
     "mock_u2f_ble_connection.h",
-    "mock_u2f_device.cc",
-    "mock_u2f_device.h",
-    "mock_u2f_discovery_observer.cc",
-    "mock_u2f_discovery_observer.h",
   ]
 
   deps = [
@@ -204,8 +204,8 @@ is_linux_without_udev = is_linux && !use_udev
 source_set("test_support") {
   testonly = true
   sources = [
-    "fake_u2f_discovery.cc",
-    "fake_u2f_discovery.h",
+    "fake_fido_discovery.cc",
+    "fake_fido_discovery.h",
     "test_callback_receiver.h",
   ]
   deps = [

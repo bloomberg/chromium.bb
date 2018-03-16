@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fake_u2f_discovery.h"
+#include "device/fido/fake_fido_discovery.h"
 
 #include <utility>
 
@@ -12,53 +12,53 @@
 namespace device {
 namespace test {
 
-// FakeU2fDiscovery ----------------------------------------------------------
+// FakeFidoDiscovery ----------------------------------------------------------
 
-FakeU2fDiscovery::FakeU2fDiscovery(U2fTransportProtocol transport,
-                                   StartStopMode mode)
+FakeFidoDiscovery::FakeFidoDiscovery(U2fTransportProtocol transport,
+                                     StartStopMode mode)
     : transport_(transport),
       mode_(mode),
       start_called_callback_(wait_for_start_loop_.QuitClosure()),
       stop_called_callback_(wait_for_stop_loop_.QuitClosure()) {}
-FakeU2fDiscovery::~FakeU2fDiscovery() = default;
+FakeFidoDiscovery::~FakeFidoDiscovery() = default;
 
-void FakeU2fDiscovery::WaitForCallToStart() {
+void FakeFidoDiscovery::WaitForCallToStart() {
   wait_for_start_loop_.Run();
   ASSERT_FALSE(start_called_callback_);
 }
 
-void FakeU2fDiscovery::WaitForCallToStop() {
+void FakeFidoDiscovery::WaitForCallToStop() {
   wait_for_stop_loop_.Run();
   ASSERT_FALSE(stop_called_callback_);
 }
 
-void FakeU2fDiscovery::SimulateStarted(bool success) {
+void FakeFidoDiscovery::SimulateStarted(bool success) {
   ASSERT_FALSE(is_running_);
   is_running_ = success;
   NotifyDiscoveryStarted(success);
 }
 
-void FakeU2fDiscovery::SimulateStopped(bool success) {
+void FakeFidoDiscovery::SimulateStopped(bool success) {
   ASSERT_TRUE(is_running_);
   is_running_ = !success;
   NotifyDiscoveryStopped(success);
 }
 
-void FakeU2fDiscovery::WaitForCallToStartAndSimulateSuccess() {
+void FakeFidoDiscovery::WaitForCallToStartAndSimulateSuccess() {
   WaitForCallToStart();
   SimulateStarted(true /* success */);
 }
 
-void FakeU2fDiscovery::WaitForCallToStopAndSimulateSuccess() {
+void FakeFidoDiscovery::WaitForCallToStopAndSimulateSuccess() {
   WaitForCallToStop();
   SimulateStopped(true /* success */);
 }
 
-U2fTransportProtocol FakeU2fDiscovery::GetTransportProtocol() const {
+U2fTransportProtocol FakeFidoDiscovery::GetTransportProtocol() const {
   return transport_;
 }
 
-void FakeU2fDiscovery::Start() {
+void FakeFidoDiscovery::Start() {
   if (is_running_)
     return;
 
@@ -69,7 +69,7 @@ void FakeU2fDiscovery::Start() {
     SimulateStarted(true /* success */);
 }
 
-void FakeU2fDiscovery::Stop() {
+void FakeFidoDiscovery::Stop() {
   if (!is_running_)
     return;
 
@@ -80,26 +80,27 @@ void FakeU2fDiscovery::Stop() {
     SimulateStopped(true /* success */);
 }
 
-// ScopedFakeU2fDiscoveryFactory ---------------------------------------------
+// ScopedFakeFidoDiscoveryFactory ---------------------------------------------
 
-ScopedFakeU2fDiscoveryFactory::ScopedFakeU2fDiscoveryFactory() = default;
-ScopedFakeU2fDiscoveryFactory::~ScopedFakeU2fDiscoveryFactory() = default;
+ScopedFakeFidoDiscoveryFactory::ScopedFakeFidoDiscoveryFactory() = default;
+ScopedFakeFidoDiscoveryFactory::~ScopedFakeFidoDiscoveryFactory() = default;
 
-FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextHidDiscovery(
-    FakeU2fDiscovery::StartStopMode mode) {
-  next_hid_discovery_ = std::make_unique<FakeU2fDiscovery>(
+FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextHidDiscovery(
+    FakeFidoDiscovery::StartStopMode mode) {
+  next_hid_discovery_ = std::make_unique<FakeFidoDiscovery>(
       U2fTransportProtocol::kUsbHumanInterfaceDevice, mode);
   return next_hid_discovery_.get();
 }
 
-FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextBleDiscovery(
-    FakeU2fDiscovery::StartStopMode mode) {
-  next_ble_discovery_ = std::make_unique<FakeU2fDiscovery>(
+FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextBleDiscovery(
+    FakeFidoDiscovery::StartStopMode mode) {
+  next_ble_discovery_ = std::make_unique<FakeFidoDiscovery>(
       U2fTransportProtocol::kBluetoothLowEnergy, mode);
   return next_ble_discovery_.get();
 }
 
-std::unique_ptr<U2fDiscovery> ScopedFakeU2fDiscoveryFactory::CreateU2fDiscovery(
+std::unique_ptr<FidoDiscovery>
+ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {
   switch (transport) {
@@ -115,4 +116,5 @@ std::unique_ptr<U2fDiscovery> ScopedFakeU2fDiscoveryFactory::CreateU2fDiscovery(
 }
 
 }  // namespace test
+
 }  // namespace device

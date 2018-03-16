@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_DEVICE_H_
-#define DEVICE_FIDO_U2F_DEVICE_H_
+#ifndef DEVICE_FIDO_FIDO_DEVICE_H_
+#define DEVICE_FIDO_FIDO_DEVICE_H_
 
 #include <stdint.h>
 
@@ -19,9 +19,8 @@
 
 namespace device {
 
-// Device abstraction for an individual U2F device. A U2F device defines the
-// standardized Register, Sign, and GetVersion methods.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
+// Device abstraction for an individual CTAP1.0/CTAP2.0 device.
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
   using WinkCallback = base::OnceClosure;
   using DeviceCallback =
@@ -30,8 +29,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
   // Internal state machine states.
   enum class State { kInit, kConnected, kBusy, kReady, kDeviceError };
 
-  U2fDevice();
-  virtual ~U2fDevice();
+  FidoDevice();
+  virtual ~FidoDevice();
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction. The function must not immediately
   // call (i.e. hairpin) |callback|.
@@ -41,11 +40,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
   virtual std::string GetId() const = 0;
 
  protected:
-  virtual base::WeakPtr<U2fDevice> GetWeakPtr() = 0;
+  virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fDevice);
+  DISALLOW_COPY_AND_ASSIGN(FidoDevice);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_DEVICE_H_
+#endif  // DEVICE_FIDO_FIDO_DEVICE_H_

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_ble_frames.h"
 #include "device/fido/u2f_ble_transaction.h"
 
@@ -86,7 +87,7 @@ void U2fBleDevice::DeviceTransact(std::vector<uint8_t> command,
   Transition();
 }
 
-base::WeakPtr<U2fDevice> U2fBleDevice::GetWeakPtr() {
+base::WeakPtr<FidoDevice> U2fBleDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
