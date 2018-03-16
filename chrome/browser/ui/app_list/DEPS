@@ -2,8 +2,12 @@ include_rules = [
   # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
   "+ash/app_list/model",
 
+  # Code under //ash runs out-of-process in mash so it must be accessed via mojo
+  # interfaces in //ash/public/interfaces. See //ash/README.md.
   # TODO(mash): Change this to "-ash".
   "!ash",
+
+  "+ash/public",
 ]
 
 specific_include_rules = {
