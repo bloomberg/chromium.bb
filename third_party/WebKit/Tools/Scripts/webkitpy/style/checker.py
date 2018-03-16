@@ -142,7 +142,8 @@ _PATH_RULES_SPECIFIER = [
         # Blink style.
         'Source/platform/scheduler',
         'public/platform/scheduler'],
-     ['-readability/parameter_name'])
+     ['-readability/parameter_name',
+      '-readability/control_flow'])
 ]
 
 

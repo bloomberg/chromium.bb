@@ -64,7 +64,7 @@ void LazySchedulerMessageLoopDelegateForTests::RestoreDefaultTaskRunner() {
 }
 
 bool LazySchedulerMessageLoopDelegateForTests::HasMessageLoop() const {
-  return message_loop_ != nullptr;
+  return !!message_loop_;
 }
 
 bool LazySchedulerMessageLoopDelegateForTests::PostDelayedTask(

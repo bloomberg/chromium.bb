@@ -465,11 +465,12 @@ void TaskQueueManagerImpl::NotifyDidProcessTask(
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "TaskQueueManager.QueueOnTaskCompleted");
-    if (task_start_time_sec && task_end_time_sec)
+    if (task_start_time_sec && task_end_time_sec) {
       executing_task.task_queue->OnTaskCompleted(
           executing_task.pending_task, executing_task.task_start_time,
           time_after_task->Now(),
           task_end_thread_time - executing_task.task_start_thread_time);
+    }
   }
 
   if (task_start_time_sec && task_end_time_sec &&

@@ -91,14 +91,11 @@ base::Optional<base::TimeTicks> CPUTimeBudgetPool::GetTimeTasksCanRunUntil(
 
 base::TimeTicks CPUTimeBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
-  if (!is_enabled_ || current_budget_level_->InMicroseconds() >= 0) {
+  if (!is_enabled_ || current_budget_level_->InMicroseconds() >= 0)
     return last_checkpoint_;
-  } else {
-    // Subtract because current_budget is negative.
-    return last_checkpoint_ +
-           (-current_budget_level_ + min_budget_level_to_run_) /
-               cpu_percentage_;
-  }
+  // Subtract because current_budget is negative.
+  return last_checkpoint_ +
+         (-current_budget_level_ + min_budget_level_to_run_) / cpu_percentage_;
 }
 
 void CPUTimeBudgetPool::RecordTaskRunTime(TaskQueue* queue,

@@ -77,13 +77,13 @@ ThreadCPUThrottler::ThrottlingThread::ThrottlingThread(double rate)
     : throttled_thread_handle_(base::PlatformThread::CurrentHandle()) {
 #endif
   SetThrottlingRate(rate);
-  CHECK(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 1) == 0);
+  CHECK_EQ(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 1), 0);
   Start();
 }
 
 ThreadCPUThrottler::ThrottlingThread::~ThrottlingThread() {
   Stop();
-  CHECK(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 0) == 1);
+  CHECK_EQ(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 0), 1);
 }
 
 void ThreadCPUThrottler::ThrottlingThread::SetThrottlingRate(double rate) {

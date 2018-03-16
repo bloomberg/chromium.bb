@@ -58,7 +58,7 @@ TaskQueueImpl::~TaskQueueImpl() {
   // contains a strong reference to this TaskQueueImpl and the
   // TaskQueueManagerImpl destructor calls UnregisterTaskQueue on all task
   // queues.
-  DCHECK(any_thread().task_queue_manager == nullptr)
+  DCHECK(!any_thread().task_queue_manager)
       << "UnregisterTaskQueue must be called first!";
   DCHECK(main_thread_only().on_task_started_handler.is_null());
   DCHECK(main_thread_only().on_task_completed_handler.is_null());
@@ -993,9 +993,10 @@ void TaskQueueImpl::OnTaskCompleted(
     base::TimeTicks start,
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
-  if (!main_thread_only().on_task_completed_handler.is_null())
+  if (!main_thread_only().on_task_completed_handler.is_null()) {
     main_thread_only().on_task_completed_handler.Run(task, start, end,
                                                      thread_time);
+  }
 }
 
 bool TaskQueueImpl::RequiresTaskTiming() const {

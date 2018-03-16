@@ -93,15 +93,11 @@ bool UserModel::IsGestureExpectedSoonImpl(
     const base::TimeTicks now,
     base::TimeDelta* prediction_valid_duration) const {
   if (is_gesture_active_) {
-    if (IsGestureExpectedToContinue(now, prediction_valid_duration)) {
+    if (IsGestureExpectedToContinue(now, prediction_valid_duration))
       return false;
-    } else {
-      // If a gesture is not expected to continue then we expect a subsequent
-      // gesture soon.
-      *prediction_valid_duration =
-          base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
-      return true;
-    }
+    *prediction_valid_duration =
+        base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
+    return true;
   } else {
     // If we've have a finished a gesture then a subsequent gesture is deemed
     // likely.
