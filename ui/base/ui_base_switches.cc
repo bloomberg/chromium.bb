@@ -78,8 +78,9 @@ const char kTopChromeMDMaterialHybrid[] = "material-hybrid";
 // |kTopChromeMD| switch.
 const char kTopChromeMDMaterialTouchOptimized[] = "material-touch-optimized";
 
-// Classic, non-material, mode for the |kTopChromeMD| switch.
-const char kTopChromeMDNonMaterial[] = "non-material";
+// Material design mode that represents a refresh of the Chrome UI for the
+// |kTopChromeMD| switch.
+const char kTopChromeMDMaterialRefresh[] = "material-refresh";
 
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
