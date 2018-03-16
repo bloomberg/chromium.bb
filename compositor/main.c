@@ -469,6 +469,7 @@ usage(int error_code)
 		"  --shell=MODULE\tShell module, defaults to desktop-shell.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
+		"  --xwayland\t\tLoad the xwayland module\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
 		"  --log=FILE\t\tLog to the given file\n"
 		"  -c, --config=FILE\tConfig file to load, defaults to weston.ini\n"
