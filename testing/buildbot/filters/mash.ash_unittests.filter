@@ -89,6 +89,8 @@
 -HighlighterControllerTest.HighlighterGesturesScaled
 # Test is flaky. http://crbug.com/817327.
 -HighlighterControllerTest.HighlighterGesturesRotated
+# Test fails due to DSF routing bug https://crbug.com/821535
+-HighlighterControllerTest.SelectionInsideScreen
 
 # TODO: Top-of-screen mouse reveal doesn't work, maybe problem with
 # EventGenerator. http://crbug.com/698085
