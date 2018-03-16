@@ -167,10 +167,15 @@ TEST_F(ConverterTest, VectorOfWrappables) {
   v8::MaybeLocal<v8::Value> maybe = ConvertToV8(isolate, vector);
   v8::Local<v8::Value> array;
   ASSERT_TRUE(maybe.ToLocal(&array));
+  v8::Local<v8::Value> array2;
+  ASSERT_TRUE(TryConvertToV8(isolate, vector, &array2));
 
   std::vector<MyObject*> out_value;
   ASSERT_TRUE(ConvertFromV8(isolate, array, &out_value));
   EXPECT_THAT(out_value, testing::ContainerEq(vector));
+  std::vector<MyObject*> out_value2;
+  ASSERT_TRUE(ConvertFromV8(isolate, array2, &out_value2));
+  EXPECT_THAT(out_value2, testing::ContainerEq(vector));
 }
 
 }  // namespace gin
