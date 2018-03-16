@@ -1447,4 +1447,33 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
       "OfflinePages.ClearTemporaryPages.BatchSize", 0);
 }
 
+TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
+  // The maintenance tasks should not be executed when disabled by tests.
+  model()->DoNotRunMaintenanceTasksForTesting();
+
+  // With that setting GetAllPages and saving a page should not schedule
+  // maintenance tasks.
+  base::MockCallback<MultipleOfflinePageItemCallback> callback;
+  model()->GetAllPages(callback.Get());
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  SavePageWithExpectedResult(kTestUrl, kTestClientId1, kTestUrl2,
+                             kEmptyRequestOrigin, std::move(archiver),
+                             SavePageResult::SUCCESS);
+  PumpLoop();
+  EXPECT_EQ(base::Time(), last_maintenance_tasks_schedule_time());
+
+  // Advance the clock considerably and confirm no runs happened.
+  task_runner()->FastForwardBy(base::TimeDelta::FromDays(1));
+  PumpLoop();
+  EXPECT_EQ(base::Time(), last_maintenance_tasks_schedule_time());
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.Result", 0);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.BatchSize", 0);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Temporary.Result", 0);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ConsistencyCheck.Persistent.Result", 0);
+}
+
 }  // namespace offline_pages
