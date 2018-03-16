@@ -542,11 +542,8 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       break;
     }
     case network::DataElement::TYPE_DATA_PIPE: {
-      WriteParam(m, const_cast<network::DataElement&>(p)
-                        .ReleaseDataPipeGetter()
-                        .PassInterface()
-                        .PassHandle()
-                        .release());
+      WriteParam(
+          m, p.CloneDataPipeGetter().PassInterface().PassHandle().release());
       break;
     }
     case network::DataElement::TYPE_CHUNKED_DATA_PIPE: {

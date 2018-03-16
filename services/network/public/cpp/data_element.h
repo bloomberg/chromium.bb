@@ -62,9 +62,6 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   const base::FilePath& path() const { return path_; }
   const base::File& file() const { return file_; }
   const std::string& blob_uuid() const { return blob_uuid_; }
-  const mojom::DataPipeGetterPtr& data_pipe() const {
-    return data_pipe_getter_;
-  }
   uint64_t offset() const { return offset_; }
   uint64_t length() const { return length_; }
   const base::Time& expected_modification_time() const {
@@ -171,7 +168,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   base::File ReleaseFile();
 
   // Takes ownership of the DataPipeGetter, if this is of TYPE_DATA_PIPE.
-  mojom::DataPipeGetterPtr ReleaseDataPipeGetter();
+  mojom::DataPipeGetterPtrInfo ReleaseDataPipeGetter();
+  mojom::DataPipeGetterPtr CloneDataPipeGetter() const;
 
   // Takes ownership of the DataPipeGetter, if this is of
   // TYPE_CHUNKED_DATA_PIPE.
@@ -192,7 +190,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // For TYPE_BLOB.
   std::string blob_uuid_;
   // For TYPE_DATA_PIPE.
-  mojom::DataPipeGetterPtr data_pipe_getter_;
+  mojom::DataPipeGetterPtrInfo data_pipe_getter_;
   // For TYPE_CHUNKED_DATA_PIPE.
   mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
   uint64_t offset_;

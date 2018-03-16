@@ -181,7 +181,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
       }
       case DataElement::TYPE_DATA_PIPE: {
         element_readers.push_back(std::make_unique<DataPipeElementReader>(
-            body, const_cast<DataElement*>(&element)->ReleaseDataPipeGetter()));
+            body, element.CloneDataPipeGetter()));
         break;
       }
       case DataElement::TYPE_CHUNKED_DATA_PIPE: {

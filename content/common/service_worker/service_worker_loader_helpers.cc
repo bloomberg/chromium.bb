@@ -170,10 +170,7 @@ ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
         NOTREACHED();
         break;
       case network::DataElement::TYPE_DATA_PIPE: {
-        network::mojom::DataPipeGetterPtrInfo clone_ptr_info;
-        element.data_pipe()->Clone(mojo::MakeRequest(&clone_ptr_info));
-        network::mojom::DataPipeGetterPtr clone_ptr(std::move(clone_ptr_info));
-        clone->AppendDataPipe(std::move(clone_ptr));
+        clone->AppendDataPipe(element.CloneDataPipeGetter());
         break;
       }
       case network::DataElement::TYPE_RAW_FILE:

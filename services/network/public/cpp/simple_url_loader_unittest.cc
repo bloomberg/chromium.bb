@@ -1408,10 +1408,7 @@ class MockURLLoader : public network::mojom::URLLoader {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
             network::DataElement::TYPE_DATA_PIPE) {
-      // The const_cast is weird, but it's how the current API works.
-      data_pipe_getter_ =
-          const_cast<network::DataElement*>(&(*request_body->elements())[0])
-              ->ReleaseDataPipeGetter();
+      data_pipe_getter_ = (*request_body->elements())[0].CloneDataPipeGetter();
       DCHECK(data_pipe_getter_);
     }
   }
