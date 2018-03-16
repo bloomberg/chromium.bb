@@ -33,17 +33,17 @@
 
 #include "modules/websockets/WebSocketHandle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "public/platform/modules/websockets/websocket.mojom-blink.h"
+#include "services/network/public/mojom/websocket.mojom-blink.h"
 
 namespace blink {
 
 class WebSocketHandleImpl : public WebSocketHandle,
-                            public mojom::blink::WebSocketClient {
+                            public network::mojom::blink::WebSocketClient {
  public:
   WebSocketHandleImpl();
   ~WebSocketHandleImpl() override;
 
-  void Initialize(mojom::blink::WebSocketPtr) override;
+  void Initialize(network::mojom::blink::WebSocketPtr) override;
   void Connect(const KURL&,
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
@@ -59,16 +59,16 @@ class WebSocketHandleImpl : public WebSocketHandle,
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);
 
-  // mojom::blink::WebSocketClient methods:
+  // network::mojom::blink::WebSocketClient methods:
   void OnFailChannel(const String& reason) override;
   void OnStartOpeningHandshake(
-      mojom::blink::WebSocketHandshakeRequestPtr) override;
+      network::mojom::blink::WebSocketHandshakeRequestPtr) override;
   void OnFinishOpeningHandshake(
-      mojom::blink::WebSocketHandshakeResponsePtr) override;
+      network::mojom::blink::WebSocketHandshakeResponsePtr) override;
   void OnAddChannelResponse(const String& selected_protocol,
                             const String& extensions) override;
   void OnDataFrame(bool fin,
-                   mojom::blink::WebSocketMessageType,
+                   network::mojom::blink::WebSocketMessageType,
                    const Vector<uint8_t>& data) override;
   void OnFlowControl(int64_t quota) override;
   void OnDropChannel(bool was_clean,
@@ -78,8 +78,8 @@ class WebSocketHandleImpl : public WebSocketHandle,
 
   WebSocketHandleClient* client_;
 
-  mojom::blink::WebSocketPtr websocket_;
-  mojo::Binding<mojom::blink::WebSocketClient> client_binding_;
+  network::mojom::blink::WebSocketPtr websocket_;
+  mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;
 };
 
 }  // namespace blink
