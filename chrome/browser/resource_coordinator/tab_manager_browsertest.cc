@@ -34,6 +34,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
@@ -896,6 +897,91 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerWasDiscarded) {
       browser()->tab_strip_model()->GetWebContentsAt(0), kDiscardedStateJS,
       &discarded_result));
   EXPECT_TRUE(discarded_result);
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest,
+                       TabManagerWasDiscardedCrossSiteSubFrame) {
+  const char kDiscardedStateJS[] =
+      "window.domAutomationController.send("
+      "window.document.wasDiscarded);";
+  // Navigate to a page with a cross-site frame.
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Grab the original frames.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* main_frame = contents->GetMainFrame();
+  ASSERT_LE(2u, contents->GetAllFrames().size());
+  content::RenderFrameHost* child_frame = contents->GetAllFrames()[1];
+
+  // Sanity check that in this test page the main frame and the
+  // subframe are cross-site.
+  EXPECT_FALSE(content::SiteInstance::IsSameWebSite(
+      browser()->profile(), main_frame->GetLastCommittedURL(),
+      child_frame->GetLastCommittedURL()));
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(main_frame->GetProcess()->GetID(),
+              child_frame->GetProcess()->GetID());
+  }
+
+  // document.wasDiscarded is false before discard, on main frame and child
+  // frame.
+  bool before_discard_mainframe_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      main_frame, kDiscardedStateJS, &before_discard_mainframe_result));
+  EXPECT_FALSE(before_discard_mainframe_result);
+
+  bool before_discard_childframe_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      child_frame, kDiscardedStateJS, &before_discard_childframe_result));
+  EXPECT_FALSE(before_discard_childframe_result);
+
+  // Discard the tab. This simulates a tab discard.
+  g_browser_process->GetTabManager()->DiscardWebContentsAt(
+      0, browser()->tab_strip_model(), DiscardReason::kProactive);
+
+  // Here we simulate re-focussing the tab causing reload with navigation,
+  // the navigation will reload the tab.
+  // TODO(panicker): Consider adding a test hook on LifecycleUnit when ready.
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Re-assign pointers after discarding, as they've changed.
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  main_frame = contents->GetMainFrame();
+  ASSERT_LE(2u, contents->GetAllFrames().size());
+  child_frame = contents->GetAllFrames()[1];
+
+  // document.wasDiscarded is true after discard, on mainframe and childframe.
+  bool discarded_mainframe_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      main_frame, kDiscardedStateJS, &discarded_mainframe_result));
+  EXPECT_TRUE(discarded_mainframe_result);
+
+  bool discarded_childframe_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      child_frame, kDiscardedStateJS, &discarded_childframe_result));
+  EXPECT_TRUE(discarded_childframe_result);
+
+  // Navigate the child frame, wasDiscarded is not set anymore.
+  // TODO(panicker): Add test to navigate the child frame cross site.
+  GURL childframe_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(contents, "frame1", childframe_url));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      child_frame, kDiscardedStateJS, &discarded_childframe_result));
+  EXPECT_FALSE(discarded_childframe_result);
+
+  // Navigate the main frame (same site) again, wasDiscarded is not set anymore.
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      main_frame, kDiscardedStateJS, &discarded_mainframe_result));
+  EXPECT_FALSE(discarded_mainframe_result);
+
+  // TODO(panicker): Add test to go back in history and ensure wasDiscarded is
+  // still false.
 }
 
 namespace {

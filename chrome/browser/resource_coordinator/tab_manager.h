@@ -261,6 +261,8 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           TabManagerWasDiscardedCrossSiteSubFrame);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            GetUnsortedTabStatsIsInVisibleWindow);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardTabWithNonVisibleTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
