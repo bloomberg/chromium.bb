@@ -939,6 +939,7 @@ extern const char kTopChromeMdMaterial[];
 extern const char kTopChromeMdMaterialAuto[];
 extern const char kTopChromeMdMaterialHybrid[];
 extern const char kTopChromeMdMaterialTouchOptimized[];
+extern const char kTopChromeMdMaterialRefresh[];
 
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
