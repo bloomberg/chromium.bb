@@ -43,6 +43,13 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.2
   static base::Optional<std::vector<Signature>> ParseSignature(
       base::StringPiece signature_str);
+
+  // Parses |content_type| to get the value of "v=" parameter of the signed
+  // exchange. Example: "b0" for "application/signed-exchange;v=b0". Returns
+  // false if failed to parse.
+  static bool GetVersionParamFromContentType(
+      base::StringPiece content_type,
+      base::Optional<std::string>* version_param);
 };
 
 }  // namespace content

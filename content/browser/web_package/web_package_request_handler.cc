@@ -24,7 +24,7 @@ namespace content {
 bool WebPackageRequestHandler::IsSupportedMimeType(
     const std::string& mime_type) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
-  return mime_type == "application/http-exchange+cbor";
+  return mime_type == "application/signed-exchange";
 }
 
 WebPackageRequestHandler::WebPackageRequestHandler(

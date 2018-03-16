@@ -71,6 +71,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // and |url_loader_throttles_getter| are used to set up a network URLLoader to
   // actually fetch the certificate.
   SignedExchangeHandler(
+      std::string content_type,
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
       url::Origin request_initiator,
