@@ -256,10 +256,9 @@ with_man_pages = with_man_pages != 'false' and prog_xslt.found() and prog_sed.fo
 # Used for tets
 prog_bash = find_program('bash')
 
-if cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));''',
-               name : 'compiler supports __attribute__(("hidden"))')
-  config.set10('HAVE_VISIBILITY', true)
-endif
+config.set10('HAVE_VISIBILITY',
+  cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));''',
+              name : 'compiler supports __attribute__(("hidden"))'))
 
 foreach t : [
              [with_exynos, 'EXYNOS'],

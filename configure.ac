@@ -535,6 +535,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
 
 if test "x$HAVE_ATTRIBUTE_VISIBILITY" = xyes; then
     AC_DEFINE(HAVE_VISIBILITY, 1, [Compiler supports __attribute__(("hidden"))])
+else
+    AC_DEFINE(HAVE_VISIBILITY, 0)
 fi
 
 AC_SUBST(WARN_CFLAGS)

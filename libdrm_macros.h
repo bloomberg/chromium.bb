@@ -23,7 +23,7 @@
 #ifndef LIBDRM_LIBDRM_H
 #define LIBDRM_LIBDRM_H
 
-#if defined(HAVE_VISIBILITY)
+#if HAVE_VISIBILITY
 #  define drm_private __attribute__((visibility("hidden")))
 #else
 #  define drm_private
