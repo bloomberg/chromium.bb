@@ -50,7 +50,8 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
 
   Browser* NavigateHelper(const GURL& url,
                           Browser* browser,
-                          WindowOpenDisposition disposition);
+                          WindowOpenDisposition disposition,
+                          bool wait_for_navigation);
 
   size_t created_tab_contents_count_;
 };
