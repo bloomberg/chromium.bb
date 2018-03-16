@@ -49,8 +49,8 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/browser/nacl_process_host.h"
-#include "components/nacl/common/nacl_process_type.h"
-#include "components/nacl/common/nacl_switches.h"
+#include "components/nacl/common/nacl_process_type.h"  // nogncheck
+#include "components/nacl/common/nacl_switches.h"      // nogncheck
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #endif

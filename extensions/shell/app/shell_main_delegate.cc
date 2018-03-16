@@ -32,9 +32,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
-#include "components/nacl/common/nacl_switches.h"
+#include "components/nacl/common/nacl_switches.h"  // nogncheck
 #if defined(OS_LINUX)
-#include "components/nacl/common/nacl_paths.h"
+#include "components/nacl/common/nacl_paths.h"  // nogncheck
 #endif  // OS_LINUX
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
@@ -50,8 +50,8 @@
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/content/app/breakpad_linux.h"         // nogncheck
+#include "components/crash/content/app/crash_reporter_client.h"  // nogncheck
 #include "extensions/shell/app/shell_crash_reporter_client.h"
 #endif
 
