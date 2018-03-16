@@ -72,7 +72,7 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
 }
 
 void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
-  subscribers_.ForAllPtrs([&url](auto* ptr) { ptr->OnTextResponse(url); });
+  subscribers_.ForAllPtrs([&url](auto* ptr) { ptr->OnOpenUrlResponse(url); });
 }
 
 }  // namespace assistant
