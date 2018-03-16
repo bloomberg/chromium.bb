@@ -109,15 +109,15 @@ void ExtensionsTest::TearDown() {
   // as member variables instead of singletons. The individual services will be
   // cleaned up before the factories are destroyed.
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
-      browser_context_.get());
-  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       incognito_context_.get());
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      browser_context_.get());
 
   extensions_browser_client_.reset();
   ExtensionsBrowserClient::Set(nullptr);
 
-  browser_context_.reset();
   incognito_context_.reset();
+  browser_context_.reset();
   pref_service_.reset();
 }
 
