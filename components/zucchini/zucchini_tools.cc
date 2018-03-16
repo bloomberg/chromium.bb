@@ -56,7 +56,7 @@ status::Code ReadReferences(ConstBufferView image,
     out << std::endl;
 
     if (do_dump) {
-      auto refs = group.GetReader(disasm.get());
+      refs = group.GetReader(disasm.get());
 
       for (auto ref = refs->GetNext(); ref; ref = refs->GetNext()) {
         out << "  " << AsHex<8>(ref->location);
