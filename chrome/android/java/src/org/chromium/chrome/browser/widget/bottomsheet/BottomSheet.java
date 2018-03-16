@@ -73,8 +73,8 @@ public class BottomSheet
         extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
                                        FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
-    @IntDef({SHEET_STATE_NONE, SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL,
-            SHEET_STATE_SCROLLING})
+    @IntDef({SHEET_STATE_NONE, SHEET_STATE_HIDDEN, SHEET_STATE_PEEK, SHEET_STATE_HALF,
+            SHEET_STATE_FULL, SHEET_STATE_SCROLLING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SheetState {}
     /**
@@ -82,10 +82,11 @@ public class BottomSheet
      * transitioning between states.
      */
     private static final int SHEET_STATE_NONE = -1;
-    public static final int SHEET_STATE_PEEK = 0;
-    public static final int SHEET_STATE_HALF = 1;
-    public static final int SHEET_STATE_FULL = 2;
-    public static final int SHEET_STATE_SCROLLING = 3;
+    public static final int SHEET_STATE_HIDDEN = 0;
+    public static final int SHEET_STATE_PEEK = 1;
+    public static final int SHEET_STATE_HALF = 2;
+    public static final int SHEET_STATE_FULL = 3;
+    public static final int SHEET_STATE_SCROLLING = 4;
 
     /** The different reasons that the sheet's state can change. */
     @IntDef({StateChangeReason.NONE, StateChangeReason.OMNIBOX_FOCUS, StateChangeReason.SWIPE,
@@ -181,8 +182,8 @@ public class BottomSheet
      * they go from smallest to largest.
      */
     private static final int[] sStates =
-            new int[] {SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL};
-    private final float[] mStateRatios = new float[3];
+            new int[] {SHEET_STATE_HIDDEN, SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL};
+    private final float[] mStateRatios = new float[4];
 
     /** The interpolator that the height animator uses. */
     private final Interpolator mInterpolator = new DecelerateInterpolator(1.0f);
@@ -222,7 +223,7 @@ public class BottomSheet
 
     /** The current state that the sheet is in. */
     @SheetState
-    private int mCurrentState = SHEET_STATE_PEEK;
+    private int mCurrentState = SHEET_STATE_HIDDEN;
 
     /** The target sheet state. This is the state that the sheet is currently moving to. */
     @SheetState
@@ -249,6 +250,12 @@ public class BottomSheet
      * final value sent to these observers is 1.0f.
      */
     private float mLastPeekToHalfRatioSent;
+
+    /**
+     * The last offset ratio sent to observers of onSheetOffsetChanged(). This is used to ensure the
+     * min and max values are provided at least once (0 and 1).
+     */
+    private float mLastOffsetRatioSent;
 
     /** The FrameLayout used to hold the bottom sheet toolbar. */
     private TouchRestrictingFrameLayout mToolbarHolder;
@@ -352,6 +359,7 @@ public class BottomSheet
      */
     public static boolean isStateStable(@SheetState int sheetState) {
         switch (sheetState) {
+            case SHEET_STATE_HIDDEN:
             case SHEET_STATE_PEEK:
             case SHEET_STATE_HALF:
             case SHEET_STATE_FULL:
@@ -367,6 +375,10 @@ public class BottomSheet
 
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
+        // If the sheet is scrolling off-screen or in the process of hiding, gestures should not
+        // affect it.
+        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)) return false;
+
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
         if (mActivity == null || isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
@@ -770,7 +782,15 @@ public class BottomSheet
 
             @Override
             public void onControlsOffsetChanged(
-                    float topOffset, float bottomOffset, boolean needsAnimate) {}
+                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                if (getSheetState() == SHEET_STATE_HIDDEN) return;
+                if (getCurrentOffsetPx() > getSheetHeightForState(SHEET_STATE_PEEK)) return;
+
+                float hiddenRatio = -topOffset / mFullscreenManager.getTopControlsHeight();
+                float peekHeight = getPeekRatio() * mContainerHeight;
+
+                setSheetOffsetFromBottom(peekHeight - hiddenRatio * peekHeight);
+            }
 
             @Override
             public void onContentOffsetChanged(float offset) {}
@@ -844,7 +864,22 @@ public class BottomSheet
 
     @Override
     public float getMinOffsetPx() {
-        return getPeekRatio() * mContainerHeight;
+        return (flingToHideEnabled() ? getHiddenRatio() : getPeekRatio()) * mContainerHeight;
+    }
+
+    /**
+     * @return Whether flinging down hard enough will close the sheet.
+     */
+    private boolean flingToHideEnabled() {
+        return true;
+    }
+
+    /**
+     * @return The minimum sheet state that the user can swipe to. i.e. flinging down will either
+     *         close the sheet or peek it.
+     */
+    private @SheetState int getMinSwipableSheetState() {
+        return flingToHideEnabled() ? SHEET_STATE_HIDDEN : SHEET_STATE_PEEK;
     }
 
     @Override
@@ -1090,6 +1125,7 @@ public class BottomSheet
         // the correct toolbar height and container height are not know until those views are
         // inflated. The other views are a specific DP distance from the top and bottom and are
         // also updated.
+        mStateRatios[SHEET_STATE_HIDDEN] = 0;
         mStateRatios[SHEET_STATE_PEEK] = (mToolbarHeight + mToolbarShadowHeight) / mContainerHeight;
         mStateRatios[SHEET_STATE_HALF] = HALF_HEIGHT_RATIO;
         // The max height ratio will be greater than 1 to account for the toolbar shadow.
@@ -1199,6 +1235,13 @@ public class BottomSheet
     }
 
     /**
+     * @return The ratio of the height of the screen that the hidden state is.
+     */
+    private float getHiddenRatio() {
+        return mStateRatios[SHEET_STATE_HIDDEN];
+    }
+
+    /**
      * @return The ratio of the height of the screen that the peeking state is.
      */
     @VisibleForTesting
@@ -1233,18 +1276,29 @@ public class BottomSheet
     /**
      * Sends notifications if the sheet is transitioning from the peeking to half expanded state and
      * from the peeking to fully expanded state. The peek to half events are only sent when the
-     * sheet is between the peeking and half states.
+     * sheet is between the peeking and half states. Events are not sent for states less than
+     * peeking (i.e. hidden).
      */
     private void sendOffsetChangeEvents() {
+        // Do not send events for states less than the peeking state unless 0 has not been sent.
+        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)
+                && mLastOffsetRatioSent <= 0) {
+            return;
+        }
+
         float screenRatio = mContainerHeight > 0 ? getCurrentOffsetPx() / mContainerHeight : 0;
 
         // This ratio is relative to the peek and full positions of the sheet.
         float peekFullRatio = MathUtils.clamp(
                 (screenRatio - getPeekRatio()) / (getFullRatio() - getPeekRatio()), 0, 1);
 
-        for (BottomSheetObserver o : mObservers) {
-            o.onSheetOffsetChanged(MathUtils.areFloatsEqual(peekFullRatio, 0) ? 0 : peekFullRatio);
+        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)) {
+            mLastOffsetRatioSent = 0;
+        } else {
+            mLastOffsetRatioSent = MathUtils.areFloatsEqual(peekFullRatio, 0) ? 0 : peekFullRatio;
         }
+
+        for (BottomSheetObserver o : mObservers) o.onSheetOffsetChanged(mLastOffsetRatioSent);
 
         // This ratio is relative to the peek and half positions of the sheet.
         float peekHalfRatio = MathUtils.clamp(
@@ -1355,11 +1409,13 @@ public class BottomSheet
             if (getFocusedChild() == null) requestFocus();
         }
 
+        setVisibility(mCurrentState == SHEET_STATE_HIDDEN ? GONE : VISIBLE);
+
         for (BottomSheetObserver o : mObservers) {
             o.onSheetStateChanged(mCurrentState);
         }
 
-        if (state == SHEET_STATE_PEEK) {
+        if (state <= SHEET_STATE_PEEK) {
             onSheetClosed(reason);
         } else {
             onSheetOpened(reason);
@@ -1431,7 +1487,7 @@ public class BottomSheet
      */
     @SheetState
     private int getTargetSheetState(float sheetHeight, float yVelocity) {
-        if (sheetHeight <= getMinOffsetPx()) return SHEET_STATE_PEEK;
+        if (sheetHeight <= getMinOffsetPx()) return sStates[getMinSwipableSheetState()];
         if (sheetHeight >= getMaxOffsetPx()) return SHEET_STATE_FULL;
 
         boolean isMovingDownward = yVelocity < 0;
@@ -1439,11 +1495,11 @@ public class BottomSheet
 
         // First, find the two states that the sheet height is between.
         @SheetState
-        int nextState = sStates[0];
+        int nextState = sStates[getMinSwipableSheetState()];
 
         @SheetState
         int prevState = nextState;
-        for (int i = 0; i < sStates.length; i++) {
+        for (int i = getMinSwipableSheetState(); i < sStates.length; i++) {
             if (sStates[i] == SHEET_STATE_HALF && shouldSkipHalfState) continue;
             prevState = nextState;
             nextState = sStates[i];
@@ -1478,6 +1534,7 @@ public class BottomSheet
 
     @Override
     public void onFadingViewClick() {
+        if (!mIsSheetOpen) return;
         setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
     }
 
