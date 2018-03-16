@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_connection.h"
+#include "device/fido/fido_ble_connection.h"
 
 #include <utility>
 
@@ -72,10 +72,10 @@ constexpr const char* ToString(BluetoothGattService::GattErrorCode error_code) {
 
 }  // namespace
 
-U2fBleConnection::U2fBleConnection(std::string device_address)
+FidoBleConnection::FidoBleConnection(std::string device_address)
     : address_(std::move(device_address)), weak_factory_(this) {}
 
-U2fBleConnection::U2fBleConnection(
+FidoBleConnection::FidoBleConnection(
     std::string device_address,
     ConnectionStatusCallback connection_status_callback,
     ReadCallback read_callback)
@@ -86,19 +86,19 @@ U2fBleConnection::U2fBleConnection(
   DCHECK(!address_.empty());
 }
 
-U2fBleConnection::~U2fBleConnection() {
+FidoBleConnection::~FidoBleConnection() {
   if (adapter_)
     adapter_->RemoveObserver(this);
 }
 
-void U2fBleConnection::Connect() {
+void FidoBleConnection::Connect() {
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&U2fBleConnection::OnGetAdapter, weak_factory_.GetWeakPtr()));
+      base::Bind(&FidoBleConnection::OnGetAdapter, weak_factory_.GetWeakPtr()));
 }
 
-void U2fBleConnection::ReadControlPointLength(
+void FidoBleConnection::ReadControlPointLength(
     ControlPointLengthCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetU2fService();
+  const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
     std::move(callback).Run(base::nullopt);
     return;
@@ -118,8 +118,9 @@ void U2fBleConnection::ReadControlPointLength(
       base::Bind(OnReadControlPointLengthError, copyable_callback));
 }
 
-void U2fBleConnection::ReadServiceRevisions(ServiceRevisionsCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetU2fService();
+void FidoBleConnection::ReadServiceRevisions(
+    ServiceRevisionsCallback callback) {
+  const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
     std::move(callback).Run({});
     return;
@@ -151,16 +152,16 @@ void U2fBleConnection::ReadServiceRevisions(ServiceRevisionsCallback callback) {
   // the individually supported service revisions, hence the indirection to
   // ReturnServiceRevisions() is introduced.
   base::Closure copyable_callback = base::AdaptCallbackForRepeating(
-      base::BindOnce(&U2fBleConnection::ReturnServiceRevisions,
+      base::BindOnce(&FidoBleConnection::ReturnServiceRevisions,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 
   // If the Service Revision Bitfield characteristic is not present, only
   // attempt to read the Service Revision characteristic.
   if (!service_revision_bitfield) {
     service_revision->ReadRemoteCharacteristic(
-        base::Bind(&U2fBleConnection::OnReadServiceRevision,
+        base::Bind(&FidoBleConnection::OnReadServiceRevision,
                    weak_factory_.GetWeakPtr(), copyable_callback),
-        base::Bind(&U2fBleConnection::OnReadServiceRevisionError,
+        base::Bind(&FidoBleConnection::OnReadServiceRevisionError,
                    weak_factory_.GetWeakPtr(), copyable_callback));
     return;
   }
@@ -169,9 +170,9 @@ void U2fBleConnection::ReadServiceRevisions(ServiceRevisionsCallback callback) {
   // attempt to read the Service Revision Bitfield characteristic.
   if (!service_revision) {
     service_revision_bitfield->ReadRemoteCharacteristic(
-        base::Bind(&U2fBleConnection::OnReadServiceRevisionBitfield,
+        base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfield,
                    weak_factory_.GetWeakPtr(), copyable_callback),
-        base::Bind(&U2fBleConnection::OnReadServiceRevisionBitfieldError,
+        base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfieldError,
                    weak_factory_.GetWeakPtr(), copyable_callback));
     return;
   }
@@ -184,21 +185,21 @@ void U2fBleConnection::ReadServiceRevisions(ServiceRevisionsCallback callback) {
       base::BarrierClosure(2, copyable_callback);
 
   service_revision->ReadRemoteCharacteristic(
-      base::Bind(&U2fBleConnection::OnReadServiceRevision,
+      base::Bind(&FidoBleConnection::OnReadServiceRevision,
                  weak_factory_.GetWeakPtr(), barrier_closure),
-      base::Bind(&U2fBleConnection::OnReadServiceRevisionError,
+      base::Bind(&FidoBleConnection::OnReadServiceRevisionError,
                  weak_factory_.GetWeakPtr(), barrier_closure));
 
   service_revision_bitfield->ReadRemoteCharacteristic(
-      base::Bind(&U2fBleConnection::OnReadServiceRevisionBitfield,
+      base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfield,
                  weak_factory_.GetWeakPtr(), barrier_closure),
-      base::Bind(&U2fBleConnection::OnReadServiceRevisionBitfieldError,
+      base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfieldError,
                  weak_factory_.GetWeakPtr(), barrier_closure));
 }
 
-void U2fBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
-                                         WriteCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetU2fService();
+void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
+                                          WriteCallback callback) {
+  const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
     std::move(callback).Run(false);
     return;
@@ -218,9 +219,9 @@ void U2fBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
       base::Bind(OnWriteError, copyable_callback));
 }
 
-void U2fBleConnection::WriteServiceRevision(ServiceRevision service_revision,
-                                            WriteCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetU2fService();
+void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
+                                             WriteCallback callback) {
+  const BluetoothRemoteGattService* u2f_service = GetFidoService();
   if (!u2f_service) {
     std::move(callback).Run(false);
     return;
@@ -255,7 +256,7 @@ void U2fBleConnection::WriteServiceRevision(ServiceRevision service_revision,
       base::Bind(OnWriteError, copyable_callback));
 }
 
-void U2fBleConnection::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
+void FidoBleConnection::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
   if (!adapter) {
     DLOG(ERROR) << "Failed to get Adapter.";
     OnConnectionError();
@@ -268,7 +269,7 @@ void U2fBleConnection::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
   CreateGattConnection();
 }
 
-void U2fBleConnection::CreateGattConnection() {
+void FidoBleConnection::CreateGattConnection() {
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
     DLOG(ERROR) << "Failed to get Device.";
@@ -277,13 +278,13 @@ void U2fBleConnection::CreateGattConnection() {
   }
 
   device->CreateGattConnection(
-      base::Bind(&U2fBleConnection::OnCreateGattConnection,
+      base::Bind(&FidoBleConnection::OnCreateGattConnection,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&U2fBleConnection::OnCreateGattConnectionError,
+      base::Bind(&FidoBleConnection::OnCreateGattConnectionError,
                  weak_factory_.GetWeakPtr()));
 }
 
-void U2fBleConnection::OnCreateGattConnection(
+void FidoBleConnection::OnCreateGattConnection(
     std::unique_ptr<BluetoothGattConnection> connection) {
   connection_ = std::move(connection);
 
@@ -298,13 +299,13 @@ void U2fBleConnection::OnCreateGattConnection(
     ConnectToU2fService();
 }
 
-void U2fBleConnection::OnCreateGattConnectionError(
+void FidoBleConnection::OnCreateGattConnectionError(
     BluetoothDevice::ConnectErrorCode error_code) {
   DLOG(ERROR) << "CreateGattConnection() failed: " << ToString(error_code);
   OnConnectionError();
 }
 
-void U2fBleConnection::ConnectToU2fService() {
+void FidoBleConnection::ConnectToU2fService() {
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (!device) {
     DLOG(ERROR) << "Failed to get Device.";
@@ -362,26 +363,26 @@ void U2fBleConnection::ConnectToU2fService() {
 
   u2f_service->GetCharacteristic(*status_id_)
       ->StartNotifySession(
-          base::Bind(&U2fBleConnection::OnStartNotifySession,
+          base::Bind(&FidoBleConnection::OnStartNotifySession,
                      weak_factory_.GetWeakPtr()),
-          base::Bind(&U2fBleConnection::OnStartNotifySessionError,
+          base::Bind(&FidoBleConnection::OnStartNotifySessionError,
                      weak_factory_.GetWeakPtr()));
 }
 
-void U2fBleConnection::OnStartNotifySession(
+void FidoBleConnection::OnStartNotifySession(
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   notify_session_ = std::move(notify_session);
   DVLOG(2) << "Created notification session. Connection established.";
   connection_status_callback_.Run(true);
 }
 
-void U2fBleConnection::OnStartNotifySessionError(
+void FidoBleConnection::OnStartNotifySessionError(
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "StartNotifySession() failed: " << ToString(error_code);
   OnConnectionError();
 }
 
-void U2fBleConnection::OnConnectionError() {
+void FidoBleConnection::OnConnectionError() {
   connection_status_callback_.Run(false);
 
   connection_.reset();
@@ -395,7 +396,7 @@ void U2fBleConnection::OnConnectionError() {
   service_revision_bitfield_id_.reset();
 }
 
-const BluetoothRemoteGattService* U2fBleConnection::GetU2fService() const {
+const BluetoothRemoteGattService* FidoBleConnection::GetFidoService() const {
   if (!adapter_) {
     DLOG(ERROR) << "No adapter present.";
     return nullptr;
@@ -422,23 +423,23 @@ const BluetoothRemoteGattService* U2fBleConnection::GetU2fService() const {
   return u2f_service;
 }
 
-void U2fBleConnection::DeviceAdded(BluetoothAdapter* adapter,
-                                   BluetoothDevice* device) {
+void FidoBleConnection::DeviceAdded(BluetoothAdapter* adapter,
+                                    BluetoothDevice* device) {
   if (adapter != adapter_ || device->GetAddress() != address_)
     return;
   CreateGattConnection();
 }
 
-void U2fBleConnection::DeviceAddressChanged(BluetoothAdapter* adapter,
-                                            BluetoothDevice* device,
-                                            const std::string& old_address) {
+void FidoBleConnection::DeviceAddressChanged(BluetoothAdapter* adapter,
+                                             BluetoothDevice* device,
+                                             const std::string& old_address) {
   if (adapter != adapter_ || old_address != address_)
     return;
   address_ = device->GetAddress();
 }
 
-void U2fBleConnection::DeviceChanged(BluetoothAdapter* adapter,
-                                     BluetoothDevice* device) {
+void FidoBleConnection::DeviceChanged(BluetoothAdapter* adapter,
+                                      BluetoothDevice* device) {
   if (adapter != adapter_ || device->GetAddress() != address_)
     return;
   if (connection_ && !device->IsGattConnected()) {
@@ -447,7 +448,7 @@ void U2fBleConnection::DeviceChanged(BluetoothAdapter* adapter,
   }
 }
 
-void U2fBleConnection::GattCharacteristicValueChanged(
+void FidoBleConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
@@ -457,15 +458,15 @@ void U2fBleConnection::GattCharacteristicValueChanged(
   read_callback_.Run(value);
 }
 
-void U2fBleConnection::GattServicesDiscovered(BluetoothAdapter* adapter,
-                                              BluetoothDevice* device) {
+void FidoBleConnection::GattServicesDiscovered(BluetoothAdapter* adapter,
+                                               BluetoothDevice* device) {
   if (adapter != adapter_ || device->GetAddress() != address_)
     return;
   ConnectToU2fService();
 }
 
 // static
-void U2fBleConnection::OnReadControlPointLength(
+void FidoBleConnection::OnReadControlPointLength(
     ControlPointLengthCallback callback,
     const std::vector<uint8_t>& value) {
   if (value.size() != 2) {
@@ -480,14 +481,14 @@ void U2fBleConnection::OnReadControlPointLength(
 }
 
 // static
-void U2fBleConnection::OnReadControlPointLengthError(
+void FidoBleConnection::OnReadControlPointLengthError(
     ControlPointLengthCallback callback,
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "Error reading Control Point Length: " << ToString(error_code);
   std::move(callback).Run(base::nullopt);
 }
 
-void U2fBleConnection::OnReadServiceRevision(
+void FidoBleConnection::OnReadServiceRevision(
     base::OnceClosure callback,
     const std::vector<uint8_t>& value) {
   std::string service_revision(value.begin(), value.end());
@@ -508,14 +509,14 @@ void U2fBleConnection::OnReadServiceRevision(
   std::move(callback).Run();
 }
 
-void U2fBleConnection::OnReadServiceRevisionError(
+void FidoBleConnection::OnReadServiceRevisionError(
     base::OnceClosure callback,
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "Error reading Service Revision: " << ToString(error_code);
   std::move(callback).Run();
 }
 
-void U2fBleConnection::OnReadServiceRevisionBitfield(
+void FidoBleConnection::OnReadServiceRevisionBitfield(
     base::OnceClosure callback,
     const std::vector<uint8_t>& value) {
   if (value.empty()) {
@@ -549,7 +550,7 @@ void U2fBleConnection::OnReadServiceRevisionBitfield(
   std::move(callback).Run();
 }
 
-void U2fBleConnection::OnReadServiceRevisionBitfieldError(
+void FidoBleConnection::OnReadServiceRevisionBitfieldError(
     base::OnceClosure callback,
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "Error reading Service Revision Bitfield: "
@@ -557,19 +558,19 @@ void U2fBleConnection::OnReadServiceRevisionBitfieldError(
   std::move(callback).Run();
 }
 
-void U2fBleConnection::ReturnServiceRevisions(
+void FidoBleConnection::ReturnServiceRevisions(
     ServiceRevisionsCallback callback) {
   std::move(callback).Run(std::move(service_revisions_));
 }
 
 // static
-void U2fBleConnection::OnWrite(WriteCallback callback) {
+void FidoBleConnection::OnWrite(WriteCallback callback) {
   DVLOG(2) << "Write succeeded.";
   std::move(callback).Run(true);
 }
 
 // static
-void U2fBleConnection::OnWriteError(
+void FidoBleConnection::OnWriteError(
     WriteCallback callback,
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "Write Failed: " << ToString(error_code);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_BLE_DISCOVERY_H_
-#define DEVICE_FIDO_U2F_BLE_DISCOVERY_H_
+#ifndef DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_
+#define DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_
 
 #include <memory>
 
@@ -20,12 +20,12 @@ class BluetoothDevice;
 class BluetoothDiscoverySession;
 class BluetoothUUID;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDiscovery
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
     : public FidoDiscovery,
       BluetoothAdapter::Observer {
  public:
-  U2fBleDiscovery();
-  ~U2fBleDiscovery() override;
+  FidoBleDiscovery();
+  ~FidoBleDiscovery() override;
 
   // FidoDiscovery:
   U2fTransportProtocol GetTransportProtocol() const override;
@@ -33,7 +33,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDiscovery
   void Stop() override;
 
  private:
-  static const BluetoothUUID& U2fServiceUUID();
+  static const BluetoothUUID& FidoServiceUUID();
 
   void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
   void OnSetPowered();
@@ -53,11 +53,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDiscovery
   scoped_refptr<BluetoothAdapter> adapter_;
   std::unique_ptr<BluetoothDiscoverySession> discovery_session_;
 
-  base::WeakPtrFactory<U2fBleDiscovery> weak_factory_;
+  base::WeakPtrFactory<FidoBleDiscovery> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fBleDiscovery);
+  DISALLOW_COPY_AND_ASSIGN(FidoBleDiscovery);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_BLE_DISCOVERY_H_
+#endif  // DEVICE_FIDO_FIDO_BLE_DISCOVERY_H_

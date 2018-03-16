@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_discovery.h"
+#include "device/fido/fido_ble_discovery.h"
 
 #include <string>
 
@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/bluetooth_test.h"
+#include "device/fido/fido_ble_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
-#include "device/fido/u2f_ble_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,11 +37,11 @@ MATCHER_P(IdMatches, id, "") {
   return arg->GetId() == std::string("ble:") + id;
 }
 
-TEST_F(BluetoothTest, U2fBleDiscoveryNoAdapter) {
+TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
   // We purposefully construct a temporary and provide no fake adapter,
   // simulating cases where the discovery is destroyed before obtaining a handle
   // to an adapter. This should be handled gracefully and not result in a crash.
-  U2fBleDiscovery discovery;
+  FidoBleDiscovery discovery;
 
   // We don't expect any calls to the notification methods.
   MockFidoDiscoveryObserver observer;
@@ -52,7 +52,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryNoAdapter) {
   EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);
 }
 
-TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
+TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -62,7 +62,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
   SimulateLowEnergyDevice(4);  // This device should be ignored.
   SimulateLowEnergyDevice(7);
 
-  U2fBleDiscovery discovery;
+  FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
@@ -93,14 +93,14 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
   }
 }
 
-TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
+TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
   }
   InitWithFakeAdapter();
 
-  U2fBleDiscovery discovery;
+  FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
@@ -142,10 +142,10 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
 
 // Simulate the scenario where the BLE device is already known at start-up time,
 // but no service advertisements have been received from the device yet, so we
-// do not know if it is a U2F device or not. As soon as it is discovered that
-// the device supports the U2F service, the observer should be notified of a new
-// U2fBleDevice.
-TEST_F(BluetoothTest, U2fBleDiscoveryFindsUpdatedDevice) {
+// do not know if it is a CTAP2/U2F device or not. As soon as it is discovered
+// that the device supports the FIDO service, the observer should be notified of
+// a new FidoBleDevice.
+TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -154,7 +154,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsUpdatedDevice) {
 
   SimulateLowEnergyDevice(3);
 
-  U2fBleDiscovery discovery;
+  FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
@@ -185,7 +185,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsUpdatedDevice) {
 
     const auto devices = discovery.GetDevices();
     ASSERT_THAT(devices, ::testing::SizeIs(1u));
-    EXPECT_EQ(U2fBleDevice::GetId(BluetoothTestBase::kTestDeviceAddress1),
+    EXPECT_EQ(FidoBleDevice::GetId(BluetoothTestBase::kTestDeviceAddress1),
               devices[0]->GetId());
   }
 

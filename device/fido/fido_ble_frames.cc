@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_ble_frames.h"
+#include "device/fido/fido_ble_frames.h"
 
 #include <algorithm>
 #include <limits>
@@ -13,18 +13,18 @@
 
 namespace device {
 
-U2fBleFrame::U2fBleFrame() = default;
+FidoBleFrame::FidoBleFrame() = default;
 
-U2fBleFrame::U2fBleFrame(FidoBleDeviceCommand command,
-                         std::vector<uint8_t> data)
+FidoBleFrame::FidoBleFrame(FidoBleDeviceCommand command,
+                           std::vector<uint8_t> data)
     : command_(command), data_(std::move(data)) {}
 
-U2fBleFrame::U2fBleFrame(U2fBleFrame&&) = default;
-U2fBleFrame& U2fBleFrame::operator=(U2fBleFrame&&) = default;
+FidoBleFrame::FidoBleFrame(FidoBleFrame&&) = default;
+FidoBleFrame& FidoBleFrame::operator=(FidoBleFrame&&) = default;
 
-U2fBleFrame::~U2fBleFrame() = default;
+FidoBleFrame::~FidoBleFrame() = default;
 
-bool U2fBleFrame::IsValid() const {
+bool FidoBleFrame::IsValid() const {
   switch (command_) {
     case FidoBleDeviceCommand::kPing:
     case FidoBleDeviceCommand::kMsg:
@@ -38,21 +38,21 @@ bool U2fBleFrame::IsValid() const {
   return false;
 }
 
-U2fBleFrame::KeepaliveCode U2fBleFrame::GetKeepaliveCode() const {
+FidoBleFrame::KeepaliveCode FidoBleFrame::GetKeepaliveCode() const {
   DCHECK_EQ(command_, FidoBleDeviceCommand::kKeepAlive);
   DCHECK_EQ(data_.size(), 1u);
   return static_cast<KeepaliveCode>(data_[0]);
 }
 
-U2fBleFrame::ErrorCode U2fBleFrame::GetErrorCode() const {
+FidoBleFrame::ErrorCode FidoBleFrame::GetErrorCode() const {
   DCHECK_EQ(command_, FidoBleDeviceCommand::kError);
   DCHECK_EQ(data_.size(), 1u);
   return static_cast<ErrorCode>(data_[0]);
 }
 
-std::pair<U2fBleFrameInitializationFragment,
-          base::queue<U2fBleFrameContinuationFragment>>
-U2fBleFrame::ToFragments(size_t max_fragment_size) const {
+std::pair<FidoBleFrameInitializationFragment,
+          base::queue<FidoBleFrameContinuationFragment>>
+FidoBleFrame::ToFragments(size_t max_fragment_size) const {
   DCHECK_LE(data_.size(), std::numeric_limits<uint16_t>::max());
   DCHECK_GE(max_fragment_size, 3u);
 
@@ -64,10 +64,10 @@ U2fBleFrame::ToFragments(size_t max_fragment_size) const {
   const size_t init_fragment_size =
       std::min(max_fragment_size - 3, data_view.size());
 
-  U2fBleFrameInitializationFragment initial_fragment(
+  FidoBleFrameInitializationFragment initial_fragment(
       command_, data_view.size(), data_view.first(init_fragment_size));
 
-  base::queue<U2fBleFrameContinuationFragment> other_fragments;
+  base::queue<FidoBleFrameContinuationFragment> other_fragments;
   data_view = data_view.subspan(init_fragment_size);
 
   while (!data_view.empty()) {
@@ -84,18 +84,18 @@ U2fBleFrame::ToFragments(size_t max_fragment_size) const {
   return {initial_fragment, std::move(other_fragments)};
 }
 
-U2fBleFrameFragment::U2fBleFrameFragment() = default;
+FidoBleFrameFragment::FidoBleFrameFragment() = default;
 
-U2fBleFrameFragment::U2fBleFrameFragment(const U2fBleFrameFragment& frame) =
+FidoBleFrameFragment::FidoBleFrameFragment(const FidoBleFrameFragment& frame) =
     default;
-U2fBleFrameFragment::~U2fBleFrameFragment() = default;
+FidoBleFrameFragment::~FidoBleFrameFragment() = default;
 
-U2fBleFrameFragment::U2fBleFrameFragment(base::span<const uint8_t> fragment)
+FidoBleFrameFragment::FidoBleFrameFragment(base::span<const uint8_t> fragment)
     : fragment_(fragment) {}
 
-bool U2fBleFrameInitializationFragment::Parse(
+bool FidoBleFrameInitializationFragment::Parse(
     base::span<const uint8_t> data,
-    U2fBleFrameInitializationFragment* fragment) {
+    FidoBleFrameInitializationFragment* fragment) {
   if (data.size() < 3)
     return false;
 
@@ -105,11 +105,11 @@ bool U2fBleFrameInitializationFragment::Parse(
     return false;
 
   *fragment =
-      U2fBleFrameInitializationFragment(command, data_length, data.subspan(3));
+      FidoBleFrameInitializationFragment(command, data_length, data.subspan(3));
   return true;
 }
 
-size_t U2fBleFrameInitializationFragment::Serialize(
+size_t FidoBleFrameInitializationFragment::Serialize(
     std::vector<uint8_t>* buffer) const {
   buffer->push_back(static_cast<uint8_t>(command_));
   buffer->push_back((data_length_ >> 8) & 0xFF);
@@ -118,32 +118,32 @@ size_t U2fBleFrameInitializationFragment::Serialize(
   return fragment().size() + 3;
 }
 
-bool U2fBleFrameContinuationFragment::Parse(
+bool FidoBleFrameContinuationFragment::Parse(
     base::span<const uint8_t> data,
-    U2fBleFrameContinuationFragment* fragment) {
+    FidoBleFrameContinuationFragment* fragment) {
   if (data.empty())
     return false;
   const uint8_t sequence = data[0];
-  *fragment = U2fBleFrameContinuationFragment(data.subspan(1), sequence);
+  *fragment = FidoBleFrameContinuationFragment(data.subspan(1), sequence);
   return true;
 }
 
-size_t U2fBleFrameContinuationFragment::Serialize(
+size_t FidoBleFrameContinuationFragment::Serialize(
     std::vector<uint8_t>* buffer) const {
   buffer->push_back(sequence_);
   buffer->insert(buffer->end(), fragment().begin(), fragment().end());
   return fragment().size() + 1;
 }
 
-U2fBleFrameAssembler::U2fBleFrameAssembler(
-    const U2fBleFrameInitializationFragment& fragment)
+FidoBleFrameAssembler::FidoBleFrameAssembler(
+    const FidoBleFrameInitializationFragment& fragment)
     : data_length_(fragment.data_length()),
       frame_(fragment.command(),
              std::vector<uint8_t>(fragment.fragment().begin(),
                                   fragment.fragment().end())) {}
 
-bool U2fBleFrameAssembler::AddFragment(
-    const U2fBleFrameContinuationFragment& fragment) {
+bool FidoBleFrameAssembler::AddFragment(
+    const FidoBleFrameContinuationFragment& fragment) {
   if (fragment.sequence() != sequence_number_)
     return false;
   sequence_number_ = (sequence_number_ + 1) & 0x7F;
@@ -158,14 +158,14 @@ bool U2fBleFrameAssembler::AddFragment(
   return true;
 }
 
-bool U2fBleFrameAssembler::IsDone() const {
+bool FidoBleFrameAssembler::IsDone() const {
   return frame_.data().size() == data_length_;
 }
 
-U2fBleFrame* U2fBleFrameAssembler::GetFrame() {
+FidoBleFrame* FidoBleFrameAssembler::GetFrame() {
   return IsDone() ? &frame_ : nullptr;
 }
 
-U2fBleFrameAssembler::~U2fBleFrameAssembler() = default;
+FidoBleFrameAssembler::~FidoBleFrameAssembler() = default;
 
 }  // namespace device

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_MOCK_U2F_BLE_CONNECTION_H_
-#define DEVICE_FIDO_MOCK_U2F_BLE_CONNECTION_H_
+#ifndef DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_
+#define DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_
 
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/fido/u2f_ble_connection.h"
+#include "device/fido/fido_ble_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 
-class MockU2fBleConnection : public U2fBleConnection {
+class MockFidoBleConnection : public FidoBleConnection {
  public:
-  explicit MockU2fBleConnection(std::string device_address);
-  ~MockU2fBleConnection() override;
+  explicit MockFidoBleConnection(std::string device_address);
+  ~MockFidoBleConnection() override;
 
   MOCK_METHOD0(Connect, void());
   // GMock cannot mock a method taking a move-only type.
@@ -48,9 +48,9 @@ class MockU2fBleConnection : public U2fBleConnection {
   ConnectionStatusCallback connection_status_callback_;
   ReadCallback read_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockU2fBleConnection);
+  DISALLOW_COPY_AND_ASSIGN(MockFidoBleConnection);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_MOCK_U2F_BLE_CONNECTION_H_
+#endif  // DEVICE_FIDO_MOCK_FIDO_BLE_CONNECTION_H_

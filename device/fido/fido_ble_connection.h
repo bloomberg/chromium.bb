@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_BLE_CONNECTION_H_
-#define DEVICE_FIDO_U2F_BLE_CONNECTION_H_
+#ifndef DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
+#define DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
 
 #include <stdint.h>
 
@@ -41,7 +41,7 @@ class BluetoothRemoteGattService;
 //
 // TODO(crbug.com/763303): Add support for pairing from within this class and
 // provide users with an option to manually specify a PIN code.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
     : public BluetoothAdapter::Observer {
  public:
   enum class ServiceRevision {
@@ -62,10 +62,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
   using ServiceRevisionsCallback =
       base::OnceCallback<void(std::set<ServiceRevision>)>;
 
-  U2fBleConnection(std::string device_address,
-                   ConnectionStatusCallback connection_status_callback,
-                   ReadCallback read_callback);
-  ~U2fBleConnection() override;
+  FidoBleConnection(std::string device_address,
+                    ConnectionStatusCallback connection_status_callback,
+                    ReadCallback read_callback);
+  ~FidoBleConnection() override;
 
   const std::string& address() const { return address_; }
 
@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
                                     WriteCallback callback);
 
  protected:
-  explicit U2fBleConnection(std::string device_address);
+  explicit FidoBleConnection(std::string device_address);
 
  private:
   // BluetoothAdapter::Observer:
@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
 
   void OnConnectionError();
 
-  const BluetoothRemoteGattService* GetU2fService() const;
+  const BluetoothRemoteGattService* GetFidoService() const;
 
   static void OnReadControlPointLength(ControlPointLengthCallback callback,
                                        const std::vector<uint8_t>& value);
@@ -154,11 +154,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
 
   std::set<ServiceRevision> service_revisions_;
 
-  base::WeakPtrFactory<U2fBleConnection> weak_factory_;
+  base::WeakPtrFactory<FidoBleConnection> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fBleConnection);
+  DISALLOW_COPY_AND_ASSIGN(FidoBleConnection);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_BLE_CONNECTION_H_
+#endif  // DEVICE_FIDO_FIDO_BLE_CONNECTION_H_
