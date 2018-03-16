@@ -1416,10 +1416,10 @@ zcr_remote_surface_v1_set_window_type(struct zcr_remote_surface_v1 *zcr_remote_s
  * surface, e.g. fullscreen or maximized.
  */
 static inline void
-zcr_remote_surface_v1_resize(struct zcr_remote_surface_v1 *zcr_remote_surface_v1, uint32_t direction)
+zcr_remote_surface_v1_resize(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
-			 ZCR_REMOTE_SURFACE_V1_RESIZE, direction);
+			 ZCR_REMOTE_SURFACE_V1_RESIZE);
 }
 
 /**
@@ -1545,6 +1545,8 @@ zcr_remote_surface_v1_set_snapped_to_right(struct zcr_remote_surface_v1 *zcr_rem
  * @ingroup iface_zcr_remote_surface_v1
  *
  * Request to start an interactive, user-driven resize of the surface.
+ * "x" and "y" specifies the starting point of the pointer device
+ * that initiated the reize.
  *
  * The compositor responds to this request with a "drag_started"
  * event, followed by "bounds_changed" events, and ends the
@@ -1556,10 +1558,10 @@ zcr_remote_surface_v1_set_snapped_to_right(struct zcr_remote_surface_v1 *zcr_rem
  * surface, e.g. fullscreen or maximized, or no drag event is in pregress.
  */
 static inline void
-zcr_remote_surface_v1_start_resize(struct zcr_remote_surface_v1 *zcr_remote_surface_v1, uint32_t resize_direction)
+zcr_remote_surface_v1_start_resize(struct zcr_remote_surface_v1 *zcr_remote_surface_v1, uint32_t resize_direction, int32_t x, int32_t y)
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
-			 ZCR_REMOTE_SURFACE_V1_START_RESIZE, resize_direction);
+			 ZCR_REMOTE_SURFACE_V1_START_RESIZE, resize_direction, x, y);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY 0

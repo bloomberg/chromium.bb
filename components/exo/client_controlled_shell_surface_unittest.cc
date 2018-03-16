@@ -876,9 +876,8 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   surface->Attach(desktop_buffer.get());
   shell_surface->SetGeometry(gfx::Rect(window_size));
   surface->Commit();
-
   EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
-  shell_surface->StartResize(HTTOP);
+  shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
   // Client cannot start drag if mouse isn't pressed.
@@ -889,7 +888,7 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   ui::test::EventGenerator& event_generator = GetEventGenerator();
   event_generator.MoveMouseToCenterOf(window);
   event_generator.PressLeftButton();
-  shell_surface->StartResize(HTTOP);
+  shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_TRUE(window_state->is_dragged());
   event_generator.ReleaseLeftButton();
   ASSERT_FALSE(window_state->is_dragged());
@@ -897,7 +896,7 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   // Press pressed outside of the window.
   event_generator.MoveMouseTo(gfx::Point(200, 50));
   event_generator.PressLeftButton();
-  shell_surface->StartResize(HTTOP);
+  shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_FALSE(window_state->is_dragged());
 }
 
