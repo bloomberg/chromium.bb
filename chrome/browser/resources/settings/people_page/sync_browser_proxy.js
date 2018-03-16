@@ -180,8 +180,9 @@ cr.define('settings', function() {
     /**
      * Function to invoke when leaving the sync page so that the C++ layer can
      * be notified that the sync UI is no longer open.
+     * @param {boolean} didAbort
      */
-    didNavigateAwayFromSyncPage() {}
+    didNavigateAwayFromSyncPage(didAbort) {}
 
     /**
      * Sets which types of data to sync.
@@ -274,8 +275,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    didNavigateAwayFromSyncPage() {
-      chrome.send('SyncSetupDidClosePage');
+    didNavigateAwayFromSyncPage(didAbort) {
+      chrome.send('SyncSetupDidClosePage', [didAbort]);
     }
 
     /** @override */

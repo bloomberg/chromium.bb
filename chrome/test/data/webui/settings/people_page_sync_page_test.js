@@ -418,5 +418,22 @@ cr.define('settings_people_page_sync_page', function() {
             assertTrue(encryptWithPassphrase.disabled);
           });
     });
+
+    if (!cr.isChromeOS) {
+      test('FirstTimeSetupNotification', function() {
+        assertTrue(!!syncPage.$.toast);
+        assertFalse(syncPage.$.toast.open);
+        syncPage.setupInProgress = true;
+        Polymer.dom.flush();
+        assertTrue(syncPage.$.toast.open);
+
+        MockInteractions.tap(syncPage.$.toast.querySelector('paper-button'));
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+            .then(abort => {
+              assertTrue(abort);
+            });
+      });
+    }
   });
 });

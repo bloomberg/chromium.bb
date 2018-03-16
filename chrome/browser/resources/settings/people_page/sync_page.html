@@ -14,6 +14,10 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
+<if expr="not chromeos">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
+</if>
+
 <dom-module id="settings-sync-page">
   <template>
     <style include="settings-shared iron-flex">
@@ -60,6 +64,29 @@
       #sync-data-types .list-item:not([hidden]) ~ .list-item:not([hidden]) {
         border-top: var(--settings-separator-line);
       }
+
+<if expr="not chromeos">
+      #toast {
+        color: white;
+        left: 0;
+        z-index: 1;
+      }
+
+      :host-context([dir='rtl']) #toast {
+        left: auto;
+        right: 0;
+      }
+
+      #toast paper-button {
+        -webkit-margin-end: 0;
+        -webkit-margin-start: 32px;
+        color: var(--google-blue-300);
+        font-weight: 500;
+        height: 32px;
+        min-width: 52px;
+        padding: 8px;
+      }
+</if>
     </style>
     <div id="[[pages_.SPINNER]]" class="settings-box first"
         hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
@@ -335,6 +362,14 @@
         </div>
       </template>
     </div>
+<if expr="not chromeos">
+    <cr-toast id="toast" open="[[setupInProgress]]">
+      $i18n{syncWillStart}
+      <paper-button on-click="onCancelSyncClick_">
+        $i18n{cancelSync}
+      </paper-button>
+    </cr-toast>
+</if>
   </template>
   <script src="sync_page.js"></script>
 </dom-module>

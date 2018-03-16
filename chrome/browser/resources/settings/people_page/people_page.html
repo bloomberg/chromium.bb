@@ -287,7 +287,11 @@
             associated-control="[[$$('#sync-status')]]"
             page-title="$i18n{syncPageTitle}"
             no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
-          <settings-sync-page></settings-sync-page>
+          <settings-sync-page
+<if expr="not chromeos">
+              setup-in-progress="[[syncStatus.setupInProgress]]"
+</if>
+          ></settings-sync-page>
         </settings-subpage>
       </template>
 <if expr="chromeos">
@@ -387,7 +391,6 @@
           on-close="onImportDataDialogClosed_">
       </settings-import-data-dialog>
     </template>
-
 <if expr="not chromeos">
     <cr-toast duration="3000" id="toast">
       $i18n{syncSettingsSavedToast}
