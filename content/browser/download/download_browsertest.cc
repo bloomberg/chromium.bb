@@ -3155,7 +3155,14 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, Resumption) {
 
 // Verifies that if the last slice is finished, parallel download resumption
 // can complete.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
+#if defined(OS_CHROMEOS)
+// Failing on ChromeOS: https://crbug.com/822450
+#define MAYBE_ResumptionLastSliceFinished DISABLED_ResumptionLastSliceFinished
+#else
+#define MAYBE_ResumptionLastSliceFinished ResumptionLastSliceFinished
+#endif
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
+                       MAYBE_ResumptionLastSliceFinished) {
   // Create the received slices data, last slice is actually finished.
   std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
       download::DownloadItem::ReceivedSlice(0, 1000),
