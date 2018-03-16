@@ -330,31 +330,16 @@ def RunBinhostTest(buildroot, incremental=True):
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
-def RunLocalTryjob(buildroot, build_config, args,
-                   git_cache_dir=None, target_buildroot=None):
-  """Run a local tryjob.
-
-  Args:
-    buildroot: The buildroot of the current build.
-    build_config: The name of the build config to build.
-    args: List of strings giving additional command line arguments.
-    git_cache_dir: If calling from a stage, use
-                   "self._run.options.git_cache_dir".
-    target_buildroot: Buildroot for the tryjob. None for a tmpdir.
-  """
+def RunBranchUtilTest(buildroot, version):
+  """Tests that branch-util works at the given manifest version."""
   with osutils.TempDir() as tempdir:
-    if not target_buildroot:
-      target_buildroot = tempdir
-
     cmd = [
         'cros', 'tryjob', '--local', '--yes',
-        '--buildroot', target_buildroot,
+        '--branch-name', 'test_branch',
+        '--version', version,
+        '--buildroot', tempdir,
+        'branch-util-tryjob',
     ]
-    cmd.extend(args)
-    if git_cache_dir:
-      cmd.extend(['--git-cache-dir', git_cache_dir])
-    cmd.append(build_config)
-
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 

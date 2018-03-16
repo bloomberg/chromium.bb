@@ -436,13 +436,9 @@ class BranchUtilTestStage(generic_stages.BuilderStage):
             self._run.attrs.manifest_manager is not None), \
         'Must run ManifestVersionedSyncStage before this stage.'
     manifest_manager = self._run.attrs.manifest_manager
-
-    args = [
-        '--branch-name', 'test_branch',
-        '--version', manifest_manager.GetCurrentVersionInfo().VersionString(),
-    ]
-    commands.RunLocalTryjob(self._build_root, 'branch-util-tryjob', args,
-                            git_cache_dir=self._run.options.git_cache_dir)
+    commands.RunBranchUtilTest(
+        self._build_root,
+        manifest_manager.GetCurrentVersionInfo().VersionString())
 
 
 class CrosSigningTestStage(generic_stages.BuilderStage):
