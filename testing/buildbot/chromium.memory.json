@@ -1809,7 +1809,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 4
+          "shards": 8
         },
         "test": "net_unittests"
       },
