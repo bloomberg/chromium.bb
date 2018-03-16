@@ -300,7 +300,7 @@ audio::-webkit-media-controls-timeline,
 video::-webkit-media-controls-timeline {
   -webkit-appearance: -internal-media-control;
 
-  height: 2px;
+  height: 4px;
   padding-left: 16px;
   padding-right: 16px;
   margin: 0;
@@ -338,9 +338,9 @@ input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   background: rgba(0, 0, 0, .87);
   box-shadow: 0 0 10px 0 #fff;
 
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
   margin-top: -4px;
   flex: 0 0 0;
 }
@@ -357,14 +357,14 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-backg
   position: absolute;
   width: 100%;
   top: 0;
-  height: 2px;
+  height: 4px;
   overflow: hidden;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
   position: absolute;
-  height: 2px;
+  height: 4px;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before {
