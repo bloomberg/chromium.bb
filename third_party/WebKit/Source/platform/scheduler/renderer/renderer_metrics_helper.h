@@ -12,6 +12,7 @@
 #include "platform/scheduler/child/metrics_helper.h"
 #include "platform/scheduler/renderer/frame_status.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
+#include "platform/scheduler/renderer/use_case.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
 #include "public/platform/TaskType.h"
@@ -124,6 +125,8 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
       foreground_per_task_type_duration_reporter_;
   TaskDurationPerTaskTypeMetricReporter
       background_per_task_type_duration_reporter_;
+
+  TaskDurationMetricReporter<UseCase> per_task_use_case_duration_reporter_;
 
   MainThreadTaskLoadState main_thread_task_load_state_;
 

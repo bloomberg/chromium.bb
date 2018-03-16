@@ -37818,6 +37818,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="InternalIPC"/>
 </enum>
 
+<enum name="RendererSchedulerTaskUseCase">
+  <int value="0" label="None"/>
+  <int value="1" label="CompositorGesture"/>
+  <int value="2" label="MainThreadCustomHandling"/>
+  <int value="3" label="SynchronizedGesture"/>
+  <int value="4" label="TouchStart"/>
+  <int value="5" label="Loading"/>
+  <int value="6" label="MainThreadGesture"/>
+</enum>
+
 <enum name="RendererSchedulerThreadType">
   <int value="0" label="MainThread"/>
   <int value="1" label="UnspecifiedWorkerThread"/>
