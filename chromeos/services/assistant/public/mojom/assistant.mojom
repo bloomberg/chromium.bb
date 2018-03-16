@@ -4,6 +4,8 @@
 
 module chromeos.assistant.mojom;
 
+import "url/mojom/url.mojom";
+
 // Interface to communicate with assistant backend.
 interface Assistant {
   // Send text query to assistant. Result will be returned through registered
@@ -22,4 +24,7 @@ interface AssistantEventSubscriber {
 
   // Assistant's got text response from server.
   OnTextResponse(string response);
+
+  // Assistant's got open URL response from server.
+  OnOpenUrlResponse(url.mojom.Url url);
 };

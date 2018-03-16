@@ -13,5 +13,6 @@ mojom("mojom") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//services/identity/public/mojom",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
