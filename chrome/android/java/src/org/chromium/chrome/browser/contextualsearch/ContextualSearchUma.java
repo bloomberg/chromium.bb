@@ -695,6 +695,24 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether search results were seen for a Tap gesture.  Recorded for all users.
+     * @param wasPanelSeen Whether the panel was seen.
+     */
+    public static void logTapResultsSeen(boolean wasPanelSeen) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.Tap.ResultsSeen", wasPanelSeen);
+    }
+
+    /**
+     * Logs whether search results were seen for all gestures.  Recorded for all users.
+     * @param wasPanelSeen Whether the panel was seen.
+     */
+    public static void logAllResultsSeen(boolean wasPanelSeen) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.All.ResultsSeen", wasPanelSeen);
+    }
+
+    /**
      * Logs the whether the panel was seen and the type of the trigger and if Bar nearly overlapped.
      * If the panel was seen, logs the duration of the panel view into a BarOverlap or BarNoOverlap
      * duration histogram.
