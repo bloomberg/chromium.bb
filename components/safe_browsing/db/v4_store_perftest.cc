@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/elapsed_timer.h"
@@ -23,14 +24,28 @@ namespace safe_browsing {
 class V4StorePerftest : public testing::Test {};
 
 TEST_F(V4StorePerftest, StressTest) {
-  const int kNumPrefixes = 2000000;
+// Debug builds can be quite slow. Use a smaller number of prefixes to test.
+#if defined(NDEBUG)
+  const size_t kNumPrefixes = 2000000;
+#else
+  const size_t kNumPrefixes = 20000;
+#endif
+
+  static_assert(kMaxHashPrefixLength == crypto::kSHA256Length,
+                "SHA256 produces a valid FullHash");
+  CHECK(base::IsValidForType<size_t>(
+      base::CheckMul(kNumPrefixes, kMaxHashPrefixLength)));
+
+  // Keep the full hashes as one big string to avoid tons of allocations /
+  // deallocations in the test.
+  std::string full_hashes(kNumPrefixes * kMaxHashPrefixLength, 0);
+  base::StringPiece full_hashes_piece = base::StringPiece(full_hashes);
   std::vector<std::string> prefixes;
-  std::vector<std::string> full_hashes;
   for (size_t i = 0; i < kNumPrefixes; i++) {
-    std::string sha256 = crypto::SHA256HashString(base::StringPrintf("%zu", i));
-    DCHECK_EQ(crypto::kSHA256Length, kMaxHashPrefixLength);
-    full_hashes.push_back(sha256);
-    prefixes.push_back(sha256.substr(0, kMinHashPrefixLength));
+    size_t index = i * kMaxHashPrefixLength;
+    crypto::SHA256HashString(base::StringPrintf("%zu", i), &full_hashes[index],
+                             kMaxHashPrefixLength);
+    prefixes.push_back(full_hashes.substr(index, kMinHashPrefixLength));
   }
 
   auto store = std::make_unique<TestV4Store>(
@@ -39,13 +54,16 @@ TEST_F(V4StorePerftest, StressTest) {
 
   size_t matches = 0;
   base::ElapsedTimer timer;
-  for (const auto& full_hash : full_hashes) {
+  for (size_t i = 0; i < kNumPrefixes; i++) {
+    size_t index = i * kMaxHashPrefixLength;
+    base::StringPiece full_hash =
+        full_hashes_piece.substr(index, kMaxHashPrefixLength);
     matches += !store->GetMatchingHashPrefix(full_hash).empty();
   }
-  perf_test::PrintResult("GetMachingHashPrefix", "", "",
+  perf_test::PrintResult("GetMatchingHashPrefix", "", "",
                          timer.Elapsed().InMillisecondsF(), "ms", true);
 
-  EXPECT_EQ(matches, full_hashes.size());
+  EXPECT_EQ(kNumPrefixes, matches);
 }
 
 }  // namespace safe_browsing
