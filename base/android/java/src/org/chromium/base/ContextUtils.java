@@ -25,6 +25,8 @@ import org.chromium.base.annotations.MainDex;
 public class ContextUtils {
     private static final String TAG = "ContextUtils";
     private static Context sApplicationContext;
+    // TODO(agrieve): Remove sProcessName caching when we stop supporting JB.
+    private static String sProcessName;
 
     /**
      * Initialization-on-demand holder. This exists for thread-safe lazy initialization.
@@ -132,6 +134,9 @@ public class ContextUtils {
             throw new RuntimeException("Global application context cannot be set to null.");
         }
         sApplicationContext = appContext;
+
+        // TODO(agrieve): Remove when we stop supporting JB.
+        getProcessName(); // Prime the cache for getProcessName().
     }
 
     /**
@@ -166,13 +171,20 @@ public class ContextUtils {
 
     /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
     public static String getProcessName() {
+        if (sProcessName != null) {
+            return sProcessName;
+        }
         try {
             // An even more convenient ActivityThread.currentProcessName() exists, but was not added
             // until JB MR2.
             Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
             Object activityThread =
                     activityThreadClazz.getMethod("currentActivityThread").invoke(null);
-            return (String) activityThreadClazz.getMethod("getProcessName").invoke(activityThread);
+            // Before JB MR2, currentActivityThread() returns null when called on a non-UI thread.
+            // Cache the name to allow other threads to access it.
+            sProcessName =
+                    (String) activityThreadClazz.getMethod("getProcessName").invoke(activityThread);
+            return sProcessName;
         } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
             // If fallback logic is ever needed, refer to:
             // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
