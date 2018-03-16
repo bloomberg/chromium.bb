@@ -18,6 +18,10 @@ class ASH_EXPORT UnifiedSystemInfoView : public views::View {
   UnifiedSystemInfoView();
   ~UnifiedSystemInfoView() override;
 
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(UnifiedSystemInfoViewTest, EnterpriseManagedVisible);
   FRIEND_TEST_ALL_PREFIXES(UnifiedSystemInfoViewTest,
