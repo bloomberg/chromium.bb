@@ -171,7 +171,8 @@ class CORE_EXPORT SVGElement : public Element {
   bool InUseShadowTree() const;
 
   void AddReferenceTo(SVGElement*);
-  void NotifyIncomingReferences(bool needs_layout);
+  using InvalidationCallback = base::RepeatingCallback<void(SVGElement&)>;
+  void NotifyIncomingReferences(const InvalidationCallback&);
   void RebuildAllIncomingReferences();
   void RemoveAllIncomingReferences();
   void RemoveAllOutgoingReferences();

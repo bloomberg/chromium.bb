@@ -1257,7 +1257,8 @@ void SVGElement::AddReferenceTo(SVGElement* target_element) {
   target_element->EnsureSVGRareData()->IncomingReferences().insert(this);
 }
 
-void SVGElement::NotifyIncomingReferences(bool needs_layout) {
+void SVGElement::NotifyIncomingReferences(
+    const InvalidationCallback& invalidation_callback) {
   if (!HasSVGRareData())
     return;
 
@@ -1273,16 +1274,12 @@ void SVGElement::NotifyIncomingReferences(bool needs_layout) {
                       (new SVGElementSet));
 
   for (SVGElement* element : dependencies) {
-    if (LayoutObject* layout_object = element->GetLayoutObject()) {
-      if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
-        // Reference cycle: we are in process of invalidating this dependant.
-        continue;
-      }
-
-      LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-          *layout_object, needs_layout);
-      invalidating_dependencies.erase(element);
+    if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
+      // Reference cycle: we are in process of invalidating this dependant.
+      continue;
     }
+    invalidation_callback.Run(*element);
+    invalidating_dependencies.erase(element);
   }
 }
 

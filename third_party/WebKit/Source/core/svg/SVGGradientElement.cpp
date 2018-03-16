@@ -24,6 +24,7 @@
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/GradientAttributes.h"
 #include "core/svg/SVGStopElement.h"
@@ -68,8 +69,25 @@ void SVGGradientElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(gradient_transform_);
   visitor->Trace(spread_method_);
   visitor->Trace(gradient_units_);
+  visitor->Trace(target_id_observer_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
+}
+
+void SVGGradientElement::BuildPendingResource() {
+  ClearResourceReferences();
+  if (!isConnected())
+    return;
+  Element* target = ObserveTarget(target_id_observer_, *this);
+  if (auto* gradient = ToSVGGradientElementOrNull(target))
+    AddReferenceTo(gradient);
+
+  InvalidateGradient(LayoutInvalidationReason::kSvgResourceInvalidated);
+}
+
+void SVGGradientElement::ClearResourceReferences() {
+  UnobserveTarget(target_id_observer_);
+  RemoveAllOutgoingReferences();
 }
 
 void SVGGradientElement::CollectStyleForPresentationAttribute(
@@ -94,14 +112,33 @@ void SVGGradientElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
   if (attr_name == SVGNames::gradientUnitsAttr ||
       attr_name == SVGNames::gradientTransformAttr ||
-      attr_name == SVGNames::spreadMethodAttr ||
-      SVGURIReference::IsKnownAttribute(attr_name)) {
+      attr_name == SVGNames::spreadMethodAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
     return;
   }
 
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    BuildPendingResource();
+    return;
+  }
+
   SVGElement::SvgAttributeChanged(attr_name);
+}
+
+Node::InsertionNotificationRequest SVGGradientElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGElement::InsertedInto(root_parent);
+  if (root_parent->isConnected())
+    BuildPendingResource();
+  return kInsertionDone;
+}
+
+void SVGGradientElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGElement::RemovedFrom(root_parent);
+  if (root_parent->isConnected())
+    ClearResourceReferences();
 }
 
 void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
@@ -117,6 +154,15 @@ void SVGGradientElement::InvalidateGradient(
     LayoutInvalidationReasonForTracing reason) {
   if (auto* layout_object = ToLayoutSVGResourceContainer(GetLayoutObject()))
     layout_object->InvalidateCacheAndMarkForLayout(reason);
+}
+
+void SVGGradientElement::InvalidateDependentGradients() {
+  NotifyIncomingReferences(WTF::BindRepeating([](SVGElement& element) {
+    if (auto* gradient = ToSVGGradientElementOrNull(element)) {
+      gradient->InvalidateGradient(
+          LayoutInvalidationReason::kSvgResourceInvalidated);
+    }
+  }));
 }
 
 void SVGGradientElement::CollectCommonAttributes(

@@ -61,6 +61,8 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
   }
 
   void InvalidateGradient(LayoutInvalidationReasonForTracing);
+  void InvalidateDependentGradients();
+
   const SVGGradientElement* ReferencedElement() const;
   void CollectCommonAttributes(GradientAttributes&) const;
 
@@ -79,13 +81,19 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
+  InsertionNotificationRequest InsertedInto(ContainerNode*) final;
+  void RemovedFrom(ContainerNode*) final;
   void ChildrenChanged(const ChildrenChange&) final;
+
+  void BuildPendingResource();
+  void ClearResourceReferences();
 
   Vector<Gradient::ColorStop> BuildStops() const;
 
   Member<SVGAnimatedTransformList> gradient_transform_;
   Member<SVGAnimatedEnumeration<SVGSpreadMethodType>> spread_method_;
   Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> gradient_units_;
+  Member<IdTargetObserver> target_id_observer_;
 };
 
 inline bool IsSVGGradientElement(const SVGElement& element) {
