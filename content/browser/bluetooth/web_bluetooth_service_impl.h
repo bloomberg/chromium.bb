@@ -60,7 +60,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void CrashRendererAndClosePipe(bad_message::BadMessageReason reason);
 
   // Sets the connection error handler for WebBluetoothServiceImpl's Binding.
-  void SetClientConnectionErrorHandler(base::Closure closure);
+  void SetClientConnectionErrorHandler(base::OnceClosure closure);
 
   // Returns whether the device is paired with the |render_frame_host_|'s
   // GetLastCommittedOrigin().
