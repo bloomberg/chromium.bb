@@ -833,18 +833,12 @@ void NavigationRequest::OnResponseStarted(
   if (!response_should_be_rendered_)
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
 
-  // Update the service worker params of the request params.
-  bool did_create_service_worker_host =
-      navigation_handle_->service_worker_handle() &&
-      navigation_handle_->service_worker_handle()
-              ->service_worker_provider_host_id() !=
-          kInvalidServiceWorkerProviderId;
+  // Update the service worker and AppCache params of the request params.
   request_params_.service_worker_provider_id =
-      did_create_service_worker_host
+      navigation_handle_->service_worker_handle()
           ? navigation_handle_->service_worker_handle()
                 ->service_worker_provider_host_id()
           : kInvalidServiceWorkerProviderId;
-
   request_params_.appcache_host_id =
       navigation_handle_->appcache_handle()
           ? navigation_handle_->appcache_handle()->appcache_host_id()

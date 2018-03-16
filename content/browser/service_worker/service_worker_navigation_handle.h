@@ -28,12 +28,12 @@ class ServiceWorkerNavigationHandleCore;
 //   pointer to the ServiceWorkerNavigationHandleCore.
 //
 //   3) If we pre-create a ServiceWorkerProviderHost for this navigation, its
-//   ownershipped is passed to the ServiceWorkerNavigationHandleCore. The
+//   ownership is passed to the ServiceWorkerNavigationHandleCore. The
 //   ServiceWorkerNavigationHandleCore id is updated.
 //
 //   4) The ServiceWorkerNavigationHandleCore informs the
-//   ServiceWorkerNavigationHandle on the UI that the service worker provider
-//   id was updated.
+//   ServiceWorkerNavigationHandle on the UI thread that the service worker
+//   provider id was updated.
 //
 //   5) When the navigation is ready to commit, the NavigationRequest will
 //   update the RequestNavigationParams based on the id from the
