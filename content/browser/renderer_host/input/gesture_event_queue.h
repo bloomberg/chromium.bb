@@ -237,6 +237,7 @@ class CONTENT_EXPORT GestureEventQueue {
   // Meaningful only when processing_acks_ is true.
   // TODO(818214): Remove once the cause of the hang is identified.
   base::TimeTicks processing_acks_start_;
+  int processing_acks_iterations_ = 0;
   bool did_report_hang_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);

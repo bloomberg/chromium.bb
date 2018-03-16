@@ -221,10 +221,10 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
 
   if (view_->wheel_scroll_latching_enabled()) {
     if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
       is_scroll_bubbling_ = true;
     } else if (is_scroll_bubbling_) {
-      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
     }
     if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
@@ -232,12 +232,12 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
     }
   } else {  // !view_->wheel_scroll_latching_enabled()
     if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
-      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
       is_scroll_bubbling_ = true;
     } else if ((event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
                 event.GetType() == blink::WebInputEvent::kGestureFlingStart) &&
                is_scroll_bubbling_) {
-      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
       is_scroll_bubbling_ = false;
     }
   }

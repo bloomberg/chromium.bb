@@ -182,6 +182,11 @@ void GestureEventQueue::ReportPossibleHang(
         base::debug::CrashKeySize::Size32);
     base::debug::ScopedCrashKeyString size_key_value(
         size_key, std::to_string(coalesced_gesture_events_.size()));
+    static auto* iterations_key = base::debug::AllocateCrashKeyString(
+        "gesture-event-queue-hang-num-iterations",
+        base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString iterations_key_value(
+        iterations_key, std::to_string(processing_acks_iterations_));
     base::debug::DumpWithoutCrashing();
     did_report_hang_ = true;
   }
@@ -283,7 +288,9 @@ void GestureEventQueue::AckCompletedEvents() {
     return;
   base::AutoReset<bool> process_acks(&processing_acks_, true);
   processing_acks_start_ = base::TimeTicks::Now();
+  base::AutoReset<int> process_acks_iterations(&processing_acks_iterations_, 0);
   while (!coalesced_gesture_events_.empty()) {
+    ++processing_acks_iterations_;
     auto iter = coalesced_gesture_events_.begin();
     if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
       break;
