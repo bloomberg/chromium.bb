@@ -9,7 +9,6 @@
 async_test(t => {
   const video = document.querySelector('video');
   const timeline = timelineElement(video);
-  const timeElement = timelineThumbCurrentTime(video);
   const thumb = timelineThumb(video);
 
   video.addEventListener('playing', t.step_func(() => {
@@ -30,9 +29,6 @@ async_test(t => {
 
     // Check the scrubbing UI is shown with the correct time.
     checkControlsClassName(video, 'phase-ready state-scrubbing');
-    assert_equals('', timeElement.style.display);
-    assert_equals('0:' + Math.round(video.currentTime),
-        timeElement.textContent);
 
     // Ensure that the timeline now has a value in the middle.
     assert_equals(30, Math.round(timeline.value));
@@ -40,9 +36,6 @@ async_test(t => {
     // Add an event listener for when we start playing again after seeking.
     video.addEventListener('playing', t.step_func_done(() => {
       checkControlsClassName(video, 'phase-ready state-playing');
-
-      // Check the scrubbing UI is no longer shown.
-      assert_equals('none', timeElement.style.display);
     }), { once: true });
 
     // Release the touch.

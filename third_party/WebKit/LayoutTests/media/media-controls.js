@@ -222,15 +222,6 @@ function timelineThumb(videoElement) {
     return thumb;
 }
 
-function timelineThumbCurrentTime(videoElement) {
-    const controlID = '-internal-media-controls-thumb-current-time';
-    const timeline = timelineElement(videoElement);
-    const thumb = mediaControlsElement(window.internals.shadowRoot(timeline).firstChild, controlID);
-    if (!thumb)
-        throw 'Failed to find timeline current time';
-    return thumb;
-}
-
 function scrubbingMessageElement(videoElement) {
     var controlID = '-internal-media-controls-scrubbing-message';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);

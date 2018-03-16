@@ -13,7 +13,6 @@ namespace blink {
 
 class Event;
 class HTMLDivElement;
-class MediaControlCurrentTimeDisplayElement;
 class MediaControlsImpl;
 
 class MediaControlTimelineElement : public MediaControlSliderElement {
@@ -55,8 +54,6 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
   bool EndScrubbingEvent(Event&);
 
   MediaControlTimelineMetrics metrics_;
-
-  Member<MediaControlCurrentTimeDisplayElement> current_time_display_;
 
   bool is_touching_ = false;
 
