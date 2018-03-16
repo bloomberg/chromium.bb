@@ -307,16 +307,16 @@ def get_waterfall_config():
     waterfall, 'Win 10 Perf', 'chromium-rel-win10', 'win',
     swarming=[
       {
-       'gpu': '102b:0534',
+       'gpu': '8086:5912',
        'os': 'Windows-10',
        'pool': 'Chrome-perf',
        'device_ids': [
-           'build132-m1', 'build133-m1',
-           'build134-m1', 'build135-m1', 'build136-m1'
+           'build189-a9', 'build190-a9',
+           'build191-a9', 'build192-a9', 'build193-a9'
           ],
        'perf_tests': [
-         ('media_perftests', 'build134-m1'),
-         ('views_perftests', 'build135-m1')]
+         ('media_perftests', 'build189-a9'),
+         ('views_perftests', 'build190-a9')]
       }
     ])
   waterfall = add_tester(
