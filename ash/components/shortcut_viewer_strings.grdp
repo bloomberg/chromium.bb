@@ -58,7 +58,10 @@
     Launcher
   </message>
 
-  <!-- Keys with special meaning -->
+  <!-- Keys with special label -->
+  <message name="IDS_KSV_KEY_ESCAPE" desc="Name of [Esc] key. Shouldn't be translated in many languages.">
+    Esc
+  </message>
   <message name="IDS_KSV_KEY_SPACE" desc="Name of [Space] key.">
     Space
   </message>
