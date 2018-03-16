@@ -817,16 +817,22 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
       }
     }
 
-    // Copy over the surviving active nodes.
-    HeapVector<Member<AudioNode>> actives;
-    CHECK_GE(active_source_nodes_.size(), remove_count);
-    actives.ReserveInitialCapacity(active_source_nodes_.size() - remove_count);
-    for (unsigned i = 0; i < removables.size(); ++i) {
-      if (!removables[i])
-        actives.push_back(active_source_nodes_[i]);
+    // Copy over the surviving active nodes after removal.
+    if (remove_count > 0) {
+      HeapVector<Member<AudioNode>> actives;
+      DCHECK_GE(active_source_nodes_.size(), remove_count);
+      size_t initial_capacity =
+          std::min(active_source_nodes_.size() - remove_count,
+                   active_source_nodes_.size());
+      actives.ReserveInitialCapacity(initial_capacity);
+      for (unsigned i = 0; i < removables.size(); ++i) {
+        if (!removables[i])
+          actives.push_back(active_source_nodes_[i]);
+      }
+      active_source_nodes_.swap(actives);
     }
-    active_source_nodes_.swap(actives);
   }
+
   has_posted_cleanup_task_ = false;
 }
 
