@@ -248,7 +248,6 @@ source_set("unit_tests") {
     "//net",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/ocmock",
     "//url",
   ]
 }

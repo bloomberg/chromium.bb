@@ -13,7 +13,6 @@
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/backoff_entry.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -79,9 +78,27 @@
 
 @end
 
+@interface MockUIApplication : NSObject
+// Mocks UIApplication's canOpenURL.
+@end
+
+@implementation MockUIApplication {
+  BOOL canOpen_;
+}
+
+- (void)setCanOpenURL:(BOOL)canOpen {
+  canOpen_ = canOpen;
+}
+
+- (BOOL)canOpenURL:(NSURL*)url {
+  return canOpen_;
+}
+
+@end
+
 @interface InstallationNotifier (Testing)
 - (void)setDispatcher:(id<DispatcherProtocol>)dispatcher;
-- (void)resetDispatcher;
+- (void)setSharedApplication:(id)sharedApplication;
 - (void)dispatchInstallationNotifierBlock;
 - (void)registerForInstallationNotifications:(id)observer
                                 withSelector:(SEL)notificationSelector
@@ -103,14 +120,10 @@ class InstallationNotifierTest : public PlatformTest {
     dispatcher_ = dispatcher;
     notificationReceiver1_ = ([[MockNotificationReceiver alloc] init]);
     notificationReceiver2_ = ([[MockNotificationReceiver alloc] init]);
-    application_ = OCMClassMock([UIApplication class]);
-    OCMStub([application_ sharedApplication]).andReturn(application_);
+    sharedApplication_ = [[MockUIApplication alloc] init];
+    [installationNotifier_ setSharedApplication:sharedApplication_];
     [installationNotifier_ setDispatcher:dispatcher_];
     histogramTester_.reset(new base::HistogramTester());
-  }
-
-  ~InstallationNotifierTest() override {
-    [installationNotifier_ resetDispatcher];
   }
 
   void VerifyHistogramValidity(int expectedYes, int expectedNo) {
@@ -141,12 +154,12 @@ class InstallationNotifierTest : public PlatformTest {
   __weak FakeDispatcher* dispatcher_;
   MockNotificationReceiver* notificationReceiver1_;
   MockNotificationReceiver* notificationReceiver2_;
-  id application_;
+  MockUIApplication* sharedApplication_;
   std::unique_ptr<base::HistogramTester> histogramTester_;
 };
 
 TEST_F(InstallationNotifierTest, RegisterWithAppAlreadyInstalled) {
-  OCMStub([application_ canOpenURL:[OCMArg any]]).andReturn(YES);
+  [sharedApplication_ setCanOpenURL:YES];
   [installationNotifier_
       registerForInstallationNotifications:notificationReceiver1_
                               withSelector:@selector(receivedNotification)
@@ -161,11 +174,11 @@ TEST_F(InstallationNotifierTest, RegisterWithAppAlreadyInstalled) {
 }
 
 TEST_F(InstallationNotifierTest, RegisterWithAppInstalledAfterSomeTime) {
-  [dispatcher_
-      executeAfter:10
-             block:^{
-               OCMStub([application_ canOpenURL:[OCMArg any]]).andReturn(YES);
-             }];
+  [sharedApplication_ setCanOpenURL:NO];
+  [dispatcher_ executeAfter:10
+                      block:^{
+                        [sharedApplication_ setCanOpenURL:YES];
+                      }];
   [installationNotifier_
       registerForInstallationNotifications:notificationReceiver1_
                               withSelector:@selector(receivedNotification)
@@ -175,11 +188,11 @@ TEST_F(InstallationNotifierTest, RegisterWithAppInstalledAfterSomeTime) {
 }
 
 TEST_F(InstallationNotifierTest, RegisterForTwoInstallations) {
-  [dispatcher_
-      executeAfter:10
-             block:^{
-               OCMStub([application_ canOpenURL:[OCMArg any]]).andReturn(YES);
-             }];
+  [sharedApplication_ setCanOpenURL:NO];
+  [dispatcher_ executeAfter:10
+                      block:^{
+                        [sharedApplication_ setCanOpenURL:YES];
+                      }];
   [installationNotifier_
       registerForInstallationNotifications:notificationReceiver1_
                               withSelector:@selector(receivedNotification)
@@ -202,7 +215,7 @@ TEST_F(InstallationNotifierTest, RegisterForTwoInstallations) {
 }
 
 TEST_F(InstallationNotifierTest, RegisterAndThenUnregister) {
-  OCMStub([application_ canOpenURL:[OCMArg any]]).andReturn(NO);
+  [sharedApplication_ setCanOpenURL:NO];
   [dispatcher_ executeAfter:10
                       block:^{
                         [installationNotifier_
@@ -217,7 +230,7 @@ TEST_F(InstallationNotifierTest, RegisterAndThenUnregister) {
 }
 
 TEST_F(InstallationNotifierTest, TestExponentialBackoff) {
-  OCMStub([application_ canOpenURL:[OCMArg any]]).andReturn(NO);
+  [sharedApplication_ setCanOpenURL:NO];
   // Making sure that delay is multiplied by |multiplyFactor| every time.
   [dispatcher_ executeAfter:0
                       block:^{
