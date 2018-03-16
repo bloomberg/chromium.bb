@@ -43,6 +43,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
 
+  // Sets the initial session state and show the UI. Not part of the constructor
+  // because showing the UI triggers the accessibility checks in browser_tests,
+  // which will crash unless the constructor returns, allowing the caller
+  // to store the constructed widget.
+  void Initialize();
+
   // Clean up prior to deletion.
   void Shutdown();
 
