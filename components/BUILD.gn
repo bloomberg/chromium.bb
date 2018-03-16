@@ -547,9 +547,6 @@ if (!is_ios) {
       "visitedlink/test/visitedlink_perftest.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
     deps = [
       "//base",
       "//components/discardable_memory/common",
