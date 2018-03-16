@@ -464,8 +464,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
 
           // TODO(dshwang): after moving to D3D11, remove this.
           // https://crbug.com/438691
-          GLenum format =
-              video_decode_accelerator_.get()->GetSurfaceInternalFormat();
+          GLenum format = video_decode_accelerator_->GetSurfaceInternalFormat();
           if (format != GL_RGBA) {
             DCHECK(format == GL_BGRA_EXT);
             texture_manager->SetLevelInfo(texture_ref, texture_target_, 0,
