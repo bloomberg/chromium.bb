@@ -187,9 +187,8 @@ else
 endif
 dep_m = cc.find_library('m', required : false)
 foreach header : ['sys/sysctl.h', 'sys/select.h', 'alloca.h']
-  if cc.compiles('#include <@0@>'.format(header), name : '@0@ works'.format(header))
-    config.set10('HAVE_' + header.underscorify().to_upper(), true)
-  endif
+  config.set('HAVE_' + header.underscorify().to_upper(),
+    cc.compiles('#include <@0@>'.format(header), name : '@0@ works'.format(header)))
 endforeach
 if cc.has_header_symbol('sys/sysmacros.h', 'major')
   config.set10('MAJOR_IN_SYSMACROS', true)
