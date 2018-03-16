@@ -49,11 +49,6 @@ FloatRoundedRect::FloatRoundedRect(const FloatRect& rect,
                                    const FloatSize& bottom_right)
     : rect_(rect), radii_(top_left, top_right, bottom_left, bottom_right) {}
 
-bool FloatRoundedRect::Radii::IsZero() const {
-  return top_left_.IsZero() && top_right_.IsZero() && bottom_left_.IsZero() &&
-         bottom_right_.IsZero();
-}
-
 void FloatRoundedRect::Radii::Scale(float factor) {
   if (factor == 1)
     return;

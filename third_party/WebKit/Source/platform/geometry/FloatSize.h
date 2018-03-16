@@ -70,7 +70,10 @@ class PLATFORM_EXPORT FloatSize {
   void SetHeight(float height) { height_ = height; }
 
   bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
-  bool IsZero() const;
+  bool IsZero() const {
+    return fabs(width_) < std::numeric_limits<float>::epsilon() &&
+           fabs(height_) < std::numeric_limits<float>::epsilon();
+  }
   bool IsExpressibleAsIntSize() const;
 
   float AspectRatio() const { return width_ / height_; }

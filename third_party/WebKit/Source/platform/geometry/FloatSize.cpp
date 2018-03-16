@@ -46,11 +46,6 @@ float FloatSize::DiagonalLength() const {
   return hypotf(width_, height_);
 }
 
-bool FloatSize::IsZero() const {
-  return fabs(width_) < std::numeric_limits<float>::epsilon() &&
-         fabs(height_) < std::numeric_limits<float>::epsilon();
-}
-
 bool FloatSize::IsExpressibleAsIntSize() const {
   return isWithinIntRange(width_) && isWithinIntRange(height_);
 }
