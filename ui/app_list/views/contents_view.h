@@ -154,6 +154,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the height of current display.
   int GetDisplayHeight() const;
 
+  // Returns the width of the current display.
+  int GetDisplayWidth() const;
+
   // Starts the fade out animation when the app list is closed.
   void FadeOutOnClose(base::TimeDelta animation_duration);
 

@@ -61,11 +61,8 @@ namespace app_list {
 
 namespace {
 
-// The preferred width/height for apps grid. For page #01, it includes the
-// top/bottom 24px padding. For page #02 and all the followings, it includes top
-// 24px padding and bottom 56px padding.
+// The preferred width for apps grid.
 constexpr int kAppsGridPreferredWidth = 576;
-constexpr int kAppsGridPreferredHeight = 623;
 
 // 32px page break space adjustment needed to keep 48px page break space due to
 // the fact that page #02 and all the followings have bottom 56px padding.
@@ -765,7 +762,8 @@ gfx::Size AppsGridView::CalculatePreferredSize() const {
   if (folder_delegate_)
     return GetTileGridSize();
 
-  gfx::Size size = gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
+  gfx::Size size =
+      gfx::Size(kAppsGridPreferredWidth, kHorizontalPagePreferredHeight);
   return size;
 }
 
@@ -2338,7 +2336,7 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
 
 gfx::Size AppsGridView::GetTileGridSize() const {
   if (!folder_delegate_)
-    return gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
+    return gfx::Size(kAppsGridPreferredWidth, kHorizontalPagePreferredHeight);
 
   gfx::Rect rect(GetTotalTileSize());
   rect.set_size(
