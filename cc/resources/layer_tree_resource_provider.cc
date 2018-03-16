@@ -7,10 +7,10 @@
 #include "base/bits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -504,7 +504,7 @@ void LayerTreeResourceProvider::CopyToResource(viz::ResourceId id,
     if (resource->format == viz::ETC1) {
       DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
       int image_bytes =
-          ResourceUtil::CheckedSizeInBytes<int>(image_size, viz::ETC1);
+          viz::ResourceSizes::CheckedSizeInBytes<int>(image_size, viz::ETC1);
       gl->CompressedTexImage2D(resource->target, 0, GLInternalFormat(viz::ETC1),
                                image_size.width(), image_size.height(), 0,
                                image_bytes, image);

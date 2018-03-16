@@ -118,6 +118,7 @@ viz_component("common") {
     "resources/resource_id.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
+    "resources/resource_sizes.h",
     "resources/resource_texture_hint.h",
     "resources/resource_type.h",
     "resources/returned_resource.h",

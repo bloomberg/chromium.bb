@@ -186,7 +186,6 @@ cc_component("cc") {
     "resources/resource_pool.h",
     "resources/resource_provider.cc",
     "resources/resource_provider.h",
-    "resources/resource_util.h",
     "resources/scoped_ui_resource.cc",
     "resources/scoped_ui_resource.h",
     "resources/ui_resource_bitmap.cc",

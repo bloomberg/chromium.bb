@@ -16,12 +16,12 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -465,7 +465,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     ri->CompressedCopyTextureCHROMIUM(staging_buffer->texture_id,
                                       mailbox_texture_id);
   } else {
-    int bytes_per_row = ResourceUtil::UncheckedWidthInBytes<int>(
+    int bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
         rect_to_copy.width(), staging_buffer->format);
     int chunk_size_in_rows =
         std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);

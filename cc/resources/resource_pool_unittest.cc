@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/resources/resource_util.h"
 #include "cc/test/fake_resource_provider.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,7 +82,7 @@ TEST_F(ResourcePoolTest, AccountingSingleResource) {
   viz::ResourceFormat format = viz::RGBA_8888;
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   size_t resource_bytes =
-      ResourceUtil::UncheckedSizeInBytes<size_t>(size, format);
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format);
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
 
