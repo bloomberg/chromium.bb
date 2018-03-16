@@ -5,11 +5,16 @@
 source_set("download") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "download_manager_animation_constants.h",
+    "download_manager_animation_constants.mm",
     "download_manager_consumer.h",
     "download_manager_coordinator.h",
     "download_manager_coordinator.mm",
     "download_manager_mediator.h",
     "download_manager_mediator.mm",
+    "download_manager_state.h",
+    "download_manager_state_view.h",
+    "download_manager_state_view.mm",
     "download_manager_view_controller.h",
     "download_manager_view_controller.mm",
     "legacy_download_manager_controller.h",
@@ -20,11 +25,7 @@ source_set("download") {
     "radial_progress_view.mm",
   ]
   deps = [
-    "resources:download_done",
-    "resources:download_error",
-    "resources:download_file",
     "resources:download_manager_controller_xib",
-    "resources:download_progress",
     "resources:error_icon",
     "resources:file_icon_body",
     "resources:file_icon_fold",

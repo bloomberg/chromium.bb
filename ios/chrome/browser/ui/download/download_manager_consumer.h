@@ -7,16 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, DownloadManagerState) {
-  // Download has not started yet.
-  kDownloadManagerStateNotStarted = 0,
-  // Download is actively progressing.
-  kDownloadManagerStateInProgress,
-  // Download is completely finished without errors.
-  kDownloadManagerStateSucceeded,
-  // Download has failed with an error.
-  kDownloadManagerStateFailed,
-};
+#import "ios/chrome/browser/ui/download/download_manager_state.h"
 
 // Consumer for the download manager mediator.
 @protocol DownloadManagerConsumer

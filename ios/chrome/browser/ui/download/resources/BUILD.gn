@@ -9,42 +9,6 @@ bundle_data_ib_file("download_manager_controller_xib") {
   source = "DownloadManagerController.xib"
 }
 
-imageset("download_done") {
-  sources = [
-    "download_done.imageset/Contents.json",
-    "download_done.imageset/download_done.png",
-    "download_done.imageset/download_done@2x.png",
-    "download_done.imageset/download_done@3x.png",
-  ]
-}
-
-imageset("download_error") {
-  sources = [
-    "download_error.imageset/Contents.json",
-    "download_error.imageset/download_error.png",
-    "download_error.imageset/download_error@2x.png",
-    "download_error.imageset/download_error@3x.png",
-  ]
-}
-
-imageset("download_file") {
-  sources = [
-    "download_file.imageset/Contents.json",
-    "download_file.imageset/download_file.png",
-    "download_file.imageset/download_file@2x.png",
-    "download_file.imageset/download_file@3x.png",
-  ]
-}
-
-imageset("download_progress") {
-  sources = [
-    "download_progress.imageset/Contents.json",
-    "download_progress.imageset/download_progress.png",
-    "download_progress.imageset/download_progress@2x.png",
-    "download_progress.imageset/download_progress@3x.png",
-  ]
-}
-
 imageset("error_icon") {
   sources = [
     "error_icon.imageset/Contents.json",

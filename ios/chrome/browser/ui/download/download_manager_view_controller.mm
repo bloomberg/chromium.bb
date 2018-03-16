@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
+#import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -20,11 +22,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kDownloadManagerNotStartedImage = @"download_file";
-NSString* const kDownloadManagerInProgressImage = @"download_progress";
-NSString* const kDownloadManagerSucceededImage = @"download_done";
-NSString* const kDownloadManagerFailedImage = @"download_error";
 
 namespace {
 // Layout Guide name for action button UILayoutGuide.
@@ -48,7 +45,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 
 @interface DownloadManagerViewController () {
   UIButton* _closeButton;
-  UIImageView* _statusIcon;
+  DownloadManagerStateView* _stateIcon;
   UILabel* _statusLabel;
   UIButton* _actionButton;
   UIButton* _installDriveButton;
@@ -117,7 +114,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.view addSubview:self.downloadControlsRow];
   [self.view addSubview:self.installDriveControlsRow];
   [self.downloadControlsRow addSubview:self.closeButton];
-  [self.downloadControlsRow addSubview:self.statusIcon];
+  [self.downloadControlsRow addSubview:self.stateIcon];
   [self.downloadControlsRow addSubview:self.statusLabel];
   [self.downloadControlsRow addSubview:self.progressView];
   [self.downloadControlsRow addSubview:self.actionButton];
@@ -193,11 +190,10 @@ NSString* GetSizeString(long long size_in_bytes) {
   ]];
 
   // status icon constraints.
-  UIImageView* statusIcon = self.statusIcon;
+  DownloadManagerStateView* stateIcon = self.stateIcon;
   [NSLayoutConstraint activateConstraints:@[
-    [statusIcon.centerYAnchor
-        constraintEqualToAnchor:downloadRow.centerYAnchor],
-    [statusIcon.leadingAnchor
+    [stateIcon.centerYAnchor constraintEqualToAnchor:downloadRow.centerYAnchor],
+    [stateIcon.leadingAnchor
         constraintEqualToAnchor:downloadRow.layoutMarginsGuide.leadingAnchor],
   ]];
 
@@ -205,11 +201,11 @@ NSString* GetSizeString(long long size_in_bytes) {
   RadialProgressView* progressView = self.progressView;
   [NSLayoutConstraint activateConstraints:@[
     [progressView.leadingAnchor
-        constraintEqualToAnchor:statusIcon.leadingAnchor],
+        constraintEqualToAnchor:stateIcon.leadingAnchor],
     [progressView.trailingAnchor
-        constraintEqualToAnchor:statusIcon.trailingAnchor],
-    [progressView.topAnchor constraintEqualToAnchor:statusIcon.topAnchor],
-    [progressView.bottomAnchor constraintEqualToAnchor:statusIcon.bottomAnchor],
+        constraintEqualToAnchor:stateIcon.trailingAnchor],
+    [progressView.topAnchor constraintEqualToAnchor:stateIcon.topAnchor],
+    [progressView.bottomAnchor constraintEqualToAnchor:stateIcon.bottomAnchor],
   ]];
 
   // status label constraints.
@@ -218,7 +214,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   [NSLayoutConstraint activateConstraints:@[
     [statusLabel.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
-    [statusLabel.leadingAnchor constraintEqualToAnchor:statusIcon.trailingAnchor
+    [statusLabel.leadingAnchor constraintEqualToAnchor:stateIcon.trailingAnchor
                                               constant:kElementMargin],
     [statusLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:actionButton.leadingAnchor
@@ -318,7 +314,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 - (void)setState:(DownloadManagerState)state {
   if (_state != state) {
     _state = state;
-    [self updateStatusIcon];
+    [self updateStateIcon];
     [self updateStatusLabel];
     [self updateActionButton];
     [self updateProgressView];
@@ -331,7 +327,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 
   _installDriveButtonVisible = visible;
   __weak DownloadManagerViewController* weakSelf = self;
-  [UIView animateWithDuration:animated ? 0.2 : 0.0
+  [UIView animateWithDuration:animated ? kDownloadManagerAnimationDuration : 0.0
                    animations:^{
                      DownloadManagerViewController* strongSelf = weakSelf;
                      [strongSelf updateInstallDriveControlsRow];
@@ -395,13 +391,15 @@ NSString* GetSizeString(long long size_in_bytes) {
   return _closeButton;
 }
 
-- (UIImageView*)statusIcon {
-  if (!_statusIcon) {
-    _statusIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
-    _statusIcon.translatesAutoresizingMaskIntoConstraints = NO;
-    [self updateStatusIcon];
+- (DownloadManagerStateView*)stateIcon {
+  if (!_stateIcon) {
+    _stateIcon = [[DownloadManagerStateView alloc] initWithFrame:CGRectZero];
+    _stateIcon.translatesAutoresizingMaskIntoConstraints = NO;
+    _stateIcon.downloadColor = [MDCPalette bluePalette].tint600;
+    _stateIcon.documentColor = [MDCPalette greyPalette].tint700;
+    [self updateStateIcon];
   }
-  return _statusIcon;
+  return _stateIcon;
 }
 
 - (UILabel*)statusLabel {
@@ -480,7 +478,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _progressView = [[RadialProgressView alloc] initWithFrame:CGRectZero];
     _progressView.translatesAutoresizingMaskIntoConstraints = NO;
     _progressView.lineWidth = 2;
-    _progressView.tintColor = [MDCPalette bluePalette].tint500;
+    _progressView.tintColor = [MDCPalette bluePalette].tint600;
     [self updateProgressView];
   }
   return _progressView;
@@ -593,25 +591,9 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.widthConstraint.active = YES;
 }
 
-// Updates status icon image depending on |state|.
-- (void)updateStatusIcon {
-  NSString* imageName = nil;
-  switch (_state) {
-    case kDownloadManagerStateNotStarted:
-      imageName = kDownloadManagerNotStartedImage;
-      break;
-    case kDownloadManagerStateInProgress:
-      imageName = kDownloadManagerInProgressImage;
-      break;
-    case kDownloadManagerStateSucceeded:
-      imageName = kDownloadManagerSucceededImage;
-      break;
-    case kDownloadManagerStateFailed:
-      imageName = kDownloadManagerFailedImage;
-      break;
-  }
-  DCHECK(imageName);
-  self.statusIcon.image = [UIImage imageNamed:imageName];
+// Updates state icon depending.
+- (void)updateStateIcon {
+  [self.stateIcon setState:_state animated:YES];
 }
 
 // Updates status label text depending on |state|.
