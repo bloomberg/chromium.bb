@@ -458,6 +458,14 @@ int ContentsView::GetDisplayHeight() const {
       .height();
 }
 
+int ContentsView::GetDisplayWidth() const {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestView(GetWidget()->GetNativeView())
+      .work_area()
+      .size()
+      .width();
+}
+
 void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
   DoAnimation(animation_duration, layer(), 0.0f);
   DoAnimation(animation_duration, GetSearchBoxView()->layer(), 0.0f);

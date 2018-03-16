@@ -47,6 +47,11 @@ const int kGridTitleHorizontalPadding = 8;
 const int kGridSelectedSize = 64;
 const int kGridSelectedCornerRadius = 8;
 
+// The preferred height for horizontal pages. For page #01 in the apps grid, it
+// includes the top/bottom 24px padding. For page #02 and all the followings,
+// it includes top 24px padding and bottom 56px padding.
+const int kHorizontalPagePreferredHeight = 623;
+
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 // Color of the folder bubble shadow.

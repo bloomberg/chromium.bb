@@ -46,6 +46,8 @@ APP_LIST_EXPORT extern const int kGridTitleHorizontalPadding;
 APP_LIST_EXPORT extern const int kGridSelectedSize;
 APP_LIST_EXPORT extern const int kGridSelectedCornerRadius;
 
+APP_LIST_EXPORT extern const int kHorizontalPagePreferredHeight;
+
 APP_LIST_EXPORT extern const SkColor kFolderTitleColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
 APP_LIST_EXPORT extern const SkColor kFolderShadowColor;

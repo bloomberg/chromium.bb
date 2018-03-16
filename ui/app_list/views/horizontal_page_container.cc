@@ -5,10 +5,12 @@
 #include "ui/app_list/views/horizontal_page_container.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_controller.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_container_view.h"
+#include "ui/app_list/views/assistant_container_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/controls/label.h"
@@ -33,9 +35,13 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
   pagination_controller_.reset(new PaginationController(
       &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
 
-  apps_container_view_ = new AppsContainerView(contents_view_, model);
-
   // Add horizontal pages.
+  if (chromeos::switches::IsAssistantEnabled()) {
+    assistant_container_view_ = new AssistantContainerView(contents_view_);
+    AddHorizontalPage(assistant_container_view_);
+  }
+
+  apps_container_view_ = new AppsContainerView(contents_view_, model);
   AddHorizontalPage(apps_container_view_);
   pagination_model_.SetTotalPages(horizontal_pages_.size());
 
@@ -48,7 +54,11 @@ HorizontalPageContainer::~HorizontalPageContainer() {
 }
 
 gfx::Size HorizontalPageContainer::CalculatePreferredSize() const {
-  return apps_container_view_->GetPreferredSize();
+  gfx::Size size;
+  for (auto* page : horizontal_pages_) {
+    size.SetToMax(page->GetPreferredSize());
+  }
+  return size;
 }
 
 void HorizontalPageContainer::Layout() {
