@@ -90,7 +90,6 @@ Bug(none) http/tests/serviceworker/chromium/register-error-messages.html [ Failu
 Bug(none) http/tests/websocket/cookie-document-to-ws.html [ Failure ]
 Bug(none) http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
 Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
-Bug(none) http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Failure ]
 Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
@@ -112,12 +111,6 @@ crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeo
 # Started flaking after test was rewritten in r517585.
 Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
 
-crbug.com/777879 external/wpt/FileAPI/file/send-file-form-iso-2022-jp.tentative.html [ Crash ]
-crbug.com/777879 external/wpt/FileAPI/file/send-file-form-utf-8.html [ Crash ]
-crbug.com/777879 external/wpt/FileAPI/file/send-file-form-windows-1252.tentative.html [ Crash ]
-crbug.com/777879 external/wpt/FileAPI/file/send-file-form-x-user-defined.tentative.html [ Crash ]
-crbug.com/777879 external/wpt/FileAPI/file/send-file-form.html [ Crash ]
-
 # Started flaking after https://chromium-review.googlesource.com/864265.
 # Text-diff: total-byte-weight: {{true => false}}
 Bug(none) http/tests/devtools/audits2/audits2-limited-run.js [ Failure ]
@@ -134,5 +127,3 @@ crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]
-
-crbug.com/821878 external/wpt/html/semantics/forms/form-submission-0/submit-file.sub.html [ Crash ]

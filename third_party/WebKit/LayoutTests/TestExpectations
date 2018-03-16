@@ -617,7 +617,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onload
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-onprogress-event.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/upload-progress-events.html [ Crash Timeout Pass ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Pass Crash ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Crash ]
 
 # Timeout tests in dictionary order.
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-status.any.html [ Pass Timeout ]
@@ -702,7 +701,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/redirect-cors
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/simple-cross-origin-denied-events-post-sync.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/simple-cross-origin-denied-events-sync.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xhr-to-blob-in-isolated-world.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-sync-no-progress-events.html [ Failure ]
 # ====== Out of Blink CORS related tests END ======
