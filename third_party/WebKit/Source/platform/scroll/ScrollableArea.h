@@ -277,9 +277,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void RegisterForAnimation() {}
   virtual void DeregisterForAnimation() {}
 
-  virtual bool UsesCompositedScrolling() const {
-    return uses_composited_scrolling_;
-  }
+  bool UsesCompositedScrolling() const { return uses_composited_scrolling_; }
   void SetUsesCompositedScrolling(bool uses_composited_scrolling) {
     uses_composited_scrolling_ = uses_composited_scrolling;
   }
