@@ -168,8 +168,9 @@ void ResourceLoader::SetDefersLoading(bool defers) {
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
                                        int intra_priority_value) {
-  if (scheduler_client_id_ != ResourceLoadScheduler::kInvalidClientId) {
+  if (scheduler_->IsRunning(scheduler_client_id_)) {
     DCHECK(loader_);
+    DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
     loader_->DidChangePriority(
         static_cast<WebURLRequest::Priority>(load_priority),
         intra_priority_value);

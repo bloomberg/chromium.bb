@@ -178,6 +178,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // TrafficReportHints::InvalidInstance() can be used to omit reporting.
   bool Release(ClientId, ReleaseOption, const TrafficReportHints&);
 
+  // Checks if the specified client was already scheduled to call Run(), but
+  // haven't call Release() yet.
+  bool IsRunning(ClientId id) { return running_requests_.Contains(id); }
+
   // Sets outstanding limit for testing.
   void SetOutstandingLimitForTesting(size_t limit) {
     SetOutstandingLimitForTesting(limit, limit);
