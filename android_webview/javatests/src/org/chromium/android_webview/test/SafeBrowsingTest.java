@@ -46,6 +46,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
@@ -656,6 +657,7 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @FlakyTest(message = "crbug/822753")
     public void testSafeBrowsingDontProceedNavigatesBackForSubResource() throws Throwable {
         loadGreenPage();
         final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
