@@ -781,8 +781,8 @@ void av1_highbd_build_inter_predictor(
     int p_row, int plane, enum mv_precision precision, int x, int y,
     const MACROBLOCKD *xd, int can_use_previous) {
   const int is_q4 = precision == MV_PRECISION_Q4;
-  const MV32 mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
-                       is_q4 ? src_mv->col : src_mv->col * 2 };
+  const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
+                     is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
   mv.col += SCALE_EXTRA_OFF;
   mv.row += SCALE_EXTRA_OFF;
@@ -809,8 +809,8 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                enum mv_precision precision, int x, int y,
                                const MACROBLOCKD *xd, int can_use_previous) {
   const int is_q4 = precision == MV_PRECISION_Q4;
-  const MV32 mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
-                       is_q4 ? src_mv->col : src_mv->col * 2 };
+  const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
+                     is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
   mv.col += SCALE_EXTRA_OFF;
   mv.row += SCALE_EXTRA_OFF;
@@ -1022,7 +1022,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           xs = sf->x_step_q4;
           ys = sf->y_step_q4;
         } else {
-          const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
+          const MV mv_q4 = clamp_mv_to_umv_border_sb(
               xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
           xs = ys = SCALE_SUBPEL_SHIFTS;
           subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
@@ -1105,7 +1105,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         subpel_params[ref].xs = sf->x_step_q4;
         subpel_params[ref].ys = sf->y_step_q4;
       } else {
-        const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
+        const MV mv_q4 = clamp_mv_to_umv_border_sb(
             xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
         subpel_params[ref].subpel_x = (mv_q4.col & SUBPEL_MASK)
                                       << SCALE_EXTRA_BITS;
@@ -1952,7 +1952,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     xs = sf->x_step_q4;
     ys = sf->y_step_q4;
   } else {
-    const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
+    const MV mv_q4 = clamp_mv_to_umv_border_sb(
         xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
     xs = ys = SCALE_SUBPEL_SHIFTS;
     subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;

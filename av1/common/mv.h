@@ -318,12 +318,6 @@ static INLINE void clamp_mv(MV *mv, int min_col, int max_col, int min_row,
   mv->row = clamp(mv->row, min_row, max_row);
 }
 
-static INLINE void clamp_mv32(MV32 *mv, int min_col, int max_col, int min_row,
-                              int max_row) {
-  mv->col = clamp(mv->col, min_col, max_col);
-  mv->row = clamp(mv->row, min_row, max_row);
-}
-
 static INLINE int mv_has_subpel(const MV *mv) {
   return (mv->row & SUBPEL_MASK) || (mv->col & SUBPEL_MASK);
 }

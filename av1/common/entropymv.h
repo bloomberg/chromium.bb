@@ -71,7 +71,7 @@ typedef enum {
 #define MV_MAX ((1 << MV_MAX_BITS) - 1)
 #define MV_VALS ((MV_MAX << 1) + 1)
 
-#define MV_IN_USE_BITS 15
+#define MV_IN_USE_BITS 14
 #define MV_UPP ((1 << MV_IN_USE_BITS) - 1)
 #define MV_LOW (-(1 << MV_IN_USE_BITS))
 
