@@ -53,6 +53,14 @@ Polymer({
       type: Object,
     },
 
+    // <if expr="not chromeos">
+    /** @private */
+    setupInProgress: {
+      type: Boolean,
+      value: false,
+    },
+    // </if>
+
     /**
      * Whether the "create passphrase" inputs should be shown. These inputs
      * give the user the opportunity to use a custom passphrase instead of
@@ -103,6 +111,12 @@ Polymer({
    */
   unloadCallback_: null,
 
+  /**
+   * Whether the user decided to abort sync.
+   * @private {boolean}
+   */
+  didAbort_: false,
+
   /** @override */
   created: function() {
     this.browserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
@@ -123,6 +137,11 @@ Polymer({
   detached: function() {
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateAwayFromPage_();
+
+    if (this.unloadCallback_) {
+      window.removeEventListener('unload', this.unloadCallback_);
+      this.unloadCallback_ = null;
+    }
   },
 
   /** @protected */
@@ -167,7 +186,8 @@ Polymer({
     // search useful content when the page is not visible to the user.
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    this.browserProxy_.didNavigateAwayFromSyncPage();
+    this.browserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
+    this.didAbort_ = false;
 
     window.removeEventListener('unload', this.unloadCallback_);
     this.unloadCallback_ = null;
@@ -397,7 +417,13 @@ Polymer({
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();
     }
-  }
+  },
+
+  /** @private */
+  onCancelSyncClick_: function() {
+    this.didAbort_ = true;
+    settings.navigateTo(settings.routes.BASIC);
+  },
 });
 
 })();

@@ -78,8 +78,8 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  didNavigateAwayFromSyncPage() {
-    this.methodCalled('didNavigateAwayFromSyncPage');
+  didNavigateAwayFromSyncPage(abort) {
+    this.methodCalled('didNavigateAwayFromSyncPage', abort);
   }
 
   /** @override */

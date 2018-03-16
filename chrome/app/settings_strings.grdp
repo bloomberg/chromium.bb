@@ -3156,6 +3156,14 @@
   <message name="IDS_SETTINGS_SYNC_LOADING" desc="The message shown when waiting for the sync backend to start up.">
     Please wait...
   </message>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SYNC_WILL_START" desc="The message to tell users that sync will start once they leave the sync setup page.">
+      Sync will start once you leave this page
+    </message>
+    <message name="IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC" desc="The label of button that allows user to cancel sync.">
+      Cancel sync
+    </message>
+  </if>
   <message name="IDS_SETTINGS_SYNC_TIMEOUT" desc="Text explaining what to do if sync times out.">
     Check your internet connection. If the problem continues, try signing out and signing in again.
   </message>

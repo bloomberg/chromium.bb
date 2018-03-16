@@ -380,7 +380,11 @@ void PeopleHandler::DisplayTimeout() {
 }
 
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
-  MarkFirstSetupComplete();
+  // Don't mark setup as complete if "didAbort" is true.
+  if (!args->GetList()[0].GetBool()) {
+    MarkFirstSetupComplete();
+  }
+
   CloseSyncSetup();
 }
 
