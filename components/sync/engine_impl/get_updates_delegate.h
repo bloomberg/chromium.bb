@@ -69,8 +69,8 @@ class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
 // Functionality specific to the configure GetUpdate request.
 class ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
-  explicit ConfigureGetUpdatesDelegate(
-      sync_pb::SyncEnums::GetUpdatesOrigin origin);
+  ConfigureGetUpdatesDelegate(
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   ~ConfigureGetUpdatesDelegate() override;
 
   // Sets the 'source' and 'origin' fields for this request.
@@ -90,7 +90,10 @@ class ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
       const sync_pb::ClientToServerMessage& request) const override;
 
  private:
-  const sync_pb::SyncEnums::GetUpdatesOrigin origin_;
+  static sync_pb::SyncEnums::GetUpdatesOrigin ConvertConfigureSourceToOrigin(
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
+
+  const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesDelegate);
 };

@@ -618,9 +618,8 @@ message GetUpdatesMessage {
   optional int64 from_timestamp = 1;
 
   // Indicates the reason for the GetUpdatesMessage.
-  // This was *mostly* deprecated in M29.  We now rely on GetUpdatesOrigin
-  // instead to encode the reason for the GetUpdates request.  Now this field
-  // only contains the "notifications_enabled" flag.
+  // Deprecated in M29.  We should eventually rely on GetUpdatesOrigin instead.
+  // Newer clients will support both systems during the transition period.
   optional GetUpdatesCallerInfo caller_info = 2;
 
   // Indicates whether related folders should be fetched.

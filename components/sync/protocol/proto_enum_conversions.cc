@@ -75,11 +75,24 @@ const char* ProtoEnumToString(
 
 const char* ProtoEnumToString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
+  ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource, UNKNOWN,
+                     PROGRAMMATIC);
   switch (updates_source) {
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, UNKNOWN);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, FIRST_UPDATE);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, LOCAL);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NOTIFICATION);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, PERIODIC);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, SYNC_CYCLE_CONTINUATION);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NEWLY_SUPPORTED_DATATYPE);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, MIGRATION);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NEW_CLIENT);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, RECONFIGURATION);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, DATATYPE_REFRESH);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, RETRY);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, PROGRAMMATIC);
   }
-  // Note: No "NOTREACHED()" here - this enum used to have more entries, but it
-  // has been deprecated so we don't need to handle them anymore.
+  NOTREACHED();
   return "";
 }
 

@@ -57,9 +57,10 @@ class Syncer {
   // purposes.  It describes the reson for performing this initial download.
   // Returns: false if an error occurred and retries should backoff, true
   // otherwise.
-  virtual bool ConfigureSyncShare(const ModelTypeSet& request_types,
-                                  sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                                  SyncCycle* cycle);
+  virtual bool ConfigureSyncShare(
+      const ModelTypeSet& request_types,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+      SyncCycle* cycle);
 
   // Requests to download updates for the |request_types|.  For a well-behaved
   // client with a working connection to the invalidations server, this should
@@ -93,7 +94,7 @@ class Syncer {
   bool ExitRequested();
 
   bool HandleCycleEnd(SyncCycle* cycle,
-                      sync_pb::SyncEnums::GetUpdatesOrigin origin);
+                      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   CancelationSignal* const cancelation_signal_;
 

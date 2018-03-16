@@ -47,7 +47,7 @@ TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
                              0, base::Time::Now(), base::Time::Now(),
                              std::vector<int>(MODEL_TYPE_COUNT, 0),
                              std::vector<int>(MODEL_TYPE_COUNT, 0),
-                             sync_pb::SyncEnums::UNKNOWN_ORIGIN);
+                             sync_pb::GetUpdatesCallerInfo::UNKNOWN);
   std::unique_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(16u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits, *value,

@@ -20,11 +20,12 @@ SyncCycle::SyncCycle(SyncCycleContext* context, Delegate* delegate)
 SyncCycle::~SyncCycle() {}
 
 SyncCycleSnapshot SyncCycle::TakeSnapshot() const {
-  return TakeSnapshotWithOrigin(sync_pb::SyncEnums::UNKNOWN_ORIGIN);
+  return TakeSnapshotWithSource(sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 }
 
-SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
-    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin) const {
+SyncCycleSnapshot SyncCycle::TakeSnapshotWithSource(
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
+    const {
   syncable::Directory* dir = context_->directory();
 
   ProgressMarkerMap download_progress_markers;
@@ -47,15 +48,15 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
       context_->notifications_enabled(), dir->GetEntriesCount(),
       status_controller_->sync_start_time(),
       status_controller_->poll_finish_time(), num_entries_by_type,
-      num_to_delete_entries_by_type, get_updates_origin);
+      num_to_delete_entries_by_type, legacy_updates_source);
 
   return snapshot;
 }
 
 void SyncCycle::SendSyncCycleEndEventNotification(
-    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin) {
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
   SyncCycleEvent event(SyncCycleEvent::SYNC_CYCLE_ENDED);
-  event.snapshot = TakeSnapshotWithOrigin(get_updates_origin);
+  event.snapshot = TakeSnapshotWithSource(source);
 
   DVLOG(1) << "Sending cycle end event with snapshot: "
            << event.snapshot.ToString();

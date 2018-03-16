@@ -108,6 +108,8 @@ TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
   processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
+            gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
     ModelType type = GetModelTypeFromSpecificsFieldNumber(
@@ -154,6 +156,8 @@ TEST_F(GetUpdatesProcessorTest, NotifyMany) {
   processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
+            gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
     ModelType type = GetModelTypeFromSpecificsFieldNumber(
@@ -192,6 +196,8 @@ TEST_F(GetUpdatesProcessorTest, InitialSyncRequest) {
   processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
+            gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
     ModelType type = GetModelTypeFromSpecificsFieldNumber(
@@ -216,13 +222,15 @@ TEST_F(GetUpdatesProcessorTest, InitialSyncRequest) {
 TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
   sync_pb::ClientToServerMessage message;
   ConfigureGetUpdatesDelegate configure_delegate(
-      sync_pb::SyncEnums::RECONFIGURATION);
+      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
   processor->PrepareGetUpdates(enabled_types(), &message);
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, gu_msg.get_updates_origin());
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
+            gu_msg.caller_info().source());
 
   ModelTypeSet progress_types;
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
@@ -242,6 +250,8 @@ TEST_F(GetUpdatesProcessorTest, PollTest) {
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu_msg.get_updates_origin());
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
+            gu_msg.caller_info().source());
 
   ModelTypeSet progress_types;
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
@@ -270,6 +280,8 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RETRY,
+            gu_msg.caller_info().source());
   EXPECT_TRUE(gu_msg.is_retry());
 
   ModelTypeSet progress_types;
@@ -302,6 +314,8 @@ TEST_F(GetUpdatesProcessorTest, NudgeWithRetryTest) {
 
   const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_NE(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
+  EXPECT_NE(sync_pb::GetUpdatesCallerInfo::RETRY,
+            gu_msg.caller_info().source());
 
   EXPECT_TRUE(gu_msg.is_retry());
 }
@@ -409,7 +423,7 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
 // types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
   ConfigureGetUpdatesDelegate configure_delegate(
-      sync_pb::SyncEnums::RECONFIGURATION);
+      sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
 
