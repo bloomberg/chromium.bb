@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "chromecast/browser/extensions/api/generated_api_registration.h"
 #include "chromecast/browser/extensions/cast_extension_host_delegate.h"
 #include "chromecast/browser/extensions/cast_extension_system_factory.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
@@ -27,7 +28,6 @@
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/shell/browser/api/generated_api_registration.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -191,7 +191,7 @@ void CastExtensionsBrowserClient::RegisterExtensionFunctions(
   api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // cast_shell-only APIs.
-  shell::api::ShellGeneratedFunctionRegistry::RegisterAll(registry);
+  cast::api::CastGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 void CastExtensionsBrowserClient::RegisterExtensionInterfaces(

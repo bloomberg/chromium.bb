@@ -238,6 +238,7 @@ cast_source_set("browser") {
     ]
 
     deps += [
+      "//chromecast/common/extensions_api:api_registration_bundle_generator_registration",
       "//components/guest_view/browser",
       "//components/keyed_service/content",
       "//components/pref_registry",
@@ -247,7 +248,6 @@ cast_source_set("browser") {
       "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",
-      "//extensions/shell/common/api:api_registration_bundle_generator_registration",
       "//google_apis:google_apis",
     ]
   }

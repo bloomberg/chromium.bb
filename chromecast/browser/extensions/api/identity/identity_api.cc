@@ -5,7 +5,7 @@
 #include "chromecast/browser/extensions/api/identity/identity_api.h"
 
 namespace extensions {
-namespace shell {
+namespace cast {
 
 namespace {
 const char kErrorNoUserAccount[] = "No user account.";
@@ -35,5 +35,5 @@ ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-}  // namespace shell
+}  // namespace cast
 }  // namespace extensions
