@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
-#include "content/browser/web_package/signed_exchange_cert_fetcher.h"
+#include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
@@ -67,15 +67,11 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::string content_type,
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
-    url::Origin request_initiator,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter,
+    std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
-      request_initiator_(std::move(request_initiator)),
-      url_loader_factory_(std::move(url_loader_factory)),
-      url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
+      cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       request_context_getter_(std::move(request_context_getter)),
       net_log_(net::NetLogWithSource::Make(
           request_context_getter_->GetURLRequestContext()->net_log(),
@@ -231,15 +227,12 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   // may be empty.
   DCHECK(cert_url.is_valid());
 
-  DCHECK(url_loader_factory_);
-  DCHECK(url_loader_throttles_getter_);
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
-      std::move(url_loader_throttles_getter_).Run();
-  cert_fetcher_ = SignedExchangeCertFetcher::CreateAndStart(
-      std::move(url_loader_factory_), std::move(throttles), cert_url,
-      std::move(request_initiator_), false,
-      base::BindOnce(&SignedExchangeHandler::OnCertReceived,
-                     base::Unretained(this)));
+  DCHECK(cert_fetcher_factory_);
+  cert_fetcher_ = std::move(cert_fetcher_factory_)
+                      ->CreateFetcherAndStart(
+                          cert_url, false,
+                          base::BindOnce(&SignedExchangeHandler::OnCertReceived,
+                                         base::Unretained(this)));
 
   state_ = State::kFetchingCertificate;
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),

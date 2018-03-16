@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -51,9 +52,7 @@ MockSignedExchangeHandlerFactory::~MockSignedExchangeHandlerFactory() = default;
 std::unique_ptr<SignedExchangeHandler> MockSignedExchangeHandlerFactory::Create(
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
-    url::Origin request_initiator,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter) {
+    std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory) {
   return std::make_unique<MockSignedExchangeHandler>(
       error_, request_url_, mime_type_, response_headers_, std::move(body),
       std::move(headers_callback));
