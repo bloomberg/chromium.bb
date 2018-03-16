@@ -3063,10 +3063,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_bg_limit_8_4",
+                    "name": "Enabled_bg_limit_3_1",
                     "params": {
-                        "bg_limit": "8",
-                        "bg_sub_limit": "4"
+                        "bg_limit": "3",
+                        "bg_sub_limit": "1"
                     },
                     "enable_features": [
                         "ResourceLoadScheduler"
