@@ -92,17 +92,19 @@ class MockInputApi(object):
 
   def FilterSourceFile(self, file, white_list=(), black_list=()):
     local_path = file.LocalPath()
+    found_in_white_list = not white_list
     if white_list:
       for pattern in white_list:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
-          return True
+          found_in_white_list = True
+          break
     if black_list:
       for pattern in black_list:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
           return False
-    return True
+    return found_in_white_list
 
   def LocalPaths(self):
     return self.files
