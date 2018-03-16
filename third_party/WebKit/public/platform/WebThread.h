@@ -48,7 +48,7 @@ typedef uintptr_t PlatformThreadId;
 struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
   explicit WebThreadCreationParams(WebThreadType);
 
-  WebThreadCreationParams& SetThreadName(const char* name);
+  WebThreadCreationParams& SetThreadNameForTest(const char* name);
 
   // Sets a scheduler for the frame which was responsible for the creation
   // of this thread.

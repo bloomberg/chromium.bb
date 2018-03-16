@@ -168,10 +168,10 @@ class DataConsumerHandleTestUtil {
           : context_(test->context_),
             reading_thread_(std::make_unique<Thread>(
                 WebThreadCreationParams(WebThreadType::kTestThread)
-                    .SetThreadName("reading thread"))),
+                    .SetThreadNameForTest("reading thread"))),
             updating_thread_(std::make_unique<Thread>(
                 WebThreadCreationParams(WebThreadType::kTestThread)
-                    .SetThreadName("updating thread"))) {
+                    .SetThreadNameForTest("updating thread"))) {
         context_->RegisterThreadHolder(this);
       }
       ~ThreadHolder() { context_->UnregisterThreadHolder(); }

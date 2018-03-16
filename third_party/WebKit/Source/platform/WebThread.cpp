@@ -21,7 +21,7 @@ WebThreadCreationParams::WebThreadCreationParams(WebThreadType thread_type)
       name(GetNameForThreadType(thread_type)),
       frame_scheduler(nullptr) {}
 
-WebThreadCreationParams& WebThreadCreationParams::SetThreadName(
+WebThreadCreationParams& WebThreadCreationParams::SetThreadNameForTest(
     const char* thread_name) {
   name = thread_name;
   return *this;
