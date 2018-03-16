@@ -23,6 +23,7 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"

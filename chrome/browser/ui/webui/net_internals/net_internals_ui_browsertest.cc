@@ -31,6 +31,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"

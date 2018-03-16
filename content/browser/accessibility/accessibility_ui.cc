@@ -26,6 +26,7 @@
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/grit/content_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"

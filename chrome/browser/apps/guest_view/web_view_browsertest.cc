@@ -53,6 +53,7 @@
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_service.h"

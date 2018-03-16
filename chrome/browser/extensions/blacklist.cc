@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"

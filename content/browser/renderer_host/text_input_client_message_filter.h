@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/common/mac/attributed_string_coder.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace gfx {
 class Point;

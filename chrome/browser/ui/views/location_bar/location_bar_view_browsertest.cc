@@ -23,6 +23,7 @@
 #include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model_impl.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/ct_policy_status.h"

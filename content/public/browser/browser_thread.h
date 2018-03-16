@@ -18,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 

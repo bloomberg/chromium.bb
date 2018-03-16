@@ -27,6 +27,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"

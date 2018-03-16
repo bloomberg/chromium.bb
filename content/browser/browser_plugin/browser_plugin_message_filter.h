@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 

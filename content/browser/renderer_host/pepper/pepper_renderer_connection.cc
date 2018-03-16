@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/common/frame_messages.h"
 #include "content/common/pepper_renderer_instance_data.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"

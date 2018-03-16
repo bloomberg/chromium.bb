@@ -21,6 +21,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/cache_storage/cache_storage_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/origin_util.h"
 #include "storage/browser/blob/blob_data_handle.h"

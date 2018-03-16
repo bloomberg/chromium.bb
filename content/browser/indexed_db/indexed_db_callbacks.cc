@@ -31,7 +31,6 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/blob/blob_data_builder.h"

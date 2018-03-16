@@ -12,6 +12,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 

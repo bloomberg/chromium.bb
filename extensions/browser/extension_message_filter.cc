@@ -8,7 +8,6 @@
 #include "base/memory/singleton.h"
 #include "components/crx_file/id_util.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/browser/blob_holder.h"

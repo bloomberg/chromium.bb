@@ -42,7 +42,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/ukm/content/source_url_recorder.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/render_frame_host.h"

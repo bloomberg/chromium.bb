@@ -21,6 +21,7 @@
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/origin.h"
 
 namespace base {

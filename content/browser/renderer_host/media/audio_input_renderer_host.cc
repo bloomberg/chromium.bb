@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/media/audio_input_delegate_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 
 namespace content {

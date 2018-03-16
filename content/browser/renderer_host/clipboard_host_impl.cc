@@ -20,6 +20,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"

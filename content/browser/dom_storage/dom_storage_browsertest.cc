@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_paths.h"

@@ -12,6 +12,7 @@
 #include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 
 struct PeerConnectionInfo;
 

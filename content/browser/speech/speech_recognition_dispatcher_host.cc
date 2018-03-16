@@ -17,7 +17,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"

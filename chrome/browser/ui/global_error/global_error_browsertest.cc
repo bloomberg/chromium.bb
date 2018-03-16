@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_prefs.h"

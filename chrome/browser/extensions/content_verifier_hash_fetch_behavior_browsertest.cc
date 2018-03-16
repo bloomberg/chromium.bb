@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/test_utils.h"

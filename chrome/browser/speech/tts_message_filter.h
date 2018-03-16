@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

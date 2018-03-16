@@ -12,6 +12,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"

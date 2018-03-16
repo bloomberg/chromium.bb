@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 

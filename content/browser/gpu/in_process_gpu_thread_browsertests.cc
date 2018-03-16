@@ -7,6 +7,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/gpu/in_process_gpu_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 
