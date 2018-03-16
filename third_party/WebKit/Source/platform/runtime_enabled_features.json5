@@ -341,7 +341,7 @@
     },
     {
       name: "CustomElementsBuiltin",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CustomUserTiming",
