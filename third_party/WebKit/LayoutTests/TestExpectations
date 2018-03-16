@@ -1540,6 +1540,8 @@ crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
 # were matched on pass/fail but not exact error messages.
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 
+crbug.com/822757 external/wpt/resource-timing/resource_initiator_types.html [ Pass Failure ]
+
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/object-src [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Skip ]
