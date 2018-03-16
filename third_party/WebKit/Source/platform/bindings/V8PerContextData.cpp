@@ -52,6 +52,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
       context_(isolate_, context),
       activity_logger_(nullptr) {
   context_holder_->SetContext(context);
+  context_.Get().AnnotateStrongRetainer("blink::V8PerContextData::context_");
 
   if (IsMainThread()) {
     InstanceCounters::IncrementCounter(
