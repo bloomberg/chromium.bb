@@ -284,6 +284,15 @@ typedef void (^VNRequestCompletionHandler)(VNRequest* request, NSError* error);
     : VNImageBasedRequest<VNFaceObservationAccepting>
 @end
 
+// VNImageRequestHandler forward declarations.
+typedef NSString* VNImageOption NS_STRING_ENUM;
+
+@interface VNImageRequestHandler : NSObject
+- (instancetype)initWithCIImage:(CIImage*)image
+                        options:(NSDictionary<VNImageOption, id>*)options;
+- (BOOL)performRequests:(NSArray<VNRequest*>*)requests error:(NSError**)error;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_13
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the

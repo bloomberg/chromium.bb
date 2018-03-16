@@ -5,10 +5,9 @@
 #ifndef SERVICES_SHAPE_DETECTION_DETECTION_UTILS_MAC_H_
 #define SERVICES_SHAPE_DETECTION_DETECTION_UTILS_MAC_H_
 
-#import <QuartzCore/QuartzCore.h>
+#import <CoreImage/CoreImage.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace shape_detection {
