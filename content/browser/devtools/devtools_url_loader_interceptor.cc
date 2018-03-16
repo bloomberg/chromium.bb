@@ -320,7 +320,7 @@ class DevToolsURLLoaderInterceptor::Impl
   }
 
  private:
-  friend class InterceptionJob;
+  friend class content::InterceptionJob;
 
   template <typename Callback>
   InterceptionJob* FindJob(const std::string& id,
