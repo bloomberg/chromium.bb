@@ -28,7 +28,6 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/style/ComputedStyle.h"
-#include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGResource.h"
 #include "core/svg/SVGTreeScopeResources.h"
@@ -99,28 +98,6 @@ static HashSet<AtomicString>& FillAndStrokeTags() {
           tspanTag.LocalName(),
       }));
   return tag_list;
-}
-
-static HashSet<AtomicString>& ChainableResourceTags() {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tag_list,
-                      ({
-                          linearGradientTag.LocalName(), patternTag.LocalName(),
-                          radialGradientTag.LocalName(),
-                      }));
-  return tag_list;
-}
-
-static inline AtomicString TargetReferenceFromResource(SVGElement& element) {
-  String target;
-  if (auto* pattern = ToSVGPatternElementOrNull(element))
-    target = pattern->href()->CurrentValue()->Value();
-  else if (auto* gradient = ToSVGGradientElementOrNull(element))
-    target = gradient->href()->CurrentValue()->Value();
-  else
-    NOTREACHED();
-
-  return SVGURIReference::FragmentIdentifierFromIRIString(
-      target, element.GetTreeScope());
 }
 
 namespace {
@@ -257,8 +234,9 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
     }
   }
 
-  if (ChainableResourceTags().Contains(tag_name)) {
-    AtomicString id = TargetReferenceFromResource(element);
+  if (auto* pattern = ToSVGPatternElementOrNull(element)) {
+    AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
+        pattern->HrefString(), tree_scope);
     EnsureResources(resources).SetLinkedResource(
         AttachToResource<LayoutSVGResourceContainer>(tree_scope_resources, id,
                                                      element));
