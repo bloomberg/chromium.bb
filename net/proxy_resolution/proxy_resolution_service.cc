@@ -60,6 +60,36 @@ namespace net {
 
 namespace {
 
+#if defined(OS_WIN) || defined(OS_IOS) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+constexpr net::NetworkTrafficAnnotationTag kSystemProxyConfigTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("proxy_config_system", R"(
+      semantics {
+        sender: "Proxy Config"
+        description:
+          "Establishing a connection through a proxy server using system proxy "
+          "settings."
+        trigger:
+          "Whenever a network request is made when the system proxy settings "
+          "are used, and they indicate to use a proxy server."
+        data:
+          "Proxy configuration."
+        destination: OTHER
+        destination_other:
+          "The proxy server specified in the configuration."
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "User cannot override system proxy settings, but can change them "
+          "through 'Advanced/System/Open proxy settings'."
+        policy_exception_justification:
+          "Using either of 'ProxyMode', 'ProxyServer', or 'ProxyPacUrl' "
+          "policies can set Chrome to use a specific proxy settings and avoid "
+          "system proxy."
+      })");
+#endif
+
 const size_t kDefaultNumPacThreads = 4;
 
 // When the IP address changes we don't immediately re-run proxy auto-config.
@@ -1454,16 +1484,15 @@ void ProxyResolutionService::ForceReloadProxyConfig() {
 std::unique_ptr<ProxyConfigService>
 ProxyResolutionService::CreateSystemProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-// TODO(https://crbug.com/656607): Add traffic annotation here.
 #if defined(OS_WIN)
   return std::make_unique<ProxyConfigServiceWin>(
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_IOS)
   return std::make_unique<ProxyConfigServiceIOS>(
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_MACOSX)
   return std::make_unique<ProxyConfigServiceMac>(
-      io_task_runner, NO_TRAFFIC_ANNOTATION_BUG_656607);
+      io_task_runner, kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
@@ -1485,7 +1514,7 @@ ProxyResolutionService::CreateSystemProxyConfigService(
   // keep us updated when the proxy config changes.
   linux_config_service->SetupAndFetchInitialConfig(
       glib_thread_task_runner, io_task_runner,
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      kSystemProxyConfigTrafficAnnotation);
 
   return std::move(linux_config_service);
 #elif defined(OS_ANDROID)
