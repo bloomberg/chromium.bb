@@ -13,6 +13,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
@@ -105,9 +106,11 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   scoped_refptr<SessionStorageNamespaceImpl> MaybeGetExistingNamespace(
       const std::string& namespace_id) const;
 
+  // Note: can be called on multiple threads, protected by a mutex.
   void AddNamespace(const std::string& namespace_id,
                     SessionStorageNamespaceImpl* session_namespace);
 
+  // Note: can be called on multiple threads, protected by a mutex.
   void RemoveNamespace(const std::string& namespace_id);
 
   // Called on UI thread when the system is under memory pressure.
@@ -137,6 +140,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // the SessionStorageNamespaceImpl objects that are still alive thanks to the
   // sessions component.
   std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_;
+  mutable base::Lock alive_namespaces_lock_;
 
   base::FilePath legacy_localstorage_path_;
 
