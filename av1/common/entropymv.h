@@ -46,7 +46,7 @@ static INLINE int mv_joint_horizontal(MV_JOINT_TYPE type) {
 }
 
 /* Symbols for coding magnitude class of nonzero components */
-#define MV_CLASSES 12
+#define MV_CLASSES 11
 typedef enum {
   MV_CLASS_0 = 0,   /* (0, 2]     integer pel */
   MV_CLASS_1 = 1,   /* (2, 4]     integer pel */
@@ -59,12 +59,12 @@ typedef enum {
   MV_CLASS_8 = 8,   /* (256, 512] integer pel */
   MV_CLASS_9 = 9,   /* (512, 1024] integer pel */
   MV_CLASS_10 = 10, /* (1024,2048] integer pel */
-  MV_CLASS_11 = 11, /* (2048,4096] integer pel */
 } MV_CLASS_TYPE;
 
 #define CLASS0_BITS 1 /* bits at integer precision for class 0 */
 #define CLASS0_SIZE (1 << CLASS0_BITS)
 #define MV_OFFSET_BITS (MV_CLASSES + CLASS0_BITS - 2)
+#define MV_BITS_CONTEXTS 6
 #define MV_FP_SIZE 4
 
 #define MV_MAX_BITS (MV_CLASSES + CLASS0_BITS + 2)

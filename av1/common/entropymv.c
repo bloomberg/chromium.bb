@@ -16,8 +16,8 @@ static const nmv_context default_nmv_context = {
   { AOM_CDF4(4096, 11264, 19328) },  // joints_cdf
   { {
         // Vertical component
-        { AOM_CDF12(28672, 30976, 31858, 32320, 32551, 32656, 32740, 32752,
-                    32757, 32762, 32767) },  // classes_cdf // fp
+        { AOM_CDF11(28672, 30976, 31858, 32320, 32551, 32656, 32740, 32757,
+                    32762, 32767) },  // class_cdf // fp
         { { AOM_CDF4(16384, 24576, 26624) },
           { AOM_CDF4(12288, 21248, 24128) } },  // class0_fp_cdf
         { AOM_CDF4(8192, 17408, 21248) },       // fp_cdf
@@ -34,13 +34,12 @@ static const nmv_context default_nmv_context = {
           { AOM_CDF2(128 * 224) },
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 234) },
-          { AOM_CDF2(128 * 240) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
     },
     {
         // Horizontal component
-        { AOM_CDF12(28672, 30976, 31858, 32320, 32551, 32656, 32740, 32752,
-                    32757, 32762, 32767) },  // classes_cdf // fp
+        { AOM_CDF11(28672, 30976, 31858, 32320, 32551, 32656, 32740, 32757,
+                    32762, 32767) },  // class_cdf // fp
         { { AOM_CDF4(16384, 24576, 26624) },
           { AOM_CDF4(12288, 21248, 24128) } },  // class0_fp_cdf
         { AOM_CDF4(8192, 17408, 21248) },       // fp_cdf
@@ -57,7 +56,6 @@ static const nmv_context default_nmv_context = {
           { AOM_CDF2(128 * 224) },
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 234) },
-          { AOM_CDF2(128 * 240) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
     } },
 };
@@ -110,10 +108,9 @@ static INLINE int mv_class_base(MV_CLASS_TYPE c) {
 }
 
 MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
-  const MV_CLASS_TYPE c =
-      (z >= CLASS0_SIZE * 4096)
-          ? ((z >= CLASS0_SIZE * 8192) ? MV_CLASS_11 : MV_CLASS_10)
-          : (MV_CLASS_TYPE)log_in_base_2[z >> 3];
+  const MV_CLASS_TYPE c = (z >= CLASS0_SIZE * 4096)
+                              ? MV_CLASS_10
+                              : (MV_CLASS_TYPE)log_in_base_2[z >> 3];
   if (offset) *offset = z - mv_class_base(c);
   return c;
 }
