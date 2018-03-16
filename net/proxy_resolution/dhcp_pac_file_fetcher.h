@@ -11,6 +11,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -60,7 +61,8 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcher {
   // Only one fetch is allowed to be outstanding at a time.
   virtual int Fetch(base::string16* utf16_text,
                     const CompletionCallback& callback,
-                    const NetLogWithSource& net_log) = 0;
+                    const NetLogWithSource& net_log,
+                    const NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   // Aborts the in-progress fetch (if any).
   virtual void Cancel() = 0;
@@ -95,7 +97,8 @@ class NET_EXPORT_PRIVATE DoNothingDhcpPacFileFetcher
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override;
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;

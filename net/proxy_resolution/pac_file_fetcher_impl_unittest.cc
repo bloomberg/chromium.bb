@@ -231,8 +231,9 @@ TEST_F(PacFileFetcherImplTest, FileUrl) {
   {  // Fetch a non-existent file.
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(GetTestFileUrl("does-not-exist"), &text,
-                                   callback.callback());
+    int result =
+        pac_fetcher.Fetch(GetTestFileUrl("does-not-exist"), &text,
+                          callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
     EXPECT_TRUE(text.empty());
@@ -240,8 +241,9 @@ TEST_F(PacFileFetcherImplTest, FileUrl) {
   {  // Fetch a file that exists.
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(GetTestFileUrl("pac.txt"), &text,
-                                   callback.callback());
+    int result =
+        pac_fetcher.Fetch(GetTestFileUrl("pac.txt"), &text, callback.callback(),
+                          TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
@@ -260,7 +262,8 @@ TEST_F(PacFileFetcherImplTest, HttpMimeType) {
     GURL url(test_server_.GetURL("/pac.txt"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
@@ -269,7 +272,8 @@ TEST_F(PacFileFetcherImplTest, HttpMimeType) {
     GURL url(test_server_.GetURL("/pac.html"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.html-\n"), text);
@@ -278,7 +282,8 @@ TEST_F(PacFileFetcherImplTest, HttpMimeType) {
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.nsproxy-\n"), text);
@@ -294,7 +299,8 @@ TEST_F(PacFileFetcherImplTest, HttpStatusCode) {
     GURL url(test_server_.GetURL("/500.pac"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_STATUS_NOT_OK));
     EXPECT_TRUE(text.empty());
@@ -303,7 +309,8 @@ TEST_F(PacFileFetcherImplTest, HttpStatusCode) {
     GURL url(test_server_.GetURL("/404.pac"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_STATUS_NOT_OK));
     EXPECT_TRUE(text.empty());
@@ -320,7 +327,8 @@ TEST_F(PacFileFetcherImplTest, ContentDisposition) {
   GURL url(test_server_.GetURL("/downloadable.pac"));
   base::string16 text;
   TestCompletionCallback callback;
-  int result = pac_fetcher.Fetch(url, &text, callback.callback());
+  int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(ASCIIToUTF16("-downloadable.pac-\n"), text);
@@ -337,7 +345,8 @@ TEST_F(PacFileFetcherImplTest, NoCache) {
   {
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-cacheable_1hr.pac-\n"), text);
@@ -352,7 +361,8 @@ TEST_F(PacFileFetcherImplTest, NoCache) {
   {
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
 
     // Expect any error. The exact error varies by platform.
@@ -382,7 +392,8 @@ TEST_F(PacFileFetcherImplTest, TooLarge) {
     const GURL& url = urls[i];
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_TOO_BIG));
     EXPECT_TRUE(text.empty());
@@ -395,7 +406,8 @@ TEST_F(PacFileFetcherImplTest, TooLarge) {
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.nsproxy-\n"), text);
@@ -411,7 +423,8 @@ TEST_F(PacFileFetcherImplTest, Empty) {
   GURL url(test_server_.GetURL("/empty"));
   base::string16 text;
   TestCompletionCallback callback;
-  int result = pac_fetcher.Fetch(url, &text, callback.callback());
+  int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(0u, text.size());
@@ -432,7 +445,8 @@ TEST_F(PacFileFetcherImplTest, Hang) {
     GURL url(test_server_.GetURL("/slow/proxy.pac?1.2"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_TIMED_OUT));
     EXPECT_TRUE(text.empty());
@@ -445,7 +459,8 @@ TEST_F(PacFileFetcherImplTest, Hang) {
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.nsproxy-\n"), text);
@@ -465,7 +480,8 @@ TEST_F(PacFileFetcherImplTest, Encodings) {
     GURL url(test_server_.GetURL("/gzipped_pac"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("This data was gzipped.\n"), text);
@@ -477,7 +493,8 @@ TEST_F(PacFileFetcherImplTest, Encodings) {
     GURL url(test_server_.GetURL("/utf16be_pac"));
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("This was encoded as UTF-16BE.\n"), text);
@@ -503,7 +520,8 @@ TEST_F(PacFileFetcherImplTest, DataURLs) {
     GURL url(kEncodedUrl);
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsOk());
     EXPECT_EQ(ASCIIToUTF16(kPacScript), text);
   }
@@ -516,7 +534,8 @@ TEST_F(PacFileFetcherImplTest, DataURLs) {
     GURL url(kEncodedUrlBroken);
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(url, &text, callback.callback());
+    int result = pac_fetcher.Fetch(url, &text, callback.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_FAILED));
   }
 }
@@ -545,7 +564,8 @@ TEST_F(PacFileFetcherImplTest, Priority) {
     GURL url(test_server_.GetURL("/hung"));
     // Fine to use the same string and callback for all of these, as they should
     // all hang.
-    int result = pac_fetcher->Fetch(url, &text, callback.callback());
+    int result = pac_fetcher->Fetch(url, &text, callback.callback(),
+                                    TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     pac_fetchers.push_back(std::move(pac_fetcher));
   }
@@ -565,8 +585,9 @@ TEST_F(PacFileFetcherImplTest, OnShutdown) {
   PacFileFetcherImpl pac_fetcher(&context_);
   base::string16 text;
   TestCompletionCallback callback;
-  int result = pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
-                                 callback.callback());
+  int result =
+      pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
+                        callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));
   EXPECT_EQ(1u, context_.url_requests()->size());
 
@@ -580,7 +601,7 @@ TEST_F(PacFileFetcherImplTest, OnShutdown) {
   EXPECT_FALSE(callback.have_result());
 
   result = pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
-                             callback.callback());
+                             callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(result, IsError(ERR_CONTEXT_SHUT_DOWN));
 }
 
@@ -592,8 +613,9 @@ TEST_F(PacFileFetcherImplTest, OnShutdownWithNoLiveRequest) {
 
   base::string16 text;
   TestCompletionCallback callback;
-  int result = pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
-                                 callback.callback());
+  int result =
+      pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
+                        callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(result, IsError(ERR_CONTEXT_SHUT_DOWN));
   EXPECT_EQ(0u, context_.url_requests()->size());
 }

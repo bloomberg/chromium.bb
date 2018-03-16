@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
 class GURL;
@@ -50,7 +51,8 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   // PacFileFetcher methods:
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   URLRequestContext* GetRequestContext() const override;
   void OnShutdown() override;

@@ -328,7 +328,7 @@ int PacFileDecider::DoFetchPacScript() {
     return dhcp_pac_file_fetcher_->Fetch(
         &pac_script_,
         base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
-        net_log_);
+        net_log_, NetworkTrafficAnnotationTag(traffic_annotation_));
   }
 
   if (!pac_file_fetcher_) {
@@ -338,7 +338,8 @@ int PacFileDecider::DoFetchPacScript() {
 
   return pac_file_fetcher_->Fetch(
       effective_pac_url, &pac_script_,
-      base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)));
+      base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
+      NetworkTrafficAnnotationTag(traffic_annotation_));
 }
 
 int PacFileDecider::DoFetchPacScriptComplete(int result) {

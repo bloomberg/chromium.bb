@@ -287,9 +287,11 @@ DhcpPacFileFetcherWin::~DhcpPacFileFetcherWin() {
   Cancel();
 }
 
-int DhcpPacFileFetcherWin::Fetch(base::string16* utf16_text,
-                                 const CompletionCallback& callback,
-                                 const NetLogWithSource& net_log) {
+int DhcpPacFileFetcherWin::Fetch(
+    base::string16* utf16_text,
+    const CompletionCallback& callback,
+    const NetLogWithSource& net_log,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ != STATE_START && state_ != STATE_DONE) {
     NOTREACHED();
@@ -319,7 +321,7 @@ int DhcpPacFileFetcherWin::Fetch(base::string16* utf16_text,
       base::Bind(&DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames,
                  last_query_.get()),
       base::Bind(&DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone,
-                 AsWeakPtr(), last_query_));
+                 AsWeakPtr(), last_query_, traffic_annotation));
 
   return ERR_IO_PENDING;
 }
@@ -366,7 +368,8 @@ void DhcpPacFileFetcherWin::CancelImpl() {
 }
 
 void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
-    scoped_refptr<AdapterQuery> query) {
+    scoped_refptr<AdapterQuery> query,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This can happen if this object is reused for multiple queries,
@@ -405,7 +408,8 @@ void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
     size_t fetcher_index = fetchers_.size();
     fetcher->Fetch(adapter_name,
                    base::Bind(&DhcpPacFileFetcherWin::OnFetcherDone,
-                              base::Unretained(this), fetcher_index));
+                              base::Unretained(this), fetcher_index),
+                   traffic_annotation);
     fetchers_.push_back(std::move(fetcher));
   }
   num_pending_fetchers_ = fetchers_.size();

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 #include <string>
@@ -25,7 +26,8 @@ class MockPacFileFetcher : public PacFileFetcher {
   // PacFileFetcher implementation.
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   void OnShutdown() override;
   URLRequestContext* GetRequestContext() const override;
