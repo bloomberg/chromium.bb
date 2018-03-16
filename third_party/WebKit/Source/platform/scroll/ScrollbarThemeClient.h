@@ -71,7 +71,7 @@ class PLATFORM_EXPORT ScrollbarThemeClient {
   virtual ScrollbarPart HoveredPart() const = 0;
 
   virtual void StyleChanged() = 0;
-  virtual void SetScrollbarsHidden(bool) = 0;
+  virtual void SetScrollbarsHiddenIfOverlay(bool) = 0;
 
   virtual bool Enabled() const = 0;
   virtual void SetEnabled(bool) = 0;

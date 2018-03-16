@@ -156,7 +156,7 @@ void WebScrollbarThemeClientImpl::StyleChanged() {
   NOTREACHED();
 }
 
-void WebScrollbarThemeClientImpl::SetScrollbarsHidden(bool hidden) {
+void WebScrollbarThemeClientImpl::SetScrollbarsHiddenIfOverlay(bool hidden) {
   NOTREACHED();
 }
 

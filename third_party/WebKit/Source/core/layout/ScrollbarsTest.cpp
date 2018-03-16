@@ -482,43 +482,46 @@ TEST_P(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
   ScrollableArea* frame_scroller_area =
       frame_view->LayoutViewportScrollableArea();
 
+  // Scrollbars are hidden at start.
+  scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  frame_scroller_area->SetScrollbarsHiddenIfOverlay(true);
   ASSERT_TRUE(scroller_area->HorizontalScrollbar());
   ASSERT_TRUE(scroller_area->VerticalScrollbar());
   ASSERT_TRUE(frame_scroller_area->HorizontalScrollbar());
   ASSERT_TRUE(frame_scroller_area->VerticalScrollbar());
 
-  EXPECT_FALSE(frame_scroller_area->ScrollbarsHidden());
-  EXPECT_TRUE(frame_scroller_area->HorizontalScrollbar()
-                  ->ShouldParticipateInHitTesting());
-  EXPECT_TRUE(frame_scroller_area->VerticalScrollbar()
-                  ->ShouldParticipateInHitTesting());
-
-  EXPECT_FALSE(scroller_area->ScrollbarsHidden());
-  EXPECT_TRUE(
-      scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
-  EXPECT_TRUE(
-      scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
-
-  frame_scroller_area->SetScrollbarsHidden(true);
+  EXPECT_TRUE(frame_scroller_area->ScrollbarsHiddenIfOverlay());
   EXPECT_FALSE(frame_scroller_area->HorizontalScrollbar()
                    ->ShouldParticipateInHitTesting());
   EXPECT_FALSE(frame_scroller_area->VerticalScrollbar()
                    ->ShouldParticipateInHitTesting());
-  frame_scroller_area->SetScrollbarsHidden(false);
-  EXPECT_TRUE(frame_scroller_area->HorizontalScrollbar()
-                  ->ShouldParticipateInHitTesting());
-  EXPECT_TRUE(frame_scroller_area->VerticalScrollbar()
-                  ->ShouldParticipateInHitTesting());
 
-  scroller_area->SetScrollbarsHidden(true);
+  EXPECT_TRUE(scroller_area->ScrollbarsHiddenIfOverlay());
   EXPECT_FALSE(
       scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
   EXPECT_FALSE(
       scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
-  scroller_area->SetScrollbarsHidden(false);
+
+  frame_scroller_area->SetScrollbarsHiddenIfOverlay(false);
+  EXPECT_TRUE(frame_scroller_area->HorizontalScrollbar()
+                  ->ShouldParticipateInHitTesting());
+  EXPECT_TRUE(frame_scroller_area->VerticalScrollbar()
+                  ->ShouldParticipateInHitTesting());
+  frame_scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  EXPECT_FALSE(frame_scroller_area->HorizontalScrollbar()
+                   ->ShouldParticipateInHitTesting());
+  EXPECT_FALSE(frame_scroller_area->VerticalScrollbar()
+                   ->ShouldParticipateInHitTesting());
+
+  scroller_area->SetScrollbarsHiddenIfOverlay(false);
   EXPECT_TRUE(
       scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
   EXPECT_TRUE(
+      scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
+  scroller_area->SetScrollbarsHiddenIfOverlay(true);
+  EXPECT_FALSE(
+      scroller_area->HorizontalScrollbar()->ShouldParticipateInHitTesting());
+  EXPECT_FALSE(
       scroller_area->VerticalScrollbar()->ShouldParticipateInHitTesting());
 }
 
@@ -587,6 +590,13 @@ TEST_P(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 
   Compositor().BeginFrame();
 
+  // Enable the Scrollbar.
+  WebView()
+      .MainFrameImpl()
+      ->GetFrameView()
+      ->LayoutViewportScrollableArea()
+      ->SetScrollbarsHiddenIfOverlay(false);
+
   Document& document = GetDocument();
   Element* a_tag = document.getElementById("a");
 
@@ -622,7 +632,7 @@ TEST_P(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewportScrollableArea()
-      ->SetScrollbarsHidden(true);
+      ->SetScrollbarsHiddenIfOverlay(true);
 
   // Ensure hittest only has link
   hit_test_result = HitTest(18, a_tag->OffsetTop());
@@ -733,6 +743,13 @@ TEST_P(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
   )HTML");
   Compositor().BeginFrame();
 
+  // Enable the Scrollbar.
+  WebView()
+      .MainFrameImpl()
+      ->GetFrameView()
+      ->LayoutViewportScrollableArea()
+      ->SetScrollbarsHiddenIfOverlay(false);
+
   frame_resource.Complete("<!DOCTYPE html>");
   Compositor().BeginFrame();
 
@@ -769,7 +786,7 @@ TEST_P(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
       .MainFrameImpl()
       ->GetFrameView()
       ->LayoutViewportScrollableArea()
-      ->SetScrollbarsHidden(true);
+      ->SetScrollbarsHiddenIfOverlay(true);
 
   // Ensure hittest has IFRAME and no scrollbar.
   hit_test_result = HitTest(196, 5);
@@ -1198,42 +1215,42 @@ TEST_P(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
 
   DCHECK(!scrollable_area->UsesCompositedScrolling());
 
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
+  EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
+  EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   scrollable_area->SetScrollOffset(ScrollOffset(10, 10), kProgrammaticScroll,
                                    kScrollBehaviorInstant);
 
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
+  EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
+  EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('space').style.height = '500px';"));
   Compositor().BeginFrame();
 
-  EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
+  EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('container').style.height = '300px';"));
   Compositor().BeginFrame();
 
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
+  EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
+  EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   // Non-composited scrollbars don't fade out while mouse is over.
   EXPECT_TRUE(scrollable_area->VerticalScrollbar());
   scrollable_area->SetScrollOffset(ScrollOffset(20, 20), kProgrammaticScroll,
                                    kScrollBehaviorInstant);
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
+  EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   scrollable_area->MouseEnteredScrollbar(*scrollable_area->VerticalScrollbar());
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
+  EXPECT_FALSE(scrollable_area->ScrollbarsHiddenIfOverlay());
   scrollable_area->MouseExitedScrollbar(*scrollable_area->VerticalScrollbar());
   RunTasksForPeriod(kMockOverlayFadeOutDelayMS);
-  EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
+  EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(0.0);
 }
@@ -1685,6 +1702,7 @@ TEST_P(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
 }
 
 TEST_P(ScrollbarsTest, MouseOverIFrameScrollbar) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   WebView().Resize(WebSize(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");

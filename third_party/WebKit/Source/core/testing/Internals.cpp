@@ -3435,7 +3435,7 @@ void Internals::setCapsLockState(bool enabled) {
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
                                                        bool visible) {
   if (ScrollableArea* scrollable_area = ScrollableAreaForNode(node)) {
-    scrollable_area->SetScrollbarsHidden(!visible);
+    scrollable_area->SetScrollbarsHiddenIfOverlay(!visible);
     scrollable_area->GetScrollAnimator().SetScrollbarsVisibleForTesting(
         visible);
     return scrollable_area->GetPageScrollbarTheme().UsesOverlayScrollbars();

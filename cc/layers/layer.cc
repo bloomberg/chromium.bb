@@ -1341,7 +1341,7 @@ void Layer::SetMayContainVideo(bool yes) {
 
 void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
   if (inputs_.client)
-    inputs_.client->didChangeScrollbarsHidden(hidden);
+    inputs_.client->didChangeScrollbarsHiddenIfOverlay(hidden);
 }
 
 // On<Property>Animated is called due to an ongoing accelerated animation.

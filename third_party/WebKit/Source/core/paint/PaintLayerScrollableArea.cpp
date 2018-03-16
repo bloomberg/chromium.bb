@@ -892,7 +892,7 @@ void PaintLayerScrollableArea::UpdateScrollDimensions() {
 void PaintLayerScrollableArea::UpdateScrollbarEnabledState() {
   bool force_disable =
       GetPageScrollbarTheme().ShouldDisableInvisibleScrollbars() &&
-      ScrollbarsHidden();
+      ScrollbarsHiddenIfOverlay();
 
   if (HorizontalScrollbar())
     HorizontalScrollbar()->SetEnabled(HasHorizontalOverflow() &&

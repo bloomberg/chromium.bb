@@ -4506,7 +4506,7 @@ void LocalFrameView::ComputeScrollbarExistence(
 void LocalFrameView::UpdateScrollbarEnabledState() {
   bool force_disabled =
       GetPageScrollbarTheme().ShouldDisableInvisibleScrollbars() &&
-      ScrollbarsHidden();
+      ScrollbarsHiddenIfOverlay();
 
   if (HorizontalScrollbar()) {
     HorizontalScrollbar()->SetEnabled(ContentsWidth() > VisibleWidth() &&

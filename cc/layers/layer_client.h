@@ -31,7 +31,7 @@ class CC_EXPORT LayerClient {
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo(Layer* layer) = 0;
   virtual void didUpdateMainThreadScrollingReasons() = 0;
-  virtual void didChangeScrollbarsHidden(bool) = 0;
+  virtual void didChangeScrollbarsHiddenIfOverlay(bool) = 0;
 
  protected:
   virtual ~LayerClient() {}

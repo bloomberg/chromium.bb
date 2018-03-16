@@ -881,7 +881,7 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
 
-  scrollable_area->SetScrollbarsHidden(true);
+  scrollable_area->SetScrollbarsHiddenIfOverlay(true);
 
   HitTestRequest hit_request(HitTestRequest::kMove | HitTestRequest::kReadOnly);
   HitTestResult hit_result(hit_request, LayoutPoint(95, 5));
@@ -891,7 +891,7 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   GetDocument().GetLayoutView()->HitTest(hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), nullptr);
 
-  scrollable_area->SetScrollbarsHidden(false);
+  scrollable_area->SetScrollbarsHiddenIfOverlay(false);
 
   hit_result = HitTestResult(hit_request, LayoutPoint(95, 5));
   GetDocument().GetLayoutView()->HitTest(hit_result);

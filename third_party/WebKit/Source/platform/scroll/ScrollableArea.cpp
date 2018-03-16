@@ -84,7 +84,7 @@ ScrollableArea::ScrollableArea()
       horizontal_scrollbar_needs_paint_invalidation_(false),
       vertical_scrollbar_needs_paint_invalidation_(false),
       scroll_corner_needs_paint_invalidation_(false),
-      scrollbars_hidden_(false),
+      scrollbars_hidden_if_overlay_(true),
       scrollbar_captured_(false),
       mouse_over_scrollbar_(false),
       needs_show_scrollbar_layers_(false),
@@ -382,7 +382,7 @@ void ScrollableArea::MouseEnteredScrollbar(Scrollbar& scrollbar) {
 void ScrollableArea::MouseExitedScrollbar(Scrollbar& scrollbar) {
   mouse_over_scrollbar_ = false;
   GetScrollAnimator().MouseExitedScrollbar(scrollbar);
-  if (!scrollbars_hidden_) {
+  if (HasOverlayScrollbars() && !scrollbars_hidden_if_overlay_) {
     // This will kick off the fade out timer.
     ShowOverlayScrollbars();
   }
@@ -586,27 +586,30 @@ bool ScrollableArea::ShouldScrollOnMainThread() const {
   return true;
 }
 
-bool ScrollableArea::ScrollbarsHidden() const {
-  return HasOverlayScrollbars() && scrollbars_hidden_;
+bool ScrollableArea::ScrollbarsHiddenIfOverlay() const {
+  return HasOverlayScrollbars() && scrollbars_hidden_if_overlay_;
 }
 
-void ScrollableArea::SetScrollbarsHidden(bool hidden) {
-  if (scrollbars_hidden_ == static_cast<unsigned>(hidden))
+void ScrollableArea::SetScrollbarsHiddenIfOverlay(bool hidden) {
+  if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
     return;
 
-  scrollbars_hidden_ = hidden;
+  if (scrollbars_hidden_if_overlay_ == static_cast<unsigned>(hidden))
+    return;
+
+  scrollbars_hidden_if_overlay_ = hidden;
   ScrollbarVisibilityChanged();
 }
 
 void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
-  SetScrollbarsHidden(true);
+  SetScrollbarsHiddenIfOverlay(true);
 }
 
 void ScrollableArea::ShowOverlayScrollbars() {
   if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
     return;
 
-  SetScrollbarsHidden(false);
+  SetScrollbarsHiddenIfOverlay(false);
   needs_show_scrollbar_layers_ = true;
 
   const double time_until_disable =

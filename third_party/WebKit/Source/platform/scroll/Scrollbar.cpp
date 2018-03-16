@@ -524,9 +524,9 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   AutoscrollPressedPart(GetTheme().InitialAutoscrollTimerDelay());
 }
 
-void Scrollbar::SetScrollbarsHidden(bool hidden) {
+void Scrollbar::SetScrollbarsHiddenIfOverlay(bool hidden) {
   if (scrollable_area_)
-    scrollable_area_->SetScrollbarsHidden(hidden);
+    scrollable_area_->SetScrollbarsHiddenIfOverlay(hidden);
 }
 
 void Scrollbar::SetEnabled(bool e) {
@@ -538,7 +538,7 @@ void Scrollbar::SetEnabled(bool e) {
   // We can skip thumb/track repaint when hiding an overlay scrollbar, but not
   // when showing (since the proportions may have changed while hidden).
   bool skipPartsRepaint = IsOverlayScrollbar() && scrollable_area_ &&
-                          scrollable_area_->ScrollbarsHidden();
+                          scrollable_area_->ScrollbarsHiddenIfOverlay();
   SetNeedsPaintInvalidation(skipPartsRepaint ? kNoPart : kAllParts);
 }
 
@@ -557,7 +557,7 @@ bool Scrollbar::ShouldParticipateInHitTesting() {
   // Non-overlay scrollbars should always participate in hit testing.
   if (!IsOverlayScrollbar())
     return true;
-  return !scrollable_area_->ScrollbarsHidden();
+  return !scrollable_area_->ScrollbarsHiddenIfOverlay();
 }
 
 bool Scrollbar::IsWindowActive() const {
