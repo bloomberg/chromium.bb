@@ -55,6 +55,7 @@ base::CommandLine ActionRunner::MakeCommandLine(
     command_line.AppendSwitch("system");
   command_line.AppendSwitchASCII(
       "browser-version", component_.config()->GetBrowserVersion().GetString());
+  command_line.AppendSwitchASCII("sessionid", component_.session_id());
   return command_line;
 }
 
