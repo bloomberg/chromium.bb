@@ -149,7 +149,6 @@ const char kFakeAudioInputDeviceId1[] = "fake_audio_input 1";
 const char kFakeAudioInputDeviceId2[] = "fake_audio_input 2";
 const char kFakeVideoInputDeviceId1[] = "fake_video_input 1";
 const char kFakeVideoInputDeviceId2[] = "fake_video_input 2";
-const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
 
 class MockMediaDevicesDispatcherHost
     : public blink::mojom::MediaDevicesDispatcherHost {
@@ -158,25 +157,9 @@ class MockMediaDevicesDispatcherHost
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
+                        bool request_video_input_capabilities,
                         EnumerateDevicesCallback callback) override {
-    std::vector<std::vector<MediaDeviceInfo>> result(NUM_MEDIA_DEVICE_TYPES);
-    if (request_audio_input) {
-      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].push_back(MediaDeviceInfo(
-          kFakeAudioInputDeviceId1, "Fake Audio Input 1", "fake_group 1"));
-      result[MEDIA_DEVICE_TYPE_AUDIO_INPUT].push_back(MediaDeviceInfo(
-          kFakeAudioInputDeviceId2, "Fake Audio Input 2", "fake_group 2"));
-    }
-    if (request_video_input) {
-      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].push_back(
-          MediaDeviceInfo(kFakeVideoInputDeviceId1, "Fake Video Input 1", ""));
-      result[MEDIA_DEVICE_TYPE_VIDEO_INPUT].push_back(
-          MediaDeviceInfo(kFakeVideoInputDeviceId2, "Fake Video Input 2", ""));
-    }
-    if (request_audio_output) {
-      result[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].push_back(MediaDeviceInfo(
-          kFakeAudioOutputDeviceId1, "Fake Audio Input 1", "fake_group 1"));
-    }
-    std::move(callback).Run(result);
+    NOTREACHED();
   }
 
   void GetVideoInputCapabilities(

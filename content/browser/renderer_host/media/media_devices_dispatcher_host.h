@@ -18,8 +18,6 @@
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "url/origin.h"
 
-using blink::mojom::MediaDeviceType;
-
 namespace content {
 
 class MediaStreamManager;
@@ -41,6 +39,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
+                        bool request_video_input_capabilities,
                         EnumerateDevicesCallback client_callback) override;
   void GetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback) override;
@@ -110,13 +109,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       const std::string& device_id_salt,
       const url::Origin& security_origin,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
-
-  // Returns the supported video formats for the given |device_id|.
-  // If |try_in_use_first| is true and the device is being used, only the format
-  // in use is returned. Otherwise, all formats supported by the device are
-  // returned.
-  media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id,
-                                                  bool try_in_use_first);
 
   // The following const fields can be accessed on any thread.
   const int render_process_id_;

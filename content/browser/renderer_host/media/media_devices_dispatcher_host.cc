@@ -33,17 +33,6 @@ namespace content {
 
 namespace {
 
-// Resolutions used if the source doesn't support capability enumeration.
-struct {
-  int width;
-  int height;
-} const kFallbackVideoResolutions[] = {{1920, 1080}, {1280, 720}, {960, 720},
-                                       {640, 480},   {640, 360},  {320, 240},
-                                       {320, 180}};
-
-// Frame rates for sources with no support for capability enumeration.
-const int kFallbackVideoFrameRates[] = {30, 60};
-
 std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
 ToVectorAudioInputDeviceCapabilitiesPtr(
     const std::vector<blink::mojom::AudioInputDeviceCapabilities>&
@@ -108,6 +97,7 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     bool request_audio_input,
     bool request_video_input,
     bool request_audio_output,
+    bool request_video_input_capabilities,
     EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -124,7 +114,8 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
 
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       render_process_id_, render_frame_id_, group_id_salt_base_,
-      devices_to_enumerate, std::move(client_callback));
+      devices_to_enumerate, request_video_input_capabilities,
+      std::move(client_callback));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
@@ -233,7 +224,8 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
         blink::mojom::VideoInputDeviceCapabilities::New();
     capabilities->device_id = std::move(hmac_device_id);
     capabilities->formats =
-        GetVideoInputFormats(descriptor.device_id, true /* try_in_use_first */);
+        media_stream_manager_->media_devices_manager()->GetVideoInputFormats(
+            descriptor.device_id, true /* try_in_use_first */);
     capabilities->facing_mode = descriptor.facing;
 #if defined(OS_ANDROID)
     // On Android, the facing mode is not available in the |facing| field,
@@ -296,51 +288,13 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats(
     if (DoesMediaDeviceIDMatchHMAC(device_id_salt, security_origin, device_id,
                                    descriptor.device_id)) {
       std::move(client_callback)
-          .Run(GetVideoInputFormats(descriptor.device_id, try_in_use_first));
+          .Run(media_stream_manager_->media_devices_manager()
+                   ->GetVideoInputFormats(descriptor.device_id,
+                                          try_in_use_first));
       return;
     }
   }
   std::move(client_callback).Run(media::VideoCaptureFormats());
-}
-
-media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
-    const std::string& device_id,
-    bool try_in_use_first) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media::VideoCaptureFormats formats;
-
-  if (try_in_use_first) {
-    base::Optional<media::VideoCaptureFormat> format =
-        media_stream_manager_->video_capture_manager()->GetDeviceFormatInUse(
-            MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
-    if (format.has_value()) {
-      formats.push_back(format.value());
-      return formats;
-    }
-  }
-
-  media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
-      device_id, &formats);
-  // Remove formats that have zero resolution.
-  formats.erase(std::remove_if(formats.begin(), formats.end(),
-                               [](const media::VideoCaptureFormat& format) {
-                                 return format.frame_size.GetArea() <= 0;
-                               }),
-                formats.end());
-
-  // If the device does not report any valid format, use a fallback list of
-  // standard formats.
-  if (formats.empty()) {
-    for (const auto& resolution : kFallbackVideoResolutions) {
-      for (const auto frame_rate : kFallbackVideoFrameRates) {
-        formats.push_back(media::VideoCaptureFormat(
-            gfx::Size(resolution.width, resolution.height), frame_rate,
-            media::PIXEL_FORMAT_I420));
-      }
-    }
-  }
-
-  return formats;
 }
 
 struct MediaDevicesDispatcherHost::AudioInputCapabilitiesRequest {

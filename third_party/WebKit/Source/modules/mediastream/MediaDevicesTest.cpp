@@ -31,9 +31,12 @@ class MockMediaDevicesDispatcherHost
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
                         bool request_audio_output,
+                        bool request_video_input_capabilities,
                         EnumerateDevicesCallback callback) override {
     Vector<Vector<MediaDeviceInfoPtr>> enumeration(
         static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES));
+    Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
+        video_input_capabilities;
     MediaDeviceInfoPtr device_info;
     if (request_audio_input) {
       device_info = mojom::blink::MediaDeviceInfo::New();
@@ -64,6 +67,19 @@ class MockMediaDevicesDispatcherHost
       device_info->group_id = "";
       enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
           .push_back(std::move(device_info));
+
+      if (request_video_input_capabilities) {
+        mojom::blink::VideoInputDeviceCapabilitiesPtr capabilities =
+            mojom::blink::VideoInputDeviceCapabilities::New();
+        capabilities->device_id = kFakeVideoInputDeviceId1;
+        capabilities->facing_mode = blink::mojom::FacingMode::NONE;
+        video_input_capabilities.push_back(std::move(capabilities));
+
+        capabilities = mojom::blink::VideoInputDeviceCapabilities::New();
+        capabilities->device_id = kFakeVideoInputDeviceId2;
+        capabilities->facing_mode = blink::mojom::FacingMode::USER;
+        video_input_capabilities.push_back(std::move(capabilities));
+      }
     }
     if (request_audio_output) {
       device_info = mojom::blink::MediaDeviceInfo::New();
@@ -73,7 +89,8 @@ class MockMediaDevicesDispatcherHost
       enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_OUTPUT)]
           .push_back(std::move(device_info));
     }
-    std::move(callback).Run(std::move(enumeration));
+    std::move(callback).Run(std::move(enumeration),
+                            std::move(video_input_capabilities));
   }
 
   void GetVideoInputCapabilities(GetVideoInputCapabilitiesCallback) override {
