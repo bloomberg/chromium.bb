@@ -1009,7 +1009,6 @@ int BrowserMainLoop::CreateThreads() {
   DCHECK(io_thread_);
   io_thread_->InitIOThreadDelegate();
 
-  TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
   created_threads_ = true;
   return result_code_;
 }
