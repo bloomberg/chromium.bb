@@ -93,7 +93,6 @@ jumbo_component("wtf") {
     "ListHashSet.h",
     "Locker.h",
     "MathExtras.h",
-    "NonCopyingSort.h",
     "Noncopyable.h",
     "NotFound.h",
     "Optional.h",
