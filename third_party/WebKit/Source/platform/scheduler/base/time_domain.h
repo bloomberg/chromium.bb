@@ -69,16 +69,10 @@ class PLATFORM_EXPORT TimeDomain {
   // the next task was posted to and it returns true.  Returns false otherwise.
   bool NextScheduledTaskQueue(internal::TaskQueueImpl** out_task_queue) const;
 
-  // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
-  // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
-  // registered wake-up for |queue|.
-  void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
-                           internal::TaskQueueImpl::DelayedWakeUp wake_up,
-                           base::TimeTicks now);
-
-  // Cancels any scheduled calls to TaskQueueImpl::WakeUpForDelayedWork for
-  // |queue|.
-  void CancelDelayedWork(internal::TaskQueueImpl* queue);
+  void ScheduleWakeUpForQueue(
+      internal::TaskQueueImpl* queue,
+      base::Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
+      LazyNow* lazy_now);
 
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);
@@ -132,9 +126,6 @@ class PLATFORM_EXPORT TimeDomain {
     void ClearHeapHandle() {
       DCHECK(queue->heap_handle().IsValid());
       queue->set_heap_handle(HeapHandle());
-
-      DCHECK(queue->scheduled_time_domain_wake_up());
-      queue->SetScheduledTimeDomainWakeUp(base::nullopt);
     }
   };
 

@@ -254,20 +254,11 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     Task pending_task, base::TimeTicks now) {
-  DelayedWakeUp wake_up = pending_task.delayed_wake_up();
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
-  // If |pending_task| is at the head of the queue, then make sure a wake-up
-  // is requested if the queue is enabled.  Note we still want to schedule a
-  // wake-up even if blocked by a fence, because we'd break throttling logic
-  // otherwise.
-  DelayedWakeUp new_wake_up =
-      main_thread_only().delayed_incoming_queue.top().delayed_wake_up();
-  if (wake_up.time == new_wake_up.time &&
-      wake_up.sequence_num == new_wake_up.sequence_num) {
-    ScheduleDelayedWorkInTimeDomain(now);
-  }
+  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  UpdateDelayedWakeUp(&lazy_now);
 
   TraceQueueSize();
 }
@@ -420,16 +411,23 @@ bool TaskQueueImpl::HasTaskToRunImmediately() const {
   return !immediate_incoming_queue().empty();
 }
 
-base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
+base::Optional<TaskQueueImpl::DelayedWakeUp>
+TaskQueueImpl::GetNextScheduledWakeUpImpl() {
   // Note we don't scheduled a wake-up for disabled queues.
   if (main_thread_only().delayed_incoming_queue.empty() || !IsQueueEnabled())
     return base::nullopt;
 
-  return main_thread_only().delayed_incoming_queue.top().delayed_run_time;
+  return main_thread_only().delayed_incoming_queue.top().delayed_wake_up();
 }
 
-base::Optional<TaskQueueImpl::DelayedWakeUp>
-TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
+base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
+  base::Optional<DelayedWakeUp> wake_up = GetNextScheduledWakeUpImpl();
+  if (!wake_up)
+    return base::nullopt;
+  return wake_up->time;
+}
+
+void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
   while (!main_thread_only().delayed_incoming_queue.empty()) {
@@ -446,14 +444,18 @@ TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
         main_thread_only().task_queue_manager->GetNextSequenceNumber());
     main_thread_only().delayed_work_queue->Push(std::move(task));
     main_thread_only().delayed_incoming_queue.pop();
+
+    // Normally WakeUpForDelayedWork is called inside DoWork, but it also
+    // can be called elsewhere (e.g. tests and fast-path for posting
+    // delayed tasks). Ensure that there is a DoWork posting. No-op inside
+    // existing DoWork due to DoWork deduplication.
+    if (IsQueueEnabled() || !main_thread_only().current_fence) {
+      main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
+          FROM_HERE);
+    }
   }
 
-  // Make sure the next wake up is scheduled.
-  if (!main_thread_only().delayed_incoming_queue.empty()) {
-    return main_thread_only().delayed_incoming_queue.top().delayed_wake_up();
-  }
-
-  return base::nullopt;
+  UpdateDelayedWakeUp(lazy_now);
 }
 
 void TaskQueueImpl::TraceQueueSize() const {
@@ -599,7 +601,13 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
   main_thread_only().time_domain = time_domain;
   time_domain->RegisterQueue(this);
 
-  ScheduleDelayedWorkInTimeDomain(time_domain->Now());
+  LazyNow lazy_now = time_domain->CreateLazyNow();
+  // Clear scheduled wake up to ensure that new notifications are issued
+  // correctly.
+  // TODO(altimin): Remove this when we won't have to support changing time
+  // domains.
+  main_thread_only().scheduled_wake_up = base::nullopt;
+  UpdateDelayedWakeUp(&lazy_now);
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
@@ -836,6 +844,9 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
   if (!main_thread_only().task_queue_manager)
     return;
 
+  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  UpdateDelayedWakeUp(&lazy_now);
+
   if (enable) {
     if (HasPendingImmediateWork() &&
         !main_thread_only().on_next_wake_up_changed_callback.is_null()) {
@@ -844,16 +855,12 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
           base::TimeTicks());
     }
 
-    ScheduleDelayedWorkInTimeDomain(main_thread_only().time_domain->Now());
-
-    // Note the selector calls TaskQueueManagerImpl::OnTaskQueueEnabled which
-    // posts a DoWork if needed.
+    // Note the selector calls TaskQueueManager::OnTaskQueueEnabled which posts
+    // a DoWork if needed.
     main_thread_only()
         .task_queue_manager->main_thread_only()
         .selector.EnableQueue(this);
   } else {
-    if (!main_thread_only().delayed_incoming_queue.empty())
-      main_thread_only().time_domain->CancelDelayedWork(this);
     main_thread_only()
         .task_queue_manager->main_thread_only()
         .selector.DisableQueue(this);
@@ -872,9 +879,6 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
   if (main_thread_only().delayed_incoming_queue.empty())
     return;
 
-  base::TimeTicks first_task_runtime =
-      main_thread_only().delayed_incoming_queue.top().delayed_run_time;
-
   // Remove canceled tasks.
   std::priority_queue<Task> remaining_tasks;
   while (!main_thread_only().delayed_incoming_queue.empty()) {
@@ -887,13 +891,8 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
 
   main_thread_only().delayed_incoming_queue = std::move(remaining_tasks);
 
-  // Re-schedule delayed call to WakeUpForDelayedWork if needed.
-  if (main_thread_only().delayed_incoming_queue.empty()) {
-    main_thread_only().time_domain->CancelDelayedWork(this);
-  } else if (first_task_runtime !=
-             main_thread_only().delayed_incoming_queue.top().delayed_run_time) {
-    ScheduleDelayedWorkInTimeDomain(main_thread_only().time_domain->Now());
-  }
+  LazyNow lazy_now(now);
+  UpdateDelayedWakeUp(&lazy_now);
 }
 
 void TaskQueueImpl::PushImmediateIncomingTaskForTest(
@@ -933,31 +932,31 @@ void TaskQueueImpl::SetOnNextWakeUpChangedCallback(
   main_thread_only().on_next_wake_up_changed_callback = callback;
 }
 
-void TaskQueueImpl::ScheduleDelayedWorkInTimeDomain(base::TimeTicks now) {
-  if (!IsQueueEnabled())
-    return;
-  if (main_thread_only().delayed_incoming_queue.empty())
-    return;
-
-  main_thread_only().time_domain->ScheduleDelayedWork(
-      this, main_thread_only().delayed_incoming_queue.top().delayed_wake_up(),
-      now);
+void TaskQueueImpl::UpdateDelayedWakeUp(LazyNow* lazy_now) {
+  return UpdateDelayedWakeUpImpl(lazy_now, GetNextScheduledWakeUpImpl());
 }
 
-void TaskQueueImpl::SetScheduledTimeDomainWakeUp(
-    base::Optional<base::TimeTicks> scheduled_time_domain_wake_up) {
-  main_thread_only().scheduled_time_domain_wake_up =
-      scheduled_time_domain_wake_up;
-
-  // If queue has immediate work an appropriate notification has already
-  // been issued.
-  if (!scheduled_time_domain_wake_up ||
-      main_thread_only().on_next_wake_up_changed_callback.is_null() ||
-      HasPendingImmediateWork())
+void TaskQueueImpl::UpdateDelayedWakeUpImpl(
+    LazyNow* lazy_now,
+    base::Optional<TaskQueueImpl::DelayedWakeUp> wake_up) {
+  if (main_thread_only().scheduled_wake_up == wake_up)
     return;
+  main_thread_only().scheduled_wake_up = wake_up;
 
-  main_thread_only().on_next_wake_up_changed_callback.Run(
-      scheduled_time_domain_wake_up.value());
+  if (wake_up &&
+      !main_thread_only().on_next_wake_up_changed_callback.is_null() &&
+      !HasPendingImmediateWork()) {
+    main_thread_only().on_next_wake_up_changed_callback.Run(wake_up->time);
+  }
+
+  main_thread_only().time_domain->ScheduleWakeUpForQueue(this, wake_up,
+                                                         lazy_now);
+}
+
+void TaskQueueImpl::SetDelayedWakeUpForTesting(
+    base::Optional<TaskQueueImpl::DelayedWakeUp> wake_up) {
+  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  UpdateDelayedWakeUpImpl(&lazy_now, wake_up);
 }
 
 bool TaskQueueImpl::HasPendingImmediateWork() {

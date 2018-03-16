@@ -9,9 +9,9 @@
 namespace blink {
 namespace scheduler {
 base::TimeTicks LazyNow::Now() {
-  if (now_.is_null())
+  if (!now_)
     now_ = tick_clock_->NowTicks();
-  return now_;
+  return now_.value();
 }
 
 }  // namespace scheduler
