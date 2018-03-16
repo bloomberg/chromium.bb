@@ -58,8 +58,10 @@ class ArcVoiceInteractionArcHomeServiceTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     AXTreeSnapshotWaiter waiter;
-    web_contents->RequestAXTreeSnapshot(base::BindOnce(
-        &AXTreeSnapshotWaiter::ReceiveSnapshot, base::Unretained(&waiter)));
+    web_contents->RequestAXTreeSnapshot(
+        base::BindOnce(&AXTreeSnapshotWaiter::ReceiveSnapshot,
+                       base::Unretained(&waiter)),
+        ui::kAXModeComplete);
     waiter.Wait();
     auto node = ui::AXSnapshotNodeAndroid::Create(waiter.snapshot(), false);
     return ArcVoiceInteractionArcHomeService::

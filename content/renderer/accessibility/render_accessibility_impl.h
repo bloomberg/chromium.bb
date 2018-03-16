@@ -61,9 +61,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
  public:
   // Request a one-time snapshot of the accessibility tree without
   // enabling accessibility if it wasn't already enabled.
-  static void SnapshotAccessibilityTree(
-      RenderFrameImpl* render_frame,
-      AXContentTreeUpdate* response);
+  static void SnapshotAccessibilityTree(RenderFrameImpl* render_frame,
+                                        AXContentTreeUpdate* response,
+                                        ui::AXMode ax_mode);
 
   RenderAccessibilityImpl(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~RenderAccessibilityImpl() override;

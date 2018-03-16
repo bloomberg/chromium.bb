@@ -9,6 +9,7 @@
 
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "content/common/view_message_enums.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -182,8 +183,9 @@ IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
 // Request a one-time snapshot of the accessibility tree without
 // enabling accessibility if it wasn't already enabled. The passed id
 // will be returned in the AccessibilityHostMsg_SnapshotResponse message.
-IPC_MESSAGE_ROUTED1(AccessibilityMsg_SnapshotTree,
-                    int /* callback id */)
+IPC_MESSAGE_ROUTED2(AccessibilityMsg_SnapshotTree,
+                    int /* callback id */,
+                    ui::AXMode /* ax_mode */)
 
 // Messages sent from the renderer to the browser.
 

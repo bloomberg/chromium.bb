@@ -341,7 +341,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsWaitingForResponse() const override;
   const net::LoadStateWithParam& GetLoadState() const override;
   const base::string16& GetLoadStateHost() const override;
-  void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) override;
+  void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
+                             ui::AXMode ax_mode) override;
   uint64_t GetUploadSize() const override;
   uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;
@@ -1347,6 +1348,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // A helper for clearing the link status bubble after navigating away.
   // See also UpdateTargetURL.
   void ClearTargetURL();
+
+  class AXTreeSnapshotCombiner;
+  void RecursiveRequestAXTreeSnapshotOnFrame(FrameTreeNode* root_node,
+                                             AXTreeSnapshotCombiner* combiner,
+                                             ui::AXMode ax_mode);
 
   // Data for core operation ---------------------------------------------------
 
