@@ -409,6 +409,10 @@ NSString* GetSizeString(long long size_in_bytes) {
     _statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _statusLabel.font = [MDCTypography subheadFont];
+    [_statusLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     [self updateStatusLabel];
   }
   return _statusLabel;
