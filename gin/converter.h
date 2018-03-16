@@ -224,32 +224,17 @@ ConvertToV8(v8::Isolate* isolate, T input) {
   return Converter<T>::ToV8(isolate, input);
 }
 
-template<typename T, bool = ToV8ReturnsMaybe<T>::value> struct ToV8Traits;
+template <typename T>
+std::enable_if_t<ToV8ReturnsMaybe<T>::value, bool>
+TryConvertToV8(v8::Isolate* isolate, T input, v8::Local<v8::Value>* output) {
+  return ConvertToV8(isolate, input).ToLocal(output);
+}
 
 template <typename T>
-struct ToV8Traits<T, true> {
-  static bool TryConvertToV8(v8::Isolate* isolate,
-                             T input,
-                             v8::Local<v8::Value>* output) {
-    return ConvertToV8(isolate, input).ToLocal(output);
-  }
-};
-
-template <typename T>
-struct ToV8Traits<T, false> {
-  static bool TryConvertToV8(v8::Isolate* isolate,
-                             T input,
-                             v8::Local<v8::Value>* output) {
-    *output = ConvertToV8(isolate, input);
-    return true;
-  }
-};
-
-template <typename T>
-bool TryConvertToV8(v8::Isolate* isolate,
-                    T input,
-                    v8::Local<v8::Value>* output) {
-  return ToV8Traits<T>::TryConvertToV8(isolate, input, output);
+std::enable_if_t<!ToV8ReturnsMaybe<T>::value, bool>
+TryConvertToV8(v8::Isolate* isolate, T input, v8::Local<v8::Value>* output) {
+  *output = ConvertToV8(isolate, input);
+  return true;
 }
 
 // This crashes when input.size() > v8::String::kMaxLength.
