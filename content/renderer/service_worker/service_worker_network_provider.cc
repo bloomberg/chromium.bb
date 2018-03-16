@@ -149,58 +149,46 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     bool content_initiated,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory) {
-  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
-  bool should_create_provider_for_window = false;
-  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
-  std::unique_ptr<ServiceWorkerNetworkProvider> network_provider;
+  std::unique_ptr<ServiceWorkerNetworkProvider> provider;
 
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
   // will always be created since it is expected in a certain number of places,
   // however it will have an invalid id.
-  // PlzNavigate: |service_worker_provider_id| can be sent by the browser, if
-  // it already created the SeviceWorkerProviderHost.
-  if (browser_side_navigation && !content_initiated) {
-    should_create_provider_for_window =
-        request_params.should_create_service_worker;
-    service_worker_provider_id = request_params.service_worker_provider_id;
-    DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
-               service_worker_provider_id) ||
-           service_worker_provider_id == kInvalidServiceWorkerProviderId);
-  } else {
-    should_create_provider_for_window =
+  bool should_create_provider = false;
+  int provider_id = kInvalidServiceWorkerProviderId;
+  if (content_initiated) {
+    should_create_provider =
         ((frame->EffectiveSandboxFlags() & blink::WebSandboxFlags::kOrigin) !=
          blink::WebSandboxFlags::kOrigin);
+  } else {
+    should_create_provider = request_params.should_create_service_worker;
+    provider_id = request_params.service_worker_provider_id;
   }
 
   // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
-  if (should_create_provider_for_window) {
-    // Ideally Document::isSecureContext would be called here, but the document
+  if (should_create_provider) {
+    // Ideally Document::IsSecureContext would be called here, but the document
     // is not created yet, and due to redirects the URL may change. So pass
     // is_parent_frame_secure to the browser process, so it can determine the
     // context security when deciding whether to allow a service worker to
     // control the document.
     const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
 
-    if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
-      network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
-          route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
-          GetNextProviderId(), is_parent_frame_secure,
-          std::move(controller_info), std::move(default_loader_factory)));
-    } else {
-      CHECK(browser_side_navigation);
-      DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
-          service_worker_provider_id));
-      network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
-          route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
-          service_worker_provider_id, is_parent_frame_secure,
-          std::move(controller_info), std::move(default_loader_factory)));
-    }
+    DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
+           provider_id == kInvalidServiceWorkerProviderId);
+    if (provider_id == kInvalidServiceWorkerProviderId)
+      provider_id = GetNextProviderId();
+
+    provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
+        route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
+        provider_id, is_parent_frame_secure, std::move(controller_info),
+        std::move(default_loader_factory)));
   } else {
-    network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
+    provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
   }
   return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
-      std::move(network_provider));
+      std::move(provider));
 }
 
 // static

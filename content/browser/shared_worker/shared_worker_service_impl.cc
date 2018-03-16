@@ -179,9 +179,6 @@ void SharedWorkerServiceImpl::CreateWorker(
   host->Start(std::move(factory), pause_on_start, devtools_worker_token);
   host->AddClient(std::move(client), process_id, frame_id, message_port);
 
-  const GURL url = host->instance()->url();
-  const std::string name = host->instance()->name();
-
   worker_hosts_.insert(std::move(host));
 }
 
