@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -49,7 +50,8 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
   // You may only call Fetch() once on a given instance of
   // DhcpPacFileAdapterFetcher.
   virtual void Fetch(const std::string& adapter_name,
-                     const CompletionCallback& callback);
+                     const CompletionCallback& callback,
+                     const NetworkTrafficAnnotationTag traffic_annotation);
 
   // Cancels the fetch on this adapter.
   virtual void Cancel();
@@ -152,7 +154,8 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
 
  private:
   // Event/state transition handlers
-  void OnDhcpQueryDone(scoped_refptr<DhcpQuery> dhcp_query);
+  void OnDhcpQueryDone(scoped_refptr<DhcpQuery> dhcp_query,
+                       const NetworkTrafficAnnotationTag traffic_annotation);
   void OnTimeout();
   void OnFetcherDone(int result);
   void TransitionToFinish();

@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GURL;
 
@@ -46,7 +47,8 @@ class NET_EXPORT_PRIVATE PacFileFetcher {
   // Only one fetch is allowed to be outstanding at a time.
   virtual int Fetch(const GURL& url,
                     base::string16* utf16_text,
-                    const CompletionCallback& callback) = 0;
+                    const CompletionCallback& callback,
+                    const NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   // Aborts the in-progress fetch (if any).
   virtual void Cancel() = 0;

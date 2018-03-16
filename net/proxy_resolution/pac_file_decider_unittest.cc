@@ -117,7 +117,8 @@ class RuleBasedPacFileFetcher : public PacFileFetcher {
   // PacFileFetcher implementation.
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag traffic_annotation) override {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
@@ -147,7 +148,8 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override;
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;
@@ -167,9 +169,11 @@ MockDhcpPacFileFetcher::MockDhcpPacFileFetcher() = default;
 
 MockDhcpPacFileFetcher::~MockDhcpPacFileFetcher() = default;
 
-int MockDhcpPacFileFetcher::Fetch(base::string16* utf16_text,
-                                  const CompletionCallback& callback,
-                                  const NetLogWithSource& net_log) {
+int MockDhcpPacFileFetcher::Fetch(
+    base::string16* utf16_text,
+    const CompletionCallback& callback,
+    const NetLogWithSource& net_log,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   utf16_text_ = utf16_text;
   callback_ = callback;
   return ERR_IO_PENDING;
@@ -694,7 +698,8 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override {
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag traffic_annotation) override {
     *utf16_text = expected_text_;
     return OK;
   }
@@ -777,7 +782,8 @@ class AsyncFailDhcpFetcher
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override {
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag traffic_annotation) override {
     callback_ = callback;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

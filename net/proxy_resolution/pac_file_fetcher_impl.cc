@@ -19,7 +19,6 @@
 #include "net/base/request_priority.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 
 // TODO(eroman):
@@ -125,9 +124,11 @@ void PacFileFetcherImpl::OnResponseCompleted(URLRequest* request,
   FetchCompleted();
 }
 
-int PacFileFetcherImpl::Fetch(const GURL& url,
-                              base::string16* text,
-                              const CompletionCallback& callback) {
+int PacFileFetcherImpl::Fetch(
+    const GURL& url,
+    base::string16* text,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
   DCHECK(!callback.is_null());
@@ -151,35 +152,6 @@ int PacFileFetcherImpl::Fetch(const GURL& url,
   DCHECK(fetch_start_time_.is_null());
   fetch_start_time_ = base::TimeTicks::Now();
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("proxy_script_fetcher", R"(
-        semantics {
-          sender: "Proxy Service"
-          description:
-            "Fetches candidate URLs for proxy auto-config (PAC) scripts. This "
-            "may be carried out as part of the web proxy auto-discovery "
-            "protocol, or because an explicit PAC script is specified by the "
-            "proxy settings. The source of these URLs may be user-specified "
-            "(when part of proxy settings), or may be provided by the network "
-            "(DNS or DHCP based discovery). Note that a user may not be using "
-            "a proxy, but determining that (i.e. auto-detect) may cause these "
-            "fetches."
-          trigger:
-            "PAC URLs may be fetched on initial start, every time the network "
-            "changes, whenever the proxy settings change, or periodically on a "
-            "timer to check for changes."
-          data: "None."
-          destination: OTHER
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "This feature cannot be disabled by settings. This request is only "
-            "made if the effective proxy settings include either auto-detect, "
-            "or specify a PAC script."
-          policy_exception_justification: "Not implemented."
-        })");
   // Use highest priority, so if socket pools are being used for other types of
   // requests, PAC requests are aren't blocked on them.
   cur_request_ = url_request_context_->CreateRequest(url, MAXIMUM_PRIORITY,

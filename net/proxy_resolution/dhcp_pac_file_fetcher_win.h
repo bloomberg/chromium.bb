@@ -18,6 +18,7 @@
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class TaskRunner;
@@ -43,7 +44,8 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcherWin
   // DhcpPacFileFetcher implementation.
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override;
+            const NetLogWithSource& net_log,
+            const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;
@@ -108,7 +110,9 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcherWin
  private:
   // Event/state transition handlers
   void CancelImpl();
-  void OnGetCandidateAdapterNamesDone(scoped_refptr<AdapterQuery> query);
+  void OnGetCandidateAdapterNamesDone(
+      scoped_refptr<AdapterQuery> query,
+      const NetworkTrafficAnnotationTag traffic_annotation);
   void OnFetcherDone(size_t fetcher_i, int result);
   void OnWaitTimer();
   void TransitionToDone();

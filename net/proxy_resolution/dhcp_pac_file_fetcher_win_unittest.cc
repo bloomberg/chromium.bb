@@ -16,6 +16,7 @@
 #include "net/base/completion_callback.h"
 #include "net/proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +60,7 @@ class RealFetchTester {
     int result = fetcher_->Fetch(
         &pac_text_,
         base::Bind(&RealFetchTester::OnCompletion, base::Unretained(this)),
-        NetLogWithSource());
+        NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != ERR_IO_PENDING)
       finished_ = true;
   }
@@ -213,7 +214,8 @@ class DummyDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
         fetch_delay_ms_(1) {}
 
   void Fetch(const std::string& adapter_name,
-             const CompletionCallback& callback) override {
+             const CompletionCallback& callback,
+             const NetworkTrafficAnnotationTag traffic_annotation) override {
     callback_ = callback;
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(fetch_delay_ms_),
                  this, &DummyDhcpPacFileAdapterFetcher::OnTimer);
@@ -380,7 +382,7 @@ class FetcherClient {
     int result = fetcher_.Fetch(
         &pac_text_,
         base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
-        NetLogWithSource());
+        NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     ASSERT_THAT(result, IsError(ERR_IO_PENDING));
   }
 
@@ -388,7 +390,7 @@ class FetcherClient {
     int result = fetcher_.Fetch(
         &pac_text_,
         base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
-        NetLogWithSource());
+        NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != ERR_IO_PENDING)
       result_ = result;
     return result;

@@ -47,8 +47,10 @@ DhcpPacFileAdapterFetcher::~DhcpPacFileAdapterFetcher() {
   Cancel();
 }
 
-void DhcpPacFileAdapterFetcher::Fetch(const std::string& adapter_name,
-                                      const CompletionCallback& callback) {
+void DhcpPacFileAdapterFetcher::Fetch(
+    const std::string& adapter_name,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, STATE_START);
   result_ = ERR_IO_PENDING;
@@ -64,7 +66,7 @@ void DhcpPacFileAdapterFetcher::Fetch(const std::string& adapter_name,
       base::Bind(&DhcpPacFileAdapterFetcher::DhcpQuery::GetPacURLForAdapter,
                  dhcp_query.get(), adapter_name),
       base::Bind(&DhcpPacFileAdapterFetcher::OnDhcpQueryDone, AsWeakPtr(),
-                 dhcp_query));
+                 dhcp_query, traffic_annotation));
 }
 
 void DhcpPacFileAdapterFetcher::Cancel() {
@@ -131,7 +133,8 @@ std::string DhcpPacFileAdapterFetcher::DhcpQuery::ImplGetPacURLFromDhcp(
 DhcpPacFileAdapterFetcher::DhcpQuery::~DhcpQuery() {}
 
 void DhcpPacFileAdapterFetcher::OnDhcpQueryDone(
-    scoped_refptr<DhcpQuery> dhcp_query) {
+    scoped_refptr<DhcpQuery> dhcp_query,
+    const NetworkTrafficAnnotationTag traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Because we can't cancel the call to the Win32 API, we can expect
   // it to finish while we are in a few different states.  The expected
@@ -153,7 +156,8 @@ void DhcpPacFileAdapterFetcher::OnDhcpQueryDone(
     script_fetcher_.reset(ImplCreateScriptFetcher());
     script_fetcher_->Fetch(pac_url_, &pac_script_,
                            base::Bind(&DhcpPacFileAdapterFetcher::OnFetcherDone,
-                                      base::Unretained(this)));
+                                      base::Unretained(this)),
+                           traffic_annotation);
   }
 }
 

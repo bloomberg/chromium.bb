@@ -45,7 +45,8 @@ DhcpPacFileFetcherChromeos::~DhcpPacFileFetcherChromeos() = default;
 int DhcpPacFileFetcherChromeos::Fetch(
     base::string16* utf16_text,
     const net::CompletionCallback& callback,
-    const net::NetLogWithSource& net_log) {
+    const net::NetLogWithSource& net_log,
+    const net::NetworkTrafficAnnotationTag traffic_annotation) {
   if (!network_handler_task_runner_.get())
     return net::ERR_PAC_NOT_IN_DHCP;
   CHECK(!callback.is_null());
@@ -53,7 +54,8 @@ int DhcpPacFileFetcherChromeos::Fetch(
       network_handler_task_runner_.get(), FROM_HERE,
       base::Bind(&GetPacUrlFromDefaultNetwork),
       base::Bind(&DhcpPacFileFetcherChromeos::ContinueFetch,
-                 weak_ptr_factory_.GetWeakPtr(), utf16_text, callback));
+                 weak_ptr_factory_.GetWeakPtr(), utf16_text, callback,
+                 traffic_annotation));
   return net::ERR_IO_PENDING;
 }
 
@@ -75,16 +77,19 @@ std::string DhcpPacFileFetcherChromeos::GetFetcherName() const {
   return "chromeos";
 }
 
-void DhcpPacFileFetcherChromeos::ContinueFetch(base::string16* utf16_text,
-                                               net::CompletionCallback callback,
-                                               std::string pac_url) {
+void DhcpPacFileFetcherChromeos::ContinueFetch(
+    base::string16* utf16_text,
+    net::CompletionCallback callback,
+    const net::NetworkTrafficAnnotationTag traffic_annotation,
+    std::string pac_url) {
   NET_LOG_EVENT("DhcpPacFileFetcher", pac_url);
   pac_url_ = GURL(pac_url);
   if (pac_url_.is_empty()) {
     callback.Run(net::ERR_PAC_NOT_IN_DHCP);
     return;
   }
-  int res = pac_file_fetcher_->Fetch(pac_url_, utf16_text, callback);
+  int res = pac_file_fetcher_->Fetch(pac_url_, utf16_text, callback,
+                                     traffic_annotation);
   if (res != net::ERR_IO_PENDING)
     callback.Run(res);
 }
