@@ -156,6 +156,14 @@ typedef struct {
   // when the frame is fully decoded.
   int row;
   int col;
+
+  // Inter frame reference frame delta for loop filter
+  int8_t ref_deltas[TOTAL_REFS_PER_FRAME];
+
+  // 0 = ZERO_MV, MV
+  int8_t mode_deltas[MAX_MODE_LF_DELTAS];
+
+  int sharpness_level;
 } RefCntBuffer;
 
 typedef struct BufferPool {

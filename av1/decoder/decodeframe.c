@@ -1144,6 +1144,10 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
           lf->mode_deltas[i] = aom_rb_read_inv_signed_literal(rb, 6);
     }
   }
+
+  // write deltas to frame buffer
+  memcpy(cm->cur_frame->ref_deltas, lf->ref_deltas, TOTAL_REFS_PER_FRAME);
+  memcpy(cm->cur_frame->mode_deltas, lf->mode_deltas, MAX_MODE_LF_DELTAS);
 }
 
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {

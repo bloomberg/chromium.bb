@@ -551,8 +551,22 @@ static void save_coding_context(AV1_COMP *cpi) {
   av1_copy(cc->nmv_costs, cpi->nmv_costs);
   av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
 
-  av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
-  av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
+  const int prime_idx = cm->primary_ref_frame;
+  const int buf_idx =
+      prime_idx == PRIMARY_REF_NONE ? -1 : cm->frame_refs[prime_idx].idx;
+  int8_t last_ref_deltas[TOTAL_REFS_PER_FRAME];
+  int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
+  if (prime_idx == PRIMARY_REF_NONE || buf_idx < 0) {
+    av1_set_default_ref_deltas(last_ref_deltas);
+    av1_set_default_mode_deltas(last_mode_deltas);
+  } else {
+    memcpy(last_ref_deltas, cm->buffer_pool->frame_bufs[buf_idx].ref_deltas,
+           TOTAL_REFS_PER_FRAME);
+    memcpy(last_mode_deltas, cm->buffer_pool->frame_bufs[buf_idx].mode_deltas,
+           MAX_MODE_LF_DELTAS);
+  }
+  av1_copy(cc->last_ref_lf_deltas, last_ref_deltas);
+  av1_copy(cc->last_mode_lf_deltas, last_mode_deltas);
 
   cc->fc = *cm->fc;
 }
@@ -567,8 +581,15 @@ static void restore_coding_context(AV1_COMP *cpi) {
   av1_copy(cpi->nmv_costs, cc->nmv_costs);
   av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
 
-  av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
-  av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
+  const int prime_idx = cm->primary_ref_frame;
+  const int buf_idx =
+      prime_idx == PRIMARY_REF_NONE ? -1 : cm->frame_refs[prime_idx].idx;
+  if (prime_idx != PRIMARY_REF_NONE && buf_idx >= 0) {
+    memcpy(cm->buffer_pool->frame_bufs[buf_idx].ref_deltas,
+           cc->last_ref_lf_deltas, TOTAL_REFS_PER_FRAME);
+    memcpy(cm->buffer_pool->frame_bufs[buf_idx].mode_deltas,
+           cc->last_mode_lf_deltas, MAX_MODE_LF_DELTAS);
+  }
 
   *cm->fc = cc->fc;
 }

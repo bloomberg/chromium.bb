@@ -1144,24 +1144,32 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->intrabc_cdf, default_intrabc_cdf);
 }
 
+void av1_set_default_ref_deltas(int8_t *ref_deltas) {
+  assert(ref_deltas != NULL);
+
+  ref_deltas[INTRA_FRAME] = 1;
+  ref_deltas[LAST_FRAME] = 0;
+  ref_deltas[LAST2_FRAME] = ref_deltas[LAST_FRAME];
+  ref_deltas[LAST3_FRAME] = ref_deltas[LAST_FRAME];
+  ref_deltas[BWDREF_FRAME] = ref_deltas[LAST_FRAME];
+  ref_deltas[GOLDEN_FRAME] = -1;
+  ref_deltas[ALTREF2_FRAME] = -1;
+  ref_deltas[ALTREF_FRAME] = -1;
+}
+
+void av1_set_default_mode_deltas(int8_t *mode_deltas) {
+  assert(mode_deltas != NULL);
+
+  mode_deltas[0] = 0;
+  mode_deltas[0] = 0;
+}
+
 static void set_default_lf_deltas(struct loopfilter *lf) {
   lf->mode_ref_delta_enabled = 1;
   lf->mode_ref_delta_update = 1;
 
-  lf->ref_deltas[INTRA_FRAME] = 1;
-  lf->ref_deltas[LAST_FRAME] = 0;
-  lf->ref_deltas[LAST2_FRAME] = lf->ref_deltas[LAST_FRAME];
-  lf->ref_deltas[LAST3_FRAME] = lf->ref_deltas[LAST_FRAME];
-  lf->ref_deltas[BWDREF_FRAME] = lf->ref_deltas[LAST_FRAME];
-  lf->ref_deltas[GOLDEN_FRAME] = -1;
-  lf->ref_deltas[ALTREF2_FRAME] = -1;
-  lf->ref_deltas[ALTREF_FRAME] = -1;
-
-  lf->mode_deltas[0] = 0;
-  lf->mode_deltas[1] = 0;
-
-  av1_copy(lf->last_ref_deltas, lf->ref_deltas);
-  av1_copy(lf->last_mode_deltas, lf->mode_deltas);
+  av1_set_default_ref_deltas(lf->ref_deltas);
+  av1_set_default_mode_deltas(lf->mode_deltas);
 }
 
 void av1_setup_frame_contexts(AV1_COMMON *cm) {
@@ -1176,8 +1184,6 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
 void av1_setup_past_independence(AV1_COMMON *cm) {
   // Reset the segment feature data to the default stats:
   // Features disabled, 0, with delta coding (Default state).
-  struct loopfilter *const lf = &cm->lf;
-
   av1_clearall_segfeatures(&cm->seg);
 
 #if CONFIG_SEGMENT_PRED_LAST
@@ -1192,13 +1198,10 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   if (cm->current_frame_seg_map)
     memset(cm->current_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
 
-  // Reset the mode ref deltas for loop filter
-  av1_zero(lf->last_ref_deltas);
-  av1_zero(lf->last_mode_deltas);
-  set_default_lf_deltas(lf);
-
-  // To force update of the sharpness
-  lf->last_sharpness_level = -1;
+  // reset mode ref deltas
+  av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
+  av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
+  set_default_lf_deltas(&cm->lf);
 
   av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
