@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #import "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
@@ -12,6 +13,8 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -156,16 +159,20 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 #pragma mark - UIScrollViewAccessibilityDelegate
 
 - (NSString*)accessibilityScrollStatusForScrollView:(UIScrollView*)scrollView {
-  // TODO(crbug.com/818699) : Localize strings.
   // This reads the new page whenever the user scrolls in VoiceOver.
+  int stringID;
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
-      return @"Incognito Tabs page";
+      stringID = IDS_IOS_TAB_GRID_INCOGNITO_TABS_TITLE;
+      break;
     case TabGridPageRegularTabs:
-      return @"Regular Tabs page";
+      stringID = IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE;
+      break;
     case TabGridPageRemoteTabs:
-      return @"Remote Tabs page";
+      stringID = IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE;
+      break;
   }
+  return l10n_util::GetNSString(stringID);
 }
 
 #pragma mark - GridTransitionStateProviding properties
@@ -298,11 +305,11 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-  // TODO(crbug.com/818699) : Localize strings.
-  viewController.emptyStateView = [self
-      createEmptyStateViewWithTopText:@"No Incognito Tabs"
-                           bottomText:
-                               @"Open a tab to browse the web privately."];
+  int titleStringID = IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_TITLE;
+  int bodyStringID = IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_BODY;
+  viewController.emptyStateView =
+      [self createEmptyStateViewWithTitleStringID:titleStringID
+                                     bodyStringID:bodyStringID];
   viewController.theme = GridThemeDark;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -333,10 +340,11 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-  // TODO(crbug.com/818699) : Localize strings.
+  int titleStringID = IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_TITLE;
+  int bodyStringID = IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_BODY;
   viewController.emptyStateView =
-      [self createEmptyStateViewWithTopText:@"No Open Tabs"
-                                 bottomText:@"Open a tab to browse the web."];
+      [self createEmptyStateViewWithTitleStringID:titleStringID
+                                     bodyStringID:bodyStringID];
   viewController.theme = GridThemeLight;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -386,12 +394,12 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 }
 
 // Creates an empty state view.
-- (UIView*)createEmptyStateViewWithTopText:(NSString*)topText
-                                bottomText:(NSString*)bottomText {
+- (UIView*)createEmptyStateViewWithTitleStringID:(int)titleStringID
+                                    bodyStringID:(int)bodyStringID {
   UIView* view = [[UIView alloc] init];
   UILabel* topLabel = [[UILabel alloc] init];
   topLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  topLabel.text = topText;
+  topLabel.text = l10n_util::GetNSString(titleStringID);
   topLabel.textColor = [UIColor whiteColor];
   topLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
   topLabel.adjustsFontForContentSizeCategory = YES;
@@ -400,7 +408,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [view addSubview:topLabel];
   UILabel* bottomLabel = [[UILabel alloc] init];
   bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  bottomLabel.text = bottomText;
+  bottomLabel.text = l10n_util::GetNSString(bodyStringID);
   bottomLabel.textColor = [UIColor whiteColor];
   bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   bottomLabel.adjustsFontForContentSizeCategory = YES;
@@ -542,9 +550,11 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
     self.closeAllButton = self.topToolbar.leadingButton;
   }
 
-  // TODO(crbug.com/818699) : Localize strings.
-  [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
-  [self.closeAllButton setTitle:@"Close All" forState:UIControlStateNormal];
+  [self.doneButton setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_DONE_BUTTON)
+                   forState:UIControlStateNormal];
+  [self.closeAllButton
+      setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON)
+      forState:UIControlStateNormal];
   self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
@@ -598,6 +608,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
                                       imageWithRenderingMode:
                                           UIImageRenderingModeAlwaysOriginal]
                          forState:UIControlStateNormal];
+      self.newTabButton.accessibilityLabel =
+          l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_INCOGNITO_TAB);
       break;
     case TabGridPageRegularTabs:
       self.newTabButton.enabled = YES;
@@ -605,6 +617,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
                                       imageWithRenderingMode:
                                           UIImageRenderingModeAlwaysOriginal]
                          forState:UIControlStateNormal];
+      self.newTabButton.accessibilityLabel =
+          l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_TAB);
       break;
     case TabGridPageRemoteTabs:
       self.newTabButton.enabled = NO;
