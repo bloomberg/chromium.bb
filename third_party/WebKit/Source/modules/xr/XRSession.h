@@ -22,6 +22,7 @@ namespace blink {
 class Element;
 class ResizeObserver;
 class V8XRFrameRequestCallback;
+class XRCanvasInputProvider;
 class XRDevice;
 class XRFrameOfReferenceOptions;
 class XRInputSourceEvent;
@@ -70,13 +71,7 @@ class XRSession final : public EventTargetWithInlineData {
   using InputSourceMap =
       HeapHashMap<uint32_t, TraceWrapperMember<XRInputSource>>;
 
-  HeapVector<Member<XRInputSource>> getInputSources() const {
-    HeapVector<Member<XRInputSource>> source_array;
-    for (const auto& input_source : input_sources_.Values()) {
-      source_array.push_back(input_source);
-    }
-    return source_array;
-  }
+  HeapVector<Member<XRInputSource>> getInputSources() const;
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);
@@ -96,6 +91,10 @@ class XRSession final : public EventTargetWithInlineData {
   // as the size which gives 1:1 pixel ratio at the center of the user's view.
   DoubleSize IdealFramebufferSize() const;
 
+  // Reports the size of the output context's, if one is available. If not
+  // reports (0, 0);
+  DoubleSize OutputCanvasSize() const;
+
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
@@ -109,6 +108,10 @@ class XRSession final : public EventTargetWithInlineData {
 
   const HeapVector<Member<XRView>>& views();
 
+  void OnSelectStart(XRInputSource*);
+  void OnSelectEnd(XRInputSource*);
+  void OnSelect(XRInputSource*);
+
   void Trace(blink::Visitor*) override;
   virtual void TraceWrappers(const blink::ScriptWrappableVisitor*) const;
 
@@ -121,9 +124,6 @@ class XRSession final : public EventTargetWithInlineData {
   void UpdateInputSourceState(
       XRInputSource*,
       const device::mojom::blink::XRInputSourceStatePtr&);
-  void OnSelectStart(XRInputSource*);
-  void OnSelectEnd(XRInputSource*);
-  void OnSelect(XRInputSource*);
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
                                              XRInputSource*);
 
@@ -134,6 +134,7 @@ class XRSession final : public EventTargetWithInlineData {
   HeapVector<Member<XRView>> views_;
   InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
+  Member<XRCanvasInputProvider> canvas_input_provider_;
 
   XRFrameRequestCallbackCollection callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;

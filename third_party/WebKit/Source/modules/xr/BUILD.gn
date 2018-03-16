@@ -8,6 +8,8 @@ blink_modules_sources("xr") {
   sources = [
     "XR.cpp",
     "XR.h",
+    "XRCanvasInputProvider.cpp",
+    "XRCanvasInputProvider.h",
     "XRCoordinateSystem.cpp",
     "XRCoordinateSystem.h",
     "XRDevice.cpp",
