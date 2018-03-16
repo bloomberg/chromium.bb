@@ -152,6 +152,7 @@ blink_core_sources("frame") {
     "WebFrameWidgetImpl.h",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",
+    "WebLocalFrameImplFindInPage.cpp",
     "WebViewFrameWidget.cpp",
     "WebViewFrameWidget.h",
     "csp/CSPDirective.h",
