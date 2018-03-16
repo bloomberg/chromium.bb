@@ -34,6 +34,7 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
     ListAdapter mAdapter;
     private ListView mListView;
     private Drawable mBackground;
+    private int mHorizontalPadding;
 
     /**
      * Creates an DropdownPopupWindow with specified parameters.
@@ -75,6 +76,12 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
                 new AnchoredPopupWindow(context, mAnchorView, mBackground, mListView, rectProvider);
         mAnchoredPopupWindow.addOnDismissListener(onDismissLitener);
         mAnchoredPopupWindow.setLayoutObserver(this);
+        Rect paddingRect = new Rect();
+        mBackground.getPadding(paddingRect);
+        rectProvider.setInsetPx(0, /* top= */ paddingRect.bottom, 0, /* bottom= */ paddingRect.top);
+        mHorizontalPadding = paddingRect.right + paddingRect.left;
+        mAnchoredPopupWindow.setPreferredHorizontalOrientation(
+                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
     }
 
     /**
@@ -112,9 +119,12 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
         boolean wasShowing = mAnchoredPopupWindow.isShowing();
         mAnchoredPopupWindow.setVerticalOverlapAnchor(false);
         mAnchoredPopupWindow.setHorizontalOverlapAnchor(true);
-        mAnchoredPopupWindow.setMaxWidth(measureContentWidth()
-                + mContext.getResources().getDimensionPixelSize(
-                          R.dimen.dropdown_item_label_margin));
+        int contentWidth = measureContentWidth();
+        if (mAnchorView.getWidth() < contentWidth) {
+            mAnchoredPopupWindow.setMaxWidth(contentWidth + mHorizontalPadding);
+        } else {
+            mAnchoredPopupWindow.setMaxWidth(mAnchorView.getWidth() + mHorizontalPadding);
+        }
         mAnchoredPopupWindow.show();
         mListView.setDividerHeight(0);
         ApiCompatibilityUtils.setLayoutDirection(
