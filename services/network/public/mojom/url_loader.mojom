@@ -4,17 +4,13 @@
 
 module network.mojom;
 
+import "services/network/public/mojom/network_param.mojom";
+
 [Native]
 struct URLRequest;
 
 [Native]
 struct URLResponseHead;
-
-[Native]
-struct SSLCertRequestInfo;
-
-[Native]
-struct SSLInfo;
 
 [Native]
 struct URLRequestRedirectInfo;
@@ -24,9 +20,6 @@ struct CORSErrorStatus;
 
 [Native]
 struct URLLoaderCompletionStatus;
-
-[Native]
-struct X509Certificate;
 
 // This enum corresponds to net::RequestPriority. See its comments for details.
 enum RequestPriority {

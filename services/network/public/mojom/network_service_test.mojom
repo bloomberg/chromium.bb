@@ -5,12 +5,7 @@
 module network.mojom;
 
 import "services/network/public/mojom/network_change_manager.mojom";
-
-[Native]
-struct CertVerifyResult;
-
-[Native]
-struct X509Certificate;
+import "services/network/public/mojom/network_param.mojom";
 
 struct Rule {
   string host_pattern;

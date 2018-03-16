@@ -63,6 +63,7 @@ mojom("mojom") {
     "fetch_api.mojom",
     "http_request_headers.mojom",
     "network_change_manager.mojom",
+    "network_param.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
     "network_types.mojom",
