@@ -74,8 +74,7 @@ PolicyBlacklistNavigationThrottle::~PolicyBlacklistNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 PolicyBlacklistNavigationThrottle::WillStartRequest() {
-  if (blacklist_service_ &&
-      blacklist_service_->IsURLBlocked(navigation_handle()->GetURL())) {
+  if (blacklist_service_->IsURLBlocked(navigation_handle()->GetURL())) {
     return ThrottleCheckResult(BLOCK_REQUEST,
                                net::ERR_BLOCKED_BY_ADMINISTRATOR);
   }
