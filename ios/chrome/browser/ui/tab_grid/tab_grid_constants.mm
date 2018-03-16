@@ -11,6 +11,10 @@
 // The color of the text buttons in the toolbars.
 const int kTabGridToolbarTextButtonColor = 0xFFFFFF;
 
+// Colors for the empty state.
+const int kTabGridEmptyStateTitleTextColor = 0xF8F9FA;
+const int kTabGridEmptyStateBodyTextColor = 0xBDC1C6;
+
 // The distance the toolbar content is inset from either side.
 const CGFloat kTabGridToolbarHorizontalInset = 16.0f;
 

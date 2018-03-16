@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,7 +65,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       forCellWithReuseIdentifier:kCellIdentifier];
   collectionView.dataSource = self;
   collectionView.delegate = self;
-  collectionView.backgroundColor = [UIColor blackColor];
+  collectionView.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
   if (@available(iOS 11, *))
     collectionView.contentInsetAdjustmentBehavior =
         UIScrollViewContentInsetAdjustmentAlways;

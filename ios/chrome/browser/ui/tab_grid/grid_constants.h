@@ -41,7 +41,7 @@ extern const int kGridDarkThemeCellCloseButtonTintColor;
 // GridCell dimensions.
 extern const CGFloat kGridCellCornerRadius;
 extern const CGFloat kGridCellIconCornerRadius;
-// Height of the cell header containing the icon, title, and close button.
+// The cell header contains the icon, title, and close button.
 extern const CGFloat kGridCellHeaderHeight;
 extern const CGFloat kGridCellHeaderLeadingInset;
 extern const CGFloat kGridCellHeaderTrailingInset;

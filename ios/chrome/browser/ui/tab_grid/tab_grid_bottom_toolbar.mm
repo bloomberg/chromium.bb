@@ -44,15 +44,9 @@
 
   UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  leadingButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  leadingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
   UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  trailingButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  trailingButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
   UIButton* centerButton = [UIButton buttonWithType:UIButtonTypeSystem];
   centerButton.translatesAutoresizingMaskIntoConstraints = NO;
