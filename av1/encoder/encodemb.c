@@ -255,7 +255,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0) {
     xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
   }
-  uint8_t disable_txk_check = args->enable_optimize_b;
+  // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
+  // enable_optimize_b is true.
+  const uint8_t disable_txk_check = args->enable_optimize_b;
   if (plane == 0 && p->eobs[block] == 0) {
     if (disable_txk_check) {
       xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
@@ -550,10 +552,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                     AV1_XFORM_QUANT_FP);
     av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                    tx_size, a, l, 1, &dummy_rate_cost);
-    if (plane == 0 && p->eobs[block] == 0) {
-      assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
-                 plane_bsize, blk_row, blk_col)] == DCT_DCT);
-    }
   } else {
     av1_xform_quant(
         cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
