@@ -14,6 +14,10 @@ class GURL;
 
 namespace content {
 
+// Determines whether |url_template| is valid; that is, whether
+// ReplaceWebShareUrlPlaceholders() would succeed for the given template.
+CONTENT_EXPORT bool ValidateWebShareUrlTemplate(const GURL& url_template);
+
 // Writes to |url_template_filled|, a copy of |url_template| with all
 // instances of "{title}", "{text}", and "{url}" in the query and fragment
 // parts of the URL replaced with |title|, |text|, and |url| respectively.

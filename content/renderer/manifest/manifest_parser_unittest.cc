@@ -1089,9 +1089,24 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     Manifest manifest = ParseManifestWithURLs(
         "{ \"share_target\": {\"url_template\": \"share/?title={title\" } }",
         manifest_url, document_url);
+    ASSERT_FALSE(manifest.share_target.has_value());
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'url_template' ignored. Placeholders have incorrect "
+        "syntax.",
+        errors()[0]);
+  }
+
+  // Smoke test: Contains share_target and url_template, and url_template
+  // contains unknown placeholder.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": {\"url_template\": \"share/?title={abcxyz}\" } }",
+        manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
     EXPECT_EQ(manifest.share_target.value().url_template.spec(),
-              "https://foo.com/share/?title={title");
+              "https://foo.com/share/?title={abcxyz}");
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }

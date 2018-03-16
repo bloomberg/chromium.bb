@@ -126,9 +126,8 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
   if (!content::ReplaceWebShareUrlPlaceholders(result->url_template(), title,
                                                text, share_url,
                                                &url_template_filled)) {
-    // TODO(mgiuca): This error should not be possible at share time, because
-    // targets with invalid templates should not be chooseable. Fix
-    // https://crbug.com/694380 and replace this with a DCHECK.
+    // This error should not be possible at share time. content::ManifestParser
+    // should have filtered out invalid targets at manifest parse time.
     std::move(callback).Run(blink::mojom::ShareError::INTERNAL_ERROR);
     return;
   }
