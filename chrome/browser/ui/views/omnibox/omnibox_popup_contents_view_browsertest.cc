@@ -9,6 +9,12 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
@@ -16,12 +22,29 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/native_theme/native_theme_dark_aura.h"
+#endif
+
+#if defined(USE_X11)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ash_config.h"
+#endif
 
 namespace {
 
@@ -43,6 +66,27 @@ class ClickTrackingOverlayView : public views::View {
 
  private:
   gfx::Point* last_click_;
+};
+
+// Helper to wait for theme changes. The wait is triggered when an instance of
+// this class goes out of scope.
+class ThemeChangeWaiter {
+ public:
+  explicit ThemeChangeWaiter(ThemeService* theme_service)
+      : theme_change_observer_(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                               content::Source<ThemeService>(theme_service)) {}
+
+  ~ThemeChangeWaiter() {
+    theme_change_observer_.Wait();
+    // Theme changes propagate asynchronously in DesktopWindowTreeHostX11::
+    // FrameTypeChanged(), so ensure all tasks are consumed.
+    content::RunAllPendingInMessageLoop();
+  }
+
+ private:
+  content::WindowedNotificationObserver theme_change_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThemeChangeWaiter);
 };
 
 std::string PrintPopupType(const testing::TestParamInfo<PopupType>& info) {
@@ -143,6 +187,192 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
     EXPECT_EQ(popup_rect.y(), alignment_rect.y());
     EXPECT_EQ(popup_rect.x(), alignment_rect.x());
     EXPECT_EQ(popup_rect.right(), alignment_rect.right());
+  }
+}
+
+// Integration test for omnibox popup theming. This is a browser test since it
+// relies on initialization done in chrome_browser_main_extra_parts_views_linux
+// propagating through correctly to OmniboxPopupContentsView::GetTint().
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, ThemeIntegration) {
+  // Sanity check the bot: ensure the profile is configured to use the system
+  // theme. On Linux, the default depends on a whitelist using the result of
+  // base::nix::GetDesktopEnvironment(). E.g. KDE never uses the system theme.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(browser()->profile());
+  if (!theme_service->UsingSystemTheme()) {
+    ThemeChangeWaiter wait(theme_service);
+    theme_service->UseSystemTheme();
+  }
+  ASSERT_TRUE(theme_service->UsingSystemTheme());
+
+  // Unthemed, non-incognito always has a white background. Exceptions: Inverted
+  // color themes on Windows and GTK (not tested here).
+  EXPECT_EQ(SK_ColorWHITE, GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                                           popup_view()->GetTint()));
+
+  Browser* browser_under_test = browser();
+
+  // Helper to get the background selected color for |browser_under_test| using
+  // omnibox_theme.
+  auto get_selection_color = [&browser_under_test]() {
+    LocationBarView* location_bar =
+        BrowserView::GetBrowserViewForBrowser(browser_under_test)
+            ->toolbar()
+            ->location_bar();
+    return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                           location_bar->tint(), OmniboxPartState::SELECTED);
+  };
+
+  // Helper to ensure consistency of colors obtained via the ui::NativeTheme
+  // associated with |browser_under_test|. Technically, this should rely on the
+  // popup's Widget (not the browser's), but the popup inherits this theme
+  // whenever it is created. Correctness of this doesn't need to last forever:
+  // we should avoid getting all colors via NativeTheme, since they are not all
+  // native theme concepts (just sometimes derived from them).
+  auto get_selection_color_from_widget = [&]() {
+    return BrowserView::GetBrowserViewForBrowser(browser_under_test)
+        ->GetNativeTheme()
+        ->GetSystemColor(
+            ui::NativeTheme::kColorId_ResultsTableSelectedBackground);
+  };
+
+  // Selection is derived from the native theme, except on the new style. This
+  // gets a color from omnibox_theme with the style given by GetParam(), but it
+  // is only used in checks when GetParam() is ROUNDED.
+  const SkColor rounded_selection_color_light =
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, OmniboxTint::LIGHT,
+                      OmniboxPartState::SELECTED);
+  const SkColor rounded_selection_color_dark =
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, OmniboxTint::DARK,
+                      OmniboxPartState::SELECTED);
+
+  // Tests below are mainly interested just whether things change, so ensure
+  // that can be detected.
+  EXPECT_NE(rounded_selection_color_dark, rounded_selection_color_light);
+
+  const SkColor default_selection_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_ResultsTableSelectedBackground);
+  SkColor system_selection_color = default_selection_color;
+#if defined(USE_X11)
+  // On Linux, ensure GTK is fully plumbed through by getting expectations
+  // directly from views::LinuxUI.
+  ASSERT_TRUE(views::LinuxUI::instance());
+  system_selection_color =
+      views::LinuxUI::instance()->GetActiveSelectionBgColor();
+#endif
+
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_light, get_selection_color());
+  } else {
+    EXPECT_EQ(system_selection_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  SkColor legacy_dark_color = system_selection_color;
+
+#if defined(OS_MACOSX) || defined(USE_X11)
+  // Mac and system-themed Desktop Linux continue to use light theming in
+  // incognito windows.
+  const bool dark_used_in_system_incognito_theme = false;
+#else
+  const bool dark_used_in_system_incognito_theme = true;
+#endif
+#if defined(USE_AURA)
+  legacy_dark_color = ui::NativeThemeDarkAura::instance()->GetSystemColor(
+      ui::NativeTheme::kColorId_ResultsTableSelectedBackground);
+#endif
+
+  // Check unthemed incognito windows.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  browser_under_test = incognito_browser;
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(dark_used_in_system_incognito_theme
+                  ? rounded_selection_color_dark
+                  : rounded_selection_color_light,
+              get_selection_color());
+  } else {
+    EXPECT_EQ(dark_used_in_system_incognito_theme ? legacy_dark_color
+                                                  : system_selection_color,
+              get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  // Install a theme (in both browsers, since it's the same profile).
+  extensions::ChromeTestExtensionLoader loader(browser()->profile());
+  {
+    ThemeChangeWaiter wait(theme_service);
+    base::FilePath path = ui_test_utils::GetTestFilePath(
+        base::FilePath().AppendASCII("extensions"),
+        base::FilePath().AppendASCII("theme"));
+    loader.LoadExtension(path);
+  }
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    // http://crbug.com/704942: Incognito frames do not update correctly in
+    // Mash, so the old values remain. Check here so this is revisited when
+    // fixed, and bail out of the rest of the test.
+    if (GetParam() == ROUNDED)
+      EXPECT_EQ(rounded_selection_color_dark, get_selection_color());
+    else
+      EXPECT_EQ(legacy_dark_color, get_selection_color());
+
+    return;
+  }
+#endif
+
+  // Check the incognito browser first. Everything should now be light and never
+  // GTK.
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_light, get_selection_color());
+  } else {
+    EXPECT_EQ(default_selection_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  // Same in the non-incognito browser .
+  browser_under_test = browser();
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_light, get_selection_color());
+  } else {
+    EXPECT_EQ(default_selection_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  // Undo the theme install. Check the regular browser goes back to native.
+  {
+    ThemeChangeWaiter wait(theme_service);
+    theme_service->UseSystemTheme();
+  }
+
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_light, get_selection_color());
+  } else {
+    EXPECT_EQ(system_selection_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  // Switch to the default theme without installing a custom theme. E.g. this is
+  // what gets used on KDE or when switching to the "classic" theme in settings.
+  {
+    ThemeChangeWaiter wait(theme_service);
+    theme_service->UseDefaultTheme();
+  }
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_light, get_selection_color());
+  } else {
+    EXPECT_EQ(default_selection_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
+  }
+
+  // Check incognito again. It should now use a dark theme, even on Linux.
+  browser_under_test = incognito_browser;
+  if (GetParam() == ROUNDED) {
+    EXPECT_EQ(rounded_selection_color_dark, get_selection_color());
+  } else {
+    EXPECT_EQ(legacy_dark_color, get_selection_color());
+    EXPECT_EQ(get_selection_color_from_widget(), get_selection_color());
   }
 }
 
