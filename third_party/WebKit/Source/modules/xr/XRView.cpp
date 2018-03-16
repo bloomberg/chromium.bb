@@ -52,6 +52,8 @@ void XRView::UpdateProjectionMatrixFromFoV(float up_rad,
   out[13] = 0.0f;
   out[14] = (2.0f * far_depth * near_depth) * inv_nf;
   out[15] = 0.0f;
+
+  inv_projection_dirty_ = true;
 }
 
 void XRView::UpdateProjectionMatrixFromAspect(float fovy,
@@ -78,10 +80,66 @@ void XRView::UpdateProjectionMatrixFromAspect(float fovy,
   out[13] = 0.0f;
   out[14] = (2.0f * far_depth * near_depth) * inv_nf;
   out[15] = 0.0f;
+
+  inv_projection_dirty_ = true;
 }
 
 void XRView::UpdateOffset(float x, float y, float z) {
   offset_.Set(x, y, z);
+}
+
+std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
+    double x,
+    double y,
+    double canvas_width,
+    double canvas_height) {
+  // Recompute the inverse projection matrix if needed.
+  if (inv_projection_dirty_) {
+    float* m = projection_matrix_->Data();
+    std::unique_ptr<TransformationMatrix> projection =
+        TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
+                                     m[7], m[8], m[9], m[10], m[11], m[12],
+                                     m[13], m[14], m[15]);
+    inv_projection_ = TransformationMatrix::Create(projection->Inverse());
+    inv_projection_dirty_ = false;
+  }
+
+  // Transform the x/y coordinate into WebGL normalized device coordinates.
+  // Z coordinate of -1 means the point will be projected onto the projection
+  // matrix near plane.
+  FloatPoint3D point_in_projection_space(
+      x / canvas_width * 2.0 - 1.0,
+      (canvas_height - y) / canvas_height * 2.0 - 1.0, -1.0);
+
+  FloatPoint3D point_in_view_space =
+      inv_projection_->MapPoint(point_in_projection_space);
+
+  const FloatPoint3D kOrigin(0.0, 0.0, 0.0);
+  const FloatPoint3D kUp(0.0, 1.0, 0.0);
+
+  // Generate a "Look At" matrix
+  FloatPoint3D z_axis = kOrigin - point_in_view_space;
+  z_axis.Normalize();
+
+  FloatPoint3D x_axis = kUp.Cross(z_axis);
+  x_axis.Normalize();
+
+  FloatPoint3D y_axis = z_axis.Cross(x_axis);
+  y_axis.Normalize();
+
+  // TODO(bajones): There's probably a more efficent way to do this?
+  TransformationMatrix inv_pointer(x_axis.X(), y_axis.X(), z_axis.X(), 0.0,
+                                   x_axis.Y(), y_axis.Y(), z_axis.Y(), 0.0,
+                                   x_axis.Z(), y_axis.Z(), z_axis.Z(), 0.0, 0.0,
+                                   0.0, 0.0, 1.0);
+  inv_pointer.Translate3d(-point_in_view_space.X(), -point_in_view_space.Y(),
+                          -point_in_view_space.Z());
+
+  // LookAt matrices are view matrices (inverted), so invert before returning.
+  std::unique_ptr<TransformationMatrix> pointer =
+      TransformationMatrix::Create(inv_pointer.Inverse());
+
+  return pointer;
 }
 
 void XRView::Trace(blink::Visitor* visitor) {

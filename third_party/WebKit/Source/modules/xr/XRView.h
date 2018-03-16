@@ -43,6 +43,11 @@ class XRView final : public ScriptWrappable {
                                         float near_depth,
                                         float far_depth);
 
+  std::unique_ptr<TransformationMatrix> UnprojectPointer(double x,
+                                                         double y,
+                                                         double canvas_width,
+                                                         double canvas_height);
+
   // TODO(bajones): Should eventually represent this as a full transform.
   const FloatPoint3D& offset() const { return offset_; }
   void UpdateOffset(float x, float y, float z);
@@ -55,6 +60,8 @@ class XRView final : public ScriptWrappable {
   Member<XRSession> session_;
   Member<DOMFloat32Array> projection_matrix_;
   FloatPoint3D offset_;
+  std::unique_ptr<TransformationMatrix> inv_projection_;
+  bool inv_projection_dirty_ = true;
 };
 
 }  // namespace blink
