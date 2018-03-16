@@ -1285,6 +1285,7 @@ def GeneralTemplates(site_config, ge_build_config):
       builder_class_name='fuzzer_builders.FuzzerBuilder',
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
+      gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-asan/',
   )
 
   site_config.AddTemplate(
@@ -4052,6 +4053,7 @@ def TryjobMirrors(site_config):
         # Force uprev. This is so patched in changes are always built.
         uprev=True,
         active_waterfall=waterfall.WATERFALL_TRYBOT,
+        gs_path=config_lib.GS_PATH_DEFAULT,
     )
 
     # Force uprev. This is so patched in changes are always built.
