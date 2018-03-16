@@ -89,6 +89,7 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       safe_builtins_(this),
       isolate_(v8_context->GetIsolate()) {
   VLOG(1) << "Created context:\n" << GetDebugString();
+  v8_context_.AnnotateStrongRetainer("extensions::ScriptContext::v8_context_");
   if (web_frame_)
     url_ = GetAccessCheckedFrameURL(web_frame_);
 }

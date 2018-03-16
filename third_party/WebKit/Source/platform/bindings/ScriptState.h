@@ -175,8 +175,11 @@ class ScriptStateProtectingContext {
  public:
   ScriptStateProtectingContext(ScriptState* script_state)
       : script_state_(script_state) {
-    if (script_state_)
+    if (script_state_) {
       context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
+      context_.Get().AnnotateStrongRetainer(
+          "blink::ScriptStateProtectingContext::context_");
+    }
   }
 
   ScriptState* operator->() const { return script_state_.get(); }
