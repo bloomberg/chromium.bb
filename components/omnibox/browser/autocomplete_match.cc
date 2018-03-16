@@ -438,9 +438,19 @@ TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
     const base::string16& keyword,
     const std::string& host) {
+  return const_cast<TemplateURL*>(GetTemplateURLWithKeyword(
+      static_cast<const TemplateURLService*>(template_url_service), keyword,
+      host));
+}
+
+// static
+const TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
+    const TemplateURLService* template_url_service,
+    const base::string16& keyword,
+    const std::string& host) {
   if (template_url_service == nullptr)
     return nullptr;
-  TemplateURL* template_url =
+  const TemplateURL* template_url =
       keyword.empty() ? nullptr
                       : template_url_service->GetTemplateURLForKeyword(keyword);
   return (template_url || host.empty()) ?
@@ -451,7 +461,7 @@ TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
 GURL AutocompleteMatch::GURLToStrippedGURL(
     const GURL& url,
     const AutocompleteInput& input,
-    TemplateURLService* template_url_service,
+    const TemplateURLService* template_url_service,
     const base::string16& keyword) {
   if (!url.is_valid())
     return url;
