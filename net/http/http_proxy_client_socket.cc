@@ -23,7 +23,6 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -36,7 +35,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     bool tunnel,
     bool using_spdy,
     NextProto negotiated_protocol,
-    bool is_https_proxy)
+    bool is_https_proxy,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
                               base::Unretained(this))),
       next_state_(STATE_NONE),
@@ -48,6 +48,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       negotiated_protocol_(negotiated_protocol),
       is_https_proxy_(is_https_proxy),
       redirect_has_load_timing_info_(false),
+      traffic_annotation_(traffic_annotation),
       net_log_(transport_->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
   request_.url = GURL("https://" + endpoint.ToString());
@@ -418,10 +419,9 @@ int HttpProxyClientSocket::DoSendRequest() {
   parser_buf_ = new GrowableIOBuffer();
   http_stream_parser_.reset(new HttpStreamParser(
       transport_.get(), &request_, parser_buf_.get(), net_log_));
-  // TODO(crbug.com/656607): Add propoer annotation.
   return http_stream_parser_->SendRequest(request_line_, request_headers_,
-                                          NO_TRAFFIC_ANNOTATION_BUG_656607,
-                                          &response_, io_callback_);
+                                          traffic_annotation_, &response_,
+                                          io_callback_);
 }
 
 int HttpProxyClientSocket::DoSendRequestComplete(int result) {

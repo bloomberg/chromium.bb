@@ -29,6 +29,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -277,7 +278,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
       /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
-      /*is_trusted_proxy=*/false, /*tunnel=*/true, net_log_));
+      /*is_trusted_proxy=*/false, /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
+      net_log_));
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());
@@ -326,7 +328,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
       /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
-      /*is_trusted_proxy=*/false, /*tunnel=*/true, net_log_));
+      /*is_trusted_proxy=*/false, /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
+      net_log_));
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());

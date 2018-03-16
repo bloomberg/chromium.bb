@@ -46,7 +46,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
                         bool tunnel,
                         bool using_spdy,
                         NextProto negotiated_protocol,
-                        bool is_https_proxy);
+                        bool is_https_proxy,
+                        const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // On destruction Disconnect() is called.
   ~HttpProxyClientSocket() override;
@@ -161,6 +162,9 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   // Used only for redirects.
   bool redirect_has_load_timing_info_;
   LoadTimingInfo redirect_load_timing_info_;
+
+  // Network traffic annotation for handshaking and setup.
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   const NetLogWithSource net_log_;
 

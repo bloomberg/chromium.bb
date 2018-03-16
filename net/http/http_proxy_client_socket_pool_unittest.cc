@@ -32,6 +32,7 @@
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -173,7 +174,7 @@ class HttpProxyClientSocketPoolTest
         HostPortPair("www.google.com", tunnel ? 443 : 80),
         session_->http_auth_cache(), session_->http_auth_handler_factory(),
         session_->spdy_session_pool(), session_->quic_stream_factory(),
-        /*is_trusted_proxy=*/false, tunnel);
+        /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   scoped_refptr<HttpProxySocketParams> CreateTunnelParams() {

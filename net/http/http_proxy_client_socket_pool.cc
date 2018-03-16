@@ -85,7 +85,8 @@ HttpProxySocketParams::HttpProxySocketParams(
     SpdySessionPool* spdy_session_pool,
     QuicStreamFactory* quic_stream_factory,
     bool is_trusted_proxy,
-    bool tunnel)
+    bool tunnel,
+    const NetworkTrafficAnnotationTag traffic_annotation)
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
       quic_version_(quic_version),
@@ -96,7 +97,8 @@ HttpProxySocketParams::HttpProxySocketParams(
       http_auth_cache_(tunnel ? http_auth_cache : NULL),
       http_auth_handler_factory_(tunnel ? http_auth_handler_factory : NULL),
       is_trusted_proxy_(is_trusted_proxy),
-      tunnel_(tunnel) {
+      tunnel_(tunnel),
+      traffic_annotation_(traffic_annotation) {
   // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
   // and |ssl_params| must be valid while |transport_params| is null.
   // Otherwise, |quic_version| must be QUIC_VERSION_UNSUPPORTED, and exactly
@@ -159,6 +161,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->quic_stream_factory(),
           params->is_trusted_proxy(),
           params->tunnel(),
+          params->traffic_annotation(),
           this->net_log())) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() = default;
