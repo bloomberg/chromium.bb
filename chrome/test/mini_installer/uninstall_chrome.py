@@ -38,7 +38,8 @@ def main():
              options.chrome_long_name)
   # Query the key. It will throw a WindowsError if the key doesn't exist.
   try:
-    key = _winreg.OpenKey(root_key, sub_key, 0, _winreg.KEY_QUERY_VALUE)
+    key = _winreg.OpenKey(root_key, sub_key, 0,
+                          _winreg.KEY_QUERY_VALUE | _winreg.KEY_WOW64_32KEY)
   except WindowsError:
     if options.no_error_if_absent:
       return 0
