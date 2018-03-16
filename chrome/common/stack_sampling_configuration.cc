@@ -72,19 +72,28 @@ StackSamplingConfiguration::StackSamplingConfiguration()
     : configuration_(GenerateConfiguration()) {
 }
 
-bool StackSamplingConfiguration::IsProfilerEnabledForThread(
-    metrics::CallStackProfileParams::Thread thread) const {
+base::StackSamplingProfiler::SamplingParams
+StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {
+  base::StackSamplingProfiler::SamplingParams params;
+  params.bursts = 1;
+  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
+  params.samples_per_burst = 0;
+
+  if (IsProfilerEnabledForCurrentProcess()) {
+    const base::TimeDelta duration = base::TimeDelta::FromSeconds(30);
+    params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+    params.samples_per_burst = duration / params.sampling_interval;
+  }
+
+  return params;
+}
+
+bool StackSamplingConfiguration::IsProfilerEnabledForCurrentProcess() const {
   if (IsBrowserProcess()) {
     return configuration_ == PROFILE_ENABLED ||
            configuration_ == PROFILE_CONTROL;
   }
-
-#if defined(OS_MACOSX)
-  // Disabled pending a resolution to crashes on Intel GPU tests. See
-  // https://crbug.com/774682.
-  if (thread == metrics::CallStackProfileParams::GPU_MAIN_THREAD)
-    return false;
-#endif
 
   DCHECK_EQ(PROFILE_FROM_COMMAND_LINE, configuration_);
   // This is a child process. The |kStartStackProfiler| switch passed by the

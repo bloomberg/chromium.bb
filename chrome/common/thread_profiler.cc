@@ -124,10 +124,8 @@ std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread(
 
 void ThreadProfiler::SetMainThreadTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForThread(
-          periodic_profile_params_.thread)) {
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
-  }
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -141,7 +139,7 @@ void ThreadProfiler::SetMainThreadTaskRunner(
 // static
 void ThreadProfiler::StartOnChildThread(
     metrics::CallStackProfileParams::Thread thread) {
-  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForThread(thread))
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   auto profiler = std::unique_ptr<ThreadProfiler>(
@@ -151,6 +149,9 @@ void ThreadProfiler::StartOnChildThread(
 
 void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
     service_manager::Connector* connector) {
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    return;
+
   DCHECK_NE(metrics::CallStackProfileParams::BROWSER_PROCESS, GetProcess());
 
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
@@ -193,7 +194,7 @@ ThreadProfiler::ThreadProfiler(
           metrics::CallStackProfileParams::PERIODIC_COLLECTION,
           metrics::CallStackProfileParams::MAY_SHUFFLE),
       weak_factory_(this) {
-  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForThread(thread))
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   startup_profiler_ = std::make_unique<base::StackSamplingProfiler>(
