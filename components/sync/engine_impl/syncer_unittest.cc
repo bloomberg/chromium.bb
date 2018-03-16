@@ -259,7 +259,7 @@ class SyncerTest : public testing::Test,
   bool SyncShareConfigureTypes(ModelTypeSet types) {
     ResetCycle();
     return syncer_->ConfigureSyncShare(
-        types, sync_pb::SyncEnums::RECONFIGURATION, cycle_.get());
+        types, sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, cycle_.get());
   }
 
   void SetUp() override {

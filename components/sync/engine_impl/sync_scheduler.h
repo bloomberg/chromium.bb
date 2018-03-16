@@ -24,15 +24,16 @@ namespace syncer {
 
 struct ConfigurationParams {
   ConfigurationParams();
-  ConfigurationParams(sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                      ModelTypeSet types_to_download,
-                      const base::Closure& ready_task,
-                      const base::Closure& retry_task);
+  ConfigurationParams(
+      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
+      ModelTypeSet types_to_download,
+      const base::Closure& ready_task,
+      const base::Closure& retry_task);
   ConfigurationParams(const ConfigurationParams& other);
   ~ConfigurationParams();
 
-  // Origin for the configuration.
-  sync_pb::SyncEnums::GetUpdatesOrigin origin;
+  // Source for the configuration.
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source;
   // The types that should be downloaded.
   ModelTypeSet types_to_download;
   // Callback to invoke on configuration completion.

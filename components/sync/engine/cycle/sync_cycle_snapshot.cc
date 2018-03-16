@@ -36,7 +36,7 @@ SyncCycleSnapshot::SyncCycleSnapshot(
     base::Time poll_finish_time,
     const std::vector<int>& num_entries_by_type,
     const std::vector<int>& num_to_delete_entries_by_type,
-    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin)
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
     : model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
@@ -49,7 +49,7 @@ SyncCycleSnapshot::SyncCycleSnapshot(
       poll_finish_time_(poll_finish_time),
       num_entries_by_type_(num_entries_by_type),
       num_to_delete_entries_by_type_(num_to_delete_entries_by_type),
-      get_updates_origin_(get_updates_origin),
+      legacy_updates_source_(legacy_updates_source),
       is_initialized_(true) {}
 
 SyncCycleSnapshot::SyncCycleSnapshot(const SyncCycleSnapshot& other) = default;
@@ -82,7 +82,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
   value->SetInteger("numHierarchyConflicts", num_hierarchy_conflicts_);
   value->SetInteger("numServerConflicts", num_server_conflicts_);
   value->SetInteger("numEntries", num_entries_);
-  value->SetString("getUpdatesOrigin", ProtoEnumToString(get_updates_origin_));
+  value->SetString("legacySource", ProtoEnumToString(legacy_updates_source_));
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
 
   std::unique_ptr<base::DictionaryValue> counter_entries(
@@ -157,9 +157,9 @@ const std::vector<int>& SyncCycleSnapshot::num_to_delete_entries_by_type()
   return num_to_delete_entries_by_type_;
 }
 
-sync_pb::SyncEnums::GetUpdatesOrigin SyncCycleSnapshot::get_updates_origin()
-    const {
-  return get_updates_origin_;
+sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
+SyncCycleSnapshot::legacy_updates_source() const {
+  return legacy_updates_source_;
 }
 
 }  // namespace syncer

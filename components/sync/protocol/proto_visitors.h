@@ -744,6 +744,11 @@ VISIT_PROTO_FIELDS(const sync_pb::SessionWindow& proto) {
   VISIT_ENUM(browser_type);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::SourceInfo& proto) {
+  VISIT_ENUM(source);
+  VISIT_REP(type_hint);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
   VISIT(num_encryption_conflicts);
   VISIT(num_hierarchy_conflicts);
@@ -751,7 +756,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
   VISIT(num_updates_downloaded);
   VISIT(num_reflected_updates_downloaded);
   VISIT(caller_info);
-  VISIT_ENUM(get_updates_origin);
+  VISIT_REP(source_info);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {

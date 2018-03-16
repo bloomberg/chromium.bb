@@ -22,7 +22,14 @@ message TypeHint {
   optional bool has_valid_hint = 2;
 }
 
-message DeprecatedSourceInfo {}
+// Information about the source that triggered a sync.
+message SourceInfo {
+  // An enum indicating the reason for the nudge.
+  optional GetUpdatesCallerInfo.GetUpdatesSource source = 1;
+
+  // The per-type hint information associated with the nudge.
+  repeated TypeHint type_hint = 2;
+}
 
 // The additional info here is from the StatusController. They get sent when
 // the event SYNC_CYCLE_COMPLETED  is sent.
@@ -48,15 +55,13 @@ message SyncCycleCompletedEventInfo {
   // Counts to track the effective usefulness of our GetUpdate requests.
   optional int32 num_updates_downloaded = 8;
   optional int32 num_reflected_updates_downloaded = 9;
-
-  // |caller_info| was mostly replaced by |get_updates_origin|; now it only
-  // contains the |notifications_enabled| flag.
   optional GetUpdatesCallerInfo caller_info = 10;
 
-  // |source_info| was unused and marked deprecated in M66.
-  repeated DeprecatedSourceInfo source_info = 11 [deprecated = true];
-
-  optional SyncEnums.GetUpdatesOrigin get_updates_origin = 12;
+  // A list of all the sources that were merged into this cycle.
+  //
+  // Some scenarios, notably mode switches and canary jobs, can spuriously add
+  // back-to-back duplicate sources to this list.
+  repeated SourceInfo source_info = 11;
 }
 
 // Datatype specifics statistics gathered at association time.

@@ -117,8 +117,15 @@ class NudgeTracker {
   // Returns the set of types that have pending refresh requests.
   ModelTypeSet GetRefreshRequestedTypes() const;
 
-  // Returns the 'origin' of the GetUpdate request.
-  sync_pb::SyncEnums::GetUpdatesOrigin GetOrigin() const;
+  // Returns the 'source' of the GetUpdate request.
+  //
+  // This flag is deprecated, but still used by the server.  There can be more
+  // than one reason to perform a particular sync cycle.  The GetUpdatesTrigger
+  // message will contain more reliable information about the reasons for
+  // performing a sync.
+  //
+  // See the implementation for important information about the coalesce logic.
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource GetLegacySource() const;
 
   // Fills a GetUpdatesTrigger message for the next GetUpdates request.  This is
   // used by the DownloadUpdatesCommand to dump lots of useful per-type state

@@ -23,19 +23,20 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
+using sync_pb::GetUpdatesCallerInfo;
 
 namespace syncer {
 
 namespace {
 
-bool IsConfigRelatedUpdateOriginValue(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
-  switch (origin) {
-    case sync_pb::SyncEnums::RECONFIGURATION:
-    case sync_pb::SyncEnums::MIGRATION:
-    case sync_pb::SyncEnums::NEW_CLIENT:
-    case sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE:
-    case sync_pb::SyncEnums::PROGRAMMATIC:
+bool IsConfigRelatedUpdateSourceValue(
+    GetUpdatesCallerInfo::GetUpdatesSource source) {
+  switch (source) {
+    case GetUpdatesCallerInfo::RECONFIGURATION:
+    case GetUpdatesCallerInfo::MIGRATION:
+    case GetUpdatesCallerInfo::NEW_CLIENT:
+    case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
+    case GetUpdatesCallerInfo::PROGRAMMATIC:
       return true;
     default:
       return false;
@@ -93,13 +94,13 @@ void RunAndReset(base::Closure* task) {
 }  // namespace
 
 ConfigurationParams::ConfigurationParams()
-    : origin(sync_pb::SyncEnums::UNKNOWN_ORIGIN) {}
+    : source(GetUpdatesCallerInfo::UNKNOWN) {}
 ConfigurationParams::ConfigurationParams(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
     ModelTypeSet types_to_download,
     const base::Closure& ready_task,
     const base::Closure& retry_task)
-    : origin(origin),
+    : source(source),
       types_to_download(types_to_download),
       ready_task(ready_task),
       retry_task(retry_task) {
@@ -253,7 +254,7 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
 void SyncSchedulerImpl::ScheduleConfiguration(
     const ConfigurationParams& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConfigRelatedUpdateOriginValue(params.origin));
+  DCHECK(IsConfigRelatedUpdateSourceValue(params.source));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
   DCHECK(!params.ready_task.is_null());
   DCHECK(started_) << "Scheduler must be running to configure.";
@@ -472,7 +473,7 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   SyncCycle cycle(cycle_context_, this);
   bool success =
       syncer_->ConfigureSyncShare(pending_configure_params_->types_to_download,
-                                  pending_configure_params_->origin, &cycle);
+                                  pending_configure_params_->source, &cycle);
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";

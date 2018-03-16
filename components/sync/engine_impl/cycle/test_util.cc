@@ -7,26 +7,29 @@
 namespace syncer {
 namespace test_util {
 
-void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
-                                    sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                                    SyncCycle* cycle) {
+void SimulateGetEncryptionKeyFailed(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(
       SERVER_RESPONSE_VALIDATION_FAILED);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureSuccess(ModelTypeSet requsted_types,
-                              sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                              SyncCycle* cycle) {
+void SimulateConfigureSuccess(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureFailed(ModelTypeSet requsted_types,
-                             sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                             SyncCycle* cycle) {
+void SimulateConfigureFailed(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
@@ -34,7 +37,7 @@ void SimulateConfigureFailed(ModelTypeSet requsted_types,
 
 void SimulateConfigureConnectionFailure(
     ModelTypeSet requsted_types,
-    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   cycle->mutable_status_controller()->set_last_download_updates_result(

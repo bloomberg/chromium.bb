@@ -36,15 +36,10 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
       snapshot.model_neutral_state().num_updates_downloaded_total);
   sync_completed_event_info->set_num_reflected_updates_downloaded(
       snapshot.model_neutral_state().num_reflected_updates_downloaded_total);
-  sync_completed_event_info->set_get_updates_origin(
-      snapshot.get_updates_origin());
+  sync_completed_event_info->mutable_caller_info()->set_source(
+      snapshot.legacy_updates_source());
   sync_completed_event_info->mutable_caller_info()->set_notifications_enabled(
       snapshot.notifications_enabled());
-
-  // Fill the legacy GetUpdatesSource field. This is not used anymore, but it's
-  // a required field so we still have to fill it with something.
-  sync_completed_event_info->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 
   AddEventToQueue(event_info);
 }

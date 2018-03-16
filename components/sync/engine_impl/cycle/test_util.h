@@ -16,18 +16,21 @@ namespace test_util {
 // Utils to simulate various outcomes of a sync cycle.
 
 // Configure sync cycle successes and failures.
-void SimulateGetEncryptionKeyFailed(ModelTypeSet requested_types,
-                                    sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                                    SyncCycle* cycle);
-void SimulateConfigureSuccess(ModelTypeSet requested_types,
-                              sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                              SyncCycle* cycle);
-void SimulateConfigureFailed(ModelTypeSet requested_types,
-                             sync_pb::SyncEnums::GetUpdatesOrigin origin,
-                             SyncCycle* cycle);
+void SimulateGetEncryptionKeyFailed(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle);
+void SimulateConfigureSuccess(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle);
+void SimulateConfigureFailed(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncCycle* cycle);
 void SimulateConfigureConnectionFailure(
     ModelTypeSet requested_types,
-    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncCycle* cycle);
 
 // Normal mode sync cycle successes and failures.
