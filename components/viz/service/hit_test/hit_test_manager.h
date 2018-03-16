@@ -13,6 +13,7 @@
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
+class LatestLocalSurfaceIdLookupDelegate;
 
 // HitTestManager manages the collection of HitTestRegionList objects
 // submitted in calls to SubmitCompositorFrame.  This collection is
@@ -21,18 +22,6 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
  public:
   explicit HitTestManager(SurfaceManager* surface_manager);
   virtual ~HitTestManager();
-
-  // Called when HitTestRegionList is submitted along with every call
-  // to SubmitCompositorFrame.
-  void SubmitHitTestRegionList(
-      const SurfaceId& surface_id,
-      const uint64_t frame_index,
-      mojom::HitTestRegionListPtr hit_test_region_list);
-
-  // Returns the HitTestRegionList corresponding to the given
-  // surface_id and the active CompositorFrame matched by frame_index.
-  const mojom::HitTestRegionList* GetActiveHitTestRegionList(
-      const SurfaceId& surface_id) const;
 
   // SurfaceObserver:
   void OnSurfaceCreated(const SurfaceId& surface_id) override {}
@@ -46,12 +35,23 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
 
+  // Called when HitTestRegionList is submitted along with every call
+  // to SubmitCompositorFrame.
+  void SubmitHitTestRegionList(
+      const SurfaceId& surface_id,
+      const uint64_t frame_index,
+      mojom::HitTestRegionListPtr hit_test_region_list);
+
+  // Returns the HitTestRegionList corresponding to the given
+  // |frame_sink_id| and the active CompositorFrame matched by frame_index.
+  const mojom::HitTestRegionList* GetActiveHitTestRegionList(
+      LatestLocalSurfaceIdLookupDelegate* delegate,
+      const FrameSinkId& frame_sink_id) const;
+
  private:
   bool ValidateHitTestRegionList(
       const SurfaceId& surface_id,
       const mojom::HitTestRegionListPtr& hit_test_region_list);
-  bool ValidateHitTestRegion(const SurfaceId& surface_id,
-                             const mojom::HitTestRegionPtr& hit_test_region);
 
   SurfaceManager* const surface_manager_;
 

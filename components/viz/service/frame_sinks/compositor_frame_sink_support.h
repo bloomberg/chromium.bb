@@ -27,6 +27,7 @@
 namespace viz {
 
 class FrameSinkManagerImpl;
+class LatestLocalSurfaceIdLookupDelegate;
 class Surface;
 class SurfaceManager;
 
@@ -70,7 +71,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
-  void SetUpHitTest();
+  void SetUpHitTest(
+      LatestLocalSurfaceIdLookupDelegate* local_surface_id_lookup_delegate);
 
   // The provided callback will be run every time a surface owned by this object
   // or one of its descendents is determined to be damaged at aggregation time.

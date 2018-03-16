@@ -389,6 +389,10 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
       EXPECT_TRUE(
           aggregator_.previous_contained_surfaces().find(surface_ids[i]) !=
           aggregator_.previous_contained_surfaces().end());
+      auto it = aggregator_.previous_contained_frame_sinks().find(
+          surface_ids[i].frame_sink_id());
+      EXPECT_TRUE(it != aggregator_.previous_contained_frame_sinks().end());
+      EXPECT_EQ(it->second, surface_ids[i].local_surface_id());
     }
   }
 

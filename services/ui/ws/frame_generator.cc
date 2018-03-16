@@ -178,9 +178,8 @@ viz::mojom::HitTestRegionListPtr FrameGenerator::GenerateHitTestRegionList()
   hit_test_region_list->bounds.set_size(pixel_size_);
 
   auto hit_test_region = viz::mojom::HitTestRegion::New();
-  viz::SurfaceId surface_id = window_manager_surface_info_.id();
-  hit_test_region->frame_sink_id = surface_id.frame_sink_id();
-  hit_test_region->local_surface_id = surface_id.local_surface_id();
+  hit_test_region->frame_sink_id =
+      window_manager_surface_info_.id().frame_sink_id();
   hit_test_region->flags = viz::mojom::kHitTestChildSurface;
   hit_test_region->rect = gfx::Rect(pixel_size_);
 

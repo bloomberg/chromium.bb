@@ -52,6 +52,8 @@ viz_static_library("test_support") {
     "test_gles2_interface.h",
     "test_gpu_memory_buffer_manager.cc",
     "test_gpu_memory_buffer_manager.h",
+    "test_latest_local_surface_id_lookup_delegate.cc",
+    "test_latest_local_surface_id_lookup_delegate.h",
     "test_layer_tree_frame_sink.cc",
     "test_layer_tree_frame_sink.h",
     "test_shared_bitmap_manager.cc",

@@ -65,14 +65,16 @@ bool DirectLayerTreeFrameSink::BindToClient(
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root,
       capabilities_.delegated_sync_points_required);
-  if (use_viz_hit_test_)
-    support_->SetUpHitTest();
   begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
   display_->Initialize(this, frame_sink_manager_->surface_manager());
+
+  if (use_viz_hit_test_)
+    support_->SetUpHitTest(display_);
+
   return true;
 }
 
@@ -208,6 +210,18 @@ mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
 
     for (const DrawQuad* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
+
+        // Skip the quad if the FrameSinkId between fallback and primary is not
+        // the same, because we don't know which FrameSinkId would be used to
+        // draw this quad.
+        if (surface_quad->fallback_surface_id.has_value() &&
+            surface_quad->fallback_surface_id->frame_sink_id() !=
+                surface_quad->primary_surface_id.frame_sink_id()) {
+          continue;
+        }
+
         // Skip the quad if the transform is not invertible (i.e. it will not
         // be able to receive events).
         gfx::Transform target_to_quad_transform;
@@ -216,12 +230,9 @@ mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
           continue;
         }
 
-        const SurfaceDrawQuad* surface_quad =
-            SurfaceDrawQuad::MaterialCast(quad);
         auto hit_test_region = mojom::HitTestRegion::New();
-        const SurfaceId& surface_id = surface_quad->primary_surface_id;
-        hit_test_region->frame_sink_id = surface_id.frame_sink_id();
-        hit_test_region->local_surface_id = surface_id.local_surface_id();
+        hit_test_region->frame_sink_id =
+            surface_quad->primary_surface_id.frame_sink_id();
         hit_test_region->flags = mojom::kHitTestMouse | mojom::kHitTestTouch |
                                  mojom::kHitTestChildSurface;
         hit_test_region->rect = surface_quad->rect;

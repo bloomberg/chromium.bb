@@ -532,7 +532,7 @@ TEST_F(HostFrameSinkManagerLocalTest, HitTestAggregatorQuery) {
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
   auto support =
       CreateCompositorFrameSinkSupport(kFrameSinkChild1, true /* is_root */);
-  support->SetUpHitTest();
+  support->SetUpHitTest(nullptr /* local_surface_id_lookup_delegate */);
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
   EXPECT_TRUE(support->GetHitTestAggregator());
 
