@@ -124,13 +124,17 @@ BlobBytesProvider::~BlobBytesProvider() {
 }
 
 void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
+  if (!data_.IsEmpty()) {
+    uint64_t last_offset = offsets_.IsEmpty() ? 0 : offsets_.back();
+    offsets_.push_back(last_offset + data_.back()->length());
+  }
   data_.push_back(std::move(data));
 }
 
 void BlobBytesProvider::AppendData(base::span<const char> data) {
   if (data_.IsEmpty() || data_.back()->length() + data.length() >
                              kMaxConsolidatedItemSizeInBytes) {
-    data_.push_back(RawData::Create());
+    AppendData(RawData::Create());
   }
   data_.back()->MutableData()->Append(data.data(), data.length());
 }
@@ -176,17 +180,17 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
     return;
   }
 
-  // TODO(mek): Could have a more efficient way to find beginning.
+  // Find first data item that should be read from (by finding the first offset
+  // that starts after the offset we want to start reading from).
+  size_t data_index =
+      std::upper_bound(offsets_.begin(), offsets_.end(), source_offset) -
+      offsets_.begin();
 
   // Offset of the current data chunk in the overall stream provided by this
   // provider.
-  uint64_t offset = 0;
-  for (const scoped_refptr<RawData>& data : data_) {
-    // Skip any chunks that are entirely before the data we need to write.
-    if (offset + data->length() <= source_offset) {
-      offset += data->length();
-      continue;
-    }
+  uint64_t offset = data_index == 0 ? 0 : offsets_[data_index - 1];
+  for (; data_index < data_.size(); ++data_index) {
+    const auto& data = data_[data_index];
 
     // We're done if the beginning of the current chunk is past the end of the
     // data to write.

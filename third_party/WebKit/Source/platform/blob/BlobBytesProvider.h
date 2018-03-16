@@ -43,6 +43,10 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
   FRIEND_TEST_ALL_PREFIXES(BlobBytesProviderTest, Consolidation);
 
   Vector<scoped_refptr<RawData>> data_;
+  // |offsets_| always contains exactly one fewer item than |data_| (except when
+  // |data_| itself is empty).
+  // offsets_[x] is equal to the sum of data_[i].length for all i <= x.
+  Vector<uint64_t> offsets_;
 };
 
 }  // namespace blink
