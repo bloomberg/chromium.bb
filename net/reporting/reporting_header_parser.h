@@ -25,7 +25,8 @@ class NET_EXPORT ReportingHeaderParser {
   static void RecordHeaderDiscardedForNoReportingService();
   static void RecordHeaderDiscardedForInvalidSSLInfo();
   static void RecordHeaderDiscardedForCertStatusError();
-  static void RecordHeaderDiscardedForInvalidJson();
+  static void RecordHeaderDiscardedForJsonInvalid();
+  static void RecordHeaderDiscardedForJsonTooBig();
 
   static void ParseHeader(ReportingContext* context,
                           const GURL& url,

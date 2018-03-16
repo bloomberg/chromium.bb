@@ -37979,8 +37979,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Discarded: no ReportingService"/>
   <int value="1" label="Discarded: invalid SSLInfo"/>
   <int value="2" label="Discarded: cert status error"/>
-  <int value="3" label="Discarded: invalid JSON"/>
+  <int value="3" label="Discarded: JSON invalid"/>
   <int value="4" label="Parsed"/>
+  <int value="5" label="Discarded: JSON too big"/>
 </enum>
 
 <enum name="ReportingReportOutcome">

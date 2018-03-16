@@ -26,8 +26,9 @@ enum class HeaderOutcome {
   DISCARDED_NO_REPORTING_SERVICE = 0,
   DISCARDED_INVALID_SSL_INFO = 1,
   DISCARDED_CERT_STATUS_ERROR = 2,
-  DISCARDED_INVALID_JSON = 3,
+  DISCARDED_JSON_INVALID = 3,
   PARSED = 4,
+  DISCARDED_JSON_TOO_BIG = 5,
 
   MAX
 };
@@ -239,8 +240,13 @@ void ReportingHeaderParser::RecordHeaderDiscardedForCertStatusError() {
 }
 
 // static
-void ReportingHeaderParser::RecordHeaderDiscardedForInvalidJson() {
-  RecordHeaderOutcome(HeaderOutcome::DISCARDED_INVALID_JSON);
+void ReportingHeaderParser::RecordHeaderDiscardedForJsonInvalid() {
+  RecordHeaderOutcome(HeaderOutcome::DISCARDED_JSON_INVALID);
+}
+
+// static
+void ReportingHeaderParser::RecordHeaderDiscardedForJsonTooBig() {
+  RecordHeaderOutcome(HeaderOutcome::DISCARDED_JSON_TOO_BIG);
 }
 
 // static
