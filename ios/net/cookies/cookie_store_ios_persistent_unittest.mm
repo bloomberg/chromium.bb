@@ -26,12 +26,12 @@
 
 namespace net {
 
-struct InactiveCookieStoreIOSTestTraits {
+struct PersistentCookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
     return std::make_unique<CookieStoreIOSPersistent>(nullptr);
   }
 
-  static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+  static void DeliverChangeNotifications() { base::RunLoop().RunUntilIdle(); }
 
   static const bool is_cookie_monster = false;
   static const bool supports_http_only = false;
@@ -45,6 +45,8 @@ struct InactiveCookieStoreIOSTestTraits {
   static const bool supports_named_cookie_tracking = false;
   static const bool supports_url_cookie_tracking = false;
   static const bool supports_multiple_tracking_callbacks = false;
+  static const bool has_exact_change_cause = false;
+  static const bool has_exact_change_ordering = false;
   static const int creation_time_granularity_in_ms = 0;
   static const int enforces_prefixes = true;
   static const bool enforce_strict_secure = false;
@@ -52,18 +54,18 @@ struct InactiveCookieStoreIOSTestTraits {
   base::MessageLoop loop_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
                               CookieStoreTest,
-                              InactiveCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+                              PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
                               CookieStoreChangeGlobalTest,
-                              InactiveCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+                              PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
                               CookieStoreChangeUrlTest,
-                              InactiveCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+                              PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
                               CookieStoreChangeNamedTest,
-                              InactiveCookieStoreIOSTestTraits);
+                              PersistentCookieStoreIOSTestTraits);
 
 namespace {
 

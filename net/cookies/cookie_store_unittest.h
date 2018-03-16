@@ -47,8 +47,8 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // Factory function. Will be called at most once per test.
 //   static std::unique_ptr<CookieStore> Create();
 //
-//   // Drains the run loop(s) involved in the test.
-//   static void RunUntilIdle();
+//   // Drains the run loop(s) used to deliver cookie change notifications.
+//   static void DeliverChangeNotifications();
 //
 //   // The cookie store supports cookies with the exclude_httponly() option.
 //   static const bool supports_http_only;
@@ -85,6 +85,16 @@ const char kValidCookieLine[] = "A=B; path=/";
 //
 //   // The cookie store supports more than one callback per cookie change type.
 //   static const bool supports_multiple_tracking_callbacks;
+//
+//   // The cookie store correctly distinguishes between OVERWRITE and EXPLICIT
+//   // (deletion) change causes.
+//   static const bool has_exact_change_cause;
+//
+//   // The cookie store is guaranteed to deliver cookie changes in the order
+//   // in which calls were issued. This only applies to changes coming from
+//   // _different_ calls. If a call results in a cookie overwrite, the deletion
+//   // change must still be issued before the insertion change.
+//   static const bool has_exact_change_ordering;
 //
 //   // Time to wait between two cookie insertions to ensure that cookies have
 //   // different creation times.
@@ -301,9 +311,6 @@ class CookieStoreTest : public testing::Test {
       cookie_store_ = CookieStoreTestTraits::Create();
     return cookie_store_.get();
   }
-
-  // Drains all pending tasks on the run loop(s) involved in the test.
-  void RunUntilIdle() { CookieStoreTestTraits::RunUntilIdle(); }
 
   // Compares two cookie lines.
   void MatchCookieLines(const std::string& line1, const std::string& line2) {

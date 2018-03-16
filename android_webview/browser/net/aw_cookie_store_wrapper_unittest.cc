@@ -34,7 +34,7 @@ struct AwCookieStoreWrapperTestTraits {
     return cookie_store;
   }
 
-  static void RunUntilIdle() {
+  static void DeliverChangeNotifications() {
     base::RunLoop run_loop;
     GetCookieStoreTaskRunner()->PostTaskAndReply(
         FROM_HERE, base::BindOnce([] { base::RunLoop().RunUntilIdle(); }),
@@ -55,6 +55,8 @@ struct AwCookieStoreWrapperTestTraits {
   static const bool supports_url_cookie_tracking = false;
   static const bool supports_named_cookie_tracking = true;
   static const bool supports_multiple_tracking_callbacks = false;
+  static const bool has_exact_change_cause = true;
+  static const bool has_exact_change_ordering = true;
   static const int creation_time_granularity_in_ms = 0;
 };
 
