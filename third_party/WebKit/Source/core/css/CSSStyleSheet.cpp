@@ -309,7 +309,7 @@ bool CSSStyleSheet::CanAccessRules() const {
     return true;
   if (document->GetStyleEngine().InspectorStyleSheet() == this)
     return true;
-  if (document->GetSecurityOrigin()->CanRequest(base_url))
+  if (document->GetSecurityOrigin()->CanReadContent(base_url))
     return true;
   if (allow_rule_access_from_origin_ &&
       document->GetSecurityOrigin()->CanAccess(

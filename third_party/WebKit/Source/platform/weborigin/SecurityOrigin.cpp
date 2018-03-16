@@ -318,20 +318,16 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   return false;
 }
 
-bool SecurityOrigin::TaintsCanvas(const KURL& url) const {
+bool SecurityOrigin::CanReadContent(const KURL& url) const {
   if (CanRequest(url))
-    return false;
+    return true;
 
-  // This function exists because we treat data URLs as having a unique origin,
-  // contrary to the current (9/19/2009) draft of the HTML5 specification.
-  // We still want to let folks paint data URLs onto untainted canvases, so
-  // we special case data URLs below. If we change to match HTML5 w.r.t.
-  // data URL security, then we can remove this function in favor of
-  // !canRequest.
+  // This function exists because we treat data URLs as having a unique opaque
+  // origin, see https://fetch.spec.whatwg.org/#main-fetch.
   if (url.ProtocolIsData())
-    return false;
+    return true;
 
-  return true;
+  return false;
 }
 
 bool SecurityOrigin::CanDisplay(const KURL& url) const {

@@ -1490,12 +1490,12 @@ bool HTMLMediaElement::IsMediaDataCORSSameOrigin(
     return false;
 
   // DidPassCORSAccessCheck() means it was a successful CORS-enabled fetch (vs.
-  // non-CORS-enabled or failed). TaintsCanvas() does CheckAccess() on the URL
-  // plus allows data sources, to ensure that it is not a URL that requires
+  // non-CORS-enabled or failed). CanReadContent() does CheckAccess() on the
+  // URL plus allows data sources, to ensure that it is not a URL that requires
   // CORS (basically same origin).
   return (GetWebMediaPlayer() &&
           GetWebMediaPlayer()->DidPassCORSAccessCheck()) ||
-         !origin->TaintsCanvas(currentSrc());
+         origin->CanReadContent(currentSrc());
 }
 
 bool HTMLMediaElement::IsInCrossOriginFrame() const {
