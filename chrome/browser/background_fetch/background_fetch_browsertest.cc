@@ -293,8 +293,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_FALSE(guid.empty());
 }
 
+// TODO(crbug.com/822944): Disabled since flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       OfflineItemCollection_SingleFileMetadata) {
+                       DISABLED_OfflineItemCollection_SingleFileMetadata) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection. We then
   // verify that all the appropriate values have been set.
