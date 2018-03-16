@@ -64,7 +64,6 @@ android_library("content_shell_java") {
     ":content_shell_java_resources",
     ":content_shell_manifest",
     "//base:base_java",
-    "//base:base_java_test_support",
     "//components/content_view:content_view_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
@@ -200,7 +199,7 @@ android_library("content_shell_test_java") {
 
 instrumentation_test_apk("content_shell_test_apk") {
   deps = [
-    "//base:base_javatests",
+    "//base:base_java_test_support",
     "//content/public/android:content_javatests",
     "//net/android:net_javatests",
     "//third_party/android_support_test_runner:runner_java",

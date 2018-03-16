@@ -2296,13 +2296,16 @@ if (enable_java_templates) {
       output = _final_dex_path
       enable_multidex = _enable_multidex
 
+      if (_enable_multidex) {
+        extra_main_dex_proguard_config = _generated_proguard_main_dex_config
+        deps += [ ":$_process_resources_target" ]
+      }
+
       # All deps are already included in _dex_sources when proguard is used.
       if (!_proguard_enabled) {
         if (_enable_multidex) {
           _dex_arg_key =
               "${_rebased_build_config}:deps_info:java_runtime_classpath"
-          extra_main_dex_proguard_config = _generated_proguard_main_dex_config
-          deps += [ ":$_process_resources_target" ]
         } else {
           _dex_arg_key =
               "${_rebased_build_config}:final_dex:dependency_dex_files"
