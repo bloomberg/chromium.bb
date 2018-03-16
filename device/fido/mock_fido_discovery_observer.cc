@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/u2f_device.h"
+#include "device/fido/mock_fido_discovery_observer.h"
 
 namespace device {
 
-U2fDevice::U2fDevice() = default;
-U2fDevice::~U2fDevice() = default;
+MockFidoDiscoveryObserver::MockFidoDiscoveryObserver() = default;
+MockFidoDiscoveryObserver::~MockFidoDiscoveryObserver() = default;
 
 }  // namespace device

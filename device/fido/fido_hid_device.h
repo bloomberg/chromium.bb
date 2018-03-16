@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_HID_DEVICE_H_
-#define DEVICE_FIDO_U2F_HID_DEVICE_H_
+#ifndef DEVICE_FIDO_FIDO_HID_DEVICE_H_
+#define DEVICE_FIDO_FIDO_HID_DEVICE_H_
 
 #include <memory>
 #include <queue>
@@ -17,18 +17,18 @@
 #include "base/macros.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
-#include "device/fido/u2f_device.h"
+#include "device/fido/fido_device.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 
 class FidoHidMessage;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
  public:
-  U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
-               device::mojom::HidManager* hid_manager);
-  ~U2fHidDevice() final;
+  FidoHidDevice(device::mojom::HidDeviceInfoPtr device_info,
+                device::mojom::HidManager* hid_manager);
+  ~FidoHidDevice() final;
 
   // Send a command to this device.
   void DeviceTransact(std::vector<uint8_t> command,
@@ -45,15 +45,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
   static bool IsTestEnabled();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestConnectionFailure);
-  FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestDeviceError);
-  FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestRetryChannelAllocation);
+  FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestConnectionFailure);
+  FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestDeviceError);
+  FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestRetryChannelAllocation);
 
   static constexpr uint8_t kWinkCapability = 0x01;
   static constexpr uint8_t kLockCapability = 0x02;
   static constexpr uint32_t kBroadcastChannel = 0xffffffff;
 
-  using U2fHidMessageCallback =
+  using HidMessageCallback =
       base::OnceCallback<void(bool, std::unique_ptr<FidoHidMessage>)>;
   using ConnectCallback = device::mojom::HidManager::ConnectCallback;
 
@@ -73,22 +73,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
   // Write all message packets to device, and read response if expected.
   void WriteMessage(std::unique_ptr<FidoHidMessage> message,
                     bool response_expected,
-                    U2fHidMessageCallback callback);
+                    HidMessageCallback callback);
   void PacketWritten(std::unique_ptr<FidoHidMessage> message,
                      bool response_expected,
-                     U2fHidMessageCallback callback,
+                     HidMessageCallback callback,
                      bool success);
   // Read all response message packets from device.
-  void ReadMessage(U2fHidMessageCallback callback);
+  void ReadMessage(HidMessageCallback callback);
   void MessageReceived(DeviceCallback callback,
                        bool success,
                        std::unique_ptr<FidoHidMessage> message);
-  void OnRead(U2fHidMessageCallback callback,
+  void OnRead(HidMessageCallback callback,
               bool success,
               uint8_t report_id,
               const base::Optional<std::vector<uint8_t>>& buf);
   void OnReadContinuation(std::unique_ptr<FidoHidMessage> message,
-                          U2fHidMessageCallback callback,
+                          HidMessageCallback callback,
                           bool success,
                           uint8_t report_id,
                           const base::Optional<std::vector<uint8_t>>& buf);
@@ -97,7 +97,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
               std::unique_ptr<FidoHidMessage> response);
   void ArmTimeout(DeviceCallback callback);
   void OnTimeout(DeviceCallback callback);
-  base::WeakPtr<U2fDevice> GetWeakPtr() override;
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
   uint32_t channel_id_ = kBroadcastChannel;
   uint8_t capabilities_ = 0;
@@ -107,17 +107,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
   std::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>
       pending_transactions_;
 
-  // All the U2fHidDevice instances are owned by U2fRequest. So it is safe to
-  // let the U2fHidDevice share the device::mojo::HidManager raw pointer from
+  // All the FidoHidDevice instances are owned by U2fRequest. So it is safe to
+  // let the FidoHidDevice share the device::mojo::HidManager raw pointer from
   // U2fRequest.
   device::mojom::HidManager* hid_manager_;
   device::mojom::HidDeviceInfoPtr device_info_;
   device::mojom::HidConnectionPtr connection_;
-  base::WeakPtrFactory<U2fHidDevice> weak_factory_;
+  base::WeakPtrFactory<FidoHidDevice> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(U2fHidDevice);
+  DISALLOW_COPY_AND_ASSIGN(FidoHidDevice);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_U2F_HID_DEVICE_H_
+#endif  // DEVICE_FIDO_FIDO_HID_DEVICE_H_

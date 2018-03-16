@@ -66,13 +66,13 @@ test("device_unittests") {
     "bluetooth/uribeacon/uri_encoder_unittest.cc",
     "fido/ctap_request_unittest.cc",
     "fido/ctap_response_unittest.cc",
-    "fido/fake_u2f_discovery_unittest.cc",
+    "fido/fake_fido_discovery_unittest.cc",
+    "fido/fido_discovery_unittest.cc",
     "fido/fido_hid_message_unittest.cc",
     "fido/test_callback_receiver_unittest.cc",
     "fido/u2f_ble_connection_unittest.cc",
     "fido/u2f_ble_device_unittest.cc",
     "fido/u2f_ble_frames_unittest.cc",
-    "fido/u2f_discovery_unittest.cc",
     "fido/u2f_register_unittest.cc",
     "fido/u2f_request_unittest.cc",
     "fido/u2f_sign_unittest.cc",
@@ -118,8 +118,8 @@ test("device_unittests") {
   # Linux, requires udev.
   if (!is_linux_without_udev && !is_android) {
     sources += [
-      "fido/u2f_hid_device_unittest.cc",
-      "fido/u2f_hid_discovery_unittest.cc",
+      "fido/fido_hid_device_unittest.cc",
+      "fido/fido_hid_discovery_unittest.cc",
     ]
     deps += [
       "//device/fido:test_support",

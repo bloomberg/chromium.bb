@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/bluetooth_test.h"
-#include "device/fido/mock_u2f_discovery_observer.h"
+#include "device/fido/mock_fido_discovery_observer.h"
 #include "device/fido/u2f_ble_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +44,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryNoAdapter) {
   U2fBleDiscovery discovery;
 
   // We don't expect any calls to the notification methods.
-  MockU2fDiscoveryObserver observer;
+  MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DiscoveryStopped(&discovery, _)).Times(0);
@@ -63,7 +63,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {
   SimulateLowEnergyDevice(7);
 
   U2fBleDiscovery discovery;
-  MockU2fDiscoveryObserver observer;
+  MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
   {
@@ -101,7 +101,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsNewDevice) {
   InitWithFakeAdapter();
 
   U2fBleDiscovery discovery;
-  MockU2fDiscoveryObserver observer;
+  MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
   {
@@ -155,7 +155,7 @@ TEST_F(BluetoothTest, U2fBleDiscoveryFindsUpdatedDevice) {
   SimulateLowEnergyDevice(3);
 
   U2fBleDiscovery discovery;
-  MockU2fDiscoveryObserver observer;
+  MockFidoDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
   {

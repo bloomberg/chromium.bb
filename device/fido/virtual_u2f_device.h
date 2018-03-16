@@ -16,7 +16,7 @@
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "device/fido/u2f_device.h"
+#include "device/fido/fido_device.h"
 
 namespace crypto {
 class ECPrivateKey;
@@ -24,7 +24,7 @@ class ECPrivateKey;
 
 namespace device {
 
-class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
  public:
   VirtualU2fDevice();
   ~VirtualU2fDevice() override;
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
   void TryWink(WinkCallback cb) override;
   std::string GetId() const override;
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
-  base::WeakPtr<U2fDevice> GetWeakPtr() override;
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
   struct RegistrationData {
@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
 
   // Keyed on appId/rpId hash (aka "applicationParam")
   std::map<std::vector<uint8_t>, RegistrationData> registrations_;
-  base::WeakPtrFactory<U2fDevice> weak_factory_;
+  base::WeakPtrFactory<FidoDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualU2fDevice);
 };

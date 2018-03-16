@@ -159,7 +159,7 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
       FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
 }
 
-base::WeakPtr<U2fDevice> VirtualU2fDevice::GetWeakPtr() {
+base::WeakPtr<FidoDevice> VirtualU2fDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

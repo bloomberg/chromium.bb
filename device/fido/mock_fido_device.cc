@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/mock_u2f_device.h"
+#include "device/fido/mock_fido_device.h"
 
 #include <utility>
 
@@ -12,21 +12,21 @@
 
 namespace device {
 
-MockU2fDevice::MockU2fDevice() : weak_factory_(this) {}
-MockU2fDevice::~MockU2fDevice() = default;
+MockFidoDevice::MockFidoDevice() : weak_factory_(this) {}
+MockFidoDevice::~MockFidoDevice() = default;
 
-void MockU2fDevice::TryWink(WinkCallback cb) {
+void MockFidoDevice::TryWink(WinkCallback cb) {
   TryWinkRef(cb);
 }
 
-void MockU2fDevice::DeviceTransact(std::vector<uint8_t> command,
-                                   DeviceCallback cb) {
+void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
+                                    DeviceCallback cb) {
   DeviceTransactPtr(command, cb);
 }
 
 // static
-void MockU2fDevice::NotSatisfied(const std::vector<uint8_t>& command,
-                                 DeviceCallback& cb) {
+void MockFidoDevice::NotSatisfied(const std::vector<uint8_t>& command,
+                                  DeviceCallback& cb) {
   std::move(cb).Run(apdu::ApduResponse(
                         std::vector<uint8_t>(),
                         apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED)
@@ -34,8 +34,8 @@ void MockU2fDevice::NotSatisfied(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockU2fDevice::WrongData(const std::vector<uint8_t>& command,
-                              DeviceCallback& cb) {
+void MockFidoDevice::WrongData(const std::vector<uint8_t>& command,
+                               DeviceCallback& cb) {
   std::move(cb).Run(
       apdu::ApduResponse(std::vector<uint8_t>(),
                          apdu::ApduResponse::Status::SW_WRONG_DATA)
@@ -43,8 +43,8 @@ void MockU2fDevice::WrongData(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockU2fDevice::NoErrorSign(const std::vector<uint8_t>& command,
-                                DeviceCallback& cb) {
+void MockFidoDevice::NoErrorSign(const std::vector<uint8_t>& command,
+                                 DeviceCallback& cb) {
   std::move(cb).Run(
       apdu::ApduResponse(
           std::vector<uint8_t>(std::begin(test_data::kTestU2fSignResponse),
@@ -54,8 +54,8 @@ void MockU2fDevice::NoErrorSign(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockU2fDevice::NoErrorRegister(const std::vector<uint8_t>& command,
-                                    DeviceCallback& cb) {
+void MockFidoDevice::NoErrorRegister(const std::vector<uint8_t>& command,
+                                     DeviceCallback& cb) {
   std::move(cb).Run(
       apdu::ApduResponse(
           std::vector<uint8_t>(std::begin(test_data::kTestU2fRegisterResponse),
@@ -65,8 +65,8 @@ void MockU2fDevice::NoErrorRegister(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockU2fDevice::NoErrorVersion(const std::vector<uint8_t>& command,
-                                   DeviceCallback& cb) {
+void MockFidoDevice::NoErrorVersion(const std::vector<uint8_t>& command,
+                                    DeviceCallback& cb) {
   std::move(cb).Run(
       apdu::ApduResponse(std::vector<uint8_t>(kU2fVersionResponse.cbegin(),
                                               kU2fVersionResponse.cend()),
@@ -75,7 +75,7 @@ void MockU2fDevice::NoErrorVersion(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockU2fDevice::SignWithCorruptedResponse(
+void MockFidoDevice::SignWithCorruptedResponse(
     const std::vector<uint8_t>& command,
     DeviceCallback& cb) {
   std::move(cb).Run(
@@ -88,11 +88,11 @@ void MockU2fDevice::SignWithCorruptedResponse(
 }
 
 // static
-void MockU2fDevice::WinkDoNothing(WinkCallback& cb) {
+void MockFidoDevice::WinkDoNothing(WinkCallback& cb) {
   std::move(cb).Run();
 }
 
-base::WeakPtr<U2fDevice> MockU2fDevice::GetWeakPtr() {
+base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
