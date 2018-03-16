@@ -293,6 +293,8 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestChecksumErrorOnStartup);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, WriteToDiskFails);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, FullUpdateFailsChecksumSynchronously);
+  FRIEND_TEST_ALL_PREFIXES(V4StorePerftest, StressTest);
+
   friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes_length| is a
@@ -337,6 +339,10 @@ class V4Store {
   // be small and infrequent.
   static void ReserveSpaceInPrefixMap(const HashPrefixMap& other_prefixes_map,
                                       HashPrefixMap* prefix_map_to_update);
+
+  // Same as the public GetMatchingHashPrefix method, but takes a StringPiece,
+  // for performance reasons.
+  HashPrefix GetMatchingHashPrefix(base::StringPiece full_hash);
 
   // Merges the prefix map from the old store (|old_hash_prefix_map|) and the
   // update (additions_map) to populate the prefix map for the current store.

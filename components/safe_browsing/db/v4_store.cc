@@ -777,6 +777,10 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
 }
 
 HashPrefix V4Store::GetMatchingHashPrefix(const FullHash& full_hash) {
+  return GetMatchingHashPrefix(base::StringPiece(full_hash));
+}
+
+HashPrefix V4Store::GetMatchingHashPrefix(base::StringPiece full_hash) {
   // It should never be the case that more than one hash prefixes match a given
   // full hash. However, if that happens, this method returns any one of them.
   // It does not guarantee which one of those will be returned.
@@ -784,8 +788,7 @@ HashPrefix V4Store::GetMatchingHashPrefix(const FullHash& full_hash) {
   checks_attempted_++;
   for (const auto& pair : hash_prefix_map_) {
     const PrefixSize& prefix_size = pair.first;
-    base::StringPiece hash_prefix =
-        base::StringPiece(full_hash).substr(0, prefix_size);
+    base::StringPiece hash_prefix = full_hash.substr(0, prefix_size);
     if (HashPrefixMatches(hash_prefix, pair.second, prefix_size))
       return hash_prefix.as_string();
   }
