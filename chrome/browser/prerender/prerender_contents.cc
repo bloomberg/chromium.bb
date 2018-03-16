@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -32,7 +31,6 @@
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/prerender_util.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
@@ -45,6 +43,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "net/http/http_response_headers.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -203,6 +202,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_been_cancelled_(false),
+      process_pid_(base::kNullProcessId),
       child_id_(-1),
       route_id_(-1),
       origin_(origin),
@@ -634,41 +634,54 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     NotifyPrerenderStop();
 }
 
-base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
-  if (!process_metrics_) {
-    // If a PrenderContents hasn't started prerending, don't be fully formed.
+void PrerenderContents::DestroyWhenUsingTooManyResources() {
+  if (process_pid_ == base::kNullProcessId) {
     const RenderViewHost* rvh = GetRenderViewHost();
     if (!rvh)
-      return nullptr;
+      return;
 
     const content::RenderProcessHost* rph = rvh->GetProcess();
     if (!rph)
-      return nullptr;
+      return;
 
     base::ProcessHandle handle = rph->GetHandle();
     if (handle == base::kNullProcessHandle)
-      return nullptr;
+      return;
 
-#if !defined(OS_MACOSX)
-    process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(handle);
-#else
-    process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(
-        handle, content::BrowserChildProcessHost::GetPortProvider());
-#endif
+    process_pid_ = base::GetProcId(handle);
   }
 
-  return process_metrics_.get();
-}
-
-void PrerenderContents::DestroyWhenUsingTooManyResources() {
-  base::ProcessMetrics* metrics = MaybeGetProcessMetrics();
-  if (!metrics)
+  if (process_pid_ == base::kNullProcessId)
     return;
 
-  size_t private_bytes, shared_bytes;
-  if (metrics->GetMemoryBytes(&private_bytes, &shared_bytes) &&
-      private_bytes > prerender_manager_->config().max_bytes) {
-    Destroy(FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+  // Using AdaptCallbackForRepeating allows for an easier transition to
+  // OnceCallbacks for https://crbug.com/714018.
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDumpForPid(process_pid_,
+                                base::AdaptCallbackForRepeating(base::BindOnce(
+                                    &PrerenderContents::DidGetMemoryUsage,
+                                    weak_factory_.GetWeakPtr())));
+}
+
+void PrerenderContents::DidGetMemoryUsage(
+    bool success,
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> global_dump) {
+  if (!success)
+    return;
+
+  for (const memory_instrumentation::GlobalMemoryDump::ProcessDump& dump :
+       global_dump->process_dumps()) {
+    if (dump.pid() != process_pid_)
+      continue;
+
+    // If |final_status_| == |FINAL_STATUS_USED|, then destruction will be
+    // handled by the entity that set final_status_.
+    if (dump.os_dump().private_footprint_kb * 1024 >
+            prerender_manager_->config().max_bytes &&
+        final_status_ != FINAL_STATUS_USED) {
+      Destroy(FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+    }
+    return;
   }
 }
 
