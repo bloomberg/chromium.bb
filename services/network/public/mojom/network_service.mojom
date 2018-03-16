@@ -16,17 +16,12 @@ import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
+import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
-
-[Native]
-struct AuthChallengeInfo;
-
-[Native]
-struct AuthCredentials;
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
