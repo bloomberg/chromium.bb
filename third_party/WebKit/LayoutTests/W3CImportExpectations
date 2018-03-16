@@ -305,9 +305,7 @@ external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.h
 external/wpt/svg/linking/scripted [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
-external/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]
 external/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]
-external/wpt/FileAPI/BlobURL/test3-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_errors-manual.html [ Skip ]
 external/wpt/FileAPI/filelist-section/filelist_multiple_selected_files-manual.html [ Skip ]
 external/wpt/FileAPI/filelist-section/filelist_selected_file-manual.html [ Skip ]
@@ -389,7 +387,6 @@ external/wpt/pointerevents/pointerevent_pointerId_scope-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_releasepointercapture_release_right_after_capture-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_setpointercapture_override_pending_capture_element-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_setpointercapture_to_same_element_twice-manual.html [ Skip ]
-external/wpt/quirks-mode/active-and-hover-manual.html [ Skip ]
 external/wpt/touch-events/multi-touch-interactions-manual.html [ Skip ]
 external/wpt/touch-events/multi-touch-interfaces-manual.html [ Skip ]
 external/wpt/touch-events/single-touch-manual.html [ Skip ]
