@@ -188,9 +188,12 @@
       'dependencies': [
         '../data/compiled_resources2.gyp:coordinate2d',
         '../data/compiled_resources2.gyp:margins',
+        '../data/compiled_resources2.gyp:measurement_system',
         '../data/compiled_resources2.gyp:size',
         'margin_control',
         'settings_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
+        '<(EXTERNS_GYP):pending',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

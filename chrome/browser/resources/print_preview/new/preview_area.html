@@ -143,7 +143,9 @@
     </div>
     <print-preview-margin-control-container id="marginControlContainer"
         page-size="[[documentInfo.pageSize]]" settings="{{settings}}"
-        preview-loaded="[[previewLoaded_]]">
+        measurement-system="[[measurementSystem]]"
+        preview-loaded="[[previewLoaded_]]"
+        on-margin-drag-changed="onMarginDragChanged_">
     </print-preview-margin-control-container>
   </template>
   <script src="preview_area.js"></script>

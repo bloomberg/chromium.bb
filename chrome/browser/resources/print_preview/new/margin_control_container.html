@@ -1,18 +1,31 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="margin_control.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="../data/coordinate2d.html">
 <link rel="import" href="../data/margins.html">
+<link rel="import" href="../data/measurement_system.html">
 <link rel="import" href="../data/size.html">
 
 <dom-module id="print-preview-margin-control-container">
   <template>
+    <style>
+      :host([dragging_=dragging-vertical]) {
+        cursor: ns-resize;
+      }
+
+      :host([dragging_=dragging-horizontal]) {
+        cursor: ew-resize;
+      }
+    </style>
     <template is="dom-repeat" items="[[marginSides_]]">
-      <print-preview-margin-control side="[[item]]" invisible="[[hidden_]]"
+      <print-preview-margin-control side="[[item]]"
+          invisible="[[isInvisible_(available_, visible)]]"
           translate-transform="[[translateTransform_]]"
           clip-size="[[clipSize_]]" scale-transform="[[scaleTransform_]]"
-          page-size="[[pageSize]]">
+          page-size="[[pageSize]]" on-pointerdown="onPointerDown_"
+          on-text-change="onTextChange_">
       </print-preview-margin-control>
     </template>
   </template>

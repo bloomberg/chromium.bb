@@ -67,15 +67,18 @@ Polymer({
       type: Boolean,
       notify: true,
       computed: 'computeControlsDisabled_(state)',
-    }
+    },
+
+    /** @private {?print_preview.MeasurementSystem} */
+    measurementSystem_: {
+      type: Object,
+      notify: true,
+      value: null,
+    },
   },
 
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
-
-  /** @type {!print_preview.MeasurementSystem} */
-  measurementSystem_: new print_preview.MeasurementSystem(
-      ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL),
 
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
@@ -142,7 +145,7 @@ Polymer({
     this.notifyPath('documentInfo_.title');
     this.notifyPath('documentInfo_.pageCount');
     this.$.model.setStickySettings(settings.serializedAppStateStr);
-    this.measurementSystem_.setSystem(
+    this.measurementSystem_ = new print_preview.MeasurementSystem(
         settings.thousandsDelimeter, settings.decimalDelimeter,
         settings.unitType);
     this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);

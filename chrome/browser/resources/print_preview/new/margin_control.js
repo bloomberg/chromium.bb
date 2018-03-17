@@ -62,9 +62,66 @@ Polymer({
       ['updatePosition_(positionInPts_, scaleTransform, translateTransform, ' +
        'pageSize, side)'],
 
+  /** @param {string} value New value of the margin control's textbox. */
+  setTextboxValue: function(value) {
+    const textbox = this.$.textbox;
+    if (textbox.value != value)
+      textbox.value = value;
+  },
+
   /** @param {number} position The new position for the margin control. */
-  setPositionInPts(position) {
+  setPositionInPts: function(position) {
     this.positionInPts_ = position;
+  },
+
+  /**
+   * @return {string} 'true' or 'false', indicating whether the input should be
+   *     aria-hidden.
+   * @private
+   */
+  getAriaHidden_: function() {
+    return this.invisible.toString();
+  },
+
+  /**
+   * Converts a value in pixels to points.
+   * @param {number} pixels Pixel value to convert.
+   * @return {number} Given value expressed in points.
+   */
+  convertPixelsToPts: function(pixels) {
+    let pts;
+    const orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
+    if (this.side == orientationEnum.TOP) {
+      pts = pixels - this.translateTransform.y + RADIUS_PX;
+      pts /= this.scaleTransform;
+    } else if (this.side == orientationEnum.RIGHT) {
+      pts = pixels - this.translateTransform.x + RADIUS_PX;
+      pts /= this.scaleTransform;
+      pts = this.pageSize.width - pts;
+    } else if (this.side == orientationEnum.BOTTOM) {
+      pts = pixels - this.translateTransform.y + RADIUS_PX;
+      pts /= this.scaleTransform;
+      pts = this.pageSize.height - pts;
+    } else {
+      assert(this.side == orientationEnum.LEFT);
+      pts = pixels - this.translateTransform.x + RADIUS_PX;
+      pts /= this.scaleTransform;
+    }
+    return pts;
+  },
+
+  /**
+   * @param {!PointerEvent} event A pointerdown event triggered by this element.
+   * @return {boolean} Whether the margin should start being dragged.
+   */
+  shouldDrag: function(event) {
+    return !this.$.textbox.disabled && event.button == 0 &&
+        (event.path[0] == this || event.path[0] == this.$.line);
+  },
+
+  /** @private */
+  onInput_: function() {
+    this.fire('text-change', this.$.textbox.value);
   },
 
   /** @private */
