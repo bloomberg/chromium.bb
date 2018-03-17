@@ -17,19 +17,10 @@
 #if CONFIG_DEPENDENT_HORZTILES
 void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
                               int row, int col) {
-#if CONFIG_DEPENDENT_HORZTILEGROUPS
-  (void)cm;
-  (void)col;
-#if !CONFIG_MAX_TILE
-  (void)row;
-#endif
-  tile->tg_horz_boundary = (row == 0);
-#else
   const int tg_start_row = cm->tile_group_start_row[row][col];
   const int tg_start_col = cm->tile_group_start_col[row][col];
   tile->tg_horz_boundary = ((row == tg_start_row && col >= tg_start_col) ||
                             (row == tg_start_row + 1 && col < tg_start_col));
-#endif
 #if CONFIG_MAX_TILE
   if (cm->tile_row_independent[row]) {
     tile->tg_horz_boundary = 1;  // this tile row is independent
