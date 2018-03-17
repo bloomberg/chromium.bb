@@ -202,7 +202,7 @@ public class CastWebContentsIntentUtilsTest {
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
-        Assert.assertEquals(CastIntents.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
+        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
         Assert.assertTrue(CastWebContentsIntentUtils.isTouchable(in));
     }
 
@@ -212,7 +212,7 @@ public class CastWebContentsIntentUtilsTest {
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
-        Assert.assertEquals(CastIntents.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
+        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
         Assert.assertFalse(CastWebContentsIntentUtils.isTouchable(in));
     }
 

@@ -141,7 +141,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
-        IntentFilter intentFilter = new IntentFilter(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+        IntentFilter intentFilter =
+                new IntentFilter(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
                 .registerReceiver(receiver, intentFilter);
 
