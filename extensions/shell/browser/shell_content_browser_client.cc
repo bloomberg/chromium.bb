@@ -300,6 +300,17 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
                                                      factory_request);
 }
 
+bool ShellContentBrowserClient::HandleExternalProtocol(
+    const GURL& url,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    int child_id,
+    content::NavigationUIData* navigation_data,
+    bool is_main_frame,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
+  return false;
+}
+
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
     const content::MainFunctionParams& parameters,
     ShellBrowserMainDelegate* browser_main_delegate) {
