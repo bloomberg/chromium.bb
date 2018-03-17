@@ -271,7 +271,8 @@ Polymer({
 
   /**
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-   * @return {number}
+   * @return {number} The index of the currently selected mode of the
+   * |selectedDisplay|. If the display has no modes, returns 0.
    * @private
    */
   getSelectedModeIndex_: function(selectedDisplay) {
@@ -351,19 +352,20 @@ Polymer({
    * @private
    */
   setSelectedDisplay_: function(selectedDisplay) {
-    // Set |currentSelectedModeIndex_| and |modeValues_| first since these
-    // are not used directly in data binding.
+    // |modeValues_| controls the resolution slider's tick values. Changing it
+    // might trigger a change in the |selectedModePref_.value| if the number of
+    // modes differs and the current mode index is out of range of the new modes
+    // indices. Thus, we need to set |currentSelectedModeIndex_| to -1 to
+    // indicate that the |selectedDisplay| and |selectedModePref_.value| are out
+    // of sync, and therefore getResolutionText_() and onSelectedModeChange_()
+    // will be no-ops.
+    this.currentSelectedModeIndex_ = -1;
     const numModes = selectedDisplay.modes.length;
-    if (numModes == 0) {
-      this.modeValues_ = [];
-      this.currentSelectedModeIndex_ = 0;
-    } else {
-      this.modeValues_ = Array.from(Array(numModes).keys());
-      this.currentSelectedModeIndex_ =
-          this.getSelectedModeIndex_(selectedDisplay);
-    }
+    this.modeValues_ = numModes == 0 ? [] : Array.from(Array(numModes).keys());
 
     if (this.showDisplayZoomSetting_) {
+      // Note that the display zoom values has the same number of ticks for all
+      // displays, so the above problem doesn't apply here.
       this.zoomValues_ = this.getZoomValues_(selectedDisplay);
       this.set(
           'selectedZoomPref_.value',
@@ -374,6 +376,11 @@ Polymer({
     // Set |selectedDisplay| first since only the resolution slider depends
     // on |selectedModePref_|.
     this.selectedDisplay = selectedDisplay;
+
+    // Now that everything is in sync, set the selected mode to its correct
+    // value right before updating the pref.
+    this.currentSelectedModeIndex_ =
+        this.getSelectedModeIndex_(selectedDisplay);
     this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
   },
 
