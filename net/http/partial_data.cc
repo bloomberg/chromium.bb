@@ -34,15 +34,14 @@ PartialData::PartialData()
     : current_range_start_(0),
       current_range_end_(0),
       cached_start_(0),
-      resource_size_(0),
       cached_min_len_(0),
+      resource_size_(0),
       range_present_(false),
       final_range_(false),
       sparse_entry_(true),
       truncated_(false),
       initial_validation_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 PartialData::~PartialData() = default;
 
@@ -200,6 +199,19 @@ bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
     if (total_length <= 0)
       return false;
 
+    // In case we see a truncated entry, we first send a network request for
+    // 1 byte range with If-Range: to probe server support for resumption.
+    // The setting of |current_range_start_| and |cached_start_| below (with any
+    // positive value of |cached_min_len_|) results in that.
+    //
+    // Setting |initial_validation_| to true is how this communicates to
+    // HttpCache::Transaction that we're doing that (and that it's not the user
+    // asking for one byte), so if it sees a 206 with that flag set it will call
+    // SetRangeToStartDownload(), and then restart the process looking for the
+    // entire file (which is what the user wanted), with the cache handling
+    // the previous portion, and then a second network request for the entire
+    // rest of the range. A 200 in response to the probe request can be simply
+    // returned directly to the user.
     truncated_ = true;
     initial_validation_ = true;
     sparse_entry_ = false;
