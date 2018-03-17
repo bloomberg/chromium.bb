@@ -301,6 +301,10 @@ CrElementsToastTest.prototype = {
   ]),
 };
 
+TEST_F('CrElementsToastTest', 'All', function() {
+  mocha.run();
+});
+
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}
