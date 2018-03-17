@@ -4885,10 +4885,16 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  EXPECT_TRUE(root_layer->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(copy_grand_parent_layer->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(copy_parent_layer->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(copy_layer->has_copy_requests_in_target_subtree());
+  auto& effect_tree =
+      root_layer->layer_tree_impl()->property_trees()->effect_tree;
+  EXPECT_TRUE(effect_tree.Node(root_layer->effect_tree_index())
+                  ->subtree_has_copy_request);
+  EXPECT_TRUE(effect_tree.Node(copy_grand_parent_layer->effect_tree_index())
+                  ->subtree_has_copy_request);
+  EXPECT_TRUE(effect_tree.Node(copy_parent_layer->effect_tree_index())
+                  ->subtree_has_copy_request);
+  EXPECT_TRUE(effect_tree.Node(copy_layer->effect_tree_index())
+                  ->subtree_has_copy_request);
 
   // We should have four render surfaces, one for the root, one for the grand
   // parent since it has opacity and two drawing descendants, one for the parent
