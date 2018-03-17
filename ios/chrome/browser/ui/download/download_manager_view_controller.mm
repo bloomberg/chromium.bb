@@ -478,7 +478,8 @@ NSString* GetSizeString(long long size_in_bytes) {
     _progressView = [[RadialProgressView alloc] initWithFrame:CGRectZero];
     _progressView.translatesAutoresizingMaskIntoConstraints = NO;
     _progressView.lineWidth = 2;
-    _progressView.tintColor = [MDCPalette bluePalette].tint600;
+    _progressView.progressTintColor = [MDCPalette bluePalette].tint600;
+    _progressView.trackTintColor = [MDCPalette greyPalette].tint300;
     [self updateProgressView];
   }
   return _progressView;

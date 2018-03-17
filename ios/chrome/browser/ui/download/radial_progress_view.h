@@ -17,6 +17,11 @@
 // The line width used when stroking the progress arc.
 @property(nonatomic) CGFloat lineWidth;
 
+@property(nonatomic, nullable) UIColor* progressTintColor;
+
+// Track is drawn underneath the progress.
+@property(nonatomic, nullable) UIColor* trackTintColor;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_RADIAL_PROGRESS_VIEW_H_
