@@ -869,6 +869,10 @@ body.album #album {
     width: auto;
   }
 
+  #browser video::-webkit-media-controls {
+    display: none;
+  }
+
   /* Reset styles to default on the album view. */
   #album div.media-wrapper,
   #album div.media-wrapper.selected {
