@@ -11,10 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
@@ -29,11 +28,10 @@ class Connector;
 // Parses the media metadata of a Blob safely in a utility process. This class
 // expects the MIME type of the Blob to be already known. It creates a utility
 // process to do further MIME-type-specific metadata extraction from the Blob
-// data. All public methods and callbacks of this class run on the UI thread.
-class SafeMediaMetadataParser
-    : public base::RefCountedThreadSafe<SafeMediaMetadataParser> {
+// data.
+class SafeMediaMetadataParser {
  public:
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       bool parse_success,
       std::unique_ptr<base::DictionaryValue> metadata_dictionary,
       std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images)>
@@ -44,53 +42,36 @@ class SafeMediaMetadataParser
                           int64_t blob_size,
                           const std::string& mime_type,
                           bool get_attached_images);
-
-  // Should be called on the UI thread. |callback| also runs on the UI thread.
-  void Start(service_manager::Connector* connector,
-             const DoneCallback& callback);
-
- private:
-  friend class base::RefCountedThreadSafe<SafeMediaMetadataParser>;
-
-  class MediaDataSourceImpl;
-
   ~SafeMediaMetadataParser();
 
-  // Starts the utility process and sends it a metadata parse request.
-  // Runs on the IO thread.
-  void StartOnIOThread(std::unique_ptr<service_manager::Connector> connector,
-                       const DoneCallback& callback);
+  // Should be called on the thread |connector| is associated with. |callback|
+  // is invoked on that same thread.
+  void Start(service_manager::Connector* connector, DoneCallback callback);
+
+ private:
+  class MediaDataSourceImpl;
 
   // Callback if the utility process or metadata parse request fails.
-  // Runs on the IO thread.
   void ParseMediaMetadataFailed();
 
   // Callback from utility process when it finishes parsing metadata.
-  // Runs on the IO thread.
   void ParseMediaMetadataDone(
       bool parse_success,
       std::unique_ptr<base::DictionaryValue> metadata_dictionary,
       const std::vector<metadata::AttachedImage>& attached_images);
 
-  // Sequence of functions that bounces from the IO thread to the UI thread to
-  // read the blob data, then sends the data back to the utility process.
+  // Starts to read the blob data and sends the data back to the utility
+  // process.
   void StartBlobRequest(
       chrome::mojom::MediaDataSource::ReadBlobCallback callback,
       int64_t position,
       int64_t length);
-  void StartBlobReaderOnUIThread(
-      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-      int64_t position,
-      int64_t length);
-  void BlobReaderDoneOnUIThread(
-      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-      std::unique_ptr<std::string> data,
-      int64_t /* blob_total_size */);
-  void FinishBlobRequest(
-      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-      std::unique_ptr<std::string> data);
 
-  // All member variables are only accessed on the IO thread.
+  // Invoked when the full blob content has been read.
+  void BlobReaderDone(chrome::mojom::MediaDataSource::ReadBlobCallback callback,
+                      std::unique_ptr<std::string> data,
+                      int64_t /* blob_total_size */);
+
   content::BrowserContext* const browser_context_;
   const std::string blob_uuid_;
   const int64_t blob_size_;
@@ -101,6 +82,8 @@ class SafeMediaMetadataParser
   DoneCallback callback_;
 
   std::unique_ptr<MediaDataSourceImpl> media_data_source_;
+
+  base::WeakPtrFactory<SafeMediaMetadataParser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeMediaMetadataParser);
 };
