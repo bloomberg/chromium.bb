@@ -57,8 +57,6 @@
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
-#include "chrome/browser/net/profile_network_context_service.h"
-#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
@@ -3928,7 +3926,6 @@ ChromeContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  Profile* profile = Profile::FromBrowserContext(context);
   // If the relative partition path is empty, this is creating the Profile's
   // main NetworkContext.
   if (relative_partition_path.empty()) {
@@ -3936,17 +3933,12 @@ ChromeContentBrowserClient::CreateNetworkContext(
     // ProfileIOData is removed. Currently, TestProfile (used in unit tests)
     // needs to be able to bypass ProfileNetworkContextServiceFactory, since
     // TestProfile bypasses ProfileIOData's URLRequestContext creation logic.
+    Profile* profile = Profile::FromBrowserContext(context);
     return profile->CreateMainNetworkContext();
   }
-
-  // TODO(mmenke):  Share this with the non-network service code path once
-  // ProfileNetworkContextServiceFactory can create a fully functional
-  // NetworkContext for Apps when the network service is disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    return ProfileNetworkContextServiceFactory::GetForContext(context)
-        ->CreateNetworkContextForPartition(in_memory, relative_partition_path);
-  }
-
+  // TODO(mmenke):  Implement this once ProfileNetworkContextServiceFactory can
+  // create a fully functional NetworkContext for Apps when the network service
+  // is disabled.
   return ContentBrowserClient::CreateNetworkContext(context, in_memory,
                                                     relative_partition_path);
 }
