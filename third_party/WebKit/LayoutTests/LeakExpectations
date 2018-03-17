@@ -56,6 +56,17 @@ crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-inter
 crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
 crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass Leak ]
 
+# -----------------------------------------------------------------
+# Sheriff 2018-03-08
+# -----------------------------------------------------------------
+crbug.com/821547 [ Linux ] animations/composition/backdrop-filter-composition.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] animations/interpolation/backdrop-filter-interpolation.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] svg/animations/additive-type-by-animation.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] virtual/threaded/animations/composition/backdrop-filter-composition.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/backdrop-filter-interpolation.html [ Pass Leak ]
+crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/filter-interpolation-003.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
