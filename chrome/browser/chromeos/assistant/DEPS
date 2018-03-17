@@ -1,0 +1,7 @@
+include_rules = [
+  # Add browser dependencies explicitly.
+  "-chrome",
+  "+chrome/browser/chromeos/assistant",
+  "-chromeos/services",
+  "+chromeos/services/assistant/public",
+]

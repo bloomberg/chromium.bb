@@ -72,8 +72,9 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 // PlatformApiImpl
 ////////////////////////////////////////////////////////////////////////////////
 
-PlatformApiImpl::PlatformApiImpl(const std::string& config)
-    : audio_input_provider_(config),
+PlatformApiImpl::PlatformApiImpl(const std::string& config,
+                                 mojom::AudioInputPtr audio_input)
+    : audio_input_provider_(std::move(audio_input)),
       audio_output_provider_(config, this),
       auth_provider_(),
       file_provider_(config),

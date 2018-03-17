@@ -9,13 +9,15 @@
 #include "base/logging.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/services/assistant/service.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 
 namespace chromeos {
 namespace assistant {
 
-AssistantManagerServiceImpl::AssistantManagerServiceImpl()
-    : platform_api_(kDefaultConfigStr),
+AssistantManagerServiceImpl::AssistantManagerServiceImpl(
+    mojom::AudioInputPtr audio_input)
+    : platform_api_(kDefaultConfigStr, std::move(audio_input)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       assistant_manager_(
           assistant_client::AssistantManager::Create(&platform_api_,
@@ -37,6 +39,11 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
 
   SetAccessToken(access_token);
   assistant_manager_->Start();
+  running_ = true;
+}
+
+bool AssistantManagerServiceImpl::IsRunning() const {
+  return running_;
 }
 
 void AssistantManagerServiceImpl::SetAccessToken(

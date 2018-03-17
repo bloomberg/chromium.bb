@@ -11,12 +11,18 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
-void FakeAssistantManagerServiceImpl::Start(const std::string& access_token) {}
+void FakeAssistantManagerServiceImpl::Start(const std::string& access_token) {
+  running_ = true;
+}
 
 void FakeAssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {}
 
 void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
+
+bool FakeAssistantManagerServiceImpl::IsRunning() const {
+  return running_;
+}
 
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 

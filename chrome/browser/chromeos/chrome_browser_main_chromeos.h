@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/system/version_loader.h"
 
 class NotificationPlatformBridge;
@@ -44,6 +45,12 @@ class WakeOnWifiManager;
 namespace default_app_order {
 class ExternalLoader;
 }
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+namespace assistant {
+class AssistantClient;
+}  // namespace assistant
+#endif
 
 namespace internal {
 class DBusPreEarlyInit;
@@ -109,6 +116,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  std::unique_ptr<assistant::AssistantClient> assistant_client_;
+#endif
 
   std::unique_ptr<arc::VoiceInteractionControllerClient>
       arc_voice_interaction_controller_client_;

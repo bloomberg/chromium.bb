@@ -21,6 +21,9 @@ class AssistantManagerService : public mojom::Assistant {
   // Start the assistant in the background with |token|.
   virtual void Start(const std::string& access_token) = 0;
 
+  // Returns whether assistant is running.
+  virtual bool IsRunning() const = 0;
+
   // Set access token for assistant.
   virtual void SetAccessToken(const std::string& access_token) = 0;
 

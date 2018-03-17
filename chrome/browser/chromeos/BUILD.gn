@@ -1698,6 +1698,13 @@ source_set("chromeos") {
       "//chromeos/services/assistant:lib",
       "//chromeos/services/assistant/public/mojom",
     ]
+
+    sources += [
+      "assistant/assistant_client.cc",
+      "assistant/assistant_client.h",
+      "assistant/platform_audio_input_host.cc",
+      "assistant/platform_audio_input_host.h",
+    ]
   }
 
   if (use_cups) {
