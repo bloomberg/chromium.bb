@@ -1361,10 +1361,19 @@ bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
 }
 
 bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
+  bool force_pseudo_state = false;
+  probe::forcePseudoState(const_cast<Element*>(&element),
+                          CSSSelector::kPseudoFocusVisible,
+                          &force_pseudo_state);
+  if (force_pseudo_state)
+    return true;
   bool always_show_focus_ring =
       IsHTMLFormControlElement(element) &&
       ToHTMLFormControlElement(element).ShouldShowFocusRingOnMouseFocus();
-  return MatchesFocusPseudoClass(element) &&
+  // Avoid probing for force_pseudo_state. Otherwise, as currently implemented,
+  // :focus-visible will always match if :focus is forced, since no focus
+  // source flags will be set.
+  return element.IsFocused() && IsFrameFocused(element) &&
          (!element.WasFocusedByMouse() || always_show_focus_ring);
 }
 

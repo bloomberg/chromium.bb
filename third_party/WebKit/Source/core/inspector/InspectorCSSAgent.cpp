@@ -870,6 +870,9 @@ void InspectorCSSAgent::ForcePseudoState(Element* element,
     case CSSSelector::kPseudoFocusWithin:
       force = forced_pseudo_state & kPseudoFocusWithin;
       break;
+    case CSSSelector::kPseudoFocusVisible:
+      force = forced_pseudo_state & kPseudoFocusVisible;
+      break;
     case CSSSelector::kPseudoHover:
       force = forced_pseudo_state & kPseudoHover;
       break;
