@@ -525,9 +525,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ResolveTapDisambiguation,
                     gfx::Point /* tap_viewport_offset */,
                     bool /* is_long_press */)
 
-// Fetches complete rendered content of a web page as plain text.
-IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
-
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw. Robust to events that can
@@ -761,11 +758,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectWordAroundCaretAck,
                     bool /* did_select */,
                     int /* start_adjust */,
                     int /* end_adjust */)
-
-#if defined(OS_MACOSX)
-// Receives content of a web page as plain text.
-IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string)
-#endif
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform

@@ -268,7 +268,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetAllowPauseForResizeOrRepaint(bool allow);
 
   // RenderWidgetHostView implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
@@ -521,6 +520,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
  private:
   friend class RenderWidgetHostViewMacTest;
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest, GetPageTextForSpeech);
 
   // Allocate a new FrameSinkId if this object is the platform view of a
   // RenderWidgetHostViewGuest. This FrameSinkId will not be actually used in
@@ -536,14 +536,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // invoke it from the message loop.
   void ShutdownHost();
 
-  // IPC message handlers.
-  void OnGetRenderedTextCompleted(const std::string& text);
-
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
-
-  // Dispatches a TTS session.
-  void SpeakText(const std::string& text);
 
   // Adds/Removes frame observer based on state.
   void UpdateNeedsBeginFramesInternal();
@@ -554,6 +548,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
                                        uint64_t sequence_number);
+
+  // Gets a textual view of the page's contents, and passes it to the callback
+  // provided.
+  using SpeechCallback = base::OnceCallback<void(const base::string16&)>;
+  void GetPageTextForSpeech(SpeechCallback callback);
 
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
