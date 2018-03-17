@@ -601,6 +601,10 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortNonWebSafeScheme) {
   RunTest("testLoadAbortNonWebSafeScheme", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadAbortUnknownScheme) {
+  RunTest("testLoadAbortUnknownScheme", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadProgressEvent) {
   RunTest("testLoadProgressEvent", "web_view/apitest");
 }

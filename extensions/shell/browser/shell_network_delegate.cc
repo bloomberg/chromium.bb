@@ -25,8 +25,16 @@ bool g_accept_all_cookies = true;
 using RequestMap = std::map<net::URLRequest*, std::unique_ptr<WebRequestInfo>>;
 base::LazyInstance<RequestMap>::Leaky g_requests = LAZY_INSTANCE_INITIALIZER;
 
+// Returns the corresponding WebRequestInfo object for the request, creating it
+// if necessary.
 WebRequestInfo* GetWebRequestInfo(net::URLRequest* request) {
-  return g_requests.Get()[request].get();
+  auto it = g_requests.Get().find(request);
+  if (it == g_requests.Get().end()) {
+    it = g_requests.Get()
+             .emplace(request, std::make_unique<WebRequestInfo>(request))
+             .first;
+  }
+  return it->second.get();
 }
 
 }  // namespace
@@ -47,11 +55,10 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  auto info = std::make_unique<WebRequestInfo>(request);
-  auto* raw_info = info.get();
-  g_requests.Get().emplace(request, std::move(info));
+  WebRequestInfo* web_request_info = GetWebRequestInfo(request);
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      browser_context_, extension_info_map_.get(), raw_info, callback, new_url);
+      browser_context_, extension_info_map_.get(), web_request_info, callback,
+      new_url);
 }
 
 int ShellNetworkDelegate::OnBeforeStartTransaction(
@@ -124,6 +131,7 @@ void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
 void ShellNetworkDelegate::OnURLRequestDestroyed(
     net::URLRequest* request) {
   auto it = g_requests.Get().find(request);
+  DCHECK(it != g_requests.Get().end());
   ExtensionWebRequestEventRouter::GetInstance()->OnRequestWillBeDestroyed(
       browser_context_, it->second.get());
   g_requests.Get().erase(it);
