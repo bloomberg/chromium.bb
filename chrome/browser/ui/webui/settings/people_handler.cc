@@ -207,7 +207,8 @@ PeopleHandler::~PeopleHandler() {
   if (!web_ui())
     return;
 
-  // This case is hit when the user performs a back navigation.
+  // Note that if the user left the sync page by closing the tab, refresh,
+  // or via the back navigation, it would first go through OnDidClosePage().
   CloseSyncSetup();
 }
 
@@ -730,7 +731,6 @@ void PeopleHandler::CloseSyncSetup() {
 #if !defined(OS_CHROMEOS)
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.
-          // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
           if (sync_service->IsFirstSetupInProgress()) {
             SigninManagerFactory::GetForProfile(profile_)
                 ->SignOut(signin_metrics::ABORT_SIGNIN,
