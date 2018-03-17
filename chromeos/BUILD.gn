@@ -19,7 +19,6 @@ component("chromeos") {
     "//dbus",
   ]
   deps = [
-    ":account_manager_proto",
     ":attestation_proto",
     ":authpolicy_proto",
     ":biod_proto",
@@ -60,8 +59,6 @@ component("chromeos") {
     "accelerometer/accelerometer_reader.h",
     "accelerometer/accelerometer_types.cc",
     "accelerometer/accelerometer_types.h",
-    "account_manager/account_manager.cc",
-    "account_manager/account_manager.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
     "attestation/attestation_constants.cc",
@@ -667,7 +664,6 @@ test("chromeos_unittests") {
     "//url",
   ]
   sources = [
-    "account_manager/account_manager_unittest.cc",
     "app_mode/kiosk_oem_manifest_parser_unittest.cc",
     "attestation/attestation_flow_unittest.cc",
     "audio/audio_devices_pref_handler_impl_unittest.cc",
@@ -851,12 +847,4 @@ proto_library("smbprovider_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/smbprovider"
-}
-
-proto_library("account_manager_proto") {
-  sources = [
-    "account_manager/tokens.proto",
-  ]
-
-  proto_out_dir = "chromeos/account_manager"
 }
