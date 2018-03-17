@@ -67,12 +67,12 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
 
   ASSERT_EQ(1U, GetWarpRegionsCount());
-  EXPECT_EQ(gfx::Rect(359, 16, 1, 344), GetIndicatorBounds(display_0_id));
+  EXPECT_EQ(gfx::Rect(359, 32, 1, 328), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(360, 0, 1, 360), GetIndicatorBounds(display_1_id));
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
   EXPECT_EQ(gfx::Rect(359, 0, 1, 360), GetIndicatorBounds(display_0_id));
-  EXPECT_EQ(gfx::Rect(360, 16, 1, 344), GetIndicatorBounds(display_1_id));
+  EXPECT_EQ(gfx::Rect(360, 32, 1, 328), GetIndicatorBounds(display_1_id));
 
   // Move 2nd display downwards a bit.
   layout->placement_list[0].offset = 5;
@@ -81,12 +81,12 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   // This is same as before because the 2nd display's y is above
   // the indicator's x.
   ASSERT_EQ(1U, GetWarpRegionsCount());
-  EXPECT_EQ(gfx::Rect(359, 16, 1, 344), GetIndicatorBounds(display_0_id));
+  EXPECT_EQ(gfx::Rect(359, 32, 1, 328), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(360, 5, 1, 355), GetIndicatorBounds(display_1_id));
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
   EXPECT_EQ(gfx::Rect(359, 5, 1, 355), GetIndicatorBounds(display_0_id));
-  EXPECT_EQ(gfx::Rect(360, 21, 1, 339), GetIndicatorBounds(display_1_id));
+  EXPECT_EQ(gfx::Rect(360, 37, 1, 323), GetIndicatorBounds(display_1_id));
 
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
@@ -102,19 +102,19 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
   EXPECT_EQ(gfx::Rect(359, 200, 1, 160), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(360, 200, 1, 160), GetIndicatorBounds(display_1_id));
 
-  // Now move 2nd display upwards
+  // Now move 2nd display upwards.
   layout->placement_list[0].offset = -5;
   display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
-  EXPECT_EQ(gfx::Rect(359, 16, 1, 344), GetIndicatorBounds(display_0_id));
+  EXPECT_EQ(gfx::Rect(359, 32, 1, 328), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(360, 0, 1, 360), GetIndicatorBounds(display_1_id));
   event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  // 16 px are reserved on 2nd display from top, so y must be
-  // (16 - 5) = 11
+  // 32 px are reserved on 2nd display from top, so y must be
+  // (32 - 5) = 27.
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(359, 0, 1, 360), GetIndicatorBounds(display_0_id));
-  EXPECT_EQ(gfx::Rect(360, 11, 1, 349), GetIndicatorBounds(display_1_id));
+  EXPECT_EQ(gfx::Rect(360, 27, 1, 333), GetIndicatorBounds(display_1_id));
 
   event_filter()->HideSharedEdgeIndicator();
 }
@@ -137,13 +137,13 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
-  EXPECT_EQ(gfx::Rect(0, 16, 1, 344), GetIndicatorBounds(display_0_id));
+  EXPECT_EQ(gfx::Rect(0, 32, 1, 328), GetIndicatorBounds(display_0_id));
   EXPECT_EQ(gfx::Rect(-1, 0, 1, 360), GetIndicatorBounds(display_1_id));
 
   event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
   ASSERT_EQ(1U, GetWarpRegionsCount());
   EXPECT_EQ(gfx::Rect(0, 0, 1, 360), GetIndicatorBounds(display_0_id));
-  EXPECT_EQ(gfx::Rect(-1, 16, 1, 344), GetIndicatorBounds(display_1_id));
+  EXPECT_EQ(gfx::Rect(-1, 32, 1, 328), GetIndicatorBounds(display_1_id));
 
   layout->placement_list[0].offset = 250;
   display_manager()->SetLayoutForCurrentDisplays(layout->Copy());
@@ -226,7 +226,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestThreeDisplays) {
   ASSERT_EQ(2U, GetWarpRegionsCount());
   const ExtendedMouseWarpController::WarpRegion* region_0 = GetWarpRegion(0);
   const ExtendedMouseWarpController::WarpRegion* region_1 = GetWarpRegion(1);
-  EXPECT_EQ(gfx::Rect(359, 16, 1, 344),
+  EXPECT_EQ(gfx::Rect(359, 32, 1, 328),
             region_1->GetIndicatorBoundsForTest(display_0_id));
   EXPECT_EQ(gfx::Rect(360, 0, 1, 360),
             region_1->GetIndicatorBoundsForTest(display_1_id));
@@ -242,9 +242,9 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestThreeDisplays) {
   region_1 = GetWarpRegion(1);
   EXPECT_EQ(gfx::Rect(359, 0, 1, 360),
             region_1->GetIndicatorBoundsForTest(display_0_id));
-  EXPECT_EQ(gfx::Rect(360, 16, 1, 344),
+  EXPECT_EQ(gfx::Rect(360, 32, 1, 328),
             region_1->GetIndicatorBoundsForTest(display_1_id));
-  EXPECT_EQ(gfx::Rect(1059, 16, 1, 684),
+  EXPECT_EQ(gfx::Rect(1059, 32, 1, 668),
             region_0->GetIndicatorBoundsForTest(display_1_id));
   EXPECT_EQ(gfx::Rect(1060, 0, 1, 700),
             region_0->GetIndicatorBoundsForTest(display_2_id));
@@ -260,7 +260,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestThreeDisplays) {
             region_1->GetIndicatorBoundsForTest(display_1_id));
   EXPECT_EQ(gfx::Rect(1059, 0, 1, 700),
             region_0->GetIndicatorBoundsForTest(display_1_id));
-  EXPECT_EQ(gfx::Rect(1060, 16, 1, 684),
+  EXPECT_EQ(gfx::Rect(1060, 32, 1, 668),
             region_0->GetIndicatorBoundsForTest(display_2_id));
   event_filter()->HideSharedEdgeIndicator();
   // TODO(oshima): Add test cases primary swap.
@@ -307,7 +307,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
   EXPECT_EQ(gfx::Rect(700, 500, 400, 1),
             region_1->GetIndicatorBoundsForTest(display_2_id));
   // between 1 and 0
-  EXPECT_EQ(gfx::Rect(699, 16, 1, 484),
+  EXPECT_EQ(gfx::Rect(699, 32, 1, 468),
             region_2->GetIndicatorBoundsForTest(display_0_id));
   EXPECT_EQ(gfx::Rect(700, 0, 1, 500),
             region_2->GetIndicatorBoundsForTest(display_1_id));
