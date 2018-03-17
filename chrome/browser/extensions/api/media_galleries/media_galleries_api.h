@@ -33,6 +33,8 @@ namespace content {
 class BlobHandle;
 }
 
+class SafeMediaMetadataParser;
+
 namespace extensions {
 
 // The profile-keyed service that manages the media galleries extension API.
@@ -177,6 +179,7 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
                    int64_t total_blob_length);
 
   void OnSafeMediaMetadataParserDone(
+      std::unique_ptr<SafeMediaMetadataParser> parser_keep_alive,
       bool parse_success,
       std::unique_ptr<base::DictionaryValue> result_dictionary,
       std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images);

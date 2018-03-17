@@ -674,17 +674,19 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
       metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
 
-  auto parser = base::MakeRefCounted<SafeMediaMetadataParser>(
+  auto parser = std::make_unique<SafeMediaMetadataParser>(
       GetProfile(), blob_uuid, total_blob_length, mime_type,
       get_attached_images);
-  parser->Start(
+  SafeMediaMetadataParser* parser_ptr = parser.get();
+  parser_ptr->Start(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      base::Bind(
+      base::BindOnce(
           &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
-          this));
+          this, std::move(parser)));
 }
 
 void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
+    std::unique_ptr<SafeMediaMetadataParser> parser_keep_alive,
     bool parse_success,
     std::unique_ptr<base::DictionaryValue> metadata_dictionary,
     std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images) {
