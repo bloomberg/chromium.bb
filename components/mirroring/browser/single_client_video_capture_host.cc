@@ -63,9 +63,7 @@ SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
 
 SingleClientVideoCaptureHost::~SingleClientVideoCaptureHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // If started, Stop() must be called before destruction.
-  DCHECK(!observer_);
+  Stop(0);
 }
 
 void SingleClientVideoCaptureHost::Start(
@@ -103,6 +101,9 @@ void SingleClientVideoCaptureHost::Start(
 void SingleClientVideoCaptureHost::Stop(int32_t device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << __func__;
+
+  if (!observer_)
+    return;
 
   // Returns all the buffers.
   for (const auto& entry : buffer_context_map_) {
