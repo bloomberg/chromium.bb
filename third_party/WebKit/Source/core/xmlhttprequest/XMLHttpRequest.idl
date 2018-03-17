@@ -77,5 +77,5 @@ enum XMLHttpRequestResponseType {
     [Custom=Getter, RaisesException=Getter] readonly attribute any response;
     [Custom=Getter, RaisesException=Getter] readonly attribute USVString responseText;
     // TODO(foolip): responseXML should be [Exposed=Window].
-    [RaisesException=Getter] readonly attribute Document? responseXML;
+    [MeasureAs=XMLHttpRequestResponseXML, RaisesException=Getter] readonly attribute Document? responseXML;
 };
