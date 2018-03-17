@@ -17964,6 +17964,7 @@ Called by update_net_error_codes.py.-->
   <int value="2388" label="CSSSelectorPseudoFocusVisible"/>
   <int value="2389" label="DistrustedLegacySymantecSubresource"/>
   <int value="2390" label="VRDisplayGetFrameData"/>
+  <int value="2391" label="XMLHttpRequestResponseXML"/>
 </enum>
 
 <enum name="FeedbackSource">
