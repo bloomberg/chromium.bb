@@ -168,13 +168,12 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
-  const int num_planes = av1_num_planes(cm);
   int p;
-  for (p = 0; p < num_planes; ++p)
+  for (p = 0; p < MAX_MB_PLANE; ++p)
     av1_free_restoration_struct(&cm->rst_info[p]);
   aom_free(cm->rst_tmpbuf);
   cm->rst_tmpbuf = NULL;
-  for (p = 0; p < num_planes; ++p) {
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     aom_free(boundaries->stripe_boundary_above);
     aom_free(boundaries->stripe_boundary_below);
@@ -209,7 +208,6 @@ static int alloc_loop_filter(AV1_COMMON *cm) {
 #endif  // LOOP_FILTER_BITMASK
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
-  const int num_planes = av1_num_planes(cm);
   int i;
   cm->free_mi(cm);
 
@@ -220,7 +218,7 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
 #if !CONFIG_SEGMENT_PRED_LAST
   free_seg_map(cm);
 #endif
-  for (i = 0; i < num_planes; i++) {
+  for (i = 0; i < MAX_MB_PLANE; i++) {
     aom_free(cm->above_context[i]);
     cm->above_context[i] = NULL;
   }
@@ -230,7 +228,7 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
   aom_free(cm->above_txfm_context);
   cm->above_txfm_context = NULL;
 
-  for (i = 0; i < num_planes; ++i) {
+  for (i = 0; i < MAX_MB_PLANE; ++i) {
     aom_free(cm->top_txfm_context[i]);
     cm->top_txfm_context[i] = NULL;
   }
