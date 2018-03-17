@@ -57,7 +57,7 @@ function makeClientOffer() {
     's=-',
     't=0 0',
     'm=video 1 RTP/SAVPF 100',
-    'a=rtcp:1 IN IP4 0.0.0.0',
+    'a=rtcp-mux',
     'a=ice-ufrag:6HHHdzzeIhkE0CKj',
     'a=ice-pwd:XYDGVpfvklQIEnZ6YnyLsAew',
     'a=sendonly',
@@ -107,7 +107,7 @@ var PC_SERVER_REMOTE_OFFER = [
   'm=video 1 RTP/SAVPF 100',
   'a=sendonly',
   'a=mid:video',
-  'a=rtcp:1 IN IP4 0.0.0.0',
+  'a=rtcp-mux',
   'a=ice-ufrag:6HHHdzzeIhkE0CKj',
   'a=ice-pwd:XYDGVpfvklQIEnZ6YnyLsAew',
   'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
@@ -133,9 +133,14 @@ function trace(text) {
   console.log((performance.now() / 1000).toFixed(3) + ': ' + text);
 }
 
+function fail(e) {
+   trace('Failure : ' + e.name + ': ' + e.message);
+   throw e;
+}
+
 function initialize() {
   trace('Setting up for a new call.');
-  var configs = {iceServers:[], rtcpMuxPolicy:'negotiate'};
+  var configs = {iceServers:[]};
   var constraints = {'mandatory': {'DtlsSrtpKeyAgreement': false}};
   pcClient = new RTCPeerConnection(configs, constraints);
   trace('Created local peer connection object pcClient');
@@ -146,9 +151,9 @@ function initialize() {
   pcServer.onaddstream = onServerGotStream;
 
   var pcClientInitialOffer = makeClientOffer();
-  trace('Setting initial local Offer to:\n' + pcClientInitialOffer);
+  trace('Setting initial local Offer to:\n' + pcClientInitialOffer.sdp);
   pcClient.setLocalDescription(pcClientInitialOffer,
-      setServerRemoteDescription);
+      setServerRemoteDescription, fail);
 }
 
 function gotStream(stream) {
@@ -178,8 +183,8 @@ function openCamera(width, height) {
 
 function renegotiateClient() {
   pcClient.setLocalDescription(makeClientOffer(), function() {
-    pcClient.setRemoteDescription(serverAnswer);
-  });
+    pcClient.setRemoteDescription(serverAnswer, function(){}, fail);
+  }, fail);
 }
 
 function setServerRemoteDescription() {
@@ -187,19 +192,19 @@ function setServerRemoteDescription() {
   pcServer.setRemoteDescription(new RTCSessionDescription({
     'type': 'offer',
     'sdp': PC_SERVER_REMOTE_OFFER
-  }), afterSetServerRemoteDescription);
+  }), afterSetServerRemoteDescription, fail);
 }
 
 function afterSetServerRemoteDescription() {
-  pcServer.createAnswer(onServerAnswer, function(error) {});
+  pcServer.createAnswer(onServerAnswer, fail);
 }
 
 function onServerAnswer(desc) {
   desc.sdp += 'a=x-google-flag:conference\n';
   serverAnswer = desc;
   trace('Setting both Answers to:\n' + desc.sdp);
-  pcServer.setLocalDescription(desc);
-  pcClient.setRemoteDescription(desc);
+  pcServer.setLocalDescription(desc, function() {}, fail);
+  pcClient.setRemoteDescription(desc, function() {}, fail);
 }
 
 function onServerGotStream(e) {
