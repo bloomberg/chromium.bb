@@ -416,8 +416,6 @@ class CC_EXPORT LayerImpl {
 
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
-  bool has_copy_requests_in_target_subtree();
-
   void UpdatePropertyTreeForAnimationIfNeeded(ElementId element_id);
 
   float GetIdealContentsScale() const;

@@ -494,10 +494,6 @@ void LayerImpl::ResetChangeTracking() {
   damage_rect_.SetRect(0, 0, 0, 0);
 }
 
-bool LayerImpl::has_copy_requests_in_target_subtree() {
-  return GetEffectTree().Node(effect_tree_index())->subtree_has_copy_request;
-}
-
 bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
