@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/after_startup_task_utils.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
