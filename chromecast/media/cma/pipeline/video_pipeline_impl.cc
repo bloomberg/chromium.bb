@@ -27,9 +27,8 @@ namespace {
 const size_t kMaxVideoFrameSize = 1024 * 1024;
 }
 
-VideoPipelineImpl::VideoPipelineImpl(
-    MediaPipelineBackend::VideoDecoder* decoder,
-    const VideoPipelineClient& client)
+VideoPipelineImpl::VideoPipelineImpl(CmaBackend::VideoDecoder* decoder,
+                                     const VideoPipelineClient& client)
     : AvPipelineImpl(decoder, client.av_pipeline_client),
       video_decoder_(decoder),
       natural_size_changed_cb_(client.natural_size_changed_cb) {
@@ -56,7 +55,7 @@ VideoPipelineImpl::~VideoPipelineImpl() {
   if (configs.empty()) {
     return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
-  DCHECK(configs.size() <= 2);
+  DCHECK_LE(configs.size(), 2U);
   DCHECK(configs[0].IsValidConfig());
   encryption_schemes_.resize(configs.size());
 
@@ -137,7 +136,7 @@ void VideoPipelineImpl::UpdateStatistics() {
 
   // TODO(mbjorge): Give Statistics a default constructor when the
   // next system update happens. b/32802298
-  MediaPipelineBackend::VideoDecoder::Statistics video_stats = {};
+  CmaBackend::VideoDecoder::Statistics video_stats = {};
   video_decoder_->GetStatistics(&video_stats);
 
   ::media::PipelineStatistics current_stats;

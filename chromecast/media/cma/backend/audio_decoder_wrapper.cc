@@ -16,18 +16,17 @@ namespace media {
 
 AudioDecoderWrapper::AudioDecoderWrapper(
     MediaPipelineBackendManager* backend_manager,
-    AudioDecoder* decoder,
+    MediaPipelineBackend::AudioDecoder* backend_decoder,
     AudioContentType type,
     MediaPipelineBackendManager::BufferDelegate* buffer_delegate)
     : backend_manager_(backend_manager),
-      decoder_(decoder),
+      decoder_(backend_decoder),
       content_type_(type),
       buffer_delegate_(buffer_delegate),
       delegate_active_(false),
       global_volume_multiplier_(1.0f),
       stream_volume_multiplier_(1.0f) {
   DCHECK(backend_manager_);
-  DCHECK(decoder_);
 
   backend_manager_->AddAudioDecoder(this);
   if (buffer_delegate_) {
@@ -46,7 +45,7 @@ void AudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   global_volume_multiplier_ = multiplier;
   if (!delegate_active_) {
     float volume = stream_volume_multiplier_ * global_volume_multiplier_;
-    decoder_->SetVolume(volume);
+    decoder_.SetVolume(volume);
     if (buffer_delegate_) {
       buffer_delegate_->OnSetVolume(volume);
     }
@@ -54,36 +53,36 @@ void AudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
 }
 
 void AudioDecoderWrapper::SetDelegate(Delegate* delegate) {
-  decoder_->SetDelegate(delegate);
+  decoder_.SetDelegate(delegate);
 }
 
-MediaPipelineBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
+CmaBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
     CastDecoderBuffer* buffer) {
   if (buffer_delegate_ && buffer_delegate_->IsActive()) {
     // Mute the decoder, we are sending audio to delegate.
     if (!delegate_active_) {
       delegate_active_ = true;
-      decoder_->SetVolume(0.0);
+      decoder_.SetVolume(0.0);
     }
     buffer_delegate_->OnPushBuffer(buffer);
   } else {
     // Restore original volume.
     if (delegate_active_) {
       delegate_active_ = false;
-      if (!decoder_->SetVolume(stream_volume_multiplier_ *
-                               global_volume_multiplier_)) {
+      if (!decoder_.SetVolume(stream_volume_multiplier_ *
+                              global_volume_multiplier_)) {
         LOG(ERROR) << "SetVolume failed";
       }
     }
   }
-  return decoder_->PushBuffer(buffer);
+  return decoder_.PushBuffer(buffer);
 }
 
 bool AudioDecoderWrapper::SetConfig(const AudioConfig& config) {
   if (buffer_delegate_) {
     buffer_delegate_->OnSetConfig(config);
   }
-  return decoder_->SetConfig(config);
+  return decoder_.SetConfig(config);
 }
 
 bool AudioDecoderWrapper::SetVolume(float multiplier) {
@@ -96,15 +95,19 @@ bool AudioDecoderWrapper::SetVolume(float multiplier) {
   if (delegate_active_) {
     return true;
   }
-  return decoder_->SetVolume(volume);
+  return decoder_.SetVolume(volume);
 }
 
 AudioDecoderWrapper::RenderingDelay AudioDecoderWrapper::GetRenderingDelay() {
-  return decoder_->GetRenderingDelay();
+  return decoder_.GetRenderingDelay();
 }
 
 void AudioDecoderWrapper::GetStatistics(Statistics* statistics) {
-  decoder_->GetStatistics(statistics);
+  decoder_.GetStatistics(statistics);
+}
+
+bool AudioDecoderWrapper::RequiresDecryption() {
+  return decoder_.IsUsingSoftwareDecoder();
 }
 
 }  // namespace media

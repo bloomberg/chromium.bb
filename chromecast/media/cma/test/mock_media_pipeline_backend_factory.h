@@ -5,8 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_TEST_MOCK_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 #define CHROMECAST_MEDIA_CMA_TEST_MOCK_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 
+#include <memory>
+
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,9 +20,8 @@ class MockMediaPipelineBackendFactory : public MediaPipelineBackendFactory {
   MockMediaPipelineBackendFactory();
   ~MockMediaPipelineBackendFactory() override;
 
-  MOCK_METHOD1(
-      CreateBackend,
-      std::unique_ptr<MediaPipelineBackend>(const MediaPipelineDeviceParams&));
+  MOCK_METHOD1(CreateBackend,
+               std::unique_ptr<CmaBackend>(const MediaPipelineDeviceParams&));
 };
 
 }  // namespace media

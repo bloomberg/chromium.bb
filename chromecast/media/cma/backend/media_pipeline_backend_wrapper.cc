@@ -9,6 +9,7 @@
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
 
 namespace chromecast {
@@ -51,8 +52,7 @@ void MediaPipelineBackendWrapper::LogicalResume() {
   SetPlaying(true);
 }
 
-MediaPipelineBackend::AudioDecoder*
-MediaPipelineBackendWrapper::CreateAudioDecoder() {
+CmaBackend::AudioDecoder* MediaPipelineBackendWrapper::CreateAudioDecoder() {
   DCHECK(!audio_decoder_);
 
   if (!backend_manager_->IncrementDecoderCount(
@@ -77,8 +77,7 @@ MediaPipelineBackendWrapper::CreateAudioDecoder() {
   return audio_decoder_.get();
 }
 
-MediaPipelineBackend::VideoDecoder*
-MediaPipelineBackendWrapper::CreateVideoDecoder() {
+CmaBackend::VideoDecoder* MediaPipelineBackendWrapper::CreateVideoDecoder() {
   DCHECK(!have_video_decoder_);
 
   if (!backend_manager_->IncrementDecoderCount(DecoderType::VIDEO_DECODER))

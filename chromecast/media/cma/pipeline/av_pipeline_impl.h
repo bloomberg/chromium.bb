@@ -17,9 +17,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/stream_decryptor.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
 #include "media/base/pipeline_status.h"
 
@@ -37,10 +37,9 @@ class CodedFrameProvider;
 class DecoderBufferBase;
 struct EncryptionScheme;
 
-class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
+class AvPipelineImpl : CmaBackend::Decoder::Delegate {
  public:
-  AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
-                 const AvPipelineClient& client);
+  AvPipelineImpl(CmaBackend::Decoder* decoder, const AvPipelineClient& client);
   ~AvPipelineImpl() override;
 
   void SetCdm(CastCdmContext* cast_cdm_context);
@@ -92,7 +91,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
  private:
   void OnFlushDone();
 
-  // MediaPipelineBackend::Decoder::Delegate implementation:
+  // CmaBackend::Decoder::Delegate implementation:
   void OnPushBufferComplete(BufferStatus status) override;
   void OnEndOfStream() override;
   void OnDecoderError() override;
@@ -113,7 +112,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   // Process a pending buffer.
   void ProcessPendingBuffer();
-  void DoPushBufferCompleteTask(MediaPipelineBackend::BufferStatus status);
+  void DoPushBufferCompleteTask(CmaBackend::BufferStatus status);
 
   // Pushes all the ready buffers to decoder.
   void PushAllReadyBuffers();
@@ -135,7 +134,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   base::ThreadChecker thread_checker_;
 
-  MediaPipelineBackend::Decoder* const decoder_;
+  CmaBackend::Decoder* const decoder_;
   const AvPipelineClient client_;
 
   // Callback provided to Flush().

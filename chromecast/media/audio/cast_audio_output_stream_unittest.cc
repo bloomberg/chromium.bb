@@ -9,16 +9,15 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/test/mock_media_pipeline_backend_factory.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/task_runner.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
@@ -46,19 +45,18 @@ int OnMoreData(base::TimeDelta /* delay */,
 
 class NotifyPushBufferCompleteTask : public chromecast::TaskRunner::Task {
  public:
-  NotifyPushBufferCompleteTask(
-      MediaPipelineBackend::Decoder::Delegate* delegate)
+  explicit NotifyPushBufferCompleteTask(CmaBackend::Decoder::Delegate* delegate)
       : delegate_(delegate) {}
   ~NotifyPushBufferCompleteTask() override = default;
   void Run() override {
-    delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
+    delegate_->OnPushBufferComplete(CmaBackend::BufferStatus::kBufferSuccess);
   }
 
  private:
-  MediaPipelineBackend::Decoder::Delegate* const delegate_;
+  CmaBackend::Decoder::Delegate* const delegate_;
 };
 
-class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
+class FakeAudioDecoder : public CmaBackend::AudioDecoder {
  public:
   enum PipelineStatus {
     PIPELINE_STATUS_OK,
@@ -67,7 +65,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
     PIPELINE_STATUS_ASYNC_ERROR,
   };
 
-  FakeAudioDecoder(const MediaPipelineDeviceParams& params)
+  explicit FakeAudioDecoder(const MediaPipelineDeviceParams& params)
       : params_(params),
         volume_(1.0f),
         pipeline_status_(PIPELINE_STATUS_OK),
@@ -77,7 +75,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
         delegate_(nullptr) {}
   ~FakeAudioDecoder() override {}
 
-  // MediaPipelineBackend::AudioDecoder implementation:
+  // CmaBackend::AudioDecoder implementation:
   void SetDelegate(Delegate* delegate) override {
     DCHECK(delegate);
     delegate_ = delegate;
@@ -88,18 +86,18 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
 
     switch (pipeline_status_) {
       case PIPELINE_STATUS_OK:
-        return MediaPipelineBackend::kBufferSuccess;
+        return CmaBackend::BufferStatus::kBufferSuccess;
       case PIPELINE_STATUS_BUSY:
         pending_push_ = true;
-        return MediaPipelineBackend::kBufferPending;
+        return CmaBackend::BufferStatus::kBufferPending;
       case PIPELINE_STATUS_ERROR:
-        return MediaPipelineBackend::kBufferFailed;
+        return CmaBackend::BufferStatus::kBufferFailed;
       case PIPELINE_STATUS_ASYNC_ERROR:
         delegate_->OnDecoderError();
-        return MediaPipelineBackend::kBufferSuccess;
+        return CmaBackend::BufferStatus::kBufferSuccess;
       default:
         NOTREACHED();
-        return MediaPipelineBackend::kBufferFailed;
+        return CmaBackend::BufferStatus::kBufferFailed;
     }
   }
   void GetStatistics(Statistics* statistics) override {}
@@ -112,6 +110,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
     return true;
   }
   RenderingDelay GetRenderingDelay() override { return rendering_delay_; }
+  bool RequiresDecryption() override { return false; }
 
   const AudioConfig& config() const { return config_; }
   float volume() const { return volume_; }
@@ -142,15 +141,15 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
   RenderingDelay rendering_delay_;
 };
 
-class FakeMediaPipelineBackend : public MediaPipelineBackend {
+class FakeCmaBackend : public CmaBackend {
  public:
   enum State { kStateStopped, kStateRunning, kStatePaused };
 
-  FakeMediaPipelineBackend(const MediaPipelineDeviceParams& params)
+  explicit FakeCmaBackend(const MediaPipelineDeviceParams& params)
       : params_(params), state_(kStateStopped), audio_decoder_(nullptr) {}
-  ~FakeMediaPipelineBackend() override {}
+  ~FakeCmaBackend() override {}
 
-  // MediaPipelineBackend implementation:
+  // CmaBackend implementation:
   AudioDecoder* CreateAudioDecoder() override {
     DCHECK(!audio_decoder_);
     audio_decoder_ = std::make_unique<FakeAudioDecoder>(params_);
@@ -214,8 +213,9 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         std::make_unique<NiceMock<MockMediaPipelineBackendFactory>>();
     ON_CALL(*backend_factory, CreateBackend(_))
         .WillByDefault(Invoke([this](const MediaPipelineDeviceParams& params) {
-          media_pipeline_backend_ = new FakeMediaPipelineBackend(params);
-          return base::WrapUnique(media_pipeline_backend_);
+          auto backend = std::make_unique<FakeCmaBackend>(params);
+          media_pipeline_backend_ = backend.get();
+          return backend;
         }));
     audio_manager_ = std::make_unique<CastAudioManager>(
         std::make_unique<::media::TestAudioThread>(), nullptr,
@@ -229,10 +229,10 @@ class CastAudioOutputStreamTest : public ::testing::Test {
                                     bits_per_sample_, frames_per_buffer_);
   }
 
-  FakeMediaPipelineBackend* GetBackend() { return media_pipeline_backend_; }
+  FakeCmaBackend* GetBackend() { return media_pipeline_backend_; }
 
   FakeAudioDecoder* GetAudio() {
-    FakeMediaPipelineBackend* backend = GetBackend();
+    FakeCmaBackend* backend = GetBackend();
     return (backend ? backend->decoder() : nullptr);
   }
 
@@ -258,7 +258,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   base::Thread media_thread_;
   std::unique_ptr<CastAudioManager> audio_manager_;
   // MockMediaPipelineBackendFactory* backend_factory_;
-  FakeMediaPipelineBackend* media_pipeline_backend_;
+  FakeCmaBackend* media_pipeline_backend_;
   // AudioParameters used to create AudioOutputStream.
   // Tests can modify these parameters before calling CreateStream.
   ::media::AudioParameters::Format format_;
@@ -343,20 +343,20 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
   EXPECT_TRUE(stream->Open());
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
-  FakeMediaPipelineBackend* backend = GetBackend();
+  FakeCmaBackend* backend = GetBackend();
   ASSERT_TRUE(backend);
-  EXPECT_EQ(FakeMediaPipelineBackend::kStateStopped, backend->state());
+  EXPECT_EQ(FakeCmaBackend::kStateStopped, backend->state());
 
   ::media::MockAudioSourceCallback source_callback;
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   stream->Start(&source_callback);
   media_thread_.FlushForTesting();
-  EXPECT_EQ(FakeMediaPipelineBackend::kStateRunning, backend->state());
+  EXPECT_EQ(FakeCmaBackend::kStateRunning, backend->state());
 
   stream->Stop();
   media_thread_.FlushForTesting();
-  EXPECT_EQ(FakeMediaPipelineBackend::kStatePaused, backend->state());
+  EXPECT_EQ(FakeCmaBackend::kStatePaused, backend->state());
 
   stream->Close();
 }
@@ -516,7 +516,7 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
 
   FakeAudioDecoder* audio_device = GetAudio();
   EXPECT_TRUE(audio_device);
-  EXPECT_EQ(FakeMediaPipelineBackend::kStateRunning, GetBackend()->state());
+  EXPECT_EQ(FakeCmaBackend::kStateRunning, GetBackend()->state());
 
   stream->Stop();
   stream->Close();
@@ -537,8 +537,7 @@ TEST_F(CastAudioOutputStreamTest, AudioDelay) {
   FakeAudioDecoder* audio_decoder = GetAudio();
   ASSERT_TRUE(audio_decoder);
   audio_decoder->set_rendering_delay(
-      MediaPipelineBackend::AudioDecoder::RenderingDelay(kDelayUs,
-                                                         kDelayTimestampUs));
+      CmaBackend::AudioDecoder::RenderingDelay(kDelayUs, kDelayTimestampUs));
 
   ::media::MockAudioSourceCallback source_callback;
   const base::TimeDelta delay(base::TimeDelta::FromMicroseconds(kDelayUs));

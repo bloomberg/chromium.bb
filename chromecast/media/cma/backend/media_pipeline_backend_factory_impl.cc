@@ -4,8 +4,8 @@
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_factory_impl.h"
 
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace chromecast {
@@ -19,8 +19,7 @@ MediaPipelineBackendFactoryImpl::MediaPipelineBackendFactoryImpl(
 
 MediaPipelineBackendFactoryImpl::~MediaPipelineBackendFactoryImpl() {}
 
-std::unique_ptr<MediaPipelineBackend>
-MediaPipelineBackendFactoryImpl::CreateBackend(
+std::unique_ptr<CmaBackend> MediaPipelineBackendFactoryImpl::CreateBackend(
     const MediaPipelineDeviceParams& params) {
   return media_pipeline_backend_manager_->CreateMediaPipelineBackend(params);
 }

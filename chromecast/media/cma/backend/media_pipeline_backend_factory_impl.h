@@ -5,17 +5,19 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
 
 namespace chromecast {
 namespace media {
 
-class MediaPipelineBackend;
+class CmaBackend;
 class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 
-// Creates MediaPipelineBackends using a given MediaPipelineBackendManager.
+// Creates CmaBackends using a given MediaPipelineBackendManager.
 class MediaPipelineBackendFactoryImpl : public MediaPipelineBackendFactory {
  public:
   // TODO(slan): Use a static Create method once all of the constructor
@@ -24,7 +26,7 @@ class MediaPipelineBackendFactoryImpl : public MediaPipelineBackendFactory {
       MediaPipelineBackendManager* media_pipeline_backend_manager);
   ~MediaPipelineBackendFactoryImpl() override;
 
-  std::unique_ptr<MediaPipelineBackend> CreateBackend(
+  std::unique_ptr<CmaBackend> CreateBackend(
       const MediaPipelineDeviceParams& params) override;
 
  protected:
@@ -38,7 +40,7 @@ class MediaPipelineBackendFactoryImpl : public MediaPipelineBackendFactory {
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendFactoryImpl);
 };
 
-}  // media
-}  // chromecast
+}  // namespace media
+}  // namespace chromecast
 
 #endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_

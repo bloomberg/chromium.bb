@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/pipeline/audio_decoder_software_wrapper.h"
+#include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
 
 #include <ostream>
 
@@ -39,7 +39,7 @@ constexpr media::AudioCodec kPassthroughCodecs[] = {
     kCodecEAC3, kCodecAC3, kCodecDTS,
 };
 
-} // namespace
+}  // namespace
 
 AudioDecoderSoftwareWrapper::AudioDecoderSoftwareWrapper(
     MediaPipelineBackend::AudioDecoder* backend_decoder)
@@ -126,6 +126,10 @@ bool AudioDecoderSoftwareWrapper::SetVolume(float multiplier) {
 AudioDecoderSoftwareWrapper::RenderingDelay
 AudioDecoderSoftwareWrapper::GetRenderingDelay() {
   return backend_decoder_->GetRenderingDelay();
+}
+
+bool AudioDecoderSoftwareWrapper::IsUsingSoftwareDecoder() {
+  return software_decoder_.get() != nullptr;
 }
 
 bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(

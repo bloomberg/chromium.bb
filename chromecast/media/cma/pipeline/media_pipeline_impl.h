@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -25,7 +25,6 @@ class VideoDecoderConfig;
 
 namespace chromecast {
 namespace media {
-class AudioDecoderSoftwareWrapper;
 class AudioPipelineImpl;
 class BufferingController;
 class CastCdmContext;
@@ -42,7 +41,7 @@ class MediaPipelineImpl {
   // Initialize the media pipeline: the pipeline is configured based on
   // |load_type|.
   void Initialize(LoadType load_type,
-                  std::unique_ptr<MediaPipelineBackend> media_pipeline_backend);
+                  std::unique_ptr<CmaBackend> media_pipeline_backend);
 
   void SetClient(const MediaPipelineClient& client);
   void SetCdm(int cdm_id);
@@ -101,9 +100,9 @@ class MediaPipelineImpl {
 
   // Since av pipeline still need to access device components in their
   // destructor, it's important to delete them first.
-  std::unique_ptr<MediaPipelineBackend> media_pipeline_backend_;
-  std::unique_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
-  MediaPipelineBackend::VideoDecoder* video_decoder_;
+  std::unique_ptr<CmaBackend> media_pipeline_backend_;
+  CmaBackend::AudioDecoder* audio_decoder_;
+  CmaBackend::VideoDecoder* video_decoder_;
   std::unique_ptr<AudioPipelineImpl> audio_pipeline_;
   std::unique_ptr<VideoPipelineImpl> video_pipeline_;
   std::unique_ptr<FlushTask> pending_flush_task_;

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_PIPELINE_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
-#define CHROMECAST_MEDIA_CMA_PIPELINE_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
 
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,23 +22,23 @@ namespace media {
 // Provides transparent software decoding if the backend does not support the
 // incoming audio config.
 class AudioDecoderSoftwareWrapper
-    : public MediaPipelineBackend::AudioDecoder,
-      public MediaPipelineBackend::Decoder::Delegate {
+    : public MediaPipelineBackend::Decoder::Delegate {
  public:
   using DecoderDelegate = MediaPipelineBackend::Decoder::Delegate;
+  using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
+  using Statistics = MediaPipelineBackend::AudioDecoder::Statistics;
 
   AudioDecoderSoftwareWrapper(
       MediaPipelineBackend::AudioDecoder* backend_decoder);
   ~AudioDecoderSoftwareWrapper() override;
 
-  // MediaPipelineBackend::AudioDecoder implementation:
-  void SetDelegate(DecoderDelegate* delegate) override;
-  MediaPipelineBackend::BufferStatus PushBuffer(
-      CastDecoderBuffer* buffer) override;
-  void GetStatistics(Statistics* statistics) override;
-  bool SetConfig(const AudioConfig& config) override;
-  bool SetVolume(float multiplier) override;
-  RenderingDelay GetRenderingDelay() override;
+  void SetDelegate(DecoderDelegate* delegate);
+  MediaPipelineBackend::BufferStatus PushBuffer(CastDecoderBuffer* buffer);
+  void GetStatistics(Statistics* statistics);
+  bool SetConfig(const AudioConfig& config);
+  bool SetVolume(float multiplier);
+  RenderingDelay GetRenderingDelay();
+  bool IsUsingSoftwareDecoder();
 
  private:
   bool CreateSoftwareDecoder(const AudioConfig& config);
@@ -69,4 +70,4 @@ class AudioDecoderSoftwareWrapper
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_PIPELINE_AUDIO_DECODER_SOFTWARE_WRAPPER_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_SOFTWARE_WRAPPER_H_

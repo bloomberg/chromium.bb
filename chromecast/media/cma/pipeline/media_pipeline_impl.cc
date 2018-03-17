@@ -16,16 +16,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
-#include "chromecast/media/cma/pipeline/audio_decoder_software_wrapper.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/cma_pipeline_buildflags.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_observer.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/timestamp_constants.h"
 
 namespace chromecast {
@@ -122,10 +121,9 @@ MediaPipelineImpl::~MediaPipelineImpl() {
 
 void MediaPipelineImpl::Initialize(
     LoadType load_type,
-    std::unique_ptr<MediaPipelineBackend> media_pipeline_backend) {
+    std::unique_ptr<CmaBackend> media_pipeline_backend) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  audio_decoder_.reset();
   media_pipeline_backend_ = std::move(media_pipeline_backend);
 
   if (load_type == kLoadTypeURL || load_type == kLoadTypeMediaSource) {
@@ -178,13 +176,11 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!audio_decoder_);
 
-  MediaPipelineBackend::AudioDecoder* backend_audio_decoder =
-      media_pipeline_backend_->CreateAudioDecoder();
-  if (!backend_audio_decoder) {
+  audio_decoder_ = media_pipeline_backend_->CreateAudioDecoder();
+  if (!audio_decoder_) {
     return ::media::PIPELINE_ERROR_ABORT;
   }
-  audio_decoder_.reset(new AudioDecoderSoftwareWrapper(backend_audio_decoder));
-  audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_.get(), client));
+  audio_pipeline_ = std::make_unique<AudioPipelineImpl>(audio_decoder_, client);
   if (cdm_context_)
     audio_pipeline_->SetCdm(cdm_context_);
   ::media::PipelineStatus status =

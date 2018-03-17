@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/stream_id.h"
 #include "media/base/pipeline_status.h"
 
@@ -27,7 +27,7 @@ class CodedFrameProvider;
 
 class VideoPipelineImpl : public AvPipelineImpl {
  public:
-  VideoPipelineImpl(MediaPipelineBackend::VideoDecoder* decoder,
+  VideoPipelineImpl(CmaBackend::VideoDecoder* decoder,
                     const VideoPipelineClient& client);
   ~VideoPipelineImpl() override;
 
@@ -47,7 +47,7 @@ class VideoPipelineImpl : public AvPipelineImpl {
   const EncryptionScheme& GetEncryptionScheme(StreamId id) const override;
   std::unique_ptr<StreamDecryptor> CreateDecryptor() override;
 
-  MediaPipelineBackend::VideoDecoder* const video_decoder_;
+  CmaBackend::VideoDecoder* const video_decoder_;
   const VideoPipelineClient::NaturalSizeChangedCB natural_size_changed_cb_;
   std::vector<EncryptionScheme> encryption_schemes_;
 

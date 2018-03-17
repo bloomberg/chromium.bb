@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace chromecast {
@@ -20,9 +20,10 @@ namespace media {
 
 enum class AudioContentType;
 class AudioDecoderWrapper;
+class MediaPipelineBackend;
 class MediaPipelineBackendManager;
 
-class MediaPipelineBackendWrapper : public MediaPipelineBackend {
+class MediaPipelineBackendWrapper : public CmaBackend {
  public:
   MediaPipelineBackendWrapper(const media::MediaPipelineDeviceParams& params,
                               MediaPipelineBackendManager* backend_manager);
@@ -31,7 +32,7 @@ class MediaPipelineBackendWrapper : public MediaPipelineBackend {
   void LogicalPause();
   void LogicalResume();
 
-  // MediaPipelineBackend implementation:
+  // CmaBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
   VideoDecoder* CreateVideoDecoder() override;
   bool Initialize() override;

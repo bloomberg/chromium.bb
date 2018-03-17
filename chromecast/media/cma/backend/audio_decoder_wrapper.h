@@ -6,6 +6,8 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_WRAPPER_H_
 
 #include "base/macros.h"
+#include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
+#include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -14,11 +16,11 @@ namespace media {
 
 enum class AudioContentType;
 
-class AudioDecoderWrapper : public MediaPipelineBackend::AudioDecoder {
+class AudioDecoderWrapper : public CmaBackend::AudioDecoder {
  public:
   AudioDecoderWrapper(
       MediaPipelineBackendManager* backend_manager,
-      MediaPipelineBackend::AudioDecoder* decoder,
+      MediaPipelineBackend::AudioDecoder* backend_decoder,
       AudioContentType type,
       MediaPipelineBackendManager::BufferDelegate* buffer_delegate);
   ~AudioDecoderWrapper() override;
@@ -28,16 +30,17 @@ class AudioDecoderWrapper : public MediaPipelineBackend::AudioDecoder {
   AudioContentType content_type() const { return content_type_; }
 
  private:
-  // MediaPipelineBackend::AudioDecoder implementation:
+  // CmaBackend::AudioDecoder implementation:
   void SetDelegate(Delegate* delegate) override;
   BufferStatus PushBuffer(CastDecoderBuffer* buffer) override;
   bool SetConfig(const AudioConfig& config) override;
   bool SetVolume(float multiplier) override;
   RenderingDelay GetRenderingDelay() override;
   void GetStatistics(Statistics* statistics) override;
+  bool RequiresDecryption() override;
 
   MediaPipelineBackendManager* const backend_manager_;
-  MediaPipelineBackend::AudioDecoder* const decoder_;
+  AudioDecoderSoftwareWrapper decoder_;
   const AudioContentType content_type_;
 
   MediaPipelineBackendManager::BufferDelegate* const buffer_delegate_;
