@@ -48,6 +48,7 @@ test("cast_media_unittests") {
     "base/media_resource_tracker_unittest.cc",
     "base/slew_volume_unittests.cc",
     "base/supported_codec_profile_levels_memo_unittest.cc",
+    "cma/backend/audio_decoder_software_wrapper_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

@@ -10,15 +10,15 @@
 namespace chromecast {
 namespace media {
 
-class MediaPipelineBackend;
+class CmaBackend;
 struct MediaPipelineDeviceParams;
 
-// Abstract base class to create MediaPipelineBackend.
+// Abstract base class to create CmaBackend.
 class MediaPipelineBackendFactory {
  public:
   virtual ~MediaPipelineBackendFactory() {}
 
-  virtual std::unique_ptr<MediaPipelineBackend> CreateBackend(
+  virtual std::unique_ptr<CmaBackend> CreateBackend(
       const MediaPipelineDeviceParams& params) = 0;
 };
 

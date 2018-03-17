@@ -35,7 +35,7 @@ const int kNoCallbackId = -1;
 
 }  // namespace
 
-AvPipelineImpl::AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
+AvPipelineImpl::AvPipelineImpl(CmaBackend::Decoder* decoder,
                                const AvPipelineClient& client)
     : bytes_decoded_since_last_update_(0),
       decoder_(decoder),
@@ -277,10 +277,9 @@ void AvPipelineImpl::PushReadyBuffer(scoped_refptr<DecoderBufferBase> buffer) {
 
   pushed_buffer_ = std::move(buffer);
 
-  MediaPipelineBackend::BufferStatus status =
-      decoder_->PushBuffer(pushed_buffer_.get());
+  CmaBackend::BufferStatus status = decoder_->PushBuffer(pushed_buffer_.get());
 
-  if (status != MediaPipelineBackend::kBufferPending)
+  if (status != CmaBackend::BufferStatus::kBufferPending)
     OnPushBufferComplete(status);
 }
 
@@ -308,7 +307,7 @@ void AvPipelineImpl::OnPushBufferComplete(BufferStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   pushed_buffer_ = nullptr;
-  if (status == MediaPipelineBackend::kBufferFailed) {
+  if (status == CmaBackend::BufferStatus::kBufferFailed) {
     LOG(WARNING) << "AvPipelineImpl: PushFrame failed";
     OnDecoderError();
     return;

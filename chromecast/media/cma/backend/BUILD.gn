@@ -18,8 +18,11 @@ declare_args() {
 
 cast_source_set("backend") {
   sources = [
+    "audio_decoder_software_wrapper.cc",
+    "audio_decoder_software_wrapper.h",
     "audio_decoder_wrapper.cc",
     "audio_decoder_wrapper.h",
+    "cma_backend.h",
     "media_pipeline_backend_factory.h",
     "media_pipeline_backend_factory_impl.cc",
     "media_pipeline_backend_factory_impl.h",
@@ -40,6 +43,7 @@ cast_source_set("backend") {
     "//chromecast/base/metrics:metrics",
     "//chromecast/media:libcast_media",
     "//chromecast/media/cma/base",
+    "//chromecast/media/cma/decoder",
   ]
 }
 

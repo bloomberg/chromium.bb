@@ -4,6 +4,9 @@
 
 #include "chromecast/media/service/cast_renderer.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
@@ -119,8 +122,7 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
     load_type = kLoadTypeMediaStream;
   }
 
-  std::unique_ptr<MediaPipelineBackend> backend =
-      backend_factory_->CreateBackend(params);
+  auto backend = backend_factory_->CreateBackend(params);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;
