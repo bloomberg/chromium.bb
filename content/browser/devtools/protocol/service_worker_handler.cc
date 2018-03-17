@@ -213,8 +213,7 @@ Response ServiceWorkerHandler::Unregister(const std::string& scope_url) {
     return CreateDomainNotEnabledErrorResponse();
   if (!context_)
     return CreateContextErrorResponse();
-  context_->UnregisterServiceWorker(GURL(scope_url),
-                                    base::DoNothing::Repeatedly<bool>());
+  context_->UnregisterServiceWorker(GURL(scope_url), base::DoNothing());
   return Response::OK();
 }
 
@@ -223,8 +222,7 @@ Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
     return CreateDomainNotEnabledErrorResponse();
   if (!context_)
     return CreateContextErrorResponse();
-  context_->StartServiceWorker(
-      GURL(scope_url), base::DoNothing::Repeatedly<ServiceWorkerStatusCode>());
+  context_->StartServiceWorker(GURL(scope_url), base::DoNothing());
   return Response::OK();
 }
 
