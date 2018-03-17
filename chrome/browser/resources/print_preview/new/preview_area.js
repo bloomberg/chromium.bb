@@ -64,6 +64,9 @@ Polymer({
       observer: 'onStateChanged_',
     },
 
+    /** @type {?print_preview.MeasurementSystem} */
+    measurementSystem: Object,
+
     /** @private {string} */
     previewState_: {
       type: String,
@@ -77,6 +80,11 @@ Polymer({
       notify: true,
       computed: 'computePreviewLoaded_(previewState_)',
     },
+  },
+
+  listeners: {
+    'pointerover': 'onPointerOver_',
+    'pointerout': 'onPointerOut_',
   },
 
   observers: [
@@ -137,6 +145,46 @@ Polymer({
   /** @return {boolean} Whether the preview is loaded. */
   previewLoaded: function() {
     return this.previewLoaded_;
+  },
+
+  /**
+   * Called when the pointer moves onto the component. Shows the margin
+   * controls if custom margins are being used.
+   * @param {!Event} event Contains element pointer moved from.
+   * @private
+   */
+  onPointerOver_: function(event) {
+    const marginControlContainer = this.$.marginControlContainer;
+    let fromElement = event.fromElement;
+    while (fromElement != null) {
+      if (fromElement == marginControlContainer)
+        return;
+
+      fromElement = fromElement.parentElement;
+    }
+    marginControlContainer.visible = true;
+  },
+
+  /**
+   * Called when the pointer moves off of the component. Hides the margin
+   * controls if they are visible.
+   * @param {!Event} event Contains element pointer moved to.
+   * @private
+   */
+  onPointerOut_: function(event) {
+    const marginControlContainer = this.$.marginControlContainer;
+    let toElement = event.toElement;
+    while (toElement != null) {
+      if (toElement == marginControlContainer)
+        return;
+
+      toElement = toElement.parentElement;
+    }
+
+    if (marginControlContainer.isDragging())
+      return;
+
+    marginControlContainer.visible = false;
   },
 
   /** @private */
@@ -411,6 +459,20 @@ Polymer({
     this.plugin_.setLoadCallback(this.onPluginLoad_.bind(this));
     this.plugin_.setViewportChangedCallback(
         this.onPreviewVisualStateChange_.bind(this));
+  },
+
+  /**
+   * Called when dragging margins starts or stops.
+   */
+  onMarginDragChanged_: function(e) {
+    if (!this.plugin_)
+      return;
+
+    // When hovering over the plugin (which may be in a separate iframe)
+    // pointer events will be sent to the frame. When dragging the margins,
+    // we don't want this to happen as it can cause the margin to stop
+    // being draggable.
+    this.plugin_.style.pointerEvents = e.detail ? 'none' : 'auto';
   },
 
   /**
