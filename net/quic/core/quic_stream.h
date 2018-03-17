@@ -55,7 +55,10 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                     (kV3LowestPriority + kV3HighestPriority) / 2,
                 "Unexpected value of kDefaultPriority");
 
-  QuicStream(QuicStreamId id, QuicSession* session);
+  // Creates a new stream with stream_id |id| associated with |session|. If
+  // |is_static| is true, then the stream will be given precedence
+  // over other streams when determing what streams should write next.
+  QuicStream(QuicStreamId id, QuicSession* session, bool is_static);
 
   virtual ~QuicStream();
 
@@ -427,6 +430,10 @@ class QUIC_EXPORT_PRIVATE QuicStream {
 
   // Latched value of FLAGS_quic_buffered_data_threshold.
   const QuicByteCount buffered_data_threshold_;
+
+  // If true, then this stream has precedence over other streams for write
+  // scheduling.
+  const bool is_static_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStream);
 };

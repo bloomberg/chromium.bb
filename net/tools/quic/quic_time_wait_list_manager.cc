@@ -240,7 +240,7 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
     DCHECK(writer_->IsWriteBlocked());
     visitor_->OnWriteBlocked(this);
     return writer_->IsWriteBlockedDataBuffered();
-  } else if (result.status == WRITE_STATUS_ERROR) {
+  } else if (IsWriteError(result.status)) {
     QUIC_LOG_FIRST_N(WARNING, 1)
         << "Received unknown error while sending reset packet to "
         << queued_packet->client_address().ToString() << ": "

@@ -141,6 +141,7 @@ void QuicClientBase::InitializeSession() {
 void QuicClientBase::Disconnect() {
   DCHECK(initialized_);
 
+  initialized_ = false;
   if (connected()) {
     session()->connection()->CloseConnection(
         QUIC_PEER_GOING_AWAY, "Client disconnecting",
@@ -150,8 +151,6 @@ void QuicClientBase::Disconnect() {
   ClearDataToResend();
 
   network_helper_->CleanUpAllUDPSockets();
-
-  initialized_ = false;
 }
 
 ProofVerifier* QuicClientBase::proof_verifier() const {

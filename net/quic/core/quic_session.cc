@@ -63,12 +63,9 @@ QuicSession::QuicSession(QuicConnection* connection,
       session_unblocks_stream_(
           GetQuicReloadableFlag(quic_streams_unblocked_by_session2)),
       register_streams_early_(
-          GetQuicReloadableFlag(quic_register_streams_early)) {
-  if (use_control_frame_manager()) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_control_frame_manager);
-  }
+          GetQuicReloadableFlag(quic_register_streams_early2)) {
   if (register_streams_early()) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_register_streams_early);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_register_streams_early2);
   }
 }
 
@@ -314,14 +311,13 @@ void QuicSession::OnCanWrite() {
   size_t num_writes = flow_controller_.IsBlocked()
                           ? write_blocked_streams_.NumBlockedSpecialStreams()
                           : write_blocked_streams_.NumBlockedStreams();
-  if (num_writes == 0 && (!use_control_frame_manager() ||
-                          !control_frame_manager_.WillingToWrite())) {
+  if (num_writes == 0 && !control_frame_manager_.WillingToWrite()) {
     return;
   }
 
   QuicConnection::ScopedPacketFlusher flusher(
       connection_, QuicConnection::SEND_ACK_IF_QUEUED);
-  if (use_control_frame_manager() && control_frame_manager_.WillingToWrite()) {
+  if (control_frame_manager_.WillingToWrite()) {
     control_frame_manager_.OnCanWrite();
   }
   for (size_t i = 0; i < num_writes; ++i) {
@@ -363,8 +359,7 @@ bool QuicSession::WillingAndAbleToWrite() const {
   // 3) If the crypto or headers streams are blocked, or
   // 4) connection is not flow control blocked and there are write blocked
   // streams.
-  return (use_control_frame_manager() &&
-          control_frame_manager_.WillingToWrite()) ||
+  return control_frame_manager_.WillingToWrite() ||
          !streams_with_pending_retransmission_.empty() ||
          write_blocked_streams_.HasWriteBlockedSpecialStream() ||
          (!flow_controller_.IsBlocked() &&
@@ -422,7 +417,6 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
 }
 
 bool QuicSession::WriteControlFrame(const QuicFrame& frame) {
-  DCHECK(use_control_frame_manager());
   return connection_->SendControlFrame(frame);
 }
 
@@ -436,12 +430,8 @@ void QuicSession::SendRstStream(QuicStreamId id,
 
   if (connection()->connected()) {
     // Only send a RST_STREAM frame if still connected.
-    if (use_control_frame_manager()) {
-      control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
-      connection_->OnStreamReset(id, error);
-    } else {
-      connection_->SendRstStream(id, error, bytes_written);
-    }
+    control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
+    connection_->OnStreamReset(id, error);
   }
   CloseStreamInner(id, true);
 }
@@ -452,23 +442,16 @@ void QuicSession::SendGoAway(QuicErrorCode error_code,
     return;
   }
   goaway_sent_ = true;
-  if (use_control_frame_manager()) {
-    control_frame_manager_.WriteOrBufferGoAway(
-        error_code, largest_peer_created_stream_id_, reason);
-  } else {
-    connection_->SendGoAway(error_code, largest_peer_created_stream_id_,
-                            reason);
-  }
+  control_frame_manager_.WriteOrBufferGoAway(
+      error_code, largest_peer_created_stream_id_, reason);
 }
 
 void QuicSession::SendBlocked(QuicStreamId id) {
-  DCHECK(use_control_frame_manager());
   control_frame_manager_.WriteOrBufferBlocked(id);
 }
 
 void QuicSession::SendWindowUpdate(QuicStreamId id,
                                    QuicStreamOffset byte_offset) {
-  DCHECK(use_control_frame_manager());
   control_frame_manager_.WriteOrBufferWindowUpdate(id, byte_offset);
 }
 
@@ -755,20 +738,23 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
     const CryptoHandshakeMessage& /*message*/) {}
 
 void QuicSession::RegisterStreamPriority(QuicStreamId id,
+                                         bool is_static,
                                          SpdyPriority priority) {
   // Static streams do not need to be registered with the write blocked list,
   // since it has special handling for them.
-  if (!register_streams_early() || !QuicContainsKey(static_stream_map_, id)) {
-    write_blocked_streams()->RegisterStream(id, priority);
+  if (register_streams_early() && is_static) {
+    return;
   }
+  write_blocked_streams()->RegisterStream(id, priority);
 }
 
-void QuicSession::UnregisterStreamPriority(QuicStreamId id) {
+void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
   // Static streams do not need to be registered with the write blocked list,
   // since it has special handling for them.
-  if (!register_streams_early() || !QuicContainsKey(static_stream_map_, id)) {
-    write_blocked_streams()->UnregisterStream(id);
+  if (register_streams_early() && is_static) {
+    return;
   }
+  write_blocked_streams()->UnregisterStream(id);
 }
 
 void QuicSession::UpdateStreamPriority(QuicStreamId id,
@@ -979,8 +965,7 @@ bool QuicSession::HasDataToWrite() const {
          write_blocked_streams_.HasWriteBlockedDataStreams() ||
          connection_->HasQueuedData() ||
          !streams_with_pending_retransmission_.empty() ||
-         (use_control_frame_manager() &&
-          control_frame_manager_.WillingToWrite());
+         control_frame_manager_.WillingToWrite();
 }
 
 void QuicSession::PostProcessAfterData() {
@@ -989,13 +974,16 @@ void QuicSession::PostProcessAfterData() {
 
 void QuicSession::OnAckNeedsRetransmittableFrame() {
   flow_controller_.SendWindowUpdate();
-  if (use_control_frame_manager() && !control_frame_manager_.WillingToWrite()) {
+  if (GetQuicReloadableFlag(quic_remove_redundant_ping)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_remove_redundant_ping);
+    return;
+  }
+  if (!control_frame_manager_.WillingToWrite()) {
     SendPing();
   }
 }
 
 void QuicSession::SendPing() {
-  DCHECK(use_control_frame_manager());
   control_frame_manager_.WritePing();
 }
 
@@ -1073,10 +1061,7 @@ QuicStream* QuicSession::GetStream(QuicStreamId id) const {
 bool QuicSession::OnFrameAcked(const QuicFrame& frame,
                                QuicTime::Delta ack_delay_time) {
   if (frame.type != STREAM_FRAME) {
-    if (use_control_frame_manager()) {
-      return control_frame_manager_.OnControlFrameAcked(frame);
-    }
-    return false;
+    return control_frame_manager_.OnControlFrameAcked(frame);
   }
   bool new_stream_data_acked = false;
   QuicStream* stream = GetStream(frame.stream_frame->stream_id);
@@ -1109,9 +1094,7 @@ void QuicSession::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
 
 void QuicSession::OnFrameLost(const QuicFrame& frame) {
   if (frame.type != STREAM_FRAME) {
-    if (use_control_frame_manager()) {
-      control_frame_manager_.OnControlFrameLost(frame);
-    }
+    control_frame_manager_.OnControlFrameLost(frame);
     return;
   }
   QuicStream* stream = GetStream(frame.stream_frame->stream_id);
@@ -1136,8 +1119,7 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
   SetTransmissionType(type);
   for (const QuicFrame& frame : frames) {
     if (frame.type != STREAM_FRAME) {
-      if (use_control_frame_manager() &&
-          !control_frame_manager_.RetransmitControlFrame(frame)) {
+      if (!control_frame_manager_.RetransmitControlFrame(frame)) {
         break;
       }
       continue;
@@ -1154,10 +1136,7 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
 
 bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
   if (frame.type != STREAM_FRAME) {
-    if (use_control_frame_manager()) {
-      return control_frame_manager_.IsControlFrameOutstanding(frame);
-    }
-    return false;
+    return control_frame_manager_.IsControlFrameOutstanding(frame);
   }
   QuicStream* stream = GetStream(frame.stream_frame->stream_id);
   return stream != nullptr &&
@@ -1204,8 +1183,7 @@ bool QuicSession::RetransmitLostData() {
       streams_with_pending_retransmission_.erase(kCryptoStreamId);
     }
   }
-  if (use_control_frame_manager() &&
-      control_frame_manager_.HasPendingRetransmission()) {
+  if (control_frame_manager_.HasPendingRetransmission()) {
     SetTransmissionType(LOSS_RETRANSMISSION);
     control_frame_manager_.OnCanWrite();
     if (control_frame_manager_.HasPendingRetransmission()) {
@@ -1251,10 +1229,6 @@ void QuicSession::NeuterUnencryptedData() {
 
 void QuicSession::SetTransmissionType(TransmissionType type) {
   connection_->SetTransmissionType(type);
-}
-
-bool QuicSession::use_control_frame_manager() const {
-  return connection_->use_control_frame_manager();
 }
 
 bool QuicSession::session_decides_what_to_write() const {

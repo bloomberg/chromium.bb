@@ -126,15 +126,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, true)
 // blocked list and let session unblock it later.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_streams_unblocked_by_session2,
-          false)
+          true)
 
-// When true, ignore the specified ack delay if it causes the RTT sample to be
-// less than min_rtt.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, true)
-
-// If true, plugin control frame manager to QuicSession, and let it manage sent
-// control frames.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_control_frame_manager, true)
 // When true, allows two connection options to run experiments with using max
 // ack delay as described in QUIC IETF.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, false)
@@ -152,8 +145,8 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 // If true, enable QUIC version 42.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42_2, true)
 
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, false)
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41, false)
 
 // Delays construction of QuicCryptoServerStream::HandshakerDelegate
@@ -201,7 +194,7 @@ QUIC_FLAG(
 
 // If true, QUIC streams are registered in the QuicStream constructor instead
 // of in the QuicSpdyStream constructor.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early2, false)
 
 // If this flag and
 // FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
@@ -211,3 +204,19 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
     false)
+
+// When true, this flag has QuicConnection call
+// QuicConnectionVisitorInterface::OnSuccessfulVersionNegotiation earlier when
+// processing the packet header.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_server_early_version_negotiation,
+          false)
+
+// If true, QUIC will always discard outgoing packets after connection close.
+// Currently out-of-order outgoing packets are not discarded
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_always_discard_packets_after_close,
+          false)
+
+// If true, stop sending a redundant PING every 20 acks.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_redundant_ping, false)

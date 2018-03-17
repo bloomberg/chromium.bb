@@ -96,14 +96,9 @@ class QuicSpdyClientStreamTest : public QuicTest {
 TEST_F(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
   headers_[":status"] = "200 ok";
 
-  if (session_.use_control_frame_manager()) {
-    EXPECT_CALL(*connection_, SendControlFrame(_));
-    EXPECT_CALL(*connection_,
-                OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
-  } else {
-    EXPECT_CALL(*connection_,
-                SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD, 0));
-  }
+  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
@@ -156,14 +151,9 @@ TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
 
-  if (session_.use_control_frame_manager()) {
-    EXPECT_CALL(*connection_, SendControlFrame(_));
-    EXPECT_CALL(*connection_,
-                OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
-  } else {
-    EXPECT_CALL(*connection_,
-                SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD, 0));
-  }
+  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, large_body));
 

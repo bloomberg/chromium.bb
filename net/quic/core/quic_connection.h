@@ -379,19 +379,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // otherwise.
   virtual bool SendControlFrame(const QuicFrame& frame);
 
-  // Send a RST_STREAM frame to the peer.
-  virtual void SendRstStream(QuicStreamId id,
-                             QuicRstStreamErrorCode error,
-                             QuicStreamOffset bytes_written);
-
   // Called when stream |id| is reset because of |error|.
   virtual void OnStreamReset(QuicStreamId id, QuicRstStreamErrorCode error);
-
-  // Send a BLOCKED frame to the peer.
-  virtual void SendBlocked(QuicStreamId id);
-
-  // Send a WINDOW_UPDATE frame to the peer.
-  virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
   // Closes the connection.
   // |connection_close_behavior| determines whether or not a connection close
@@ -400,11 +389,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       QuicErrorCode error,
       const QuicString& details,
       ConnectionCloseBehavior connection_close_behavior);
-
-  // Sends a GOAWAY frame.
-  virtual void SendGoAway(QuicErrorCode error,
-                          QuicStreamId last_good_stream_id,
-                          const QuicString& reason);
 
   // Returns statistics tracked for this connection.
   const QuicConnectionStats& GetStats();
@@ -428,6 +412,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Called when an error occurs while attempting to write a packet to the
   // network.
   void OnWriteError(int error_code);
+
+  // Whether |result| represents a MSG TOO BIG write error.
+  bool IsMsgTooBig(const WriteResult& result);
 
   // If the socket is not blocked, writes queued packets.
   void WriteIfNotBlocked();
@@ -586,9 +573,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Called when the ping alarm fires. Causes a ping frame to be sent only
   // if the retransmission alarm is not running.
   void OnPingTimeout();
-
-  // Sends a ping frame.
-  void SendPing();
 
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
@@ -761,8 +745,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void set_defer_send_in_response_to_packets(bool defer) {
     defer_send_in_response_to_packets_ = defer;
   }
-
-  bool use_control_frame_manager() const { return use_control_frame_manager_; }
 
   bool session_decides_what_to_write() const;
 
@@ -1220,8 +1202,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Id of latest sent control frame. 0 if no control frame has been sent.
   QuicControlFrameId last_control_frame_id_;
 
-  // Latched value of quic_reloadable_flag_quic_use_control_frame_manager.
-  const bool use_control_frame_manager_;
+  // Latched value of
+  // quic_reloadable_flag_quic_server_early_version_negotiation.
+  const bool negotiate_version_early_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_always_discard_packets_after_close.
+  const bool always_discard_packets_after_close_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

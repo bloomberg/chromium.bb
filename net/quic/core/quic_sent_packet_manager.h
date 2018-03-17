@@ -110,8 +110,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetHandshakeConfirmed();
 
-  // Processes the incoming ack.
-  void OnIncomingAck(const QuicAckFrame& ack_frame, QuicTime ack_receive_time);
+  // Processes the incoming ack. Returns true if a previously-unacked packet is
+  // acked.
+  bool OnIncomingAck(const QuicAckFrame& ack_frame, QuicTime ack_receive_time);
 
   // Requests retransmission of all unacked packets of |retransmission_type|.
   // The behavior of this method depends on the value of |retransmission_type|:
@@ -225,8 +226,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // with newly acked packets.
   void OnAckRange(QuicPacketNumber start, QuicPacketNumber end);
 
-  // Called when an ack frame is parsed completely.
-  void OnAckFrameEnd(QuicTime ack_receive_time);
+  // Called when an ack frame is parsed completely. Returns true if a previously
+  // -unacked packet is acked.
+  bool OnAckFrameEnd(QuicTime ack_receive_time);
 
   // Called to enable/disable letting session decide what to write.
   void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);

@@ -229,6 +229,8 @@ class QuicClientBase {
   NetworkHelper* network_helper();
   const NetworkHelper* network_helper() const;
 
+  bool initialized() const { return initialized_; }
+
  protected:
   // TODO(rch): Move GetNumSentClientHellosFromSession and
   // GetNumReceivedServerConfigUpdatesFromSession into a new/better

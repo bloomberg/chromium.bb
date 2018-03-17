@@ -26,7 +26,8 @@ QuicHeadersStream::CompressedHeaderInfo::CompressedHeaderInfo(
 QuicHeadersStream::CompressedHeaderInfo::~CompressedHeaderInfo() {}
 
 QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
-    : QuicStream(kHeadersStreamId, session), spdy_session_(session) {
+    : QuicStream(kHeadersStreamId, session, /*is_static=*/true),
+      spdy_session_(session) {
   // The headers stream is exempt from connection level flow control.
   DisableConnectionFlowControlForThisStream();
 }

@@ -2956,17 +2956,22 @@ TEST_P(EndToEndTest, WayTooLongRequestHeaders) {
 
 class WindowUpdateObserver : public QuicConnectionDebugVisitor {
  public:
-  WindowUpdateObserver() : num_window_update_frames_(0) {}
+  WindowUpdateObserver() : num_window_update_frames_(0), num_ping_frames_(0) {}
 
   size_t num_window_update_frames() const { return num_window_update_frames_; }
+
+  size_t num_ping_frames() const { return num_ping_frames_; }
 
   void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
                            const QuicTime& receive_time) override {
     ++num_window_update_frames_;
   }
 
+  void OnPingFrame(const QuicPingFrame& frame) override { ++num_ping_frames_; }
+
  private:
   size_t num_window_update_frames_;
+  size_t num_ping_frames_;
 };
 
 TEST_P(EndToEndTest, WindowUpdateInAck) {
@@ -2990,6 +2995,13 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   client_->Disconnect();
   if (version > QUIC_VERSION_38) {
     EXPECT_LT(0u, observer.num_window_update_frames());
+    if (GetQuicReloadableFlag(quic_remove_redundant_ping)) {
+      EXPECT_EQ(0u, observer.num_ping_frames());
+    } else {
+      // A redundant PING frame is bundled with each WINDOW_UPDATE frame.
+      EXPECT_EQ(observer.num_window_update_frames(),
+                observer.num_ping_frames());
+    }
   } else {
     EXPECT_EQ(0u, observer.num_window_update_frames());
   }

@@ -202,10 +202,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
       const CryptoHandshakeMessage& message);
 
   // Called by the stream on creation to set priority in the write blocked list.
-  virtual void RegisterStreamPriority(QuicStreamId id, SpdyPriority priority);
+  virtual void RegisterStreamPriority(QuicStreamId id,
+                                      bool is_static,
+                                      SpdyPriority priority);
   // Called by the stream on deletion to clear priority crom the write blocked
   // list.
-  virtual void UnregisterStreamPriority(QuicStreamId id);
+  virtual void UnregisterStreamPriority(QuicStreamId id, bool is_static);
   // Called by the stream on SetPriority to update priority on the write blocked
   // list.
   virtual void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
@@ -315,8 +317,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   bool session_unblocks_stream() const { return session_unblocks_stream_; }
 
   bool register_streams_early() const { return register_streams_early_; }
-
-  bool use_control_frame_manager() const;
 
   bool session_decides_what_to_write() const;
 
@@ -565,7 +565,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session2.
   const bool session_unblocks_stream_;
 
-  // Latched value of quic_reloadable_flag_quic_register_streams_early.
+  // Latched value of quic_reloadable_flag_quic_register_streams_early2.
   const bool register_streams_early_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);

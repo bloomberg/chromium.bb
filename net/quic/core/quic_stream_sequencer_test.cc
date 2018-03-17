@@ -34,7 +34,8 @@ namespace test {
 
 class MockStream : public QuicStream {
  public:
-  MockStream(QuicSession* session, QuicStreamId id) : QuicStream(id, session) {}
+  MockStream(QuicSession* session, QuicStreamId id)
+      : QuicStream(id, session, /*is_static=*/false) {}
 
   MOCK_METHOD0(OnFinRead, void());
   MOCK_METHOD0(OnDataAvailable, void());
