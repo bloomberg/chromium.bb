@@ -27,12 +27,12 @@ namespace {
 
 // Maximum size on the display edge that initiate snapping phantom window,
 // from the corner of the display.
-const int kMaximumSnapHeight = 16;
+constexpr int kMaximumSnapHeight = 32;
 
 // Minimum height of an indicator on the display edge that allows
 // dragging a window.  If two displays shares the edge smaller than
 // this, entire edge will be used as a draggable space.
-const int kMinimumIndicatorHeight = 200;
+constexpr int kMinimumIndicatorHeight = 200;
 
 // Helper method that maps an aura::Window to display id;
 int64_t GetDisplayIdFromWindow(aura::Window* window) {
