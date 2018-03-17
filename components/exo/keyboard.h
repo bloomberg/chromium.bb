@@ -9,6 +9,7 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/exo/keyboard_observer.h"
@@ -19,6 +20,7 @@
 #include "ui/events/event_handler.h"
 
 namespace ui {
+enum class DomCode;
 class KeyEvent;
 }
 
@@ -108,6 +110,9 @@ class Keyboard : public ui::EventHandler,
 
   // The current focus surface for the keyboard.
   Surface* focus_ = nullptr;
+
+  // Set of currently pressed keys.
+  base::flat_set<ui::DomCode> pressed_keys_;
 
   // Current set of modifier flags.
   int modifier_flags_ = 0;

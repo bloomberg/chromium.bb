@@ -174,6 +174,9 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, true));
   generator.PressKey(ui::VKEY_A, 0);
 
+  // This should not generate another press event for KEY_A.
+  generator.PressKey(ui::VKEY_A, 0);
+
   // This should only generate a release event for KEY_A.
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, false));
   generator.ReleaseKey(ui::VKEY_A, 0);
