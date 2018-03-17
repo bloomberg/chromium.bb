@@ -420,9 +420,10 @@ test jobs. Sharded test runs can be achieved in a couple of ways.
 #### 1. Running test\_libaom directly:
 
 ~~~
-   # Set the environment variable GTEST_TOTAL_SHARDS to 9 to run 10 test shards
+   # Set the environment variable GTEST_TOTAL_SHARDS to control the number of
+   # shards.
+   $ export GTEST_TOTAL_SHARDS=10
    # (GTEST shard indexing is 0 based).
-   $ export GTEST_TOTAL_SHARDS=9
    $ seq 0 $(( $GTEST_TOTAL_SHARDS - 1 )) \
        | xargs -n 1 -P 0 -I{} env GTEST_SHARD_INDEX={} ./test_libaom
 ~~~
