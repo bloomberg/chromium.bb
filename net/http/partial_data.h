@@ -128,11 +128,21 @@ class PartialData {
   // Completion routine for our callback.
   void GetAvailableRangeCompleted(int64_t* start, int result);
 
+  // The portion we're trying to get, either from cache or network.
   int64_t current_range_start_;
   int64_t current_range_end_;
+
+  // Next portion available in the cache --- this may be what's currently being
+  // read, or the next thing that will be read if the current network portion
+  // succeeds.
+  //
+  // |cached_start_| represents the beginning of the range, while
+  // |cached_min_len_| the data not yet read (possibly overestimated).
   int64_t cached_start_;
-  int64_t resource_size_;
   int cached_min_len_;
+
+  // The size of the whole file.
+  int64_t resource_size_;
   HttpByteRange byte_range_;  // The range requested by the user.
   // The clean set of extra headers (no ranges).
   HttpRequestHeaders extra_headers_;
