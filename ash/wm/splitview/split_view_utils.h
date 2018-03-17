@@ -42,11 +42,19 @@ enum SplitviewAnimationType {
   // selector item if it is snappable, or if an item cannot be snapped.
   SPLITVIEW_ANIMATION_TEXT_FADE_IN,
   SPLITVIEW_ANIMATION_TEXT_FADE_OUT,
-  // Used to slide in and out the preview area highlight.
-  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+  // Used when the text fades in or out with the highlights, as opposed to
+  // fading in when the highlights change bounds. Has slightly different
+  // animation values.
+  SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT,
+  SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT,
   // Used to slide in and out the other highlight.
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT,
+  // Used to slide in and out the preview area highlight.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+  // Used to slide in the text labels.
+  SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
+  SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
 };
 
 // Animates |layer|'s opacity based on |type|.

@@ -33,6 +33,11 @@ namespace {
 // The amount of round applied to the corners of the highlight views.
 constexpr int kHighlightScreenRoundRectRadiusDp = 4;
 
+// When animating, this is the location of the split view label as a ratio of
+// the width or height.
+constexpr double kSplitviewLabelExpandTranslationPrimaryAxisRatio = 0.20;
+constexpr double kSplitviewLabelShrinkTranslationPrimaryAxisRatio = 0.05;
+
 // Creates the widget responsible for displaying the indicators.
 std::unique_ptr<views::Widget> CreateWidget() {
   auto widget = std::make_unique<views::Widget>();
@@ -80,28 +85,71 @@ bool IsPreviewAreaOnLeftTopOfScreen(IndicatorState indicator_state) {
           !split_view_controller->IsCurrentScreenOrientationPrimary());
 }
 
+// Helper function to compute the transform for the indicator labels when the
+// view changes states. |main_transform| determines what ratio of the highlight
+// we want to shift to. |non_transformed_bounds| represents the bounds of the
+// label before its transform is applied; the centerpoint is used to calculate
+// the amount of shift. One of |highlight_width| or |highlight_height| will be
+// used to calculate the amount of shift as well, depending on |landscape|. If
+// the label is not |left_or_top| (right or bottom) we will translate in the
+// other direction.
+gfx::Transform ComputeLabelTransform(bool main_transform,
+                                     const gfx::Rect& non_transformed_bounds,
+                                     int highlight_width,
+                                     int highlight_height,
+                                     bool landscape,
+                                     bool left_or_top) {
+  // Compute the distance of the translation.
+  const float ratio = main_transform
+                          ? kSplitviewLabelExpandTranslationPrimaryAxisRatio
+                          : kSplitviewLabelShrinkTranslationPrimaryAxisRatio;
+  const gfx::Point center_point = non_transformed_bounds.CenterPoint();
+  const int primary_axis_center =
+      landscape ? center_point.x() : center_point.y();
+  const int highlight_length = landscape ? highlight_width : highlight_height;
+  const float translate =
+      std::fabs(ratio * highlight_length - primary_axis_center);
+
+  // Translate along x for landscape, along y for portrait.
+  gfx::Vector2dF translation(landscape ? translate : 0,
+                             landscape ? 0 : translate);
+  // Translate in other direction if right or bottom label.
+  if (!left_or_top)
+    translation = -translation;
+  gfx::Transform transform;
+  transform.Translate(translation);
+  return transform;
+}
+
 }  // namespace
 
 // View which contains a label and can be rotated. Used by and rotated by
 // SplitViewDragIndicatorsView.
-class SplitViewDragIndicators::RotatedImageLabelView : public RoundedRectView {
+class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
  public:
-  RotatedImageLabelView()
-      : RoundedRectView(kSplitviewLabelRoundRectRadiusDp,
-                        kSplitviewLabelBackgroundColor) {
+  RotatedImageLabelView() {
     label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL);
     label_->SetPaintToLayer();
     label_->layer()->SetFillsBoundsOpaquely(false);
     label_->SetEnabledColor(kSplitviewLabelEnabledColor);
     label_->SetBackgroundColor(kSplitviewLabelBackgroundColor);
 
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
+    // Use |label_parent_| to add padding and rounded edges to the text. Create
+    // this extra view so that we can rotate the label, while having a slide
+    // animation at times on the whole thing.
+    label_parent_ = new RoundedRectView(kSplitviewLabelRoundRectRadiusDp,
+                                        kSplitviewLabelBackgroundColor);
+    label_parent_->SetPaintToLayer();
+    label_parent_->layer()->SetFillsBoundsOpaquely(false);
+    label_parent_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
         gfx::Insets(kSplitviewLabelVerticalInsetDp,
                     kSplitviewLabelHorizontalInsetDp)));
+    label_parent_->AddChildView(label_);
+
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    AddChildView(label_);
+    AddChildView(label_parent_);
   }
 
   ~RotatedImageLabelView() override = default;
@@ -112,10 +160,18 @@ class SplitViewDragIndicators::RotatedImageLabelView : public RoundedRectView {
   // degrees.
   void OnBoundsUpdated(const gfx::Rect& bounds, double angle) {
     SetBoundsRect(bounds);
-    SetTransform(ComputeRotateAroundCenterTransform(bounds, angle));
+    label_parent_->SetBoundsRect(gfx::Rect(bounds.size()));
+    label_parent_->SetTransform(
+        ComputeRotateAroundCenterTransform(bounds, angle));
+  }
+
+ protected:
+  gfx::Size CalculatePreferredSize() const override {
+    return label_parent_->GetPreferredSize();
   }
 
  private:
+  RoundedRectView* label_parent_ = nullptr;
   views::Label* label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RotatedImageLabelView);
@@ -190,9 +246,15 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
               indicator_state == IndicatorState::kCannotSnap
                   ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
                   : IDS_ASH_SPLIT_VIEW_GUIDANCE));
-          DoSplitviewOpacityAnimation(view->layer(),
-                                      show ? SPLITVIEW_ANIMATION_TEXT_FADE_IN
-                                           : SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
+          SplitviewAnimationType animation_type;
+          if (IsPreviewAreaState(previous_indicator_state_)) {
+            animation_type = SPLITVIEW_ANIMATION_TEXT_FADE_IN;
+          } else {
+            animation_type =
+                show ? SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT
+                     : SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT;
+          }
+          DoSplitviewOpacityAnimation(view->layer(), animation_type);
         }
 
         for (RoundedRectView* view : GetHighlightViews()) {
@@ -209,8 +271,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       }
       case IndicatorState::kPreviewAreaLeft:
       case IndicatorState::kPreviewAreaRight: {
-        left_rotated_view_->layer()->SetOpacity(0.f);
-        right_rotated_view_->layer()->SetOpacity(0.f);
+        for (RotatedImageLabelView* view : GetTextViews()) {
+          DoSplitviewOpacityAnimation(view->layer(),
+                                      SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
+        }
 
         if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
           DoSplitviewOpacityAnimation(left_hightlight_view_->layer(),
@@ -392,9 +456,32 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       left_rotation_angle = 90.0 * (base::i18n::IsRTL() ? 1 : -1);
 
     left_rotated_view_->OnBoundsUpdated(left_rotated_bounds,
-                                        left_rotation_angle /* angle */);
+                                        /*angle=*/left_rotation_angle);
     right_rotated_view_->OnBoundsUpdated(right_rotated_bounds,
-                                         -left_rotation_angle /* angle */);
+                                         /*angle=*/-left_rotation_angle);
+
+    // Compute the transform for the labels. The labels slide in and out when
+    // moving between states.
+    gfx::Transform main_rotated_transform, other_rotated_transform;
+    SplitviewAnimationType animation = SPLITVIEW_ANIMATION_TEXT_SLIDE_IN;
+    if (IsPreviewAreaState(indicator_state_)) {
+      animation = SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT;
+      main_rotated_transform = ComputeLabelTransform(
+          preview_left, left_rotated_bounds, highlight_width, highlight_height,
+          landscape, preview_left);
+      other_rotated_transform = ComputeLabelTransform(
+          !preview_left, left_rotated_bounds, highlight_width, highlight_height,
+          landscape, preview_left);
+    }
+
+    DoSplitviewTransformAnimation(
+        left_rotated_view_->layer(), animation,
+        preview_left ? main_rotated_transform : other_rotated_transform,
+        nullptr);
+    DoSplitviewTransformAnimation(
+        right_rotated_view_->layer(), animation,
+        preview_left ? other_rotated_transform : main_rotated_transform,
+        nullptr);
   }
 
   // ui::ImplicitAnimationObserver:
