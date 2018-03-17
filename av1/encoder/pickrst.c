@@ -160,14 +160,6 @@ static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
 
   av1_loop_restoration_filter_unit(
       limits, rui, &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-      cm->loop_filter_across_tiles_v_enabled,
-      cm->loop_filter_across_tiles_h_enabled,
-#else
-      cm->loop_filter_across_tiles_enabled,
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
       is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
       fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
       rsc->dst->strides[is_uv], cm->rst_tmpbuf);

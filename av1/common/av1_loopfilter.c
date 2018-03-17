@@ -1653,35 +1653,6 @@ static void build_y_mask(AV1_COMMON *const cm,
     *int_4x4_y |= (size_mask[block_size] & 0xffffffffffffffffULL) << shift_y;
 }
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-// This function update the bit masks for the entire 64x64 region represented
-// by mi_row, mi_col. In case one of the edge is a tile boundary, loop filtering
-// for that edge is disabled. This function only check the tile boundary info
-// for the top left corner mi to determine the boundary information for the
-// top and left edge of the whole super block
-static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
-                                             const int mi_row, const int mi_col,
-                                             LOOP_FILTER_MASK *lfm) {
-  int i;
-  const BOUNDARY_TYPE *const bi =
-      cm->boundary_info + mi_row * cm->mi_stride + mi_col;
-
-  if (*bi & TILE_LEFT_BOUNDARY) {
-    for (i = 0; i <= TX_32X32; i++) {
-      lfm->left_y[i] &= 0xfefefefefefefefeULL;
-      lfm->left_uv[i] &= 0xeeee;
-    }
-  }
-
-  if (*bi & TILE_ABOVE_BOUNDARY) {
-    for (i = 0; i <= TX_32X32; i++) {
-      lfm->above_y[i] &= 0xffffffffffffff00ULL;
-      lfm->above_uv[i] &= 0xfff0;
-    }
-  }
-}
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-
 // This function sets up the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col.
 // TODO(JBB): This function only works for yv12.
@@ -1914,12 +1885,6 @@ void av1_setup_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
       lfm->left_uv[i] &= 0xeeee;
     }
   }
-
-#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-  if (av1_disable_loopfilter_on_tile_boundary(cm)) {
-    update_tile_boundary_filter_mask(cm, mi_row, mi_col, lfm);
-  }
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
   // Assert if we try to apply 2 different loop filters at the same position.
   assert(!(lfm->left_y[TX_16X16] & lfm->left_y[TX_8X8]));
@@ -2331,22 +2296,6 @@ static TX_SIZE set_lpf_parameters(
       const int curr_skipped = mbmi->skip && is_inter_block(mbmi);
       uint32_t level = curr_level;
       if (coord) {
-#if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-        // Note: For sub8x8 blocks, we need to look at the top-left mi unit in
-        // order
-        // to extract the correct boundary information.
-        const int mi_row_bound = ((y << scale_vert) >> MI_SIZE_LOG2);
-        const int mi_col_bound = ((x << scale_horz) >> MI_SIZE_LOG2);
-        BOUNDARY_TYPE *const bi =
-            cm->boundary_info + mi_row_bound * cm->mi_stride + mi_col_bound;
-        // here, assuming bounfary_info is set correctly based on the
-        // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
-        // only be set to true when this flag is set to 0.
-        int left_boundary = (*bi & TILE_LEFT_BOUNDARY);
-        int top_boundary = (*bi & TILE_ABOVE_BOUNDARY);
-        if (((VERT_EDGE == edge_dir) && (0 == left_boundary)) ||
-            ((HORZ_EDGE == edge_dir) && (0 == top_boundary)))
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
         {
           const MODE_INFO *const mi_prev = *(mi - mode_step);
           const int pv_row =

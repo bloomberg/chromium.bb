@@ -89,14 +89,6 @@ class AV1ExtTileTest
       encoder->Control(AV1E_SET_SINGLE_TILE_DECODING, 1);
       // Always use 64x64 max partition.
       encoder->Control(AV1E_SET_SUPERBLOCK_SIZE, AOM_SUPERBLOCK_SIZE_64X64);
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-      encoder->Control(AV1E_SET_TILE_LOOPFILTER_V, 0);
-      encoder->Control(AV1E_SET_TILE_LOOPFILTER_H, 0);
-#else
-      encoder->Control(AV1E_SET_TILE_LOOPFILTER, 0);
-#endif
-#endif
     }
 
     if (video->frame() == 1) {

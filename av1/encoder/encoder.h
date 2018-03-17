@@ -261,14 +261,6 @@ typedef struct AV1EncoderConfig {
   int tile_widths[MAX_TILE_COLS];
   int tile_heights[MAX_TILE_ROWS];
 #endif
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-  int loop_filter_across_tiles_v_enabled;
-  int loop_filter_across_tiles_h_enabled;
-#else
-  int loop_filter_across_tiles_enabled;
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
   int max_threads;
 

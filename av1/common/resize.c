@@ -1132,18 +1132,8 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
     uint8_t *const dst_ptr = dst + upscaled_x0;
     const int dst_width = upscaled_x1 - upscaled_x0;
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-    const int pad_left = (!cm->loop_filter_across_tiles_v_enabled || j == 0);
-    const int pad_right =
-        (!cm->loop_filter_across_tiles_v_enabled || j == cm->tile_cols - 1);
-#elif CONFIG_LOOPFILTERING_ACROSS_TILES
-    const int pad_left = (!cm->loop_filter_across_tiles_enabled || j == 0);
-    const int pad_right =
-        (!cm->loop_filter_across_tiles_enabled || j == cm->tile_cols - 1);
-#else
     const int pad_left = (j == 0);
     const int pad_right = (j == cm->tile_cols - 1);
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES(_EXT)
 
     if (cm->use_highbitdepth)
       highbd_upscale_normative_rect(

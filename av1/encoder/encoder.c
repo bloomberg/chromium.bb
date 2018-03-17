@@ -919,18 +919,6 @@ static void set_tile_info(AV1_COMP *cpi) {
         get_tile_size(cm->mi_rows, cm->log2_tile_rows, &cm->tile_rows);
 #endif  // CONFIG_MAX_TILE
   }
-
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-  cm->loop_filter_across_tiles_v_enabled =
-      cpi->oxcf.loop_filter_across_tiles_v_enabled;
-  cm->loop_filter_across_tiles_h_enabled =
-      cpi->oxcf.loop_filter_across_tiles_h_enabled;
-#else
-  cm->loop_filter_across_tiles_enabled =
-      cpi->oxcf.loop_filter_across_tiles_enabled;
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 }
 
 static void update_frame_size(AV1_COMP *cpi) {
