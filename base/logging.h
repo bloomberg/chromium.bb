@@ -552,9 +552,26 @@ class CheckOpResult {
 #define TRAP_SEQUENCE() __builtin_trap()
 #endif  // ARCH_CPU_*
 
+// CHECK() and the trap sequence can be invoked from a constexpr function.
+// This could make compilation fail on GCC, as it forbids directly using inline
+// asm inside a constexpr function. However, it allows calling a lambda
+// expression including the same asm.
+// The side effect is that the top of the stacktrace will not point to the
+// calling function, but to this anonymous lambda. This is still useful as the
+// full name of the lambda will typically include the name of the function that
+// calls CHECK() and the debugger will still break at the right line of code.
+#if !defined(__clang__)
+#define WRAPPED_TRAP_SEQUENCE() \
+  do {                          \
+    [] { TRAP_SEQUENCE(); }();  \
+  } while (false)
+#else
+#define WRAPPED_TRAP_SEQUENCE() TRAP_SEQUENCE()
+#endif
+
 #define IMMEDIATE_CRASH()    \
   ({                         \
-    TRAP_SEQUENCE();         \
+    WRAPPED_TRAP_SEQUENCE(); \
     __builtin_unreachable(); \
   })
 
