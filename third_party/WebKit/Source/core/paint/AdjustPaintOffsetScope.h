@@ -32,8 +32,19 @@ class AdjustPaintOffsetScope {
     DCHECK(fragment.GetLayoutObject());
     const LayoutBox& box = ToLayoutBox(*fragment.GetLayoutObject());
     if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-        !AdjustPaintOffset(box))
-      adjusted_paint_offset_ = paint_offset + fragment.Offset().ToLayoutPoint();
+        !AdjustPaintOffset(box)) {
+      if (!box.HasFlippedBlocksWritingMode()) {
+        adjusted_paint_offset_ =
+            paint_offset + fragment.Offset().ToLayoutPoint();
+      } else {
+        // fragment.Offset() is in physical coordinate, not a flipped physical
+        // coordinate, but BlockPainter::PaintChild() has already incorporated
+        // flipping and assume child painters accumulate flipped offset.
+        // NGBlockNode::CopyFragmentDataToLayoutBox() already computed flipped
+        // fragment.Offset() and stored to LayoutBox, so use it.
+        adjusted_paint_offset_ = paint_offset + box.Location();
+      }
+    }
   }
 
   const PaintInfo& GetPaintInfo() const {
