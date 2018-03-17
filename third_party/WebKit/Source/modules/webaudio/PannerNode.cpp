@@ -102,7 +102,7 @@ PannerHandler::~PannerHandler() {
 void PannerHandler::Process(size_t frames_to_process) {
   AudioBus* destination = Output(0).Bus();
 
-  if (!IsInitialized() || !Input(0).IsConnected() || !panner_.get()) {
+  if (!IsInitialized() || !panner_.get()) {
     destination->Zero();
     return;
   }
