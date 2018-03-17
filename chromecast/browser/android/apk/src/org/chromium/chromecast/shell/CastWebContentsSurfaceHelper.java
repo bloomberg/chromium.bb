@@ -113,7 +113,7 @@ class CastWebContentsSurfaceHelper {
         // well.
         mTouchEnabledState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+            filter.addAction(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
                 String intentUri = CastWebContentsIntentUtils.getUriString(intent);
                 Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);

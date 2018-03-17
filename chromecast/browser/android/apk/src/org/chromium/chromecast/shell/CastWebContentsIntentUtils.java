@@ -72,6 +72,13 @@ public class CastWebContentsIntentUtils {
     static final String ACTION_REQUEST_MOVE_OUT =
             "com.google.android.apps.castshell.intent.action.REQUEST_MOVE_OUT";
 
+    /**
+     * Action type of intent from CastWebContentsComponent to notify CastWebContentsActivity that
+     * touch should be enabled.
+     */
+    public static final String ACTION_ENABLE_TOUCH_INPUT =
+            "com.google.android.apps.castshell.intent.action.ENABLE_TOUCH_INPUT";
+
     /** Key of extra value in an intent, the value is a URI of cast://webcontents/<instanceId> */
     static final String INTENT_EXTRA_URI = "content_uri";
 
@@ -319,7 +326,7 @@ public class CastWebContentsIntentUtils {
     // CastWebContentsComponent -> CastWebContentsSurfaceHelper and host activity of
     // CastWebContentsFragment
     public static Intent enableTouchInput(String instanceId, boolean enabled) {
-        Intent intent = new Intent(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+        Intent intent = new Intent(ACTION_ENABLE_TOUCH_INPUT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enabled);
         return intent;
