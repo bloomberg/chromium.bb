@@ -1432,11 +1432,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw,
-#if CONFIG_DEPENDENT_HORZTILES
-                 cm->dependent_horz_tiles,
-#endif  // CONFIG_DEPENDENT_HORZTILES
-                 cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
@@ -1529,11 +1525,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   bw = mi_size_wide[mbmi->sb_type];
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw,
-#if CONFIG_DEPENDENT_HORZTILES
-                 cm->dependent_horz_tiles,
-#endif  // CONFIG_DEPENDENT_HORZTILES
-                 cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
   if (!mbmi->skip) {
     if (!is_inter_block(mbmi))
@@ -1782,14 +1774,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   const int mi_col_end = tile->mi_col_end;
   int mi_row, mi_col;
 
-#if CONFIG_DEPENDENT_HORZTILES
-  if (!cm->dependent_horz_tiles || mi_row_start == 0 ||
-      tile->tg_horz_boundary) {
-    av1_zero_above_context(cm, mi_col_start, mi_col_end);
-  }
-#else
   av1_zero_above_context(cm, mi_col_start, mi_col_end);
-#endif
   if (cpi->common.delta_q_present_flag) {
     xd->prev_qindex = cpi->common.base_qindex;
 #if CONFIG_EXT_DELTA_Q
@@ -2342,9 +2327,6 @@ static void write_tile_info(const AV1_COMMON *const cm,
     // rows
     aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
     if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
-#endif
-#if CONFIG_DEPENDENT_HORZTILES
-    if (cm->tile_rows > 1) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
 #endif
   }
 
@@ -3857,9 +3839,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         is_last_tile_in_tg = 0;
       }
 
-#if CONFIG_DEPENDENT_HORZTILES
-      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
-#endif
       buf->data = dst + total_size;
 
       // The last tile of the tile group does not have a header.

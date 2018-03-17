@@ -1751,21 +1751,10 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
     } else {
 #else
     if (!cm->loop_filter_across_tiles_enabled) {
-// In this case, we should use CDEF pixels for the above context
-// of the topmost stripe in each region, and for the below context
-// of the bottommost stripe in each tile.
-//
-// As a special case, when dependent-horztiles is enabled, we may be
-// allowed to use pixels from the tile above us. But we don't use pixels
-// from the tile below in that case, to match the behaviour of
-// av1_setup_across_tile_boundary_info()
-#if CONFIG_DEPENDENT_HORZTILES
-      if (cm->dependent_horz_tiles && !tile_info->tg_horz_boundary)
-        use_deblock_above = (frame_stripe > 0);
-      else
-#endif
-        use_deblock_above = (tile_stripe > 0);
-
+      // In this case, we should use CDEF pixels for the above context
+      // of the topmost stripe in each region, and for the below context
+      // of the bottommost stripe in each tile.
+      use_deblock_above = (tile_stripe > 0);
       use_deblock_below = (y1 < tile_rect.bottom);
     } else {
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT

@@ -14,26 +14,9 @@
 #include "av1/common/resize.h"
 #include "aom_dsp/aom_dsp_common.h"
 
-#if CONFIG_DEPENDENT_HORZTILES
-void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
-                              int row, int col) {
-  const int tg_start_row = cm->tile_group_start_row[row][col];
-  const int tg_start_col = cm->tile_group_start_col[row][col];
-  tile->tg_horz_boundary = ((row == tg_start_row && col >= tg_start_col) ||
-                            (row == tg_start_row + 1 && col < tg_start_col));
-#if CONFIG_MAX_TILE
-  if (cm->tile_row_independent[row]) {
-    tile->tg_horz_boundary = 1;  // this tile row is independent
-  }
-#endif
-}
-#endif
 void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
   av1_tile_set_row(tile, cm, row);
   av1_tile_set_col(tile, cm, col);
-#if CONFIG_DEPENDENT_HORZTILES
-  av1_tile_set_tg_boundary(tile, cm, row, col);
-#endif
 }
 
 #if CONFIG_MAX_TILE
@@ -118,17 +101,6 @@ void av1_calculate_tile_rows(AV1_COMMON *const cm) {
   } else {
     cm->log2_tile_rows = tile_log2(1, cm->tile_rows);
   }
-
-#if CONFIG_DEPENDENT_HORZTILES
-  // Record which tile rows must be indpendent for parallelism
-  for (i = 0, start_sb = 0; i < cm->tile_rows; i++) {
-    cm->tile_row_independent[i] = 0;
-    if (cm->tile_row_start_sb[i + 1] - start_sb > cm->max_tile_height_sb) {
-      cm->tile_row_independent[i] = 1;
-      start_sb = cm->tile_row_start_sb[i];
-    }
-  }
-#endif
 }
 
 void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
@@ -298,9 +270,7 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
 // when CONFIG_LOOPFILTERING_ACROSS_TILES_EXT is enabled, whether tile
 // is dependent horizontal tile or not is ignored. tile boundary is always
 // initialized based on the actual tile boundary.
-#if CONFIG_DEPENDENT_HORZTILES && !CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-    if (!cm->dependent_horz_tiles || tile_info->tg_horz_boundary)
-#elif CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
+#if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     if (cm->loop_filter_across_tiles_h_enabled == 0)
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     {

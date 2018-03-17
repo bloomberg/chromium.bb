@@ -267,11 +267,8 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
-  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width,
-#if CONFIG_DEPENDENT_HORZTILES
-                 cm->dependent_horz_tiles,
-#endif  // CONFIG_DEPENDENT_HORZTILES
-                 cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width, cm->mi_rows,
+                 cm->mi_cols);
 
   // Set up source buffers.
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
@@ -3744,14 +3741,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
   int mi_row;
 
-#if CONFIG_DEPENDENT_HORZTILES
-  if ((!cm->dependent_horz_tiles) || (tile_row == 0) ||
-      tile_info->tg_horz_boundary) {
-    av1_zero_above_context(cm, tile_info->mi_col_start, tile_info->mi_col_end);
-  }
-#else
   av1_zero_above_context(cm, tile_info->mi_col_start, tile_info->mi_col_end);
-#endif
 
   // Set up pointers to per thread motion search counters.
   this_tile->m_search_count = 0;   // Count of motion search hits.

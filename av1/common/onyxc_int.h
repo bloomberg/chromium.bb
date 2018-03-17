@@ -481,10 +481,7 @@ typedef struct AV1Common {
   int log2_tile_rows;                        // only valid for uniform tiles
   int tile_col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
   int tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
-#if CONFIG_DEPENDENT_HORZTILES
-  int tile_row_independent[MAX_TILE_ROWS];  // valid for 0 <= i <  tile_rows
-#endif
-  int tile_width, tile_height;  // In MI units
+  int tile_width, tile_height;               // In MI units
 #else
   int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_width, tile_height;         // In MI units
@@ -493,11 +490,6 @@ typedef struct AV1Common {
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
 
-#if CONFIG_DEPENDENT_HORZTILES
-  int dependent_horz_tiles;
-  int tile_group_start_row[MAX_TILE_ROWS][MAX_TILE_COLS];
-  int tile_group_start_col[MAX_TILE_ROWS][MAX_TILE_COLS];
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   int loop_filter_across_tiles_v_enabled;
@@ -790,25 +782,14 @@ static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh,
 
 static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
                                   int mi_row, int bh, int mi_col, int bw,
-#if CONFIG_DEPENDENT_HORZTILES
-                                  int dependent_horz_tile_flag,
-#endif  // CONFIG_DEPENDENT_HORZTILES
                                   int mi_rows, int mi_cols) {
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
   xd->mb_to_bottom_edge = ((mi_rows - bh - mi_row) * MI_SIZE) * 8;
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
 
-#if CONFIG_DEPENDENT_HORZTILES
-  if (dependent_horz_tile_flag) {
-    xd->up_available = (mi_row > tile->mi_row_start) || !tile->tg_horz_boundary;
-  } else {
-#endif  // CONFIG_DEPENDENT_HORZTILES
-    // Are edges available for intra prediction?
-    xd->up_available = (mi_row > tile->mi_row_start);
-#if CONFIG_DEPENDENT_HORZTILES
-  }
-#endif  // CONFIG_DEPENDENT_HORZTILES
+  // Are edges available for intra prediction?
+  xd->up_available = (mi_row > tile->mi_row_start);
 
   const int ss_x = xd->plane[1].subsampling_x;
   const int ss_y = xd->plane[1].subsampling_y;

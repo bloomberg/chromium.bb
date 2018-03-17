@@ -41,9 +41,6 @@ struct av1_extracfg {
   unsigned int static_thresh;
   unsigned int tile_columns;  // log2 number of tile columns
   unsigned int tile_rows;     // log2 number of tile rows
-#if CONFIG_DEPENDENT_HORZTILES
-  unsigned int dependent_horz_tiles;
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   unsigned int loop_filter_across_tiles_v_enabled;
@@ -119,9 +116,6 @@ static struct av1_extracfg default_extra_cfg = {
   0,  // static_thresh
   0,  // tile_columns
   0,  // tile_rows
-#if CONFIG_DEPENDENT_HORZTILES
-  0,  // Dependent Horizontal tiles
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   1,  // loop_filter_across_tiles_v_enabled
@@ -351,9 +345,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
         "Adaptive quantization are not supported in large scale tile "
         "coding.");
 
-#if CONFIG_DEPENDENT_HORZTILES
-  RANGE_CHECK_HI(extra_cfg, dependent_horz_tiles, 1);
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   RANGE_CHECK_HI(extra_cfg, loop_filter_across_tiles_v_enabled, 1);
@@ -687,10 +678,6 @@ static aom_codec_err_t set_encoder_config(
     oxcf->tile_heights[i] = AOMMAX(cfg->tile_heights[i], 1);
   }
 #endif
-#if CONFIG_DEPENDENT_HORZTILES
-  oxcf->dependent_horz_tiles =
-      (cfg->large_scale_tile) ? 0 : extra_cfg->dependent_horz_tiles;
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   oxcf->loop_filter_across_tiles_v_enabled =
@@ -840,14 +827,6 @@ static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_DEPENDENT_HORZTILES
-static aom_codec_err_t ctrl_set_tile_dependent_rows(aom_codec_alg_priv_t *ctx,
-                                                    va_list args) {
-  struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.dependent_horz_tiles = CAST(AV1E_SET_TILE_DEPENDENT_ROWS, args);
-  return update_extra_cfg(ctx, &extra_cfg);
-}
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 static aom_codec_err_t ctrl_set_tile_loopfilter_v(aom_codec_alg_priv_t *ctx,
@@ -1655,9 +1634,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
-#if CONFIG_DEPENDENT_HORZTILES
-  { AV1E_SET_TILE_DEPENDENT_ROWS, ctrl_set_tile_dependent_rows },
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   { AV1E_SET_TILE_LOOPFILTER_V, ctrl_set_tile_loopfilter_v },

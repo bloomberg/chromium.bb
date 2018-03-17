@@ -285,11 +285,7 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   // Distance of Mb to the various image edges. These are specified to 8th pel
   // as they are always compared to values that are in 1/8th pel units
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw,
-#if CONFIG_DEPENDENT_HORZTILES
-                 cm->dependent_horz_tiles,
-#endif  // CONFIG_DEPENDENT_HORZTILES
-                 cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
                        mi_col, num_planes);
@@ -1595,9 +1591,6 @@ static void read_tile_info(AV1Decoder *const pbi,
     cm->tile_rows = 1;
     while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
 
-#if CONFIG_DEPENDENT_HORZTILES
-    cm->dependent_horz_tiles = 0;
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
     if (cm->tile_cols > 1) {
@@ -1661,12 +1654,6 @@ static void read_tile_info(AV1Decoder *const pbi,
       get_tile_size(cm->mi_rows, cm->log2_tile_rows, &cm->tile_rows);
 
 #endif  // CONFIG_MAX_TILE
-#if CONFIG_DEPENDENT_HORZTILES
-  if (cm->tile_rows > 1)
-    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
-  else
-    cm->dependent_horz_tiles = 0;
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
   if (cm->tile_cols > 1) {
@@ -1876,11 +1863,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int tc = 0;
   int first_tile_in_tg = 0;
 
-#if CONFIG_DEPENDENT_HORZTILES
-  int tile_group_start_col = 0;
-  int tile_group_start_row = 0;
-#endif
-
   if (startTile == 0) {
     cm->largest_tile_size = 0;
     cm->largest_tile_id = 0;
@@ -1899,20 +1881,10 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Data ended before all tiles were read.");
       buf->col = c;
-#if CONFIG_DEPENDENT_HORZTILES
-      if (tc == startTile) {
-        tile_group_start_row = r;
-        tile_group_start_col = c;
-      }
-#endif  // CONFIG_DEPENDENT_HORZTILES
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
       data += hdr_offset;
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,
                       &pbi->common.error, &data, buf);
-#if CONFIG_DEPENDENT_HORZTILES
-      cm->tile_group_start_row[r][c] = tile_group_start_row;
-      cm->tile_group_start_col[r][c] = tile_group_start_col;
-#endif
       if (buf->size > cm->largest_tile_size) {
         cm->largest_tile_size = buf->size;
         cm->largest_tile_id = r * tile_cols + c;
@@ -2064,16 +2036,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       av1_tile_set_col(&tile_info, cm, col);
 
-#if CONFIG_DEPENDENT_HORZTILES
-      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
-      if (!cm->dependent_horz_tiles || tile_row == 0 ||
-          tile_info.tg_horz_boundary) {
-        av1_zero_above_context(cm, tile_info.mi_col_start,
-                               tile_info.mi_col_end);
-      }
-#else
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
-#endif
       av1_reset_loop_restoration(&td->xd, num_planes);
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT

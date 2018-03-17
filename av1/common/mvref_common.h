@@ -107,12 +107,8 @@ static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
 static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
                             int mi_rows, const AV1_COMMON *cm,
                             const POSITION *mi_pos) {
-#if CONFIG_DEPENDENT_HORZTILES
-  const int dependent_horz_tile_flag = cm->dependent_horz_tiles;
-#else
   const int dependent_horz_tile_flag = 0;
   (void)cm;
-#endif
   if (dependent_horz_tile_flag && !tile->tg_horz_boundary) {
     return !(mi_row + mi_pos->row < 0 ||
              mi_col + mi_pos->col < tile->mi_col_start ||
@@ -129,12 +125,8 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
 static INLINE int find_valid_row_offset(const TileInfo *const tile, int mi_row,
                                         int mi_rows, const AV1_COMMON *cm,
                                         int row_offset) {
-#if CONFIG_DEPENDENT_HORZTILES
-  const int dependent_horz_tile_flag = cm->dependent_horz_tiles;
-#else
   const int dependent_horz_tile_flag = 0;
   (void)cm;
-#endif
   if (dependent_horz_tile_flag && !tile->tg_horz_boundary)
     return clamp(row_offset, -mi_row, mi_rows - mi_row - 1);
   else

@@ -35,10 +35,6 @@ void av1_tile_init(TileInfo *tile, const struct AV1Common *cm, int row,
 
 void av1_tile_set_row(TileInfo *tile, const struct AV1Common *cm, int row);
 void av1_tile_set_col(TileInfo *tile, const struct AV1Common *cm, int col);
-#if CONFIG_DEPENDENT_HORZTILES
-void av1_tile_set_tg_boundary(TileInfo *tile, const struct AV1Common *const cm,
-                              int row, int col);
-#endif
 void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                          int *max_log2_tile_cols);
 

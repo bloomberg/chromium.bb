@@ -431,10 +431,6 @@ static const arg_def_t tile_width =
 static const arg_def_t tile_height =
     ARG_DEF(NULL, "tile-height", 1, "Tile heights (command separated)");
 #endif
-#if CONFIG_DEPENDENT_HORZTILES
-static const arg_def_t tile_dependent_rows =
-    ARG_DEF(NULL, "tile-dependent-rows", 1, "Enable dependent Tile rows");
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 static const arg_def_t tile_loopfilter_v =
@@ -640,9 +636,6 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &single_tile_decoding,
                                        &tile_cols,
                                        &tile_rows,
-#if CONFIG_DEPENDENT_HORZTILES
-                                       &tile_dependent_rows,
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
                                        &tile_loopfilter_v,
@@ -703,9 +696,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_SINGLE_TILE_DECODING,
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
-#if CONFIG_DEPENDENT_HORZTILES
-                                        AV1E_SET_TILE_DEPENDENT_ROWS,
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
                                         AV1E_SET_TILE_LOOPFILTER_V,
