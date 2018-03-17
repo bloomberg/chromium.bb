@@ -299,8 +299,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "touch_calibration_hand.icon",
     "tray_action_new_lock_screen_note.1x.icon",
     "tray_action_new_lock_screen_note.icon",
-    "window_control_back.1x.icon",
-    "window_control_back.icon",
   ]
 
   if (is_chrome_branded) {
