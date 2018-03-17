@@ -123,8 +123,6 @@ class CC_EXPORT LayerImpl {
 
   bool is_clipped() const { return draw_properties_.is_clipped; }
 
-  void UpdatePropertyTreeScrollOffset();
-
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
   void PopulateSharedQuadState(viz::SharedQuadState* state,
@@ -196,7 +194,6 @@ class CC_EXPORT LayerImpl {
   bool contents_opaque() const { return contents_opaque_; }
 
   float Opacity() const;
-  const gfx::Transform& Transform() const;
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId element_id);
@@ -533,7 +530,6 @@ class CC_EXPORT LayerImpl {
 
   gfx::PointF position_;
 
-  gfx::Rect clip_rect_in_target_space_;
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;

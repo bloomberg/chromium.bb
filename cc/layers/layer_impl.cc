@@ -638,10 +638,6 @@ float LayerImpl::Opacity() const {
     return 1.f;
 }
 
-const gfx::Transform& LayerImpl::Transform() const {
-  return GetTransformTree().Node(transform_tree_index())->local;
-}
-
 void LayerImpl::SetElementId(ElementId element_id) {
   if (element_id == element_id_)
     return;
