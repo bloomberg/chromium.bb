@@ -18,6 +18,7 @@
 #include "net/quic/core/frames/quic_path_response_frame.h"
 #include "net/quic/core/frames/quic_ping_frame.h"
 #include "net/quic/core/frames/quic_rst_stream_frame.h"
+#include "net/quic/core/frames/quic_stop_sending_frame.h"
 #include "net/quic/core/frames/quic_stop_waiting_frame.h"
 #include "net/quic/core/frames/quic_stream_frame.h"
 #include "net/quic/core/frames/quic_window_update_frame.h"

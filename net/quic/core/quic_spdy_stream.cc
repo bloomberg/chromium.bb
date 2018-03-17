@@ -26,7 +26,7 @@ namespace net {
                                                         " ")
 
 QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
-    : QuicStream(id, spdy_session),
+    : QuicStream(id, spdy_session, /*is_static=*/false),
       spdy_session_(spdy_session),
       visitor_(nullptr),
       headers_decompressed_(false),
@@ -37,13 +37,14 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
   // are complete.
   sequencer()->SetBlockedUntilFlush();
   if (!session()->register_streams_early()) {
-    spdy_session_->RegisterStreamPriority(id, priority());
+    spdy_session_->RegisterStreamPriority(id, /*is_static=*/false, priority());
   }
 }
 
 QuicSpdyStream::~QuicSpdyStream() {
   if (spdy_session_ != nullptr && !session()->register_streams_early()) {
-    spdy_session_->UnregisterStreamPriority(id());
+    spdy_session_->UnregisterStreamPriority(id(),
+                                            /*is_static=*/false);
   }
 }
 

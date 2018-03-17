@@ -45,7 +45,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 // static
 const SpdyPriority QuicStream::kDefaultPriority;
 
-QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
+QuicStream::QuicStream(QuicStreamId id, QuicSession* session, bool is_static)
     : sequencer_(this, session->connection()->clock()),
       id_(id),
       session_(session),
@@ -78,11 +78,11 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       ack_listener_(nullptr),
       send_buffer_(
           session->connection()->helper()->GetStreamSendBufferAllocator()),
-      buffered_data_threshold_(
-          GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
+      buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
+      is_static_(is_static) {
   SetFromConfig();
   if (session_->register_streams_early()) {
-    session_->RegisterStreamPriority(id, priority_);
+    session_->RegisterStreamPriority(id, is_static_, priority_);
   }
 }
 
@@ -95,7 +95,7 @@ QuicStream::~QuicStream() {
         << ", fin_outstanding: " << fin_outstanding_;
   }
   if (session_ != nullptr && session_->register_streams_early()) {
-    session_->UnregisterStreamPriority(id());
+    session_->UnregisterStreamPriority(id(), is_static_);
   }
 }
 

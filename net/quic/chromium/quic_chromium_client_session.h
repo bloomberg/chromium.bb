@@ -454,7 +454,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                           ack_listener) override;
   void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) override;
-  void UnregisterStreamPriority(QuicStreamId id) override;
+  void UnregisterStreamPriority(QuicStreamId id, bool is_static) override;
   void UpdateStreamPriority(QuicStreamId id,
                             SpdyPriority new_priority) override;
 

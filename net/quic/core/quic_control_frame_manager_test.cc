@@ -37,7 +37,6 @@ class QuicControlFrameManagerTest : public QuicTest {
 
  protected:
   void Initialize() {
-    SetQuicReloadableFlag(quic_use_control_frame_manager, true);
     connection_ = new MockQuicConnection(&helper_, &alarm_factory_,
                                          Perspective::IS_SERVER);
     session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);

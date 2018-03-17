@@ -30,29 +30,6 @@ TEST_F(RttStatsTest, DefaultsBeforeUpdate) {
 }
 
 TEST_F(RttStatsTest, SmoothedRtt) {
-  SetQuicReloadableFlag(quic_min_rtt_ack_delay, false);
-  // Verify that ack_delay is corrected for in Smoothed RTT.
-  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
-                       QuicTime::Delta::FromMilliseconds(100),
-                       QuicTime::Zero());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.smoothed_rtt());
-  // Verify that effective RTT of zero does not change Smoothed RTT.
-  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
-                       QuicTime::Delta::FromMilliseconds(200),
-                       QuicTime::Zero());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.smoothed_rtt());
-  // Verify that large erroneous ack_delay does not change Smoothed RTT.
-  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
-                       QuicTime::Delta::FromMilliseconds(300),
-                       QuicTime::Zero());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
-  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.smoothed_rtt());
-}
-
-TEST_F(RttStatsTest, SmoothedRttMaxAckDelay) {
-  SetQuicReloadableFlag(quic_min_rtt_ack_delay, true);
   // Verify that ack_delay is ignored in the first measurement.
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
                        QuicTime::Delta::FromMilliseconds(100),
@@ -241,10 +218,7 @@ TEST_F(RttStatsTest, ResetAfterConnectionMigrations) {
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.smoothed_rtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.min_rtt());
-  if (GetQuicReloadableFlag(quic_min_rtt_ack_delay)) {
-    EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
-              rtt_stats_.max_ack_delay());
-  }
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats_.max_ack_delay());
 
   // Reset rtt stats on connection migrations.
   rtt_stats_.OnConnectionMigration();

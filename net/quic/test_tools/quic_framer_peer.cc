@@ -160,6 +160,34 @@ bool QuicFramerPeer::AppendIetfPathResponseFrameAndTypeByte(
 }
 
 // static
+bool QuicFramerPeer::AppendIetfResetStreamFrame(QuicFramer* framer,
+                                                const QuicRstStreamFrame& frame,
+                                                QuicDataWriter* writer) {
+  return framer->AppendIetfResetStreamFrame(frame, writer);
+}
+// static
+bool QuicFramerPeer::ProcessIetfResetStreamFrame(QuicFramer* framer,
+                                                 QuicDataReader* reader,
+                                                 QuicRstStreamFrame* frame) {
+  return framer->ProcessIetfResetStreamFrame(reader, frame);
+}
+// static
+bool QuicFramerPeer::ProcessIetfStopSendingFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    QuicStopSendingFrame* stop_sending_frame) {
+  return framer->ProcessIetfStopSendingFrame(reader, stop_sending_frame);
+}
+// static
+bool QuicFramerPeer::AppendIetfStopSendingFrameAndTypeByte(
+    QuicFramer* framer,
+    const QuicStopSendingFrame& stop_sending_frame,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfStopSendingFrameAndTypeByte(stop_sending_frame,
+                                                       writer);
+}
+
+// static
 void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     framer1->encrypter_[i].swap(framer2->encrypter_[i]);

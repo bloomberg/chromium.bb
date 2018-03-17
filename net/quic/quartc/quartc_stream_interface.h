@@ -32,8 +32,6 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
 
   virtual int stream_error() = 0;
 
-  virtual int connection_error() = 0;
-
   struct WriteParameters {
     WriteParameters() : fin(false) {}
     // |fin| is set to be true when there is no more data need to be send

@@ -36,8 +36,6 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream,
 
   int stream_error() override;
 
-  int connection_error() override;
-
   void Write(const char* data,
              size_t size,
              const WriteParameters& param) override;

@@ -2304,20 +2304,20 @@ bool QuicFramer::AppendIetfStreamFrame(const QuicStreamFrame& frame,
   }
 
   // Put the type-byte in the header.
-  if (writer->WriteUInt8(frame_type) == false) {
+  if (!writer->WriteUInt8(frame_type)) {
     set_detailed_error("Unable to write frame-type.");
     return false;
   }
 
   // Stream ID always goes in the header...
-  if (writer->WriteVarInt62(static_cast<uint64_t>(frame.stream_id)) == false) {
+  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.stream_id))) {
     set_detailed_error("Writing stream id failed.");
     return false;
   }
 
   // Offset may go in the header...
   if (frame_type & IETF_STREAM_FRAME_OFF_BIT) {
-    if (writer->WriteVarInt62(static_cast<uint64_t>(frame.offset)) == false) {
+    if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.offset))) {
       set_detailed_error("Writing data offset failed.");
       return false;
     }
@@ -2325,7 +2325,7 @@ bool QuicFramer::AppendIetfStreamFrame(const QuicStreamFrame& frame,
 
   // Frame data length...
   if (frame_type & IETF_STREAM_FRAME_LEN_BIT) {
-    if (writer->WriteVarInt62(frame.data_length) == false) {
+    if (!writer->WriteVarInt62(frame.data_length)) {
       set_detailed_error("Writing data length failed.");
       return false;
     }
@@ -2956,7 +2956,7 @@ bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
                                        QuicConnectionCloseFrame* frame) {
   uint16_t code;
   if (!reader->ReadUInt16(&code)) {
-    set_detailed_error("Unable to read clode frame code.");
+    set_detailed_error("Unable to read close frame code.");
     return false;
   }
   frame->error_code = static_cast<QuicErrorCode>(code);
@@ -3043,6 +3043,91 @@ bool QuicFramer::AppendIetfPathResponseFrameAndTypeByte(
 
   if (!writer->WriteBytes(frame.data_buffer.data(), kQuicPathFrameBufferSize)) {
     set_detailed_error("Writing Path Response data failed.");
+    return false;
+  }
+  return true;
+}
+
+// Add a new ietf-format stream reset frame.
+// General format is
+//    stream id
+//    application error code
+//    final offset
+bool QuicFramer::AppendIetfResetStreamFrame(const QuicRstStreamFrame& frame,
+                                            QuicDataWriter* writer) {
+  // Put the type-byte in the header.
+  if (!writer->WriteUInt8(QuicIetfFrameType::IETF_RST_STREAM)) {
+    set_detailed_error("Unable to write reset-stream frame-type.");
+    return false;
+  }
+  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.stream_id))) {
+    set_detailed_error("Writing reset-stream stream id failed.");
+    return false;
+  }
+  if (!writer->WriteUInt16(static_cast<uint16_t>(frame.error_code))) {
+    set_detailed_error("Writing reset-stream error code failed.");
+    return false;
+  }
+  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.byte_offset))) {
+    set_detailed_error("Writing reset-stream final-offset failed.");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::ProcessIetfResetStreamFrame(QuicDataReader* reader,
+                                             QuicRstStreamFrame* frame) {
+  // Get Stream ID from frame. ReadVarIntStreamID returns false
+  // if either A) there is a read error or B) the resulting value of
+  // the Stream ID is larger than the maximum allowed value.
+  if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
+    set_detailed_error("Reading reset-stream stream id failed.");
+    return false;
+  }
+
+  uint16_t temp_uint16;
+  if (!reader->ReadUInt16(&temp_uint16)) {
+    set_detailed_error("Reading reset-stream error code failed.");
+    return false;
+  }
+  frame->error_code = static_cast<QuicRstStreamErrorCode>(temp_uint16);
+
+  if (!reader->ReadVarInt62(&frame->byte_offset)) {
+    set_detailed_error("Reading reset-stream final-offset failed.");
+    return false;
+  }
+  return true;
+}
+
+// IETF Stop Sending frames.
+bool QuicFramer::ProcessIetfStopSendingFrame(
+    QuicDataReader* reader,
+    QuicStopSendingFrame* stop_sending_frame) {
+  if (!reader->ReadVarIntStreamId(&stop_sending_frame->stream_id)) {
+    set_detailed_error("Unable to read stream id");
+    return false;
+  }
+
+  if (!reader->ReadUInt16(&stop_sending_frame->application_error_code)) {
+    set_detailed_error("Unable to read application error code.");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendIetfStopSendingFrameAndTypeByte(
+    const QuicStopSendingFrame& stop_sending_frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_STOP_SENDING)) {
+    set_detailed_error("Can not write stop sending frame type byte");
+    return false;
+  }
+  if (!writer->WriteVarInt62(stop_sending_frame.stream_id)) {
+    set_detailed_error("Can not write stop sending stream id");
+    return false;
+  }
+  if (!writer->WriteUInt16(stop_sending_frame.application_error_code)) {
+    set_detailed_error("Can not write application error code");
     return false;
   }
   return true;

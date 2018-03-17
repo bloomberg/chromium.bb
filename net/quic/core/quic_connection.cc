@@ -291,8 +291,10 @@ QuicConnection::QuicConnection(
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
       last_control_frame_id_(kInvalidControlFrameId),
-      use_control_frame_manager_(
-          GetQuicReloadableFlag(quic_use_control_frame_manager)) {
+      negotiate_version_early_(
+          GetQuicReloadableFlag(quic_server_early_version_negotiation)),
+      always_discard_packets_after_close_(
+          GetQuicReloadableFlag(quic_always_discard_packets_after_close)) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
@@ -522,6 +524,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
   const bool set_version_early =
       GetQuicReloadableFlag(quic_store_version_before_signalling);
   if (set_version_early) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_store_version_before_signalling);
     // Store the new version.
     framer_.set_version(received_version);
   }
@@ -655,6 +658,31 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     }
     ++stats_.packets_dropped;
     return false;
+  }
+
+  if (negotiate_version_early_ &&
+      version_negotiation_state_ != NEGOTIATED_VERSION &&
+      perspective_ == Perspective::IS_SERVER) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_server_early_version_negotiation);
+    if (!header.version_flag) {
+      // Packets should have the version flag till version negotiation is
+      // done.
+      QuicString error_details =
+          QuicStrCat(ENDPOINT, "Packet ", header.packet_number,
+                     " without version flag before version negotiated.");
+      QUIC_DLOG(WARNING) << error_details;
+      CloseConnection(QUIC_INVALID_VERSION, error_details,
+                      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      return false;
+    } else {
+      DCHECK_EQ(header.version, version());
+      version_negotiation_state_ = NEGOTIATED_VERSION;
+      visitor_->OnSuccessfulVersionNegotiation(version());
+      if (debug_visitor_ != nullptr) {
+        debug_visitor_->OnSuccessfulVersionNegotiation(version());
+      }
+    }
+    DCHECK_EQ(NEGOTIATED_VERSION, version_negotiation_state_);
   }
 
   return true;
@@ -1285,7 +1313,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
       version_packet->data(), version_packet->length(), self_address().host(),
       peer_address(), per_packet_options_);
 
-  if (result.status == WRITE_STATUS_ERROR) {
+  if (IsWriteError(result.status)) {
     OnWriteError(result.error_code);
     return;
   }
@@ -1320,7 +1348,6 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
 }
 
 bool QuicConnection::SendControlFrame(const QuicFrame& frame) {
-  DCHECK(use_control_frame_manager_);
   if (!CanWrite(HAS_RETRANSMITTABLE_DATA) && frame.type != PING_FRAME) {
     QUIC_DVLOG(1) << ENDPOINT << "Failed to send control frame: " << frame;
     // Do not check congestion window for ping.
@@ -1339,18 +1366,6 @@ bool QuicConnection::SendControlFrame(const QuicFrame& frame) {
     stats_.blocked_frames_sent++;
   }
   return true;
-}
-
-void QuicConnection::SendRstStream(QuicStreamId id,
-                                   QuicRstStreamErrorCode error,
-                                   QuicStreamOffset bytes_written) {
-  DCHECK(!use_control_frame_manager_);
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
-      ++last_control_frame_id_, id, error, bytes_written)));
-
-  OnStreamReset(id, error);
 }
 
 void QuicConnection::OnStreamReset(QuicStreamId id,
@@ -1388,24 +1403,6 @@ void QuicConnection::OnStreamReset(QuicStreamId id,
   }
   // TODO(ianswett): Consider checking for 3 RTOs when the last stream is
   // cancelled as well.
-}
-
-void QuicConnection::SendWindowUpdate(QuicStreamId id,
-                                      QuicStreamOffset byte_offset) {
-  DCHECK(!use_control_frame_manager_);
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(QuicFrame(
-      new QuicWindowUpdateFrame(++last_control_frame_id_, id, byte_offset)));
-}
-
-void QuicConnection::SendBlocked(QuicStreamId id) {
-  DCHECK(!use_control_frame_manager_);
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(
-      QuicFrame(new QuicBlockedFrame(++last_control_frame_id_, id)));
-  stats_.blocked_frames_sent++;
 }
 
 const QuicConnectionStats& QuicConnection::GetStats() {
@@ -1624,7 +1621,17 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   }
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
-    if (perspective_ == Perspective::IS_SERVER) {
+    if (perspective_ == Perspective::IS_CLIENT) {
+      DCHECK(!header.version_flag);
+      // If the client gets a packet without the version flag from the server
+      // it should stop sending version since the version negotiation is done.
+      packet_generator_.StopSendingVersion();
+      version_negotiation_state_ = NEGOTIATED_VERSION;
+      visitor_->OnSuccessfulVersionNegotiation(version());
+      if (debug_visitor_ != nullptr) {
+        debug_visitor_->OnSuccessfulVersionNegotiation(version());
+      }
+    } else if (!negotiate_version_early_) {
       if (!header.version_flag) {
         // Packets should have the version flag till version negotiation is
         // done.
@@ -1643,20 +1650,8 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
           debug_visitor_->OnSuccessfulVersionNegotiation(version());
         }
       }
-    } else {
-      DCHECK(!header.version_flag);
-      // If the client gets a packet without the version flag from the server
-      // it should stop sending version since the version negotiation is done.
-      packet_generator_.StopSendingVersion();
-      version_negotiation_state_ = NEGOTIATED_VERSION;
-      visitor_->OnSuccessfulVersionNegotiation(version());
-      if (debug_visitor_ != nullptr) {
-        debug_visitor_->OnSuccessfulVersionNegotiation(version());
-      }
     }
   }
-
-  DCHECK_EQ(NEGOTIATED_VERSION, version_negotiation_state_);
 
   if (last_size_ > largest_received_packet_size_) {
     largest_received_packet_size_ = last_size_;
@@ -1833,6 +1828,12 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(SerializedPacket* packet) {
+  if (always_discard_packets_after_close_ && ShouldDiscardPacket(*packet)) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_always_discard_packets_after_close, 1, 2);
+    ++stats_.packets_discarded;
+    return true;
+  }
   if (packet->packet_number < sent_packet_manager_.GetLargestSentPacket()) {
     QUIC_BUG << "Attempt to write packet:" << packet->packet_number
              << " after:" << sent_packet_manager_.GetLargestSentPacket();
@@ -1843,7 +1844,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     RecordInternalErrorLocation(QUIC_CONNECTION_WRITE_PACKET);
     return true;
   }
-  if (ShouldDiscardPacket(*packet)) {
+  if (!always_discard_packets_after_close_ && ShouldDiscardPacket(*packet)) {
     ++stats_.packets_discarded;
     return true;
   }
@@ -1915,9 +1916,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 
   // In some cases, an MTU probe can cause EMSGSIZE. This indicates that the
   // MTU discovery is permanently unsuccessful.
-  if (result.status == WRITE_STATUS_ERROR &&
-      result.error_code == kMessageTooBigErrorCode &&
-      packet->retransmittable_frames.empty() &&
+  if (IsMsgTooBig(result) && packet->retransmittable_frames.empty() &&
       packet->encrypted_length > long_term_mtu_) {
     mtu_discovery_target_ = 0;
     mtu_discovery_alarm_->Cancel();
@@ -1925,7 +1924,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     return true;
   }
 
-  if (result.status == WRITE_STATUS_ERROR) {
+  if (IsWriteError(result.status)) {
     OnWriteError(result.error_code);
     QUIC_LOG_FIRST_N(ERROR, 10)
         << ENDPOINT << "failed writing " << encrypted_length
@@ -1979,6 +1978,12 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   }
 
   return true;
+}
+
+bool QuicConnection::IsMsgTooBig(const WriteResult& result) {
+  return (result.status == WRITE_STATUS_MSG_TOO_BIG) ||
+         (IsWriteError(result.status) &&
+          result.error_code == kMessageTooBigErrorCode);
 }
 
 bool QuicConnection::ShouldDiscardPacket(const SerializedPacket& packet) {
@@ -2114,23 +2119,7 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
 
 void QuicConnection::OnPingTimeout() {
   if (!retransmission_alarm_->IsSet()) {
-    if (use_control_frame_manager_) {
-      visitor_->SendPing();
-    } else {
-      SendPing();
-    }
-  }
-}
-
-void QuicConnection::SendPing() {
-  DCHECK(!use_control_frame_manager_);
-  ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
-  packet_generator_.AddControlFrame(
-      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
-  // Send PING frame immediately, without checking for congestion window bounds.
-  packet_generator_.FlushAllQueuedFrames();
-  if (debug_visitor_ != nullptr) {
-    debug_visitor_->OnPingSent();
+    visitor_->SendPing();
   }
 }
 
@@ -2154,13 +2143,6 @@ void QuicConnection::SendAck() {
   }
 
   visitor_->OnAckNeedsRetransmittableFrame();
-  if (!use_control_frame_manager_) {
-    if (!packet_generator_.HasRetransmittableFrames()) {
-      // Visitor did not add a retransmittable frame, add a ping frame.
-      packet_generator_.AddControlFrame(
-          QuicFrame(QuicPingFrame(++last_control_frame_id_)));
-    }
-  }
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
@@ -2362,19 +2344,6 @@ void QuicConnection::CancelAllAlarms() {
   timeout_alarm_->Cancel();
   mtu_discovery_alarm_->Cancel();
   retransmittable_on_wire_alarm_->Cancel();
-}
-
-void QuicConnection::SendGoAway(QuicErrorCode error,
-                                QuicStreamId last_good_stream_id,
-                                const QuicString& reason) {
-  DCHECK(!use_control_frame_manager_);
-  QUIC_DLOG(INFO) << ENDPOINT << "Going away with error "
-                  << QuicErrorCodeToString(error) << " (" << error << ")";
-
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
-  packet_generator_.AddControlFrame(QuicFrame(new QuicGoAwayFrame(
-      ++last_control_frame_id_, error, last_good_stream_id, reason)));
 }
 
 QuicByteCount QuicConnection::max_packet_length() const {
@@ -2705,6 +2674,13 @@ bool QuicConnection::SendConnectivityProbingPacket(
   // TODO(zhongyi): remove this histogram once the cause of the INTERNAL_ERROR
   // increase is determined.
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SentConnectivityProbe", true);
+  if (always_discard_packets_after_close_ && !connected_) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_always_discard_packets_after_close, 2, 2);
+    QUIC_BUG << "Not sending connectivity probing packet as connection is "
+             << "disconnected.";
+    return false;
+  }
   if (perspective_ == Perspective::IS_SERVER && probing_writer == nullptr) {
     // Server can use default packet writer to write probing packet.
     probing_writer = writer_;
@@ -2736,7 +2712,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
       probing_packet->encrypted_buffer, probing_packet->encrypted_length,
       self_address().host(), peer_address, per_packet_options_);
 
-  if (result.status == WRITE_STATUS_ERROR) {
+  if (IsWriteError(result.status)) {
     QUIC_DLOG(INFO) << "Write probing packet not finished with error = "
                     << result.error_code;
     return false;
@@ -2956,8 +2932,7 @@ void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
   // because it needs the receiver to allow receiving overlapping stream data.
   const bool enable_session_decides_what_to_write =
       transport_version() > QUIC_VERSION_41 &&
-      GetQuicReloadableFlag(quic_streams_unblocked_by_session2) &&
-      use_control_frame_manager_;
+      GetQuicReloadableFlag(quic_streams_unblocked_by_session2);
   sent_packet_manager_.SetSessionDecideWhatToWrite(
       enable_session_decides_what_to_write);
   packet_generator_.SetCanSetTransmissionType(

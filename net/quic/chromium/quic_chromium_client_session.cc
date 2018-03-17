@@ -912,11 +912,12 @@ void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
       base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()));
 }
 
-void QuicChromiumClientSession::UnregisterStreamPriority(QuicStreamId id) {
+void QuicChromiumClientSession::UnregisterStreamPriority(QuicStreamId id,
+                                                         bool is_static) {
   if (headers_include_h2_stream_dependency_) {
     priority_dependency_state_.OnStreamDestruction(id);
   }
-  QuicSpdySession::UnregisterStreamPriority(id);
+  QuicSpdySession::UnregisterStreamPriority(id, is_static);
 }
 
 void QuicChromiumClientSession::UpdateStreamPriority(
@@ -1686,11 +1687,7 @@ void QuicChromiumClientSession::WriteToNewSocket() {
     // Unblock the connection before sending a PING packet, since it
     // may have been blocked before the migration started.
     connection()->OnCanWrite();
-    if (use_control_frame_manager()) {
-      SendPing();
-    } else {
-      connection()->SendPing();
-    }
+    SendPing();
     return;
   }
 

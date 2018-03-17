@@ -9,7 +9,7 @@
 namespace net {
 
 QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
-    : QuicStream(id, session) {}
+    : QuicStream(id, session, /*is_static=*/false) {}
 QuartcStream::~QuartcStream() {}
 
 void QuartcStream::OnDataAvailable() {
@@ -59,10 +59,6 @@ bool QuartcStream::fin_sent() {
 
 int QuartcStream::stream_error() {
   return QuicStream::stream_error();
-}
-
-int QuartcStream::connection_error() {
-  return QuicStream::connection_error();
 }
 
 void QuartcStream::Write(const char* data,

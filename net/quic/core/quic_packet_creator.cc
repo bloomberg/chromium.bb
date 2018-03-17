@@ -504,7 +504,7 @@ QuicPacketCreator::SerializeConnectivityProbingPacket() {
   return serialize_packet;
 }
 
-// TODO(jri): Make this a public method of framer?
+// TODO(b/74062209): Make this a public method of framer?
 SerializedPacket QuicPacketCreator::NoPacket() {
   return SerializedPacket(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false,
                           false);

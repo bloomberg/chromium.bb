@@ -916,6 +916,49 @@ TEST_P(QuicDataWriterTest, MultiVarInt1) {
   EXPECT_FALSE(reader.ReadVarInt62(&test_val));
 }
 
+// Test encoding/decoding stream-id values.
+void EncodeDecodeStreamId(uint64_t value_in, bool expected_decode_result) {
+  char buffer[1 * kMultiVarCount];
+  memset(buffer, 0, sizeof(buffer));
+
+  // Encode the given Stream ID.
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        Endianness::NETWORK_BYTE_ORDER);
+  EXPECT_TRUE(writer.WriteVarInt62(value_in));
+
+  QuicDataReader reader(buffer, sizeof(buffer), Endianness::NETWORK_BYTE_ORDER);
+  QuicStreamId received_stream_id;
+  bool read_result = reader.ReadVarIntStreamId(&received_stream_id);
+  EXPECT_EQ(expected_decode_result, read_result);
+  if (read_result) {
+    EXPECT_EQ(value_in, received_stream_id);
+  }
+}
+
+// Test writing & reading stream-ids of various value.
+TEST_P(QuicDataWriterTest, StreamId1) {
+  // Check a 1-byte QuicStreamId, should work
+  EncodeDecodeStreamId(UINT64_C(0x15), true);
+
+  // Check a 2-byte QuicStream ID. It should work.
+  EncodeDecodeStreamId(UINT64_C(0x1567), true);
+
+  // Check a QuicStreamId that requires 4 bytes of encoding
+  // This should work.
+  EncodeDecodeStreamId(UINT64_C(0x34567890), true);
+
+  // Check a QuicStreamId that requires 8 bytes of encoding
+  // but whose value is in the acceptable range.
+  // This should work.
+  EncodeDecodeStreamId(UINT64_C(0xf4567890), true);
+
+  // Check QuicStreamIds that require 8 bytes of encoding
+  // and whose value is not acceptable.
+  // This should fail.
+  EncodeDecodeStreamId(UINT64_C(0x100000000), false);
+  EncodeDecodeStreamId(UINT64_C(0x3fffffffffffffff), false);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

@@ -267,4 +267,17 @@ bool QuicDataReader::ReadVarInt62(uint64_t* result) {
   return false;
 }
 
+bool QuicDataReader::ReadVarIntStreamId(QuicStreamId* result) {
+  uint64_t temp_uint64;
+  // TODO(fkastenholz): We should disambiguate read-errors from
+  // value errors.
+  if (!this->ReadVarInt62(&temp_uint64)) {
+    return false;
+  }
+  if (temp_uint64 > kQuicMaxStreamId) {
+    return false;
+  }
+  *result = static_cast<QuicStreamId>(temp_uint64);
+  return true;
+}
 }  // namespace net
