@@ -34,7 +34,8 @@ namespace assistant {
 class AssistantManagerService;
 
 class Service : public service_manager::Service,
-                public ash::mojom::SessionActivationObserver {
+                public ash::mojom::SessionActivationObserver,
+                public mojom::AssistantPlatform {
  public:
   Service();
   ~Service() override;
@@ -55,6 +56,10 @@ class Service : public service_manager::Service,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindAssistantConnection(mojom::AssistantRequest request);
+  void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
+
+  // mojom::AssistantPlatform overrides:
+  void Init(mojom::AudioInputPtr audio_input) override;
 
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
@@ -73,19 +78,17 @@ class Service : public service_manager::Service,
 
   void AddAshSessionObserver();
 
-  AccountId account_id_;
-
   service_manager::BinderRegistry registry_;
 
-  identity::mojom::IdentityManagerPtr identity_manager_;
-
   mojo::BindingSet<mojom::Assistant> bindings_;
-
+  mojo::Binding<mojom::AssistantPlatform> platform_binding_;
   mojo::Binding<ash::mojom::SessionActivationObserver>
       session_observer_binding_;
 
-  std::unique_ptr<AssistantManagerService> assistant_manager_service_;
+  identity::mojom::IdentityManagerPtr identity_manager_;
 
+  AccountId account_id_;
+  std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);

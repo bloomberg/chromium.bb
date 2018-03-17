@@ -49,6 +49,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/chromeos/assistant/assistant_client.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #endif
 
@@ -131,8 +132,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     if (chromeos::switches::IsAssistantEnabled()) {
-      content::BrowserContext::GetConnectorFor(user_profile)
-          ->StartService(chromeos::assistant::mojom::kServiceName);
+      assistant::AssistantClient::Get()->Start(
+          content::BrowserContext::GetConnectorFor(user_profile));
     }
 #endif
 

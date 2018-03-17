@@ -30,11 +30,12 @@ class AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver {
  public:
-  AssistantManagerServiceImpl();
+  explicit AssistantManagerServiceImpl(mojom::AudioInputPtr audio_input);
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token) override;
+  bool IsRunning() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
 
@@ -49,6 +50,7 @@ class AssistantManagerServiceImpl
   void OnOpenUrl(const std::string& url) override;
 
  private:
+  bool running_ = false;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;

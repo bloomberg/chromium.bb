@@ -26,6 +26,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void Start(const std::string& access_token) override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
+  bool IsRunning() const override;
 
   // mojom::AssistantEvent overrides:
   void SendTextQuery(const std::string& query) override;
@@ -33,6 +34,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
       mojom::AssistantEventSubscriberPtr subscriber) override;
 
  private:
+  bool running_ = false;
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceImpl);
 };
 

@@ -37,6 +37,8 @@ source_set("lib") {
     sources += [
       "assistant_manager_service_impl.cc",
       "assistant_manager_service_impl.h",
+      "platform/audio_input_provider_impl.cc",
+      "platform/audio_input_provider_impl.h",
       "platform/system_provider_impl.cc",
       "platform/system_provider_impl.h",
       "platform_api_impl.cc",

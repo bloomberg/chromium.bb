@@ -119,16 +119,13 @@
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "net/cert/sth_distributor.h"
 #include "rlz/features/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -141,7 +138,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
+#include "chrome/browser/chromeos/assistant/assistant_client.h"
 #endif
 
 namespace chromeos {
@@ -1379,8 +1376,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     if (chromeos::switches::IsAssistantEnabled()) {
-      content::BrowserContext::GetConnectorFor(profile)->StartService(
-          chromeos::assistant::mojom::kServiceName);
+      assistant::AssistantClient::Get()->Start(
+          content::BrowserContext::GetConnectorFor(profile));
     }
 #endif
 

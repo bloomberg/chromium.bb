@@ -189,6 +189,10 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/chromeos/assistant/assistant_client.h"
+#endif
+
 namespace chromeos {
 
 namespace {
@@ -702,6 +706,11 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   arc_voice_interaction_controller_client_ =
       std::make_unique<arc::VoiceInteractionControllerClient>();
 
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  if (chromeos::switches::IsAssistantEnabled())
+    assistant_client_ = std::make_unique<assistant::AssistantClient>();
+#endif
+
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
@@ -1070,6 +1079,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   arc_service_launcher_->Shutdown();
 
   arc_voice_interaction_controller_client_.reset();
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  assistant_client_.reset();
+#endif
 
   // Unregister CrosSettings observers before CrosSettings is destroyed.
   shutdown_policy_forwarder_.reset();

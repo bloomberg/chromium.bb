@@ -8,7 +8,10 @@
         "identity": [ "identity_manager" ]
       },
       "provides": {
-        "assistant": [ "chromeos::assistant::mojom::Assistant" ]
+        "assistant": [
+            "chromeos::assistant::mojom::Assistant",
+            "chromeos::assistant::mojom::AssistantPlatform"
+        ]
       }
     }
   }
