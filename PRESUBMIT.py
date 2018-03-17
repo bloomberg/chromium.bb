@@ -495,7 +495,8 @@ _BANNED_CPP_FUNCTIONS = (
 
 _IPC_ENUM_TRAITS_DEPRECATED = (
     'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
-    'See http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc')
+    'See http://www.chromium.org/Home/chromium-security/education/'
+    'security-tips-for-ipc')
 
 _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
     r".*[\\\/]BuildHooksAndroidImpl\.java",
@@ -776,7 +777,8 @@ def _CheckNoDEPSGIT(input_api, output_api):
       'Never commit changes to .DEPS.git. This file is maintained by an\n'
       'automated system based on what\'s in DEPS and your changes will be\n'
       'overwritten.\n'
-      'See https://sites.google.com/a/chromium.org/dev/developers/how-tos/get-the-code#Rolling_DEPS\n'
+      'See https://sites.google.com/a/chromium.org/dev/developers/how-tos/'
+      'get-the-code#Rolling_DEPS\n'
       'for more information')]
   return []
 
@@ -937,13 +939,13 @@ def _CheckUnwantedDependencies(input_api, output_api):
   added_java_imports = []
   for f in input_api.AffectedFiles():
     if CppChecker.IsCppFile(f.LocalPath()):
-      changed_lines = [line for line_num, line in f.ChangedContents()]
+      changed_lines = [line for _, line in f.ChangedContents()]
       added_includes.append([f.AbsoluteLocalPath(), changed_lines])
     elif ProtoChecker.IsProtoFile(f.LocalPath()):
-      changed_lines = [line for line_num, line in f.ChangedContents()]
+      changed_lines = [line for _, line in f.ChangedContents()]
       added_imports.append([f.AbsoluteLocalPath(), changed_lines])
     elif JavaChecker.IsJavaFile(f.LocalPath()):
-      changed_lines = [line for line_num, line in f.ChangedContents()]
+      changed_lines = [line for _, line in f.ChangedContents()]
       added_java_imports.append([f.AbsoluteLocalPath(), changed_lines])
 
   deps_checker = checkdeps.DepsChecker(input_api.PresubmitLocalPath())
@@ -1102,8 +1104,8 @@ def _CheckGoogleSupportAnswerUrl(input_api, output_api):
   results = []
   if errors:
     results.append(output_api.PresubmitPromptWarning(
-      'Found Google support URL addressed by answer number. Please replace with '
-      'a p= identifier instead. See crbug.com/679462\n', errors))
+      'Found Google support URL addressed by answer number. Please replace '
+      'with a p= identifier instead. See crbug.com/679462\n', errors))
   return results
 
 
@@ -1174,7 +1176,7 @@ def _ExtractAddRulesFromParsedDeps(parsed_deps):
       rule[1:] for rule in parsed_deps.get('include_rules', [])
       if rule.startswith('+') or rule.startswith('!')
   ])
-  for specific_file, rules in parsed_deps.get('specific_include_rules',
+  for _, rules in parsed_deps.get('specific_include_rules',
                                               {}).iteritems():
     add_rules.update([
         rule[1:] for rule in rules
@@ -1696,7 +1698,7 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
               'per-file %s=file://ipc/SECURITY_OWNERS' % pattern,
           ]
       }
-      to_check[owners_file][pattern]['files'].append(f)
+    to_check[owners_file][pattern]['files'].append(input_file)
 
   # Iterate through the affected files to see what we actually need to check
   # for. We should only nag patch authors about per-file rules if a file in that
@@ -1759,7 +1761,7 @@ def _CheckIpcOwners(input_api, output_api):
   for owners_file, patterns in to_check.iteritems():
     missing_lines = []
     files = []
-    for pattern, entry in patterns.iteritems():
+    for _, entry in patterns.iteritems():
       missing_lines.extend(entry['rules'])
       files.extend(['  %s' % f.LocalPath() for f in entry['files']])
     if missing_lines:
@@ -2408,7 +2410,7 @@ def _CheckForRelativeIncludes(input_api, output_api):
     if not CppChecker.IsCppFile(f.LocalPath()):
       continue
 
-    relative_includes = [line for line_num, line in f.ChangedContents()
+    relative_includes = [line for _, line in f.ChangedContents()
                          if "#include" in line and "../" in line]
     if not relative_includes:
       continue
@@ -2945,9 +2947,12 @@ def _CheckForWindowsLineEndings(input_api, output_api):
   source_file_filter = lambda f: input_api.FilterSourceFile(
       f, white_list=file_inclusion_pattern, black_list=None)
   for f in input_api.AffectedSourceFiles(source_file_filter):
-    for line_number, line in f.ChangedContents():
+    include_file = False
+    for _, line in f.ChangedContents():
       if line.endswith('\r\n'):
-        problems.append(f.LocalPath())
+        include_file = True
+    if include_file:
+      problems.append(f.LocalPath())
 
   if problems:
     return [output_api.PresubmitPromptWarning('Are you sure that you want '
@@ -2957,8 +2962,7 @@ def _CheckForWindowsLineEndings(input_api, output_api):
   return []
 
 
-def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None,
-                           lint_filters=None, verbose_level=None):
+def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None):
   """Checks that all source files use SYSLOG properly."""
   syslog_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
