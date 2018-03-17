@@ -73,6 +73,13 @@ cr.define('extensions', function() {
       role: 'banner',
     },
 
+    /** @override */
+    detached: function() {
+      const openToastElement = this.$$('cr-toast[open]');
+      if (openToastElement)
+        openToastElement.hide();
+    },
+
     /**
      * @return {boolean}
      * @private
@@ -149,6 +156,9 @@ cr.define('extensions', function() {
       this.isUpdating_ = true;
       const toastElement = this.$$('cr-toast');
       this.toastLabel_ = this.i18n('toolbarUpdatingToast');
+
+      // Keep the toast open indefinitely.
+      toastElement.duration = 0;
       toastElement.show();
       this.delegate.updateAllExtensions()
           .then(() => {
@@ -156,10 +166,11 @@ cr.define('extensions', function() {
             const doneText = this.i18n('toolbarUpdateDone');
             this.fire('iron-announce', {text: doneText});
             this.toastLabel_ = doneText;
-            toastElement.show();
+            toastElement.show(3000);
             this.isUpdating_ = false;
           })
           .catch(function() {
+            toastElement.hide();
             this.isUpdating_ = false;
           });
     },
