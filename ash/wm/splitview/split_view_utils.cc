@@ -23,9 +23,15 @@ constexpr base::TimeDelta kOtherFadeInOutMs =
 // The delay before the other highlight starts fading in or out.
 constexpr base::TimeDelta kOtherFadeOutDelayMs =
     base::TimeDelta::FromMilliseconds(117);
+// The animation speed for any animation on the indicator labels.
+constexpr base::TimeDelta kLabelAnimationMs =
+    base::TimeDelta::FromMilliseconds(83);
+// The delay before the indicator labels start animating.
+constexpr base::TimeDelta kLabelAnimationDelayMs =
+    base::TimeDelta::FromMilliseconds(167);
 
 constexpr float kHighlightOpacity = 0.3f;
-constexpr float kPREVIEW_AREAHighlightOpacity = 0.18f;
+constexpr float kPreviewAreaHighlightOpacity = 0.18f;
 
 // Gets the duration, tween type and delay before animation based on |type|.
 void GetAnimationValuesForType(SplitviewAnimationType type,
@@ -39,8 +45,8 @@ void GetAnimationValuesForType(SplitviewAnimationType type,
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT:
-    case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
-    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
+    case SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT:
+    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
       *out_duration = kHighlightsFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
@@ -48,6 +54,15 @@ void GetAnimationValuesForType(SplitviewAnimationType type,
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
       *out_duration = kOtherFadeInOutMs;
+      *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
+      return;
+    case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
+    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
+    case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
+      if (type == SPLITVIEW_ANIMATION_TEXT_SLIDE_IN)
+        *out_delay = kLabelAnimationDelayMs;
+      *out_duration = kLabelAnimationMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
@@ -73,8 +88,9 @@ void ApplyAnimationSettings(ui::ScopedLayerAnimationSettings* settings,
   if (!delay.is_zero()) {
     settings->SetPreemptionStrategy(
         ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    animator->SchedulePauseForProperties(delay,
-                                         ui::LayerAnimationElement::OPACITY);
+    animator->SchedulePauseForProperties(
+        delay, ui::LayerAnimationElement::OPACITY |
+                   ui::LayerAnimationElement::TRANSFORM);
   }
 }
 
@@ -88,18 +104,20 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
+    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
       target_opacity = 0.f;
       break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
-      target_opacity = kPREVIEW_AREAHighlightOpacity;
+      target_opacity = kPreviewAreaHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
       target_opacity = kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
+    case SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT:
       target_opacity = 1.f;
       break;
     default:
@@ -129,9 +147,11 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
     return;
 
   switch (type) {
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
+    case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
+    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
       break;
     default:
       NOTREACHED() << "Not a valid split view transform type.";
