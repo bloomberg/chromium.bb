@@ -107,9 +107,13 @@ Polymer({
    * The unload callback is needed because the sign-in flow needs to know
    * if the user has closed the tab with the sync settings. This property is
    * non-null if the user is currently navigated on the sync settings route.
+   *
+   * TODO(scottchen): We had to change from unload to beforeunload due to
+   *     crbug.com/501292. Change back to unload once it's fixed.
+   *
    * @private {?Function}
    */
-  unloadCallback_: null,
+  beforeunloadCallback_: null,
 
   /**
    * Whether the user decided to abort sync.
@@ -138,9 +142,9 @@ Polymer({
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateAwayFromPage_();
 
-    if (this.unloadCallback_) {
-      window.removeEventListener('unload', this.unloadCallback_);
-      this.unloadCallback_ = null;
+    if (this.beforeunloadCallback_) {
+      window.removeEventListener('beforeunload', this.beforeunloadCallback_);
+      this.beforeunloadCallback_ = null;
     }
   },
 
@@ -165,7 +169,7 @@ Polymer({
   onNavigateToPage_: function() {
     assert(settings.getCurrentRoute() == settings.routes.SYNC);
 
-    if (this.unloadCallback_)
+    if (this.beforeunloadCallback_)
       return;
 
     // Display loading page until the settings have been retrieved.
@@ -173,13 +177,13 @@ Polymer({
 
     this.browserProxy_.didNavigateToSyncPage();
 
-    this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
-    window.addEventListener('unload', this.unloadCallback_);
+    this.beforeunloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
+    window.addEventListener('beforeunload', this.beforeunloadCallback_);
   },
 
   /** @private */
   onNavigateAwayFromPage_: function() {
-    if (!this.unloadCallback_)
+    if (!this.beforeunloadCallback_)
       return;
 
     // Reset the status to CONFIGURE such that the searching algorithm can
@@ -189,8 +193,8 @@ Polymer({
     this.browserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
     this.didAbort_ = false;
 
-    window.removeEventListener('unload', this.unloadCallback_);
-    this.unloadCallback_ = null;
+    window.removeEventListener('beforeunload', this.beforeunloadCallback_);
+    this.beforeunloadCallback_ = null;
   },
 
   /**
