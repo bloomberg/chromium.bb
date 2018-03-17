@@ -13,7 +13,7 @@ from core import oauth_api
 from core import upload_results_to_perf_dashboard
 from core import results_merger
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 
 
 RESULTS_URL = 'https://chromeperf.appspot.com'
@@ -100,6 +100,8 @@ def _process_perf_results(output_json, configuration_name,
   try:
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for directory in benchmark_directory_list:
+        # Obtain the test name we are running
+        benchmark_name = basename(directory)
         disabled = False
         with open(join(directory, 'test_results.json')) as json_data:
           json_results = json.load(json_data)
@@ -121,11 +123,11 @@ def _process_perf_results(output_json, configuration_name,
             test_results_list.append(json_results)
         if disabled:
           # We don't upload disabled benchmarks
-          print 'Benchmark %s disabled' % directory
+          print 'Benchmark %s disabled' % benchmark_name
           continue
-        print 'Uploading perf results from %s benchmark' % directory
+        print 'Uploading perf results from %s benchmark' % benchmark_name
         _upload_perf_results(join(directory, 'perf_results.json'),
-            directory, configuration_name, build_properties,
+            benchmark_name, configuration_name, build_properties,
             oauth_file, tmpfile_dir)
       _merge_json_output(output_json, test_results_list)
   finally:
