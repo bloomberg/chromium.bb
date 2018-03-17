@@ -4,11 +4,18 @@
 
 suite('cr-toast', function() {
   let toast;
+  let mockTimer;
 
   setup(function() {
     PolymerTest.clearBody();
     toast = document.createElement('cr-toast');
     document.body.appendChild(toast);
+    mockTimer = new MockTimer();
+    mockTimer.install();
+  });
+
+  teardown(function() {
+    mockTimer.uninstall();
   });
 
   test('simple show/hide', function() {
@@ -21,10 +28,7 @@ suite('cr-toast', function() {
     assertFalse(toast.open);
   });
 
-  test('auto hide', function() {
-    const mockTimer = new MockTimer();
-    mockTimer.install();
-
+  test('auto hide with show()', function() {
     const duration = 100;
     toast.duration = duration;
 
@@ -33,18 +37,95 @@ suite('cr-toast', function() {
 
     mockTimer.tick(duration);
     assertFalse(toast.open);
+  });
 
-    // Check that multiple shows reset the timeout.
-    toast.show();
+  test('auto hide with (open = true)', function() {
+    const duration = 100;
+    toast.duration = duration;
+
+    toast.open = true;
+
+    mockTimer.tick(duration);
+    assertFalse(toast.open);
+  });
+
+  test('show() clears auto-hide', function() {
+    const duration = 70;
+    toast.duration = duration;
+    toast.open = true;
     mockTimer.tick(duration - 1);
-    assertTrue(toast.open);
-
     toast.show();
+
+    // Auto-hide is cleared and toast should remain open.
     mockTimer.tick(1);
-    // |duration| has passed, the next line would fail if the timeout wasn't
-    // reset.
     assertTrue(toast.open);
 
-    mockTimer.uninstall();
+    // When duration passes, new auto-hide should close toast.
+    mockTimer.tick(duration - 2);
+    assertTrue(toast.open);
+    mockTimer.tick(1);
+    mockTimer.tick(duration);
+    assertFalse(toast.open);
+  });
+
+  test('(open = true) does not clear auto-hide', function() {
+    const duration = 70;
+    toast.duration = duration;
+    toast.open = true;
+    mockTimer.tick(duration - 1);
+    toast.open = true;
+    mockTimer.tick(1);
+    assertFalse(toast.open);
+  });
+
+  test('clearing duration clears timeout', function() {
+    const nonZeroDuration = 30;
+    toast.duration = nonZeroDuration;
+    toast.open = true;
+    assertTrue(toast.open);
+
+    const zeroDuration = 0;
+    toast.duration = zeroDuration;
+    mockTimer.tick(nonZeroDuration);
+    assertTrue(toast.open);
+  });
+
+  test('setting a duration starts new auto-hide', function() {
+    toast.duration = 0;
+    toast.show();
+
+    const nonZeroDuration = 50;
+    toast.duration = nonZeroDuration;
+    mockTimer.tick(nonZeroDuration - 1);
+    assertTrue(toast.open);
+
+    mockTimer.tick(1);
+    assertFalse(toast.open);
+  });
+
+  test('setting duration clears auto-hide', function() {
+    const oldDuration = 30;
+    toast.duration = oldDuration;
+    toast.open = true;
+
+    mockTimer.tick(oldDuration - 1);
+    assertTrue(toast.open);
+
+    const newDuration = 50;
+    toast.duration = newDuration;
+    mockTimer.tick(newDuration - 1);
+    assertTrue(toast.open);
+
+    mockTimer.tick(1);
+    assertFalse(toast.open);
+  });
+
+  test('setting duration using show(duration)', function() {
+    const duration = 100;
+    toast.show(duration);
+    assertTrue(toast.open);
+
+    mockTimer.tick(duration);
+    assertFalse(toast.open);
   });
 });
