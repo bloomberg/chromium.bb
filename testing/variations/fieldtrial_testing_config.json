@@ -149,7 +149,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PromotePanelOpeningExperiment2",
+                    "name": "PromotePanelOpeningExperiment",
                     "params": {
                         "availability": ">=30",
                         "event_1": "name:contextual_search_promote_panel_open_iph_trigger;comparator:<2;window:680;storage:680",
@@ -172,7 +172,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PromoteTapExperiment2",
+                    "name": "PromoteTapExperiment",
                     "params": {
                         "availability": ">=30",
                         "event_1": "name:contextual_search_panel_opened;comparator:>=2;window:90;storage:90",
@@ -195,7 +195,7 @@
             ],
             "experiments": [
                 {
-                    "name": "WebSearchExperiment2",
+                    "name": "WebSearchExperiment",
                     "params": {
                         "availability": ">=30",
                         "event_1": "name:web_search_performed;comparator:>=1;window:90;storage:90",
