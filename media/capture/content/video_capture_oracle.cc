@@ -108,6 +108,20 @@ void VideoCaptureOracle::SetCaptureSizeConstraints(
                                      use_fixed_aspect_ratio);
 }
 
+void VideoCaptureOracle::SetAutoThrottlingEnabled(bool enabled) {
+  if (auto_throttling_enabled_ == enabled)
+    return;
+  auto_throttling_enabled_ = enabled;
+
+  // When not auto-throttling, have the CaptureResolutionChooser target the max
+  // resolution within constraints.
+  if (!enabled)
+    resolution_chooser_.SetTargetFrameArea(std::numeric_limits<int>::max());
+
+  if (next_frame_number_ > 0)
+    CommitCaptureSizeAndReset(GetFrameTimestamp(next_frame_number_ - 1));
+}
+
 void VideoCaptureOracle::SetSourceSize(const gfx::Size& source_size) {
   resolution_chooser_.SetSourceSize(source_size);
   // If the |resolution_chooser_| computed a new capture size, that will become

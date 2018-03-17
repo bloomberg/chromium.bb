@@ -88,7 +88,9 @@ interface FrameSinkVideoCapturer {
 
   // Specifies the minimum amount of time that must elapse between changing the
   // size of video frames. This can be set to zero to disable resize throttling,
-  // which means each video frame could have a different size.
+  // which means each video frame could have a different size. Note that
+  // setting this period too low can result in erratic frame sizing behaviour;
+  // consider disabling auto-throttling in such cases.
   //
   // Default, if never called: 3 seconds.
   SetMinSizeChangePeriod(mojo.common.mojom.TimeDelta min_period);
@@ -106,6 +108,15 @@ interface FrameSinkVideoCapturer {
   // can handle variable frame resolutions.
   SetResolutionConstraints(gfx.mojom.Size min_size, gfx.mojom.Size max_size,
                            bool use_fixed_aspect_ratio);
+
+  // Specifies whether capture resolution should be automatically adjusted
+  // within the bounds provided to SetReslutionConstraints in response to
+  // utilization feedback from the consumer and the buffer pool. When set to
+  // false, the capturer will always use the highest resolution within
+  // constraints that doesn't exceed the source size.
+  //
+  // Default, if never called: true.
+  SetAutoThrottlingEnabled(bool enabled);
 
   // Targets a different compositor frame sink. This may be called anytime,
   // before or after Start().

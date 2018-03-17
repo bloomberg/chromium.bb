@@ -66,6 +66,8 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
       gfx::Size(1, 1),
       gfx::Size(media::limits::kMaxDimension, media::limits::kMaxDimension),
       false);
+  video_capturer_->SetAutoThrottlingEnabled(false);
+  video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
   video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
                                        kMaxFrameRate);
 
