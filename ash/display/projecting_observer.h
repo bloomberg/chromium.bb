@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_PROJECTING_OBSERVER_CHROMEOS_H_
-#define ASH_DISPLAY_PROJECTING_OBSERVER_CHROMEOS_H_
+#ifndef ASH_DISPLAY_PROJECTING_OBSERVER_H_
+#define ASH_DISPLAY_PROJECTING_OBSERVER_H_
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
@@ -63,4 +63,4 @@ class ASH_EXPORT ProjectingObserver
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_PROJECTING_OBSERVER_CHROMEOS_H_
+#endif  // ASH_DISPLAY_PROJECTING_OBSERVER_H_

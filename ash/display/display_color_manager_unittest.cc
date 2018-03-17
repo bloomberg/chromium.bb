@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_color_manager_chromeos.h"
+#include "ash/display/display_color_manager.h"
 
 #include <memory>
 
