@@ -1477,8 +1477,7 @@ crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 crbug.com/771977 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure ]
 crbug.com/772048 crbug.com/772060 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
-# Test also leaky on WebKit Linux Trusty.
-crbug.com/816534 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Pass Crash Failure ]
+crbug.com/816534 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Pass Crash ]
 crbug.com/816534 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Pass Crash ]
 crbug.com/771722 external/wpt/web-animations/timing-model/animations/the-current-time-of-an-animation.html [ Failure ]
 crbug.com/771722 crbug.com/771751 crbug.com/772060 external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html [ Failure ]
@@ -2561,14 +2560,6 @@ crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-dat
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Failure Timeout ]
-
-# Sheriff failures 2018-03-13
-crbug.com/821547 [ Linux ] animations/composition/backdrop-filter-composition.html [ Failure Pass ]
-crbug.com/821547 [ Linux ] animations/interpolation/backdrop-filter-interpolation.html [ Failure Pass ]
-# crbug.com/821547 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Failure Pass ]
-crbug.com/821547 [ Linux ] svg/animations/additive-type-by-animation.html [ Failure Pass ]
-crbug.com/821547 [ Linux ] virtual/threaded/animations/composition/backdrop-filter-composition.html [ Failure Pass ]
-crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/backdrop-filter-interpolation.html [ Failure Pass ]
 
 # Disabling SharedArrayBuffer
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/identity-not-preserved.html [ Failure ]
