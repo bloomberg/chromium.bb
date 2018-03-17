@@ -375,16 +375,6 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
       return false;
     }
 
-    gpu::GPUInfo gpu_info;
-    gpu::CollectContextGraphicsInfo(&gpu_info);
-    // See crbug.com/822716, the ATI proprietary driver has eglGetProcAddress
-    // but eglInitialize crashes with x11.
-    if (gpu_info.driver_vendor.find("ATI Technologies Inc.") !=
-        std::string::npos) {
-      LOG(INFO) << "Skip test, ATI proprietary driver crashes with egl/x11";
-      return false;
-    }
-
     gl_reinitialized_ = true;
     gl::init::ShutdownGL(false /* due_to_fallback */);
     if (!GLTestHelper::InitializeGL(
