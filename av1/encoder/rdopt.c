@@ -5050,12 +5050,11 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
   xd->cfl.store_y = !x->skip_chroma_rd;
   if (xd->cfl.store_y) {
-    // Perform one extra call to txfm_rd_in_plane(), with the values chosen
-    // during luma RDO, so we can store reconstructed luma values
-    RD_STATS this_rd_stats;
-    txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
-                     mbmi->sb_type, mbmi->tx_size,
-                     cpi->sf.use_fast_coef_costing);
+    // Restore reconstructed luma values.
+    const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
+    const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
+    av1_encode_intra_block_plane(cpi, x, mbmi->sb_type, AOM_PLANE_Y,
+                                 x->optimize, mi_row, mi_col);
     xd->cfl.store_y = 0;
   }
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
@@ -8082,8 +8081,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
     xd->cfl.store_y = !x->skip_chroma_rd;
     if (xd->cfl.store_y) {
-      // Perform one extra call to txfm_rd_in_plane(), with the values chosen
-      // during luma RDO, so we can store reconstructed luma values
+      // Restore reconstructed luma values.
       memcpy(x->blk_skip[0], ctx->blk_skip[0],
              sizeof(uint8_t) * ctx->num_4x4_blk);
       av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y,
