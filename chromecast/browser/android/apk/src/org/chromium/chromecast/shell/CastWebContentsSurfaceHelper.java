@@ -49,6 +49,7 @@ class CastWebContentsSurfaceHelper {
     private final Controller<WebContents> mHasWebContentsState = new Controller<>();
     private final Controller<Unit> mResumedState = new Controller<>();
     private final Controller<Uri> mHasUriState = new Controller<>();
+    private final Controller<Uri> mTouchEnabledState = new Controller<>();
 
     private final Activity mHostActivity;
     private final boolean mShowInFragment;
@@ -106,6 +107,23 @@ class CastWebContentsSurfaceHelper {
                 maybeFinishLater();
             });
         });
+
+        // Receive broadcasts indicating that touch input should be enabled.
+        // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as
+        // well.
+        mTouchEnabledState.watch((Uri uri) -> {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+            return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
+                String intentUri = CastWebContentsIntentUtils.getUriString(intent);
+                Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);
+                if (!uri.toString().equals(intentUri)) {
+                    Log.d(TAG, "Current URI=" + mUri + "; intent URI=" + intentUri);
+                    return;
+                }
+                mTouchInputEnabled = CastWebContentsIntentUtils.isTouchable(intent);
+            });
+        });
     }
 
     void onNewWebContents(
@@ -129,6 +147,7 @@ class CastWebContentsSurfaceHelper {
 
         mHasUriState.set(mUri);
         mHasWebContentsState.set(webContents);
+        mTouchEnabledState.set(mUri);
 
         showWebContents(webContents);
     }
@@ -262,6 +281,7 @@ class CastWebContentsSurfaceHelper {
         detachWebContentsIfAny();
         mHasWebContentsState.reset();
         mHasUriState.reset();
+        mTouchEnabledState.reset();
     }
 
     String getInstanceId() {

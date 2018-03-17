@@ -69,7 +69,14 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
       web_contents->GetJavaWebContents();
 
   Java_CastContentWindowAndroid_createWindowForWebContents(
-      env, java_window_, java_web_contents, static_cast<int>(visibility_priority));
+      env, java_window_, java_web_contents,
+      static_cast<int>(visibility_priority));
+}
+
+void CastContentWindowAndroid::EnableTouchInput(bool enabled) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CastContentWindowAndroid_enableTouchInput(
+      env, java_window_, static_cast<jboolean>(enabled));
 }
 
 void CastContentWindowAndroid::OnActivityStopped(
@@ -91,8 +98,8 @@ void CastContentWindowAndroid::OnKeyDown(
 void CastContentWindowAndroid::RequestVisibility(
     VisibilityPriority visibility_priority) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CastContentWindowAndroid_requestVisibilityPriority(env, java_window_,
-                                                          static_cast<int>(visibility_priority));
+  Java_CastContentWindowAndroid_requestVisibilityPriority(
+      env, java_window_, static_cast<int>(visibility_priority));
 }
 
 void CastContentWindowAndroid::RequestMoveOut() {

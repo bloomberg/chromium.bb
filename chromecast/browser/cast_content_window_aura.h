@@ -30,6 +30,8 @@ class CastContentWindowAura : public CastContentWindow {
   void RequestVisibility(VisibilityPriority visibility_priority) override;
   void RequestMoveOut() override;
 
+  void EnableTouchInput(bool enabled) override;
+
  private:
   friend class CastContentWindow;
 

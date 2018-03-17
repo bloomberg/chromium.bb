@@ -31,6 +31,8 @@ class CastContentWindowAndroid : public CastContentWindow {
       bool is_visible,
       VisibilityPriority visibility_priority) override;
 
+  void EnableTouchInput(bool enabled) override;
+
   void RequestVisibility(VisibilityPriority visibility_priority) override;
 
   void RequestMoveOut() override;

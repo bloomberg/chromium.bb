@@ -76,6 +76,10 @@ void CastContentWindowAura::CreateWindowForWebContents(
   }
 }
 
+void CastContentWindowAura::EnableTouchInput(bool enabled) {
+  // TODO(halliwell): implement this
+}
+
 void CastContentWindowAura::RequestVisibility(
     VisibilityPriority visibility_priority){};
 

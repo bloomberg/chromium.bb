@@ -95,9 +95,8 @@ public class CastWebContentsComponent {
 
         @Override
         public void start(StartParams params) {
-            if (!sendIntent(CastWebContentsIntentUtils.requestStartCastFragment(
-                        params.webContents, params.appId, params.visibilityPriority,
-                        mEnableTouchInput, mInstanceId))) {
+            if (!sendIntent(CastWebContentsIntentUtils.requestStartCastFragment(params.webContents,
+                        params.appId, params.visibilityPriority, mEnableTouchInput, mInstanceId))) {
                 // No intent receiver to handle SHOW_WEB_CONTENT in fragment
                 startCastActivity(params.context, params.webContents, mEnableTouchInput);
             }
@@ -196,7 +195,7 @@ public class CastWebContentsComponent {
             filter.addAction(CastWebContentsIntentUtils.ACTION_KEY_EVENT);
             filter.addAction(CastWebContentsIntentUtils.ACTION_ON_VISIBILITY_CHANGE);
             filter.addAction(CastWebContentsIntentUtils.ACTION_ON_GESTURE);
-            return new LocalBroadcastReceiverScope(filter, this::onReceiveIntent);
+            return new LocalBroadcastReceiverScope(filter, this ::onReceiveIntent);
         });
     }
 
@@ -281,6 +280,11 @@ public class CastWebContentsComponent {
     public void requestMoveOut() {
         if (DEBUG) Log.d(TAG, "requestMoveOut");
         sendIntentSync(CastWebContentsIntentUtils.requestMoveOut(mInstanceId));
+    }
+
+    public void enableTouchInput(String instanceId, boolean enabled) {
+        if (DEBUG) Log.d(TAG, "enableTouchInput");
+        sendIntentSync(CastWebContentsIntentUtils.enableTouchInput(mInstanceId, enabled));
     }
 
     public static void onComponentClosed(String instanceId) {
