@@ -161,6 +161,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
 bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     int mode_enum,
+    base::Optional<gfx::Rect> target_bounds,
     OnSetModeCallback on_set_mode_callback) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
@@ -168,6 +169,7 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
     return false;
 
   controller->SetContainerType(ConvertKeyboardModeToContainerType(mode_enum),
+                               std::move(target_bounds),
                                std::move(on_set_mode_callback));
   return true;
 }

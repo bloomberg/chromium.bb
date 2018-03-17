@@ -751,7 +751,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_FALSE(notified_is_available());
 
   SetModeCallbackInvocationCounter invocation_counter;
-  controller()->SetContainerType(ContainerType::FLOATING,
+  controller()->SetContainerType(ContainerType::FLOATING, base::nullopt,
                                  invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
@@ -767,7 +767,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // callback should do nothing when container mode is set to the current active
   // container type. An unnecessary call gets registered synchronously as a
   // failure status to the callback.
-  controller()->SetContainerType(ContainerType::FLOATING,
+  controller()->SetContainerType(ContainerType::FLOATING, base::nullopt,
                                  invocation_counter.GetInvocationCallback());
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));

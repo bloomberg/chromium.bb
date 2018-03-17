@@ -777,10 +777,12 @@ void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
       event, container_->GetRootWindow()->bounds());
 }
 
-
 void KeyboardController::SetContainerType(
     const ContainerType type,
+    base::Optional<gfx::Rect> target_bounds,
     base::OnceCallback<void(bool)> callback) {
+  // TODO(yhanada): Use target_bounds parameter to change the size of the
+  // container window.
   if (container_behavior_->GetType() == type) {
     std::move(callback).Run(false);
     return;
