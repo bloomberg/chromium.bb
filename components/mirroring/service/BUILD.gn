@@ -1,0 +1,39 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+source_set("service") {
+  sources = [
+    "video_capture_client.cc",
+    "video_capture_client.h",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+
+  deps = [
+    "//media/capture/mojom:video_capture",
+    "//media/mojo/common:common",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "video_capture_client_unittest.cc",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base/test:test_support",
+    "//media/capture/mojom:video_capture",
+    "//mojo/public/cpp/bindings",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
