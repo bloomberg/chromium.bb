@@ -45,11 +45,6 @@ namespace {
 
 constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(1500);
 
-// Returns true if the touch-optimized UI is enabled.
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 }  // namespace
 
 // static
@@ -75,7 +70,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
         features::kAnimatedAppMenuIcon, "HasDelay", false);
   }
 
-  if (IsTouchOptimized())
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 }
 
@@ -160,7 +155,8 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 }
 
 gfx::Size AppMenuButton::CalculatePreferredSize() const {
-  const int icon_size = IsTouchOptimized() ? 24 : 16;
+  const int icon_size =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 16;
   gfx::Rect rect(gfx::Size(icon_size, icon_size));
   rect.Inset(-GetLayoutInsets(TOOLBAR_BUTTON));
 
@@ -235,7 +231,8 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
     return;
   }
 
-  const bool is_touch = IsTouchOptimized();
+  const bool is_touch =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   const gfx::VectorIcon* icon_id = nullptr;
   switch (type_) {
     case AppMenuIconController::IconType::NONE:

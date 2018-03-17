@@ -61,11 +61,6 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   return looper_builder.detach();
 }
 
-// Returns true if the touch-optimized UI is enabled.
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 }  // namespace
 
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
@@ -78,7 +73,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
                               ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
 
-  if (IsTouchOptimized()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     // Initialize the ink drop mode for a ripple highlight on button press.
     ink_drop_container_ = new views::InkDropContainerView();
     AddChildView(ink_drop_container_);
@@ -104,7 +99,7 @@ int NewTabButton::GetTopOffset() {
 
   // In touch-optimized UI, the button is placed vertically exactly in the
   // center of the tabstrip.
-  if (IsTouchOptimized())
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return extra_vertical_space / 2;
 
   // In the non-touch-optimized UI, the new tab button is placed at a fixed
@@ -220,7 +215,8 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Fill.
   SkPath fill;
-  const bool is_touch_ui = IsTouchOptimized();
+  const bool is_touch_ui =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   if (is_touch_ui) {
     fill = GetTouchOptimizedButtonPath(0 /* button_y */, scale,
                                        true /* for_fill */);
@@ -316,7 +312,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 void NewTabButton::Layout() {
   ImageButton::Layout();
 
-  if (IsTouchOptimized()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     // If icons are not initialized, initialize them now. Icons are always
     // initialized together so it's enough to check the |plus_icon_|.
     if (plus_icon_.isNull())
@@ -331,7 +327,7 @@ void NewTabButton::Layout() {
 void NewTabButton::OnThemeChanged() {
   ImageButton::OnThemeChanged();
 
-  if (!IsTouchOptimized())
+  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return;
 
   InitButtonIcons();
@@ -380,7 +376,7 @@ void NewTabButton::GetBorderPath(float button_y,
                                  float scale,
                                  bool extend_to_top,
                                  SkPath* path) const {
-  if (IsTouchOptimized()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     *path = GetTouchOptimizedButtonPath(button_y, scale, false /* for_fill */);
     return;
   }
@@ -433,7 +429,8 @@ void NewTabButton::PaintFill(bool pressed,
   // For unpressed buttons, draw the fill and its shadow.
   // Note that for touch-optimized UI, we always draw the fill since the button
   // has a flat design with no hover highlight.
-  const bool is_touch_ui = IsTouchOptimized();
+  const bool is_touch_ui =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   if (is_touch_ui || !pressed) {
     // First we compute the background image coordinates and scale, in case we
     // need to draw a custom background image.
@@ -510,7 +507,7 @@ SkColor NewTabButton::GetButtonFillColor() const {
 }
 
 void NewTabButton::InitButtonIcons() {
-  DCHECK(IsTouchOptimized());
+  DCHECK(ui::MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   DCHECK(theme_provider);
@@ -526,7 +523,7 @@ void NewTabButton::InitButtonIcons() {
 SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
                                                  float scale,
                                                  bool for_fill) const {
-  DCHECK(IsTouchOptimized());
+  DCHECK(ui::MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   const float radius = kButtonCornerRadius * scale;
   const float rect_width =
@@ -549,7 +546,7 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
 }
 
 void NewTabButton::UpdateInkDropBaseColor() {
-  DCHECK(IsTouchOptimized());
+  DCHECK(ui::MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   set_ink_drop_base_color(color_utils::BlendTowardOppositeLuma(
       GetButtonFillColor(), SK_AlphaOPAQUE));

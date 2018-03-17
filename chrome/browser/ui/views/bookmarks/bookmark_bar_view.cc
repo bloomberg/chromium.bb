@@ -165,12 +165,8 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 int GetInkDropCornerRadius() {
-  return IsTouchOptimized() ? 4 : 2;
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 4 : 2;
 }
 
 gfx::Insets GetInkDropInsets() {
@@ -178,11 +174,13 @@ gfx::Insets GetInkDropInsets() {
   // vertically so that they do not touch the bookmark bar borders.
   // TODO(estade): currently this is used as DIP rather than pixels. This
   // should be fixed: see https://crbug.com/706228
-  return IsTouchOptimized() ? gfx::Insets(3, 3) : gfx::Insets(1, 0);
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? gfx::Insets(3, 3)
+             : gfx::Insets(1, 0);
 }
 
 SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
-  if (IsTouchOptimized()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     return color_utils::BlendTowardOppositeLuma(
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR), SK_AlphaOPAQUE);
   }
@@ -217,7 +215,7 @@ std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
           host_view->size(), GetInkDropCornerRadius(),
           gfx::RectF(gfx::Rect(host_view->size())).CenterPoint(),
           GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider())));
-  if (IsTouchOptimized())
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
   return highlight;
 }
@@ -236,7 +234,7 @@ class BookmarkButtonBase : public views::LabelButton {
     SetElideBehavior(kElideBehavior);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    if (IsTouchOptimized())
+    if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
       set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
     show_animation_.reset(new gfx::SlideAnimation(this));
@@ -373,7 +371,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     SetInkDropMode(InkDropMode::ON);
-    if (IsTouchOptimized())
+    if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
       set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
   }
@@ -1739,7 +1737,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (IsTouchOptimized() && GetThemeProvider()) {
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() &&
+          GetThemeProvider()) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -2067,9 +2066,11 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(IsTouchOptimized() ? kBookmarkbarTouchOverflowIcon
-                                               : kOverflowChevronIcon,
-                            overflow_color));
+      gfx::CreateVectorIcon(
+          ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+              ? kBookmarkbarTouchOverflowIcon
+              : kOverflowChevronIcon,
+          overflow_color));
 
   // Redraw the background.
   SchedulePaint();

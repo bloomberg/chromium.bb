@@ -32,13 +32,8 @@ const int kReloadMenuItems[]  = {
   IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
 };
 
-// Returns true if the touch-optimized UI is enabled.
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 const gfx::VectorIcon& GetIconForMode(bool is_reload) {
-  if (IsTouchOptimized())
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return is_reload ? kReloadTouchIcon : kNavigateStopTouchIcon;
 
   return is_reload ? vector_icons::kReloadIcon : kNavigateStopIcon;
