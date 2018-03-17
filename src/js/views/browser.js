@@ -293,6 +293,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
     var video = document.createElement('video');
     video.tabIndex = -1;
     video.controls = true;
+    video.setAttribute('controlsList', 'nodownload nofullscreen');
     video.onloadeddata = function() {
       // Add the video element only if the selection has not been changed and
       // there is still the image element after loading.
