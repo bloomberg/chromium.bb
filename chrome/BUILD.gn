@@ -307,6 +307,12 @@ if (!is_android && !is_mac) {
         deps += [ "//third_party/adobe/flash:flapper_binaries" ]
       }
 
+      # ChromeOS by design is safe to have rpath=$ORIGIN. This simplifies shared
+      # library usage.
+      if (is_chromeos && !is_component_build) {
+        configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+      }
+
       data_deps += [
         "//chrome/browser/resources/media/mei_preload:component",
         "//third_party/widevine/cdm:widevinecdmadapter",
