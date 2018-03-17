@@ -1,23 +1,4 @@
 {
-    "AbusiveExperienceEnforce": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AbusiveExperienceEnforce"
-                    ]
-                }
-            ]
-        }
-    ],
     "AccountConsistencyVariations": [
         {
             "platforms": [
@@ -1204,21 +1185,6 @@
                         "disallowFetchForDocWrittenScriptsInMainFrame": "false",
                         "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "true"
                     }
-                }
-            ]
-        }
-    ],
-    "DispatchSafetyNetCheckOffThread": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DispatchSafetyNetCheckOffThread"
-                    ]
                 }
             ]
         }
@@ -3650,33 +3616,6 @@
                     "enable_features": [
                         "stop-loading-in-background"
                     ]
-                }
-            ]
-        }
-    ],
-    "SubresourceFilter": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "LiveRun_BAS_Phishing",
-                    "params": {
-                        "enable_presets": "liverun_on_phishing_sites,liverun_on_better_ads_violating_sites"
-                    },
-                    "enable_features": [
-                        "SubresourceFilter",
-                        "SubresourceFilterExperimentalUI"
-                    ]
-                },
-                {
-                    "name": "VerifyFeatureIsStillDisabledByDefault",
-                    "forcing_flag": "suppress-enabling-subresource-filter-from-fieldtrial-testing-config"
                 }
             ]
         }
