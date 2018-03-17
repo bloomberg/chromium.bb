@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "chrome/browser/client_hints/client_hints.h"
 
 #include "base/memory/ptr_util.h"
@@ -37,6 +39,27 @@ bool IsJavaScriptAllowed(Profile* profile, const GURL& url) {
   return HostContentSettingsMapFactory::GetForProfile(profile)
              ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  std::string()) == CONTENT_SETTING_ALLOW;
+}
+
+// Returns the zoom factor for a given |url|.
+double GetZoomFactor(content::BrowserContext* context, const GURL& url) {
+// Android does not have the concept of zooming in like desktop.
+#if defined(OS_ANDROID)
+  return 1.0;
+#else
+
+  double zoom_level = content::HostZoomMap::GetDefaultForBrowserContext(context)
+                          ->GetZoomLevelForHostAndScheme(
+                              url.scheme(), net::GetHostOrSpecFromURL(url));
+
+  if (zoom_level == 0.0) {
+    // Get default zoom level.
+    zoom_level = content::HostZoomMap::GetDefaultForBrowserContext(context)
+                     ->GetDefaultZoomLevel();
+  }
+
+  return content::ZoomLevelToZoomFactor(zoom_level);
+#endif
 }
 
 }  // namespace
@@ -107,33 +130,33 @@ GetAdditionalNavigationRequestClientHintsHeaders(
                                 ->GetPrimaryDisplay()
                                 .device_scale_factor();
     }
-
-    double zoom_factor = 1.0;
-
-// Android does not have the concept of zooming in like desktop.
-#if !defined(OS_ANDROID)
-    double zoom_level =
-        content::HostZoomMap::GetDefaultForBrowserContext(context)
-            ->GetZoomLevelForHostAndScheme(url.scheme(),
-                                           net::GetHostOrSpecFromURL(url));
-
-    double default_zoom_level =
-        content::HostZoomMap::GetDefaultForBrowserContext(context)
-            ->GetDefaultZoomLevel();
-
-    if (zoom_level <= 0.0)
-      zoom_level = default_zoom_level;
-
-    if (zoom_level > 0.0)
-      zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
-#endif  // !OS_ANDROID
-
     DCHECK_LT(0.0, device_scale_factor);
 
+    double zoom_factor = GetZoomFactor(context, url);
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDpr)],
         base::NumberToString(device_scale_factor * zoom_factor));
+  }
+
+  if (web_client_hints.IsEnabled(
+          blink::mojom::WebClientHintsType::kViewportWidth)) {
+// TODO: https://crbug.com/821974: Viewport width client hint should be sent
+// on non-Android main frame navigations as well.
+#if !defined(OS_ANDROID)
+    double viewport_width = (display::Screen::GetScreen()
+                                 ->GetPrimaryDisplay()
+                                 .GetSizeInPixel()
+                                 .width()) /
+                            GetZoomFactor(context, url);
+    DCHECK_LT(0, viewport_width);
+    if (viewport_width > 0) {
+      additional_headers->SetHeader(
+          blink::kClientHintsHeaderMapping[static_cast<int>(
+              blink::mojom::WebClientHintsType::kViewportWidth)],
+          base::NumberToString(std::round(viewport_width)));
+    }
+#endif  // !OS_ANDROID
   }
 
   // Static assert that triggers if a new client hint header is added. If a new
