@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -1878,12 +1879,17 @@ class SitePerProcessMouseWheelHitTestBrowserTest
     EXPECT_EQ("\"scroll: 3\"", reply);
   }
 
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+
  private:
   RenderWidgetHostViewAura* rwhv_root_;
 };
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
                        SubframeWheelEventsOnMainThread) {
+  feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1899,6 +1905,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
   // surface information required for event hit testing is ready.
   RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
       root->child_at(0)->current_frame_host()->GetView());
+
+  EXPECT_FALSE(child_rwhv->wheel_scroll_latching_enabled());
   WaitForChildFrameSurfaceReady(root->child_at(0)->current_frame_host());
 
   content::RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
@@ -1914,6 +1922,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 // the same page loaded in the mainframe.
 IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
                        MainframeWheelEventsOnMainThread) {
+  feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
   GURL main_url(
       embedded_test_server()->GetURL("/page_with_scrollable_div.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1921,6 +1931,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   content::RenderFrameHostImpl* rfhi = root->current_frame_host();
   SetupWheelAndScrollHandlers(rfhi);
+
+  EXPECT_FALSE(
+      rfhi->GetRenderWidgetHost()->GetView()->wheel_scroll_latching_enabled());
 
   gfx::Point pos(10, 10);
 
