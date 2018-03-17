@@ -39,6 +39,14 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "window_control_minimize.icon",
     "window_control_restore.1x.icon",
     "window_control_restore.icon",
+    "window_control_back.1x.icon",
+    "window_control_back.icon",
+    "window_control_menu.1x.icon",
+    "window_control_menu.icon",
+    "window_control_zoom.1x.icon",
+    "window_control_zoom.icon",
+    "window_control_dezoom.1x.icon",
+    "window_control_dezoom.icon",
   ]
 }
 
