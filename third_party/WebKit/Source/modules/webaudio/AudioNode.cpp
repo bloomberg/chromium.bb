@@ -103,8 +103,6 @@ void AudioHandler::Uninitialize() {
   is_initialized_ = false;
 }
 
-void AudioHandler::ClearInternalStateWhenDisabled() {}
-
 void AudioHandler::Dispose() {
   DCHECK(IsMainThread());
   DCHECK(Context()->IsGraphOwner());
@@ -338,14 +336,6 @@ void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
     PullInputs(frames_to_process);
 
     bool silent_inputs = InputsAreSilent();
-    if (!silent_inputs) {
-      // Update |last_non_silent_time| AFTER processing this block.
-      // Doing it before causes |PropagateSilence()| to be one render
-      // quantum longer than necessary.
-      last_non_silent_time_ =
-          (Context()->CurrentSampleFrame() + frames_to_process) /
-          static_cast<double>(Context()->sampleRate());
-    }
     if (silent_inputs && PropagatesSilence()) {
       SilenceOutputs();
       // AudioParams still need to be processed so that the value can be updated
@@ -359,6 +349,15 @@ void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
       // want to silence its output.)
       UnsilenceOutputs();
       Process(frames_to_process);
+    }
+
+    if (!silent_inputs) {
+      // Update |last_non_silent_time| AFTER processing this block.
+      // Doing it before causes |PropagateSilence()| to be one render
+      // quantum longer than necessary.
+      last_non_silent_time_ =
+          (Context()->CurrentSampleFrame() + frames_to_process) /
+          static_cast<double>(Context()->sampleRate());
     }
   }
 }
@@ -437,25 +436,16 @@ void AudioHandler::DisableOutputsIfNecessary() {
     // they're connected to.  disable() can recursively deref connections (and
     // call disable()) down a whole chain of connected nodes.
 
-    // TODO(rtoy,hongchan): we need special cases the convolver, delay, biquad,
-    // and IIR since they have a significant tail-time and shouldn't be
-    // disconnected simply because they no longer have any input connections.
-    // This needs to be handled more generally where AudioNodes have a tailTime
-    // attribute. Then the AudioNode only needs to remain "active" for tailTime
-    // seconds after there are no longer any active connections.
-    //
-    // The analyser node also requires special handling because we
-    // need the internal state to be updated for the time and FFT data
-    // even if it has no connections.
-    if (GetNodeType() != kNodeTypeConvolver &&
-        GetNodeType() != kNodeTypeDelay &&
-        GetNodeType() != kNodeTypeBiquadFilter &&
-        GetNodeType() != kNodeTypeIIRFilter &&
-        GetNodeType() != kNodeTypeAnalyser) {
-      is_disabled_ = true;
-      ClearInternalStateWhenDisabled();
-      for (auto& output : outputs_)
-        output->Disable();
+    // If a node requires tail processing, we defer the disabling of
+    // the outputs so that the tail for the node can be output.
+    // Otherwise, we can disable the outputs right away.
+    if (RequiresTailProcessing()) {
+      if (Context()->ContextState() !=
+          BaseAudioContext::AudioContextState::kClosed) {
+        Context()->GetDeferredTaskHandler().AddTailProcessingHandler(this);
+      }
+    } else {
+      DisableOutputs();
     }
   }
 }
@@ -469,11 +459,14 @@ void AudioHandler::DisableOutputs() {
 void AudioHandler::MakeConnection() {
   AtomicIncrement(&connection_ref_count_);
 
+  Context()->GetDeferredTaskHandler().RemoveTailProcessingHandler(this);
+
 #if DEBUG_AUDIONODE_REFERENCES
-  fprintf(stderr,
-          "[%16p]: %16p: %2d: AudioHandler::MakeConnection   %3d [%3d]\n",
-          Context(), this, GetNodeType(), connection_ref_count_,
-          node_count_[GetNodeType()]);
+  fprintf(
+      stderr,
+      "[%16p]: %16p: %2d: AudioHandler::MakeConnection   %3d [%3d] @%.15g\n",
+      Context(), this, GetNodeType(), connection_ref_count_,
+      node_count_[GetNodeType()], Context()->currentTime());
 #endif
   // See the disabling code in disableOutputsIfNecessary(). This handles
   // the case where a node is being re-connected after being used at least
