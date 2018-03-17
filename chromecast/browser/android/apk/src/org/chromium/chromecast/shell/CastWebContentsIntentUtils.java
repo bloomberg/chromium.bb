@@ -168,8 +168,7 @@ public class CastWebContentsIntentUtils {
     }
 
     // CastWebContentsComponent.Receiver -> Host acitivity of CastWebContentsFragment
-    public static Intent gestureConsumed(
-            String instanceId, int gestureType, boolean consumed) {
+    public static Intent gestureConsumed(String instanceId, int gestureType, boolean consumed) {
         Intent intent = new Intent(ACTION_GESTURE_CONSUMED);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_GESTURE_TYPE, gestureType);
@@ -315,6 +314,15 @@ public class CastWebContentsIntentUtils {
     // Used by ACTION_VIEW, ACTION_SHOW_WEB_CONTENT
     public static boolean isTouchable(Intent in) {
         return isTouchable(in.getExtras());
+    }
+
+    // CastWebContentsComponent -> CastWebContentsSurfaceHelper and host activity of
+    // CastWebContentsFragment
+    public static Intent enableTouchInput(String instanceId, boolean enabled) {
+        Intent intent = new Intent(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+        intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
+        intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enabled);
+        return intent;
     }
 
     // CastWebContentsSurfaceHelper -> CastWebContentsActivity or host activity

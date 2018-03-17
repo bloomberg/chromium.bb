@@ -89,6 +89,9 @@ class CastContentWindow {
       bool is_visible,
       VisibilityPriority visibility_priority) = 0;
 
+  // Enables touch input to be routed to the window's WebContents.
+  virtual void EnableTouchInput(bool enabled) = 0;
+
   // Cast activity or application calls it to request for a visibility priority
   // change.
   virtual void RequestVisibility(VisibilityPriority visibility_priority) = 0;

@@ -36,4 +36,11 @@ public class CastIntents {
      */
     public static final String ACTION_ON_WEB_CONTENT_STOPPED =
             "com.google.assistant.ON_WEB_CONTENT_STOPPED";
+
+    /**
+     * Action type of intent from CastWebContentsComponent to notify CastWebContentsActivity that
+     * touch should be enabled.
+     */
+    public static final String ACTION_ENABLE_TOUCH_INPUT =
+            "com.google.android.apps.castshell.intent.action.ENABLE_TOUCH_INPUT";
 }

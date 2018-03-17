@@ -134,8 +134,7 @@ public class CastWebContentsIntentUtilsTest {
         int type = CastWebContentsIntentUtils.getGestureType(in);
         Assert.assertEquals(1, type);
         Assert.assertTrue(CastWebContentsIntentUtils.isGestureConsumed(in));
-        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_GESTURE_CONSUMED,
-            in.getAction());
+        Assert.assertEquals(CastWebContentsIntentUtils.ACTION_GESTURE_CONSUMED, in.getAction());
 
         in = CastWebContentsIntentUtils.gestureConsumed(INSTANCE_ID, 2, false);
         Assert.assertNull(in.getData());
@@ -195,6 +194,26 @@ public class CastWebContentsIntentUtilsTest {
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
+    }
+
+    @Test
+    public void testEnableTouchInputTrue() {
+        Intent in = CastWebContentsIntentUtils.enableTouchInput(INSTANCE_ID, true);
+        String uri = CastWebContentsIntentUtils.getUriString(in);
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(EXPECTED_URI, uri);
+        Assert.assertEquals(CastIntents.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
+        Assert.assertTrue(CastWebContentsIntentUtils.isTouchable(in));
+    }
+
+    @Test
+    public void testEnableTouchInputFalse() {
+        Intent in = CastWebContentsIntentUtils.enableTouchInput(INSTANCE_ID, false);
+        String uri = CastWebContentsIntentUtils.getUriString(in);
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(EXPECTED_URI, uri);
+        Assert.assertEquals(CastIntents.ACTION_ENABLE_TOUCH_INPUT, in.getAction());
+        Assert.assertFalse(CastWebContentsIntentUtils.isTouchable(in));
     }
 
     @Test

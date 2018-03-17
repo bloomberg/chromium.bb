@@ -137,6 +137,25 @@ public class CastWebContentsComponentTest {
     }
 
     @Test
+    public void testEnableTouchInputSendsEnableTouchToActivity() {
+        Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
+
+        BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
+        IntentFilter intentFilter = new IntentFilter(CastIntents.ACTION_ENABLE_TOUCH_INPUT);
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .registerReceiver(receiver, intentFilter);
+
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.enableTouchInput(INSTANCE_ID, true);
+
+        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
+                .unregisterReceiver(receiver);
+
+        verify(receiver).onReceive(any(Context.class), any(Intent.class));
+    }
+
+    @Test
     public void testOnComponentClosedCallsCallback() {
         CastWebContentsComponent.OnComponentClosedHandler callback =
                 Mockito.mock(CastWebContentsComponent.OnComponentClosedHandler.class);
