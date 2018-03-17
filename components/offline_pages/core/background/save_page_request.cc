@@ -59,12 +59,13 @@ void SavePageRequest::MarkAttemptCompleted() {
 }
 
 void SavePageRequest::MarkAttemptAborted() {
-  DCHECK_GT(started_attempt_count_, 0);
   // We intentinally do not increment the completed_attempt_count_, since this
   // was killed before it completed, so we could use the phone or browser for
   // other things.
-  if (state_ == RequestState::OFFLINING)
+  if (state_ == RequestState::OFFLINING) {
+    DCHECK_GT(started_attempt_count_, 0);
     state_ = RequestState::AVAILABLE;
+  }
 }
 
 void SavePageRequest::MarkAttemptPaused() {

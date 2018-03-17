@@ -44,6 +44,12 @@ void ChangeRequestsStateTask::UpdateRequests(
   // of the missing items will be added at the end.
   std::vector<SavePageRequest> items_to_update;
   for (auto request : read_result->updated_items) {
+    // Decrease the started_attempt_count_ for offlining requests paused by the
+    // user (https://crbug.com/701037).
+    if (request.request_state() == SavePageRequest::RequestState::OFFLINING &&
+        new_state_ == SavePageRequest::RequestState::PAUSED) {
+      request.set_started_attempt_count(request.started_attempt_count() - 1);
+    }
     request.set_request_state(new_state_);
     items_to_update.push_back(request);
   }
