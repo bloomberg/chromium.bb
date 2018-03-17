@@ -458,6 +458,9 @@ service_manifest("chrome_content_browser_manifest_overlay") {
   if (enable_cros_assistant) {
     packaged_services += [ "//chromeos/services/assistant:manifest" ]
   }
+  if (is_chromeos) {
+    packaged_services += [ "//chromeos/services/multidevice_setup:manifest" ]
+  }
 }
 
 service_manifest("chrome_test_browser_overlay") {

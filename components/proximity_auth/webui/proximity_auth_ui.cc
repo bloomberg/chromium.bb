@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/grit/components_resources.h"
 #include "components/proximity_auth/webui/proximity_auth_webui_handler.h"
 #include "components/proximity_auth/webui/url_constants.h"
@@ -13,12 +15,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace proximity_auth {
 
 ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
                                  ProximityAuthClient* delegate)
-    : content::WebUIController(web_ui) {
+    : ui::MojoWebUIController<multidevice_setup::mojom::MultiDeviceSetup>(
+          web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
   source->SetDefaultResource(IDR_PROXIMITY_AUTH_INDEX_HTML);
@@ -34,6 +38,14 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
   source->AddResourcePath("pollux.html", IDR_PROXIMITY_AUTH_POLLUX_HTML);
   source->AddResourcePath("pollux.css", IDR_PROXIMITY_AUTH_POLLUX_CSS);
   source->AddResourcePath("pollux.js", IDR_PROXIMITY_AUTH_POLLUX_JS);
+  source->AddResourcePath(
+      "chromeos/services/multidevice_setup/public/mojom/"
+      "multidevice_setup.mojom.js",
+      IDR_MULTIDEVICE_SETUP_MOJOM_JS);
+  source->AddResourcePath(
+      "chromeos/services/multidevice_setup/public/mojom/"
+      "multidevice_setup_constants.mojom.js",
+      IDR_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
@@ -42,7 +54,17 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
       std::make_unique<ProximityAuthWebUIHandler>(delegate));
 }
 
-ProximityAuthUI::~ProximityAuthUI() {
+ProximityAuthUI::~ProximityAuthUI() = default;
+
+void ProximityAuthUI::BindUIHandler(
+    multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+  service_manager::Connector* connector =
+      content::BrowserContext::GetConnectorFor(
+          web_ui()->GetWebContents()->GetBrowserContext());
+  DCHECK(connector);
+
+  connector->BindInterface(multidevice_setup::mojom::kServiceName,
+                           std::move(request));
 }
 
 }  // namespace proximity_auth

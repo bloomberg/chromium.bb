@@ -44,6 +44,7 @@
         // Only used in classic ash case.
         "local_state": [ "pref_client" ],
         "media_gallery_util": [ "parse_media" ],
+        "multidevice_setup": [ "multidevice_setup" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "patch": [ "patch_file" ],
@@ -97,7 +98,8 @@
           "mojom::PluginsPageHandler",
           "mojom::SiteEngagementDetailsProvider",
           "mojom::UsbInternalsPageHandler"
-        ]
+        ],
+        "multidevice_setup" : [ "multidevice_setup::mojom::MultiDeviceSetup" ]
       }
     },
     "navigation:dedicated_worker": {

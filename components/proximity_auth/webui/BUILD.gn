@@ -19,6 +19,8 @@ static_library("webui") {
   deps = [
     "//base",
     "//base:i18n",
+    "//chromeos/resources",
+    "//chromeos/services/multidevice_setup/public/mojom",
     "//components/cryptauth",
     "//components/prefs",
     "//components/proximity_auth",
@@ -27,5 +29,6 @@ static_library("webui") {
     "//content/public/browser",
     "//device/bluetooth",
     "//ui/resources",
+    "//ui/webui",
   ]
 }
