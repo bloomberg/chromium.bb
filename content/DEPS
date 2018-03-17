@@ -119,7 +119,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  ".*_browsertest[a-z_]*\.(cc|h)": [
+  ".*_browsertest[a-z_]*\.(cc|h|mm)": [
     # content -> content/shell dependency is disallowed, except browser tests.
     "+content/shell/browser",
     "+content/shell/common",

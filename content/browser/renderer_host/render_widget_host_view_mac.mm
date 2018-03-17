@@ -440,11 +440,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
 
-  // Because of the way Mac pumps messages during resize, (see the code
-  // in RenderMessageFilter::OnMessageReceived), SetNeedsBeginFrame
-  // messages are not delayed on Mac.  This leads to creation-time
-  // raciness where renderer sends a SetNeedsBeginFrame(true) before
-  // the renderer host is created to recieve it.
+  // Because of the way Mac pumps messages during resize, SetNeedsBeginFrame
+  // messages are not delayed on Mac.  This leads to creation-time raciness
+  // where renderer sends a SetNeedsBeginFrame(true) before the renderer host is
+  // created to receive it.
   //
   // Any renderer that will produce frames needs to have begin frames sent to
   // it. So unless it is never visible, start this value at true here to avoid
@@ -515,16 +514,6 @@ RenderWidgetHostViewMac::GetTextSelection() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
-
-bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedTextCompleted,
-        OnGetRenderedTextCompleted)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
 
 void RenderWidgetHostViewMac::InitAsChild(
     gfx::NativeView parent_view) {
@@ -1085,24 +1074,73 @@ gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() const {
   return browser_compositor_->GetRendererSize();
 }
 
-void RenderWidgetHostViewMac::SpeakSelection() {
-  if (![NSApp respondsToSelector:@selector(speakString:)])
-    return;
+namespace {
 
-  const TextInputManager::TextSelection* selection = GetTextSelection();
-  if (!selection)
-    return;
+// A helper function for CombineTextNodesAndMakeCallback() below. It would
+// ordinarily be a helper lambda in that class method, but it processes a tree
+// and needs to be recursive, and that's crazy difficult to do with a lambda.
+// TODO(avi): Move this to be a lambda when P0839R0 lands in C++.
+void AddTextNodesToVector(const ui::AXNode* node,
+                          std::vector<base::string16>* strings) {
+  const ui::AXNodeData& node_data = node->data();
 
-  if (selection->selected_text().empty() && host()) {
-    // TODO: This will not work with OOPIFs (https://crbug.com/659753).
-    // If there's no selection, speak all text. Send an asynchronous IPC
-    // request for fetching all the text for a webcontent.
-    // ViewMsg_GetRenderedTextCompleted is sent back to IPC Message receiver.
-    host()->Send(new ViewMsg_GetRenderedText(host()->GetRoutingID()));
+  if (node_data.role == ax::mojom::Role::kStaticText) {
+    if (node_data.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+      strings->emplace_back(
+          node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+    }
     return;
   }
 
-  ui::TextServicesContextMenu::SpeakText(selection->selected_text());
+  for (const auto* child : node->children())
+    AddTextNodesToVector(child, strings);
+}
+
+using SpeechCallback = base::OnceCallback<void(const base::string16&)>;
+void CombineTextNodesAndMakeCallback(SpeechCallback callback,
+                                     const ui::AXTreeUpdate& update) {
+  std::vector<base::string16> text_node_contents;
+  text_node_contents.reserve(update.nodes.size());
+
+  ui::AXTree tree(update);
+
+  AddTextNodesToVector(tree.root(), &text_node_contents);
+
+  std::move(callback).Run(
+      base::JoinString(text_node_contents, base::ASCIIToUTF16("\n")));
+}
+
+}  // namespace
+
+void RenderWidgetHostViewMac::GetPageTextForSpeech(SpeechCallback callback) {
+  // Note that the WebContents::RequestAXTreeSnapshot() call has a limit on the
+  // number of nodes returned. For large pages, this call might hit that limit.
+  // This is a reasonable thing. The "Start Speaking" call dates back to the
+  // earliest days of the Mac, before accessibility. It was designed to show off
+  // the speech capabilities of the Mac, which is fine, but is mostly
+  // inapplicable nowadays. Is it useful to have the Mac read megabytes of text
+  // with zero control over positioning, with no fast-forward or rewind? What
+  // does it even mean to read a Web 2.0 dynamic, AJAXy page aloud from
+  // beginning to end?
+  //
+  // If this is an issue, please file a bug explaining the situation and how the
+  // limits of this feature affect you in the real world.
+
+  GetWebContents()->RequestAXTreeSnapshot(
+      base::BindOnce(CombineTextNodesAndMakeCallback, std::move(callback)),
+      ui::AXMode::kWebContents);
+}
+
+void RenderWidgetHostViewMac::SpeakSelection() {
+  const TextInputManager::TextSelection* selection = GetTextSelection();
+  if (selection && !selection->selected_text().empty()) {
+    ui::TextServicesContextMenu::SpeakText(selection->selected_text());
+    return;
+  }
+
+  // With no selection, speak an approximation of the entire contents of the
+  // page.
+  GetPageTextForSpeech(base::BindOnce(ui::TextServicesContextMenu::SpeakText));
 }
 
 //
@@ -1655,11 +1693,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
   else
     password_input_enabler_.reset();
-}
-
-void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
-    const std::string& text) {
-  ui::TextServicesContextMenu::SpeakText(base::UTF8ToUTF16(text));
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
