@@ -2852,6 +2852,8 @@ jumbo_split_static_library("browser") {
       "//ash/components/quick_launch/public/mojom:constants",
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
+      "//chromeos/services/multidevice_setup",
+      "//chromeos/services/multidevice_setup/public/mojom",
       "//components/services/font:lib",
       "//components/services/font/public/interfaces",
       "//services/ui/public/cpp/input_devices",

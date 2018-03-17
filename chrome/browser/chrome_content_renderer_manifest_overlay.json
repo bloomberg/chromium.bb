@@ -27,6 +27,9 @@
           "safe_browsing::mojom::PhishingDetector",
           "spellcheck::mojom::SpellCheckPanel"
         ]
+      },
+      "requires": {
+        "content_browser": [ "multidevice_setup" ]
       }
     }
   }

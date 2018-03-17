@@ -8,19 +8,27 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace proximity_auth {
 
 class ProximityAuthClient;
 
 // The WebUI controller for chrome://proximity-auth.
-class ProximityAuthUI : public content::WebUIController {
+class ProximityAuthUI : public ui::MojoWebUIController<
+                            multidevice_setup::mojom::MultiDeviceSetup> {
  public:
   // Note: |web_ui| and |delegate| are not owned by this instance and must
   // outlive this instance.
   ProximityAuthUI(content::WebUI* web_ui, ProximityAuthClient* delegate);
   ~ProximityAuthUI() override;
+
+ protected:
+  // ui::MojoWebUIController overrides:
+  void BindUIHandler(
+      multidevice_setup::mojom::MultiDeviceSetupRequest request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthUI);

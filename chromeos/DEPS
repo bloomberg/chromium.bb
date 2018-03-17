@@ -10,6 +10,7 @@ include_rules = [
   "+components/user_manager/known_user.h",
   "+crypto",
   "+media/base/video_facing.h",
+  "+mojo/edk/embedder/embedder.h",
   "+net",
   "+third_party/cros_system_api",
   "+third_party/protobuf",

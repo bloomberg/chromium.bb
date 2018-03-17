@@ -37,10 +37,26 @@ class CryptAuthController {
       lastDeviceSync: document.getElementById('last-device-sync'),
       nextDeviceSync: document.getElementById('next-device-sync'),
       deviceSyncButton: document.getElementById('force-device-sync'),
+      newUserNotifButton: document.getElementById('show-new-user-notif'),
+      existingUserNewHostNotifButton:
+          document.getElementById('show-existing-user-new-host-notif'),
+      existingUserNewChromebookNotifButton:
+          document.getElementById('show-existing-user-new-chromebook-notif'),
     };
 
     this.elements_.enrollmentButton.onclick = this.forceEnrollment_.bind(this);
     this.elements_.deviceSyncButton.onclick = this.forceDeviceSync_.bind(this);
+    this.elements_.newUserNotifButton.onclick =
+        this.showNewUserNotification_.bind(this);
+    this.elements_.existingUserNewHostNotifButton.onclick =
+        this.showExistingUserNewHostNotification_.bind(this);
+    this.elements_.existingUserNewChromebookNotifButton.onclick =
+        this.showExistingUserNewChromebookNotification_.bind(this);
+
+    this.multiDeviceSetup = new multideviceSetup.mojom.MultiDeviceSetupPtr();
+    Mojo.bindInterface(
+        multideviceSetup.mojom.MultiDeviceSetup.name,
+        mojo.makeRequest(this.multiDeviceSetup).handle);
   }
 
   /**
@@ -135,6 +151,51 @@ class CryptAuthController {
    */
   forceDeviceSync_() {
     WebUI.forceDeviceSync();
+  }
+
+  /**
+   * Shows the "new user, potential host exists" notification.
+   */
+  showNewUserNotification_() {
+    this.showMultiDeviceSetupPromoNotification_(
+        multideviceSetup.mojom.EventTypeForDebugging.
+            kNewUserPotentialHostExists);
+  }
+
+  /**
+   * Shows the "existing user, new host" notification.
+   */
+  showExistingUserNewHostNotification_() {
+    this.showMultiDeviceSetupPromoNotification_(
+        multideviceSetup.mojom.EventTypeForDebugging.
+            kExistingUserConnectedHostSwitched);
+  }
+
+  /**
+   * Shows the "existing user, new Chromebook" notification.
+   */
+  showExistingUserNewChromebookNotification_() {
+    this.showMultiDeviceSetupPromoNotification_(
+        multideviceSetup.mojom.EventTypeForDebugging.
+            kExistingUserNewChromebookAdded);
+  }
+
+  /**
+   * Shows a "MultiDevice Setup" notification of the given type.
+   */
+  showMultiDeviceSetupPromoNotification_(type) {
+    this.multiDeviceSetup.triggerEventForDebugging(type).then(
+        function(responseParams) {
+          if (responseParams.success) {
+            console.log('Successfully triggered notification for type ' +
+                type + '.');
+          } else {
+            console.error('Failed to trigger notification for type ' + type +
+                '; no NotificationPresenter has been registered.');
+          }
+        }).catch(function(error) {
+          console.error('Failed to trigger notification type. ' + error);
+        });
   }
 };
 

@@ -8,14 +8,29 @@ import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
-# This is modeled after //services:services_unittests
-# One Big Target for services to register their unit test sources. This exists
-# to avoid having to maintain a separate test binary for every service.
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+
+# Use this target for adding new unit tests. To add a unit test to this target,
+# create a "unit_tests" source_set in your service and add it as a dependency
+# here.
 #
-# To add tests for a new service, please define a "tests" source_set in the
-# service subdirectory and add it as a dependency here. If your unit tests
-# use the ServiceTest framework, you must also include corresponding catalog
-# entries in the "chromeos_services_unittests_catalog" target below.
+# Unit tests are generally preferred over service tests as they are simpler to
+# create and maintain. Check out service_manager::TestConnectorFactory for an
+# easy way to test your services.
+source_set("unit_tests") {
+  testonly = true
+  deps = [
+    "//chromeos/services/multidevice_setup:unit_tests",
+  ]
+}
+
+# Use this target for adding new service tests. To add a unit test to this
+# target, create a "tests" source_set in your service and add it as a dependency
+# here.
+#
+# If your unit tests use the ServiceTest framework, you must also include
+# corresponding catalog entries in the "chromeos_services_unittests_catalog"
+# target below.
 service_test("chromeos_services_unittests") {
   deps = []
 

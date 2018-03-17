@@ -144,6 +144,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -1120,6 +1123,17 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
         std::make_pair(chromeos::assistant::mojom::kServiceName, info));
   }
 #endif
+
+  if (base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    info.factory = base::BindRepeating([] {
+      return std::unique_ptr<service_manager::Service>(
+          std::make_unique<chromeos::multidevice::MultiDeviceSetupService>());
+    });
+    services->insert(
+        std::make_pair(multidevice_setup::mojom::kServiceName, info));
+  }
 #endif
 
   service_manager::EmbeddedServiceInfo identity_service_info;
