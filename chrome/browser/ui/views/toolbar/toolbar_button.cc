@@ -25,15 +25,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// Returns true if the touch-optimized UI is enabled.
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
-}  // namespace
-
 ToolbarButton::ToolbarButton(Profile* profile,
                              views::ButtonListener* listener,
                              std::unique_ptr<ui::MenuModel> model)
@@ -47,7 +38,7 @@ ToolbarButton::ToolbarButton(Profile* profile,
   SetFocusPainter(nullptr);
   SetLeadingMargin(0);
 
-  if (IsTouchOptimized())
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 }
 

@@ -97,11 +97,6 @@ int GetToolbarHorizontalPadding() {
   return kPaddings[Md::GetMode()];
 }
 
-// Returns true if the touch-optimized UI is enabled.
-bool IsTouchOptimized() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 }  // namespace
 
 // static
@@ -702,7 +697,8 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
                                   location_bar_->GetPreferredSize().height());
     // In the touch-optimized UI, the toolbar buttons are big and occupy the
     // entire view's height, we don't need to add any extra vertical space.
-    const int extra_vertical_space = IsTouchOptimized() ? 0 : 9;
+    const int extra_vertical_space =
+        ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 9;
     size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
   }
   return size;
@@ -716,7 +712,8 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  const bool is_touch = IsTouchOptimized();
+  const bool is_touch =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   const gfx::VectorIcon& back_image =
       is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
   back_->SetImage(views::Button::STATE_NORMAL,
