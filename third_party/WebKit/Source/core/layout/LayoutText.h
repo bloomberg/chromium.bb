@@ -204,7 +204,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   // True if we have inline text box children which implies rendered text (or
   // whitespace) output.
-  bool HasTextBoxes() const { return FirstTextBox(); }
+  bool HasTextBoxes() const;
+
+  // TODO(layoutng) Legacy-only implementation of HasTextBoxes.
+  // All callers should call HasTextBoxes instead, and take NG into account.
+  bool HasLegacyTextBoxes() const { return FirstTextBox(); }
 
   // Returns the Position in DOM that corresponds to the given offset in the
   // |text_| string.

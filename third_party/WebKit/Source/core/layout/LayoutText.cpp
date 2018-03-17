@@ -306,10 +306,23 @@ void LayoutText::DeleteTextBoxes() {
 
 Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
   DCHECK(!IsBR());
-  if (!HasTextBoxes())
+  // TODO(layoutng) Implement GetUpperLeftCorner for layoutng
+  if (!HasLegacyTextBoxes())
     return WTF::nullopt;
   return FloatPoint(LinesBoundingBox().X(),
                     FirstTextBox()->Root().LineTop().ToFloat());
+}
+
+bool LayoutText::HasTextBoxes() const {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext())
+      return !(fragments.begin() == fragments.end());
+    // When legacy is forced, IsInLayoutNGInlineFormattingContext is false,
+    // and we fall back to normal HasTextBox
+    return FirstTextBox();
+  }
+  return FirstTextBox();
 }
 
 scoped_refptr<StringImpl> LayoutText::OriginalText() const {
@@ -2298,7 +2311,7 @@ LayoutRect LayoutText::DebugRect() const {
       LayoutRect(IntRect(first_run_offset.X(), first_run_offset.Y(),
                          lines_box.Width(), lines_box.Height()));
   LayoutBlock* block = ContainingBlock();
-  if (block && HasTextBoxes())
+  if (block && HasLegacyTextBoxes())
     block->AdjustChildDebugRect(rect);
 
   return rect;
