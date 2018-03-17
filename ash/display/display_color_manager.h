@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_COLOR_MANAGER_CHROMEOS_H_
-#define ASH_DISPLAY_DISPLAY_COLOR_MANAGER_CHROMEOS_H_
+#ifndef ASH_DISPLAY_DISPLAY_COLOR_MANAGER_H_
+#define ASH_DISPLAY_DISPLAY_COLOR_MANAGER_H_
 
 #include <stdint.h>
 
@@ -86,4 +86,4 @@ class ASH_EXPORT DisplayColorManager
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_DISPLAY_COLOR_MANAGER_CHROMEOS_H_
+#endif  // ASH_DISPLAY_DISPLAY_COLOR_MANAGER_H_

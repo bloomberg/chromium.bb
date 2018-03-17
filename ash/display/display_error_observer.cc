@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_error_observer_chromeos.h"
+#include "ash/display/display_error_observer.h"
 
 #include "ash/display/display_util.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -36,7 +36,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   if (internal_display_failed && displays.size() == 1u) {
     // If the internal display is the only display that failed, don't show this
     // notification to the user, as it's confusing and less helpful.
-    // crbug.com/775197.
+    // https://crbug.com/775197.
     return;
   }
 
