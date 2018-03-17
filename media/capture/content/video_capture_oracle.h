@@ -51,6 +51,10 @@ class CAPTURE_EXPORT VideoCaptureOracle {
                                  const gfx::Size& max_size,
                                  bool use_fixed_aspect_ratio);
 
+  // Specifies whether the oracle should automatically adjust the capture size
+  // in response to end-to-end utilization.
+  void SetAutoThrottlingEnabled(bool enabled);
+
   // Get/Update the source content size.  Changes may not have an immediate
   // effect on the proposed capture size, as the oracle will prevent too-
   // frequent changes from occurring.
@@ -181,7 +185,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
 
   // Set to false to prevent the oracle from automatically adjusting the capture
   // size in response to end-to-end utilization.
-  const bool auto_throttling_enabled_;
+  bool auto_throttling_enabled_;
 
   // The minimum amount of time that must pass between changes to the capture
   // size.

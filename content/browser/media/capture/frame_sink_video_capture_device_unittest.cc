@@ -91,6 +91,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                void(const gfx::Size& min_size,
                     const gfx::Size& max_size,
                     bool use_fixed_aspect_ratio));
+  MOCK_METHOD1(SetAutoThrottlingEnabled, void(bool));
   MOCK_METHOD1(ChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
   void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final {
     DCHECK_NOT_ON_DEVICE_THREAD();

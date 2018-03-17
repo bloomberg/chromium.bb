@@ -215,6 +215,10 @@ void FrameSinkVideoCapturerImpl::SetResolutionConstraints(
   RefreshEntireSourceSoon();
 }
 
+void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
+  oracle_.SetAutoThrottlingEnabled(enabled);
+}
+
 void FrameSinkVideoCapturerImpl::ChangeTarget(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -99,6 +99,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void SetResolutionConstraints(const gfx::Size& min_size,
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio) final;
+  void SetAutoThrottlingEnabled(bool enabled) final;
   void ChangeTarget(const FrameSinkId& frame_sink_id) final;
   void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
   void Stop() final;
