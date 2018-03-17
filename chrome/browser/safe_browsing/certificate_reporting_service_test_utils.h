@@ -168,10 +168,6 @@ class CertReportJobInterceptor : public net::URLRequestInterceptor {
   void RequestDestructed(const std::string& serialized_report,
                          ReportSendingResult expected_report_result) const;
 
-  mutable std::set<std::string> successful_reports_;
-  mutable std::set<std::string> failed_reports_;
-  mutable std::set<std::string> delayed_reports_;
-
   ReportSendingResult expected_report_result_;
 
   // Private key to decrypt certificate reports.
