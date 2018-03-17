@@ -73,6 +73,22 @@
             "description": "List of experimental feature flags."
           }
         }
+      },
+      {
+        "id": "ContainerBehaviorOptions",
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "KeyboardMode",
+            "name": "mode",
+            "description": "The value of the virtual keyboard mode to set to."
+          },
+          "bounds": {
+            "$ref": "Bounds",
+            "description": "The bounds of the virtual keyboard after changing mode",
+            "optional": true
+          }
+        }
       }
     ],
     "functions": [
@@ -198,6 +214,26 @@
             "name": "callback",
             "optional": true,
             "description": "Called when container mode is ready to change.",
+            "parameters": []
+          }
+        ],
+        "deprecated": "Please use $(ref:setContainerBehavior)"
+      },
+      {
+        "name": "setContainerBehavior",
+        "type": "function",
+        "description": "Sets the virtual keyboard container behavior",
+        "parameters": [
+          {
+            "$ref": "ContainerBehaviorOptions",
+            "name": "options",
+            "description": "Optional parameters for new container behavior."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when container mode is ready to chagne.",
             "parameters": []
           }
         ]

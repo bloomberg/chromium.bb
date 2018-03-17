@@ -10,11 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/api/virtual_keyboard.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
 
@@ -78,6 +80,7 @@ class VirtualKeyboardDelegate {
   // Sets virtual keyboard window mode.
   virtual bool SetVirtualKeyboardMode(
       int mode_enum,
+      base::Optional<gfx::Rect> target_bounds,
       OnSetModeCallback on_set_mode_callback) = 0;
 
   // Sets virtual keyboard draggable area bounds.

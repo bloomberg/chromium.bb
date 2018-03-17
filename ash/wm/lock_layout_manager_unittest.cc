@@ -279,6 +279,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 
   keyboard->SetContainerType(keyboard::ContainerType::FLOATING,
+                             base::nullopt /* target_bounds */,
                              base::BindOnce([](bool success) {}));
   ShowKeyboard(true);
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();

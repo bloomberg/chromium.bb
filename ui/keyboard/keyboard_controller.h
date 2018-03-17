@@ -177,6 +177,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
   void SetContainerType(const ContainerType type,
+                        base::Optional<gfx::Rect> target_bounds,
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard drggable rect.
