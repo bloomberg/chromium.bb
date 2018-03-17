@@ -14,7 +14,6 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"

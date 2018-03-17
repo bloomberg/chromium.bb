@@ -41,7 +41,6 @@
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
