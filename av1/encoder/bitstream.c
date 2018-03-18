@@ -3530,12 +3530,12 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
   uint32_t size = 0;
 
   write_profile(cm->profile, &wb);
-
+#if !CONFIG_SCALABILITY
   aom_wb_write_literal(&wb, 0, 4);
-#if CONFIG_SCALABILITY
+#else
   aom_wb_write_literal(&wb, enhancement_layers_cnt, 2);
   int i;
-  for (i = 1; i <= enhancement_layers_cnt; i++) {
+  for (i = 0; i <= enhancement_layers_cnt; i++) {
     aom_wb_write_literal(&wb, 0, 4);
   }
 #endif

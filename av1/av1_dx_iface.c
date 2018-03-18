@@ -213,12 +213,13 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   // if (obu_type != OBU_SEQUENCE_HEADER)
   //   return AOM_CODEC_INVALID_PARAM;
 
-  av1_read_profile(&rb);        // profile
+  av1_read_profile(&rb);  // profile
+#if !CONFIG_SCALABILITY
   aom_rb_read_literal(&rb, 4);  // level
-#if CONFIG_SCALABILITY
+#else
   int i;
   si->enhancement_layers_cnt = aom_rb_read_literal(&rb, 2);
-  for (i = 1; i <= (int)si->enhancement_layers_cnt; i++) {
+  for (i = 0; i <= (int)si->enhancement_layers_cnt; i++) {
     aom_rb_read_literal(&rb, 4);  // level for each enhancement layer
   }
 #endif  // CONFIG_SCALABILITY

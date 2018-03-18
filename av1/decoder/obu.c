@@ -150,16 +150,14 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
-#if CONFIG_SCALABILITY
-  int i;
-#endif
 
   cm->profile = av1_read_profile(rb);
+#if !CONFIG_SCALABILITY
   aom_rb_read_literal(rb, 4);  // level
-
-#if CONFIG_SCALABILITY
+#else
+  int i;
   pbi->common.enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
-  for (i = 1; i <= pbi->common.enhancement_layers_cnt; i++) {
+  for (i = 0; i <= pbi->common.enhancement_layers_cnt; i++) {
     aom_rb_read_literal(rb, 4);  // level for each enhancement layer
   }
 #endif
