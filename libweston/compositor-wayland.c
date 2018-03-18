@@ -1707,6 +1707,7 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 
 	weston_event.axis = axis;
 	weston_event.value = wl_fixed_to_double(value);
+	weston_event.has_discrete = false;
 
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL &&
 	    input->vert.has_discrete) {
