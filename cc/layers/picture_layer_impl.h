@@ -78,7 +78,6 @@ class CC_EXPORT PictureLayerImpl
   bool UpdateTiles();
   // Returns true if the LCD state changed.
   bool UpdateCanUseLCDTextAfterCommit();
-  WhichTree GetTree() const;
 
   // Mask-related functions.
   void GetContentsResourceId(viz::ResourceId* resource_id,
