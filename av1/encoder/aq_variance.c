@@ -48,8 +48,8 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
   int i;
 
   int resolution_change =
-      (cm->width != cm->last_width || cm->height != cm->last_height) &&
-      cm->prev_frame;
+      cm->prev_frame && (cm->width != cm->prev_frame->width ||
+                         cm->height != cm->prev_frame->height);
   if (resolution_change) {
     memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
     av1_clearall_segfeatures(seg);

@@ -3191,17 +3191,15 @@ void superres_post_decode(AV1Decoder *pbi) {
 }
 
 static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
-  {
-    int row, col;
-    for (row = 0; row < cm->mi_rows; ++row) {
-      BOUNDARY_TYPE *bi = cm->boundary_info + row * cm->mi_stride;
-      for (col = 0; col < cm->mi_cols; ++col) {
-        *bi = 0;
-        bi++;
-      }
+  int row, col;
+  for (row = 0; row < cm->mi_rows; ++row) {
+    BOUNDARY_TYPE *bi = cm->boundary_info + row * cm->mi_stride;
+    for (col = 0; col < cm->mi_cols; ++col) {
+      *bi = 0;
+      bi++;
     }
-    av1_setup_frame_boundary_info(cm);
   }
+  av1_setup_frame_boundary_info(cm);
 }
 
 int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,

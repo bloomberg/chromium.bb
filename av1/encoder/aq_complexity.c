@@ -49,8 +49,8 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   struct segmentation *const seg = &cm->seg;
   int resolution_change =
-      (cm->width != cm->last_width || cm->height != cm->last_height) &&
-      cm->prev_frame;
+      cm->prev_frame && (cm->width != cm->prev_frame->width ||
+                         cm->height != cm->prev_frame->height);
 
   // Make SURE use of floating point in this function is safe.
   aom_clear_system_state();
