@@ -532,6 +532,7 @@ _x86_internal_release_boards = frozenset([
     'amd64-generic-cheets',
     'amd64-generic-goofy',
     'asuka',
+    'atlas',
     'auron',
     'auron_paine',
     'auron_yuna',
@@ -2442,6 +2443,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
       'nami',
       'octopus',
+      'atlas',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
