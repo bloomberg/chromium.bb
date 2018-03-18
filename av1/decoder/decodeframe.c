@@ -3397,7 +3397,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
-  if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
+  if (av1_allow_intrabc(cm)) {
     av1_setup_scale_factors_for_frame(
         &cm->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
         xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);

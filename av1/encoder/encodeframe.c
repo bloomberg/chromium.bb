@@ -987,7 +987,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
                     tile_data->allow_update_cdf);
   }
 
-  if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
+  if (av1_allow_intrabc(cm)) {
     if (allow_update_cdf)
       update_cdf(fc->intrabc_cdf, is_intrabc_block(mbmi), 2);
 #if CONFIG_ENTROPY_STATS

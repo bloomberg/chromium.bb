@@ -61,7 +61,8 @@ static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {
 }
 
 static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
-  return cm->allow_screen_content_tools && cm->allow_intrabc;
+  return frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
+         cm->allow_intrabc;
 }
 
 static INLINE int av1_filter_intra_allowed_bsize(const AV1_COMMON *const cm,
