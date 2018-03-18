@@ -823,16 +823,13 @@ static void setup_segmentation(AV1_COMMON *const cm,
 
   seg->enabled = aom_rb_read_bit(rb);
   if (!seg->enabled) {
-#if CONFIG_SEGMENT_PRED_LAST
     if (cm->cur_frame->seg_map)
       memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
 
     memset(seg, 0, sizeof(*seg));
     segfeatures_copy(&cm->cur_frame->seg, seg);
-#endif  // CONFIG_SEGMENT_PRED_LAST
     return;
   }
-#if CONFIG_SEGMENT_PRED_LAST
   if (cm->seg.enabled && cm->prev_frame &&
       (cm->mi_rows == cm->prev_frame->mi_rows) &&
       (cm->mi_cols == cm->prev_frame->mi_cols)) {
@@ -840,7 +837,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
   } else {
     cm->last_frame_seg_map = NULL;
   }
-#endif
   // Read update flags
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     // These frames can't use previous frames, so must signal map + features
@@ -857,10 +853,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
     seg->update_data = aom_rb_read_bit(rb);
   }
 
-#if !CONFIG_SEGMENT_PRED_LAST && CONFIG_SPATIAL_SEGMENTATION
-  seg->preskip_segid = 0;
-#endif
-
   // Segmentation data update
   if (seg->update_data) {
     av1_clearall_segfeatures(seg);
@@ -870,10 +862,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
         int data = 0;
         const int feature_enabled = aom_rb_read_bit(rb);
         if (feature_enabled) {
-#if !CONFIG_SEGMENT_PRED_LAST && CONFIG_SPATIAL_SEGMENTATION
-          seg->preskip_segid |= j >= SEG_LVL_REF_FRAME;
-          seg->last_active_segid = i;
-#endif
           av1_enable_segfeature(seg, i, j);
 
           const int data_max = av1_seg_feature_data_max(j);
@@ -891,11 +879,9 @@ static void setup_segmentation(AV1_COMMON *const cm,
         av1_set_segdata(seg, i, j, data);
       }
     }
-#if CONFIG_SEGMENT_PRED_LAST
     segfeatures_copy(&cm->cur_frame->seg, seg);
   } else if (cm->prev_frame) {
     segfeatures_copy(seg, &cm->prev_frame->seg);
-#endif
   }
 }
 
@@ -3403,9 +3389,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 
   cm->setup_mi(cm);
 
-#if CONFIG_SEGMENT_PRED_LAST
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
-#endif
 
   av1_setup_motion_field(cm);
 

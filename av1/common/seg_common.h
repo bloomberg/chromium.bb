@@ -69,7 +69,6 @@ static INLINE int segfeature_active(const struct segmentation *seg,
   return seg->enabled && (seg->feature_mask[segment_id] & (1 << feature_id));
 }
 
-#if CONFIG_SEGMENT_PRED_LAST
 static INLINE void segfeatures_copy(struct segmentation *dst,
                                     struct segmentation *src) {
   int i, j;
@@ -92,7 +91,6 @@ static INLINE void segfeatures_copy(struct segmentation *dst,
     }
   }
 }
-#endif
 
 void av1_clearall_segfeatures(struct segmentation *seg);
 

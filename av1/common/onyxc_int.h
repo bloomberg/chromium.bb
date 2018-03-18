@@ -120,10 +120,8 @@ typedef struct {
   unsigned int ref_frame_offset[INTER_REFS_PER_FRAME];
 
   MV_REF *mvs;
-#if CONFIG_SEGMENT_PRED_LAST
   uint8_t *seg_map;
   struct segmentation seg;
-#endif
   int mi_rows;
   int mi_cols;
   // Width and height give the size of the buffer (before any upscaling, unlike
@@ -386,13 +384,6 @@ typedef struct AV1Common {
   // Whether to use previous frame's motion vectors for prediction.
   int use_ref_frame_mvs;
 
-#if !CONFIG_SEGMENT_PRED_LAST
-  // Persistent mb segment id map used in prediction.
-  int seg_map_idx;
-  int prev_seg_map_idx;
-
-  uint8_t *seg_map_array[NUM_PING_PONG_BUFFERS];
-#endif
   uint8_t *last_frame_seg_map;
   uint8_t *current_frame_seg_map;
   int seg_map_alloc_size;
@@ -671,12 +662,10 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
                     (MV_REF *)aom_calloc(
                         ((cm->mi_rows + 1) >> 1) * ((cm->mi_cols + 1) >> 1),
                         sizeof(*buf->mvs)));
-#if CONFIG_SEGMENT_PRED_LAST
     aom_free(buf->seg_map);
     CHECK_MEM_ERROR(cm, buf->seg_map,
                     (uint8_t *)aom_calloc(cm->mi_rows * cm->mi_cols,
                                           sizeof(*buf->seg_map)));
-#endif
   }
 
   const int mem_size =
