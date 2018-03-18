@@ -2074,6 +2074,9 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
   if (!*gpu_rasterization_enabled && !settings_.gpu_rasterization_forced)
     return;
 
+  if (!context_provider->ContextSupport()->HasGrContextSupport())
+    return;
+
   // Do not check GrContext above. It is lazy-created, and we only want to
   // create it if it might be used.
   GrContext* gr_context = context_provider->GrContext();

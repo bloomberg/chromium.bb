@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "ui/gfx/overlay_transform.h"
 
+class GrContext;
+
 namespace gfx {
 class GpuFence;
 class Rect;
@@ -114,6 +116,19 @@ class ContextSupport {
   virtual void DeleteTransferCacheEntry(uint32_t type, uint32_t id) = 0;
 
   virtual unsigned int GetTransferBufferFreeSize() const = 0;
+
+  // Returns true if the context provider automatically manages calls to
+  // GrContext::resetContext under the hood to prevent GL state synchronization
+  // problems between the GLES2 interface and skia.
+  virtual bool HasGrContextSupport() const = 0;
+
+  // Sets the GrContext that is to receive resetContext signals when the GL
+  // state is modified via direct calls to the GLES2 interface.
+  virtual void SetGrContext(GrContext* gr) = 0;
+
+  virtual void WillCallGLFromSkia() = 0;
+
+  virtual void DidCallGLFromSkia() = 0;
 
  protected:
   ContextSupport() = default;

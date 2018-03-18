@@ -142,7 +142,6 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   GrPixelConfig config = video_frame->format() == PIXEL_FORMAT_NV12
                              ? kRGBA_8888_GrPixelConfig
                              : kAlpha_8_GrPixelConfig;
-  context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
   GrBackendTexture textures[3] = {
       GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(), config,
                        source_textures[0]),
@@ -214,7 +213,6 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
         gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false);
-    context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
   } else {
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_texture =

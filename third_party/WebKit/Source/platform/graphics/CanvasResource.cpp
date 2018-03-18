@@ -208,7 +208,6 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
   const GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   gl->BindTexture(target, texture_id_);
   gl->BindTexImage2DCHROMIUM(target, image_id_);
-  gr->resetContext(kTextureBinding_GrGLBackendState);
 }
 
 CanvasResource_GpuMemoryBuffer::~CanvasResource_GpuMemoryBuffer() {
@@ -245,7 +244,6 @@ void CanvasResource_GpuMemoryBuffer::TearDown() {
   if (!context_provider_wrapper_ || !image_id_)
     return;
   auto gl = context_provider_wrapper_->ContextProvider()->ContextGL();
-  auto gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
   if (gl && texture_id_) {
     GLenum target = TextureTarget();
     gl->BindTexture(target, texture_id_);
@@ -253,9 +251,6 @@ void CanvasResource_GpuMemoryBuffer::TearDown() {
     gl->DestroyImageCHROMIUM(image_id_);
     gl->DeleteTextures(1, &texture_id_);
     gl->BindTexture(target, 0);
-    if (gr) {
-      gr->resetContext(kTextureBinding_GrGLBackendState);
-    }
   }
   image_id_ = 0;
   texture_id_ = 0;

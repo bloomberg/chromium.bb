@@ -91,6 +91,10 @@ class GLES2_IMPL_EXPORT ImplementationBase
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  void SetGrContext(GrContext* gr) override;
+  bool HasGrContextSupport() const override;
+  void WillCallGLFromSkia() override;
+  void DidCallGLFromSkia() override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

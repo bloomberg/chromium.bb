@@ -269,7 +269,7 @@ class GrContext* TestContextProvider::GrContext() {
   skia_bindings::GrContextForGLES2Interface::DefaultCacheLimitsForTests(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
-      context_gl_.get(), context3d_->test_capabilities(),
+      context_gl_.get(), support_.get(), context3d_->test_capabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes);
   cache_controller_->SetGrContext(gr_context_->get());
 
@@ -283,14 +283,6 @@ class GrContext* TestContextProvider::GrContext() {
 ContextCacheController* TestContextProvider::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
-}
-
-void TestContextProvider::InvalidateGrContext(uint32_t state) {
-  DCHECK(bound_);
-  CheckValidThreadOrLockAcquired();
-
-  if (gr_context_)
-    gr_context_->get()->resetContext(state);
 }
 
 base::Lock* TestContextProvider::GetLock() {

@@ -172,8 +172,6 @@ bool TestPlugin::Initialize(blink::WebPluginContainer* container) {
   container_ = container;
 
   blink::Platform::ContextAttributes attrs;
-  attrs.web_gl_version =
-      1;  // We are creating a context through the WebGL APIs.
   blink::WebURL url = container->GetDocument().Url();
   blink::Platform::GraphicsInfo gl_info;
   context_provider_ =

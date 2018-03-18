@@ -42,11 +42,12 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
   attributes.bind_generates_resource = false;
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
+  constexpr bool support_grcontext = true;
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
       content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
       gpu::kNullSurfaceHandle, GURL(), automatic_flushes, support_locking,
-      gpu::SharedMemoryLimits(), attributes, nullptr,
+      support_grcontext, gpu::SharedMemoryLimits(), attributes, nullptr,
       ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
 }
 
