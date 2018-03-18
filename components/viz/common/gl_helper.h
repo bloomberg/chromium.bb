@@ -574,10 +574,6 @@ class VIZ_COMMON_EXPORT ReadbackYUVInterface {
                            unsigned char* v_plane_data,
                            const gfx::Point& paste_location,
                            const base::Callback<void(bool)>& callback) = 0;
-
-  // Returns the bitwise ORed set of GL backend state change that can be used to
-  // restore the GL state after ReadbackYUV() calls.
-  static uint32_t GetGrGLBackendStateChanges();
 };
 
 }  // namespace viz

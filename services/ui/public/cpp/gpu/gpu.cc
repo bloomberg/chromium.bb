@@ -282,6 +282,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
+  constexpr bool support_grcontext = false;
 
   gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
@@ -296,7 +297,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
       std::move(gpu_channel), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
-      support_locking, gpu::SharedMemoryLimits(), attributes,
+      support_locking, support_grcontext, gpu::SharedMemoryLimits(), attributes,
       shared_context_provider, command_buffer_metrics::MUS_CLIENT_CONTEXT);
 }
 

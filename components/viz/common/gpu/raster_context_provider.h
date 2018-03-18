@@ -97,11 +97,6 @@ class VIZ_COMMON_EXPORT RasterContextProvider {
   // nullptr if a GrContext fails to initialize on this context.
   virtual class GrContext* GrContext() = 0;
 
-  // Invalidates the cached OpenGL state in GrContext.  The context provider
-  // must have been successfully bound to a thread before calling this.
-  // See skia GrContext::resetContext for details.
-  virtual void InvalidateGrContext(uint32_t state) = 0;
-
   // Returns the capabilities of the currently bound 3d context.  The context
   // provider must have been successfully bound to a thread before calling this.
   virtual const gpu::Capabilities& ContextCapabilities() const = 0;

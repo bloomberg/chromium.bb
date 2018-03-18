@@ -141,4 +141,14 @@ unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
   return 0;
 }
 
+bool TestContextSupport::HasGrContextSupport() const {
+  return true;
+}
+
+void TestContextSupport::SetGrContext(GrContext* gr) {}
+
+void TestContextSupport::WillCallGLFromSkia() {}
+
+void TestContextSupport::DidCallGLFromSkia() {}
+
 }  // namespace viz

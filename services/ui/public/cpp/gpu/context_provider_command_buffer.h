@@ -66,6 +66,7 @@ class ContextProviderCommandBuffer
       const GURL& active_url,
       bool automatic_flushes,
       bool support_locking,
+      bool support_grcontext,
       const gpu::SharedMemoryLimits& memory_limits,
       const gpu::ContextCreationAttribs& attributes,
       ContextProviderCommandBuffer* shared_context_provider,
@@ -85,7 +86,6 @@ class ContextProviderCommandBuffer
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
-  void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
@@ -141,6 +141,7 @@ class ContextProviderCommandBuffer
   const GURL active_url_;
   const bool automatic_flushes_;
   const bool support_locking_;
+  const bool support_grcontext_;
   const gpu::SharedMemoryLimits memory_limits_;
   const gpu::ContextCreationAttribs attributes_;
   const command_buffer_metrics::ContextType context_type_;

@@ -52,7 +52,6 @@ class AwRenderThreadContextProvider
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
-  void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   void AddObserver(viz::ContextLostObserver* obs) override;
   void RemoveObserver(viz::ContextLostObserver* obs) override;
