@@ -5055,7 +5055,8 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
     const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
     av1_encode_intra_block_plane(cpi, x, mbmi->sb_type, AOM_PLANE_Y,
-                                 x->optimize, mi_row, mi_col);
+                                 cpi->optimize_seg_arr[mbmi->segment_id],
+                                 mi_row, mi_col);
     xd->cfl.store_y = 0;
   }
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
