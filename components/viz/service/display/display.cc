@@ -579,31 +579,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   int minimum_draw_occlusion_width =
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
-  // The 160 comes from the LayerTreeSettings::minimum_occlusion_tracking_size
-  // default value, which is not accessible from here.
-  gfx::Size layer_occlusion_skip_rect_size(160 * device_scale_factor_,
-                                           160 * device_scale_factor_);
-
-  // Record the total number of DrawQudas has a |visible_rect| that is smaller
-  // than minimum occlusion tracking size in layer occlusion.
-  size_t total_small_quads = 0;
-
-  // Record the total number of DrawQuads that are skipped from applying draw
-  // occlusion.
-  size_t total_quad_skipped = 0;
-
-  // Record the total number of DrawQuads that are not shown on screen so that
-  // it's removed by draw occlusion.
-  size_t total_quad_removed = 0;
-
-  // Record the total number of DrawQuads that are partially shown on screen so
-  // that its visible rect is updated by draw occlusion.
-  size_t total_quad_resized = 0;
-
-  // Record the total number of DrawQuads has non scale or translation
-  // transform.
-  size_t total_quad_with_complex_transform = 0;
-
   // Total quad area to be drawn on screen before applying draw occlusion.
   size_t total_quad_area_shown_wo_occlusion_px = 0;
 
@@ -636,14 +611,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {
       total_quad_area_shown_wo_occlusion_px +=
           quad->visible_rect.height() * quad->visible_rect.width();
-      if (quad->visible_rect.width() <=
-              layer_occlusion_skip_rect_size.width() &&
-          quad->visible_rect.height() <=
-              layer_occlusion_skip_rect_size.height() &&
-          quad->visible_rect.height() >= minimum_draw_occlusion_height &&
-          quad->visible_rect.width() >= minimum_draw_occlusion_width) {
-        total_small_quads += 1;
-      }
 
       // Skip quad if it is a RenderPassDrawQuad because RenderPassDrawQuad is a
       // special type of DrawQuad where the visible_rect of shared quad state is
@@ -653,7 +620,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
           (quad->visible_rect.width() <= minimum_draw_occlusion_width &&
            quad->visible_rect.height() <= minimum_draw_occlusion_height)) {
         ++quad;
-        total_quad_skipped += 1;
         continue;
       }
 
@@ -710,12 +676,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
               cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
                   reverse_transform, occlusion_in_target_space.bounds());
         } else {
-          total_quad_with_complex_transform += 1;
           occlusion_in_quad_content_space = gfx::Rect();
-
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Compositing.Display.Draw.Quads.With.Complex.Transform.Area",
-              quad->visible_rect.height() * quad->visible_rect.width());
         }
       }
 
@@ -731,7 +692,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         total_area_saved_in_px +=
             quad->visible_rect.height() * quad->visible_rect.width();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
-        total_quad_removed += 1;
 
       } else if (occlusion_in_quad_content_space.Intersects(
                      quad->visible_rect)) {
@@ -741,7 +701,6 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         gfx::Rect origin_rect = quad->visible_rect;
         quad->visible_rect.Subtract(occlusion_in_quad_content_space);
         if (origin_rect != quad->visible_rect) {
-          total_quad_resized += 1;
           origin_rect.Subtract(quad->visible_rect);
           total_area_saved_in_px += origin_rect.height() * origin_rect.width();
         }
@@ -756,23 +715,11 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         total_area_saved_in_px +=
             quad->visible_rect.height() * quad->visible_rect.width();
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
-        total_quad_removed += 1;
       } else {
         ++quad;
       }
     }
   }
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads.Skipped",
-                            total_quad_skipped);
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads.Removed",
-                            total_quad_removed);
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads.Resized",
-                            total_quad_resized);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "Compositing.Display.Draw.Quads.With.Complex.Transform",
-      total_quad_with_complex_transform);
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads.Smaller",
-                            total_small_quads);
   UMA_HISTOGRAM_PERCENTAGE(
       "Compositing.Display.Draw.Occlusion.Percentage.Saved",
       total_quad_area_shown_wo_occlusion_px == 0
