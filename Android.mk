@@ -53,7 +53,9 @@ LOCAL_MODULE := libdrm
 
 LOCAL_SRC_FILES := $(LIBDRM_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
-        $(LOCAL_PATH)/include/drm
+	$(LOCAL_PATH) \
+	$(LOCAL_PATH)/include/drm \
+	$(LOCAL_PATH)/android
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils
