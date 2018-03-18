@@ -166,7 +166,9 @@ void ImeControllerClient::OnCapsLockChanged(bool enabled) {
   ime_controller_ptr_->UpdateCapsLockState(enabled);
 }
 
-void ImeControllerClient::OnLayoutChanging(const std::string& layout_name) {}
+void ImeControllerClient::OnLayoutChanging(const std::string& layout_name) {
+  ime_controller_ptr_->OnKeyboardLayoutNameChanged(layout_name);
+}
 
 void ImeControllerClient::FlushMojoForTesting() {
   ime_controller_ptr_.FlushForTesting();
@@ -180,6 +182,11 @@ void ImeControllerClient::BindAndSetClient() {
   // Now that the bridge is established, flush state from observed objects to
   // the ImeController, now that it will hear it.
   input_method_manager_->NotifyObserversImeExtraInputStateChange();
+  if (const chromeos::input_method::ImeKeyboard* keyboard =
+          input_method_manager_->GetImeKeyboard()) {
+    ime_controller_ptr_->OnKeyboardLayoutNameChanged(
+        keyboard->GetCurrentKeyboardLayoutName());
+  }
 }
 
 ash::mojom::ImeInfoPtr ImeControllerClient::GetAshImeInfo(

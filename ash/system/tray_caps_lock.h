@@ -29,6 +29,7 @@ class TrayCapsLock : public TrayImageItem, public ImeController::Observer {
 
   // Overridden from ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;
+  void OnKeyboardLayoutNameChanged(const std::string&) override {}
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;

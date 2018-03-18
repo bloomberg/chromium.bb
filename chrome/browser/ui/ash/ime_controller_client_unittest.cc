@@ -197,6 +197,19 @@ TEST_F(ImeControllerClientTest, CapsLock) {
   EXPECT_FALSE(ime_controller_.is_caps_lock_enabled_);
 }
 
+TEST_F(ImeControllerClientTest, LayoutName) {
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+
+  client.OnLayoutChanging("us(dvorak)");
+  client.FlushMojoForTesting();
+  EXPECT_EQ("us(dvorak)", ime_controller_.keyboard_layout_name_);
+
+  client.OnLayoutChanging("us");
+  client.FlushMojoForTesting();
+  EXPECT_EQ("us", ime_controller_.keyboard_layout_name_);
+}
+
 TEST_F(ImeControllerClientTest, ExtraInputEnabledStateChange) {
   ImeControllerClient client(&input_method_manager_);
   client.InitForTesting(ime_controller_.CreateInterfacePtr());
