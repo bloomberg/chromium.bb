@@ -118,6 +118,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;
+  void OnKeyboardLayoutNameChanged(const std::string&) override {}
 
  private:
   class EasyUnlockIcon;

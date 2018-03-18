@@ -31,6 +31,12 @@ interface ImeController {
   // to the tray.
   UpdateCapsLockState(bool enabled);
 
+  // Report keyboard layout changes from chrome (which is the source of truth)
+  // This is also called when a connection is first established between
+  // ImeController and ImeControllerClient.
+  // The layout name is a XKB keyboard layout name (e.g. "us").
+  OnKeyboardLayoutNameChanged(string layout_name);
+
   // Report the enabled state of the various extra input options (currently
   // emoji, handwriting, and voice input). |is_extra_input_options_enabled| set
   // to false will disable all extra input option UI regardless of the enabled

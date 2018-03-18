@@ -44,6 +44,11 @@ void TestImeController::UpdateCapsLockState(bool enabled) {
   is_caps_lock_enabled_ = enabled;
 }
 
+void TestImeController::OnKeyboardLayoutNameChanged(
+    const std::string& layout_name) {
+  keyboard_layout_name_ = layout_name;
+}
+
 void TestImeController::SetExtraInputOptionsEnabledState(
     bool is_extra_input_options_enabled,
     bool is_emoji_enabled,

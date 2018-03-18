@@ -61,6 +61,27 @@ class TestImeObserver : public IMEObserver {
   bool ime_menu_active_ = false;
 };
 
+class TestImeControllerObserver : public ImeController::Observer {
+ public:
+  TestImeControllerObserver() = default;
+
+  // IMEController::Observer:
+  void OnCapsLockChanged(bool enabled) override { ++caps_lock_count_; }
+  void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {
+    last_keyboard_layout_name_ = layout_name;
+  }
+
+  const std::string& last_keyboard_layout_name() const {
+    return last_keyboard_layout_name_;
+  }
+
+ private:
+  int caps_lock_count_ = 0;
+  std::string last_keyboard_layout_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImeControllerObserver);
+};
+
 using ImeControllerTest = AshTestBase;
 
 TEST_F(ImeControllerTest, RefreshIme) {
@@ -262,6 +283,17 @@ TEST_F(ImeControllerTest, SetCapsLock) {
   EXPECT_TRUE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
   EXPECT_FALSE(controller->IsCapsLockEnabled());
+}
+
+TEST_F(ImeControllerTest, OnKeyboardLayoutNameChanged) {
+  ImeController* controller = Shell::Get()->ime_controller();
+  EXPECT_TRUE(controller->keyboard_layout_name().empty());
+
+  TestImeControllerObserver observer;
+  controller->AddObserver(&observer);
+  controller->OnKeyboardLayoutNameChanged("us(dvorak)");
+  EXPECT_EQ("us(dvorak)", controller->keyboard_layout_name());
+  EXPECT_EQ("us(dvorak)", observer.last_keyboard_layout_name());
 }
 
 }  // namespace

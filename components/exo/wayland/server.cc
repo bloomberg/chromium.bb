@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
@@ -109,8 +110,6 @@
 #include <drm_fourcc.h>
 #include <linux-dmabuf-unstable-v1-server-protocol.h>
 #if defined(OS_CHROMEOS)
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 #endif
 #endif
@@ -3374,13 +3373,12 @@ const struct wl_pointer_interface pointer_implementation = {pointer_set_cursor,
 
 // Keyboard delegate class that accepts events for surfaces owned by the same
 // client as a keyboard resource.
-class WaylandKeyboardDelegate
-    : public WaylandInputDelegate,
-      public KeyboardDelegate,
-      public KeyboardObserver
+class WaylandKeyboardDelegate : public WaylandInputDelegate,
+                                public KeyboardDelegate,
+                                public KeyboardObserver
 #if defined(OS_CHROMEOS)
     ,
-      public chromeos::input_method::ImeKeyboard::Observer
+                                public ash::ImeController::Observer
 #endif
 {
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -3389,22 +3387,16 @@ class WaylandKeyboardDelegate
       : keyboard_resource_(keyboard_resource),
         xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)) {
 #if defined(OS_CHROMEOS)
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    if (keyboard) {
-      keyboard->AddObserver(this);
-      SendNamedLayout(keyboard->GetCurrentKeyboardLayoutName());
-    }
+    ash::ImeController* ime_controller = ash::Shell::Get()->ime_controller();
+    ime_controller->AddObserver(this);
+    SendNamedLayout(ime_controller->keyboard_layout_name());
 #else
     SendLayout(nullptr);
 #endif
   }
 #if defined(OS_CHROMEOS)
   ~WaylandKeyboardDelegate() override {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    if (keyboard)
-      keyboard->RemoveObserver(this);
+    ash::Shell::Get()->ime_controller()->RemoveObserver(this);
   }
 #endif
 
@@ -3468,9 +3460,9 @@ class WaylandKeyboardDelegate
   }
 
 #if defined(OS_CHROMEOS)
-  // Overridden from input_method::ImeKeyboard::Observer:
+  // Overridden from ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override {}
-  void OnLayoutChanging(const std::string& layout_name) override {
+  void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {
     SendNamedLayout(layout_name);
   }
 #endif
