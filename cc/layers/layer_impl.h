@@ -86,7 +86,8 @@ class CC_EXPORT LayerImpl {
 
   int id() const { return layer_id_; }
 
-  // Interactions with attached animations.
+  // Whether this layer is on the active tree, return false if it's on the
+  // pending tree.
   bool IsActive() const;
 
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
