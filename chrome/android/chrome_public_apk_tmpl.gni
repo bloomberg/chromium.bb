@@ -112,7 +112,6 @@ template("monochrome_public_apk_tmpl") {
     }
 
     alternative_android_sdk_jar = webview_framework_jar
-    app_as_shared_lib = true
     use_chromium_linker = false
     requires_sdk_api_level_23 = true
 
