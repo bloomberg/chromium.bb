@@ -84,15 +84,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   // row <m>?" To make that efficient, we generate the rst_last_stripe array.
   int num_stripes = 0;
   for (int i = 0; i < cm->tile_rows; ++i) {
-#if CONFIG_MAX_TILE
     TileInfo tile_info;
     av1_tile_set_row(&tile_info, cm, i);
     const int mi_h = tile_info.mi_row_end - tile_info.mi_row_start;
-#else
-    const int mi_h = ((i + 1) < cm->tile_rows)
-                         ? cm->tile_height
-                         : (cm->mi_rows - i * cm->tile_height);
-#endif
     const int ext_h = RESTORATION_UNIT_OFFSET + (mi_h << MI_SIZE_LOG2);
     const int tile_stripes = (ext_h + 63) / 64;
     num_stripes += tile_stripes;

@@ -277,15 +277,6 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
   assert(cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
-#if !CONFIG_MAX_TILE
-  // for the max_tile experiment there is no common tile_width, tile_height
-  // max_tile assumes tile dimensions are in superblocks (not 64x64 units)
-  assert(IMPLIES(cpi->common.tile_cols > 1,
-                 cpi->common.tile_width % MAX_MIB_SIZE == 0));
-  assert(IMPLIES(cpi->common.tile_rows > 1,
-                 cpi->common.tile_height % MAX_MIB_SIZE == 0));
-#endif
-
 // TODO(any): Possibly could improve this with a heuristic.
 #if CONFIG_FILEOPTIONS
   if (cpi->common.options && !cpi->common.options->ext_partition)
@@ -810,8 +801,6 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
   av1_rc_update_framerate(cpi, cpi->common.width, cpi->common.height);
 }
 
-#if CONFIG_MAX_TILE
-
 static void set_tile_info_max_tile(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int i, start_sb;
@@ -859,8 +848,6 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
   av1_calculate_tile_rows(cm);
 }
 
-#endif
-
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   (void)cm;
@@ -889,7 +876,6 @@ static void set_tile_info(AV1_COMP *cpi) {
 
     cm->tile_rows = 1;
     while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
-#if CONFIG_MAX_TILE
     int i;
     for (i = 0; i <= cm->tile_cols; i++) {
       cm->tile_col_start_sb[i] =
@@ -899,24 +885,9 @@ static void set_tile_info(AV1_COMP *cpi) {
       cm->tile_row_start_sb[i] =
           ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
-#endif  // CONFIG_MAX_TILE
   } else {
-#if CONFIG_MAX_TILE
     set_tile_info_max_tile(cpi);
     (void)cm;
-#else
-    int min_log2_tile_cols, max_log2_tile_cols;
-    av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
-
-    cm->log2_tile_cols =
-        clamp(cpi->oxcf.tile_columns, min_log2_tile_cols, max_log2_tile_cols);
-    cm->log2_tile_rows = cpi->oxcf.tile_rows;
-
-    cm->tile_width =
-        get_tile_size(cm->mi_cols, cm->log2_tile_cols, &cm->tile_cols);
-    cm->tile_height =
-        get_tile_size(cm->mi_rows, cm->log2_tile_rows, &cm->tile_rows);
-#endif  // CONFIG_MAX_TILE
   }
 }
 

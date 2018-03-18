@@ -1459,8 +1459,6 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
-#if CONFIG_MAX_TILE
-
 // Same function as av1_read_uniform but reading from uncompresses header wb
 static int rb_read_uniform(struct aom_read_bit_buffer *const rb, int n) {
   const int l = get_unsigned_bits(n);
@@ -1531,7 +1529,6 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
   }
   av1_calculate_tile_rows(cm);
 }
-#endif
 
 static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
@@ -1578,7 +1575,6 @@ static void read_tile_info(AV1Decoder *const pbi,
       pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
       pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     }
-#if CONFIG_MAX_TILE
     for (int i = 0; i <= cm->tile_cols; i++) {
       cm->tile_col_start_sb[i] =
           ((i * cm->tile_width - 1) >> cm->seq_params.mib_size_log2) + 1;
@@ -1587,35 +1583,10 @@ static void read_tile_info(AV1Decoder *const pbi,
       cm->tile_row_start_sb[i] =
           ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
-#endif  // CONFIG_MAX_TILE
     return;
   }
 
-#if CONFIG_MAX_TILE
   read_tile_info_max_tile(cm, rb);
-#else
-  int min_log2_tile_cols, max_log2_tile_cols, max_ones;
-  av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
-
-  // columns
-  max_ones = max_log2_tile_cols - min_log2_tile_cols;
-  cm->log2_tile_cols = min_log2_tile_cols;
-  while (max_ones-- && aom_rb_read_bit(rb)) cm->log2_tile_cols++;
-
-  if (cm->log2_tile_cols > 6)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Invalid number of tile columns");
-
-  // rows
-  cm->log2_tile_rows = aom_rb_read_bit(rb);
-  if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
-
-  cm->tile_width =
-      get_tile_size(cm->mi_cols, cm->log2_tile_cols, &cm->tile_cols);
-  cm->tile_height =
-      get_tile_size(cm->mi_rows, cm->log2_tile_rows, &cm->tile_rows);
-
-#endif  // CONFIG_MAX_TILE
 
   if (cm->tile_rows * cm->tile_cols > 1) {
     // tile size magnitude

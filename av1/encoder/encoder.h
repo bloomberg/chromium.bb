@@ -255,12 +255,10 @@ typedef struct AV1EncoderConfig {
 
   int tile_columns;
   int tile_rows;
-#if CONFIG_MAX_TILE
   int tile_width_count;
   int tile_height_count;
   int tile_widths[MAX_TILE_COLS];
   int tile_heights[MAX_TILE_ROWS];
-#endif
 
   int max_threads;
 

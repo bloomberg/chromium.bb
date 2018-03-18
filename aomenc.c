@@ -428,12 +428,10 @@ static const arg_def_t tile_cols =
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1,
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
-#if CONFIG_MAX_TILE
 static const arg_def_t tile_width =
     ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
 static const arg_def_t tile_height =
     ARG_DEF(NULL, "tile-height", 1, "Tile heights (command separated)");
-#endif
 static const arg_def_t lossless =
     ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
 static const arg_def_t enable_cdef =
@@ -1255,14 +1253,12 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.sframe_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &sframe_mode, argi)) {
       config->cfg.sframe_mode = arg_parse_uint(&arg);
-#if CONFIG_MAX_TILE
     } else if (arg_match(&arg, &tile_width, argi)) {
       config->cfg.tile_width_count =
           arg_parse_list(&arg, config->cfg.tile_widths, MAX_TILE_WIDTHS);
     } else if (arg_match(&arg, &tile_height, argi)) {
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
-#endif
 #if CONFIG_FILEOPTIONS
     } else if (arg_match(&arg, &ext_partition, argi)) {
       config->cfg.cfg.ext_partition = !!arg_parse_uint(&arg) > 0;

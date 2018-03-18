@@ -2198,8 +2198,6 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
   }
 }
 
-#if CONFIG_MAX_TILE
-
 // Same function as write_uniform but writing to uncompresses header wb
 static void wb_write_uniform(struct aom_write_bit_buffer *wb, int n, int v) {
   const int l = get_unsigned_bits(n);
@@ -2263,7 +2261,6 @@ static void write_tile_info_max_tile(const AV1_COMMON *const cm,
     assert(height_sb == 0);
   }
 }
-#endif
 
 static void write_tile_info(const AV1_COMMON *const cm,
                             struct aom_write_bit_buffer *saved_wb,
@@ -2292,22 +2289,7 @@ static void write_tile_info(const AV1_COMMON *const cm,
       aom_wb_write_literal(wb, tile_height - 1, 6);
     }
   } else {
-#if CONFIG_MAX_TILE
     write_tile_info_max_tile(cm, wb);
-#else
-    int min_log2_tile_cols, max_log2_tile_cols, ones;
-    av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
-
-    // columns
-    ones = cm->log2_tile_cols - min_log2_tile_cols;
-    while (ones--) aom_wb_write_bit(wb, 1);
-
-    if (cm->log2_tile_cols < max_log2_tile_cols) aom_wb_write_bit(wb, 0);
-
-    // rows
-    aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
-    if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
-#endif
   }
 
   *saved_wb = *wb;

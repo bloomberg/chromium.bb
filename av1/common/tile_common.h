@@ -52,8 +52,6 @@ typedef struct {
 AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info,
                                const struct AV1Common *cm, int is_uv);
 
-#if CONFIG_MAX_TILE
-
 // Define tile maximum width and area
 // There is no maximum height since height is limited by area and width limits
 // The minimum tile width or height is fixed at one superblock
@@ -63,7 +61,6 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info,
 void av1_get_tile_limits(struct AV1Common *const cm);
 void av1_calculate_tile_cols(struct AV1Common *const cm);
 void av1_calculate_tile_rows(struct AV1Common *const cm);
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

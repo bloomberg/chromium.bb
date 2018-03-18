@@ -314,13 +314,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
       if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
     }
   } else {
-#if CONFIG_MAX_TILE
     RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
     RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
-#else   // CONFIG_MAX_TILE
-    RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
-    RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
-#endif  // CONFIG_MAX_TILE
   }
   RANGE_CHECK_HI(cfg, monochrome, 1);
 
@@ -646,7 +641,6 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_jnt_comp =
       extra_cfg->use_jnt_comp & extra_cfg->enable_order_hint;
 
-#if CONFIG_MAX_TILE
   oxcf->tile_width_count = AOMMIN(cfg->tile_width_count, MAX_TILE_COLS);
   oxcf->tile_height_count = AOMMIN(cfg->tile_height_count, MAX_TILE_ROWS);
   for (int i = 0; i < oxcf->tile_width_count; i++) {
@@ -655,7 +649,6 @@ static aom_codec_err_t set_encoder_config(
   for (int i = 0; i < oxcf->tile_height_count; i++) {
     oxcf->tile_heights[i] = AOMMAX(cfg->tile_heights[i], 1);
   }
-#endif
   oxcf->error_resilient_mode = cfg->g_error_resilient;
   oxcf->frame_parallel_decoding_mode = extra_cfg->frame_parallel_decoding_mode;
 

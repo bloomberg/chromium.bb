@@ -19,8 +19,6 @@ void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
   av1_tile_set_col(tile, cm, col);
 }
 
-#if CONFIG_MAX_TILE
-
 // Find smallest k>=0 such that (blk_size << k) >= target
 static int tile_log2(int blk_size, int target) {
   int k;
@@ -122,43 +120,6 @@ void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_cols);
   assert(tile->mi_col_end > tile->mi_col_start);
 }
-
-#else
-
-void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
-  tile->mi_row_start = row * cm->tile_height;
-  tile->mi_row_end = AOMMIN(tile->mi_row_start + cm->tile_height, cm->mi_rows);
-}
-
-void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
-  tile->mi_col_start = col * cm->tile_width;
-  tile->mi_col_end = AOMMIN(tile->mi_col_start + cm->tile_width, cm->mi_cols);
-}
-
-#define MIN_TILE_WIDTH_MAX_SB 2
-#define MAX_TILE_WIDTH_MAX_SB 32
-
-static int get_min_log2_tile_cols(int max_sb_cols) {
-  int min_log2 = 0;
-  while ((MAX_TILE_WIDTH_MAX_SB << min_log2) < max_sb_cols) ++min_log2;
-  return min_log2;
-}
-
-static int get_max_log2_tile_cols(int max_sb_cols) {
-  int max_log2 = 1;
-  while ((max_sb_cols >> max_log2) >= MIN_TILE_WIDTH_MAX_SB) ++max_log2;
-  return max_log2 - 1;
-}
-
-void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
-                         int *max_log2_tile_cols) {
-  const int max_sb_cols =
-      ALIGN_POWER_OF_TWO(mi_cols, MAX_MIB_SIZE_LOG2) >> MAX_MIB_SIZE_LOG2;
-  *min_log2_tile_cols = get_min_log2_tile_cols(max_sb_cols);
-  *max_log2_tile_cols = get_max_log2_tile_cols(max_sb_cols);
-  assert(*min_log2_tile_cols <= *max_log2_tile_cols);
-}
-#endif  // CONFIG_MAX_TILE
 
 void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
   BOUNDARY_TYPE *bi = cm->boundary_info;

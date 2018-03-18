@@ -53,7 +53,6 @@ static int count_units_in_tile(int unit_size, int tile_size) {
 
 void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
                                   int is_uv) {
-#if CONFIG_MAX_TILE
   // We need to allocate enough space for restoration units to cover the
   // largest tile. Without CONFIG_MAX_TILE, this is always the tile at the
   // top-left and we can use av1_get_tile_rect(). With CONFIG_MAX_TILE, we have
@@ -80,10 +79,6 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
   }
   TileInfo tile_info;
   av1_tile_init(&tile_info, cm, tile_row, tile_col);
-#else
-  TileInfo tile_info;
-  av1_tile_init(&tile_info, cm, 0, 0);
-#endif  // CONFIG_MAX_TILE
 
   const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
   const int max_tile_w = tile_rect.right - tile_rect.left;
@@ -1273,7 +1268,6 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
   }
 }
 
-#if CONFIG_MAX_TILE
 // Get the horizontal or vertical index of the tile containing mi_x. For a
 // horizontal index, mi_x should be the left-most column for some block in mi
 // units and tile_x_start_sb should be cm->tile_col_start_sb. The return value
@@ -1294,7 +1288,6 @@ static int get_tile_idx(const int *tile_x_start_sb, int mi_x, int mib_log2) {
   assert(0);
   return 0;
 }
-#endif
 
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -1309,16 +1302,11 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   const int is_uv = plane > 0;
 
-// Which tile contains the superblock? Find that tile's top-left in mi-units,
-// together with the tile's size in pixels.
-#if CONFIG_MAX_TILE
+  // Which tile contains the superblock? Find that tile's top-left in mi-units,
+  // together with the tile's size in pixels.
   const int mib_log2 = cm->seq_params.mib_size_log2;
   const int tile_row = get_tile_idx(cm->tile_row_start_sb, mi_row, mib_log2);
   const int tile_col = get_tile_idx(cm->tile_col_start_sb, mi_col, mib_log2);
-#else
-  const int tile_row = mi_row / cm->tile_height;
-  const int tile_col = mi_col / cm->tile_width;
-#endif  // CONFIG_MAX_TILE
 
   TileInfo tile_info;
   av1_tile_init(&tile_info, cm, tile_row, tile_col);
