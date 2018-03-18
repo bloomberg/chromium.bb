@@ -103,7 +103,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
     }
 
     data = *buffer + (*buffer_size);
-    *buffer_size += obu_size;
+    *buffer_size += (size_t)obu_size;
     ret = fread(data, 1, (size_t)obu_size, infile);
 
     if (ret != obu_size) {
