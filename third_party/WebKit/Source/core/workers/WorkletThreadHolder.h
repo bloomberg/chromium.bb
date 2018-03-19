@@ -24,6 +24,15 @@ class WorkletThreadHolder {
     return thread_holder_instance_;
   }
 
+  static void EnsureInstance(const WebThreadCreationParams& params) {
+    DCHECK(IsMainThread());
+    MutexLocker locker(HolderInstanceMutex());
+    if (thread_holder_instance_)
+      return;
+    thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
+    thread_holder_instance_->Initialize(WorkerBackingThread::Create(params));
+  }
+
   static void EnsureInstance(WebThread* thread) {
     DCHECK(IsMainThread());
     MutexLocker locker(HolderInstanceMutex());

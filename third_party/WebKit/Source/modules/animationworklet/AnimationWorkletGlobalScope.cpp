@@ -4,9 +4,6 @@
 
 #include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 
-#include <memory>
-#include <utility>
-
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8ObjectParser.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
@@ -21,7 +18,7 @@ namespace blink {
 
 namespace {
 
-// Once this goes our of scope it clears any animators that has not been
+// Once this goes out of scope it clears any animators that have not been
 // animated.
 class ScopedAnimatorsSweeper {
   STACK_ALLOCATED();

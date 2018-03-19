@@ -14,7 +14,8 @@ namespace blink {
 class PLATFORM_EXPORT CompositorAnimator : public GarbageCollectedMixin {
  public:
   // Runs the animation frame callback.
-  virtual void Mutate(const CompositorMutatorInputState&) = 0;
+  virtual std::unique_ptr<CompositorMutatorOutputState> Mutate(
+      const CompositorMutatorInputState&) = 0;
   virtual void Trace(blink::Visitor* visitor) {}
 };
 

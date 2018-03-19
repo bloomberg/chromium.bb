@@ -6,7 +6,6 @@
 
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/HitTestResult.h"
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
@@ -201,8 +200,10 @@ void WebViewFrameWidget::ScheduleAnimation() {
   web_view_->ScheduleAnimationForWidget();
 }
 
-CompositorMutatorImpl* WebViewFrameWidget::CompositorMutator() {
-  return web_view_->CompositorMutator();
+base::WeakPtr<CompositorMutatorImpl>
+WebViewFrameWidget::EnsureCompositorMutator(
+    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
+  return web_view_->EnsureCompositorMutator(mutator_task_runner);
 }
 
 void WebViewFrameWidget::SetRootGraphicsLayer(GraphicsLayer* layer) {

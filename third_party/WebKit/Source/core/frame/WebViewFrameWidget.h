@@ -10,7 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "platform/heap/Handle.h"
+#include "platform/heap/Member.h"
 #include "platform/heap/SelfKeepAlive.h"
 
 namespace blink {
@@ -90,7 +90,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
   void ScheduleAnimation() override;
-  CompositorMutatorImpl* CompositorMutator() override;
+  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+      scoped_refptr<base::SingleThreadTaskRunner>*) override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(WebLayer*) override;

@@ -15,10 +15,7 @@ class ThreadableLoadingContext;
 class WorkerReportingProxy;
 
 // Represents the shared backing thread that is used by all animation worklets
-// and participates in Blink garbage collection process. At the moment, instead
-// of creating a dedicated backing thread it uses the existing compositor thread
-// (i.e., |Platform::CompositorThread()|).
-// TODO(petermayo): Use a dedicated thread: https://crbug.com/731727
+// and participates in the Blink garbage collection process.
 class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
  public:
   static std::unique_ptr<AnimationWorkletThread> Create(
@@ -28,7 +25,7 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
 
   WorkerBackingThread& GetWorkerBackingThread() override;
 
-  // The backing thread is cleared by clearSharedBackingThread().
+  // The backing thread is cleared by ClearSharedBackingThread().
   void ClearWorkerBackingThread() override {}
 
   // This may block the main thread.
@@ -38,6 +35,11 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   static void ClearSharedBackingThread();
 
   static void CreateSharedBackingThreadForTest();
+
+  // This only can be called after EnsureSharedBackingThread() is performed.
+  // Currently AnimationWorkletThread owns only one thread and it is shared
+  // by all the customers.
+  static WebThread* GetSharedBackingThread();
 
  private:
   AnimationWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);

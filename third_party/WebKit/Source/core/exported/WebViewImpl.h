@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "core/CoreExport.h"
 #include "core/exported/WebPagePopupImpl.h"
@@ -47,7 +48,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/TouchAction.h"
-#include "platform/heap/Handle.h"
+#include "platform/heap/Member.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -543,8 +544,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   LocalFrame* FocusedLocalFrameInWidget() const;
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
-  CompositorMutatorImpl& Mutator();
-  CompositorMutatorImpl* CompositorMutator();
+  // Create or return cached mutation distributor.  The WeakPtr must only be
+  // dereferenced on the returned |mutator_task_runner|.
+  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
 
@@ -652,9 +655,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   FloatSize elastic_overscroll_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
-  // compositor thread. The LayerTreeHostImpl is indirectly owned by this
-  // class so this pointer should be valid until this class is destructed.
-  CrossThreadPersistent<CompositorMutatorImpl> mutator_;
+  // compositor thread, so we keep the TaskRunner where you post tasks to
+  // make that happen.
+  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
 

@@ -7,16 +7,12 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorAnimatorsState.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT CompositorMutator
-    : public GarbageCollectedFinalized<CompositorMutator> {
+class PLATFORM_EXPORT CompositorMutator {
  public:
   virtual ~CompositorMutator() = default;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
   // Called from compositor thread to run the animation frame callbacks from all
   // connected AnimationWorklets.

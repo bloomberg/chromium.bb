@@ -33,14 +33,15 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/PageWidgetDelegate.h"
 #include "platform/graphics/CompositorMutatorImpl.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/heap/Member.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Optional.h"
 #include "public/platform/WebCoalescedInputEvent.h"
@@ -125,7 +126,12 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   Element* FocusedElement() const;
 
   PaintLayerCompositor* Compositor() const;
-  CompositorMutatorImpl* CompositorMutator() override;
+  // Create or return cached mutation distributor.  This usually requires a
+  // round trip to the compositor.  The output task runner is the one to use
+  // for sending mutations using the WeakPtr.
+  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner)
+      override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return true; }
@@ -186,8 +192,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
-  CompositorMutatorImpl& Mutator();
-
   WebWidgetClient* client_;
 
   // WebFrameWidget is associated with a subtree of the frame tree,
@@ -202,9 +206,10 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
-  // compositor thread. The LayerTreeHostImpl is indirectly owned by this
-  // class so this pointer should be valid until this class is destructed.
-  CrossThreadPersistent<CompositorMutatorImpl> mutator_;
+  // compositor thread, so we keep the TaskRunner where you post tasks to
+  // make that happen.
+  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   WebLayerTreeView* layer_tree_view_;
   WebLayer* root_layer_;

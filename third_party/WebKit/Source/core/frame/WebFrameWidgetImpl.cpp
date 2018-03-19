@@ -540,18 +540,16 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   client_->IntrinsicSizingInfoChanged(web_sizing_info);
 }
 
-CompositorMutatorImpl& WebFrameWidgetImpl::Mutator() {
-  return *CompositorMutator();
-}
-
-CompositorMutatorImpl* WebFrameWidgetImpl::CompositorMutator() {
-  if (!mutator_) {
-    std::unique_ptr<CompositorMutatorClient> mutator_client =
-        CompositorMutatorImpl::CreateClient();
-    mutator_ = static_cast<CompositorMutatorImpl*>(mutator_client->Mutator());
-    layer_tree_view_->SetMutatorClient(std::move(mutator_client));
+base::WeakPtr<CompositorMutatorImpl>
+WebFrameWidgetImpl::EnsureCompositorMutator(
+    scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
+  if (!mutator_task_runner_) {
+    layer_tree_view_->SetMutatorClient(
+        CompositorMutatorImpl::CreateClient(&mutator_, &mutator_task_runner_));
   }
 
+  DCHECK(mutator_task_runner_);
+  *mutator_task_runner = mutator_task_runner_;
   return mutator_;
 }
 

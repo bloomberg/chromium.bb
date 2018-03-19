@@ -8,15 +8,14 @@
 #include <memory>
 #include "cc/trees/layer_tree_mutator.h"
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CompositorMutator;
+class CompositorMutatorImpl;
 
 class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
  public:
-  explicit CompositorMutatorClient(CompositorMutator*);
+  explicit CompositorMutatorClient(std::unique_ptr<CompositorMutatorImpl>);
   virtual ~CompositorMutatorClient();
 
   void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
@@ -24,14 +23,10 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*);
   void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
-  // TODO(majidvp): Remove this when CC knows about timeline input.
   bool HasAnimators() override;
 
-  CompositorMutator* Mutator() { return mutator_.Get(); }
-
  private:
-  // Accessed by main and compositor threads.
-  CrossThreadPersistent<CompositorMutator> mutator_;
+  std::unique_ptr<CompositorMutatorImpl> mutator_;
   cc::LayerTreeMutatorClient* client_;
 };
 

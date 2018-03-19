@@ -9,7 +9,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 #include "platform/graphics/CompositorAnimator.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
@@ -23,7 +22,7 @@ class WorkletGlobalScope;
 // for a given mutator and animatorWorklet.
 //
 // This is constructed on the main thread but it is used in the worklet backing
-// thread i.e., compositor thread.
+// thread.
 class MODULES_EXPORT AnimationWorkletProxyClientImpl final
     : public GarbageCollectedFinalized<AnimationWorkletProxyClientImpl>,
       public AnimationWorkletProxyClient,
@@ -32,7 +31,11 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClientImpl);
 
  public:
-  explicit AnimationWorkletProxyClientImpl(CompositorMutatorImpl*);
+  // This client is hooked to the given |mutatee|, on the given
+  // |mutatee_runner|.
+  explicit AnimationWorkletProxyClientImpl(
+      base::WeakPtr<CompositorMutatorImpl> mutatee,
+      scoped_refptr<base::SingleThreadTaskRunner> mutatee_runner);
   void Trace(blink::Visitor*) override;
 
   // AnimationWorkletProxyClient:
@@ -40,15 +43,19 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   void Dispose() override;
 
   // CompositorAnimator:
-  // This method is invoked in compositor thread
-  void Mutate(const CompositorMutatorInputState&) override;
+  // These methods are invoked on the animation worklet thread.
+  std::unique_ptr<CompositorMutatorOutputState> Mutate(
+      const CompositorMutatorInputState&);
 
   static AnimationWorkletProxyClientImpl* FromDocument(Document*);
 
  private:
-  CrossThreadPersistent<CompositorMutatorImpl> mutator_;
+  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_runner_;
 
   CrossThreadPersistent<AnimationWorkletGlobalScope> global_scope_;
+
+  enum RunState { kUninitialized, kWorking, kDisposed } state_;
 };
 
 }  // namespace blink
