@@ -68,6 +68,7 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -1909,7 +1910,14 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(info.begin_params->headers);
-  headers.SetHeader(network::kAcceptHeader, network::kFrameAcceptHeader);
+
+  std::string accept_value = network::kFrameAcceptHeader;
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+    DCHECK(!accept_value.empty());
+    accept_value.append(kAcceptHeaderSignedExchangeSuffix);
+  }
+
+  headers.SetHeader(network::kAcceptHeader, accept_value);
   new_request->SetExtraRequestHeaders(headers);
 
   new_request->SetLoadFlags(load_flags);

@@ -32,6 +32,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -222,8 +223,14 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->common_params.referrer.policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
-  new_request->headers.SetHeader(network::kAcceptHeader,
-                                 network::kFrameAcceptHeader);
+
+  std::string accept_value = network::kFrameAcceptHeader;
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+    DCHECK(!accept_value.empty());
+    accept_value.append(kAcceptHeaderSignedExchangeSuffix);
+  }
+
+  new_request->headers.SetHeader(network::kAcceptHeader, accept_value);
 
   new_request->resource_type = request_info->is_main_frame
                                    ? RESOURCE_TYPE_MAIN_FRAME
