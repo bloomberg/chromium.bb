@@ -389,6 +389,23 @@ TEST_F(ParallelDownloadJobTest, LastReceivedSliceFinished) {
   EXPECT_EQ(1u, job_->workers().size());
   VerifyWorker(75, 0);
   DestroyParallelJob();
+
+  // Three received slices with two hole in the middle and the last slice is
+  // finished.
+  slices = {download::DownloadItem::ReceivedSlice(0, 25),
+            download::DownloadItem::ReceivedSlice(50, 25),
+            download::DownloadItem::ReceivedSlice(100, 25, true)};
+  CreateParallelJob(25, 125, slices, 3, 1, 10);
+
+  // If the first hole is filled by the original request after the job is
+  // initialized but before parallel request is created, the second hole should
+  // be filled, and no out of range request will be created.
+  slices[0].received_bytes = 50;
+  set_received_slices(slices);
+  BuildParallelRequests();
+  EXPECT_EQ(1u, job_->workers().size());
+  VerifyWorker(75, 0);
+  DestroyParallelJob();
 }
 
 // Pause, cancel, resume can be called before or after the worker establish

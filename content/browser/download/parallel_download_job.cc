@@ -214,9 +214,6 @@ void ParallelDownloadJob::BuildParallelRequests() {
 
 void ParallelDownloadJob::ForkSubRequests(
     const download::DownloadItem::ReceivedSlices& slices_to_download) {
-  if (slices_to_download.size() < 2)
-    return;
-
   // If the initial request is working on the first hole, don't create parallel
   // request for this hole.
   bool skip_first_slice = true;
