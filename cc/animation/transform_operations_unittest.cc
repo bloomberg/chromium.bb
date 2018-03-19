@@ -857,6 +857,32 @@ TEST(TransformOperationTest, ExtrapolateMatrixBlending) {
                                   operations1.Blend(operations2, -0.5).Apply());
 }
 
+TEST(TransformOperationTest, NonDecomposableBlend) {
+  TransformOperations non_decomposible_transform;
+  gfx::Transform non_decomposible_matrix(0, 0, 0, 0, 0, 0);
+  non_decomposible_transform.AppendMatrix(non_decomposible_matrix);
+
+  TransformOperations identity_transform;
+  gfx::Transform identity_matrix;
+  identity_transform.AppendMatrix(identity_matrix);
+
+  // Before the half-way point, we should return the 'from' matrix.
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      non_decomposible_matrix,
+      identity_transform.Blend(non_decomposible_transform, 0.0f).Apply());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      non_decomposible_matrix,
+      identity_transform.Blend(non_decomposible_transform, 0.49f).Apply());
+
+  // After the half-way point, we should return the 'to' matrix.
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      identity_transform.Blend(non_decomposible_transform, 0.5f).Apply());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      identity_transform.Blend(non_decomposible_transform, 1.0f).Apply());
+}
+
 TEST(TransformOperationTest, BlendedBoundsWhenTypesDoNotMatch) {
   TransformOperations operations_from;
   operations_from.AppendScale(2.0, 4.0, 8.0);

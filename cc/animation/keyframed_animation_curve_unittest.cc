@@ -5,6 +5,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 
 #include "cc/animation/transform_operations.h"
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
@@ -302,6 +303,102 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
   ExpectTranslateX(6.f, curve->GetValue(base::TimeDelta::FromSecondsD(1.5f)));
   ExpectTranslateX(6.f, curve->GetValue(base::TimeDelta::FromSecondsD(2.f)));
   ExpectTranslateX(6.f, curve->GetValue(base::TimeDelta::FromSecondsD(3.f)));
+}
+
+// Tests that a discrete transform animation (e.g. where one or more keyframes
+// is a non-invertible matrix) works as expected.
+TEST(KeyframedAnimationCurveTest, DiscreteLinearTransformAnimation) {
+  gfx::Transform non_invertible_matrix(0, 0, 0, 0, 0, 0);
+  gfx::Transform identity_matrix;
+
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations operations1;
+  operations1.AppendMatrix(non_invertible_matrix);
+  TransformOperations operations2;
+  operations2.AppendMatrix(identity_matrix);
+  TransformOperations operations3;
+  operations3.AppendMatrix(non_invertible_matrix);
+
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), operations1, nullptr));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(2.0), operations3, nullptr));
+
+  TransformOperations result;
+
+  // Between 0 and 0.5 seconds, the first keyframe should be returned.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.01f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.49f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  // Between 0.5 and 1.5 seconds, the middle keyframe should be returned.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.5f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(1.49f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, result.Apply());
+
+  // Between 1.5 and 2.0 seconds, the last keyframe should be returned.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(1.5f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(2.0f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+}
+
+TEST(KeyframedAnimationCurveTest, DiscreteCubicBezierTransformAnimation) {
+  gfx::Transform non_invertible_matrix(0, 0, 0, 0, 0, 0);
+  gfx::Transform identity_matrix;
+
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations operations1;
+  operations1.AppendMatrix(non_invertible_matrix);
+  TransformOperations operations2;
+  operations2.AppendMatrix(identity_matrix);
+  TransformOperations operations3;
+  operations3.AppendMatrix(non_invertible_matrix);
+
+  // The cubic-bezier here is a nice fairly strong ease-in curve, where 50%
+  // progression is at approximately 85% of the time.
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta(), operations1,
+      CubicBezierTimingFunction::Create(0.75f, 0.25f, 0.9f, 0.4f)));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operations2,
+      CubicBezierTimingFunction::Create(0.75f, 0.25f, 0.9f, 0.4f)));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(2.0), operations3,
+      CubicBezierTimingFunction::Create(0.75f, 0.25f, 0.9f, 0.4f)));
+
+  TransformOperations result;
+
+  // Due to the cubic-bezier, the first keyframe is returned almost all the way
+  // to 1 second.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.01f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.8f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  // Between ~0.85 and ~1.85 seconds, the middle keyframe should be returned.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(0.85f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(1.8f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, result.Apply());
+
+  // Finally the last keyframe only takes effect after ~1.85 seconds.
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(1.85f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
+
+  result = curve->GetValue(base::TimeDelta::FromSecondsD(2.0f));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(non_invertible_matrix, result.Apply());
 }
 
 // Tests that a filter animation with one keyframe works as expected.
