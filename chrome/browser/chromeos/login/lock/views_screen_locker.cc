@@ -67,7 +67,7 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->users());
-  LoginScreenClient::Get()->LoadUsers(
+  LoginScreenClient::Get()->login_screen()->LoadUsers(
       user_selection_screen_->UpdateAndReturnUserListForMojo(),
       false /* show_guests */);
   if (!ime_state_.get())
@@ -118,13 +118,13 @@ void ViewsScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {
   // TODO(xiaoyinh): Complete the implementation here.
-  LoginScreenClient::Get()->ShowErrorMessage(0 /* login_attempts */,
-                                             std::string(), std::string(),
-                                             static_cast<int>(help_topic_id));
+  LoginScreenClient::Get()->login_screen()->ShowErrorMessage(
+      0 /* login_attempts */, std::string(), std::string(),
+      static_cast<int>(help_topic_id));
 }
 
 void ViewsScreenLocker::ClearErrors() {
-  LoginScreenClient::Get()->ClearErrors();
+  LoginScreenClient::Get()->login_screen()->ClearErrors();
 }
 
 void ViewsScreenLocker::AnimateAuthenticationSuccess() {
@@ -262,7 +262,8 @@ void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
 }
 
 void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
-  LoginScreenClient::Get()->HandleFocusLeavingLockScreenApps(reverse);
+  LoginScreenClient::Get()->login_screen()->HandleFocusLeavingLockScreenApps(
+      reverse);
 }
 
 void ViewsScreenLocker::OnOSVersionLabelTextUpdated(
@@ -292,7 +293,8 @@ void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
     return;
 
   bool is_enabled = quick_unlock_storage->IsPinAuthenticationAvailable();
-  LoginScreenClient::Get()->SetPinEnabledForUser(account_id, is_enabled);
+  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(account_id,
+                                                                 is_enabled);
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
@@ -309,7 +311,7 @@ void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
 }
 
 void ViewsScreenLocker::OnDevChannelInfoUpdated() {
-  LoginScreenClient::Get()->SetDevChannelInfo(
+  LoginScreenClient::Get()->login_screen()->SetDevChannelInfo(
       os_version_label_text_, enterprise_info_text_, bluetooth_name_);
 }
 
