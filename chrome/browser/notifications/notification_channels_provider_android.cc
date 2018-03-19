@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
@@ -34,6 +35,7 @@
 #include "url/url_constants.h"
 
 using base::android::AttachCurrentThread;
+using base::android::BuildInfo;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
@@ -46,8 +48,8 @@ class NotificationChannelsBridgeImpl
   ~NotificationChannelsBridgeImpl() override = default;
 
   bool ShouldUseChannelSettings() override {
-    return Java_NotificationSettingsBridge_shouldUseChannelSettings(
-        AttachCurrentThread());
+    return BuildInfo::GetInstance()->sdk_int() >=
+           base::android::SDK_VERSION_OREO;
   }
 
   NotificationChannel CreateChannel(const std::string& origin,
