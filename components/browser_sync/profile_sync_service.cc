@@ -569,6 +569,8 @@ void ProfileSyncService::OnGetTokenSuccess(
     engine_->UpdateCredentials(GetCredentials());
   else
     startup_controller_->TryStart();
+
+  UpdateAuthErrorState(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 
 void ProfileSyncService::OnGetTokenFailure(

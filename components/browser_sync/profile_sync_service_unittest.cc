@@ -88,16 +88,19 @@ using testing::_;
 
 class TestSyncServiceObserver : public syncer::SyncServiceObserver {
  public:
-  explicit TestSyncServiceObserver(ProfileSyncService* service)
-      : service_(service), setup_in_progress_(false) {}
+  TestSyncServiceObserver()
+      : setup_in_progress_(false), auth_error_(GoogleServiceAuthError()) {}
   void OnStateChanged(syncer::SyncService* sync) override {
-    setup_in_progress_ = service_->IsSetupInProgress();
+    setup_in_progress_ = sync->IsSetupInProgress();
+    auth_error_ = sync->GetAuthError();
   }
+
   bool setup_in_progress() const { return setup_in_progress_; }
+  GoogleServiceAuthError auth_error() const { return auth_error_; }
 
  private:
-  ProfileSyncService* service_;
   bool setup_in_progress_;
+  GoogleServiceAuthError auth_error_;
 };
 
 // A variant of the FakeSyncEngine that won't automatically call back when asked
@@ -324,7 +327,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return profile_sync_service_bundle_.signin_manager();
   }
 
-  ProfileOAuth2TokenService* auth_service() {
+  FakeProfileOAuth2TokenService* auth_service() {
     return profile_sync_service_bundle_.auth_service();
   }
 
@@ -419,7 +422,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForFirstSync();
 
-  TestSyncServiceObserver observer(service());
+  TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
   auto sync_blocker = service()->GetSetupInProgressHandle();
@@ -642,6 +645,85 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
 
   EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
   EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+}
+
+// Verify that credential errors get returned from GetAuthError().
+TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
+  CreateService(ProfileSyncService::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreation(1);
+  InitializeForNthSync();
+  ASSERT_TRUE(service()->IsSyncActive());
+
+  TestSyncServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  std::string primary_account_id =
+      signin_manager()->GetAuthenticatedAccountId();
+  auth_service()->LoadCredentials(primary_account_id);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
+  ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
+
+  // Emulate Chrome receiving a new, invalid LST. This happens when the user
+  // signs out of the content area.
+  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
+                                                   "not a valid token");
+  auth_service()->IssueErrorForAllPendingRequests(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  // Check that the invalid token is returned from sync.
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+            service()->GetAuthError().state());
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+            observer.auth_error().state());
+
+  service()->RemoveObserver(&observer);
+}
+
+// Verify that credential errors get cleared when a new token is fetched
+// successfully.
+TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
+  CreateService(ProfileSyncService::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreation(1);
+  InitializeForNthSync();
+  ASSERT_TRUE(service()->IsSyncActive());
+
+  TestSyncServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  std::string primary_account_id =
+      signin_manager()->GetAuthenticatedAccountId();
+  auth_service()->LoadCredentials(primary_account_id);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
+  ASSERT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
+
+  // Emulate Chrome receiving a new, invalid LST. This happens when the user
+  // signs out of the content area.
+  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
+                                                   "not a valid token");
+  auth_service()->IssueErrorForAllPendingRequests(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  // Check that the invalid token is returned from sync.
+  ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+            service()->GetAuthError().state());
+
+  // Now emulate Chrome receiving a new, valid LST.
+  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
+                                                   "totally valid token");
+  auth_service()->IssueTokenForAllPendingRequests(
+      "this one works", base::Time::Now() + base::TimeDelta::FromDays(10));
+
+  // Check that sync auth error state cleared.
+  EXPECT_EQ(GoogleServiceAuthError::NONE, service()->GetAuthError().state());
+  EXPECT_EQ(GoogleServiceAuthError::NONE, observer.auth_error().state());
+
+  service()->RemoveObserver(&observer);
 }
 
 // Verify that the disable sync flag disables sync.
