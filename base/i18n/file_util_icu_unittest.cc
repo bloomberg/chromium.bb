@@ -37,7 +37,7 @@ static const struct GoodBadPairLinux {
   {"     ", "-   -"},
 };
 
-TEST_F(FileUtilICUTest, ReplaceIllegalCharacersInPathLinuxTest) {
+TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathLinuxTest) {
   for (size_t i = 0; i < arraysize(kLinuxIllegalCharacterCases); ++i) {
     std::string bad_name(kLinuxIllegalCharacterCases[i].bad_name);
     ReplaceIllegalCharactersInPath(&bad_name, '-');

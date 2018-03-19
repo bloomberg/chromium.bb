@@ -92,7 +92,7 @@ class PLATFORM_EXPORT KURL {
   static KURL CreateIsolated(const String&);
 
   // Resolves the relative URL with the given base URL. If provided, the
-  // TextEncoding is used to encode non-ASCII characers. The base URL can be
+  // TextEncoding is used to encode non-ASCII characters. The base URL can be
   // null or empty, in which case the relative URL will be interpreted as
   // absolute.
   // FIXME: If the base URL is invalid, this always creates an invalid

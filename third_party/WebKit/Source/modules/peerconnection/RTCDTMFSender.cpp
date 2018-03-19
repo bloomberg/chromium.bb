@@ -125,7 +125,7 @@ void RTCDTMFSender::insertDTMF(const String& tones,
   if (strspn(tones.Ascii().data(), "0123456789abcdABCD#*,") != tones.length()) {
     exception_state.ThrowDOMException(
         kInvalidCharacterError,
-        "Illegal characers in InsertDTMF tone argument");
+        "Illegal characters in InsertDTMF tone argument");
     return;
   }
 
