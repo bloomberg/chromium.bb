@@ -121,21 +121,6 @@ mojom::WindowStateType GetStateTypeFromSnapPostion(
   return mojom::WindowStateType::DEFAULT;
 }
 
-bool IsPrimaryScreenOrientation(
-    blink::WebScreenOrientationLockType screen_orientation) {
-  return screen_orientation ==
-             blink::kWebScreenOrientationLockLandscapePrimary ||
-         screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary;
-}
-
-bool IsLandscapeOrientation(
-    blink::WebScreenOrientationLockType screen_orientation) {
-  return screen_orientation ==
-             blink::kWebScreenOrientationLockLandscapePrimary ||
-         screen_orientation ==
-             blink::kWebScreenOrientationLockLandscapeSecondary;
-}
-
 // Returns the minimum size of the window according to the screen orientation.
 int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
   int minimum_width = 0;
@@ -199,8 +184,7 @@ bool SplitViewController::IsSplitViewModeActive() const {
   return state_ != NO_SNAP;
 }
 
-blink::WebScreenOrientationLockType
-SplitViewController::GetCurrentScreenOrientation() const {
+OrientationLockType SplitViewController::GetCurrentScreenOrientation() const {
   return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
 }
 
@@ -209,7 +193,7 @@ bool SplitViewController::IsCurrentScreenOrientationLandscape() const {
 }
 
 bool SplitViewController::IsCurrentScreenOrientationPrimary() const {
-  return IsPrimaryScreenOrientation(GetCurrentScreenOrientation());
+  return IsPrimaryOrientation(GetCurrentScreenOrientation());
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
@@ -648,7 +632,7 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   // We need update |previous_screen_orientation_| even though split view mode
   // is not active at the moment.
-  blink::WebScreenOrientationLockType previous_screen_orientation =
+  OrientationLockType previous_screen_orientation =
       previous_screen_orientation_;
   previous_screen_orientation_ = GetCurrentScreenOrientation();
 
@@ -671,7 +655,7 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   // Update |divider_position_| if the top/left window changes.
   if ((metrics & (display::DisplayObserver::DISPLAY_METRIC_ROTATION)) &&
-      (IsPrimaryScreenOrientation(previous_screen_orientation) !=
+      (IsPrimaryOrientation(previous_screen_orientation) !=
        IsCurrentScreenOrientationPrimary())) {
     const int work_area_long_length = GetDividerEndPosition();
     const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
@@ -1086,13 +1070,13 @@ aura::Window* SplitViewController::GetWindowForSmoothResize() {
 int SplitViewController::GetWindowComponentForResize(aura::Window* window) {
   if (window && (window == left_window_ || window == right_window_)) {
     switch (GetCurrentScreenOrientation()) {
-      case blink::kWebScreenOrientationLockLandscapePrimary:
+      case OrientationLockType::kLandscapePrimary:
         return (window == left_window_) ? HTRIGHT : HTLEFT;
-      case blink::kWebScreenOrientationLockLandscapeSecondary:
+      case OrientationLockType::kLandscapeSecondary:
         return (window == left_window_) ? HTLEFT : HTRIGHT;
-      case blink::kWebScreenOrientationLockPortraitSecondary:
+      case OrientationLockType::kPortraitSecondary:
         return (window == left_window_) ? HTTOP : HTBOTTOM;
-      case blink::kWebScreenOrientationLockPortraitPrimary:
+      case OrientationLockType::kPortraitPrimary:
         return (window == left_window_) ? HTBOTTOM : HTTOP;
       default:
         return HTNOWHERE;
@@ -1112,16 +1096,16 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
                                ? GetSnappedWindowBoundsInScreen(window, LEFT)
                                : GetSnappedWindowBoundsInScreen(window, RIGHT);
   switch (GetCurrentScreenOrientation()) {
-    case blink::kWebScreenOrientationLockLandscapePrimary:
+    case OrientationLockType::kLandscapePrimary:
       end_location.set_x(window == left_window_ ? bounds.right() : bounds.x());
       break;
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
+    case OrientationLockType::kLandscapeSecondary:
       end_location.set_x(window == left_window_ ? bounds.x() : bounds.right());
       break;
-    case blink::kWebScreenOrientationLockPortraitSecondary:
+    case OrientationLockType::kPortraitSecondary:
       end_location.set_y(window == left_window_ ? bounds.y() : bounds.bottom());
       break;
-    case blink::kWebScreenOrientationLockPortraitPrimary:
+    case OrientationLockType::kPortraitPrimary:
       end_location.set_y(window == left_window_ ? bounds.bottom() : bounds.y());
       break;
     default:

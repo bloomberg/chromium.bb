@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
@@ -29,6 +28,7 @@ class ScopedWindowTargeter;
 namespace ash {
 
 class SplitViewController;
+enum class OrientationLockType;
 
 // Split view divider. It passes the mouse/gesture events to SplitViewController
 // to resize the left and right windows accordingly. The divider widget should
@@ -41,15 +41,14 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   // Gets the size of the divider widget. The divider widget is enlarged during
   // dragging. For now, it's a vertical rectangle.
-  static gfx::Size GetDividerSize(
-      const gfx::Rect& work_area_bounds,
-      blink::WebScreenOrientationLockType screen_orientation,
-      bool is_dragging);
+  static gfx::Size GetDividerSize(const gfx::Rect& work_area_bounds,
+                                  OrientationLockType screen_orientation,
+                                  bool is_dragging);
 
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
   static gfx::Rect GetDividerBoundsInScreen(
       const gfx::Rect& work_area_bounds_in_screen,
-      blink::WebScreenOrientationLockType screen_orientation,
+      OrientationLockType screen_orientation,
       int divider_position,
       bool is_dragging);
 

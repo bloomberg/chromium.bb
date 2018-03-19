@@ -3389,7 +3389,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapePrimary);
+            OrientationLockType::kLandscapePrimary);
 
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -3425,7 +3425,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitPrimary);
+            OrientationLockType::kPortraitPrimary);
   ToggleOverview();
 
   // Test that dragging |window1| to the top of the screen snaps it to left.
@@ -3454,7 +3454,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapeSecondary);
+            OrientationLockType::kLandscapeSecondary);
   ToggleOverview();
 
   // Test that dragging |window1| to the left of the screen snaps it to right.
@@ -3483,7 +3483,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitSecondary);
+            OrientationLockType::kPortraitSecondary);
   ToggleOverview();
 
   // Test that dragging |window1| to the top of the screen snaps it to right.

@@ -7,11 +7,11 @@
 
 #include "ash/display/display_configuration_controller.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/display/display.h"
 
 namespace ash {
 class ScreenOrientationController;
+enum class OrientationLockType;
 
 class ScreenOrientationControllerTestApi {
  public:
@@ -26,9 +26,9 @@ class ScreenOrientationControllerTestApi {
 
   void SetRotationLocked(bool rotation_locked);
 
-  blink::WebScreenOrientationLockType UserLockedOrientation() const;
+  OrientationLockType UserLockedOrientation() const;
 
-  blink::WebScreenOrientationLockType GetCurrentOrientation() const;
+  OrientationLockType GetCurrentOrientation() const;
 
   void UpdateNaturalOrientation();
 

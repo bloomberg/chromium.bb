@@ -148,7 +148,7 @@ class ScreenOrientationControllerTest : public AshTestBase {
     }
   }
 
-  blink::WebScreenOrientationLockType UserLockedOrientation() const {
+  OrientationLockType UserLockedOrientation() const {
     ScreenOrientationControllerTestApi test_api(
         Shell::Get()->screen_orientation_controller());
     return test_api.UserLockedOrientation();
@@ -655,26 +655,22 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
       Shell::Get()->screen_orientation_controller();
   orientation_controller->ToggleUserRotationLock();
   EXPECT_TRUE(orientation_controller->user_rotation_locked());
-  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_180);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapeSecondary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_90);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary, UserLockedOrientation());
   orientation_controller->ToggleUserRotationLock();
 
   SetInternalDisplayRotation(display::Display::ROTATE_270);
@@ -682,26 +678,22 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
   UpdateDisplay("800x1280");
   orientation_controller->ToggleUserRotationLock();
   EXPECT_TRUE(orientation_controller->user_rotation_locked());
-  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_90);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_180);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary, UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapeSecondary,
-            UserLockedOrientation());
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary, UserLockedOrientation());
   orientation_controller->ToggleUserRotationLock();
 }
 

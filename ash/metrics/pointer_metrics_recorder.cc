@@ -47,12 +47,10 @@ void RecordUMA(ui::EventPointerType type, views::Widget* target) {
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
-    blink::WebScreenOrientationLockType screen_orientation =
+    OrientationLockType screen_orientation =
         Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
-    if (screen_orientation ==
-            blink::kWebScreenOrientationLockLandscapePrimary ||
-        screen_orientation ==
-            blink::kWebScreenOrientationLockLandscapeSecondary) {
+    if (screen_orientation == OrientationLockType::kLandscapePrimary ||
+        screen_orientation == OrientationLockType::kLandscapeSecondary) {
       form_factor = DownEventFormFactor::kTabletModeLandscape;
     } else {
       form_factor = DownEventFormFactor::kTabletModePortrait;

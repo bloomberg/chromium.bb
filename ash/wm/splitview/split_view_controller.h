@@ -6,6 +6,7 @@
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -15,7 +16,6 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -80,7 +80,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
 
-  blink::WebScreenOrientationLockType GetCurrentScreenOrientation() const;
+  OrientationLockType GetCurrentScreenOrientation() const;
 
   // Returns true if |screen_orientation_| is a landscape orientation.
   bool IsCurrentScreenOrientationLandscape() const;
@@ -332,8 +332,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SnapPosition default_snap_position_ = NONE;
 
   // The previous orientation of the screen.
-  blink::WebScreenOrientationLockType previous_screen_orientation_ =
-      blink::kWebScreenOrientationLockDefault;
+  OrientationLockType previous_screen_orientation_ = OrientationLockType::kAny;
 
   // If the divider is currently being dragging.
   bool is_resizing_ = false;
