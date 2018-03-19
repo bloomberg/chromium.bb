@@ -438,8 +438,13 @@ class InputApi(object):
     self.unittest = unittest
     self.urllib2 = urllib2
 
-    # To easily fork python.
-    self.python_executable = sys.executable
+    self.is_windows = sys.platform == 'win32'
+
+    # Set python_executable to 'python'. This is interpreted in CallCommand to
+    # convert to vpython in order to allow scripts in other repos (e.g. src.git)
+    # to automatically pick up that repo's .vpython file, instead of inheriting
+    # the one in depot_tools.
+    self.python_executable = 'python'
     self.environ = os.environ
 
     # InputApi.platform is the platform you're currently running on.
@@ -468,7 +473,6 @@ class InputApi(object):
                                      fopen=file, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
-    self.is_windows = sys.platform == 'win32'
     self.Command = CommandData
 
     # Replace <hash_map> and <hash_set> as headers that need to be included
@@ -1533,12 +1537,24 @@ def CallCommand(cmd_data):
   multiprocessing module.
 
   multiprocessing needs a top level function with a single argument.
+
+  This function converts invocation of .py files and invocations of "python" to
+  vpython invocations.
   """
+  vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
+
+  cmd = cmd_data.cmd
+  if cmd[0] == 'python':
+    cmd = list(cmd)
+    cmd[0] = vpython
+  elif cmd[0].endswith('.py'):
+    cmd = [vpython] + cmd
+
   cmd_data.kwargs['stdout'] = subprocess.PIPE
   cmd_data.kwargs['stderr'] = subprocess.STDOUT
   try:
     start = time.time()
-    (out, _), code = subprocess.communicate(cmd_data.cmd, **cmd_data.kwargs)
+    (out, _), code = subprocess.communicate(cmd, **cmd_data.kwargs)
     duration = time.time() - start
   except OSError as e:
     duration = time.time() - start

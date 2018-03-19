@@ -528,11 +528,7 @@ def GetUnitTests(input_api, output_api, unit_tests, env=None):
 
   results = []
   for unit_test in unit_tests:
-    cmd = []
-    if input_api.platform == 'win32' and unit_test.endswith('.py'):
-      # Windows needs some help.
-      cmd = [input_api.python_executable]
-    cmd.append(unit_test)
+    cmd = [unit_test]
     if input_api.verbose:
       cmd.append('--verbose')
     kwargs = {'cwd': input_api.PresubmitLocalPath()}

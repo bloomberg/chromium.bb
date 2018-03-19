@@ -2786,7 +2786,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     CommHelper(input_api, ['allo', '--verbose'], cwd=self.fake_root_dir)
     cmd = ['bar.py', '--verbose']
     if input_api.platform == 'win32':
-      cmd.insert(0, input_api.python_executable)
+      cmd.insert(0, 'vpython.bat')
+    else:
+      cmd.insert(0, 'vpython')
     CommHelper(input_api, cmd, cwd=self.fake_root_dir, ret=(('', None), 1))
 
     self.mox.ReplayAll()
