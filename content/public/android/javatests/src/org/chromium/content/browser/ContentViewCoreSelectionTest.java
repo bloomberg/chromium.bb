@@ -31,7 +31,6 @@ import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -60,7 +59,7 @@ public class ContentViewCoreSelectionTest {
             + "<input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
             + "<div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
             + "</form></body></html>");
-    private ContentViewCore mContentViewCore;
+    private ContentViewCoreImpl mContentViewCore;
     private SelectionPopupControllerImpl mSelectionPopupController;
 
     private static class TestSelectionClient implements SelectionClient {
@@ -861,7 +860,7 @@ public class ContentViewCoreSelectionTest {
     }
 
     private void setVisibileOnUiThread(final boolean show) {
-        final ContentViewCore contentViewCore = mContentViewCore;
+        final ContentViewCoreImpl contentViewCore = mContentViewCore;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -875,7 +874,7 @@ public class ContentViewCoreSelectionTest {
     }
 
     private void setAttachedOnUiThread(final boolean attached) {
-        final ContentViewCore contentViewCore = mContentViewCore;
+        final ContentViewCoreImpl contentViewCore = mContentViewCore;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -889,7 +888,7 @@ public class ContentViewCoreSelectionTest {
     }
 
     private void requestFocusOnUiThread(final boolean gainFocus) {
-        final ContentViewCore contentViewCore = mContentViewCore;
+        final ContentViewCoreImpl contentViewCore = mContentViewCore;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

@@ -23,11 +23,6 @@ public class TestContentViewCore implements ContentViewCore {
     public TestContentViewCore(Context context, String productVersion) {}
 
     @Override
-    public Context getContext() {
-        return null;
-    }
-
-    @Override
     public ViewGroup getContainerView() {
         return null;
     }

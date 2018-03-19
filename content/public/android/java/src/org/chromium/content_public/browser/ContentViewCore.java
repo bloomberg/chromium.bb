@@ -88,11 +88,6 @@ public interface ContentViewCore {
     }
 
     /**
-     * @return The context used for creating this ContentViewCore.
-     */
-    Context getContext();
-
-    /**
      * @return The ViewGroup that all view actions of this ContentViewCore should interact with.
      */
     ViewGroup getContainerView();

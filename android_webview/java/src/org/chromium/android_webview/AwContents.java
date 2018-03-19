@@ -2998,7 +2998,7 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private void setAwAutofillClient(AwAutofillClient client) {
         mAwAutofillClient = client;
-        client.init(mContentViewCore);
+        client.init(mContext);
     }
 
     @CalledByNative
