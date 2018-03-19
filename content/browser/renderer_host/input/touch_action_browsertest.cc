@@ -91,7 +91,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
-    RenderFrameSubmissionObserver frame_observer(
+    frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
         host->render_frame_metadata_provider());
     host->GetView()->SetSize(gfx::Size(400, 400));
 
@@ -103,7 +103,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // otherwise the injection of the synthetic gestures may get
     // dropped because of MainThread/Impl thread sync of touch event
     // regions.
-    frame_observer.WaitForAnyFrameSubmission();
+    frame_observer_->WaitForAnyFrameSubmission();
   }
 
   // ContentBrowserTest:
@@ -113,6 +113,13 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // TODO(rbyers): Remove this switch once touch-action ships.
     // http://crbug.com/241964
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+  // ContentBrowserTest:
+  void PostRunTestOnMainThread() override {
+    // Delete this before the WebContents is destroyed.
+    frame_observer_.reset();
+    ContentBrowserTest::PostRunTestOnMainThread();
   }
 
   int ExecuteScriptAndExtractInt(const std::string& script) {
@@ -145,9 +152,6 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
     EXPECT_EQ(10200, scroll_height);
 
-    RenderFrameSubmissionObserver frame_metadata_observer(
-        GetWidgetHost()->render_frame_metadata_provider());
-
     SyntheticSmoothScrollGestureParams params;
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
     params.anchor = gfx::PointF(point);
@@ -170,10 +174,10 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // main thread was in a busy loop.
     gfx::Vector2dF default_scroll_offset;
     while (wait_until_scrolled &&
-           frame_metadata_observer.LastRenderFrameMetadata()
+           frame_observer_->LastRenderFrameMetadata()
                    .root_scroll_offset.value_or(default_scroll_offset)
                    .y() < (distance.y() / 2)) {
-      frame_metadata_observer.WaitForMetadataChange();
+      frame_observer_->WaitForMetadataChange();
     }
 
     // Check the scroll offset
@@ -187,6 +191,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
