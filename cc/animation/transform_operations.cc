@@ -53,7 +53,11 @@ gfx::Transform TransformOperations::Apply() const {
 TransformOperations TransformOperations::Blend(const TransformOperations& from,
                                                SkMScalar progress) const {
   TransformOperations to_return;
-  BlendInternal(from, progress, &to_return);
+  if (!BlendInternal(from, progress, &to_return)) {
+    // If the matrices cannot be blended, fallback to discrete animation logic.
+    // See https://drafts.csswg.org/css-transforms/#matrix-interpolation
+    to_return = progress < 0.5 ? from : *this;
+  }
   return to_return;
 }
 

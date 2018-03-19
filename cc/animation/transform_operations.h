@@ -48,6 +48,9 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // transforms are baked to matrices (using apply), and the matrices are
   // then decomposed and interpolated. For more information, see
   // http://www.w3.org/TR/2011/WD-css3-2d-transforms-20111215/#matrix-decomposition.
+  //
+  // If either of the matrices are non-decomposable for the blend, Blend applies
+  // discrete interpolation between them based on the progress value.
   TransformOperations Blend(const TransformOperations& from,
                             SkMScalar progress) const;
 
