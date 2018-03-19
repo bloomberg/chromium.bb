@@ -55,6 +55,7 @@ struct WebURLError {
   BLINK_PLATFORM_EXPORT WebURLError(int reason, const WebURL&);
   // |reason| must not be 0.
   BLINK_PLATFORM_EXPORT WebURLError(int reason,
+                                    int extended_reason,
                                     HasCopyInCache,
                                     IsWebSecurityViolation,
                                     const WebURL&);
@@ -63,6 +64,7 @@ struct WebURLError {
                                     const WebURL&);
 
   int reason() const { return reason_; }
+  int extended_reason() const { return extended_reason_; }
   bool has_copy_in_cache() const { return has_copy_in_cache_; }
   bool is_web_security_violation() const { return is_web_security_violation_; }
   const WebURL& url() const { return url_; }
@@ -74,6 +76,9 @@ struct WebURLError {
   // A numeric error code detailing the reason for this error. The value must
   // not be 0.
   int reason_;
+
+  // Additional information based on the reason_.
+  int extended_reason_;
 
   // A flag showing whether or not we have a (possibly stale) copy of the
   // requested resource in the cache.

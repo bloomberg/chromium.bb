@@ -36,6 +36,11 @@ NET_EXPORT std::string ErrorToString(int error);
 // Same as above, but leaves off the leading "net::".
 NET_EXPORT std::string ErrorToShortString(int error);
 
+// Returns a textual representation of the error code and the extended eror
+// code.
+NET_EXPORT std::string ExtendedErrorToString(int error,
+                                             int extended_error_code);
+
 // Returns true if |error| is a certificate error code.
 NET_EXPORT bool IsCertificateError(int error);
 

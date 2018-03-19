@@ -24,6 +24,9 @@ struct CONTENT_EXPORT SyncLoadResponse : network::ResourceResponseInfo {
   // The response error code.
   int error_code = 0;
 
+  // The response extended error code.
+  int extended_error_code = 0;
+
   // Optional CORS error details.
   base::Optional<network::mojom::CORSError> cors_error;
 

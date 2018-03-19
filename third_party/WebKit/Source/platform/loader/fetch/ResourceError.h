@@ -97,6 +97,7 @@ class PLATFORM_EXPORT ResourceError final {
   void InitializeDescription();
 
   int error_code_;
+  int extended_error_code_;
   KURL failing_url_;
   String localized_description_;
   bool is_access_check_ = false;

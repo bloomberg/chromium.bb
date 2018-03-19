@@ -295,7 +295,7 @@ QUIC_EXPORT_PRIVATE const char* QuicRstStreamErrorCodeToString(
     QuicRstStreamErrorCode error);
 
 // Returns the name of the QuicErrorCode as a char*
-QUIC_EXPORT_PRIVATE const char* QuicErrorCodeToString(QuicErrorCode error);
+QUIC_EXPORT const char* QuicErrorCodeToString(QuicErrorCode error);
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

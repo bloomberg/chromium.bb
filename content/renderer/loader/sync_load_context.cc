@@ -107,6 +107,7 @@ void SyncLoadContext::OnTransferSizeUpdated(int transfer_size_diff) {}
 void SyncLoadContext::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
   response_->error_code = status.error_code;
+  response_->extended_error_code = status.extended_error_code;
   if (status.cors_error_status)
     response_->cors_error = status.cors_error_status->cors_error;
   response_->encoded_data_length = status.encoded_data_length;

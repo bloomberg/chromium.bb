@@ -9,15 +9,17 @@
 namespace blink {
 
 WebURLError::WebURLError(int reason, const WebURL& url)
-    : reason_(reason), url_(url) {
+    : reason_(reason), extended_reason_(0), url_(url) {
   DCHECK_NE(reason_, 0);
 }
 
 WebURLError::WebURLError(int reason,
+                         int extended_reason,
                          HasCopyInCache has_copy_in_cache,
                          IsWebSecurityViolation is_web_security_violation,
                          const WebURL& url)
     : reason_(reason),
+      extended_reason_(extended_reason),
       has_copy_in_cache_(has_copy_in_cache == HasCopyInCache::kTrue),
       is_web_security_violation_(is_web_security_violation ==
                                  IsWebSecurityViolation::kTrue),
