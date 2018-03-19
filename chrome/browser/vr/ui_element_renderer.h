@@ -70,7 +70,6 @@ class UiElementRenderer {
       const gfx::Transform& model_view_proj_matrix,
       const SkColor edge_color,
       const SkColor center_color,
-      const gfx::PointF& center_position,
       float opacity,
       const gfx::SizeF& element_size,
       const CornerRadii& radii);

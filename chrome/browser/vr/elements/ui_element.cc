@@ -256,14 +256,6 @@ void UiElement::SetSize(float width, float height) {
 
 void UiElement::OnSetSize(const gfx::SizeF& size) {}
 
-gfx::SizeF UiElement::ContributedSize() const {
-  gfx::RectF bounds(size());
-  if (!bounds_contain_padding_) {
-    bounds.Inset(left_padding_, bottom_padding_, right_padding_, top_padding_);
-  }
-  return bounds.size();
-}
-
 void UiElement::SetVisible(bool visible) {
   SetOpacity(visible ? opacity_when_visible_ : 0.0);
 }
@@ -702,7 +694,13 @@ void UiElement::DoLayOutChildren() {
   bool requires_relayout = false;
   gfx::RectF bounds;
   for (auto& child : children_) {
-    gfx::SizeF size = child->ContributedSize();
+    gfx::RectF outer_bounds(child->size());
+    gfx::RectF inner_bounds(child->size());
+    if (!child->bounds_contain_padding_) {
+      inner_bounds.Inset(child->left_padding_, child->bottom_padding_,
+                         child->right_padding_, child->top_padding_);
+    }
+    gfx::SizeF size = inner_bounds.size();
     if (child->x_anchoring() != NONE || child->y_anchoring() != NONE) {
       DCHECK(!child->contributes_to_parent_bounds());
       requires_relayout = true;
@@ -711,7 +709,9 @@ void UiElement::DoLayOutChildren() {
         !child->contributes_to_parent_bounds()) {
       continue;
     }
-    gfx::Point3F child_center(child->local_origin());
+    gfx::Vector2dF delta =
+        outer_bounds.CenterPoint() - inner_bounds.CenterPoint();
+    gfx::Point3F child_center(child->local_origin() - delta);
     gfx::Vector3dF corner_offset(size.width(), size.height(), 0);
     corner_offset.Scale(-0.5);
     gfx::Point3F child_upper_left = child_center + corner_offset;

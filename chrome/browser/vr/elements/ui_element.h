@@ -71,7 +71,7 @@ struct EventHandlers {
 struct HitTestRequest {
   gfx::Point3F ray_origin;
   gfx::Point3F ray_target;
-  float max_distance_to_plane;
+  float max_distance_to_plane = 1000.f;
 };
 
 // The result of performing a hit test.
@@ -225,12 +225,6 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
   virtual void OnSetSize(const gfx::SizeF& size);
-
-  // Elements may report a different size to parents that resize to contain
-  // their children. Eg, for shadows.
-  // TODO(crbug.com/820507): change this to LayoutSize and update all layout
-  // code to make use of this instead of size().
-  gfx::SizeF ContributedSize() const;
 
   gfx::PointF local_origin() const { return local_origin_; }
 

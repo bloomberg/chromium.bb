@@ -152,6 +152,8 @@ void InitializeColorSchemes() {
   normal_scheme.incognito_factor = 0.0f;
   normal_scheme.fullscreen_factor = 0.0f;
 
+  normal_scheme.content_reposition_frame = 0x66FFFFFF;
+
   normal_scheme.cursor_background_center = 0x24000000;
   normal_scheme.cursor_background_edge = SK_ColorTRANSPARENT;
   normal_scheme.cursor_foreground = SK_ColorWHITE;

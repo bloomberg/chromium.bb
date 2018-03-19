@@ -77,4 +77,13 @@ bool Resizer::OnBeginFrame(const base::TimeTicks& time,
   return false;
 }
 
+#ifndef NDEBUG
+void Resizer::DumpGeometry(std::ostringstream* os) const {
+  gfx::Transform t = LocalTransform();
+  gfx::Vector3dF right = {1, 0, 0};
+  t.TransformVector(&right);
+  *os << "s(" << right.x() << ") ";
+}
+#endif
+
 }  // namespace vr
