@@ -2565,11 +2565,15 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
     /* If bitmask is set, update reference frame id values and
-       mark frames as valid for reference */
+       mark frames as valid for reference.
+       Note that the displayed frame be valid for referencing
+       in order to have been selected.
+    */
     int refresh_frame_flags = pbi->refresh_frame_flags;
+    int display_frame_id = cm->ref_frame_id[existing_frame_idx];
     for (int i = 0; i < REF_FRAMES; i++) {
       if ((refresh_frame_flags >> i) & 1) {
-        cm->ref_frame_id[i] = cm->current_frame_id;
+        cm->ref_frame_id[i] = display_frame_id;
         cm->valid_for_referencing[i] = 1;
       }
     }
@@ -2644,9 +2648,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           cm->valid_for_referencing[existing_frame_idx] == 0)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Reference buffer frame ID mismatch");
-#if CONFIG_FWD_KF
-      cm->current_frame_id = display_frame_id;
-#endif  // CONFIG_FWD_KF
     }
     lock_buffer_pool(pool);
     if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
