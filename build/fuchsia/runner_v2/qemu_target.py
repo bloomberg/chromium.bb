@@ -126,10 +126,14 @@ class QemuTarget(target.Target):
     # See crbug.com/741194.
     logging.debug('Launching QEMU.')
     logging.debug(' '.join(qemu_command))
-    self._qemu_process = subprocess.Popen(
-        qemu_command, stdout=open(os.devnull), stdin=open(os.devnull),
-        stderr=open(os.devnull))
 
+    stdio_flags = {'stdin': open(os.devnull)}
+    if logging.getLogger().getEffectiveLevel() != logging.DEBUG:
+      # Output the Fuchsia debug log.
+      stdio_flags['stdout'] = open(os.devnull)
+      stdio_flags['stderr'] = open(os.devnull)
+
+    self._qemu_process = subprocess.Popen(qemu_command, **stdio_flags)
     self._WaitUntilReady();
 
   def Shutdown(self):
