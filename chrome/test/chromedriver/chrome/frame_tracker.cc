@@ -170,8 +170,9 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
   } else if (method == "Target.detachedFromTarget") {
     std::string target_id;
     if (!params.GetString("targetId", &target_id))
-      return Status(kUnknownError,
-                    "missing target ID in Target.detachedFromTarget event");
+      // Some types of Target.detachedFromTarget events do not have targetId.
+      // We are not interested in those types of targets.
+      return Status(kOk);
     frame_to_target_map_.erase(target_id);
   }
   return Status(kOk);
