@@ -83,6 +83,14 @@ Polymer({
       },
     },
 
+    /** @private */
+    enablePaymentHandlerContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
+      },
+    },
+
     /**
      * The type of storage for the origin.
      * @private

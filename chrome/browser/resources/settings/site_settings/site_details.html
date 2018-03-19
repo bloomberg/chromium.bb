@@ -157,6 +157,12 @@
           label="$i18n{siteSettingsClipboard}"
           hidden$="[[!enableClipboardContentSetting_]]">
       </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.PAYMENT_HANDLER}}"
+          icon="settings:payment-handler" id="paymentHandler"
+          label="$i18n{siteSettingsPaymentHandler}"
+          hidden$="[[!enablePaymentHandlerContentSetting_]]">
+      </site-details-permission>
     </div>
 
     <div id="clearAndReset" class="settings-box"

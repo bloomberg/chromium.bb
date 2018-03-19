@@ -33,6 +33,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -2187,6 +2188,13 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsAdsBlock", IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK},
     {"siteSettingsAdsBlockRecommended",
      IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK_RECOMMENDED},
+    {"siteSettingsPaymentHandler", IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER},
+    {"siteSettingsPaymentHandlerAllow",
+     IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_ALLOW},
+    {"siteSettingsPaymentHandlerAllowRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_ALLOW_RECOMMENDED},
+    {"siteSettingsPaymentHandlerBlock",
+     IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER_BLOCK},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -2210,6 +2218,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableSensorsContentSetting",
       base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses));
+
+  html_source->AddBoolean(
+      "enablePaymentHandlerContentSetting",
+      base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps));
 
   if (PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile))) {
