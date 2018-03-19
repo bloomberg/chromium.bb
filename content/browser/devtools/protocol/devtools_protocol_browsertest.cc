@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
   if (base::SysInfo::IsLowEndDevice()) return;
 
   shell()->LoadURL(
-      GURL("data:text/html,<body style='background:#123456'></body>"));
+      GURL("data:text/html,<body style='background:%23123456'></body>"));
   WaitForLoadStop(shell()->web_contents());
   Attach();
   SkBitmap expected_bitmap;
@@ -862,7 +862,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshotJpeg) {
     return;
 
   shell()->LoadURL(
-      GURL("data:text/html,<body style='background:#123456'></body>"));
+      GURL("data:text/html,<body style='background:%23123456'></body>"));
   WaitForLoadStop(shell()->web_contents());
   Attach();
   SkBitmap expected_bitmap;

@@ -25,11 +25,11 @@
 // A parsed canonicalized URL is guaranteed to be UTF-8. Any non-ASCII input
 // characters are UTF-8 encoded and % escaped to ASCII.
 //
-// The string representation of a URL is called the spec(). Getting the
-// spec will assert if the URL is invalid to help protect against malicious
-// URLs. If you want the "best effort" canonicalization of an invalid URL, you
-// can use possibly_invalid_spec(). Test validity with is_valid(). Data and
-// javascript URLs use GetContent() to extract the data.
+// The string representation of a URL is called the spec(). Getting the spec
+// will assert if the URL is invalid to help protect against malicious URLs. If
+// you want the "best effort" canonicalization of an invalid URL, you can use
+// possibly_invalid_spec(). Test validity with is_valid(). Data and javascript
+// URLs use GetContent() to extract the data.
 //
 // This class has existence checkers and getters for the various components of
 // a URL. Existence is different than being nonempty. "http://www.google.com/?"
@@ -258,9 +258,13 @@ class URL_EXPORT GURL {
     return SchemeIs(url::kBlobScheme);
   }
 
-  // The "content" of the URL is everything after the scheme (skipping the
-  // scheme delimiting colon). It is an error to get the content of an invalid
-  // URL: the result will be an empty string.
+  // For most URLs, the "content" is everything after the scheme (skipping the
+  // scheme delimiting colon) and before the fragment (skipping the fragment
+  // delimiting octothorpe). For javascript URLs the "content" also includes the
+  // fragment delimiter and fragment.
+  //
+  // It is an error to get the content of an invalid URL: the result will be an
+  // empty string.
   std::string GetContent() const;
 
   // Returns true if the hostname is an IP address. Note: this function isn't

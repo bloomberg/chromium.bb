@@ -3075,7 +3075,7 @@ public class AwSettingsTest {
         final String page = "<!doctype html>"
                 + "<script>"
                 + "window.onload = function() {"
-                + "  document.title = CSS.supports('color', '#AABBCCDD');"
+                + "  document.title = CSS.supports('color', '%23AABBCCDD');"
                 + "};"
                 + "</script>";
         mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);

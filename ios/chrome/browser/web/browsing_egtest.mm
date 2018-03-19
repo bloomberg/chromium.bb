@@ -26,6 +26,7 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/web_client.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -228,7 +229,9 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+  const std::string omniboxText =
+      web::GetContentAndFragmentForUrl(destinationURL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(omniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 
