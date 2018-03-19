@@ -2023,9 +2023,10 @@ CSSValue* ComputedStyleUtils::ValueForScrollSnapType(
 CSSValue* ComputedStyleUtils::ValueForScrollSnapAlign(
     const ScrollSnapAlign& align,
     const ComputedStyle& style) {
-  return CSSValuePair::Create(CSSIdentifierValue::Create(align.alignmentX),
-                              CSSIdentifierValue::Create(align.alignmentY),
-                              CSSValuePair::kDropIdenticalValues);
+  return CSSValuePair::Create(
+      CSSIdentifierValue::Create(align.alignment_inline),
+      CSSIdentifierValue::Create(align.alignment_block),
+      CSSValuePair::kDropIdenticalValues);
 }
 
 // Returns a suitable value for the page-break-(before|after) property, given
