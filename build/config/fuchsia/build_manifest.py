@@ -92,7 +92,8 @@ def _IsBinary(path):
   return file_tag == '\x7fELF'
 
 
-def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
+def BuildManifest(root_dir, out_dir, app_name, app_filename,
+                  runtime_deps_file, output_path):
   with open(output_path, 'w') as output:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed.
@@ -118,7 +119,7 @@ def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
 
       in_package_path = MakePackagePath(os.path.join(out_dir, next_file),
                                         [root_dir, out_dir])
-      if in_package_path == app_name:
+      if in_package_path == app_filename:
         in_package_path = 'bin/app'
         app_found = True
 
@@ -129,7 +130,14 @@ def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
                                 os.path.relpath(next_file, out_dir)))
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
-    output.write('meta/sandbox=' +
+
+    with open(os.path.join(os.path.dirname(output_path), 'package'), 'w') \
+        as package_json:
+      json.dump({'version': '0', 'name': app_name}, package_json)
+      output.write('meta/package=%s\n' %
+                   os.path.relpath(package_json.name, out_dir))
+
+    output.write('meta/sandbox=%s\n' %
                  os.path.relpath(os.path.join(root_dir, SANDBOX_POLICY_PATH),
                                  out_dir))
 
@@ -137,5 +145,4 @@ def BuildManifest(root_dir, out_dir, app_name, runtime_deps_file, output_path):
 
 
 if __name__ == '__main__':
-  sys.exit(BuildManifest(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-                         sys.argv[5]))
+  sys.exit(BuildManifest(*sys.argv[1:]))

@@ -733,7 +733,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     # The precise root cause is still nebulous, but this fix works.
     # See crbug.com/741194.
     process = subprocess.Popen(
-        qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
+        qemu_command, stdout=subprocess.PIPE)
 
   success = _HandleOutputFromProcess(process,
                                      bootfs_data.symbols_mapping)

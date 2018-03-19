@@ -16,11 +16,20 @@ template("package") {
   }
   assert(defined(pkg.binary))
 
+  _pm_tool_path = "//third_party/fuchsia-sdk/tools/pm"
+
   _pkg_out_dir = "$root_out_dir/gen/" + get_label_info(pkg.package_name, "dir")
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
   _manifest_file = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
-  _archive_file = "$_pkg_out_dir/${pkg.package_name}.far"
+  _key_file = "$_pkg_out_dir/signing-key"
+  _meta_far_file = "$_pkg_out_dir/meta.far"
+  _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
+  _final_far_file = "$_pkg_out_dir/${pkg.package_name}.far"
+
   _write_manifest_target = "${pkg.package_name}__write_manifest"
+  _generate_key_target = "${pkg.package_name}__genkey"
+  _package_target = "${pkg.package_name}__pkg"
+  _bundle_target = "${pkg.package_name}__bundle"
 
   # Generates a manifest file based on the GN runtime deps
   # suitable for "far" tool consumption.
@@ -47,6 +56,7 @@ template("package") {
     args = [
       rebase_path("//"),
       rebase_path(root_out_dir),
+      pkg.package_name,
       pkg.binary,
       rebase_path(_runtime_deps_file),
       rebase_path(_manifest_file),
@@ -55,31 +65,104 @@ template("package") {
     write_runtime_deps = _runtime_deps_file
   }
 
-  # Packages an executable target and its dependencies into a Fuchsia archive
-  # file (.far).
-  action(target_name) {
+  # Generates a signing key to use for building the package.
+  action(_generate_key_target) {
     forward_variables_from(invoker, [ "testonly" ])
 
-    far_tool_path = "//third_party/fuchsia-sdk/tools/far"
     script = "//build/gn_run_binary.py"
 
-    deps = [
-      ":$_write_manifest_target",
-    ]
-
     outputs = [
-      _archive_file,
-    ]
-
-    data = [
-      _archive_file,
+      _key_file,
     ]
 
     args = [
-      rebase_path(far_tool_path, root_build_dir),
-      "create",
-      "--archive=" + rebase_path(_archive_file),
-      "--manifest=" + rebase_path(_manifest_file),
+      rebase_path(_pm_tool_path, root_build_dir),
+      "-k",
+      rebase_path(_key_file),
+      "genkey",
+    ]
+  }
+
+  # Creates a signed Fuchsia metadata package.
+  action(_package_target) {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    script = "//build/gn_run_binary.py"
+
+    deps = [
+      ":$_generate_key_target",
+      ":$_write_manifest_target",
+    ]
+
+    inputs = [
+      _key_file,
+    ]
+
+    outputs = [
+      _meta_far_file,
+    ]
+
+    args = [
+      rebase_path(_pm_tool_path, root_build_dir),
+      "-o",
+      rebase_path(_pkg_out_dir),
+      "-k",
+      rebase_path(_key_file),
+      "-m",
+      rebase_path(_manifest_file),
+      "build",
+    ]
+  }
+
+  # Creates a package containing the metadata archive and blob data.
+  action(_bundle_target) {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    script = "//build/gn_run_binary.py"
+
+    deps = [
+      ":$_package_target",
+      ":$_write_manifest_target",
+    ]
+
+    inputs = [
+      _meta_far_file,
+      _manifest_file,
+    ]
+
+    outputs = [
+      _combined_far_file,
+    ]
+
+    args = [
+      rebase_path(_pm_tool_path, root_build_dir),
+      "-o",
+      rebase_path(_pkg_out_dir),
+      "-m",
+      rebase_path(_manifest_file),
+      "archive",
+    ]
+  }
+
+  # Copies the archive to a well-known path.
+  # TODO(kmarshall): Use a 'pm' output flag to write directly to the desired
+  # file path instead.
+  copy(target_name) {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    deps = [
+      ":$_bundle_target",
+    ]
+
+    data = [
+      _final_far_file,
+    ]
+
+    sources = [
+      _combined_far_file,
+    ]
+    outputs = [
+      _final_far_file,
     ]
   }
 }

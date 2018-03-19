@@ -126,10 +126,6 @@ template("generate_runner_script") {
     args = [
       "--script-output-path",
       rebase_path(_generated_script, root_build_dir, root_out_dir),
-      "--package",
-      rebase_path(_package_path, root_out_dir, root_build_dir),
-      "--package-manifest",
-      rebase_path(_manifest_path, root_out_dir, root_build_dir),
     ]
 
     if (defined(invoker.use_test_server) && invoker.use_test_server) {
@@ -144,6 +140,10 @@ template("generate_runner_script") {
       rebase_path(root_build_dir, root_build_dir),
       "--target-cpu",
       target_cpu,
+      "--package",
+      rebase_path(_package_path, root_out_dir, root_build_dir),
+      "--package-name",
+      invoker.package_name,
     ]
   }
 }
