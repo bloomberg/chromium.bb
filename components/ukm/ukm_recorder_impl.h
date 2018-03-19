@@ -69,6 +69,8 @@ class UkmRecorderImpl : public UkmRecorder {
 
   virtual bool ShouldRestrictToWhitelistedSourceIds() const;
 
+  virtual bool ShouldRestrictToWhitelistedEntries() const;
+
  private:
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
