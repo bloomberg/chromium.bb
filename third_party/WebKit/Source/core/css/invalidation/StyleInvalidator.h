@@ -185,7 +185,7 @@ class CORE_EXPORT StyleInvalidator {
   };
 
   using PendingInvalidationMap =
-      HeapHashMap<Member<ContainerNode>, std::unique_ptr<PendingInvalidations>>;
+      HeapHashMap<Member<ContainerNode>, PendingInvalidations>;
 
   PendingInvalidations& EnsurePendingInvalidations(ContainerNode&);
 

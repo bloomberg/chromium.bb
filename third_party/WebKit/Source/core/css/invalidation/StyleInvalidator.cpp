@@ -138,13 +138,16 @@ void StyleInvalidator::ScheduleSiblingInvalidationsAsDescendants(
 void StyleInvalidator::RescheduleSiblingInvalidationsAsDescendants(
     Element& element) {
   DCHECK(element.parentNode());
-  PendingInvalidations* pending_invalidations =
-      pending_invalidation_map_.at(&element);
-  if (!pending_invalidations || pending_invalidations->Siblings().IsEmpty())
+  auto pending_invalidations_iterator =
+      pending_invalidation_map_.find(&element);
+  if (pending_invalidations_iterator == pending_invalidation_map_.end() ||
+      pending_invalidations_iterator->value.Siblings().IsEmpty())
     return;
+  PendingInvalidations& pending_invalidations =
+      pending_invalidations_iterator->value;
 
   InvalidationLists invalidation_lists;
-  for (const auto& invalidation_set : pending_invalidations->Siblings()) {
+  for (const auto& invalidation_set : pending_invalidations.Siblings()) {
     invalidation_lists.descendants.push_back(invalidation_set);
     if (DescendantInvalidationSet* descendants =
             ToSiblingInvalidationSet(*invalidation_set).SiblingDescendants()) {
@@ -163,11 +166,12 @@ void StyleInvalidator::ClearInvalidation(ContainerNode& node) {
 
 PendingInvalidations& StyleInvalidator::EnsurePendingInvalidations(
     ContainerNode& node) {
+  auto it = pending_invalidation_map_.find(&node);
+  if (it != pending_invalidation_map_.end())
+    return it->value;
   PendingInvalidationMap::AddResult add_result =
-      pending_invalidation_map_.insert(&node, nullptr);
-  if (add_result.is_new_entry)
-    add_result.stored_value->value = std::make_unique<PendingInvalidations>();
-  return *add_result.stored_value->value;
+      pending_invalidation_map_.insert(&node, PendingInvalidations());
+  return add_result.stored_value->value;
 }
 
 StyleInvalidator::StyleInvalidator() {
@@ -284,11 +288,12 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
     ContainerNode& node,
     RecursionData& recursion_data,
     SiblingData& sibling_data) {
-  PendingInvalidations* pending_invalidations =
-      pending_invalidation_map_.at(&node);
-  DCHECK(pending_invalidations);
+  auto pending_invalidations_iterator = pending_invalidation_map_.find(&node);
+  DCHECK(pending_invalidations_iterator != pending_invalidation_map_.end());
+  PendingInvalidations& pending_invalidations =
+      pending_invalidations_iterator->value;
 
-  for (const auto& invalidation_set : pending_invalidations->Siblings()) {
+  for (const auto& invalidation_set : pending_invalidations.Siblings()) {
     CHECK(invalidation_set->IsAlive());
     sibling_data.PushInvalidationSet(
         ToSiblingInvalidationSet(*invalidation_set));
@@ -297,8 +302,8 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
   if (node.GetStyleChangeType() >= kSubtreeStyleChange)
     return;
 
-  if (!pending_invalidations->Descendants().IsEmpty()) {
-    for (const auto& invalidation_set : pending_invalidations->Descendants()) {
+  if (!pending_invalidations.Descendants().IsEmpty()) {
+    for (const auto& invalidation_set : pending_invalidations.Descendants()) {
       CHECK(invalidation_set->IsAlive());
       recursion_data.PushInvalidationSet(*invalidation_set);
     }
@@ -308,7 +313,7 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
           "StyleInvalidatorInvalidationTracking", TRACE_EVENT_SCOPE_THREAD,
           "data",
           InspectorStyleInvalidatorInvalidateEvent::InvalidationList(
-              node, pending_invalidations->Descendants()));
+              node, pending_invalidations.Descendants()));
     }
   }
 }
