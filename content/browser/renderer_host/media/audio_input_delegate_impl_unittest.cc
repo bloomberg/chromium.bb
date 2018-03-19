@@ -45,6 +45,7 @@ using ::testing::NotNull;
 using ::testing::StrictMock;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::InvokeWithoutArgs;
 
 namespace content {
 
@@ -64,6 +65,32 @@ const char* kDefaultDeviceName = "default";
 media::AudioParameters ValidAudioParameters() {
   return media::AudioParameters::UnavailableDeviceParams();
 }
+
+media::AudioOutputStream* ExpectNoOutputStreamCreation(
+    const media::AudioParameters&,
+    const std::string&) {
+  CHECK(false);
+  return nullptr;
+}
+
+media::AudioInputStream* ExpectNoInputStreamCreation(
+    const media::AudioParameters&,
+    const std::string&) {
+  CHECK(false);
+  return nullptr;
+}
+
+media::AudioInputStream* MakeInputStreamCallback(
+    media::AudioInputStream* stream,
+    bool* created,
+    const media::AudioParameters&,
+    const std::string&) {
+  CHECK(!*created);
+  *created = true;
+  return stream;
+}
+
+}  // namespace
 
 class MockEventHandler : public media::AudioInputDelegate::EventHandler {
  public:
@@ -89,20 +116,6 @@ class MockUserInputMonitor : public media::UserInputMonitor {
   MOCK_METHOD0(StopKeyboardMonitoring, void());
 };
 
-media::AudioOutputStream* ExpectNoOutputStreamCreation(
-    const media::AudioParameters&,
-    const std::string&) {
-  CHECK(false);
-  return nullptr;
-}
-
-media::AudioInputStream* ExpectNoInputStreamCreation(
-    const media::AudioParameters&,
-    const std::string&) {
-  CHECK(false);
-  return nullptr;
-}
-
 class MockAudioInputStream : public media::AudioInputStream {
  public:
   MockAudioInputStream() {}
@@ -120,31 +133,22 @@ class MockAudioInputStream : public media::AudioInputStream {
   MOCK_METHOD0(IsMuted, bool());
 };
 
-media::AudioInputStream* MakeInputStreamCallback(
-    media::AudioInputStream* stream,
-    bool* created,
-    const media::AudioParameters&,
-    const std::string&) {
-  CHECK(!*created);
-  *created = true;
-  return stream;
-}
+class MockMediaStreamProviderListener : public MediaStreamProviderListener {
+ public:
+  MockMediaStreamProviderListener() {}
+  ~MockMediaStreamProviderListener() override {}
 
-}  // namespace
+  MOCK_METHOD2(Opened,
+               void(MediaStreamType stream_type, int capture_session_id));
+  void Closed(MediaStreamType stream_type, int capture_session_id) override {}
+  void Aborted(MediaStreamType stream_type, int capture_session_id) override {}
+};
 
-// These tests are single-threaded.
-// In the real life we have AudioManager living on separate thread (or on the UI
-// thread on Mac), but AudioInputDelegate interacts with it on the IO thread via
-// AudioInputController, so we don't care much about AudioManager threading and
-// can use the main thread to run it. AudioInputDelegate lives on the IO thread,
-// it only posts notifications to the UI thread. MediaStreamManager lives on the
-// UI thread, but AID interacts with it on the IO thread, so we can have the IO
-// thread as a main thread for tests
 class AudioInputDelegateTest : public testing::Test {
  public:
   AudioInputDelegateTest()
       : thread_bundle_(base::in_place),
-        audio_manager_(std::make_unique<media::TestAudioThread>()),
+        audio_manager_(std::make_unique<media::TestAudioThread>(true)),
         audio_system_(&audio_manager_),
         media_stream_manager_(&audio_system_, audio_manager_.GetTaskRunner()) {
     audio_manager_.SetMakeInputStreamCB(
@@ -165,9 +169,22 @@ class AudioInputDelegateTest : public testing::Test {
   // AudioInputDelegateImpl will allow them to be used.
   int MakeDeviceAvailable(const std::string& device_id,
                           const std::string& name) {
+    // Authorize device for use and wait for completion.
+    MockMediaStreamProviderListener listener;
+    media_stream_manager_.audio_input_device_manager()->RegisterListener(
+        &listener);
+
     int session_id = media_stream_manager_.audio_input_device_manager()->Open(
         MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, device_id, name));
-    base::RunLoop().RunUntilIdle();
+
+    // Block for completion.
+    base::RunLoop loop;
+    EXPECT_CALL(listener, Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+        .WillOnce(InvokeWithoutArgs(&loop, &base::RunLoop::Quit));
+    loop.Run();
+    media_stream_manager_.audio_input_device_manager()->UnregisterListener(
+        &listener);
+
     return session_id;
   }
 
@@ -184,6 +201,15 @@ class AudioInputDelegateTest : public testing::Test {
         AudioInputDeviceManager::KeyboardMicRegistration(), shared_memory_count,
         kStreamId, session_id, enable_agc, ValidAudioParameters(),
         &event_handler_);
+  }
+
+  void SyncWithAudioThread() {
+    base::RunLoop().RunUntilIdle();
+
+    base::RunLoop run_loop;
+    audio_manager_.GetTaskRunner()->PostTask(
+        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   base::Optional<TestBrowserThreadBundle> thread_bundle_;
@@ -233,112 +259,101 @@ TEST_F(AudioInputDelegateTest, CreateWebContentsCaptureStream) {
 TEST_F(AudioInputDelegateTest, CreateOrdinaryCaptureStream) {
   int session_id = MakeDeviceAvailable(kDefaultDeviceId, kDefaultDeviceName);
 
-  auto delegate =
-      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
-  EXPECT_NE(delegate, nullptr);
-
   StrictMock<MockAudioInputStream> stream;
   EXPECT_CALL(stream, Open()).WillOnce(Return(true));
   EXPECT_CALL(stream, SetAutomaticGainControl(false))
-
       .WillOnce(Return(true));
   EXPECT_CALL(stream, IsMuted()).WillOnce(Return(false));
   EXPECT_CALL(event_handler_, MockOnStreamCreated(kStreamId, false));
   bool created = false;
   audio_manager_.SetMakeInputStreamCB(
       base::BindRepeating(&MakeInputStreamCallback, &stream, &created));
+  auto delegate =
+      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
+  EXPECT_NE(delegate, nullptr);
+  SyncWithAudioThread();
 
-  base::RunLoop().RunUntilIdle();
-  delegate.reset();
   EXPECT_CALL(stream, Close());
-  base::RunLoop().RunUntilIdle();
+  delegate.reset();
+  SyncWithAudioThread();
 }
 
 TEST_F(AudioInputDelegateTest, CreateOrdinaryStreamWithAGC_AGCPropagates) {
   int session_id = MakeDeviceAvailable(kDefaultDeviceId, kDefaultDeviceName);
 
-  auto delegate =
-      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoEnableAGC);
-  EXPECT_NE(delegate, nullptr);
-
   StrictMock<MockAudioInputStream> stream;
   EXPECT_CALL(stream, Open()).WillOnce(Return(true));
   EXPECT_CALL(stream, SetAutomaticGainControl(true))
-
       .WillOnce(Return(true));
   EXPECT_CALL(stream, IsMuted()).WillOnce(Return(false));
   EXPECT_CALL(event_handler_, MockOnStreamCreated(kStreamId, false));
   bool created = false;
   audio_manager_.SetMakeInputStreamCB(
       base::BindRepeating(&MakeInputStreamCallback, &stream, &created));
+  auto delegate =
+      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoEnableAGC);
+  EXPECT_NE(delegate, nullptr);
+  SyncWithAudioThread();
 
-  base::RunLoop().RunUntilIdle();
-  delegate.reset();
   EXPECT_CALL(stream, Close());
-  base::RunLoop().RunUntilIdle();
+  delegate.reset();
+  SyncWithAudioThread();
 }
 
 TEST_F(AudioInputDelegateTest, Record) {
   int session_id = MakeDeviceAvailable(kDefaultDeviceId, kDefaultDeviceName);
 
-  auto delegate =
-      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
-  EXPECT_NE(delegate, nullptr);
-
   StrictMock<MockAudioInputStream> stream;
   EXPECT_CALL(stream, Open()).WillOnce(Return(true));
   EXPECT_CALL(stream, SetAutomaticGainControl(false))
-
       .WillOnce(Return(true));
   EXPECT_CALL(stream, IsMuted()).WillOnce(Return(false));
   EXPECT_CALL(event_handler_, MockOnStreamCreated(kStreamId, false));
   bool created = false;
   audio_manager_.SetMakeInputStreamCB(
       base::BindRepeating(&MakeInputStreamCallback, &stream, &created));
+  auto delegate =
+      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
+  EXPECT_NE(delegate, nullptr);
+  SyncWithAudioThread();
 
-  base::RunLoop().RunUntilIdle();
-
-  delegate->OnRecordStream();
   EXPECT_CALL(stream, Start(NotNull()));
-  base::RunLoop().RunUntilIdle();
+  delegate->OnRecordStream();
+  SyncWithAudioThread();
 
-  delegate.reset();
   EXPECT_CALL(stream, Stop());
   EXPECT_CALL(stream, Close());
-  base::RunLoop().RunUntilIdle();
+  delegate.reset();
+  SyncWithAudioThread();
 }
 
 TEST_F(AudioInputDelegateTest, SetVolume) {
   int session_id = MakeDeviceAvailable(kDefaultDeviceId, kDefaultDeviceName);
 
-  auto delegate =
-      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
-  EXPECT_NE(delegate, nullptr);
-
   StrictMock<MockAudioInputStream> stream;
   EXPECT_CALL(stream, Open()).WillOnce(Return(true));
   EXPECT_CALL(stream, SetAutomaticGainControl(false))
-
       .WillOnce(Return(true));
   EXPECT_CALL(stream, IsMuted()).WillOnce(Return(false));
   EXPECT_CALL(event_handler_, MockOnStreamCreated(kStreamId, false));
   bool created = false;
   audio_manager_.SetMakeInputStreamCB(
       base::BindRepeating(&MakeInputStreamCallback, &stream, &created));
-
-  base::RunLoop().RunUntilIdle();
-
-  delegate->OnSetVolume(kNewVolume);
+  auto delegate =
+      CreateDelegate(kDefaultSharedMemoryCount, session_id, kDoNotEnableAGC);
+  EXPECT_NE(delegate, nullptr);
+  SyncWithAudioThread();
 
   // Note: The AudioInputController is supposed to access the max volume of the
   // stream and map [0, 1] to [0, max_volume].
   EXPECT_CALL(stream, GetMaxVolume()).WillOnce(Return(kVolumeScale));
   EXPECT_CALL(stream, SetVolume(DoubleEq(kNewVolume * kVolumeScale)));
-  base::RunLoop().RunUntilIdle();
+  delegate->OnSetVolume(kNewVolume);
+  SyncWithAudioThread();
 
-  delegate.reset();
   EXPECT_CALL(stream, Close());
-  base::RunLoop().RunUntilIdle();
+  delegate.reset();
+  SyncWithAudioThread();
 }
 
 }  // namespace content
