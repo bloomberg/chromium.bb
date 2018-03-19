@@ -2455,6 +2455,13 @@ static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
 static int get_search_init_depth(int mi_width, int mi_height,
                                  const SPEED_FEATURES *sf) {
   if (sf->tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
+
+  if (sf->tx_size_search_lgr_block) {
+    if (mi_width > mi_size_wide[BLOCK_64X64] ||
+        mi_height > mi_size_high[BLOCK_64X64])
+      return MAX_VARTX_DEPTH;
+  }
+
   return (mi_height != mi_width) ? sf->tx_size_search_init_depth_rect
                                  : sf->tx_size_search_init_depth_sqr;
 }
