@@ -231,6 +231,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                         gfx::PointF* transformed_point,
                                         viz::EventSource source) const;
 
+  // TODO(818214): Remove once this issue no longer occurs.
+  void ReportBubblingScrollToSameView(const blink::WebGestureEvent& event);
+
   // RenderWidgetTargeter::Delegate:
   RenderWidgetTargetResult FindTargetSynchronously(
       RenderWidgetHostViewBase* root_view,
