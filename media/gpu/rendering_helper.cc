@@ -364,6 +364,11 @@ void RenderingHelper::QueueVideoFrame(
   RenderedVideo* video = &videos_[window_id];
   DCHECK(!video->is_flushing);
 
+  // If running at zero fps, return immediately. This will give the frame
+  // back to the client once it drops its reference to video_frame.
+  if (frame_duration_.is_zero())
+    return;
+
   video->pending_frames.push(video_frame);
 
   if (video->frames_to_drop > 0 && video->pending_frames.size() > 1) {

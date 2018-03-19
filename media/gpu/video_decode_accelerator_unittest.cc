@@ -400,7 +400,6 @@ class GLRenderingVDAClient
   // calls have been made, N>=0 means interpret as ClientState.
   // Both |reset_after_frame_num| & |delete_decoder_state| apply only to the
   // last play-through (governed by |num_play_throughs|).
-  // |suppress_rendering| indicates GL rendering is supressed or not.
   // After |delay_reuse_after_frame_num| frame has been delivered, the client
   // will start delaying the call to ReusePictureBuffer() for kReuseDelay.
   // |decode_calls_per_second| is the number of VDA::Decode calls per second.
@@ -417,7 +416,6 @@ class GLRenderingVDAClient
                        int frame_height,
                        VideoCodecProfile profile,
                        int fake_decoder,
-                       bool suppress_rendering,
                        int delay_reuse_after_frame_num,
                        int decode_calls_per_second,
                        bool render_as_thumbnails);
@@ -505,7 +503,6 @@ class GLRenderingVDAClient
   int fake_decoder_;
   GLenum texture_target_;
   VideoPixelFormat pixel_format_;
-  bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
   int delay_reuse_after_frame_num_;
   // A map from bitstream buffer id to the decode start time of the buffer.
@@ -556,7 +553,6 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int frame_height,
     VideoCodecProfile profile,
     int fake_decoder,
-    bool suppress_rendering,
     int delay_reuse_after_frame_num,
     int decode_calls_per_second,
     bool render_as_thumbnails)
@@ -580,7 +576,6 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       fake_decoder_(fake_decoder),
       texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
-      suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second),
       render_as_thumbnails_(render_as_thumbnails),
@@ -766,7 +761,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
   if (render_as_thumbnails_) {
     rendering_helper_->RenderThumbnail(video_frame->texture_target(),
                                        video_frame->texture_id());
-  } else if (!suppress_rendering_) {
+  } else {
     rendering_helper_->QueueVideoFrame(window_id_, video_frame);
   }
 }
@@ -1357,9 +1352,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   UpdateTestVideoFileParams(num_concurrent_decoders, reset_point,
                             &test_video_files_);
 
-  // Suppress GL rendering for all tests when the "--rendering_fps" is 0.
-  const bool suppress_rendering = g_rendering_fps == 0;
-
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
@@ -1394,8 +1386,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
             video_file->data_str, num_in_flight_decodes, num_play_throughs,
             video_file->reset_after_frame_num, delete_decoder_state,
             video_file->width, video_file->height, video_file->profile,
-            g_fake_decoder, suppress_rendering, delay_after_frame_num, 0,
-            render_as_thumbnails);
+            g_fake_decoder, delay_after_frame_num, 0, render_as_thumbnails);
 
     clients_[index] = std::move(client);
   }
@@ -1474,8 +1465,8 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     }
     LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
     if (!render_as_thumbnails) {
-      int min_fps = suppress_rendering ? video_file->min_fps_no_render
-                                       : video_file->min_fps_render;
+      int min_fps = g_rendering_fps == 0 ? video_file->min_fps_no_render
+                                         : video_file->min_fps_render;
       if (min_fps > 0 && !test_reuse_delay)
         EXPECT_GT(client->frames_per_second(), min_fps);
     }
@@ -1738,7 +1729,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
       1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
       test_video_files_[0]->width, test_video_files_[0]->height,
-      test_video_files_[0]->profile, g_fake_decoder, true,
+      test_video_files_[0]->profile, g_fake_decoder,
       std::numeric_limits<int>::max(), kWebRtcDecodeCallsPerSecond, false));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
@@ -1766,7 +1757,7 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
       1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
       test_video_files_[0]->width, test_video_files_[0]->height,
-      test_video_files_[0]->profile, g_fake_decoder, true,
+      test_video_files_[0]->profile, g_fake_decoder,
       std::numeric_limits<int>::max(), 0, false));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
