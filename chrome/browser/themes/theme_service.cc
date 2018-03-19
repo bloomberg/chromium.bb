@@ -566,7 +566,10 @@ void ThemeService::ClearAllThemeData() {
                             weak_ptr_factory_.GetWeakPtr(), true));
 }
 
+void ThemeService::FixInconsistentPreferencesIfNeeded() {}
+
 void ThemeService::LoadThemePrefs() {
+  FixInconsistentPreferencesIfNeeded();
   PrefService* prefs = profile_->GetPrefs();
 
   std::string current_id = GetThemeID();
