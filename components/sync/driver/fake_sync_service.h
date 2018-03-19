@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -22,6 +23,10 @@ class FakeSyncService : public SyncService {
  public:
   FakeSyncService();
   ~FakeSyncService() override;
+
+  void set_auth_error(GoogleServiceAuthError error) {
+    error_ = std::move(error);
+  }
 
  private:
   // SyncService implementation.
