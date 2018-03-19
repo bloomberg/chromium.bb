@@ -59,6 +59,8 @@ PaymentRequestState::PaymentRequestState(
         web_contents,
         payment_request_delegate_->GetPaymentManifestWebDataService(),
         spec_->method_data(),
+        /*may_crawl_for_installable_payment_apps=*/
+        !spec_->supports_basic_card(),
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
                        weak_ptr_factory_.GetWeakPtr(), web_contents,
                        top_level_origin, frame_origin),

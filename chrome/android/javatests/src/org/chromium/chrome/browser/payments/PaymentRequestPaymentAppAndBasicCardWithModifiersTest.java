@@ -324,7 +324,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks, alicepayTypes)};
 
         PaymentAppFactory.getInstance().addAdditionalFactory((webContents, methodNames,
-                                                                     callback) -> {
+                                                                     mayCrawlUnused, callback) -> {
             ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
             BitmapDrawable icon = new BitmapDrawable(activity.getResources(),
                     Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */, 1 /* height */,

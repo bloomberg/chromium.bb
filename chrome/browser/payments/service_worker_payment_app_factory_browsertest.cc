@@ -133,6 +133,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),
         method_data,
+        /*may_crawl_for_installable_payment_apps=*/true,
         base::BindOnce(
             &ServiceWorkerPaymentAppFactoryBrowserTest::OnGotAllPaymentApps,
             base::Unretained(this)),

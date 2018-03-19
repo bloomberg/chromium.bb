@@ -65,7 +65,7 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
         final TestPay appC =
                 new TestPay("https://charliepay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, callback) -> {
+                (webContents, methodNames, mayCrawlUnused, callback) -> {
                     callback.onPaymentAppCreated(appA);
                     callback.onPaymentAppCreated(appB);
                     callback.onPaymentAppCreated(appC);

@@ -331,6 +331,7 @@ public class PaymentRequestImpl
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private boolean mPaymentAppRunning;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
+    private boolean mUserCanAddCreditCard;
     private boolean mHideServerAutofillInstruments;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
@@ -479,8 +480,11 @@ public class PaymentRequestImpl
         // Checks whether the merchant supports autofill payment instrument before show is called.
         mMerchantSupportsAutofillPaymentInstruments =
                 AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
-        PaymentAppFactory.getInstance().create(
-                mWebContents, Collections.unmodifiableMap(mMethodData), this /* callback */);
+        mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
+        PaymentAppFactory.getInstance().create(mWebContents,
+                Collections.unmodifiableMap(mMethodData), !mUserCanAddCreditCard /* mayCrawl */,
+                this /* callback */);
 
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
@@ -1758,10 +1762,8 @@ public class PaymentRequestImpl
 
         boolean foundPaymentMethods =
                 mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
-        boolean userCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
 
-        if (!mArePaymentMethodsSupported || (!foundPaymentMethods && !userCanAddCreditCard)) {
+        if (!mArePaymentMethodsSupported || (!foundPaymentMethods && !mUserCanAddCreditCard)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.

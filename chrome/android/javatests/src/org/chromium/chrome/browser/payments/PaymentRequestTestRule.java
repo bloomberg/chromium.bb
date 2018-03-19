@@ -980,7 +980,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
             final String appMethodName, final int instrumentPresence,
             final int responseSpeed, final int creationSpeed) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, callback) -> {
+                (webContents, methodNames, mayCrawlUnusued, callback) -> {
                     final TestPay app = new TestPay(appMethodName, instrumentPresence,
                             responseSpeed);
                     if (creationSpeed == IMMEDIATE_CREATION) {

@@ -52,7 +52,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
             final ServiceWorkerPaymentApp.Capabilities[] capabilities, final boolean withName,
             final boolean withIcon) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, callback) -> {
+                (webContents, methodNames, mayCrawlUnused, callback) -> {
                     ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
                     BitmapDrawable icon = withIcon
                             ? new BitmapDrawable(activity.getResources(),
