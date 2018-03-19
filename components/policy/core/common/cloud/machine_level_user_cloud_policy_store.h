@@ -30,7 +30,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
   static std::unique_ptr<MachineLevelUserCloudPolicyStore> Create(
       const std::string& machine_dm_token,
       const std::string& machine_client_id,
-      const base::FilePath& user_data_dir,
+      const base::FilePath& policy_dir,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // override DesktopCloudPolicyStore

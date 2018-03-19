@@ -62,6 +62,8 @@ source_set("internal") {
     "cloud/external_policy_data_fetcher.h",
     "cloud/external_policy_data_updater.cc",
     "cloud/external_policy_data_updater.h",
+    "cloud/machine_level_user_cloud_policy_manager.cc",
+    "cloud/machine_level_user_cloud_policy_manager.h",
     "cloud/machine_level_user_cloud_policy_store.cc",
     "cloud/machine_level_user_cloud_policy_store.h",
     "cloud/policy_header_io_helper.cc",
@@ -202,6 +204,8 @@ source_set("internal") {
     sources -= [
       "cloud/cloud_policy_client_registration_helper.cc",
       "cloud/cloud_policy_client_registration_helper.h",
+      "cloud/machine_level_user_cloud_policy_manager.cc",
+      "cloud/machine_level_user_cloud_policy_manager.h",
       "cloud/machine_level_user_cloud_policy_store.cc",
       "cloud/machine_level_user_cloud_policy_store.h",
       "cloud/user_cloud_policy_manager.cc",
@@ -322,6 +326,7 @@ source_set("unit_tests") {
     ]
   } else {
     sources += [
+      "cloud/machine_level_user_cloud_policy_manager_unittest.cc",
       "cloud/machine_level_user_cloud_policy_store_unittest.cc",
       "cloud/user_cloud_policy_manager_unittest.cc",
       "cloud/user_cloud_policy_store_unittest.cc",

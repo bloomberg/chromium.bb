@@ -12,7 +12,6 @@
 namespace policy {
 namespace {
 
-const base::FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Policy");
 const base::FilePath::CharType kPolicyCache[] =
     FILE_PATH_LITERAL("Machine Level User Cloud Policy");
 const base::FilePath::CharType kKeyCache[] =
@@ -40,9 +39,8 @@ std::unique_ptr<MachineLevelUserCloudPolicyStore>
 MachineLevelUserCloudPolicyStore::Create(
     const std::string& machine_dm_token,
     const std::string& machine_client_id,
-    const base::FilePath& user_data_dir,
+    const base::FilePath& policy_dir,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  base::FilePath policy_dir = user_data_dir.Append(kPolicyDir);
   base::FilePath policy_cache_file = policy_dir.Append(kPolicyCache);
   base::FilePath key_cache_file = policy_dir.Append(kKeyCache);
   return std::make_unique<MachineLevelUserCloudPolicyStore>(
