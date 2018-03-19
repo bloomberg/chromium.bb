@@ -3495,6 +3495,8 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
   uint32_t size = 0;
 
   write_profile(cm->profile, &wb);
+
+#if !CONFIG_OPERATING_POINTS
 #if !CONFIG_SCALABILITY
   aom_wb_write_literal(&wb, 0, 4);
 #else
@@ -3504,6 +3506,20 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
     aom_wb_write_literal(&wb, 0, 4);
   }
 #endif
+#else  // CONFIG_OPERATING_POINTS
+#if !CONFIG_SCALABILITY
+  uint8_t operating_points_minus1_cnt = 0;
+#else
+  uint8_t operating_points_minus1_cnt = enhancement_layers_cnt;
+#endif
+  aom_wb_write_literal(&wb, operating_points_minus1_cnt, 5);
+  int i;
+  for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
+    aom_wb_write_literal(&wb, 0, 12);  // operating_point_idc[i]
+    aom_wb_write_literal(&wb, 0, 4);   // level[i]
+    aom_wb_write_literal(&wb, 0, 1);   // decoder_rate_model_present_flag[i]
+  }
+#endif  // CONFIG_OPERATING_POINTS
 
   write_sequence_header(cpi, &wb);
 

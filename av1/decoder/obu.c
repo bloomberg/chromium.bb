@@ -149,6 +149,22 @@ static int check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb,
 }
 #endif
 
+#if CONFIG_OPERATING_POINTS
+static int is_obu_in_current_operating_point(AV1Decoder *pbi,
+                                             ObuHeader obu_header) {
+  if (!pbi->current_operating_point) {
+    return 1;
+  }
+
+  if ((pbi->current_operating_point >> obu_header.temporal_layer_id) & 0x1 &&
+      (pbi->current_operating_point >> (obu_header.enhancement_layer_id + 8)) &
+          0x1) {
+    return 1;
+  }
+  return 0;
+}
+#endif
+
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
@@ -157,6 +173,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   uint32_t saved_bit_offset = rb->bit_offset;
 
   cm->profile = av1_read_profile(rb);
+
+#if !CONFIG_OPERATING_POINTS
 #if !CONFIG_SCALABILITY
   aom_rb_read_literal(rb, 4);  // level
 #else
@@ -166,6 +184,29 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     aom_rb_read_literal(rb, 4);  // level for each enhancement layer
   }
 #endif
+#else  // CONFIG_OPERATING_POINTS
+#if CONFIG_SCALABILITY
+  uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
+  pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
+#else
+  uint8_t operating_points_minus1_cnt = 0;
+#endif
+  int i;
+  SequenceHeader *seq_params = &cm->seq_params;
+  for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
+    seq_params->operating_point_idc[i] = aom_rb_read_literal(rb, 12);
+    seq_params->level[i] = aom_rb_read_literal(rb, 4);
+    seq_params->decoder_rate_model_param_present_flag[i] =
+        aom_rb_read_literal(rb, 1);
+    if (seq_params->decoder_rate_model_param_present_flag[i]) {
+      seq_params->decode_to_display_rate_ratio[i] = aom_rb_read_literal(rb, 12);
+      seq_params->initial_display_delay[i] = aom_rb_read_literal(rb, 24);
+      seq_params->extra_frame_buffers[i] = aom_rb_read_literal(rb, 4);
+    }
+  }
+  // This decoder supports all levels.  Choose the first operating point
+  pbi->current_operating_point = seq_params->operating_point_idc[0];
+#endif  // CONFIG_OPERATING_POINTS
 
   read_sequence_header(cm, rb);
 
@@ -445,6 +486,13 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_OBU_FRAME
       case OBU_FRAME:
 #endif  // CONFIG_OBU_FRAME
+#if CONFIG_OPERATING_POINTS
+        // don't decode obu if it's not in current operating mode
+        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
+          decoded_payload_size = payload_size;
+          break;
+        }
+#endif
         // Only decode first frame header received
         if (!frame_header_received) {
 #if CONFIG_TRAILING_BITS
@@ -486,12 +534,26 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
+#if CONFIG_OPERATING_POINTS
+        // don't decode obu if it's not in current operating mode
+        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
+          decoded_payload_size = payload_size;
+          break;
+        }
+#endif
         decoded_payload_size += read_one_tile_group_obu(
             pbi, &rb, is_first_tg_obu_received, data + obu_payload_offset,
             data + payload_size, p_data_end, &frame_decoding_finished);
         is_first_tg_obu_received = 0;
         break;
       case OBU_METADATA:
+#if CONFIG_OPERATING_POINTS
+        // don't decode obu if it's not in current operating mode
+        if (!is_obu_in_current_operating_point(pbi, obu_header)) {
+          decoded_payload_size = payload_size;
+          break;
+        }
+#endif
         decoded_payload_size = read_metadata(data, payload_size);
         break;
       case OBU_PADDING:
