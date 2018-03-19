@@ -5,7 +5,8 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 
 #include "base/strings/sys_string_conversions.h"
-#import "content/browser/renderer_host/render_widget_host_view_mac.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace content {
 

@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/mac/attributed_string_coder.h"

@@ -2205,6 +2205,10 @@ jumbo_source_set("browser") {
       "QuartzCore.framework",
       "IOSurface.framework",
     ]
+    sources += [
+      "renderer_host/render_widget_host_view_cocoa.h",
+      "renderer_host/render_widget_host_view_cocoa.mm",
+    ]
   }
 
   if (is_chromeos) {

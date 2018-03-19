@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 
 // Unlike some event APIs, Apple does not provide a way to programmatically
 // build a zoom event. To work around this, we leverage ObjectiveC's flexible

@@ -24,6 +24,7 @@
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
