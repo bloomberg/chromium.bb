@@ -7,9 +7,6 @@ specific_include_rules = {
   "display_color_manager.cc": [
     "+third_party/qcms/src/qcms.h",
   ],
-  "screen_orientation_controller_(chromeos|test_api)\.h": [
-    "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
-  ],
   "cursor_window_controller.cc": [
     "+ash/components/cursor",
   ],

@@ -83,7 +83,7 @@ class SplitViewControllerTest : public AshTestBase {
     return split_view_controller()->split_view_divider();
   }
 
-  blink::WebScreenOrientationLockType screen_orientation() {
+  OrientationLockType screen_orientation() {
     return split_view_controller()->GetCurrentScreenOrientation();
   }
 
@@ -803,7 +803,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapePrimary);
+            OrientationLockType::kLandscapePrimary);
 
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -828,7 +828,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitPrimary);
+            OrientationLockType::kPortraitPrimary);
 
   bounds_window1 = window1->GetBoundsInScreen();
   bounds_window2 = window2->GetBoundsInScreen();
@@ -846,7 +846,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapeSecondary);
+            OrientationLockType::kLandscapeSecondary);
 
   bounds_window1 = window1->GetBoundsInScreen();
   bounds_window2 = window2->GetBoundsInScreen();
@@ -864,7 +864,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitSecondary);
+            OrientationLockType::kPortraitSecondary);
   bounds_window1 = window1->GetBoundsInScreen();
   bounds_window2 = window2->GetBoundsInScreen();
   bounds_divider =
@@ -881,7 +881,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapePrimary);
+            OrientationLockType::kLandscapePrimary);
   bounds_window1 = window1->GetBoundsInScreen();
   bounds_window2 = window2->GetBoundsInScreen();
   bounds_divider =
@@ -947,7 +947,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapePrimary);
+            OrientationLockType::kLandscapePrimary);
 
   gfx::Rect display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
@@ -977,7 +977,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitPrimary);
+            OrientationLockType::kPortraitPrimary);
 
   display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
@@ -1004,7 +1004,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockLandscapeSecondary);
+            OrientationLockType::kLandscapeSecondary);
 
   display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
@@ -1033,7 +1033,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            blink::kWebScreenOrientationLockPortraitSecondary);
+            OrientationLockType::kPortraitSecondary);
 
   display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
@@ -1068,8 +1068,7 @@ TEST_F(SplitViewControllerTest,
   aura::test::TestWindowDelegate* delegate1 =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   ui::test::EventGenerator& generator(GetEventGenerator());
-  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
-            screen_orientation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary, screen_orientation());
   gfx::Rect workarea_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
 

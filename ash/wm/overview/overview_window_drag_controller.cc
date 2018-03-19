@@ -230,8 +230,8 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
 
   switch (split_view_controller_->GetCurrentScreenOrientation()) {
-    case blink::kWebScreenOrientationLockLandscapePrimary:
-    case blink::kWebScreenOrientationLockLandscapeSecondary: {
+    case OrientationLockType::kLandscapePrimary:
+    case OrientationLockType::kLandscapeSecondary: {
       // The window can be snapped if it reaches close enough to the screen
       // edge of the screen (on primary axis). The edge insets are a fixed ratio
       // of the screen plus some padding. This matches the drag indicators ui.
@@ -251,8 +251,8 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       }
       return SplitViewController::NONE;
     }
-    case blink::kWebScreenOrientationLockPortraitPrimary:
-    case blink::kWebScreenOrientationLockPortraitSecondary: {
+    case OrientationLockType::kPortraitPrimary:
+    case OrientationLockType::kPortraitSecondary: {
       const int screen_edge_inset_for_drag =
           area.height() * kHighlightScreenPrimaryAxisRatio +
           kHighlightScreenEdgePaddingDp;

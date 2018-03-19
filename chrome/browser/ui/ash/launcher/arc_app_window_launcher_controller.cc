@@ -37,26 +37,25 @@ namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 
-blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
-    blink::WebScreenOrientationLockType natural_orientation,
+ash::OrientationLockType OrientationLockFromMojom(
     arc::mojom::OrientationLock orientation_lock) {
   DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
 
   switch (orientation_lock) {
     case arc::mojom::OrientationLock::PORTRAIT:
-      return blink::kWebScreenOrientationLockPortrait;
+      return ash::OrientationLockType::kPortrait;
     case arc::mojom::OrientationLock::LANDSCAPE:
-      return blink::kWebScreenOrientationLockLandscape;
+      return ash::OrientationLockType::kLandscape;
     case arc::mojom::OrientationLock::LANDSCAPE_PRIMARY:
-      return blink::kWebScreenOrientationLockLandscapePrimary;
+      return ash::OrientationLockType::kLandscapePrimary;
     case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
-      return blink::kWebScreenOrientationLockLandscapeSecondary;
+      return ash::OrientationLockType::kLandscapeSecondary;
     case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
-      return blink::kWebScreenOrientationLockPortraitPrimary;
+      return ash::OrientationLockType::kPortraitPrimary;
     case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
-      return blink::kWebScreenOrientationLockPortraitSecondary;
+      return ash::OrientationLockType::kPortraitSecondary;
     default:
-      return blink::kWebScreenOrientationLockAny;
+      return ash::OrientationLockType::kAny;
   }
 }
 
@@ -659,13 +658,9 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
     }
   }
 
-  blink::WebScreenOrientationLockType natural_orientation =
-      ash::Shell::Get()->screen_orientation_controller()->natural_orientation();
-
   ash::Shell* shell = ash::Shell::Get();
   shell->screen_orientation_controller()->LockOrientationForWindow(
-      window,
-      BlinkOrientationLockFromMojom(natural_orientation, orientation_lock),
+      window, OrientationLockFromMojom(orientation_lock),
       lock_completion_behavior);
 }
 

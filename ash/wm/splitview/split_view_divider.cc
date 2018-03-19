@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/ash_constants.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -193,11 +194,9 @@ SplitViewDivider::~SplitViewDivider() {
 // static
 gfx::Size SplitViewDivider::GetDividerSize(
     const gfx::Rect& work_area_bounds,
-    blink::WebScreenOrientationLockType screen_orientation,
+    OrientationLockType screen_orientation,
     bool is_dragging) {
-  if (screen_orientation == blink::kWebScreenOrientationLockLandscapePrimary ||
-      screen_orientation ==
-          blink::kWebScreenOrientationLockLandscapeSecondary) {
+  if (IsLandscapeOrientation(screen_orientation)) {
     return is_dragging
                ? gfx::Size(kDividerEnlargedShortSideLength,
                            work_area_bounds.height())
@@ -213,7 +212,7 @@ gfx::Size SplitViewDivider::GetDividerSize(
 // static
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
     const gfx::Rect& work_area_bounds_in_screen,
-    blink::WebScreenOrientationLockType screen_orientation,
+    OrientationLockType screen_orientation,
     int divider_position,
     bool is_dragging) {
   const gfx::Size divider_size = GetDividerSize(
@@ -221,8 +220,8 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
   int dragging_diff =
       (kDividerEnlargedShortSideLength - kDividerShortSideLength) / 2;
   switch (screen_orientation) {
-    case blink::kWebScreenOrientationLockLandscapePrimary:
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
+    case OrientationLockType::kLandscapePrimary:
+    case OrientationLockType::kLandscapeSecondary:
       return is_dragging
                  ? gfx::Rect(work_area_bounds_in_screen.x() + divider_position -
                                  dragging_diff,
@@ -231,8 +230,8 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
                  : gfx::Rect(work_area_bounds_in_screen.x() + divider_position,
                              work_area_bounds_in_screen.y(),
                              divider_size.width(), divider_size.height());
-    case blink::kWebScreenOrientationLockPortraitPrimary:
-    case blink::kWebScreenOrientationLockPortraitSecondary:
+    case OrientationLockType::kPortraitPrimary:
+    case OrientationLockType::kPortraitSecondary:
       return is_dragging
                  ? gfx::Rect(work_area_bounds_in_screen.x(),
                              work_area_bounds_in_screen.y() + divider_position -
@@ -259,7 +258,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
   const gfx::Rect work_area_bounds_in_screen =
       controller_->GetDisplayWorkAreaBoundsInScreen(root_window);
   const int divider_position = controller_->divider_position();
-  const blink::WebScreenOrientationLockType screen_orientation =
+  const OrientationLockType screen_orientation =
       controller_->GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,
                                   screen_orientation, divider_position,

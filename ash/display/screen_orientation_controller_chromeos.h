@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -25,6 +24,22 @@ class Window;
 }
 
 namespace ash {
+
+enum class OrientationLockType {
+  kAny = 0,
+  kNatural,
+  kCurrent,
+  kPortrait,
+  kLandscape,
+  kPortraitPrimary,
+  kPortraitSecondary,
+  kLandscapePrimary,
+  kLandscapeSecondary
+};
+
+bool IsPrimaryOrientation(OrientationLockType type);
+bool IsLandscapeOrientation(OrientationLockType type);
+bool IsPortraitOrientation(OrientationLockType type);
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
@@ -60,7 +75,7 @@ class ASH_EXPORT ScreenOrientationController
   ScreenOrientationController();
   ~ScreenOrientationController() override;
 
-  blink::WebScreenOrientationLockType natural_orientation() const {
+  OrientationLockType natural_orientation() const {
     return natural_orientation_;
   };
 
@@ -71,7 +86,7 @@ class ASH_EXPORT ScreenOrientationController
   // Allows/unallows a window to lock the screen orientation.
   void LockOrientationForWindow(
       aura::Window* requesting_window,
-      blink::WebScreenOrientationLockType lock_orientation,
+      OrientationLockType lock_orientation,
       LockCompletionBehavior lock_completion_behavior);
   void UnlockOrientationForWindow(aura::Window* window);
 
@@ -94,7 +109,7 @@ class ASH_EXPORT ScreenOrientationController
   bool rotation_locked() const { return rotation_locked_; }
 
   bool user_rotation_locked() const {
-    return user_locked_orientation_ != blink::kWebScreenOrientationLockAny;
+    return user_locked_orientation_ != OrientationLockType::kAny;
   }
 
   // Trun on/off the user rotation lock. When turned on, it will lock
@@ -107,7 +122,7 @@ class ASH_EXPORT ScreenOrientationController
   void SetLockToRotation(display::Display::Rotation rotation);
 
   // Gets current screen orientation type.
-  blink::WebScreenOrientationLockType GetCurrentOrientation() const;
+  OrientationLockType GetCurrentOrientation() const;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(
@@ -135,13 +150,12 @@ class ASH_EXPORT ScreenOrientationController
 
   struct LockInfo {
     LockInfo() {}
-    LockInfo(blink::WebScreenOrientationLockType orientation,
+    LockInfo(OrientationLockType orientation,
              LockCompletionBehavior lock_completion_behavior)
         : orientation(orientation),
           lock_completion_behavior(lock_completion_behavior) {}
 
-    blink::WebScreenOrientationLockType orientation =
-        blink::kWebScreenOrientationLockAny;
+    OrientationLockType orientation = OrientationLockType::kAny;
     LockCompletionBehavior lock_completion_behavior =
         LockCompletionBehavior::None;
   };
@@ -158,7 +172,7 @@ class ASH_EXPORT ScreenOrientationController
   void SetRotationLockedInternal(bool rotation_locked);
 
   // A helper method that set locked to the given |orientation| and save it.
-  void SetLockToOrientation(blink::WebScreenOrientationLockType orientation);
+  void SetLockToOrientation(OrientationLockType orientation);
 
   // Sets the display rotation to |rotation|. Future accelerometer updates
   // should not be used to change the rotation. SetRotationLocked(false) removes
@@ -169,14 +183,12 @@ class ASH_EXPORT ScreenOrientationController
   // Sets the display rotation based on |lock_orientation|. Future accelerometer
   // updates should not be used to change the rotation. SetRotationLocked(false)
   // removes the rotation lock.
-  void LockRotationToOrientation(
-      blink::WebScreenOrientationLockType lock_orientation);
+  void LockRotationToOrientation(OrientationLockType lock_orientation);
 
   // For orientations that do not specify primary or secondary, locks to the
   // current rotation if it matches |lock_orientation|. Otherwise locks to a
   // matching rotation.
-  void LockToRotationMatchingOrientation(
-      blink::WebScreenOrientationLockType lock_orientation);
+  void LockToRotationMatchingOrientation(OrientationLockType lock_orientation);
 
   // Detect screen rotation from |lid| accelerometer and automatically rotate
   // screen.
@@ -190,8 +202,8 @@ class ASH_EXPORT ScreenOrientationController
   // window, and applies it. If there is none, rotation lock will be removed.
   void ApplyLockForActiveWindow();
 
-  // Both |blink::WebScreenOrientationLockLandscape| and
-  // |blink::WebScreenOrientationLockPortrait| allow for rotation between the
+  // Both |OrientationLockLandscape| and
+  // |OrientationLockPortrait| allow for rotation between the
   // two angles of the same screen orientation
   // (http://www.w3.org/TR/screen-orientation/). Returns true if |rotation| is
   // supported for the current |rotation_locked_orientation_|.
@@ -205,7 +217,7 @@ class ASH_EXPORT ScreenOrientationController
   void UpdateNaturalOrientationForTest();
 
   // The orientation of the display when at a rotation of 0.
-  blink::WebScreenOrientationLockType natural_orientation_;
+  OrientationLockType natural_orientation_;
 
   // True when changes being applied cause OnDisplayConfigurationChanged() to be
   // called, and for which these changes should be ignored.
@@ -215,15 +227,14 @@ class ASH_EXPORT ScreenOrientationController
   bool rotation_locked_;
 
   // The orientation to which the current |rotation_locked_| was applied.
-  blink::WebScreenOrientationLockType rotation_locked_orientation_;
+  OrientationLockType rotation_locked_orientation_;
 
   // The rotation of the display set by the user. This rotation will be
   // restored upon exiting tablet mode.
   display::Display::Rotation user_rotation_;
 
   // The orientation of the device locked by the user.
-  blink::WebScreenOrientationLockType user_locked_orientation_ =
-      blink::kWebScreenOrientationLockAny;
+  OrientationLockType user_locked_orientation_ = OrientationLockType::kAny;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.
