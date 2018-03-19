@@ -37,21 +37,22 @@ FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  const bool is_mash = Shell::GetAshConfig() == Config::MASH;
-  if (is_mash) {
-    container_ = new TrayContainer(shelf);
-    AddChildView(container_);
+  // Flag warning tray is not currently used in non-MASH environments, because
+  // mus will roll out via experiment/Finch trial and showing the tray would
+  // reveal the experiment state to users.
+  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH);
+  container_ = new TrayContainer(shelf);
+  AddChildView(container_);
 
-    button_ = views::MdTextButton::Create(this, base::string16(),
-                                          CONTEXT_LAUNCHER_BUTTON);
-    button_->SetProminent(true);
-    button_->SetBgColorOverride(gfx::kGoogleYellow300);
-    button_->SetEnabledTextColors(SK_ColorBLACK);
-    button_->SetTooltipText(base::ASCIIToUTF16(kTooltipText));
-    UpdateButton();
-    container_->AddChildView(button_);
-  }
-  SetVisible(is_mash);
+  button_ = views::MdTextButton::Create(this, base::string16(),
+                                        CONTEXT_LAUNCHER_BUTTON);
+  button_->SetProminent(true);
+  button_->SetBgColorOverride(gfx::kGoogleYellow300);
+  button_->SetEnabledTextColors(SK_ColorBLACK);
+  button_->SetTooltipText(base::ASCIIToUTF16(kTooltipText));
+  UpdateButton();
+  container_->AddChildView(button_);
+  SetVisible(true);
 }
 
 FlagWarningTray::~FlagWarningTray() = default;
