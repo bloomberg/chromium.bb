@@ -1850,10 +1850,6 @@ int main(int argc, char** argv) {
       LOG_ASSERT(base::StringToDouble(input, &media::g_rendering_fps));
       continue;
     }
-    if (it->first == "rendering_warm_up") {
-      // TODO(owenlin): Remove this after autotest stop using it.
-      continue;
-    }
     // TODO(owenlin): Remove this flag once it is not used in autotest.
     if (it->first == "disable_rendering") {
       media::g_rendering_fps = 0;
