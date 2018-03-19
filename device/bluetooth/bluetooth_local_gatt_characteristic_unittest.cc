@@ -55,7 +55,12 @@ class BluetoothLocalGattCharacteristicTest : public BluetoothGattServerTest {
 };
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValue) {
+#define MAYBE_ReadLocalCharacteristicValue ReadLocalCharacteristicValue
+#else
+#define MAYBE_ReadLocalCharacteristicValue DISABLED_ReadLocalCharacteristicValue
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       MAYBE_ReadLocalCharacteristicValue) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattCharacteristicValueReadRequest(
       device_, read_characteristic_.get(), GetReadValueCallback(Call::EXPECTED),
@@ -64,10 +69,15 @@ TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValue) {
   EXPECT_EQ(delegate_->value_to_write_, GetInteger(last_read_value_));
   EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, WriteLocalCharacteristicValue) {
+#define MAYBE_WriteLocalCharacteristicValue WriteLocalCharacteristicValue
+#else
+#define MAYBE_WriteLocalCharacteristicValue \
+  DISABLED_WriteLocalCharacteristicValue
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       MAYBE_WriteLocalCharacteristicValue) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattCharacteristicValueWriteRequest(
       device_, write_characteristic_.get(), GetValue(kValueToWrite),
@@ -76,10 +86,15 @@ TEST_F(BluetoothLocalGattCharacteristicTest, WriteLocalCharacteristicValue) {
   EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
   EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValueFail) {
+#define MAYBE_ReadLocalCharacteristicValueFail ReadLocalCharacteristicValueFail
+#else
+#define MAYBE_ReadLocalCharacteristicValueFail \
+  DISABLED_ReadLocalCharacteristicValueFail
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       MAYBE_ReadLocalCharacteristicValueFail) {
   delegate_->value_to_write_ = 0x1337;
   delegate_->should_fail_ = true;
   SimulateLocalGattCharacteristicValueReadRequest(
@@ -89,11 +104,16 @@ TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValueFail) {
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
   EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_ReadLocalCharacteristicValueWrongPermission \
+  ReadLocalCharacteristicValueWrongPermission
+#else
+#define MAYBE_ReadLocalCharacteristicValueWrongPermission \
+  DISABLED_ReadLocalCharacteristicValueWrongPermission
+#endif
 TEST_F(BluetoothLocalGattCharacteristicTest,
-       ReadLocalCharacteristicValueWrongPermission) {
+       MAYBE_ReadLocalCharacteristicValueWrongPermission) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattCharacteristicValueReadRequest(
       device_, write_characteristic_.get(),
@@ -102,11 +122,16 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
   EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_WriteLocalCharacteristicValueFail \
+  WriteLocalCharacteristicValueFail
+#else
+#define MAYBE_WriteLocalCharacteristicValueFail \
+  DISABLED_WriteLocalCharacteristicValueFail
+#endif
 TEST_F(BluetoothLocalGattCharacteristicTest,
-       WriteLocalCharacteristicValueFail) {
+       MAYBE_WriteLocalCharacteristicValueFail) {
   const uint64_t kValueToWrite = 0x7331ul;
   delegate_->should_fail_ = true;
   SimulateLocalGattCharacteristicValueWriteRequest(
@@ -116,11 +141,16 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
   EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_WriteLocalCharacteristicValueWrongPermission \
+  WriteLocalCharacteristicValueWrongPermission
+#else
+#define MAYBE_WriteLocalCharacteristicValueWrongPermission \
+  DISABLED_WriteLocalCharacteristicValueWrongPermission
+#endif
 TEST_F(BluetoothLocalGattCharacteristicTest,
-       WriteLocalCharacteristicValueWrongPermission) {
+       MAYBE_WriteLocalCharacteristicValueWrongPermission) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattCharacteristicValueWriteRequest(
       device_, read_characteristic_.get(), GetValue(kValueToWrite),
@@ -129,10 +159,13 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
   EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, StartAndStopNotifications) {
+#define MAYBE_StartAndStopNotifications StartAndStopNotifications
+#else
+#define MAYBE_StartAndStopNotifications DISABLED_StartAndStopNotifications
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest, MAYBE_StartAndStopNotifications) {
   EXPECT_FALSE(SimulateLocalGattCharacteristicNotificationsRequest(
       read_characteristic_.get(), true));
   EXPECT_FALSE(delegate_->NotificationStatusForCharacteristic(
@@ -153,10 +186,13 @@ TEST_F(BluetoothLocalGattCharacteristicTest, StartAndStopNotifications) {
   EXPECT_FALSE(delegate_->NotificationStatusForCharacteristic(
       notify_characteristic_.get()));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, SendNotifications) {
+#define MAYBE_SendNotifications SendNotifications
+#else
+#define MAYBE_SendNotifications DISABLED_SendNotifications
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest, MAYBE_SendNotifications) {
   const uint64_t kNotifyValue = 0x7331ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS,
             notify_characteristic_->NotifyValueChanged(
@@ -171,10 +207,15 @@ TEST_F(BluetoothLocalGattCharacteristicTest, SendNotifications) {
   EXPECT_EQ(kIndicateValue, GetInteger(LastNotifactionValueForCharacteristic(
                                 indicate_characteristic_.get())));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattCharacteristicTest, SendNotificationsWrongProperties) {
+#define MAYBE_SendNotificationsWrongProperties SendNotificationsWrongProperties
+#else
+#define MAYBE_SendNotificationsWrongProperties \
+  DISABLED_SendNotificationsWrongProperties
+#endif
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       MAYBE_SendNotificationsWrongProperties) {
   const uint64_t kNewValue = 0x3334ul;
   EXPECT_EQ(BluetoothLocalGattCharacteristic::NOTIFY_PROPERTY_NOT_SET,
             read_characteristic_->NotifyValueChanged(
@@ -202,11 +243,16 @@ TEST_F(BluetoothLocalGattCharacteristicTest, SendNotificationsWrongProperties) {
   EXPECT_NE(kIndicateValue, GetInteger(LastNotifactionValueForCharacteristic(
                                 indicate_characteristic_.get())));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_SendNotificationsServiceNotRegistered \
+  SendNotificationsServiceNotRegistered
+#else
+#define MAYBE_SendNotificationsServiceNotRegistered \
+  DISABLED_SendNotificationsServiceNotRegistered
+#endif
 TEST_F(BluetoothLocalGattCharacteristicTest,
-       SendNotificationsServiceNotRegistered) {
+       MAYBE_SendNotificationsServiceNotRegistered) {
   service_->Unregister(GetCallback(Call::EXPECTED),
                        GetGattErrorCallback(Call::NOT_EXPECTED));
   const uint64_t kNotifyValue = 0x7331ul;
@@ -216,6 +262,5 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
   EXPECT_NE(kNotifyValue, GetInteger(LastNotifactionValueForCharacteristic(
                               notify_characteristic_.get())));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 }  // namespace device

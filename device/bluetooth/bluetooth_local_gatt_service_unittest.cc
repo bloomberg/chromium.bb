@@ -41,7 +41,11 @@ class BluetoothLocalGattServiceTest : public BluetoothGattServerTest {
 };
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattServiceTest, RegisterMultipleServices) {
+#define MAYBE_RegisterMultipleServices RegisterMultipleServices
+#else
+#define MAYBE_RegisterMultipleServices DISABLED_RegisterMultipleServices
+#endif
+TEST_F(BluetoothLocalGattServiceTest, MAYBE_RegisterMultipleServices) {
   base::WeakPtr<BluetoothLocalGattService> service2 =
       BluetoothLocalGattService::Create(
           adapter_.get(), BluetoothUUID(kTestUUIDGenericAttribute), true,
@@ -85,10 +89,13 @@ TEST_F(BluetoothLocalGattServiceTest, RegisterMultipleServices) {
                        GetGattErrorCallback(Call::NOT_EXPECTED));
   EXPECT_TRUE(ServiceSetsEqual(RegisteredGattServices(), {}));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-TEST_F(BluetoothLocalGattServiceTest, DeleteServices) {
+#define MAYBE_DeleteServices DeleteServices
+#else
+#define MAYBE_DeleteServices DISABLED_DeleteServices
+#endif
+TEST_F(BluetoothLocalGattServiceTest, MAYBE_DeleteServices) {
   base::WeakPtr<BluetoothLocalGattService> service2 =
       BluetoothLocalGattService::Create(
           adapter_.get(), BluetoothUUID(kTestUUIDGenericAttribute), true,
@@ -128,6 +135,5 @@ TEST_F(BluetoothLocalGattServiceTest, DeleteServices) {
   service4->Delete();
   EXPECT_TRUE(ServiceSetsEqual(RegisteredGattServices(), {}));
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 }  // namespace device
