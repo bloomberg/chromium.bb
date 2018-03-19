@@ -872,7 +872,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     // Check if |url| is allowed to run JavaScript. If not, client hints are not
     // attached to the requests that initiate on the render side.
-    if (!AllowScriptFromSource(request.Url())) {
+    if (!AllowScriptFromSourceWithoutNotifying(request.Url())) {
       return;
     }
 
@@ -980,11 +980,20 @@ MHTMLArchive* FrameFetchContext::Archive() const {
 }
 
 bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
+  if (AllowScriptFromSourceWithoutNotifying(url))
+    return true;
+  ContentSettingsClient* settings_client = GetContentSettingsClient();
+  if (settings_client)
+    settings_client->DidNotAllowScript();
+  return false;
+}
+
+bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
+    const KURL& url) const {
   ContentSettingsClient* settings_client = GetContentSettingsClient();
   Settings* settings = GetSettings();
   if (settings_client && !settings_client->AllowScriptFromSource(
                              !settings || settings->GetScriptEnabled(), url)) {
-    settings_client->DidNotAllowScript();
     return false;
   }
   return true;
@@ -1233,7 +1242,7 @@ void FrameFetchContext::ParseAndPersistClientHints(
   if (persist_duration.InSeconds() <= 0)
     return;
 
-  if (!AllowScriptFromSource(response.Url())) {
+  if (!AllowScriptFromSourceWithoutNotifying(response.Url())) {
     // Do not persist client hint preferences if the JavaScript is disabled.
     return;
   }

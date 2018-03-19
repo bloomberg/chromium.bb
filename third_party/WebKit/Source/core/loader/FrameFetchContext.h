@@ -240,6 +240,14 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void ParseAndPersistClientHints(const ResourceResponse&);
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
 
+  // Returns true if execution of scripts from the url are allowed. Compared to
+  // AllowScriptFromSource(), this method does not generate any
+  // notification to the |ContentSettingsClient| that the execution of the
+  // script was blocked. This method should be called only when there is a need
+  // to check the settings, and where blocked setting doesn't really imply that
+  // JavaScript was blocked from being executed.
+  bool AllowScriptFromSourceWithoutNotifying(const KURL&) const;
+
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
 

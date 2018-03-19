@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -168,6 +169,18 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   void SetClientHintExpectationsOnSubresources(bool expect_client_hints) {
     expect_client_hints_on_subresources_ = expect_client_hints;
+  }
+
+  // Verify that the user is not notified that cookies or JavaScript were
+  // blocked on the webpage due to the checks done by client hints.
+  void VerifyContentSettingsNotNotified() const {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                     ->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+
+    EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                     ->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   }
 
   const GURL& accept_ch_with_lifetime_http_local_url() const {
@@ -594,6 +607,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
+  VerifyContentSettingsNotNotified();
 
   // Allow cookies.
   cookie_settings_->SetCookieSetting(accept_ch_without_lifetime_url(),
@@ -648,6 +662,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
+  VerifyContentSettingsNotNotified();
 
   // Allow the cookies: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -694,6 +709,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
+  VerifyContentSettingsNotNotified();
 
   // Allow the JavaScript: Client hint preferences should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -748,6 +764,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
+  VerifyContentSettingsNotNotified();
 
   // Allow the Javascript: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -813,6 +830,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
+  VerifyContentSettingsNotNotified();
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -859,6 +877,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // Client hints are not attached to third party subresources even though
   // cookies are allowed only for the first party origin.
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
+  VerifyContentSettingsNotNotified();
 
   // Allow cookies.
   cookie_settings_->SetCookieSetting(accept_ch_without_lifetime_img_localhost(),
