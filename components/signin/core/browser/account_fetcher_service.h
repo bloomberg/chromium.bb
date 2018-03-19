@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "ui/gfx/image/image.h"
 
 class AccountInfoFetcher;
 class AccountTrackerService;
@@ -24,6 +24,7 @@ class OAuth2TokenService;
 class SigninClient;
 
 namespace image_fetcher {
+struct RequestMetadata;
 class ImageDecoder;
 class ImageFetcherImpl;
 }  // namespace image_fetcher
@@ -40,8 +41,7 @@ class PrefRegistrySyncable;
 // to child account info fetching.
 
 class AccountFetcherService : public KeyedService,
-                              public OAuth2TokenService::Observer,
-                              public image_fetcher::ImageFetcherDelegate {
+                              public OAuth2TokenService::Observer {
  public:
   // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
@@ -125,12 +125,13 @@ class AccountFetcherService : public KeyedService,
   // Called in |OnUserInfoFetchSuccess| after the account info has been fetched.
   void FetchAccountImage(const std::string& account_id);
 
-  // image_fetcher::ImageFetcherDelegate:
-  void OnImageFetched(const std::string& id, const gfx::Image& image) override;
+  void OnImageFetched(const std::string& id,
+                      const gfx::Image& image,
+                      const image_fetcher::RequestMetadata& image_metadata);
 
-  AccountTrackerService* account_tracker_service_;  // Not owned.
-  OAuth2TokenService* token_service_;  // Not owned.
-  SigninClient* signin_client_;  // Not owned.
+  AccountTrackerService* account_tracker_service_;           // Not owned.
+  OAuth2TokenService* token_service_;                        // Not owned.
+  SigninClient* signin_client_;                              // Not owned.
   invalidation::InvalidationService* invalidation_service_;  // Not owned.
   bool network_fetches_enabled_;
   bool profile_loaded_;

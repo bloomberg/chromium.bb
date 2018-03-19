@@ -417,6 +417,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void NotifyFetchWithLoadingIndicatorStarted();
   void NotifyFetchWithLoadingIndicatorFailedOrTimeouted();
 
+  GURL GetImageURLToFetch(const ContentSuggestion::ID& suggestion_id) const;
+
   State state_;
 
   PrefService* pref_service_;

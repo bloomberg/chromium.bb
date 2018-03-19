@@ -50,6 +50,7 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
   if (image_url_iterator != image_url_by_id_.end()) {
     GURL image_url = image_url_iterator->second;
     image_fetcher_->FetchSuggestionImage(suggestion_id, image_url,
+                                         ImageDataFetchedCallback(),
                                          std::move(callback));
   } else {
     DVLOG(1) << "FetchContextualSuggestionImage unknown image"

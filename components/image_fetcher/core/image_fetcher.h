@@ -11,14 +11,13 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace gfx {
 class Image;
 class Size;
-}
+}  // namespace gfx
 
 namespace image_fetcher {
 
@@ -34,13 +33,18 @@ class ImageFetcher {
   virtual ~ImageFetcher() {}
 
   using ImageFetcherCallback =
-      base::Callback<void(const std::string& id,
-                          const gfx::Image& image,
-                          const RequestMetadata& metadata)>;
+      base::OnceCallback<void(const std::string& id,
+                              const gfx::Image& image,
+                              const RequestMetadata& metadata)>;
+
+  // Callback with the |image_data|. If an error prevented a http response,
+  // |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
+  // TODO(treib): Use RefCountedBytes to avoid copying.
+  using ImageDataFetcherCallback =
+      base::OnceCallback<void(const std::string& image_data,
+                              const RequestMetadata& request_metadata)>;
 
   using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
-
-  virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) = 0;
 
   // Sets a service name against which to track data usage.
   virtual void SetDataUseServiceName(
@@ -60,13 +64,40 @@ class ImageFetcher {
   // size.
   virtual void SetDesiredImageFrameSize(const gfx::Size& size) = 0;
 
-  // An empty gfx::Image will be returned to the callback in case the image
-  // could not be fetched.
-  virtual void StartOrQueueNetworkRequest(
+  // Fetch an image and optionally decode it. |image_data_callback| is called
+  // when the image fetch completes, but |image_data_callback| may be empty.
+  // |image_callback| is called when the image is finished decoding.
+  // |image_callback| may be empty if image decoding is not required. If a
+  // callback is provided, it will be called exactly once. On failure, an empty
+  // string/gfx::Image is returned.
+  virtual void FetchImageAndData(
       const std::string& id,
       const GURL& image_url,
-      const ImageFetcherCallback& callback,
+      ImageDataFetcherCallback image_data_callback,
+      ImageFetcherCallback image_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+
+  // Fetch an image and decode it. An empty gfx::Image will be returned to the
+  // callback in case the image could not be fetched. This is the same as
+  // calling FetchImageAndData without an |image_data_callback|.
+  void FetchImage(const std::string& id,
+                  const GURL& image_url,
+                  ImageFetcherCallback callback,
+                  const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    FetchImageAndData(id, image_url, ImageDataFetcherCallback(),
+                      std::move(callback), traffic_annotation);
+  }
+
+  // Just fetch the image data, do not decode. This is the same as
+  // calling FetchImageAndData without an |image_callback|.
+  void FetchImageData(
+      const std::string& id,
+      const GURL& image_url,
+      ImageDataFetcherCallback callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    FetchImageAndData(id, image_url, std::move(callback),
+                      ImageFetcherCallback(), traffic_annotation);
+  }
 
   virtual ImageDecoder* GetImageDecoder() = 0;
 

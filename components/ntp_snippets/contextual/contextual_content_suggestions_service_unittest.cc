@@ -83,6 +83,7 @@ class FakeCachedImageFetcher : public CachedImageFetcher {
 
   void FetchSuggestionImage(const ContentSuggestion::ID&,
                             const GURL& image_url,
+                            ImageDataFetchedCallback image_data_callback,
                             ImageFetchedCallback callback) override {
     gfx::Image image;
     if (image_url.is_valid()) {

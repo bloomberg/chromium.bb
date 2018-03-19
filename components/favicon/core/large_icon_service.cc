@@ -334,8 +334,7 @@ LargeIconWorker::LargeIconWorker(
       fallback_icon_style_(
           std::make_unique<favicon_base::FallbackIconStyle>()) {}
 
-LargeIconWorker::~LargeIconWorker() {
-}
+LargeIconWorker::~LargeIconWorker() {}
 
 void LargeIconWorker::OnIconLookupComplete(
     const GURL& page_url,
@@ -458,8 +457,7 @@ LargeIconService::LargeIconService(
   // a DCHECK(image_fetcher_) here.
 }
 
-LargeIconService::~LargeIconService() {
-}
+LargeIconService::~LargeIconService() {}
 
 base::CancelableTaskTracker::TaskId
 LargeIconService::GetLargeIconOrFallbackStyle(
@@ -603,10 +601,10 @@ void LargeIconService::OnCanSetOnDemandFaviconComplete(
 
   image_fetcher_->SetDataUseServiceName(
       data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
-  image_fetcher_->StartOrQueueNetworkRequest(
+  image_fetcher_->FetchImage(
       server_request_url.spec(), server_request_url,
-      base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
-                 page_url, callback),
+      base::BindRepeating(&OnFetchIconFromGoogleServerComplete,
+                          favicon_service_, page_url, callback),
       traffic_annotation);
 }
 

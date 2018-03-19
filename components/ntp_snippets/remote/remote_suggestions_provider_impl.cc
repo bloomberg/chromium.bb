@@ -418,8 +418,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
   // database is done loading.
   database_load_start_ = base::TimeTicks::Now();
   database_->LoadSnippets(
-      base::Bind(&RemoteSuggestionsProviderImpl::OnDatabaseLoaded,
-                 base::Unretained(this)));
+      base::BindOnce(&RemoteSuggestionsProviderImpl::OnDatabaseLoaded,
+                     base::Unretained(this)));
 }
 
 RemoteSuggestionsProviderImpl::~RemoteSuggestionsProviderImpl() {
@@ -442,7 +442,7 @@ void RemoteSuggestionsProviderImpl::ReloadSuggestions() {
   if (!remote_suggestions_scheduler_->AcquireQuotaForInteractiveFetch()) {
     return;
   }
-  auto callback = base::Bind(
+  auto callback = base::BindOnce(
       [](RemoteSuggestionsScheduler* scheduler, Status status_code) {
         scheduler->OnInteractiveFetchFinished(status_code);
       },
@@ -1423,15 +1423,18 @@ void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
   StoreCategoriesToPrefs();
 }
 
+GURL RemoteSuggestionsProviderImpl::GetImageURLToFetch(
+    const ContentSuggestion::ID& suggestion_id) const {
+  if (!base::ContainsKey(category_contents_, suggestion_id.category())) {
+    return GURL();
+  }
+  return FindSuggestionImageUrl(suggestion_id);
+}
+
 void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     ImageFetchedCallback callback) {
-  if (!base::ContainsKey(category_contents_, suggestion_id.category())) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
-    return;
-  }
-  GURL image_url = FindSuggestionImageUrl(suggestion_id);
+  GURL image_url = GetImageURLToFetch(suggestion_id);
   if (image_url.is_empty()) {
     // As we don't know the corresponding suggestion anymore, we don't expect to
     // find it in the database (and also can't fetch it remotely). Cut the
@@ -1441,6 +1444,7 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
     return;
   }
   image_fetcher_.FetchSuggestionImage(suggestion_id, image_url,
+                                      ImageDataFetchedCallback(),
                                       std::move(callback));
 }
 

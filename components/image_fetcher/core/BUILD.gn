@@ -8,7 +8,6 @@ static_library("core") {
     "image_data_fetcher.h",
     "image_decoder.h",
     "image_fetcher.h",
-    "image_fetcher_delegate.h",
     "image_fetcher_impl.cc",
     "image_fetcher_impl.h",
     "request_metadata.cc",
@@ -24,6 +23,19 @@ static_library("core") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "mock_image_fetcher.cc",
+    "mock_image_fetcher.h",
+  ]
+
+  deps = [
+    ":core",
+    "//testing/gmock",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -32,6 +44,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":core",
+    ":test_support",
     "//net",
     "//net:test_support",
     "//testing/gmock",

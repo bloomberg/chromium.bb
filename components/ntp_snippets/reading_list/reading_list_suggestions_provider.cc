@@ -29,7 +29,7 @@ const int kMaxEntries = 3;
 bool CompareEntries(const ReadingListEntry* lhs, const ReadingListEntry* rhs) {
   return lhs->UpdateTime() > rhs->UpdateTime();
 }
-}
+}  // namespace
 
 ReadingListSuggestionsProvider::ReadingListSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,

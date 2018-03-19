@@ -29,6 +29,9 @@ using FetchDoneCallback =
 // ContentSuggestionsProvider.
 using ImageFetchedCallback = base::OnceCallback<void(const gfx::Image&)>;
 
+using ImageDataFetchedCallback =
+    base::OnceCallback<void(const std::string& image_data)>;
+
 // Returns the list of dismissed suggestions when invoked. Currently only used
 // for debugging methods to check the internal state of a provider.
 using DismissedSuggestionsCallback = base::OnceCallback<void(

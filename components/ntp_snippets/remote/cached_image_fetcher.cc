@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
-
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -14,105 +15,9 @@
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
-
-CachedImageFetcher::CachedImageFetcher(
-    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-    PrefService* pref_service,
-    RemoteSuggestionsDatabase* database)
-    : image_fetcher_(std::move(image_fetcher)),
-      database_(database),
-      thumbnail_requests_throttler_(
-          pref_service,
-          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
-  // |image_fetcher_| can be null in tests.
-  if (image_fetcher_) {
-    image_fetcher_->SetImageFetcherDelegate(this);
-    image_fetcher_->SetDataUseServiceName(
-        data_use_measurement::DataUseUserData::NTP_SNIPPETS_THUMBNAILS);
-  }
-}
-
-CachedImageFetcher::~CachedImageFetcher() {}
-
-void CachedImageFetcher::FetchSuggestionImage(
-    const ContentSuggestion::ID& suggestion_id,
-    const GURL& url,
-    ImageFetchedCallback callback) {
-  database_->LoadImage(
-      suggestion_id.id_within_category(),
-      base::Bind(&CachedImageFetcher::OnImageFetchedFromDatabase,
-                 base::Unretained(this), base::Passed(std::move(callback)),
-                 suggestion_id, url));
-}
-
-// This function gets only called for caching the image data received from the
-// network. The actual decoding is done in OnImageDecodedFromDatabase().
-void CachedImageFetcher::OnImageDataFetched(
-    const std::string& id_within_category,
-    const std::string& image_data) {
-  if (image_data.empty()) {
-    return;
-  }
-  database_->SaveImage(id_within_category, image_data);
-}
-
-void CachedImageFetcher::OnImageDecodingDone(
-    ImageFetchedCallback callback,
-    const std::string& id_within_category,
-    const gfx::Image& image,
-    const image_fetcher::RequestMetadata& metadata) {
-  std::move(callback).Run(image);
-}
-
-void CachedImageFetcher::OnImageFetchedFromDatabase(
-    ImageFetchedCallback callback,
-    const ContentSuggestion::ID& suggestion_id,
-    const GURL& url,
-    std::string data) {  // SnippetImageCallback requires by-value.
-  // The image decoder is null in tests.
-  if (image_fetcher_->GetImageDecoder() && !data.empty()) {
-    image_fetcher_->GetImageDecoder()->DecodeImage(
-        data,
-        // We're not dealing with multi-frame images.
-        /*desired_image_frame_size=*/gfx::Size(),
-        base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
-                   base::Unretained(this), base::Passed(std::move(callback)),
-                   suggestion_id, url));
-    return;
-  }
-  // Fetching from the DB failed; start a network fetch.
-  FetchImageFromNetwork(suggestion_id, url, std::move(callback));
-}
-
-void CachedImageFetcher::OnImageDecodedFromDatabase(
-    ImageFetchedCallback callback,
-    const ContentSuggestion::ID& suggestion_id,
-    const GURL& url,
-    const gfx::Image& image) {
-  if (!image.IsEmpty()) {
-    std::move(callback).Run(image);
-    return;
-  }
-  // If decoding the image failed, delete the DB entry.
-  database_->DeleteImage(suggestion_id.id_within_category());
-  FetchImageFromNetwork(suggestion_id, url, std::move(callback));
-}
-
-void CachedImageFetcher::FetchImageFromNetwork(
-    const ContentSuggestion::ID& suggestion_id,
-    const GURL& url,
-    ImageFetchedCallback callback) {
-  if (url.is_empty() || !thumbnail_requests_throttler_.DemandQuotaForRequest(
-                            /*interactive_request=*/true)) {
-    // Return an empty image. Directly, this is never synchronous with the
-    // original FetchSuggestionImage() call - an asynchronous database query has
-    // happened in the meantime.
-    std::move(callback).Run(gfx::Image());
-    return;
-  }
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("remote_suggestions_provider", R"(
+namespace {
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("remote_suggestions_provider", R"(
         semantics {
           sender: "Content Suggestion Thumbnail Fetch"
           description:
@@ -134,11 +39,135 @@ void CachedImageFetcher::FetchImageFromNetwork(
           }
         }
       })");
-  image_fetcher_->StartOrQueueNetworkRequest(
+}  // namespace
+
+CachedImageFetcher::CachedImageFetcher(
+    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+    PrefService* pref_service,
+    RemoteSuggestionsDatabase* database)
+    : image_fetcher_(std::move(image_fetcher)),
+      database_(database),
+      thumbnail_requests_throttler_(
+          pref_service,
+          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
+  // |image_fetcher_| can be null in tests.
+  if (image_fetcher_) {
+    image_fetcher_->SetDataUseServiceName(
+        data_use_measurement::DataUseUserData::NTP_SNIPPETS_THUMBNAILS);
+  }
+}
+
+CachedImageFetcher::~CachedImageFetcher() {}
+
+void CachedImageFetcher::FetchSuggestionImage(
+    const ContentSuggestion::ID& suggestion_id,
+    const GURL& url,
+    ImageDataFetchedCallback image_data_callback,
+    ImageFetchedCallback image_callback) {
+  database_->LoadImage(
+      suggestion_id.id_within_category(),
+      base::BindOnce(&CachedImageFetcher::OnImageFetchedFromDatabase,
+                     base::Unretained(this), std::move(image_data_callback),
+                     std::move(image_callback), suggestion_id, url));
+}
+
+void CachedImageFetcher::OnImageDecodingDone(
+    ImageFetchedCallback callback,
+    const std::string& id_within_category,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
+  std::move(callback).Run(image);
+}
+
+void CachedImageFetcher::OnImageFetchedFromDatabase(
+    ImageDataFetchedCallback image_data_callback,
+    ImageFetchedCallback image_callback,
+    const ContentSuggestion::ID& suggestion_id,
+    const GURL& url,
+    std::string data) {  // SnippetImageCallback requires by-value.
+  if (data.empty()) {
+    // Fetching from the DB failed; start a network fetch.
+    FetchImageFromNetwork(suggestion_id, url, std::move(image_data_callback),
+                          std::move(image_callback));
+    return;
+  }
+
+  if (image_data_callback) {
+    std::move(image_data_callback).Run(data);
+  }
+
+  if (image_callback) {
+    image_fetcher_->GetImageDecoder()->DecodeImage(
+        data,
+        // We're not dealing with multi-frame images.
+        /*desired_image_frame_size=*/gfx::Size(),
+        base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
+                   base::Unretained(this),
+                   base::Passed(std::move(image_callback)), suggestion_id,
+                   url));
+  }
+}
+
+void CachedImageFetcher::OnImageDecodedFromDatabase(
+    ImageFetchedCallback callback,
+    const ContentSuggestion::ID& suggestion_id,
+    const GURL& url,
+    const gfx::Image& image) {
+  if (!image.IsEmpty()) {
+    std::move(callback).Run(image);
+    return;
+  }
+  // If decoding the image failed, delete the DB entry.
+  database_->DeleteImage(suggestion_id.id_within_category());
+  FetchImageFromNetwork(suggestion_id, url, ImageDataFetchedCallback(),
+                        std::move(callback));
+}
+
+void CachedImageFetcher::FetchImageFromNetwork(
+    const ContentSuggestion::ID& suggestion_id,
+    const GURL& url,
+    ImageDataFetchedCallback image_data_callback,
+    ImageFetchedCallback image_callback) {
+  if (url.is_empty() || !thumbnail_requests_throttler_.DemandQuotaForRequest(
+                            /*interactive_request=*/true)) {
+    // Return an empty image. Directly, this is never synchronous with the
+    // original FetchSuggestionImage() call - an asynchronous database query has
+    // happened in the meantime.
+    if (image_data_callback) {
+      std::move(image_data_callback).Run(std::string());
+    }
+    if (image_callback) {
+      std::move(image_callback).Run(gfx::Image());
+    }
+    return;
+  }
+  // Image decoding callback only set when requested.
+  image_fetcher::ImageFetcher::ImageFetcherCallback decode_callback;
+  if (image_callback) {
+    decode_callback = base::BindOnce(&CachedImageFetcher::OnImageDecodingDone,
+                                     base::Unretained(this),
+                                     base::Passed(std::move(image_callback)));
+  }
+
+  image_fetcher_->FetchImageAndData(
       suggestion_id.id_within_category(), url,
-      base::Bind(&CachedImageFetcher::OnImageDecodingDone,
-                 base::Unretained(this), base::Passed(std::move(callback))),
-      traffic_annotation);
+      base::BindOnce(&CachedImageFetcher::SaveImageAndInvokeDataCallback,
+                     base::Unretained(this), suggestion_id.id_within_category(),
+                     std::move(image_data_callback)),
+      std::move(decode_callback), kTrafficAnnotation);
+}
+
+void CachedImageFetcher::SaveImageAndInvokeDataCallback(
+    const std::string& id_within_category,
+    ImageDataFetchedCallback callback,
+    const std::string& image_data,
+    const image_fetcher::RequestMetadata& request_metadata) {
+  if (!image_data.empty()) {
+    database_->SaveImage(id_within_category, image_data);
+  }
+  if (callback) {
+    std::move(callback).Run(image_data);
+  }
 }
 
 }  // namespace ntp_snippets

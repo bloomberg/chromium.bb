@@ -137,7 +137,7 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
-  image_fetcher_->StartOrQueueNetworkRequest(
+  image_fetcher_->FetchImage(
       std::string(), IconURL(site),
       base::Bind(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
                  base::Unretained(this), site,
