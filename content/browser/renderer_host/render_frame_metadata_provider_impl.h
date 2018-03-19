@@ -23,7 +23,7 @@ class FrameTokenMessageQueue;
 // notified of all frame submissions.
 //
 // All RenderFrameMetadataProvider::Observer will be notified.
-class RenderFrameMetadataProviderImpl
+class CONTENT_EXPORT RenderFrameMetadataProviderImpl
     : public RenderFrameMetadataProvider,
       public mojom::RenderFrameMetadataObserverClient {
  public:
@@ -44,12 +44,18 @@ class RenderFrameMetadataProviderImpl
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() const override;
 
  private:
+  friend class FakeRenderWidgetHostViewAura;
+
   // Paired with the mojom::RenderFrameMetadataObserverClient overrides, these
   // methods are enqueued in |frame_token_message_queue_|. They are invoked when
   // the browser process receives their associated frame tokens. These then
   // notify any |observers_|.
   void OnFrameTokenRenderFrameMetadataChanged(cc::RenderFrameMetadata metadata);
   void OnFrameTokenFrameSubmissionForTesting();
+
+  // Set |last_render_frame_metadata_| to the given |metadata| for testing
+  // purpose.
+  void SetLastRenderFrameMetadataForTest(cc::RenderFrameMetadata metadata);
 
   // mojom::RenderFrameMetadataObserverClient:
   void OnRenderFrameMetadataChanged(

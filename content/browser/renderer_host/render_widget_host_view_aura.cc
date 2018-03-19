@@ -878,12 +878,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   DCHECK(delegated_frame_host_);
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
-  // Override the background color to the current compositor background.
-  // This allows us to, when navigating to a new page, transfer this color to
-  // that page. This allows us to pass this background color to new views on
-  // navigation.
-  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
-
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   if (IsUseZoomForDSFEnabled()) {
     // With zoom-for-DSF Blink pixel coordinates are used and zoom is used to
@@ -1780,6 +1774,16 @@ void RenderWidgetHostViewAura::OnHostMovedInPixels(
                "new_origin_in_pixels", new_origin_in_pixels.ToString());
 
   UpdateScreenInfo(window_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, RenderFrameMetadataProvider::Observer
+// implementation:
+void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
+  UpdateBackgroundColorFromRenderer(host()
+                                        ->render_frame_metadata_provider()
+                                        ->LastRenderFrameMetadata()
+                                        .root_background_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

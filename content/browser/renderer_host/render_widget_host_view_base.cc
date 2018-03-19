@@ -51,7 +51,9 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
           features::kTouchpadAndWheelScrollLatching)),
       web_contents_accessibility_(nullptr),
       renderer_frame_number_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  host_->render_frame_metadata_provider()->AddObserver(this);
+}
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);
@@ -67,6 +69,8 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   // so that the |text_input_manager_| will free its state.
   if (text_input_manager_)
     text_input_manager_->Unregister(this);
+  if (host_)
+    host_->render_frame_metadata_provider()->RemoveObserver(this);
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
@@ -91,6 +95,10 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
 bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
   return false;
 }
+
+void RenderWidgetHostViewBase::OnRenderFrameMetadataChanged() {}
+
+void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
 
 void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
   SetBackgroundColor(SK_ColorWHITE);
@@ -468,7 +476,10 @@ bool RenderWidgetHostViewBase::HasSize() const {
 }
 
 void RenderWidgetHostViewBase::Destroy() {
-  host_ = nullptr;
+  if (host_) {
+    host_->render_frame_metadata_provider()->RemoveObserver(this);
+    host_ = nullptr;
+  }
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
