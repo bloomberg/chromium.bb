@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace ui {
@@ -35,7 +36,8 @@ class COMPOSITOR_EXPORT LayerDelegate {
   // the property was set directly or by an animation. This will be called
   // before the first frame of an animation is rendered and when the animation
   // ends, but not necessarily at every frame of the animation.
-  virtual void OnLayerTransformed(PropertyChangeReason reason);
+  virtual void OnLayerTransformed(const gfx::Transform& old_transform,
+                                  PropertyChangeReason reason);
   virtual void OnLayerOpacityChanged(PropertyChangeReason reason);
 
  protected:

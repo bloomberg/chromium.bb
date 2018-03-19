@@ -531,7 +531,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnLayerBoundsChanged(const gfx::Rect& old_bounds,
                             ui::PropertyChangeReason reason) override;
-  void OnLayerTransformed(ui::PropertyChangeReason reason) override;
+  void OnLayerTransformed(const gfx::Transform& old_transform,
+                          ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
 
   // Overridden from ui::EventTarget:
