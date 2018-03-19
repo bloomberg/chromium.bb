@@ -275,6 +275,25 @@ TEST_F(SuggestionsServiceTest, IgnoresNoopSyncChange) {
   EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
 }
 
+TEST_F(SuggestionsServiceTest, PersistentAuthErrorState) {
+  // Put some suggestions in.
+  suggestions_store()->StoreSuggestions(CreateSuggestionsProfile());
+
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR);
+  sync_service()->set_auth_error(std::move(error));
+  // An no-op change should not result in a suggestions refresh.
+  static_cast<SyncServiceObserver*>(suggestions_service())
+      ->OnStateChanged(sync_service());
+
+  // Wait for eventual (but unexpected) network requests.
+  task_runner()->RunUntilIdle();
+  EXPECT_FALSE(suggestions_service()->HasPendingRequestForTesting());
+
+  SuggestionsProfile empty_suggestions;
+  EXPECT_FALSE(suggestions_store()->LoadSuggestions(&empty_suggestions));
+}
+
 TEST_F(SuggestionsServiceTest, IgnoresUninterestingSyncChange) {
   base::MockCallback<SuggestionsService::ResponseCallback> callback;
   EXPECT_CALL(callback, Run(_)).Times(0);

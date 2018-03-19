@@ -311,7 +311,8 @@ GURL SuggestionsServiceImpl::BuildSuggestionsBlacklistClearURL() {
 SuggestionsServiceImpl::SyncState SuggestionsServiceImpl::ComputeSyncState()
     const {
   if (!sync_service_ || !sync_service_->CanSyncStart() ||
-      sync_service_->IsLocalSyncEnabled()) {
+      sync_service_->IsLocalSyncEnabled() ||
+      sync_service_->GetAuthError().IsPersistentError()) {
     return SYNC_OR_HISTORY_SYNC_DISABLED;
   }
   if (!sync_service_->IsSyncActive() || !sync_service_->ConfigurationDone()) {
