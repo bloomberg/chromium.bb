@@ -28,6 +28,7 @@ class ExecutionContext;
 class ScriptState;
 class WorkerClassicScriptLoader;
 class WorkerClients;
+class WorkerModuleFetchCoordinator;
 struct GlobalScopeCreationParams;
 
 // Implementation of the Worker interface defined in the WebWorker HTML spec:
@@ -93,6 +94,8 @@ class CORE_EXPORT DedicatedWorker final
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
   scoped_refptr<WorkerClassicScriptLoader> classic_script_loader_;
+
+  Member<WorkerModuleFetchCoordinator> module_fetch_coordinator_;
 };
 
 }  // namespace blink

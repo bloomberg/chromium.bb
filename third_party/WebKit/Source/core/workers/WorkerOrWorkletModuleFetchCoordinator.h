@@ -26,6 +26,9 @@ class WorkerOrWorkletModuleFetchCoordinator : public GarbageCollectedMixin {
   };
 
   virtual ~WorkerOrWorkletModuleFetchCoordinator() = default;
+
+  // Fetches a module script for the given parameters, and notifies the client
+  // upon completion.
   virtual void Fetch(FetchParameters&, Client*) = 0;
 };
 

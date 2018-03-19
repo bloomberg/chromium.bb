@@ -36,6 +36,7 @@
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
 #include "core/workers/WorkerSettings.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
@@ -125,6 +126,9 @@ class CORE_EXPORT WorkerGlobalScope
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
 
+  WorkerOrWorkletModuleFetchCoordinatorProxy* ModuleFetchCoordinatorProxy()
+      const;
+
   // Evaluates the given top-level classic script.
   virtual void EvaluateClassicScript(
       const KURL& script_url,
@@ -194,6 +198,7 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken parent_devtools_token_;
   const V8CacheOptions v8_cache_options_;
   std::unique_ptr<WorkerSettings> worker_settings_;
+  Member<WorkerOrWorkletModuleFetchCoordinatorProxy> fetch_coordinator_proxy_;
 
   mutable Member<WorkerLocation> location_;
   mutable TraceWrapperMember<WorkerNavigator> navigator_;

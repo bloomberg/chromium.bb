@@ -295,6 +295,13 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
 
+WorkerOrWorkletModuleFetchCoordinatorProxy*
+WorkerGlobalScope::ModuleFetchCoordinatorProxy() const {
+  DCHECK(IsContextThread());
+  DCHECK(fetch_coordinator_proxy_);
+  return fetch_coordinator_proxy_;
+}
+
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
@@ -333,6 +340,14 @@ WorkerGlobalScope::WorkerGlobalScope(
       user_agent_(creation_params->user_agent),
       parent_devtools_token_(creation_params->parent_devtools_token),
       v8_cache_options_(creation_params->v8_cache_options),
+      // Specify |kUnspecedLoading| because these task runners are used during
+      // module loading and this usage is not explicitly spec'ed.
+      fetch_coordinator_proxy_(
+          WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
+              creation_params->module_fetch_coordinator,
+              thread->GetParentFrameTaskRunners()->Get(
+                  TaskType::kUnspecedLoading),
+              thread->GetTaskRunner(TaskType::kUnspecedLoading))),
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
@@ -394,6 +409,7 @@ void WorkerGlobalScope::SetWorkerSettings(
 }
 
 void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
+  visitor->Trace(fetch_coordinator_proxy_);
   visitor->Trace(location_);
   visitor->Trace(navigator_);
   visitor->Trace(timers_);
