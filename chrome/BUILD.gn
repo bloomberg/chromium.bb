@@ -968,10 +968,11 @@ if (is_win) {
   }
 
   if (use_egl) {
-    # We need to copy the ANGLE libraries so that the bundle_data dependencies
-    # have a "copy" target type. Otherwise for "shared_library" target types
-    # it will try to link things into Chromium Framework when we want to keep
-    # the ANGLE libraries separate instead.
+    # We need to copy the ANGLE and SwiftShader libraries so that the
+    # bundle_data dependencies have a "copy" target type. Otherwise for
+    # "shared_library" target types it will try to link things into
+    # Chromium Framework when we want to keep the ANGLE and SwiftShader
+    # libraries separate instead.
     copy("angle_library_copy") {
       sources = [
         "$root_out_dir/libEGL.dylib",
@@ -999,12 +1000,48 @@ if (is_win) {
         ":angle_library_copy",
       ]
     }
+
+    copy("swiftshader_library_copy") {
+      sources = [
+        "$root_out_dir/libswiftshader_libEGL.dylib",
+        "$root_out_dir/libswiftshader_libGLESv2.dylib",
+      ]
+      outputs = [
+        "$root_out_dir/egl_intermediates/{{source_file_part}}",
+      ]
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
+      ]
+    }
+
+    # Add the SwiftShader .dylibs in the MODULE_DIR of Chromium.app
+    bundle_data("swiftshader_binaries") {
+      sources = [
+        "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",
+        "$root_out_dir/egl_intermediates/libswiftshader_libGLESv2.dylib",
+      ]
+      outputs = [
+        "{{bundle_contents_dir}}/Libraries/{{source_file_part}}",
+      ]
+      public_deps = [
+        ":swiftshader_library_copy",
+      ]
+    }
   }
 
   group("angle_library") {
     if (use_egl) {
       deps = [
         ":angle_binaries",
+      ]
+    }
+  }
+
+  group("swiftshader_library") {
+    if (use_egl) {
+      deps = [
+        ":swiftshader_binaries",
       ]
     }
   }
@@ -1288,6 +1325,7 @@ if (is_win) {
       ":chrome_framework_resources",
       ":chrome_framework_services",
       ":packed_resources",
+      ":swiftshader_library",
       ":widevine_cdm_library",
       "//build/config:exe_and_shlib_deps",
       "//chrome/app/nibs:chrome_xibs",
