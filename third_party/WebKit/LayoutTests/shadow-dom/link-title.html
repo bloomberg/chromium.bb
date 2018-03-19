@@ -5,10 +5,10 @@
 <body>
   <div id="host">
     <template mode-data="open">
-      <link rel="stylesheet" title="preferred1" href="data:text/css,#shadowChild1 { color: green }">
-      <link rel="stylesheet" title="title1" href="data:text/css,#shadowChild2 { color: green }">
-      <link rel="alternate stylesheet" title="prefered1" href="data:text/css,#shadowChild3 { color: green }">
-      <link rel="alternate stylesheet" title="title1" href="data:text/css,#shadowChild4 { color: green }">
+      <link rel="stylesheet" title="preferred1" href="data:text/css,%23shadowChild1 { color: green }">
+      <link rel="stylesheet" title="title1" href="data:text/css,%23shadowChild2 { color: green }">
+      <link rel="alternate stylesheet" title="prefered1" href="data:text/css,%23shadowChild3 { color: green }">
+      <link rel="alternate stylesheet" title="title1" href="data:text/css,%23shadowChild4 { color: green }">
       <div id="shadowChild1"></div>
       <div id="shadowChild2"></div>
       <div id="shadowChild3"></div>
@@ -18,8 +18,8 @@
   <div id="bodyChild1"></div>
   <div id="bodyChild2"></div>
   <script>convertTemplatesToShadowRootsWithin(host);</script>
-  <link rel="stylesheet" title="preferred1" href="data:text/css,#bodyChild1 { color: green }">
-  <link rel="stylesheet" title="non-preferred" href="data:text/css,#bodyChild2 { color: green }">
+  <link rel="stylesheet" title="preferred1" href="data:text/css,%23bodyChild1 { color: green }">
+  <link rel="stylesheet" title="non-preferred" href="data:text/css,%23bodyChild2 { color: green }">
 </body>
 <script>
 function colorFor(elem) {

@@ -9,6 +9,7 @@ source_set("http_server") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//ios/web/public/test:util",
     "//net",
     "//net:test_support",
     "//url",

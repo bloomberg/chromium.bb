@@ -38,7 +38,7 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                            "account_id",
                            token_key->account_id);
 
-  const char kOAuth2RedirectPathFormat[] = "/%s#";
+  const char kOAuth2RedirectPathFormat[] = "/%s";
   const char kOAuth2AuthorizeFormat[] =
       "?response_type=token&approval_prompt=force&authuser=0&"
       "client_id=%s&"
@@ -175,17 +175,14 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
 
   // The format of the target URL is:
   //     reversed.oauth.client.id:/extensionid#access_token=TOKEN
-  //
-  // Because there is no double slash, everything after the scheme is
-  // interpreted as a path, including the fragment.
 
   if (url.scheme() == redirect_scheme_ && !url.has_host() && !url.has_port() &&
       base::StartsWith(url.GetContent(), redirect_path_prefix_,
-                       base::CompareCase::SENSITIVE)) {
+                       base::CompareCase::SENSITIVE) &&
+      url.has_ref()) {
     web_flow_.release()->DetachDelegateAndDelete();
 
-    std::string fragment = url.GetContent().substr(
-        redirect_path_prefix_.length(), std::string::npos);
+    std::string fragment = url.ref();
     base::StringPairs pairs;
     base::SplitStringIntoKeyValuePairs(fragment, '=', '&', &pairs);
     std::string access_token;

@@ -10,6 +10,7 @@
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/signatures_util.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
@@ -25,9 +26,10 @@ const char* const kEvents[] = {"focus",  "keydown", "input",
 
 void SetNotBlacklistedMessage(TestPasswordGenerationAgent* generation_agent,
                               const char* form_str) {
+  std::string escaped_form = net::EscapeQueryParamValue(form_str, false);
   autofill::PasswordForm form;
-  form.origin = form_util::StripAuthAndParams(
-      GURL(base::StringPrintf("data:text/html;charset=utf-8,%s", form_str)));
+  form.origin = form_util::StripAuthAndParams(GURL(base::StringPrintf(
+      "data:text/html;charset=utf-8,%s", escaped_form.c_str())));
   generation_agent->FormNotBlacklisted(form);
 }
 

@@ -304,7 +304,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
 
         if (useLoadData) {
             mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                    CommonResources.makeHtmlPageWithSimpleLinkTo("#anchor"), "text/html", false);
+                    CommonResources.makeHtmlPageWithSimpleLinkTo("%23anchor"), "text/html", false);
         } else {
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), anchorLinkUrl);

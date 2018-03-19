@@ -866,9 +866,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
       shell(),
       "window.domAutomationController.send(document.body.textContent);",
       &body));
-  // TODO(arthursonzogni): This is wrong. The correct value for |body| is
-  // "body", not "body#foo". See https://crbug.com/123004.
-  EXPECT_EQ("body#foo", body);
+  EXPECT_EQ("body", body);
 
   std::string reference_fragment;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
