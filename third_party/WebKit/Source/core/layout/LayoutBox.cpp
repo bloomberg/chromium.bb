@@ -2801,10 +2801,16 @@ LayoutUnit LayoutBox::FillAvailableMeasure(LayoutUnit available_logical_width,
                                            LayoutUnit& margin_start,
                                            LayoutUnit& margin_end) const {
   DCHECK_GE(available_logical_width, 0);
-  margin_start =
-      MinimumValueForLength(Style()->MarginStart(), available_logical_width);
-  margin_end =
-      MinimumValueForLength(Style()->MarginEnd(), available_logical_width);
+
+  bool isOrthogonalElement =
+      IsHorizontalWritingMode() != ContainingBlock()->IsHorizontalWritingMode();
+  LayoutUnit available_size_for_resolving_margin =
+      isOrthogonalElement ? ContainingBlockLogicalWidthForContent()
+                          : available_logical_width;
+  margin_start = MinimumValueForLength(Style()->MarginStart(),
+                                       available_size_for_resolving_margin);
+  margin_end = MinimumValueForLength(Style()->MarginEnd(),
+                                     available_size_for_resolving_margin);
   LayoutUnit available = available_logical_width - margin_start - margin_end;
   available = std::max(available, LayoutUnit());
   return available;
