@@ -47,8 +47,8 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
                                         ScrollSnapAlign scroll_snap_align) {
   LayoutBox* old_container = snap_area.SnapContainer();
-  if (scroll_snap_align.alignmentX == SnapAlignment::kNone &&
-      scroll_snap_align.alignmentY == SnapAlignment::kNone) {
+  if (scroll_snap_align.alignment_inline == SnapAlignment::kNone &&
+      scroll_snap_align.alignment_block == SnapAlignment::kNone) {
     snap_area.SetSnapContainer(nullptr);
     if (old_container)
       UpdateSnapContainerData(*old_container);
@@ -82,8 +82,6 @@ static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
              : layout_box.GetScrollableArea();
 }
 
-// TODO(sunyunjia): Needs to add layout test for vertical writing mode.
-// https://crbug.com/821645
 static ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
   ScrollSnapType scroll_snap_type = snap_container.Style()->GetScrollSnapType();
   if (scroll_snap_type.axis == SnapAxis::kInline) {
@@ -274,11 +272,18 @@ static ScrollSnapAlign GetPhysicalAlignment(
     const ComputedStyle& area_style,
     const ComputedStyle& container_style) {
   ScrollSnapAlign align = area_style.GetScrollSnapAlign();
+  if (container_style.IsHorizontalWritingMode())
+    return align;
+
+  SnapAlignment tmp = align.alignment_inline;
+  align.alignment_inline = align.alignment_block;
+  align.alignment_block = tmp;
+
   if (container_style.IsFlippedBlocksWritingMode()) {
-    if (align.alignmentX == SnapAlignment::kStart) {
-      align.alignmentX = SnapAlignment::kEnd;
-    } else if (align.alignmentX == SnapAlignment::kEnd) {
-      align.alignmentX = SnapAlignment::kStart;
+    if (align.alignment_inline == SnapAlignment::kStart) {
+      align.alignment_inline = SnapAlignment::kEnd;
+    } else if (align.alignment_inline == SnapAlignment::kEnd) {
+      align.alignment_inline = SnapAlignment::kStart;
     }
   }
   return align;
@@ -294,12 +299,12 @@ static FloatRect GetVisibleRegion(const LayoutRect& container,
 }
 
 static SnapAxis ToSnapAxis(ScrollSnapAlign align) {
-  if (align.alignmentX != SnapAlignment::kNone &&
-      align.alignmentY != SnapAlignment::kNone)
+  if (align.alignment_inline != SnapAlignment::kNone &&
+      align.alignment_block != SnapAlignment::kNone)
     return SnapAxis::kBoth;
 
-  if (align.alignmentX != SnapAlignment::kNone &&
-      align.alignmentY == SnapAlignment::kNone)
+  if (align.alignment_inline != SnapAlignment::kNone &&
+      align.alignment_block == SnapAlignment::kNone)
     return SnapAxis::kX;
 
   return SnapAxis::kY;
@@ -373,9 +378,9 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   ScrollSnapAlign align = GetPhysicalAlignment(*area_style, *container_style);
 
   snap_area_data.snap_position.set_x(CalculateSnapPosition(
-      align.alignmentX, SearchAxis::kX, container, max_position, area));
+      align.alignment_inline, SearchAxis::kX, container, max_position, area));
   snap_area_data.snap_position.set_y(CalculateSnapPosition(
-      align.alignmentY, SearchAxis::kY, container, max_position, area));
+      align.alignment_block, SearchAxis::kY, container, max_position, area));
 
   snap_area_data.snap_axis = ToSnapAxis(align);
 

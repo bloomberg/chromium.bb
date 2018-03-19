@@ -62,24 +62,26 @@ struct ScrollSnapType {
 
 struct ScrollSnapAlign {
   ScrollSnapAlign()
-      : alignmentX(SnapAlignment::kNone), alignmentY(SnapAlignment::kNone) {}
+      : alignment_inline(SnapAlignment::kNone),
+        alignment_block(SnapAlignment::kNone) {}
 
   explicit ScrollSnapAlign(SnapAlignment alignment)
-      : alignmentX(alignment), alignmentY(alignment) {}
+      : alignment_inline(alignment), alignment_block(alignment) {}
 
-  ScrollSnapAlign(SnapAlignment x, SnapAlignment y)
-      : alignmentX(x), alignmentY(y) {}
+  ScrollSnapAlign(SnapAlignment i, SnapAlignment b)
+      : alignment_inline(i), alignment_block(b) {}
 
   bool operator==(const ScrollSnapAlign& other) const {
-    return alignmentX == other.alignmentX && alignmentY == other.alignmentY;
+    return alignment_inline == other.alignment_inline &&
+           alignment_block == other.alignment_block;
   }
 
   bool operator!=(const ScrollSnapAlign& other) const {
     return !(*this == other);
   }
 
-  SnapAlignment alignmentX;
-  SnapAlignment alignmentY;
+  SnapAlignment alignment_inline;
+  SnapAlignment alignment_block;
 };
 
 // Snap area is a bounding box that could be snapped to when a scroll happens in
