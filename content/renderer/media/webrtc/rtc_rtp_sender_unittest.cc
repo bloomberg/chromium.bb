@@ -207,7 +207,8 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackIsNotSetSynchronously) {
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
 
-TEST_F(RTCRtpSenderTest, CopiedSenderSharesInternalStates) {
+// TODO(crbug.com/812296): Disabled since flaky.
+TEST_F(RTCRtpSenderTest, DISABLED_CopiedSenderSharesInternalStates) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   auto copy = std::make_unique<RTCRtpSender>(*sender_);
