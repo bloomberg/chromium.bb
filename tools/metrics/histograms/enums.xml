@@ -30341,6 +30341,17 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="Delivered"/>
 </enum>
 
+<enum name="NetReportingUploadOutcome">
+  <int value="0" label="Canceled: redirect to insecure URL"/>
+  <int value="1" label="Canceled: auth required"/>
+  <int value="2" label="Canceled: certificate requested"/>
+  <int value="3" label="Canceled: SSL certificate error"/>
+  <int value="4" label="Canceled: Reporting shut down"/>
+  <int value="5" label="Failed: network error"/>
+  <int value="6" label="Succeeded: success"/>
+  <int value="7" label="Succeeded: remove endpoint"/>
+</enum>
+
 <enum name="NetTrustAnchors">
 <!-- Generated from net/data/ssl/root_stores/root_stores.json.
 Called by update_net_trust_anchors.py.-->
