@@ -239,9 +239,8 @@ public class AndroidViewIntegrationTest {
     private void loadPageOfSizeAndWaitForSizeChange(AwContents awContents,
             OnContentSizeChangedHelper helper, int widthCss, int heightCss,
             boolean heightPercent) throws Exception {
-        // loadDataAsync loads HTML as a data URI, which requires encoding '#' characters as '%23'.
-        final String htmlData =
-                makeHtmlPageOfSize(widthCss, heightCss, heightPercent).replace("#", "%23");
+
+        final String htmlData = makeHtmlPageOfSize(widthCss, heightCss, heightPercent);
         final int contentSizeChangeCallCount = helper.getCallCount();
         mActivityTestRule.loadDataAsync(awContents, htmlData, "text/html", false);
 

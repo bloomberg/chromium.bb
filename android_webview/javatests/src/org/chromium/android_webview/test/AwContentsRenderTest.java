@@ -68,7 +68,7 @@ public class AwContentsRenderTest {
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.YELLOW);
 
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                "data:text/html,<html><head><style>body {background-color:%23227788}</style></head>"
+                "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
                         + "<body></body></html>");
         final int teal = 0xFF227788;
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, teal);
@@ -100,7 +100,7 @@ public class AwContentsRenderTest {
     @Feature({"AndroidWebView"})
     public void testForceDrawWhenInvisible() throws Throwable {
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                "data:text/html,<html><head><style>body {background-color:%23227788}</style></head>"
+                "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
                         + "<body>Hello world!</body></html>");
 
         Bitmap visibleBitmap = null;
