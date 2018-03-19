@@ -13,10 +13,10 @@ namespace chromecast {
 namespace media {
 
 // Interface for the media backend used by the CMA pipeline. The implementation
-// is selected by MediaPipelineBackendFactory. MediaPipelineBackend is a
-// lower-level interface used to abstract the platform, with a separate
-// implementation for each platform, while CmaBackend implementations are used
-// across multiple platforms.
+// is selected by CmaBackendFactory. MediaPipelineBackend is a lower-level
+// interface used to abstract the platform, with a separate implementation for
+// each platform, while CmaBackend implementations are used across multiple
+// platforms.
 class CmaBackend {
  public:
   using BufferStatus = MediaPipelineBackend::BufferStatus;

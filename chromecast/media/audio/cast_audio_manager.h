@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_MANAGER_H_
 #define CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_MANAGER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "media/audio/audio_manager_base.h"
 
@@ -13,14 +16,14 @@ namespace chromecast {
 namespace media {
 
 class CastAudioMixer;
-class MediaPipelineBackendFactory;
+class CmaBackendFactory;
 
 class CastAudioManager : public ::media::AudioManagerBase {
  public:
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
-      std::unique_ptr<MediaPipelineBackendFactory> backend_factory,
+      std::unique_ptr<CmaBackendFactory> backend_factory,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
       bool use_mixer);
   ~CastAudioManager() override;
@@ -35,9 +38,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
   const char* GetName() override;
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override;
 
-  MediaPipelineBackendFactory* backend_factory() {
-    return backend_factory_.get();
-  }
+  CmaBackendFactory* backend_factory() { return backend_factory_.get(); }
   base::SingleThreadTaskRunner* backend_task_runner() {
     return backend_task_runner_.get();
   }
@@ -70,7 +71,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
  private:
   friend class CastAudioMixer;
 
-  std::unique_ptr<MediaPipelineBackendFactory> backend_factory_;
+  std::unique_ptr<CmaBackendFactory> backend_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;

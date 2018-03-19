@@ -5,9 +5,10 @@
 #include "chromecast/media/audio/cast_audio_manager_alsa.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/free_deleter.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 
@@ -32,7 +33,7 @@ static const char* kInvalidAudioInputDevices[] = {
 CastAudioManagerAlsa::CastAudioManagerAlsa(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
-    std::unique_ptr<MediaPipelineBackendFactory> backend_factory,
+    std::unique_ptr<CmaBackendFactory> backend_factory,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
     bool use_mixer)
     : CastAudioManager(std::move(audio_thread),

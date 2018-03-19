@@ -4,9 +4,7 @@
 
 #include "chromecast/media/service/cast_mojo_media_client.h"
 
-#include <memory>
-
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/audio_renderer_sink.h"
@@ -64,7 +62,7 @@ class CastAudioRendererSink : public ::media::AudioRendererSink {
 
 class CastRendererFactory : public ::media::RendererFactory {
  public:
-  CastRendererFactory(MediaPipelineBackendFactory* backend_factory,
+  CastRendererFactory(CmaBackendFactory* backend_factory,
                       VideoModeSwitcher* video_mode_switcher,
                       VideoResolutionPolicy* video_resolution_policy,
                       MediaResourceTracker* media_resource_tracker)
@@ -91,7 +89,7 @@ class CastRendererFactory : public ::media::RendererFactory {
   }
 
  private:
-  MediaPipelineBackendFactory* const backend_factory_;
+  CmaBackendFactory* const backend_factory_;
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;
@@ -100,7 +98,7 @@ class CastRendererFactory : public ::media::RendererFactory {
 }  // namespace
 
 CastMojoMediaClient::CastMojoMediaClient(
-    MediaPipelineBackendFactory* backend_factory,
+    CmaBackendFactory* backend_factory,
     const CreateCdmFactoryCB& create_cdm_factory_cb,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,

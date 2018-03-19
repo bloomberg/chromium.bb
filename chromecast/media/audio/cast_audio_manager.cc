@@ -5,13 +5,12 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 
 #include <algorithm>
-#include <memory>
-#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace {
@@ -36,7 +35,7 @@ namespace media {
 CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
-    std::unique_ptr<MediaPipelineBackendFactory> backend_factory,
+    std::unique_ptr<CmaBackendFactory> backend_factory,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
     bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),

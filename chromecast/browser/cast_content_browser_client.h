@@ -42,7 +42,7 @@ class MemoryPressureControllerImpl;
 
 namespace media {
 class MediaCapsImpl;
-class MediaPipelineBackendFactory;
+class CmaBackendFactory;
 class MediaPipelineBackendManager;
 class MediaResourceTracker;
 class VideoPlaneController;
@@ -86,8 +86,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-  // Creates a MediaPipelineBackendFactory.
-  virtual media::MediaPipelineBackendFactory* GetMediaPipelineBackendFactory();
+  // Creates a CmaBackendFactory.
+  virtual media::CmaBackendFactory* GetCmaBackendFactory();
 
   media::MediaResourceTracker* media_resource_tracker();
 
@@ -224,8 +224,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
-  std::unique_ptr<media::MediaPipelineBackendFactory>
-      media_pipeline_backend_factory_;
+  std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

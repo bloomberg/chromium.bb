@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_H_
 
 #include <memory>
 
@@ -14,9 +14,9 @@ class CmaBackend;
 struct MediaPipelineDeviceParams;
 
 // Abstract base class to create CmaBackend.
-class MediaPipelineBackendFactory {
+class CmaBackendFactory {
  public:
-  virtual ~MediaPipelineBackendFactory() {}
+  virtual ~CmaBackendFactory() = default;
 
   virtual std::unique_ptr<CmaBackend> CreateBackend(
       const MediaPipelineDeviceParams& params) = 0;
@@ -25,4 +25,4 @@ class MediaPipelineBackendFactory {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_H_

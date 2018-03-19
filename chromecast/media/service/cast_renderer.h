@@ -5,10 +5,13 @@
 #ifndef CHROMECAST_MEDIA_SERVICE_CAST_RENDERER_H_
 #define CHROMECAST_MEDIA_SERVICE_CAST_RENDERER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_resolution_policy.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/base/renderer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -28,7 +31,7 @@ class VideoModeSwitcher;
 class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer {
  public:
-  CastRenderer(MediaPipelineBackendFactory* backend_factory,
+  CastRenderer(CmaBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                const std::string& audio_device_id,
                VideoModeSwitcher* video_mode_switcher,
@@ -65,7 +68,7 @@ class CastRenderer : public ::media::Renderer,
   void OnVideoInitializationFinished(const ::media::PipelineStatusCB& init_cb,
                                      ::media::PipelineStatus status);
 
-  MediaPipelineBackendFactory* const backend_factory_;
+  CmaBackendFactory* const backend_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const std::string audio_device_id_;
   VideoModeSwitcher* video_mode_switcher_;

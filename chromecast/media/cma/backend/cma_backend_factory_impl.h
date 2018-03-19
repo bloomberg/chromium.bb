@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_IMPL_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 
 namespace chromecast {
 namespace media {
@@ -18,13 +18,13 @@ class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 
 // Creates CmaBackends using a given MediaPipelineBackendManager.
-class MediaPipelineBackendFactoryImpl : public MediaPipelineBackendFactory {
+class CmaBackendFactoryImpl : public CmaBackendFactory {
  public:
   // TODO(slan): Use a static Create method once all of the constructor
   // dependencies are removed from the internal implemenation.
-  explicit MediaPipelineBackendFactoryImpl(
+  explicit CmaBackendFactoryImpl(
       MediaPipelineBackendManager* media_pipeline_backend_manager);
-  ~MediaPipelineBackendFactoryImpl() override;
+  ~CmaBackendFactoryImpl() override;
 
   std::unique_ptr<CmaBackend> CreateBackend(
       const MediaPipelineDeviceParams& params) override;
@@ -37,10 +37,10 @@ class MediaPipelineBackendFactoryImpl : public MediaPipelineBackendFactory {
  private:
   media::MediaPipelineBackendManager* const media_pipeline_backend_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(CmaBackendFactoryImpl);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FACTORY_IMPL_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_CMA_BACKEND_FACTORY_IMPL_H_
