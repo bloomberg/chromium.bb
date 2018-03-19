@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/test/test_widget_observer.h"
 
@@ -40,6 +41,11 @@ void ShowInActiveTab(Browser* browser) {
 
 }  // namespace
 
+class ZoomBubbleViewsBrowserTest : public ZoomBubbleBrowserTest {
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+};
+
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
@@ -49,7 +55,8 @@ void ShowInActiveTab(Browser* browser) {
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // non-immersive fullscreen.
-IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleViewsBrowserTest,
+                       MAYBE_NonImmersiveFullscreen) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
