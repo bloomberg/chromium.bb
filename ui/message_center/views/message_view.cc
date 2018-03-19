@@ -164,12 +164,11 @@ void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
 }
 
-bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
+void MessageView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
-    return false;
+    return;
 
   MessageCenter::Get()->ClickOnNotification(notification_id_);
-  return true;
 }
 
 bool MessageView::OnKeyPressed(const ui::KeyEvent& event) {

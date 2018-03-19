@@ -12,6 +12,8 @@
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
@@ -743,8 +745,27 @@ gfx::NativeCursor NotificationViewMD::GetCursor(const ui::MouseEvent& event) {
 }
 
 bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
+  last_mouse_pressed_timestamp_ = base::TimeTicks(event.time_stamp());
+  return true;
+}
+
+bool NotificationViewMD::OnMouseDragged(const ui::MouseEvent& event) {
+  return true;
+}
+
+void NotificationViewMD::OnMouseReleased(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
-    return false;
+    return;
+
+  // The mouse has been clicked for a long time.
+  if (ui::EventTimeStampToSeconds(event.time_stamp()) -
+          ui::EventTimeStampToSeconds(last_mouse_pressed_timestamp_) >
+      ui::GetGestureProviderConfig(
+          ui::GestureProviderConfigType::CURRENT_PLATFORM)
+          .gesture_detector_config.longpress_timeout.InSecondsF()) {
+    ToggleInlineSettings(*event.AsLocatedEvent());
+    return;
+  }
 
   // Ignore click of actions row outside action buttons.
   if (expanded_) {
@@ -752,14 +773,14 @@ bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
     gfx::Point point_in_child = event.location();
     ConvertPointToTarget(this, actions_row_, &point_in_child);
     if (actions_row_->HitTestPoint(point_in_child))
-      return true;
+      return;
   }
 
   // Ignore clicks of outside region when inline settings is shown.
   if (settings_row_ && settings_row_->visible())
-    return true;
+    return;
 
-  return MessageView::OnMousePressed(event);
+  MessageView::OnMouseReleased(event);
 }
 
 void NotificationViewMD::OnMouseEvent(ui::MouseEvent* event) {
