@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class BasePage;
+
 // Visitor used to mark Oilpan objects.
 class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
  public:
@@ -36,6 +38,14 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   virtual ~MarkingVisitor();
 
   // Marking implementation.
+
+  // Conservatively marks an object if pointed to by Address.
+  void ConservativelyMarkAddress(BasePage*, Address);
+#if DCHECK_IS_ON()
+  void ConservativelyMarkAddress(BasePage*,
+                                 Address,
+                                 MarkedPointerCallbackForTesting);
+#endif  // DCHECK_IS_ON()
 
   // Marks an object and adds a tracing callback for processing of the object.
   inline void MarkHeader(HeapObjectHeader*, TraceCallback);
@@ -124,6 +134,8 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   static void MarkNoTracingCallback(Visitor*, void*);
 
   void RegisterBackingStoreReference(void* slot);
+
+  void ConservativelyMarkHeader(HeapObjectHeader*);
 
   const MarkingMode marking_mode_;
 };
