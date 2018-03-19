@@ -543,6 +543,7 @@ if (!is_ios) {
     sources = [
       "discardable_memory/common/discardable_shared_memory_heap_perftest.cc",
       "omnibox/browser/history_quick_provider_performance_unittest.cc",
+      "subresource_filter/core/common/perftests/indexed_ruleset_perftest.cc",
       "test/run_all_perftests.cc",
       "visitedlink/test/visitedlink_perftest.cc",
     ]
@@ -553,6 +554,8 @@ if (!is_ios) {
       "//components/history/core/test",
       "//components/omnibox/browser",
       "//components/omnibox/browser:test_support",
+      "//components/subresource_filter/core/common",
+      "//components/subresource_filter/core/common:tools_lib",
       "//components/test:test_support",
       "//components/visitedlink/browser",
       "//testing/perf",
@@ -567,6 +570,7 @@ if (!is_ios) {
     data = [
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/ui_test.pak",
+      "//components/subresource_filter/core/common/perftests/data",
     ]
 
     if (is_android) {
