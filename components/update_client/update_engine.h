@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_UPDATE_ENGINE_H_
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_ENGINE_H_
 
-#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
@@ -69,22 +68,23 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
   ~UpdateEngine();
 
   using UpdateContexts = std::set<scoped_refptr<UpdateContext>>;
-  using UpdateContextIterator = UpdateContexts::iterator;
 
-  void UpdateComplete(UpdateContextIterator it, Error error);
+  void UpdateComplete(scoped_refptr<UpdateContext> update_context, Error error);
 
-  void ComponentCheckingForUpdatesStart(UpdateContextIterator it,
-                                        const std::string& id);
-  void ComponentCheckingForUpdatesComplete(UpdateContextIterator it);
-  void UpdateCheckComplete(UpdateContextIterator it);
+  void ComponentCheckingForUpdatesStart(
+      scoped_refptr<UpdateContext> update_context,
+      const std::string& id);
+  void ComponentCheckingForUpdatesComplete(
+      scoped_refptr<UpdateContext> update_context);
+  void UpdateCheckComplete(scoped_refptr<UpdateContext> update_context);
 
-  void DoUpdateCheck(UpdateContextIterator it);
-  void UpdateCheckDone(UpdateContextIterator it,
+  void DoUpdateCheck(scoped_refptr<UpdateContext> update_context);
+  void UpdateCheckDone(scoped_refptr<UpdateContext> update_context,
                        int error,
                        int retry_after_sec);
 
-  void HandleComponent(UpdateContextIterator it);
-  void HandleComponentComplete(UpdateContextIterator it);
+  void HandleComponent(scoped_refptr<UpdateContext> update_context);
+  void HandleComponentComplete(scoped_refptr<UpdateContext> update_context);
 
   // Returns true if the update engine rejects this update call because it
   // occurs too soon.
