@@ -1826,6 +1826,8 @@
       field_template: "<length>",
       default_value: "Length(kMaxSizeNone)",
       converter: "ConvertLengthMaxSizing",
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "max-width",
@@ -1836,6 +1838,8 @@
       field_template: "<length>",
       default_value: "Length(kMaxSizeNone)",
       converter: "ConvertLengthMaxSizing",
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "min-height",
@@ -1846,6 +1850,7 @@
       field_template: "<length>",
       default_value: "Length()",
       converter: "ConvertLengthSizing",
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "min-width",
@@ -1856,6 +1861,7 @@
       field_template: "<length>",
       default_value: "Length()",
       converter: "ConvertLengthSizing",
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "mix-blend-mode",
