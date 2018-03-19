@@ -221,7 +221,7 @@ void ScreenLocker::Init() {
     delegate_ = views_screen_locker_.get();
 
     // Create and display lock screen.
-    LoginScreenClient::Get()->ShowLockScreen(base::BindOnce(
+    LoginScreenClient::Get()->login_screen()->ShowLockScreen(base::BindOnce(
         [](ViewsScreenLocker* screen_locker, bool did_show) {
           CHECK(did_show);
           screen_locker->OnLockScreenReady();

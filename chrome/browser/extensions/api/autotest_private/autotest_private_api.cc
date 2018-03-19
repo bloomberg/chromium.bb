@@ -107,7 +107,7 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
 
 #if defined(OS_CHROMEOS)
-  LoginScreenClient::Get()->IsReadyForPassword(base::BindOnce(
+  LoginScreenClient::Get()->login_screen()->IsReadyForPassword(base::BindOnce(
       &AutotestPrivateLoginStatusFunction::OnIsReadyForPassword, this));
   return RespondLater();
 #else

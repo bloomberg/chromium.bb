@@ -72,11 +72,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                const std::string& default_locale,
                                bool show_advanced_view) override;
 
-  // Wrappers around the mojom::LoginScreenClient interface. Hash the password
-  // and send AuthenticateUser request to LoginScreenClient.
-  // LoginScreenClient(chrome) will do the authentication and request to show
-  // error messages in the screen if auth fails, or request to clear errors if
-  // auth succeeds.
+  // Hash the password and send AuthenticateUser request to LoginScreenClient.
+  // LoginScreenClient (in the chrome process) will do the authentication and
+  // request to show error messages in the screen if auth fails, or request to
+  // clear errors if auth succeeds.
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& password,
                         bool authenticated_by_pin,

@@ -42,12 +42,12 @@ void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
   // Load the login screen.
   auto* client = LoginScreenClient::Get();
   client->SetDelegate(host_);
-  client->ShowLoginScreen(
+  client->login_screen()->ShowLoginScreen(
       base::BindOnce([](bool did_show) { CHECK(did_show); }));
 
   user_selection_screen_->Init(filtered_users);
-  client->LoadUsers(user_selection_screen_->UpdateAndReturnUserListForMojo(),
-                    show_guest);
+  client->login_screen()->LoadUsers(
+      user_selection_screen_->UpdateAndReturnUserListForMojo(), show_guest);
   user_selection_screen_->SetUsersLoaded(true /*loaded*/);
 }
 

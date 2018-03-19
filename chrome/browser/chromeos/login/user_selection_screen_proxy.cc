@@ -70,8 +70,8 @@ UserSelectionScreenProxy::~UserSelectionScreenProxy() = default;
 void UserSelectionScreenProxy::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {
-  LoginScreenClient::Get()->SetPublicSessionDisplayName(account_id,
-                                                        display_name);
+  LoginScreenClient::Get()->login_screen()->SetPublicSessionDisplayName(
+      account_id, display_name);
 }
 
 void UserSelectionScreenProxy::SetPublicSessionLocales(
@@ -79,7 +79,7 @@ void UserSelectionScreenProxy::SetPublicSessionLocales(
     std::unique_ptr<base::ListValue> locales,
     const std::string& default_locale,
     bool multiple_recommended_locales) {
-  LoginScreenClient::Get()->SetPublicSessionLocales(
+  LoginScreenClient::Get()->login_screen()->SetPublicSessionLocales(
       account_id, std::move(locales), default_locale,
       multiple_recommended_locales);
 }
@@ -92,19 +92,21 @@ void UserSelectionScreenProxy::ShowUserPodCustomIcon(
       ToEasyUnlockIconOptionsPtr(icon_options);
   if (!icon)
     return;
-  LoginScreenClient::Get()->ShowUserPodCustomIcon(account_id, std::move(icon));
+  LoginScreenClient::Get()->login_screen()->ShowUserPodCustomIcon(
+      account_id, std::move(icon));
 }
 
 void UserSelectionScreenProxy::HideUserPodCustomIcon(
     const AccountId& account_id) {
-  LoginScreenClient::Get()->HideUserPodCustomIcon(account_id);
+  LoginScreenClient::Get()->login_screen()->HideUserPodCustomIcon(account_id);
 }
 
 void UserSelectionScreenProxy::SetAuthType(
     const AccountId& account_id,
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
-  LoginScreenClient::Get()->SetAuthType(account_id, auth_type, initial_value);
+  LoginScreenClient::Get()->login_screen()->SetAuthType(account_id, auth_type,
+                                                        initial_value);
 }
 
 base::WeakPtr<chromeos::UserBoardView> UserSelectionScreenProxy::GetWeakPtr() {
