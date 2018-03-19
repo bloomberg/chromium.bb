@@ -65,6 +65,7 @@ struct buffer;
 #define OPT_Y_INVERTED 1  /* contents has y axis inverted */
 #define OPT_IMMEDIATE  2  /* create wl_buffer immediately */
 
+#define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
 
 struct display {
 	struct wl_display *display;
@@ -215,7 +216,6 @@ intel_device_destroy(struct buffer *my_buf)
 
 #endif /* HAVE_LIBDRM_INTEL */
 #ifdef HAVE_LIBDRM_FREEDRENO
-#define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
 
 static int
 fd_alloc_bo(struct buffer *buf)
