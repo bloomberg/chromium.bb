@@ -2339,73 +2339,75 @@ static TX_SIZE set_lpf_parameters(
 
       const int curr_skipped = mbmi->skip && is_inter_block(mbmi);
       uint32_t level = curr_level;
-
+      if (coord) {
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-      // Note: For sub8x8 blocks, we need to look at the top-left mi unit in
-      // order
-      // to extract the correct boundary information.
-      const int mi_row_bound = ((y << scale_vert) >> MI_SIZE_LOG2);
-      const int mi_col_bound = ((x << scale_horz) >> MI_SIZE_LOG2);
-      BOUNDARY_TYPE *const bi =
-          cm->boundary_info + mi_row_bound * cm->mi_stride + mi_col_bound;
-      // here, assuming bounfary_info is set correctly based on the
-      // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
-      // only be set to true when this flag is set to 0.
-      int left_boundary = (*bi & TILE_LEFT_BOUNDARY);
-      int top_boundary = (*bi & TILE_ABOVE_BOUNDARY);
-      if (((VERT_EDGE == edge_dir) && (0 == left_boundary)) ||
-          ((HORZ_EDGE == edge_dir) && (0 == top_boundary)))
+        // Note: For sub8x8 blocks, we need to look at the top-left mi unit in
+        // order
+        // to extract the correct boundary information.
+        const int mi_row_bound = ((y << scale_vert) >> MI_SIZE_LOG2);
+        const int mi_col_bound = ((x << scale_horz) >> MI_SIZE_LOG2);
+        BOUNDARY_TYPE *const bi =
+            cm->boundary_info + mi_row_bound * cm->mi_stride + mi_col_bound;
+        // here, assuming bounfary_info is set correctly based on the
+        // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
+        // only be set to true when this flag is set to 0.
+        int left_boundary = (*bi & TILE_LEFT_BOUNDARY);
+        int top_boundary = (*bi & TILE_ABOVE_BOUNDARY);
+        if (((VERT_EDGE == edge_dir) && (0 == left_boundary)) ||
+            ((HORZ_EDGE == edge_dir) && (0 == top_boundary)))
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-      {
-        const MODE_INFO *const mi_prev = *(mi - mode_step);
-        const int pv_row =
-            (VERT_EDGE == edge_dir) ? (mi_row) : (mi_row - (1 << scale_vert));
-        const int pv_col =
-            (VERT_EDGE == edge_dir) ? (mi_col - (1 << scale_horz)) : (mi_col);
-        const TX_SIZE pv_ts = av1_get_transform_size(mi_prev, edge_dir, pv_row,
-                                                     pv_col, plane, plane_ptr);
+        {
+          const MODE_INFO *const mi_prev = *(mi - mode_step);
+          const int pv_row =
+              (VERT_EDGE == edge_dir) ? (mi_row) : (mi_row - (1 << scale_vert));
+          const int pv_col =
+              (VERT_EDGE == edge_dir) ? (mi_col - (1 << scale_horz)) : (mi_col);
+          const TX_SIZE pv_ts = av1_get_transform_size(
+              mi_prev, edge_dir, pv_row, pv_col, plane, plane_ptr);
 
 #if CONFIG_EXT_DELTA_Q
-        const uint32_t pv_lvl =
-            get_filter_level(cm, &cm->lf_info, edge_dir, plane, &mi_prev->mbmi);
+          const uint32_t pv_lvl = get_filter_level(cm, &cm->lf_info, edge_dir,
+                                                   plane, &mi_prev->mbmi);
 #else
-        const uint32_t pv_lvl = get_filter_level(&cm->lf_info, &mi_prev->mbmi);
+          const uint32_t pv_lvl =
+              get_filter_level(&cm->lf_info, &mi_prev->mbmi);
 #endif  // CONFIG_EXT_DELTA_Q
 
-        const int pv_skip =
-            mi_prev->mbmi.skip && is_inter_block(&mi_prev->mbmi);
-        const int32_t pu_edge =
-            (coord &
-             av1_prediction_masks[edge_dir]
-                                 [ss_size_lookup[mbmi->sb_type][scale_horz]
-                                                [scale_vert]])
-                ? (0)
-                : (1);
-        // if the current and the previous blocks are skipped,
-        // deblock the edge if the edge belongs to a PU's edge only.
-        if ((curr_level || pv_lvl) && (!pv_skip || !curr_skipped || pu_edge)) {
-          const TX_SIZE min_ts = AOMMIN(ts, pv_ts);
-          if (TX_4X4 >= min_ts) {
-            params->filter_length = 4;
-          } else if (TX_8X8 == min_ts) {
-            if (plane != 0)
-              params->filter_length = 6;
-            else
-              params->filter_length = 8;
-          } else {
-            params->filter_length = 14;
-            // No wide filtering for chroma plane
-            if (plane != 0) {
-              params->filter_length = 6;
+          const int pv_skip =
+              mi_prev->mbmi.skip && is_inter_block(&mi_prev->mbmi);
+          const int32_t pu_edge =
+              (coord &
+               av1_prediction_masks[edge_dir]
+                                   [ss_size_lookup[mbmi->sb_type][scale_horz]
+                                                  [scale_vert]])
+                  ? (0)
+                  : (1);
+          // if the current and the previous blocks are skipped,
+          // deblock the edge if the edge belongs to a PU's edge only.
+          if ((curr_level || pv_lvl) &&
+              (!pv_skip || !curr_skipped || pu_edge)) {
+            const TX_SIZE min_ts = AOMMIN(ts, pv_ts);
+            if (TX_4X4 >= min_ts) {
+              params->filter_length = 4;
+            } else if (TX_8X8 == min_ts) {
+              if (plane != 0)
+                params->filter_length = 6;
+              else
+                params->filter_length = 8;
+            } else {
+              params->filter_length = 14;
+              // No wide filtering for chroma plane
+              if (plane != 0) {
+                params->filter_length = 6;
+              }
             }
-          }
 
-          // update the level if the current block is skipped,
-          // but the previous one is not
-          level = (curr_level) ? (curr_level) : (pv_lvl);
+            // update the level if the current block is skipped,
+            // but the previous one is not
+            level = (curr_level) ? (curr_level) : (pv_lvl);
+          }
         }
       }
-
       // prepare common parameters
       if (params->filter_length) {
         const loop_filter_thresh *const limits = cm->lf_info.lfthr + level;
