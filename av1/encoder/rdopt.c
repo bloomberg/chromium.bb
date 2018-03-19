@@ -1927,8 +1927,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       if (plane == 0) txk_end = DCT_DCT;
 
   uint8_t best_txb_ctx = 0;
-  const TxSetType tx_set_type = get_ext_tx_set_type(
-      tx_size, plane_bsize, is_inter, cm->reduced_tx_set_used);
+  const TxSetType tx_set_type =
+      get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
   int prune = 0;
   const int do_prune = plane == 0 && !fast_tx_search && txk_end != DCT_DCT &&
                        !(!is_inter && x->use_default_intra_tx_type) &&
@@ -2379,6 +2379,7 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
+  (void)bs;
 
   if (x->cb_partition_scan && tx_type != DCT_DCT) return 1;
 
@@ -2391,7 +2392,7 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
     return 1;
   const AV1_COMMON *const cm = &cpi->common;
   const TxSetType tx_set_type =
-      get_ext_tx_set_type(tx_size, bs, is_inter, cm->reduced_tx_set_used);
+      get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
   if (!av1_ext_tx_used[tx_set_type][tx_type]) return 1;
   if (is_inter) {
     if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
@@ -2427,7 +2428,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int is_inter = is_inter_block(mbmi);
   mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
   const TxSetType tx_set_type =
-      get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
+      get_ext_tx_set_type(mbmi->tx_size, is_inter, cm->reduced_tx_set_used);
   prune_tx(cpi, bs, x, xd, tx_set_type, 0);
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs,
                    mbmi->tx_size, cpi->sf.use_fast_coef_costing);
@@ -4302,12 +4303,8 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   param.bd = xd->bd;
   param.is_hbd = get_bitdepth_data_path_index(xd);
   param.lossless = 0;
-  const struct macroblockd_plane *const pd = &xd->plane[0];
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
-  param.tx_set_type =
-      get_ext_tx_set_type(param.tx_size, plane_bsize,
-                          is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
+  param.tx_set_type = get_ext_tx_set_type(
+      param.tx_size, is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
   const uint32_t ac_q = (uint32_t)av1_ac_quant_QTX(x->qindex, 0, xd->bd);
   uint32_t max_quantized_coef = 0;
   const int bd_idx = (xd->bd == 8) ? 0 : ((xd->bd == 10) ? 1 : 2);
@@ -4383,8 +4380,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int n4 = bsize_to_num_blk(bsize);
   // Get the tx_size 1 level down
   const TX_SIZE min_tx_size = sub_tx_size_map[1][max_txsize_rect_lookup[bsize]];
-  const TxSetType tx_set_type = get_ext_tx_set_type(
-      min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+  const TxSetType tx_set_type =
+      get_ext_tx_set_type(min_tx_size, is_inter, cm->reduced_tx_set_used);
   const int within_border =
       mi_row >= xd->tile.mi_row_start &&
       (mi_row + mi_size_high[bsize] < xd->tile.mi_row_end) &&

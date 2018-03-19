@@ -173,9 +173,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;
   txfm_param.lossless = xd->lossless[mbmi->segment_id];
-  txfm_param.tx_set_type =
-      get_ext_tx_set_type(txfm_param.tx_size, plane_bsize, is_inter_block(mbmi),
-                          cm->reduced_tx_set_used);
+  txfm_param.tx_set_type = get_ext_tx_set_type(
+      txfm_param.tx_size, is_inter_block(mbmi), cm->reduced_tx_set_used);
 
   txfm_param.bd = xd->bd;
   txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
@@ -370,7 +369,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
     txfm_param.eob = p->eobs[block];
     txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
     txfm_param.tx_set_type = get_ext_tx_set_type(
-        txfm_param.tx_size, plane_bsize, is_inter_block(&xd->mi[0]->mbmi),
+        txfm_param.tx_size, is_inter_block(&xd->mi[0]->mbmi),
         cm->reduced_tx_set_used);
     if (txfm_param.is_hbd) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);

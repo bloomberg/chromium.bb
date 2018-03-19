@@ -466,18 +466,15 @@ static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                             TX_TYPE tx_type, int eob, int reduced_tx_set,
                             TxfmParam *txfm_param) {
+  (void)plane;
   txfm_param->tx_type = tx_type;
   txfm_param->tx_size = tx_size;
   txfm_param->eob = eob;
   txfm_param->lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
   txfm_param->bd = xd->bd;
   txfm_param->is_hbd = get_bitdepth_data_path_index(xd);
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
-  txfm_param->tx_set_type =
-      get_ext_tx_set_type(txfm_param->tx_size, plane_bsize,
-                          is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
+  txfm_param->tx_set_type = get_ext_tx_set_type(
+      txfm_param->tx_size, is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
 }
 
 static void highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest,
