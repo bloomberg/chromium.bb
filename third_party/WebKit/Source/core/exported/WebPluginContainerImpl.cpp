@@ -188,10 +188,9 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
-  IntPoint origin = ParentFrameView().ContentsToRootFrame(IntPoint(0, 0));
-  origin -= paint_offset;
-  context.Translate(static_cast<float>(-origin.X()),
-                    static_cast<float>(-origin.Y()));
+  FloatPoint origin(ParentFrameView().ContentsToRootFrame(IntPoint()));
+  origin.Move(-paint_offset);
+  context.Translate(-origin.X(), -origin.Y());
 
   WebCanvas* canvas = context.Canvas();
 
