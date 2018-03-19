@@ -30,22 +30,29 @@ class LayoutObject;
 class LayoutSVGResourceContainer;
 class SVGResources;
 
+// This class traverses the graph formed by SVGResources of
+// LayoutObjects, maintaining the active path as LayoutObjects are
+// visited. It also maintains a cache of sub-graphs that has already
+// been visited and that does not contain any cycles.
 class SVGResourcesCycleSolver {
   STACK_ALLOCATED();
 
  public:
-  SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
+  SVGResourcesCycleSolver(LayoutObject&);
   ~SVGResourcesCycleSolver();
 
-  void ResolveCycles();
+  // Traverse the graph starting at the resource container
+  // passed. Returns true if a cycle is detected.
+  bool FindCycle(LayoutSVGResourceContainer*);
 
   typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
 
  private:
-  bool ResourceContainsCycles(LayoutSVGResourceContainer*);
+  bool TraverseResourceContainer(LayoutSVGResourceContainer*);
+  bool TraverseResources(LayoutObject&);
+  bool TraverseResources(SVGResources*);
 
-  LayoutObject* layout_object_;
-  SVGResources* resources_;
+  LayoutObject& layout_object_;
 
   ResourceSet active_resources_;
   ResourceSet dag_cache_;
