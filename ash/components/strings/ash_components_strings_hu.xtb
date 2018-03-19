@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Váltás az előzőleg használt billentyűzetnyelvre.</translation>
 <translation id="1195667586424773550">A link húzása a lap címsávjára</translation>
 <translation id="1204450209689312104">Új ablak megnyitása inkognitómódban</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Az aktuális oldal nyomtatása</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> vagy <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, majd <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> vagy <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Ugrás a következő lapra</translation>
 <translation id="2010818616644390445">Ugrás az ablak utolsó lapjára</translation>
+<translation id="2088054208777350526">Billentyűparancsok keresése</translation>
 <translation id="2145908266289632567">Szövegszerkesztés</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1-től az =-ig</translation>
 <translation id="2181097965834437145">Könyvjelzősáv megjelenítése vagy elrejtése</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fókuszálás a címsávra</translation>
 <translation id="3288816184963444640">A jelenlegi ablak bezárása</translation>
-<translation id="3356202203145076517">A legrégebben használt ablak megnyitása</translation>
 <translation id="3407560819924487926">Feladatkezelő megnyitása</translation>
 <translation id="3422679037938588196">Ugrás az előző keresési találatra</translation>
 <translation id="344577624355799426"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1-től 8-ig</translation>
 <translation id="3837047332182291558">Billentyűzet megvilágításának erősítése (csak háttérvilágítással rendelkező billentyűzeteknél)</translation>
 <translation id="3976863468609830880">A polcon lévő utolsó ikonra kattintás</translation>
+<translation id="4026843240379844265">Aktív ablak áthelyezése egyik kijelzőről a másikra</translation>
 <translation id="4035482366624727273">Minden kijelölése az oldalon</translation>
 <translation id="4060703249685950734">A legutóbb bezárt lap vagy ablak újbóli megnyitása</translation>
 <translation id="4090342722461256974">Tartsa lenyomva az <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> billentyűt, majd nyomja meg a <ph name="TAB" /> billentyűt, amíg nem jut el addig az ablakig, amelyet meg szeretne nyitni, majd engedje fel.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Kisegítő lehetőségek</translation>
 <translation id="7020813747703216897">Nincs megfelelő találat</translation>
 <translation id="7025325401470358758">Következő ablaktábla</translation>
+<translation id="7237562915163138771">Gépelje be a címsávba az internetcímet, majd nyomja le az <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> billentyűkombinációt</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Következő betű törlése (előre törlés)</translation>
 <translation id="766326951329901120">Tartalom beillesztése a vágólapról egyszerű szövegként</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">A link húzása a lapsor egy üres területére</translation>
 <translation id="8389638407792712197">Új ablak megnyitása</translation>
 <translation id="8429696719963529183">Funkcióbillentyűk (F1–F12) használata</translation>
+<translation id="8537650670971624753">Kilépés a keresési módból</translation>
 <translation id="85690795166292698">Link megnyitása új lapon</translation>
 <translation id="8609384513243082612">Új lap megnyitása</translation>
 <translation id="8644639153978066712">Rejtett fájlok megjelenítése a Fájlok alkalmazásban</translation>

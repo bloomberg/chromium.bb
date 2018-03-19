@@ -154,6 +154,11 @@
 <translation id="1503487916067509762">Üçüncü taraf yazılımı yerleştirme engellemesini etkinleştirir</translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
 <translation id="1509692106376861764">Bu politika, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır.</translation>
+<translation id="1519337829779572350">Bu ayar kullanımdan kaldırılmıştır, bunun yerine SafeBrowsingExtendedReportingEnabled'ı kullanın. SafeBrowsingExtendedReportingEnabled'ın etkinleştirilmesi veya devre dışı bırakılması, SafeBrowsingExtendedReportingOptInAllowed'ın Yanlış değerine ayarlanmasıyla eşdeğerdir.
+
+      Bu politika yanlış değerine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru değerine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
@@ -300,6 +305,14 @@
       Bu politika ayarı, kullanıcıya tarayıcının yeniden başlatılmasının önerildiği veya gerektiği bilgisini verecek bildirimleri etkinleştirir. Bir değer ayarlanmazsa <ph name="PRODUCT_NAME" />, menüsündeki küçük değişiklikler aracılığıyla kullanıcıya uygulamanın yeniden başlatılması gerektiğini belirtir. "Önerilen" seçeneği ayarlanırsa, kullanıcıya uygulamayı yeniden başlatmasının önerildiği yinelenen bir uyarı ile bildirilir. Kullanıcı, yeniden başlatmayı ertelemek için bu uyarıyı kapatabilir. "Zorunlu" değeri ayarlanırsa kullanıcıya, bildirim dönemi geçtikten sonra tarayıcının yeniden başlatılmasının zorlanacağını belirten yinelenen bir uyarı gösterilir. Bu dönem varsayılan olarak yedi gündür ve <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politika ayarı aracılığıyla yapılandırılabilir.
 
       Yeniden başlatmanın ardından kullanıcı oturumu yeniden açılır.</translation>
+<translation id="2075434678547407637">Videoların <ph name="PRODUCT_NAME" /> içinde otomatik olarak (kullanıcı onayı olmadan) ses içeriğiyle oynatılıp oynatılamayacağını kontrol etmenize olanak tanır.
+
+      Bu politika Doğru değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilir.
+      Bu politika Yanlış değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilmez.
+      Varsayılan olarak <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilmez.
+
+      <ph name="PRODUCT_NAME" /> çalışıyorsa ve bu politika değişirse, yalnızca yeni açılan sekmelere uygulanır. Bu nedenle bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.
+      </translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım hızlandırmayı kullan</translation>
 <translation id="2077273864382355561">Pil gücüyle çalışırken ekran kapatma gecikmesi</translation>
 <translation id="2082205219176343977">Cihaz için izin verilen minimum Chrome sürümünü yapılandır.</translation>
@@ -1064,6 +1077,7 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmazsa kullanıcı, yer işareti çubuğu bağlam menüsünden uygulamalar kısayolunu göstermeyi veya gizlemeyi seçebilir.
 
       Bu politika yapılandırılırsa kullanıcı onu değiştiremez ve uygulamalar kısayolu her zaman gösterilir veya her zaman gizlenir.</translation>
+<translation id="4432762137771104529">Güvenli Tarama Genişletilmiş Raporlamasını Etkinleştir</translation>
 <translation id="443454694385851356">Eski (güvenli değil)</translation>
 <translation id="443665821428652897">Tarayıcı kapandığında site verilerini temizle (kullanımdan kaldırıldı)</translation>
 <translation id="4439336120285389675">Geçici olarak yeniden etkinleştirmek için, kullanımdan kaldırılmış web platformu özelliklerinin bir listesini belirtin.
@@ -1076,12 +1090,6 @@ politikayı geçersiz kılamaz.
       </translation>
 <translation id="4442582539341804154">Cihaz boşta olduğunda veya askıya alındığında kilidi etkinleştir</translation>
 <translation id="4449545651113180484">Ekranı saat yönünde 270 derece döndür</translation>
-<translation id="4459359100627756769">Kurumsal giriş URL'lerinin listesini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin parmak izleri yakalanır ve şifre yeniden kullanımı algılaması için kullanılır.
-      Bu ayar yalnızca SSO/SMAL sistemini kullanan GSuite kullanıcıları tarafından kullanılmalıdır.
-
-      Bu ayar etkinleştirilirse, şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin parmak izlerini yakalar.
-      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin parmak izlerini yakalar.
-      Bu politika, bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
 <translation id="4476769083125004742">Bu politika <ph name="BLOCK_GEOLOCATION_SETTING" /> seçeneğine ayarlanırsa Android uygulamaları konum bilgisine erişemez. Bu politikayı başka bir değere ayarlar veya ayarlamadan bırakırsanız, bir Android uygulaması konum bilgisine erişmek istediğinde kullanıcıdan izin istenir.</translation>
@@ -1308,6 +1316,19 @@ politikayı geçersiz kılamaz.
 
       İstemcinin belirtilen gün sayısından daha uzun bir süre boyunca çevrimdışı olması halinde şifrelerin söz konusu gün sayısı geçmesine rağmen değiştirilmeyebileceğini unutmayın.</translation>
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
+<translation id="5106504910236139235"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama Genişletilmiş Raporlamasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini engeller.
+
+      Genişletilmiş Raporlama, tehlikeli uygulama ve sitelerin algılanmasına yardımcı olmak için Google sunucularına bazı sistem bilgileri ve sayfa içeriği gönderir.
+
+      Bu ayar doğru değerine ayarlanırsa, raporlar oluşturulur ve gerekli olduğu zaman (mesela güvenlik geçiş reklamı gösterildiğinde) gönderilir.
+
+      Bu ayar yanlış değerine ayarlanırsa raporlar hiçbir zaman gönderilmez.
+
+      Bu politika doğru veya yanlış değerine ayarlanırsa kullanıcı ayarı değiştiremez.
+
+      Bu politika ayarlanmadan bırakılırsa, kullanıcı ayarı değiştirebilir ve rapor gönderilip gönderilmeyeceğine karar verebilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
@@ -1865,6 +1886,7 @@ politikayı geçersiz kılamaz.
 
       Başlatıldığında <ph name="PRODUCT_NAME" /> ürününe uygulanacak işaretleri belirtir. Belirtilen işaretler, yalnızca giriş ekranında uygulanır. Bu politika aracılığıyla ayarlanan işaretler, kullanıcı oturumlarına yayılmaz.</translation>
 <translation id="685769593149966548">YouTube için Yüksek Düzey Kısıtlı Mod'u zorunlu kıl</translation>
+<translation id="686079137349561371">Microsoft Windows 7 veya sonraki sürümler</translation>
 <translation id="687046793986382807">Bu politika, <ph name="PRODUCT_NAME" /> sürüm 35 itibarı ile kullanımdan kaldırılmıştır.
 
       Bellek bilgisi, seçenek değerinden bağımsız olarak her şekilde sayfada raporlanır, ancak
@@ -2071,6 +2093,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika ayarlanmazsa, otomatik temizleme varsayılan yerleşik stratejiyi kullanır. Şu an bu "RemoveLRUIfDormant" stratejisidir.</translation>
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
+<translation id="733838170182967492">Medyanın otomatik olarak oynatılmasına izin verir</translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
 <translation id="7343497214039883642">Cihazlar için kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="7384999953864505698">QUIC protokolüne izin verir</translation>
@@ -2640,6 +2663,13 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> kullanıcı verileri dizinini ayarla</translation>
 <translation id="934390688529359269"><ph name="PRODUCT_NAME" /> için oturum açmaya zorlamayı etkinleştir</translation>
+<translation id="938916311528680351">Sanal makinelerin Chrome OS üzerinde çalışmasına izin verilip verilmeyeceğini kontrol etmenize olanak tanır.
+
+      Bu politika Doğru değerine ayarlanırsa, cihazın sanal makineleri çalıştırmasına izin verilir.
+      Bu politika Yanlış değerine ayarlanırsa, cihazın sanal makineleri çalıştırmasına izin verilmez.
+      Bu politika Yanlış değerine değiştirilirse, yeni sanal makineler başlatılırken geçerli olur, ancak halihazırda çalışmakta olan sanal makineleri kapatmaz.
+      Bu politika bir yönetilen cihazda ayarlanmadığında cihazın sanal makineleri çalıştırmasına izin verilir.
+      Yönetilmeyen cihazların sanal makineleri çalıştırmasına izin verilir.</translation>
 <translation id="944817693306670849">Disk önbellek boyutunu ayarla</translation>
 <translation id="982497069985795632">Yazım denetimini etkinleştir</translation>
 </translationbundle>

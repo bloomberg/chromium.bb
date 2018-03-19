@@ -572,6 +572,7 @@
 <translation id="1850508293116537636">Otočiť &amp;v smere hodinových ručičiek</translation>
 <translation id="1851361118452499663">Moje fotografie</translation>
 <translation id="1852799913675865625">Pri čítaní súboru sa vyskytla chyba: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Nová karta inkognito</translation>
 <translation id="1856715684130786728">Pridať umiestnenie...</translation>
 <translation id="1856813161013948396">Preskočte uzamknutú obrazovku jednoduchým klepnutím na senzor odtlačkov prstov. Kliknutím nastavíte konfiguráciu.</translation>
 <translation id="1858585891038687145">Dôverovať tomuto certifikátu na identifikáciu tvorcov softvéru</translation>
@@ -631,7 +632,6 @@
 <translation id="1962233722219655970">Táto stránka používa aplikáciu Native Client, ktorá na vašom počítači nefunguje.</translation>
 <translation id="1962969542251276847">Uzamknúť obrazovku</translation>
 <translation id="1963227389609234879">Odstrániť všetko</translation>
-<translation id="1965328510789761112">Súkromná pamäť</translation>
 <translation id="1965624977906726414">Nemá zvláštne povolenia.</translation>
 <translation id="1970368523891847084">Bol aktivovaný režim videa</translation>
 <translation id="197288927597451399">Uložiť</translation>
@@ -735,7 +735,6 @@ dotyku</translation>
 <translation id="2136573720723402846">Povoliť odomykanie odtlačkom prsta</translation>
 <translation id="2137068468602026500">Kliknite pod položkou Webový prehliadač na možnosť <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Stále prebieha pripájanie k zariadeniu <ph name="DEVICE_NAME" /></translation>
-<translation id="2139186145475833000">Pridať na plochu</translation>
 <translation id="214169863967063661">Otvoriť nastavenia vzhľadu</translation>
 <translation id="2142328300403846845">Otvoriť odkaz ako</translation>
 <translation id="214353449635805613">Oblasť snímky obrazovky</translation>
@@ -2049,7 +2048,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4114360727879906392">Predchádzajúce okno</translation>
 <translation id="4115002065223188701">Sieť je mimo dosahu</translation>
 <translation id="4115080753528843955">Niektoré obsahové služby používajú jedinečné identifikátory na autorizáciu prístupu ku chránenému obsahu</translation>
-<translation id="411666854932687641">Súkromná pamäť</translation>
 <translation id="4120817667028078560">Cesta je príliš dlhá</translation>
 <translation id="4121428309786185360">Dátum vypršania platnosti</translation>
 <translation id="412730574613779332">Spandex</translation>
@@ -2103,7 +2101,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4235200303672858594">Celá obrazovka</translation>
 <translation id="4235813040357936597">Pridať účet k profilu <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Zrušiť prihlasovanie</translation>
-<translation id="4240511609794012987">Zdieľaná pamäť</translation>
 <translation id="4242533952199664413">Otvoriť nastavenia</translation>
 <translation id="4242577469625748426">Nastavenia pravidla sa nepodarilo nainštalovať na zariadenie: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Nájsť ďalšie aplikácie pre dotykové pero</translation>
@@ -2656,7 +2653,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="5154108062446123722">Rozšírené nastavenia pre <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Subjekt</translation>
-<translation id="5154917547274118687">Pamäť</translation>
 <translation id="5157635116769074044">Pripnúť túto stránku na Úvodnú obrazovku...</translation>
 <translation id="5158593464696388225">Obrázok sa nepodarilo uložiť</translation>
 <translation id="5158983316805876233">Použiť rovnaký server proxy pre všetky protokoly</translation>
@@ -2909,6 +2905,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5527463195266282916">Došlo k pokusu o prechod rozšírenia na nižšiu verziu.</translation>
 <translation id="5527474464531963247">Môžete tiež vybrať inú sieť.</translation>
 <translation id="5528368756083817449">Správca záložiek</translation>
+<translation id="5530766185686772672">Zavrieť karty inkognito</translation>
 <translation id="5532223876348815659">Globálne</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vyžaduje</translation>
 <translation id="5534304873398226603">Zahodiť fotku alebo video</translation>
@@ -4423,7 +4420,6 @@ Inštaláciou aplikácie <ph name="APP_NAME" /> stiahnete <ph name="DOWNLOAD_SIZ
 <translation id="7959074893852789871">Súbor obsahoval viacero certifikátov a niektoré z nich neboli importované:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Služba určovania polohy Google pomáha odhadnúť polohu zariadenia rýchlejšie a presnejšie pomocou zdrojov, ako je napríklad sieť Wi‑Fi. Keď zapnete služby určovania polohy Google, zariadenie prejde do režimu, ktorý poskytuje informácie o polohe pomocou siete Wi‑Fi. Túto funkciu môžete kedykoľvek vypnúť v nastaveniach polohy.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Nikdy</translation>
-<translation id="7965010376480416255">Zdieľaná pamäť</translation>
 <translation id="7966241909927244760">K&amp;opírovať adresu obrázka</translation>
 <translation id="7968742106503422125">Čítať a upravovať dáta, ktoré kopírujete a prilepujete</translation>
 <translation id="7968833647796919681">Povoliť zhromažďovanie údajov o výkonnosti</translation>
@@ -4985,7 +4981,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8871696467337989339">Používate nepodporovaný príznak príkazového riadku: <ph name="BAD_FLAG" />. Prejaví sa to na nižšej stabilite a horšom zabezpečení.</translation>
 <translation id="8871974300055371298">Nastavenia obsahu</translation>
 <translation id="8872155268274985541">Našiel sa neplatný súbor manifestu externej aktualizácie Kiosku. Aplikáciu Kiosk sa nepodarilo aktualizovať. Odoberte kľúč USB.</translation>
-<translation id="8872506776304248286">Otvoriť v aplikácii</translation>
 <translation id="8874184842967597500">Nepripojené</translation>
 <translation id="8876215549894133151">Formát:</translation>
 <translation id="8876309039915144086">Generovať heslo…</translation>

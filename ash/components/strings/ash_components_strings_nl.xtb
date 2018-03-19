@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Schakelen tussen de eerdere toetsenbordtalen die je hebt gebruikt.</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">De huidige pagina afdrukken</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> of <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> of <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Naar het volgende tabblad gaan</translation>
 <translation id="2010818616644390445">Naar het laatste tabblad in het venster gaan</translation>
+<translation id="2088054208777350526">Sneltoetsen zoeken</translation>
 <translation id="2145908266289632567">Tekst bewerken</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 tot en met =</translation>
 <translation id="2181097965834437145">De bladwijzerbalk weergeven of verbergen</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Adresbalk activeren</translation>
 <translation id="3288816184963444640">Het huidige venster sluiten</translation>
-<translation id="3356202203145076517">Het venster openen dat je het langst geleden hebt gebruikt</translation>
 <translation id="3407560819924487926">Taakbeheer weergeven</translation>
 <translation id="3422679037938588196">Naar de vorige term gaan die overeenkomt met je zoekopdracht</translation>
 <translation id="344577624355799426"><ph name="ALT" /> of <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="3837047332182291558">Toetsenbord helderder maken (alleen voor toetsenborden met achtergrondverlichting)</translation>
 <translation id="3976863468609830880">Klikken op het laatste pictogram op de plank</translation>
+<translation id="4026843240379844265">Actief venster verplaatsen tussen schermen</translation>
 <translation id="4035482366624727273">Alles op de pagina selecteren</translation>
 <translation id="4060703249685950734">Het laatste tabblad of venster dat je hebt gesloten, opnieuw openen</translation>
 <translation id="4090342722461256974">Houd <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ingedrukt en tik op <ph name="TAB" /> totdat het venster verschijnt dat je wilt openen. Laat de toetsen vervolgens los.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="7020813747703216897">Geen overeenkomende resultaten gevonden</translation>
 <translation id="7025325401470358758">Volgend deelvenster</translation>
+<translation id="7237562915163138771">Typ een webadres in de adresbalk en druk vervolgens op <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> of <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
 <translation id="766326951329901120">Content vanaf het klembord plakken als platte tekst</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>
 <translation id="8389638407792712197">Nieuw venster openen</translation>
 <translation id="8429696719963529183">De F-toetsen gebruiken (F1 tot en met F12)</translation>
+<translation id="8537650670971624753">Zoekmodus afsluiten</translation>
 <translation id="85690795166292698">De link openen op een nieuw tabblad</translation>
 <translation id="8609384513243082612">Nieuw tabblad openen</translation>
 <translation id="8644639153978066712">Verborgen bestanden in de app Bestanden weergeven</translation>

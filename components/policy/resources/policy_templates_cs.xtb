@@ -146,6 +146,11 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1503487916067509762">Aktivuje blokování vkládání softwaru třetích stran</translation>
 <translation id="1504431521196476721">Vzdálené ověření identity</translation>
 <translation id="1509692106376861764">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších byla tato zásada zrušena.</translation>
+<translation id="1519337829779572350">Podpora tohoto nastavení byla ukončena, použijte namísto něj zásadu SafeBrowsingExtendedReportingEnabled. Povolení nebo zakázání zásady SafeBrowsingExtendedReportingEnabled je ekvivalentní k nastavení zásady SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
+
+      Pokud tuto zásadu nastavíte na hodnotu false, uživatelé nebudou moci zvolit, že se mají některé informace o systému a obsahu stránek odesílat na servery Google. Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatelé budou moci odesílat část informací o systému a obsahu stránek do Bezpečného prohlížení a pomoci tak rozpoznávat nebezpečné aplikace a weby.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Umožňuje webovým stránkám sledovat fyzickou polohu uživatele</translation>
 <translation id="152657506688053119">Seznam alternativních adres URL výchozího poskytovatele vyhledávání</translation>
 <translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
@@ -283,6 +288,14 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
       Tato zásada povoluje oznámení o tom, že je vyžadován nebo doporučen restart prohlížeče. Pokud není nastavena, <ph name="PRODUCT_NAME" /> uživatele o potřebě restartu informuje prostřednictvím drobných změn v nabídce. Pokud je nastavena na hodnotu Doporučeno, bude se uživateli opakovaně zobrazovat upozornění, že je doporučen restart. Uživatel upozornění může odmítnout a tím restart odložit. Pokud je nastavena na hodnotu Povinné, bude se uživateli opakovaně zobrazovat upozornění, že po uplynutí lhůty pro oznámení bude vynucen restart prohlížeče. Lhůta je ve výchozím nastavení sedm dní a lze ji nakonfigurovat pomocí zásady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Relace uživatele se po restartu obnoví.</translation>
+<translation id="2075434678547407637">Umožňuje určit, zda se v prohlížeči <ph name="PRODUCT_NAME" /> mohou videa automaticky (bez souhlasu uživatele) přehrávat se zvukovým obsahem.
+
+      Je-li tato zásada nastavena na hodnotu True, může <ph name="PRODUCT_NAME" /> automaticky přehrávat média.
+      Je-li tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> média automaticky přehrávat nemůže.
+      Ve výchozím nastavení <ph name="PRODUCT_NAME" /> média automaticky přehrávat nemůže.
+
+      Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn a tato zásada se změní, použije se nové nastavení pouze na nově otevřené karty. Některé karty proto mohou nadále vykazovat předchozí chování.
+      </translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2077273864382355561">Prodleva vypnutí obrazovky při napájení z baterie</translation>
 <translation id="2082205219176343977">Konfigurace minimální povolené verze Chromu v zařízení.</translation>
@@ -1043,6 +1056,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tato zásada není nastavena, uživatel si v kontextové nabídce záložek může vybrat, zda zástupce aplikací chce zobrazit, či nikoliv.
 
       Pokud je tato zásada nakonfigurována, uživatel ji nemůže změnit a zástupce aplikací je buď zobrazen vždy, nebo není zobrazen nikdy.</translation>
+<translation id="4432762137771104529">Zapnout rozšířené hlášení Bezpečnému prohlížení</translation>
 <translation id="443454694385851356">Starší (není bezpečné)</translation>
 <translation id="443665821428652897">Po vypnutí prohlížeče vymazat data webů (zastaralé)</translation>
 <translation id="4439336120285389675">Určuje seznam zastaralých funkcí webové platformy, které budou znovu aktivovány.
@@ -1055,12 +1069,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
       </translation>
 <translation id="4442582539341804154">Aktivovat zámek, pokud jsou zařízení nečinná nebo pozastavená</translation>
 <translation id="4449545651113180484">Otočit obrazovku ve směru hodinových ručiček o 270 stupňů</translation>
-<translation id="4459359100627756769">Konfiguruje seznam podnikových přihlašovacích adres URL (pouze schémata HTTP a HTTPS). Na těchto adresách URL bude pořizován otisk hesla, který bude následně sloužit k detekci opětovného použití hesla.
-      Toto nastavení by měli používat pouze uživatelé sady GSuite, kteří používají systém SSO/SMAL.
-
-      Pokud je toto nastavení zapnuto, bude služba pro ochranu hesel na těchto adresách URL pořizovat otisk hesla pro účely detekce jeho opětovného použití.
-      Pokud je toto nastavení vypnuto nebo není nastaveno, bude služba pro ochranu hesel pořizovat otisk hesla pouze na adrese https://accounts.google.com.
-      V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
 <translation id="4474167089968829729">Povolit ukládání hesel do správce hesel</translation>
 <translation id="4476769083125004742">Je-li tato zásada nastavena na možnost <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikace Android nemají přístup k informacím o poloze. Pokud tuto zásadu nastavíte na jinou hodnotu nebo ji ponecháte nenastavenou a aplikace Android bude chtít získat přístup k informacím o poloze, zobrazí se uživateli žádost o schválení.</translation>
@@ -1258,6 +1266,19 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 
       Jestliže byl klient delší dobu offline, mohou být hesla starší než zadaný počet dní.</translation>
 <translation id="5105313908130842249">Prodleva uzamčení obrazovky při napájení z baterie</translation>
+<translation id="5106504910236139235">Povoluje v prohlížeči <ph name="PRODUCT_NAME" /> rozšířené hlášení Bezpečnému prohlížení a znemožňuje uživatelům toto nastavení změnit.
+
+      Rozšířené hlášení odesílá na servery Google část informací o systému a obsahu stránek s cílem pomoci rozpoznat nebezpečné aplikace a weby.
+
+      Pokud je tato zásada nastavena na hodnotu true, budou se hlášení vytvářet a odesílat pokaždé, když to bude nutné (například při zobrazení vsunuté stránky s bezpečnostním upozorněním).
+
+      Pokud je tato zásada nastavena na hodnotu false, hlášení se odesílat nebudou.
+
+      Pokud je tato zásada nastavena na hodnotu true nebo false, uživatel toto nastavení nebude moci změnit.
+
+      Pokud tuto zásadu ponecháte nenastavenou, uživatel nastavení bude moci změnit a rozhodnout se, zda tato hlášení chce odesílat, či nikoliv.
+
+      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Zakázané podnikové tiskárny pro zařízení</translation>
 <translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
@@ -1815,6 +1836,7 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 
       Udává příznaky, které mají být na prohlížeč <ph name="PRODUCT_NAME" /> použity při spuštění (použijí se pouze na přihlašovací obrazovce). Příznaky nastavené prostřednictvím této zásady nezasahují do uživatelských relací.</translation>
 <translation id="685769593149966548">Vynutit přísný omezený režim pro YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 nebo novější</translation>
 <translation id="687046793986382807">V prohlížečích <ph name="PRODUCT_NAME" /> verze 35 a novějších byla tato zásada zrušena.
 
       Informace o paměti jsou stránce hlášeny bez ohledu na nastavení této možnosti. Velikosti jsou však hlášeny jen po určitých přírůstcích a frekvence aktualizací je z bezpečnostních důvodů omezena. Chcete-li získat přesná data v reálném čase, použijte prosím nástroje, jako je Telemetry.</translation>
@@ -2012,6 +2034,7 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
 
       Pokud tato zásada nastavena není, bude při automatickém čištění použita výchozí integrovaná strategie. Aktuálně je to strategie RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání relace</translation>
+<translation id="733838170182967492">Povoluje automatické přehrávání médií</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
 <translation id="7343497214039883642">Konfigurační soubor podnikových tiskáren pro zařízení</translation>
 <translation id="7384999953864505698">Povoluje protokol QUIC</translation>
@@ -2565,6 +2588,13 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 <translation id="924557436754151212">Importování uložených hesel z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="930930237275114205">Nastavit adresář uživatelských dat pluginu <ph name="PRODUCT_FRAME_NAME" /> </translation>
 <translation id="934390688529359269">Aktivuje vynucené přihlášení do prohlížeče <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Umožňuje určit, zda má být v systému Chrome OS povoleno spouštění virtuálních počítačů.
+
+      Pokud je tato zásada nastavena na hodnotu True, spouštění virtuálních počítačů je v zařízení povoleno.
+      Pokud je tato zásada nastavena na hodnotu False, spouštění virtuálních počítačů v zařízení povoleno není.
+      Při změně na hodnotu False se na spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
+      Pokud tato zásada na spravovaném zařízení není nastavena, je v něm spouštění virtuálních počítačů povoleno.
+      Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
 <translation id="944817693306670849">Nastavení velikosti mezipaměti na disku</translation>
 <translation id="982497069985795632">Zapnout kontrolu pravopisu</translation>
 </translationbundle>

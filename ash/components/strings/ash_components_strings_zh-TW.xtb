@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">切換至你使用的上一個鍵盤語言。</translation>
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">列印目前網頁</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 鍵或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /> 鍵</translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809">按下 <ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 鍵或 <ph name="LEFT" /> 鍵</translation>
 <translation id="1996162290124031907">前往下一個分頁</translation>
 <translation id="2010818616644390445">前往視窗中的最後一個分頁</translation>
+<translation id="2088054208777350526">搜尋鍵盤快速鍵</translation>
 <translation id="2145908266289632567">文字編輯</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 到 = 鍵</translation>
 <translation id="2181097965834437145">顯示或隱藏書籤列</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">將焦點移至網址列</translation>
 <translation id="3288816184963444640">關閉目前的視窗</translation>
-<translation id="3356202203145076517">開啟你最近最少使用的視窗</translation>
 <translation id="3407560819924487926">開啟工作管理員</translation>
 <translation id="3422679037938588196">前往上一個相符的搜尋結果</translation>
 <translation id="344577624355799426"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /> 鍵</translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 到 8 鍵</translation>
 <translation id="3837047332182291558">鍵盤變亮 (僅適用於背光鍵盤)</translation>
 <translation id="3976863468609830880">點選檔案櫃中的最後一個圖示</translation>
+<translation id="4026843240379844265">在不同畫面間移動使用中的視窗</translation>
 <translation id="4035482366624727273">選取網頁上的所有項目</translation>
 <translation id="4060703249685950734">重新開啟最後關閉的分頁或視窗</translation>
 <translation id="4090342722461256974">按住 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 鍵並輕觸 <ph name="TAB" /> 鍵，切換至你要開啟的視窗後放開按鍵。</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="7020813747703216897">找不到相符的搜尋結果</translation>
 <translation id="7025325401470358758">下一個窗格</translation>
+<translation id="7237562915163138771">在網址列輸入網址，然後按下 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> 鍵</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /> 鍵</translation>
 <translation id="7439718573248533901">刪除下一個字母 (向前刪除)</translation>
 <translation id="766326951329901120">以純文字貼上剪貼簿中的內容</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">將連結拖曳至分頁列中的空白區域</translation>
 <translation id="8389638407792712197">開啟新視窗</translation>
 <translation id="8429696719963529183">使用 F 鍵 (F1 到 F12)</translation>
+<translation id="8537650670971624753">結束搜尋模式</translation>
 <translation id="85690795166292698">在新分頁中開啟連結</translation>
 <translation id="8609384513243082612">開啟新分頁</translation>
 <translation id="8644639153978066712">顯示「檔案」應用程式中隱藏的檔案</translation>

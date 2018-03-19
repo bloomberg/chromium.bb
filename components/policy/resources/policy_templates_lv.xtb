@@ -152,6 +152,11 @@
 <translation id="1503487916067509762">Iespējo trešās puses programmatūras ievietošanas mēģinājuma bloķēšanu</translation>
 <translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
 <translation id="1509692106376861764">Šīs politikas darbība tika pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29.</translation>
+<translation id="1519337829779572350">Šis iestatījums ir pārtraukts, tā vietā izmantojiet SafeBrowsingExtendedReportingEnabled. SafeBrowsingExtendedReportingEnabled iespējošana vai atspējošana ir ekvivalenta SafeBrowsingExtendedReportingOptInAllowed vērtības iestatīšanai kā “False”.
+
+      Iestatot šai politikai vērtību “False”, lietotājiem tiek liegta iespēja Google serveriem nosūtīt sistēmas informāciju un lapas saturu. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapas saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
+
+      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Atļaut vietnēm izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="152657506688053119">Noklusējuma meklētājprogrammas alternatīvo vietrāžu URL saraksts</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
@@ -296,6 +301,14 @@
       Izmantojot šo politikas iestatījumu, tiek iespējoti paziņojumi lietotājiem par ieteicamu vai obligātu pārlūka atkārtotu palaišanu. Ja šī politika nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ar nelielām izmaiņām izvēlnē lietotājam tiek norādīts, ka ir jāveic atkārtota palaišana. Ja politikai ir iestatīta vērtība “Recommended”, lietotājam periodiski tiek rādīts brīdinājums par to, ka ieteicams veikt atkārtotu palaišanu. Lietotājs var noraidīt šo brīdinājumu, lai atliktu atkārtoto palaišanu. Ja šai politikai ir iestatīta vērtība “Required”, lietotājam periodiski tiek rādīts brīdinājums par to, ka pārlūks tiks atkārtoti palaists piespiedu kārtā, tiklīdz beigsies paziņojuma periods. Pēc noklusējuma šis periods ir septiņas dienas, un to var konfigurēt politikas <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> iestatījumos.
 
       Pēc atkārtotas palaišanas tiek atjaunota lietotāja sesija.</translation>
+<translation id="2075434678547407637">Atļauj kontrolēt, vai <ph name="PRODUCT_NAME" /> videoklipus var atskaņot automātiski kopā ar audio saturu (bez lietotāja piekrišanas).
+
+      Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts atskaņot multividi automātiski.
+      Ja politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> nav atļauts atskaņot multividi automātiski.
+      Pēc noklusējuma <ph name="PRODUCT_NAME" /> nav atļauts atskaņot multividi automātiski.
+
+      Ņemiet vērā, ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.
+      </translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="2077273864382355561">Aizkave līdz ekrāna izslēgšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2082205219176343977">Konfigurējiet ierīcē minimālo atļauto Chrome versiju.</translation>
@@ -1070,6 +1083,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta, lietotājs var izvēlēties — rādīt vai paslēpt lietotņu saīsni grāmatzīmju joslas kontekstizvēlnē.
 
       Ja šī politika ir konfigurēta, lietotājs to nevar mainīt un lietotņu saīsne vienmēr tiks rādīta vai nekad netiks rādīta.</translation>
+<translation id="4432762137771104529">Drošas pārlūkošanas paplašinātās ziņošanas iespējošana</translation>
 <translation id="443454694385851356">Mantoti (nedroši)</translation>
 <translation id="443665821428652897">Notīrīt vietnes datus, aizverot pārlūku (novecojis)</translation>
 <translation id="4439336120285389675">Tiek norādīts saraksts ar novecojušām tīmekļa platformas funkcijām, kas īslaicīgi atkārtoti jāiespējo.
@@ -1082,12 +1096,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       </translation>
 <translation id="4442582539341804154">Bloķēšanas iespējošana, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta</translation>
 <translation id="4449545651113180484">Pagriezt ekrānu pulksteņrādītāju kustības virzienā par 270 grādiem</translation>
-<translation id="4459359100627756769">Izmantojot šo politiku, var konfigurēt uzņēmuma pieteikšanās URL sarakstu (tikai HTTP un HTTPS shēmas). Šajos URL tiks tverts paroles ciparfails, lai noteiktu atkārtotu paroles lietošanu.
-      Šo iestatījumu ieteicams izmantot tikai G Suite lietotājiem, kas izmanto vienotas pierakstīšanās/SAML sistēmu.
-
-      Ja šis iestatījums ir iespējots, paroles aizsardzības pakalpojums šajos URL tver paroles ciparfailu, lai noteiktu atkārtotu paroles lietošanu.
-      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroles aizsardzības pakalpojums tver paroles ciparfailu tikai vietnē https://accounts.google.com.
-      Šī politika ir pieejama tikai tādās Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu.</translation>
 <translation id="4467952432486360968">Bloķē trešo pušu sīkfailus</translation>
 <translation id="4474167089968829729">Iespējot paroļu saglabāšanu paroļu pārvaldniekā</translation>
 <translation id="4476769083125004742">Ja šī politika tiek iestatīta kā <ph name="BLOCK_GEOLOCATION_SETTING" />, Android lietotnes nevar piekļūt informācijai par atrašanās vietu. Ja iestatīsiet šai politikai citu vērtību vai neiestatīsiet politiku, lietotājam tiks prasīta piekrišana, kad Android lietotne vēlēsies piekļūt informācijai par atrašanās vietu.</translation>
@@ -1293,6 +1301,19 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ņemiet vērā, ka paroļu vecums var pārsniegt norādīto dienu skaitu, ja klientdators ilgstoši ir bijis bezsaistē.</translation>
 <translation id="5105313908130842249">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="5106504910236139235">Iespējo <ph name="PRODUCT_NAME" /> drošas pārlūkošanas paplašināto ziņošanu un novērš lietotājiem iespēju mainīt šo iestatījumu.
+
+      Paplašinātā ziņošana nosūta Google serveriem sistēmas informāciju un lapas saturu, lai palīdzētu konstatēt bīstamas lietotnes un vietnes.
+
+      Ja iestatījuma vērtība ir “True”, pārskati tiks veidoti un sūtīti, kad nepieciešams (piemēram, kad tiek rādīta drošības iespiestā reklāma).
+
+      Ja iestatījuma vērtība ir “False”, pārskati netiks sūtīti nekad.
+
+      Ja politikai ir iestatīta vērtība “True” vai “False”, lietotājs nevarēs mainīt iestatījumu.
+
+      Ja politikas vērtība nav iestatīta, lietotājs varēs mainīt iestatījumu un izlemt, vai sūtīt pārskatus.
+
+      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Atspējoti uzņēmuma ierīču printeri</translation>
 <translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
@@ -1853,6 +1874,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Tiek norādītas atzīmes, kas jāizmanto pārlūkā <ph name="PRODUCT_NAME" />, kad tas tiek startēts. Norādītās atzīmes tiek izmantotas tikai pieteikšanās ekrānā. Šajā politikā iestatītās atzīmes netiek izmantotas lietotāju sesijās.</translation>
 <translation id="685769593149966548">Ieslēgt stingri ierobežoto režīmu pakalpojumā YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 vai vecākas versijas</translation>
 <translation id="687046793986382807">Šī politika kopš <ph name="PRODUCT_NAME" /> versijas 35 vairs netiek izmantota.
 
       Neatkarīgi no opcijas vērtības joprojām tiek sniegta informācija par katras lapas patērēto atmiņu, taču informācijas daudzums tiek
@@ -2062,6 +2084,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja šī politika nav iestatīta, automātiskajai tīrīšanai tiks izmantota noklusējuma tīrīšanas stratēģija. Pašlaik tā ir stratēģija “RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Sīkfailu saglabāšana sesijas laikā</translation>
+<translation id="733838170182967492">Atļauj multivides automātisko atskaņošanu</translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="7343497214039883642">Uzņēmuma printeru konfigurācijas fails ierīcēm</translation>
 <translation id="7384999953864505698">Atļauja lietot QUIC protokolu</translation>
@@ -2631,6 +2654,13 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="930930237275114205">Iestatīt <ph name="PRODUCT_FRAME_NAME" /> lietotāja datu direktoriju</translation>
 <translation id="934390688529359269">Iespējo piespiedu pierakstīšanos pārlūkā <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Atļauj kontrolēt, vai Chrome operētājsistēmā ir atļautas virtuālās mašīnas.
+
+      Ja politikai ir iestatīta vērtība “True”, ierīcē ir atļauta virtuālo mašīnu palaišana.
+      Ja politikai ir iestatīta vērtība “False”, ierīcē nav atļauta virtuālo mašīnu palaišana.
+      Kad politikas vērtība tiek mainīta uz “False”, tā tiek piemērota jaunu virtuālo mašīnu palaišanai, bet neizslēdz virtuālās mašīnas, kas jau darbojas.
+      Kad pārvaldītajā ierīcē politikas vērtība nav iestatīta, ierīcē ir atļauta virtuālo mašīnu palaišana.
+      Nepārvaldītās ierīcēs ir atļauta virtuālo mašīnu palaišana.</translation>
 <translation id="944817693306670849">Iestatīt diska kešatmiņas lielumu</translation>
 <translation id="982497069985795632">Iespējo pareizrakstības pārbaudi</translation>
 </translationbundle>

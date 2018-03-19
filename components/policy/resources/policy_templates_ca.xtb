@@ -150,6 +150,11 @@
 <translation id="1503487916067509762">Activa el bloqueig d'injecció de programari de tercers</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Aquesta opció de configuració està obsoleta, però pots utilitzar SafeBrowsingExtendedReportingEnabled. Activar o desactivar SafeBrowsingExtendedReportingEnabled és el mateix que establir SafeBrowsingExtendedReportingOptInAllowed en "false".
+
+      Si aquesta política s'estableix en "false", els usuaris no podran decidir si volen que algunes dades del sistema i cert contingut de les pàgines s'enviïn als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran enviar aquestes dades a Navegació segura per ajudar a detectar aplicacions i llocs perillosos.
+
+      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
@@ -285,6 +290,14 @@
       Aquesta política activa les notificacions per avisar l'usuari que es recomana o es requereix reiniciar el navegador. Si no s'estableix, <ph name="PRODUCT_NAME" /> fa canvis subtils al seu menú per indicar a l'usuari que cal reiniciar el navegador. Si s'estableix en "Recommended", s'avisa periòdicament l'usuari que es recomana reiniciar el navegador. L'usuari pot ignorar aquest advertiment per posposar el reinici. Si s'estableix en "Required", s'avisa periòdicament l'usuari que el navegador es reiniciarà a la força en finalitzar el període de notificació. La durada predeterminada d'aquest període és de 7 dies i es pot configurar amb la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessió de l'usuari es restaura en reiniciar el navegador.</translation>
+<translation id="2075434678547407637">Et permet controlar si els vídeos es poden reproduir automàticament (sense el consentiment de l'usuari) amb contingut d'àudio a <ph name="PRODUCT_NAME" />.
+
+      Si la política s'estableix en "true", <ph name="PRODUCT_NAME" /> podrà reproduir contingut multimèdia automàticament.
+      Si la política s'estableix en "false", <ph name="PRODUCT_NAME" /> no podrà reproduir contingut multimèdia automàticament.
+      De manera predeterminada, <ph name="PRODUCT_NAME" /> no pot reproduir contingut multimèdia automàticament.
+
+      Tingues en compte que si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.
+      </translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2077273864382355561">Retard de la desactivació de pantalla quan s'utilitza bateria</translation>
 <translation id="2082205219176343977">Configura la versió mínima de Chrome que es permet al dispositiu.</translation>
@@ -1026,6 +1039,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política no es defineix, l'usuari pot mostrar la drecera de les aplicacions al menú contextual de la barra d'adreces d'interès o amagar-la.
 
       Si aquesta política es configura, l'usuari no la pot canviar, i la drecera de les aplicacions es mostrarà sempre o bé no es mostrarà mai.</translation>
+<translation id="4432762137771104529">Activa els informes ampliats de Navegació segura</translation>
 <translation id="443454694385851356">Heretats (opció no segura)</translation>
 <translation id="443665821428652897">Esborrament de dades del lloc en tancar el navegador (obsolet)</translation>
 <translation id="4439336120285389675">Especifica una llista de funcions obsoletes de la plataforma web per tornar-les a activar temporalment.
@@ -1038,12 +1052,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
 <translation id="4449545651113180484">Gira la pantalla 270 graus en el sentit de les agulles del rellotge</translation>
-<translation id="4459359100627756769">Configura la llista d'URL d'inici de sessió d'empresa (només esquemes HTTP i HTTPS). L'empremta digital de la contrasenya es capturarà en aquests URL i s'utilitzarà per detectar la reutilització de contrasenyes.
-      Aquesta opció de configuració només l'han de fer servir els usuaris de G Suite que facin servir un sistema SSO/SMAL.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes capturarà l'empremta digital de la contrasenya en aquests URL per detectar la reutilització de contrasenyes.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes només capturarà l'empremta digital de la contrasenya a https://accounts.google.com.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4476769083125004742">Si aquesta política s'estableix en <ph name="BLOCK_GEOLOCATION_SETTING" />, les aplicacions per a Android no poden accedir a la informació d'ubicació. Si s'estableix en un altre valor o la deixes sense establir, es demana a l'usuari que doni permís quan l'aplicació per a Android vulgui accedir a la informació d'ubicació.</translation>
@@ -1228,6 +1236,19 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Tingues en compte que les contrasenyes poden tenir una antiguitat superior al nombre de dies especificat si el dispositiu del client ha estat sense connexió durant un període més llarg de temps.</translation>
 <translation id="5105313908130842249">Retard del bloqueig de pantalla quan s'utilitza bateria</translation>
+<translation id="5106504910236139235">Activa els informes ampliats de Navegació segura a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      Els informes ampliats envien informació del sistema i contingut de la pàgina als servidors de Google per ajudar a detectar aplicacions i llocs web perillosos.
+
+      Si l'opció de configuració s'estableix en "true", es crearan i s'enviaran informes sempre que sigui necessari (per exemple, quan es mostra un intersticial de seguretat).
+
+      Si l'opció de configuració s'estableix en "false", no s'enviaran mai informes.
+
+      Tant si aquesta política s'estableix en "true" com en "false", l'usuari no la podrà modificar.
+
+      Si aquesta política es deixa sense establir, l'usuari podrà canviar l'opció de configuració i decidir si vol enviar informes o no.
+
+      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Impressores desactivades per a dispositius d'empresa</translation>
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
@@ -1746,6 +1767,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Especifica les opcions que s'han d'aplicar a <ph name="PRODUCT_NAME" /> quan s'inicia. Les opcions especificades només s'apliquen a la pantalla d'inici de sessió. Les opcions definides mitjançant aquesta política no es propaguen a les sessions d'usuari.</translation>
 <translation id="685769593149966548">Aplica el mode restringit estricte a YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 o versions posteriors</translation>
 <translation id="687046793986382807">Aquesta política s'ha retirat a partir de la versió 35 de <ph name="PRODUCT_NAME" />.
 
       De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
@@ -1930,6 +1952,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
+<translation id="733838170182967492">Permet la reproducció automàtica de contingut multimèdia</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
 <translation id="7343497214039883642">Fitxer de configuració de la impressora d'empresa per a dispositius</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
@@ -2469,6 +2492,13 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Et permet controlar si es poden executar màquines virtuals a Chrome OS.
+
+      Si la política es defineix en "true", el dispositiu podrà executar màquines virtuals.
+      Si la política es defineix en "false", el dispositiu no podrà executar màquines virtuals.
+      Si la política es canvia a "false", afectarà l'execució de màquines virtuals noves, però no desactivarà les que ja s'estan executant.
+      Si la política no es defineix en un dispositiu gestionat, el dispositiu no té permís per executar màquines virtuals.
+      Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
 <translation id="982497069985795632">Activa el corrector ortogràfic</translation>
 </translationbundle>

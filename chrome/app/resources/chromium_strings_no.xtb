@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="2898082584336937987">Installer Chromium på telefonen din. Vi sender deg en SMS på <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Start Chromium på nytt innen én dag}other{Start Chromium på nytt innen # dager}}</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3046695367536568084">Du må være logget på Chromium for å bruke apper. På denne måten kan Chromium synkronisere appene, bokmerkene og passordene dine, samt loggen din og andre innstillinger, på alle enheter.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Du er nå logget på Chromium. Synkronisering er deaktivert av administratoren din.</translation>
 <translation id="4224199872375172890">Chromium er oppdatert.</translation>
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
+<translation id="4260985389288095068">Det finnes skadelig programvare på datamaskinen du bruker. Chromium kan fjerne den og gjenopprette innstillingene dine, sånn at nettleseren fungerer normalt igjen.</translation>
 <translation id="4271805377592243930">Få hjelp med Chromium</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
+<translation id="4407044323746248786">Vil du avslutte Chromium likevel?</translation>
 <translation id="4421155425831608516">Administratoren av denne enheten har deaktivert pålogging til Chromium.</translation>
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium startes på nytt om én time}other{Chromium startes på nytt om # timer}}</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4469812139324097969">Chromium er utdatert fordi den ikke har vært startet på nytt på en stund. En oppdatering er tilgjengelig og tas i bruk når du starter Chromium på nytt.</translation>
 <translation id="4488554488975128561">Du kan bidra til å gjøre Chromium tryggere og enklere å bruke ved å sende Google noe systeminformasjon og sideinnhold automatisk. Dette hjelper oss med å oppdage farlige apper og nettsteder.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Få hjelp med Chromium OS</translation>
 <translation id="4708774505295300557">Noen har tidligere logget på Chromium på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chromium-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="4714956846925717402">Kom deg raskere til Chromium</translation>
+<translation id="4746050847053251315">Vil du avslutte Chromium likevel?</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="4943838377383847465">Chromium er i bakgrunnsmodus.</translation>
 <translation id="4987820182225656817">Gjester kan bruke Chromium uten å etterlate seg spor.</translation>

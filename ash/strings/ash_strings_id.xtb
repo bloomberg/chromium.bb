@@ -25,7 +25,7 @@
 <translation id="1525508553941733066">TUTUP</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
-<translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Mungkin mencoba mencuri ketukan tombol Anda.</translation>
+<translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Keyboard tersebut mungkin mencoba mencuri ketukan tombol Anda.</translation>
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Maaf, sandi Anda masih belum dapat diverifikasi. Catatan: jika Anda baru saja mengubah sandi, sandi yang baru akan diterapkan saat Anda logout, gunakan sandi lama di sini.</translation>
@@ -210,7 +210,7 @@
 <translation id="5977415296283489383">Headphone</translation>
 <translation id="5978382165065462689">Berbagi kontrol layar via Remote Assistance.</translation>
 <translation id="5980301590375426705">Keluar dari sesi tamu</translation>
-<translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard yang disertakan.</translation>
+<translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard dalam keadaan terhubung.</translation>
 <translation id="5992218262414051481">Mode Kontras Tinggi diaktifkan. Tekan Ctrl+Search+H lagi untuk menonaktifkannya.</translation>
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
 <translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
@@ -325,7 +325,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8652175077544655965">Tutup setelan</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
-<translation id="8734991477317290293">Mungkin mencoba mencuri ketukan tombol Anda</translation>
+<translation id="8734991477317290293">Keyboard mungkin mencoba mencuri ketukan tombol Anda</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga.
 

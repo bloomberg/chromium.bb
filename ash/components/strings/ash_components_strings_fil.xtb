@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Lumipat sa nakaraang wika ng keyboard na ginagamit mo.</translation>
 <translation id="1195667586424773550">I-drag ang link sa address bar ng tab</translation>
 <translation id="1204450209689312104">Magbukas ng bagong window sa incognito mode</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">I-print ang iyong kasalukuyang page</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pagkatapos ay <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Pumunta sa susunod na tab</translation>
 <translation id="2010818616644390445">Pumunta sa huling tab sa window</translation>
+<translation id="2088054208777350526">Maghanap ng mga keyboard shortcut</translation>
 <translation id="2145908266289632567">Pag-edit ng Text</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 hanggang =</translation>
 <translation id="2181097965834437145">Ipakita o itago ang bookmarks bar</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Address bar sa pagtuon</translation>
 <translation id="3288816184963444640">Isara ang kasalukuyang window</translation>
-<translation id="3356202203145076517">Buksan ang window na pinakabihira mong ginamit kamakailan</translation>
 <translation id="3407560819924487926">Palabasin ang task manager</translation>
 <translation id="3422679037938588196">Pumunta sa nakaraang tugma para sa iyong paghahanap</translation>
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 hanggang 8</translation>
 <translation id="3837047332182291558">Gawing mas maliwanag ang keyboard (para lang sa mga keyboard na may backlight)</translation>
 <translation id="3976863468609830880">I-click ang huling icon sa iyong shelf</translation>
+<translation id="4026843240379844265">Ilipat ang aktibong window sa pagitan ng mga display</translation>
 <translation id="4035482366624727273">Piliin ang lahat ng nasa page</translation>
 <translation id="4060703249685950734">Buksang muli ang huling tab o window na isinara mo</translation>
 <translation id="4090342722461256974">Pindutin nang matagal ang <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, i-tap ang <ph name="TAB" /> hanggang sa mapunta ka sa window na gusto mong buksan, pagkatapos ay bitawan ito.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="7020813747703216897">Walang nahanap na tumutugmang resulta</translation>
 <translation id="7025325401470358758">Susunod na pane</translation>
+<translation id="7237562915163138771">Mag-type ng address sa web sa address bar, pagkatapos ay pindutin ang <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">I-delete ang susunod na titik (forward na pag-delete)</translation>
 <translation id="766326951329901120">I-paste ang content mula sa clipboard bilang plain text</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">I-drag ang link sa isang blankong bahagi sa tab strip</translation>
 <translation id="8389638407792712197">Magbukas ng bagong window</translation>
 <translation id="8429696719963529183">Gumamit ng mga F key (F1 hanggang F12)</translation>
+<translation id="8537650670971624753">Lumabas sa search mode</translation>
 <translation id="85690795166292698">Buksan ang link sa isang bagong tab</translation>
 <translation id="8609384513243082612">Magbukas ng bagong tab</translation>
 <translation id="8644639153978066712">Ipakita ang mga nakatagong file sa app na Mga File</translation>

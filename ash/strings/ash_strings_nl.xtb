@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">SLUITEN</translation>
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1550523713251050646">Klik voor meer opties</translation>
+<translation id="1567387640189251553">Er is een ander toetsenbord aangesloten sinds de laatste keer dat je je wachtwoord hebt ingevoerd. Mogelijk wordt geprobeerd om je toetsaanslagen te stelen.</translation>
 <translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
 <translation id="1621499497873603021">Resterende tijd totdat de batterij leeg is: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: Als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd wanneer je uitlogt. Gebruik hier het oude wachtwoord.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
+<translation id="1928739107511554905">Als je de update wilt downloaden, sluit je het toetsenbord aan en start je je Chromebook opnieuw op via het touchscreen.</translation>
 <translation id="1942830294380034169">Overloopknop</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Casten van <ph name="TAB_NAME" /> naar <ph name="RECEIVER_NAME" /> stopzetten</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
 <translation id="2144487987174258011">Start opnieuw op om Adobe Flash Player te updaten</translation>
+<translation id="2191905770366256395">Je afneembare toetsenbord heeft een essentiële update nodig</translation>
 <translation id="2208323208084708176">Samengestelde desktopmodus</translation>
 <translation id="2220572644011485463">Pincode of wachtwoord</translation>
 <translation id="225680501294068881">Zoeken naar apparaten...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
 <translation id="3899995891769452915">Spraakinvoer</translation>
+<translation id="3900355044994618856">Je sessie loopt over <ph name="SESSION_TIME_REMAINING" /> af</translation>
 <translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
 <translation id="394485226368336402">Audio-instellingen</translation>
 <translation id="397105322502079400">Berekenen...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">De sneltoets om de modus voor hoog contrast in of uit te schakelen, is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
+<translation id="5136175204352732067">Ander toetsenbord aangesloten</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
 <translation id="5207949376430453814">Tekstcursor markeren</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
 <translation id="5978382165065462689">De controle over je scherm delen via externe ondersteuning.</translation>
 <translation id="5980301590375426705">Gastsessie sluiten</translation>
+<translation id="598882571027504733">Als je de update wilt downloaden, sluit je het toetsenbord aan en start je je Chromebook opnieuw op</translation>
 <translation id="5992218262414051481">De modus voor hoog contrast is ingeschakeld. Druk nogmaals op Ctrl+Zoeken+H om deze uit te schakelen.</translation>
 <translation id="6018164090099858612">Mirrormodus wordt gesloten</translation>
 <translation id="6043212731627905357">Dit beeldscherm werkt niet met je <ph name="DEVICE_TYPE" /> (het beeldscherm wordt niet ondersteund).</translation>
@@ -258,6 +264,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7067196344162293536">Automatisch draaien</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
+<translation id="7131634465328662194">Je wordt automatisch uitgelogd.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
@@ -318,6 +325,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="8652175077544655965">Instellingen sluiten</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laag-vermogen-lader aangesloten</translation>
+<translation id="8734991477317290293">Mogelijk wordt geprobeerd om je toetsaanslagen te stelen</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="8814715559352963456">Het verplaatsen van vensters naar een ander bureaublad kan leiden tot onverwacht gedrag.
 

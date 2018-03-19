@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="2898082584336937987">Instalează Chromium pe telefon. Vom trimite un SMS pe telefonul tău: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Despre &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Relansează Chromium în cel mult o zi}few{Relansează Chromium în cel mult # zile}other{Relansează Chromium în cel mult # de zile}}</translation>
 <translation id="2977470724722393594">Chromium este actualizat</translation>
 <translation id="3032787606318309379">Se adaugă la Chromium...</translation>
 <translation id="3046695367536568084">Trebuie să vă conectați la Chromium pentru a folosi aplicațiile. Astfel, Chromium vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Acum sunteți conectat(ă) la Chromium! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="4224199872375172890">Chromium este actualizat.</translation>
 <translation id="4230135487732243613">Vă conectați datele Chromium cu acest cont?</translation>
+<translation id="4260985389288095068">Ai software dăunător pe computer. Chromium poate să-l elimine și să restabilească setările pentru ca browserul să funcționeze normal din nou.</translation>
 <translation id="4271805377592243930">Obține ajutor privind Chromium</translation>
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
 <translation id="4330585738697551178">Despre acest modul se cunoaște că intră în conflict cu Chromium.</translation>
+<translation id="4407044323746248786">Ieși din Chromium oricum?</translation>
 <translation id="4421155425831608516">Conectarea la Chromium este dezactivată de administratorul acestui dispozitiv.</translation>
 <translation id="4423735387467980091">Personalizați și controlați Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium se va relansa într-o oră}few{Chromium se va relansa în # ore}other{Chromium se va relansa în # de ore}}</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4469812139324097969">Chromium este neactualizat, deoarece în ultimul timp nu a fost repornit. Este disponibilă o actualizare, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="4488554488975128561">Ne poți ajuta să facem Chromium mai sigur și mai ușor de folosit trimițând automat anumite informații despre sistem și conținutul paginii la Google pentru a detecta aplicațiile și site-urile periculoase.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Obține ajutor privind sistemul de operare Chromium</translation>
 <translation id="4708774505295300557">Un alt utilizator s-a conectat anterior la Chromium pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chromium pentru a-ți păstra separat datele.</translation>
 <translation id="4714956846925717402">Accesează Chromium mai rapid</translation>
+<translation id="4746050847053251315">Ieși din Chromium oricum?</translation>
 <translation id="4888717733111232871">Regula de intrare pentru Chromium pentru a permite traficul mDNS.</translation>
 <translation id="4943838377383847465">Chromium este în modul fundal.</translation>
 <translation id="4987820182225656817">Invitații pot folosi Chromium fără a lăsa nicio urmă.</translation>

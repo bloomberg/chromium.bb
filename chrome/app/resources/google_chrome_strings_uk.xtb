@@ -41,6 +41,7 @@
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
+<translation id="2094919256425865063">Усе одно вийти з Chrome?</translation>
 <translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Допоможіть покращити Chrome, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Установіть Chrome на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису.</translation>
@@ -104,6 +105,7 @@
 <translation id="3735758079232443276">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Видалити з Chrome…</translation>
+<translation id="3844992844761326777">На вашому комп’ютері виявлено зловмисне програмне забезпечення. Chrome може видалити його та відновити налаштування для роботи веб-переглядача у звичайному режимі.</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
@@ -138,6 +140,7 @@
 <translation id="4771048833395599659">Цей файл може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="4794050651896644714">Зберігати дані в Chrome</translation>
 <translation id="4804732725083176494">Адміністратор цього пристрою вимкнув вхід у Chrome.</translation>
+<translation id="4833487314064352405">{0,plural, =1{Перезапустіть Chrome упродовж дня}one{Перезапустіть Chrome упродовж # дня}few{Перезапустіть Chrome упродовж # днів}many{Перезапустіть Chrome упродовж # днів}other{Перезапустіть Chrome упродовж # дня}}</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="4895437082222824641">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
@@ -146,6 +149,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome перезапуститься через годину}one{Chrome перезапуститься через # годину}few{Chrome перезапуститься через # години}many{Chrome перезапуститься через # годин}other{Chrome перезапуститься через # години}}</translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
 <translation id="5166975452760862670">Для Google Chrome вибрано цю мову</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
@@ -188,6 +192,7 @@
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="6634887557811630702">У вас остання версія Google Chrome.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
+<translation id="677276454032249905">Усе одно вийти з Chrome?</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>

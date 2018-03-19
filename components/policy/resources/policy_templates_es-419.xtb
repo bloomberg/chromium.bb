@@ -149,6 +149,11 @@
 <translation id="1503487916067509762">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1504431521196476721">Atestación remota</translation>
 <translation id="1509692106376861764">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
+
+      Si esta política se establece como falsa, los usuarios ya no podrán enviar cierta información del sistema ni contenido de páginas a los servidores de Google. Si esta configuración se establece como verdadera o no se configura, los usuarios podrán enviar cierta información del sistema y contenido de páginas a Navegación segura para detectar apps y sitios peligrosos.
+
+      Para obtener más información sobre Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
@@ -288,6 +293,14 @@
       Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio realizar un reinicio. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita llevar a cabo el reinicio. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para hacerlo. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es de siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Después del reinicio, se restablecerá la sesión del usuario.</translation>
+<translation id="2075434678547407637">Te permite controlar si los videos pueden reproducirse de forma automática (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
+
+      Si la política se establece como verdadera, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia de forma automática.
+      Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá hacerlo.
+      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede hacerlo.
+
+      Ten en cuenta que si se está ejecutando <ph name="PRODUCT_NAME" /> y esta política cambia, se aplicará solo a las pestañas que se abran a partir de ese momento. Por lo tanto, es posible que algunas pestañas sigan teniendo el comportamiento anterior.
+      </translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
 <translation id="2082205219176343977">Configura la versión mínima permitida de Chrome para el dispositivo.</translation>
@@ -1025,6 +1038,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política no se configura, el usuario podrá elegir si mostrar u ocultar el acceso directo a las aplicaciones en el menú contextual de la barra de favoritos.
 
       Si esta política se configura, el usuario no podrá modificarla y el acceso directo a las aplicaciones permanecerá visible u oculto, según la configuración.</translation>
+<translation id="4432762137771104529">Habilitar el informe extendido de Navegación segura</translation>
 <translation id="443454694385851356">Heredados (inseguro)</translation>
 <translation id="443665821428652897">Borrar los datos del sitio al cerrar el navegador (en desuso)</translation>
 <translation id="4439336120285389675">Especificar una lista de funciones de Web Platform que ya no están disponibles para volver a habilitarlas temporalmente
@@ -1037,12 +1051,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4449545651113180484">Rotar la pantalla hacia la derecha 270 grados</translation>
-<translation id="4459359100627756769">Configura la lista de las URL de acceso empresariales (solo esquemas HTTP y HTTPS). La huella digital de la contraseña se capturará en estas URL y se usará para detectar la reutilización de contraseñas.
-      Solo los usuarios de GSuite con un sistema de SSO/SAML deben usar esta configuración.
-
-      Si se habilita esta configuración, el servicio de protección de contraseñas capturará la huella digital de la contraseña en estas URL para detectar la reutilización de contraseñas.
-      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas solo capturará la huella digital de la contraseña en https://accounts.google.com.
-      Esta política no está disponible en instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el guardado de contraseñas en el administrador de contraseñas</translation>
 <translation id="4476769083125004742">Si esta política se establece como <ph name="BLOCK_GEOLOCATION_SETTING" />, las apps de Android no podrán acceder a la información de la ubicación. Si estableces esta política en cualquier valor o no la estableces, se le pedirá al usuario que autorice la app de Android que quiera acceder a la información de ubicación.</translation>
@@ -1235,6 +1243,19 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ten en cuenta que las contraseñas pueden ser más antiguas que la cantidad de días especificada si el cliente no se conectó por un período mayor.</translation>
 <translation id="5105313908130842249">Demora de bloqueo de pantalla con batería</translation>
+<translation id="5106504910236139235">Habilita el informe extendido de Navegación segura de <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      El informe extendido envía cierta información del sistema y contenido de páginas a los servidores de Google para detectar apps y sitios peligrosos.
+
+      Si la configuración se establece como verdadera, se crearán los informes y se enviarán cuando sea necesario (por ejemplo, cuando se muestre un intersticial de seguridad).
+
+      Si la configuración se establece como falsa, nunca se enviarán informes.
+
+      Si esta política se establece como verdadera o falsa, el usuario no podrá modificar la configuración.
+
+      Si esta política no se establece, el usuario podrá cambiar la configuración y decidir si envía los informes o no.
+
+      Para obtener más información sobre Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Impresoras empresariales inhabilitadas asociadas a dispositivos</translation>
 <translation id="5130288486815037971">Si se habilitan los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
@@ -1754,6 +1775,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 o versiones posteriores</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 
       Los datos de la memoria se informan a la página, independientemente del valor de la opción, pero los tamaños especificados
@@ -1948,6 +1970,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada, que actualmente es "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la sesión</translation>
+<translation id="733838170182967492">Permite reproducir contenido multimedia automáticamente</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7343497214039883642">Archivo de configuración de las impresoras empresariales para los dispositivos</translation>
 <translation id="7384999953864505698">Permite el protocolo QUIC</translation>
@@ -2499,6 +2522,13 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permite forzar el acceso a <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Te permite controlar si las máquinas virtuales pueden ejecutarse en el Sistema operativo Chrome.
+
+      Si la política se establece como verdadera, el dispositivo podrá ejecutar máquinas virtuales.
+      Si se establece como falsa, el dispositivo no podrá hacerlo.
+      Cuando esta política se cambia a falsa, se aplica a las máquinas virtuales que se inicien a partir de ese momento, pero no apaga las máquinas virtuales que ya estén en ejecución.
+      Cuando no se establece esta política en un dispositivo administrado, el dispositivo puede ejecutar máquinas virtuales.
+      Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
 <translation id="944817693306670849">Configurar el tamaño de caché de disco</translation>
 <translation id="982497069985795632">Habilitar el corrector ortográfico</translation>
 </translationbundle>

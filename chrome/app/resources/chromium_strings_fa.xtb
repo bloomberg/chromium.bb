@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2898082584336937987">‏Chromium را در تلفنتان نصب کنید. پیامکی به تلفن شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">‏درباره &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{‏راه‌اندازی مجدد Chromium ظرف یک روز}one{‏راه‌اندازی مجدد Chromium ظرف # روز}other{‏راه‌اندازی مجدد Chromium ظرف # روز}}</translation>
 <translation id="2977470724722393594">‏Chromium به‌روز است</translation>
 <translation id="3032787606318309379">‏افزودن به Chromium…</translation>
 <translation id="3046695367536568084">‏برای استفاده از برنامه‌ها باید وارد Chromium شده باشید. این به Chromium اجازه می‌دهد تا برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌های شما و سایر تنظیمات را در دستگاه‌ها همگام‌سازی کند.</translation>
@@ -89,11 +90,14 @@
 <translation id="4222580632002216401">‏اکنون وارد Chromium شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
 <translation id="4224199872375172890">‏Chromium به‌روز است.</translation>
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
+<translation id="4260985389288095068">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chromium می‌تواند آن را حذف و تنظیماتتان را بازیابی کند تا عملکرد مرورگرتان دوباره عادی شود.</translation>
 <translation id="4271805377592243930">‏دریافت کمک برای Chromium</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4330585738697551178">‏این مدول با Chromium تداخل دارد.</translation>
+<translation id="4407044323746248786">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4421155425831608516">‏سرپرست این دستگاه ورود به سیستم Chromium را غیرفعال کرده است.</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{‏Chromium یک ساعت دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium # ساعت دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium # ساعت دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4469812139324097969">‏Chromium قدیمی است چون برای مدتی راه‌اندازی مجدد نشده است. یک نسخه به‌روز دردسترس است و به‌محض راه‌اندازی مجدد اعمال خواهد شد.</translation>
 <translation id="4488554488975128561">‏می‌توانید با ارسال خودکار برخی از اطلاعات سیستم و محتوای صفحه به Google‏، Chromium را ایمن‌تر و آسان‌تر کنید. Google از این اطلاعات برای شناسایی برنامه‌ها و سایت‌های خطرناک استفاده می‌کند.</translation>
@@ -104,6 +108,7 @@
 <translation id="469338717132742108">‏دریافت کمک برای سیستم عامل Chromium</translation>
 <translation id="4708774505295300557">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chromium در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="4714956846925717402">‏دسترسی سریع‌تر به Chromium</translation>
+<translation id="4746050847053251315">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4888717733111232871">‏قانون ترافیک ورودی برای Chromium جهت اجازه به ترافیک mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium در حالت پس‌زمینه است.</translation>
 <translation id="4987820182225656817">‏مهمان‌ها می توانند از Chromium استفاده کنند بدون این‌که اثری از خود به جا بگذارند.</translation>

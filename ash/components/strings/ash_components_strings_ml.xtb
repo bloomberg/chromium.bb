@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">നിങ്ങൾ ഉപയോഗിച്ചിരുന്ന മുമ്പത്തെ കീബോഡ് ഭാഷയിലേക്ക് മാറുക.</translation>
 <translation id="1195667586424773550">ടാബിന്റെ വിലാസ ബാറിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="1204450209689312104">അദൃശ്യ മോഡിൽ പുതിയൊരു വിൻഡോ തുറക്കുക</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">നിങ്ങളുടെ നിലവിലെ പേജ് പ്രിന്റ് ചെയ്യുക</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> അല്ലെങ്കിൽ <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">അടുത്ത ടാബിലേക്ക് പോവുക</translation>
 <translation id="2010818616644390445">വിൻഡോയിലെ അവസാന ടാബിലേക്ക് പോവുക</translation>
+<translation id="2088054208777350526">കീബോഡ് കുറുക്കുവഴികള്‍ക്കായി തിരയുക</translation>
 <translation id="2145908266289632567">ടെക്‌സ്‌റ്റ് എഡിറ്റ് ചെയ്യൽ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 വഴി =</translation>
 <translation id="2181097965834437145">ബുക്ക്‌മാര്‍‌ക്ക് ബാർ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">വിലാസ ബാര്‍ ഫോക്കസ് ചെയ്യുക</translation>
 <translation id="3288816184963444640">നിലവിലെ വിൻഡോ അവസാനിപ്പിക്കുക</translation>
-<translation id="3356202203145076517">നിങ്ങൾ ഏറ്റവും അടുത്തിടെ ഉപയോഗിച്ച വിൻഡോ തുറക്കുക</translation>
 <translation id="3407560819924487926">ടാസ്‌ക് മാനേജർ ഉപയോഗപ്പെടുത്തുക</translation>
 <translation id="3422679037938588196">നിങ്ങളുടെ തിരയലിനായി മുമ്പത്തെ പൊരുത്തത്തിലേക്ക് പോവുക</translation>
 <translation id="344577624355799426"><ph name="ALT" /> അല്ലെങ്കിൽ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 മുതൽ 8 വരെ</translation>
 <translation id="3837047332182291558">കീബോഡ് കൂടുതൽ തെളിച്ചമുള്ളതാക്കുക (ബാക്ക്‌ലൈറ്റ് കീബോഡുകൾക്കായി മാത്രം)</translation>
 <translation id="3976863468609830880">നിങ്ങളുടെ ഷെൽഫിലെ അവസാനത്തെ ചിഹ്നം ക്ലിക്ക് ചെയ്യുക</translation>
+<translation id="4026843240379844265">ഡിസ്‌പ്ലേകൾക്ക് ഇടയിൽ സജീവ വിൻഡോകൾ നീക്കുക</translation>
 <translation id="4035482366624727273">പേജിലെ എല്ലാം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4060703249685950734">നിങ്ങൾ ഒടുവിൽ അവസാനിപ്പിച്ച ടാബ് അല്ലെങ്കിൽ വിൻഡോ വീണ്ടും തുറക്കുക</translation>
 <translation id="4090342722461256974">നിങ്ങൾ തുറക്കാൻ ആഗ്രഹിക്കുന്ന വിന്‍ഡോയിലേക്ക് എത്തുന്നത് വരെ <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> അമർത്തിപ്പിടിച്ച്, <ph name="TAB" /> ടാപ്പ് ചെയ്യുക, തുടർന്ന് സ്വതന്ത്രമാക്കുക.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="7020813747703216897">പൊരുത്തമുള്ള ഫലങ്ങളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="7025325401470358758">അടുത്ത പാൻ</translation>
+<translation id="7237562915163138771">വിലാസ ബാറിൽ ഒരു വെബ് വിലാസം ടൈപ്പ് ചെയ്യുക, തുടർന്ന് <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> അമർത്തുക</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> അല്ലെങ്കിൽ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">അടുത്ത അക്ഷരം ഇല്ലാതാക്കുക (ഫോർവേഡ് ഡിലീറ്റ്)</translation>
 <translation id="766326951329901120">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം സാധാരണ വാചകമായി ഒട്ടിക്കുക</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">ടാബ് സ്‌ട്രിപ്പിലെ ശൂന്യമായ ഏരിയയിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="8389638407792712197">പുതിയ വിൻഡോ തുറക്കുക</translation>
 <translation id="8429696719963529183">F കീകൾ ഉപയോഗിക്കുക (F1 മുതൽ F12 വരെ)</translation>
+<translation id="8537650670971624753">തിരയൽ മോഡിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="85690795166292698">പുതിയ ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="8609384513243082612">പുതിയ ടാബ് തുറക്കുക</translation>
 <translation id="8644639153978066712">'ഫയലുകൾ' ആപ്പിലെ അദൃശ്യമായ ഫയലുകൾ പ്രദർശിപ്പിക്കുക</translation>

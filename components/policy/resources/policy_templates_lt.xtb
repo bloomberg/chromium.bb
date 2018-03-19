@@ -152,6 +152,11 @@
 <translation id="1503487916067509762">Įgalinamas trečiosios šalies programinės įrangos įdėjimo blokavimas</translation>
 <translation id="1504431521196476721">Nuotolinis patvirtinimas</translation>
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
+<translation id="1519337829779572350">Šis nustatymas nebenaudojamas, vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įjungimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą kaip „False“.
+
+      Nustačius šią politiką kaip „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas kaip „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.
+
+      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
@@ -297,6 +302,14 @@
       Taikant šį politikos nustatymą įgalinami pranešimai, kuriais naudotojas informuojamas, kad rekomenduojama arba būtina iš naujo paleisti naršyklę. Nenustačius, „<ph name="PRODUCT_NAME" />“ subtiliais meniu pakeitimais nurodo naudotojui, kad reikia paleisti iš naujo. Nustačius kaip „Rekomenduojama“, naudotojui rodomas pasikartojantis įspėjimas, kad rekomenduojama paleisti iš naujo. Naudotojas gali atsisakyti šio pranešimo, kad atidėtų paleidimą iš naujo. Nustačius kaip „Būtina“, naudotojui rodomas pasikartojantis įspėjimas, nurodantis, kad naršyklė bus priverstinai paleista iš naujo pasibaigus pranešimo laikotarpiui. Pagal numatytuosius nustatymus šis laikotarpis yra septynios dienos. Jį galima konfigūruoti politikos „<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />“ nustatymuose.
 
       Paleidus iš naujo, naudotojo sesija atkuriama.</translation>
+<translation id="2075434678547407637">Leidžiama jums valdyti, ar vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso įrašo turiniu, naudojant „<ph name="PRODUCT_NAME" />“.
+
+      Nustačius politiką kaip „True“, „<ph name="PRODUCT_NAME" />“ leidžiama automatiškai leisti mediją.
+      Nustačius politiką kaip „False“, „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos.
+      Pagal numatytuosius nustatymus „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos.
+
+      Atminkite, kad pakeitus politiką, kai vykdoma „<ph name="PRODUCT_NAME" />“, tai bus taikoma tik naujiems atidarytiems skirtukams. Todėl kai kurie skirtukai vis dar gali veikti, kaip anksčiau.
+      </translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2077273864382355561">Ekrano išjungimo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
@@ -1074,6 +1087,7 @@
       Jei ši politika nenustatyta, naudotojas gali pasirinkti rodyti arba slėpti programų spartųjį klavišą žymių juostos kontekstiniame meniu.
 
       Jei ši politika sukonfigūruota, naudotojas negali jos pakeisti, o programų spartusis klavišas visada rodomas arba niekada nerodomas.</translation>
+<translation id="4432762137771104529">Saugaus naršymo išplėstinių ataskaitų teikimo įgalinimas</translation>
 <translation id="443454694385851356">Pasenę (nesaugūs)</translation>
 <translation id="443665821428652897">Išvalyti svetainės duomenis uždarant naršyklę (nebenaudojama)</translation>
 <translation id="4439336120285389675">Nurodomas nebenaudojamų žiniatinklio platformos funkcijų, kurios bus laikinai įgalintos, sąrašas.
@@ -1086,12 +1100,6 @@
       </translation>
 <translation id="4442582539341804154">Įgalinti užraktą, kai įrenginys nenaudojamas arba laikinai sustabdytas</translation>
 <translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
-<translation id="4459359100627756769">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio kontrolinis kodas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
-      Šį nustatymą turėtų naudoti tik „GSuite“ naudotojai, naudojantys sistemą SSO / SMAL.
-
-      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio kontrolinis kodas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
-      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio kontrolinis kodas bus užfiksuotas tik adresu https://accounts.google.com.
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4474167089968829729">Įgalinti slaptažodžių saugojimą slaptažodžių tvarkytuvėje</translation>
 <translation id="4476769083125004742">Jei ši politika nustatyta į „<ph name="BLOCK_GEOLOCATION_SETTING" />“, „Android“ programos negalės pasiekti vietos informacijos. Jei šią politiką nustatysite į bet kokią kitą vertę arba jos nenustatysite, naudotojo bus paprašyta sutikti, kai „Android“ programa norės pasiekti vietovės informaciją.</translation>
@@ -1297,6 +1305,19 @@
 
       Atminkite, kad slaptažodžiai gali būti senesni nei nurodytas dienų skaičius, jei klientas neprisijungia ilgesnį laikotarpį.</translation>
 <translation id="5105313908130842249">Ekrano užrakto delsa, kai naudojama akumuliatoriaus energija</translation>
+<translation id="5106504910236139235">Įgalinamas „<ph name="PRODUCT_NAME" />“ saugaus naršymo išplėstinių ataskaitų teikimas ir neleidžiama naudotojams keisti šio nustatymo.
+
+      Naudojant išplėstinių ataskaitų teikimo funkciją tam tikra sistemos informacija ir puslapio turinys siunčiami į „Google“ serverius, siekiant aptikti pavojingas programas ir svetaines.
+
+      Jei nustatymas nustatytas kaip „True“, ataskaitos kuriamos ir siunčiamos, kada reikia (pvz., kai rodomas saugos tarpinis puslapis).
+
+      Jei šis nustatymas nustatytas kaip „False“, ataskaitos niekada nesiunčiamos.
+
+      Jei ši politika nustatyta kaip „True“ arba „False“, naudotojas negali keisti nustatymo.
+
+      Jei ši politika nenustatyta, naudotojas gali keisti nustatymą ir nuspręsti, ar siųsti ataskaitas.
+
+      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Išjungti įmonės įrenginių spausdintuvai</translation>
 <translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
@@ -1859,6 +1880,7 @@
 
       Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką nustatytos žymos nepertraukia naudotojų sesijų.</translation>
 <translation id="685769593149966548">Vykdyti griežtai ribotą režimą sistemoje „YouTube“</translation>
+<translation id="686079137349561371">7 ar naujesnės versijos „Microsoft Windows“</translation>
 <translation id="687046793986382807">Ši politika nebegalioja išleidus „<ph name="PRODUCT_NAME" />“ 35 versiją.
 
       Vis tiek teikiamos atminties informacijos ataskaitos puslapyje, neatsižvelgiant į parinkties vertę, bet nurodomi dydžiai
@@ -2067,6 +2089,7 @@
 
       Jei ši politika nenustatyta, automatinis išvalymas naudos numatytąją įdiegtą strategiją. Šiuo metu tai strategija „RemoveLRUIfDormant“.</translation>
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
+<translation id="733838170182967492">Medijos automatinio paleidimo leidimas</translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
 <translation id="7343497214039883642">Įrenginiams skirtas įmonės spausdintuvų konfigūracijos failas</translation>
 <translation id="7384999953864505698">Leidžiamas protokolas QUIC</translation>
@@ -2636,6 +2659,13 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>
 <translation id="934390688529359269">Įgalinamas „<ph name="PRODUCT_NAME" />“ priverstinis prisijungimas</translation>
+<translation id="938916311528680351">Leidžiama valdyti, ar virtualiesiems įrenginiams leidžiama veikti „Chrome“ OS.
+
+      Jei politika nustatyta kaip „True“, įrenginiui leidžiama paleisti virtualiuosius įrenginius.
+      Jei politika nustatyta kaip „False“, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
+      Pakeitus šios politikos nustatymą į „False“, jis taikomas paleidžiant naujus virtualiuosius įrenginius, bet jau veikiantys virtualieji įrenginiai nėra išjungiami.
+      Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui leidžiama paleisti virtualiuosius įrenginius.
+      Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
 <translation id="982497069985795632">Rašybos tikrinimo įgalinimas</translation>
 </translationbundle>

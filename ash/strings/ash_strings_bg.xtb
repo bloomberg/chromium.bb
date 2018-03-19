@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
+<translation id="1567387640189251553">Свързана е различна клавиатура, откакто последно въведохте паролата си. Тя може да се опитва да записва кои клавиши натискате.</translation>
 <translation id="1608626060424371292">Премахване на този потребител</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
+<translation id="1928739107511554905">За да инсталирате актуализацията, използвайте сензорния екран да рестартирате своя Chromebook, докато клавиатурата е прикачена.</translation>
 <translation id="1942830294380034169">Бутон „Препълване“</translation>
 <translation id="1951012854035635156">Асистент</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Спиране на предаването на „<ph name="TAB_NAME" />“ към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="2144487987174258011">Рестартирайте, за да актуализирате Adobe Flash Player</translation>
+<translation id="2191905770366256395">Вашата отделяща се клавиатура се нуждае от критична актуализация</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>
 <translation id="225680501294068881">Сканира се за устройства...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
 <translation id="3899995891769452915">Гласово въвеждане</translation>
+<translation id="3900355044994618856">Сесията ви ще приключи след <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Установява се връзка със: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Настройки за звука</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Приемам</translation>
 <translation id="4961318399572185831">Предаване на екрана</translation>
+<translation id="5136175204352732067">Свързана е различна клавиатура</translation>
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
 <translation id="5207949376430453814">Открояване на точката на вмъкване в текста</translation>
 <translation id="5222676887888702881">Изход</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Слушалки</translation>
 <translation id="5978382165065462689">Споделяте контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="5980301590375426705">Изход от сесията като гост</translation>
+<translation id="598882571027504733">За да инсталирате актуализацията, рестартирайте своя Chromebook, докато клавиатурата е прикачена.</translation>
 <translation id="5992218262414051481">Режимът на висок контраст е активиран. За да го изключите, натиснете отново Ctrl + клавиш „Търсене“ + H.</translation>
 <translation id="6018164090099858612">Излиза се от огледалния режим</translation>
 <translation id="6043212731627905357">Този монитор не се поддържа от вашия <ph name="DEVICE_TYPE" />.</translation>
@@ -258,6 +264,7 @@
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
+<translation id="7131634465328662194">Ще излезете автоматично.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
@@ -318,6 +325,7 @@
 <translation id="8652175077544655965">Затваряне на настройките</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
+<translation id="8734991477317290293">Тя може да се опитва да записва кои клавиши натискате</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение.
 

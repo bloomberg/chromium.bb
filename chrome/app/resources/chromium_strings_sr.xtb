@@ -53,6 +53,7 @@
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2898082584336937987">Инсталирајте Chromium на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
+<translation id="2943431542152338750">{0,plural, =1{Поново покрените Chromium за један дан}one{Поново покрените Chromium за # дан}few{Поново покрените Chromium за # дана}other{Поново покрените Chromium за # дана}}</translation>
 <translation id="2977470724722393594">Chromium је ажуриран</translation>
 <translation id="3032787606318309379">Додавање у Chromium...</translation>
 <translation id="3046695367536568084">Треба да будете пријављени у Chromium да бисте користили апликације. То омогућава Chromium-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на свим уређајима.</translation>
@@ -92,11 +93,14 @@
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
+<translation id="4260985389288095068">Имате штетан софтвер на рачунару. Chromium може да га уклони и врати подешавања да би прегледач поново функционисао као и обично.</translation>
 <translation id="4271805377592243930">Пронађите помоћ за Chromium</translation>
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
+<translation id="4407044323746248786">Желите ли ипак да затворите Chromium?</translation>
 <translation id="4421155425831608516">Пријављивање у Chromium је онемогућио администратор овог уређаја.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Поново ћемо покренути Chromium за један сат}one{Поново ћемо покренути Chromium за # сат}few{Поново ћемо покренути Chromium за # сата}other{Поново ћемо покренути Chromium за # сати}}</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4469812139324097969">Chromium је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="4488554488975128561">Можете да помогнете да Chromium буде безбеднији и лакши за коришћење тако што ћете Google-у аутоматски слати неке системске информације и садржаје страница да бисмо открили опасне апликације и сајтове.</translation>
@@ -107,6 +111,7 @@
 <translation id="469338717132742108">Пронађите помоћ за Chromium OS</translation>
 <translation id="4708774505295300557">Неко се претходно пријавио на Chromium на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Направите новог Chromium корисника да би информације биле раздвојене.</translation>
 <translation id="4714956846925717402">Брже приступајте Chromium-у</translation>
+<translation id="4746050847053251315">Желите ли ипак да затворите Chromium?</translation>
 <translation id="4888717733111232871">Правило за долазни саобраћај за Chromium да би се омогућио mDNS саобраћај.</translation>
 <translation id="4943838377383847465">Chromium је у позадинском режиму.</translation>
 <translation id="4987820182225656817">Гости могу да користе Chromium а да не остављају никакве трагове.</translation>

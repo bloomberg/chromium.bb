@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Chuyển về ngôn ngữ bàn phím mà bạn đã sử dụng trước đó.</translation>
 <translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của tab</translation>
 <translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
+<translation id="1293699935367580298">Thoát</translation>
 <translation id="1299858300159559687">In trang hiện tại</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> hoặc <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> hoặc <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Chuyển sang tab tiếp theo</translation>
 <translation id="2010818616644390445">Chuyển đến tab cuối cùng trong cửa sổ</translation>
+<translation id="2088054208777350526">Tìm kiếm phím tắt</translation>
 <translation id="2145908266289632567">Chỉnh sửa văn bản</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 đến =</translation>
 <translation id="2181097965834437145">Hiển thị hoặc ẩn thanh dấu trang</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Thanh địa chỉ chính</translation>
 <translation id="3288816184963444640">Đóng cửa sổ hiện tại</translation>
-<translation id="3356202203145076517">Mở cửa sổ mà bạn ít sử dụng nhất gần đây</translation>
 <translation id="3407560819924487926">Hiển thị trình quản lý tác vụ</translation>
 <translation id="3422679037938588196">Quay lại kết quả phù hợp trước đó cho tìm kiếm của bạn</translation>
 <translation id="344577624355799426"><ph name="ALT" /> hoặc <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 đến 8</translation>
 <translation id="3837047332182291558">Tăng độ sáng của bàn phím (chỉ dành cho bàn phím có đèn nền)</translation>
 <translation id="3976863468609830880">Nhấp vào biểu tượng cuối cùng trên giá</translation>
+<translation id="4026843240379844265">Di chuyển cửa sổ đang hoạt động giữa các màn hình</translation>
 <translation id="4035482366624727273">Chọn mọi nội dung trên trang</translation>
 <translation id="4060703249685950734">Mở lại cửa sổ hoặc tab mà bạn đã đóng gần đây nhất</translation>
 <translation id="4090342722461256974">Nhấn và giữ <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> rồi nhấn vào <ph name="TAB" /> cho đến khi chuyển đến cửa sổ mà bạn muốn mở, sau đó thả tổ hợp phím ra.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="7020813747703216897">Không tìm thấy kết quả phù hợp nào</translation>
 <translation id="7025325401470358758">Ngăn tiếp theo</translation>
+<translation id="7237562915163138771">Nhập địa chỉ web vào thanh địa chỉ, sau đó nhấn <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> hoặc <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Xóa chữ cái tiếp theo (xóa tiến)</translation>
 <translation id="766326951329901120">Dán nội dung từ khay nhớ tạm dưới dạng văn bản thuần túy</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Kéo liên kết vào một vùng trống trên thanh tab</translation>
 <translation id="8389638407792712197">Mở cửa sổ mới</translation>
 <translation id="8429696719963529183">Sử dụng các phím F (F1 tới F12)</translation>
+<translation id="8537650670971624753">Thoát chế độ tìm kiếm</translation>
 <translation id="85690795166292698">Mở liên kết trong một tab mới</translation>
 <translation id="8609384513243082612">Mở tab mới</translation>
 <translation id="8644639153978066712">Hiển thị các tệp bị ẩn trong ứng dụng Tệp</translation>

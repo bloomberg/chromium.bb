@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Facoltativo: aiutaci a migliorare Chromium inviando automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="2898082584336937987">Installa Chromium sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Informazioni su &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Riavvia Chromium tra un giorno}other{Riavvia Chromium tra # giorni}}</translation>
 <translation id="2977470724722393594">Chromium è aggiornato</translation>
 <translation id="3032787606318309379">Aggiunta a Chromium in corso...</translation>
 <translation id="3046695367536568084">Per poter utilizzare le app, devi eseguire l'accesso su Chromium. Chromium potrà così sincronizzare app, Preferiti, cronologia, password e altre impostazioni tra dispositivi.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Hai eseguito l'accesso a Chromium. La sincronizzazione è stata disattivata dall'amministratore.</translation>
 <translation id="4224199872375172890">Chromium è aggiornato.</translation>
 <translation id="4230135487732243613">Collegare i tuoi dati Chromium a questo account?</translation>
+<translation id="4260985389288095068">Rilevato software dannoso sul computer. Chromium può rimuoverlo e ripristinare le tue impostazioni per ristabilire il normale funzionamento del browser.</translation>
 <translation id="4271805377592243930">Ricevi assistenza per Chromium</translation>
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
 <translation id="4330585738697551178">Questo modulo risulta in conflitto con Chromium.</translation>
+<translation id="4407044323746248786">Vuoi uscire comunque da Chromium?</translation>
 <translation id="4421155425831608516">L'accesso a Chromium è disattivato dall'amministratore del dispositivo.</translation>
 <translation id="4423735387467980091">Personalizza e controlla Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium verrà riavviato tra un'ora}other{Chromium verrà riavviato tra # ore}}</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
 <translation id="4469812139324097969">Chromium non è aggiornato perché non viene riavviato da un po'. È disponibile un aggiornamento che verrà applicato non appena riavvierai.</translation>
 <translation id="4488554488975128561">Puoi contribuire a rendere Chromium più sicuro e più facile da utilizzare inviando automaticamente a Google alcune informazioni sul sistema e alcuni contenuti delle pagine per contribuire a rilevare app e siti pericolosi.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Ricevi assistenza per Chromium OS</translation>
 <translation id="4708774505295300557">Qualcuno ha già eseguito l'accesso a Chromium su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Crea un nuovo utente Chromium per tenere separate le tue informazioni.</translation>
 <translation id="4714956846925717402">Apri Chromium più velocemente</translation>
+<translation id="4746050847053251315">Vuoi chiudere comunque Chromium?</translation>
 <translation id="4888717733111232871">Regola inbound per consentire il traffico mDNS in Chromium.</translation>
 <translation id="4943838377383847465">Chromium è in modalità background.</translation>
 <translation id="4987820182225656817">Gli ospiti possono utilizzare Chromium senza lasciare tracce.</translation>

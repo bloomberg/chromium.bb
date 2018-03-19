@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">तुम्ही आधी वापरत असलेल्या कीबोर्डवर स्विच करा.</translation>
 <translation id="1195667586424773550">लिंक ड्रॅग करून टॅबच्या अ‍ॅड्रेस बारवर आणा</translation>
 <translation id="1204450209689312104">एक नवीन विंडो गुप्त मोडमध्ये उघडा</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">तुमचे हे पेज प्रिंट करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> किंवा <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> किंवा <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">पुढील टॅबवर जा</translation>
 <translation id="2010818616644390445">विंडोमधील अंतिम टॅबवर जा</translation>
+<translation id="2088054208777350526">कीबोर्ड शॉर्टकट शोधा</translation>
 <translation id="2145908266289632567">मजकूर संपादन</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> एक पासून =</translation>
 <translation id="2181097965834437145">बुकमार्क बार दाखवा किंवा लपवा</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">अ‍ॅड्रेस बारवर फोकस करा</translation>
 <translation id="3288816184963444640">ही विंडो बंद करा</translation>
-<translation id="3356202203145076517">तुम्ही अलीकडे फारच कमी उघडलेली विंडो उघडा</translation>
 <translation id="3407560819924487926">टास्क मॅनेजर वर आणा</translation>
 <translation id="3422679037938588196">तुमच्या शोधाच्या आधीच्या जुळणीवर जा</translation>
 <translation id="344577624355799426"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> एक ते आठ</translation>
 <translation id="3837047332182291558">कीबोर्ड उजळ करा (फक्त बॅकलिट कीबोर्डसाठी)</translation>
 <translation id="3976863468609830880">तुमच्या शेल्फवरील शेवटच्या आयकनवर क्लिक करा</translation>
+<translation id="4026843240379844265">डिस्प्ले दरम्यान सक्रिय विंडो हलवा</translation>
 <translation id="4035482366624727273">पेजवरील प्रत्येक गोष्ट निवडा</translation>
 <translation id="4060703249685950734">तुम्ही याआधी बंद केलेला टॅब किंवा विंडो पुन्हा उघडा</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> दाबा आणि धरून ठेवा, तुम्हाला उघडायची असलेल्या विंडोवर तुम्ही पोहोचेपर्यंत <ph name="TAB" /> वर टॅप करत राहा, मग सोडा.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="7020813747703216897">जुळणारे परिणाम आढळले नाहीत</translation>
 <translation id="7025325401470358758">पुढील उपखंड</translation>
+<translation id="7237562915163138771">अॅड्रेस बारमध्ये वेब अ‍ॅड्रेस टाइप करा आणि त्यानंतर <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> दाबा</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">पुढील अक्षर हटवा (फॉरवर्ड करा हटवा)</translation>
 <translation id="766326951329901120">आशय एक साधा मजकूर म्हणून क्लिपबोर्डवरून पेस्ट करा</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">टॅब स्ट्रिपवरील एका रिक्त भागावर एखादी लिंक ड्रॅग करा</translation>
 <translation id="8389638407792712197">नवीन विंडो उघडा</translation>
 <translation id="8429696719963529183">F की वापरा (F1 ते F12)</translation>
+<translation id="8537650670971624753">शोध मोडमधून बाहेर पडा</translation>
 <translation id="85690795166292698">लिंक एका नवीन टॅबमध्ये उघडा</translation>
 <translation id="8609384513243082612">नवीन टॅब उघडा</translation>
 <translation id="8644639153978066712">फायली अ‍ॅप मध्ये लपलेल्या फायली प्रदर्शित करा</translation>

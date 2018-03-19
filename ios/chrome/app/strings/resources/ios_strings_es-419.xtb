@@ -190,6 +190,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="4536418791685807335">Intenta volver a acceder.</translation>
 <translation id="457386861538956877">Más ...</translation>
 <translation id="461440297010471931">Búsqueda con Google</translation>
+<translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
 <translation id="4620246317052452550">Páginas que leíste</translation>
 <translation id="4636930964841734540">Información</translation>
 <translation id="4659667755519643272">Acceder al alternador de pestañas</translation>
@@ -317,6 +318,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6914783257214138813">Las personas que tengan acceso al archivo exportado podrán ver tus contraseñas.</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6973630695168034713">Carpetas</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
@@ -366,6 +368,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7971521879845308059">Bloquear ventanas emergentes</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8019783059653722575">Te permite guardar fotos y cargarlas.</translation>
+<translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8023878949384262191">Expande la sección.</translation>
 <translation id="8059533439631660104">Contrae la sección.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
@@ -376,6 +379,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8272426682713568063">Tarjetas de crédito</translation>
 <translation id="8281781826761538115">Predeterminado: <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8328777765163860529">Cerrar todas</translation>
 <translation id="8381750437846184350">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google</translation>
 <translation id="842017693807136194">Accediste con</translation>
 <translation id="8428045167754449968">Ciudad/pueblo</translation>

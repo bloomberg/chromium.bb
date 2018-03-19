@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">మీరు ఉపయోగించిన మునుపటి కీబోర్డ్ భాషకు మారండి.</translation>
 <translation id="1195667586424773550">ట్యాబ్ యొక్క చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
 <translation id="1204450209689312104">కొత్త విండోని అజ్ఞాత మోడ్‌లో తెరవండి</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">మీ ప్రస్తుత పేజీని ముద్రించండి</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> లేదా <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> లేదా <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">తదుపరి ట్యాబ్‌కి వెళ్లండి</translation>
 <translation id="2010818616644390445">విండోలో చివరి ట్యాబ్‌కు వెళ్లండి</translation>
+<translation id="2088054208777350526">కీబోర్డ్ షార్ట్‌కట్‌ల కోసం శోధించు</translation>
 <translation id="2145908266289632567">వచన సవరణ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 నుండి =</translation>
 <translation id="2181097965834437145">బుక్‌మార్క్‌ల బార్‌ని చూపండి లేదా దాచండి</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ఫోకస్ చిరునామా బార్</translation>
 <translation id="3288816184963444640">ప్రస్తుత విండోను మూసివేయండి</translation>
-<translation id="3356202203145076517">మీరు అత్యంత ఇటీవల ఉపయోగించిన విండోని తెరవండి</translation>
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
 <translation id="3422679037938588196">మీ శోధన కోసం తదుపరి సరిపోలికకు వెళ్లండి</translation>
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="3837047332182291558">కీబోర్డ్‌ని మరింత ప్రకాశవంతం చేయండి (నేపథ్య కాంతి ఉన్న కీబోర్డ్‌లకు మాత్రమే)</translation>
 <translation id="3976863468609830880">మీ అరలోని చివరి చిహ్నాన్ని క్లిక్ చేయండి</translation>
+<translation id="4026843240379844265">యాక్టివ్ విండోని డిస్‌ప్లేల మధ్య తరల్చండి</translation>
 <translation id="4035482366624727273">పేజీలోని ప్రతిదాన్ని ఎంచుకోండి</translation>
 <translation id="4060703249685950734">మీరు మూసివేసిన చివరి ట్యాబ్ లేదా విండోని తిరిగి తెరవండి</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />ని నొక్కి, పట్టుకుని, మీరు తెరవాలనుకుంటున్న విండో వచ్చే వరకు <ph name="TAB" />ని నొక్కండి, ఆపై వదిలివేయండి.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="7020813747703216897">సరిపోలే ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="7025325401470358758">తదుపరి పేన్</translation>
+<translation id="7237562915163138771">చిరునామా బార్‌లో వెబ్ చిరునామాని టైప్ చేసి, <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" />ని నొక్కండి</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">తదుపరి అక్షరాన్ని తొలగించండి (ముందుకు తొలగింపు)</translation>
 <translation id="766326951329901120">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను సాదా వచనంగా అతికించండి</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">లింక్‌ను ట్యాబ్ స్ట్రిప్‌లోని ఖాళీ ప్రాంతంలోకి లాగండి</translation>
 <translation id="8389638407792712197">కొత్త విండోని తెరవండి</translation>
 <translation id="8429696719963529183">F కీలు (F1 నుండి F12 వరకు) ఉపయోగించండి</translation>
+<translation id="8537650670971624753">శోధన మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="85690795166292698">లింక్‌ను కొత్త ట్యాబ్‌లో తెరవండి</translation>
 <translation id="8609384513243082612">కొత్త ట్యాబ్‌ని తెరవండి</translation>
 <translation id="8644639153978066712">దాచబడిన ఫైల్‌లను ఫైల్స్ యాప్ ద్వారా ప్రదర్శించండి</translation>

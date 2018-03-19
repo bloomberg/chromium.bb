@@ -152,6 +152,11 @@
 <translation id="1503487916067509762">Nag-e-enable ng pag-block sa pagpasok ng third party software</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
 <translation id="1509692106376861764">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29.</translation>
+<translation id="1519337829779572350">Hindi na ginagamit ang setting na ito, gamitin na lang ang SafeBrowsingExtendedReportingEnabled. Katumbas ng pag-enable o pag-disable ng SafeBrowsingExtendedReportingEnabled ang pagtakda ng SafeBrowsingExtendedReportingOptInAllowed sa False.
+
+      Kapag itinakda ang patakarang ito sa false, mapipigilan ang mga user na piliing magpadala ng ilang impormasyon ng system at content ng page sa mga server ng Google. Kung ang setting na ito ay true o hindi na-configure, papayagan ang mga user na magpadala ng ilang impormasyon ng system at content ng page sa Ligtas na Pag-browse para makatulong sa pagtukoy ng mga mapanganib na app at site.
+
+      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="1522425503138261032">Payagan ang mga site na subaybayan ang aktwal na lokasyon ng mga user</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="1530812829012954197">Palaging i-render ang mga sumusunod na pattern ng URL sa browser ng host</translation>
@@ -295,6 +300,14 @@
       Ine-enable ng setting ng patakarang ito ang mga notification upang ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito upang ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Bilang default, may pitong araw ang panahong ito at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Ire-restore ang session ng user pagkatapos ng muling paglulunsad.</translation>
+<translation id="2075434678547407637">Nagbibigay-daan sa iyong kontrolin kung maaaring awtomatikong mag-play ang mga video (nang walang pahintulot ng user) na may content na audio sa <ph name="PRODUCT_NAME" />.
+
+      Kung nakatakda ang patakaran sa True, pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
+      Kung nakatakda ang patakaran sa False, hindi pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
+      Bilang default, hindi pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
+
+      Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> at magbabago ang patakarang ito, malalapat lang ito sa mga bagong nabuksang tab. Kaya maaaring maobserbahan pa rin sa ilang tab ang nakaraang gawi.
+      </translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
@@ -1063,6 +1076,7 @@
       Kung hindi nakatakda ang patakarang ito, mapipili ng user na ipakita o itago ang shortcut ng mga app sa menu ng konteksto na bar ng bookmark.
 
       Kung naka-configure ang patakarang ito, hindi ito mababago ng user at ang shortcut ng mga app ay palaging ipinapakita o hindi kailanman ipapakita.</translation>
+<translation id="4432762137771104529">I-enable ang Pinalawak na Pag-uulat sa Ligtas na Pag-browse</translation>
 <translation id="443454694385851356">Legacy (hindi secure)</translation>
 <translation id="443665821428652897">I-clear ang data ng site kapag na-shutdown ang browser (hindi ginamit)</translation>
 <translation id="4439336120285389675">Tumukoy ng listahan ng mga hindi na ginagamit na feature ng web platform upang pansamantalang ma-enable muli.
@@ -1075,12 +1089,6 @@
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
-<translation id="4459359100627756769">I-configure ang listahan ng mga login URL ng enterprise (HTTP at HTTPS na scheme lang). Ang fingerprint ng password ay kukunin sa mga URL na ito at gagamitin para sa pagtukoy ng muling paggamit ng password.
-      Ang mga user ng GSuite na gumagamit ng SSO/SMAL system lang ang dapat na gumamit sa setting na ito.
-
-      Kung ie-enable ang setting na ito, kukunin ng serbisyo ng proteksyon sa password sa mga URL na ito ang fingerprint ng password para sa pagtukoy ng muling paggamit ng password.
-      Kung naka-disable o hindi nakatakda ang setting na ito, ang serbisyo ng proteksyon sa password ay kukuha lang ng fingerprint ng password sa https://accounts.google.com.
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
 <translation id="4474167089968829729">I-enable ang pagse-save ng mga password sa password manager</translation>
 <translation id="4476769083125004742">Kung nakatakda ang patakarang ito sa <ph name="BLOCK_GEOLOCATION_SETTING" />, hindi maaaring i-access ng mga Android app ang impormasyon ng lokasyon. Kung itatakda mo ang patakarang ito sa anumang iba pang value o iiwan mo itong hindi nakatakda, hihilingin sa user na magbigay ng pahintulot kapag gusto ng Android app na i-access ang impormasyon ng lokasyon.</translation>
@@ -1287,6 +1295,19 @@
 
       Tandaan na maaaring maging mas luma kaysa sa tinukoy na bilang ng araw ang mga password kung nag-offline ang client sa loob ng mas mahabang panahon.</translation>
 <translation id="5105313908130842249">Delay ng pag-lock ng screen kapag tumatakbo gamit ang power ng baterya</translation>
+<translation id="5106504910236139235">Ine-enable ang Pinalawak na Pag-uulat sa Ligtas na Pag-browse ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Nagpapadala ang Pinalawak na Pag-uulat ng ilang impormasyon ng system at content ng page sa mga server ng Google para matulungang matukoy ang mga mapanganib na app at site.
+
+      Kung nakatakda ang setting na ito sa true, magagawa ang mga ulat at maipapadala kung kinakailangan (tulad na lang kapag ipinapakita ang isang security interstitial).
+
+      Kung nakatakda ang setting na ito sa false, hindi kailanman ipapadala ang mga ulat.
+
+      Kung nakatakada ang patakarang ito sa true o false, hindi mababago ng user ang setting.
+
+      Kung hinayaang hindi nakatakda ang patakarang ito, mababago ng user ang setting at makapagpapasya kung magpapadala ng mga ulat o hindi.
+
+      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="5108031557082757679">Mga naka-disable na printer ng device ng enterprise</translation>
 <translation id="5130288486815037971">Kung naka-enable ang mga RC4 na cipher suite sa TLS o hindi</translation>
 <translation id="5141670636904227950">Itakda ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login</translation>
@@ -1847,6 +1868,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat lang ang mga flag sa screen ng pag-log in. Ang mga flag na itinatakda sa pamamagitan ng patakarang ito ay hindi nalalapat sa mga session ng user.</translation>
 <translation id="685769593149966548">Ipatupad ang Mahigpit na Restricted Mode para sa YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 o mas bago</translation>
 <translation id="687046793986382807">Itinigil na ang patakarang ito simula noong bersyon 35 ng <ph name="PRODUCT_NAME" />.
 
       Iniuulat pa rin sa pahina ang impormasyon ng memory, ano pa man ang value ng opsyon, ngunit ang mga iniuulat na laki ay
@@ -2055,6 +2077,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
+<translation id="733838170182967492">Pinapayagan ang pag-autoplay ng media</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
 <translation id="7384999953864505698">Pinapayagan ang QUIC protocol</translation>
@@ -2623,6 +2646,13 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
 <translation id="930930237275114205">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ine-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Nagbibigay-daan sa iyong pamahalaan kung papayagan ang mga virtual machine na tumakbo sa Chrome OS.
+
+      Kung nakatakda ang patakaran sa True, pinapayagan ang device na magpatakbo ng mga virtual machine.
+      Kung nakatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
+      Kapag ginawang False ang patakarang ito, nalalapat ito sa pagsisimula ng mga bagong virtual machine ngunit hindi nito isa-shut down ang mga tumatakbo nang virtual machine.
+      Kapag hindi nakatakda ang patakarang ito sa isang pinamamahalaang device, pinapayagan ang device na magpatakbo ng mga virtual machine. 
+      Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
 <translation id="982497069985795632">Ine-enable ang spellcheck</translation>
 </translationbundle>

@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="2898082584336937987">在手機上安裝 Chromium。我們會傳送簡訊到你的手機：<ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
+<translation id="2943431542152338750">{0,plural, =1{在 1 天內重新啟動 Chromium}other{在 # 天內重新啟動 Chromium}}</translation>
 <translation id="2977470724722393594">Chromium 目前是最新版本</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3046695367536568084">你必須登入 Chromium 才能使用應用程式。在登入狀態下，Chromium 可同步處理你在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">你現在已登入 Chromium！但管理員已關閉同步功能。</translation>
 <translation id="4224199872375172890">Chromium 目前是最新版本。</translation>
 <translation id="4230135487732243613">要將你的 Chromium 資料連結至這個帳戶嗎？</translation>
+<translation id="4260985389288095068">在你的電腦上發現有害軟體。Chromium 正在進行移除，並且會還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="4271805377592243930">前往 Chromium 說明頁面</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="4330585738697551178">已知這個模組與 Chromium 衝突。</translation>
+<translation id="4407044323746248786">確定要關閉 Chromium 嗎？</translation>
 <translation id="4421155425831608516">這部裝置的管理員停用了 Chromium 的登入功能。</translation>
 <translation id="4423735387467980091">自訂及控制 Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium 將於 1 小時後重新啟動}other{Chromium 將於 # 小時後重新啟動}}</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4469812139324097969">Chromium 已有一段時間未重新啟動，現用版本因此過舊。重新啟動後，即會套用可用的更新。</translation>
 <translation id="4488554488975128561">你可以選擇自動傳送部分系統資訊和網頁內容給 Google，協助我們偵測危險的應用程式和網站，讓 Chromium 變得更安全、更好用。</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">前往 Chromium 作業系統說明頁面</translation>
 <translation id="4708774505295300557">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這部電腦上登入 Chromium。請建立新的 Chromium 使用者，以便另行保存你的資訊。</translation>
 <translation id="4714956846925717402">更快存取 Chromium</translation>
+<translation id="4746050847053251315">確定要結束 Chromium 嗎？</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>
 <translation id="4987820182225656817">以訪客身分使用 Chromium 不會留下任何紀錄。</translation>

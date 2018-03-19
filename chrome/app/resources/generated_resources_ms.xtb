@@ -119,7 +119,7 @@
 <translation id="1173894706177603556">Namakan semula</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="117624967391683467">Menyalin <ph name="FILE_NAME" />...</translation>
-<translation id="1177138678118607465">Google mungkin menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google lain. Anda boleh menukar tetapan ini pada bila-bila masa di myaccount.google.com/activitycontrols/search</translation>
+<translation id="1177138678118607465">Google mungkin menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain. Anda boleh menukar tetapan ini pada bila-bila masa di myaccount.google.com/activitycontrols/search</translation>
 <translation id="1177863135347784049">Tersuai</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
@@ -572,6 +572,7 @@
 <translation id="1850508293116537636">Putar &amp;ikut arah jam</translation>
 <translation id="1851361118452499663">Foto Saya</translation>
 <translation id="1852799913675865625">Terdapat ralat ketika cuba membaca fail: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Tab inkognito baharu</translation>
 <translation id="1856715684130786728">Tambah lokasi...</translation>
 <translation id="1856813161013948396">Langkau skrin kunci dengan mengetik penderia cap jari. Klik untuk mengkonfigurasi.</translation>
 <translation id="1858585891038687145">Percayakan sijil ini untuk mengenal pasti pembuat perisian</translation>
@@ -631,7 +632,6 @@
 <translation id="1962233722219655970">Halaman ini menggunakan aplikasi Native Client yang tidak berfungsi pada komputer anda.</translation>
 <translation id="1962969542251276847">Kunci Skrin</translation>
 <translation id="1963227389609234879">Buang Semua</translation>
-<translation id="1965328510789761112">Memori peribadi</translation>
 <translation id="1965624977906726414">Tidak mempunyai kebenaran khas.</translation>
 <translation id="1970368523891847084">Mod video dimasukkan</translation>
 <translation id="197288927597451399">Simpan</translation>
@@ -734,7 +734,6 @@
 <translation id="2136573720723402846">Dayakan buka kunci menggunakan cap jari</translation>
 <translation id="2137068468602026500">Klik <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> di bawah Penyemak Imbas Web</translation>
 <translation id="2138398485845393913">Sambungan ke "<ph name="DEVICE_NAME" />" masih berlangsung</translation>
-<translation id="2139186145475833000">Tambahkan kepada Skrin utama</translation>
 <translation id="214169863967063661">Buka tetapan penampilan</translation>
 <translation id="2142328300403846845">Buka Pautan sebagai</translation>
 <translation id="214353449635805613">Rantau tangkapan skrin</translation>
@@ -2050,7 +2049,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4114360727879906392">Tetingkap sebelumnya</translation>
 <translation id="4115002065223188701">Rangkaian di luar liputan</translation>
 <translation id="4115080753528843955">Sesetengah perkhidmatan kandungan menggunakan pengecam unik bagi tujuan membenarkan akses kepada kandungan yang dilindungi</translation>
-<translation id="411666854932687641">Memori Persendirian</translation>
 <translation id="4120817667028078560">Laluan terlalu panjang</translation>
 <translation id="4121428309786185360">Tamat Tempoh Pada</translation>
 <translation id="412730574613779332">Spandex</translation>
@@ -2104,7 +2102,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4235200303672858594">Keseluruhan skrin</translation>
 <translation id="4235813040357936597">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Batalkan log masuk</translation>
-<translation id="4240511609794012987">Memori yang dikongsi</translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="4242577469625748426">Gagal memasang tetapan dasar pada peranti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Dapatkan lagi apl stilus</translation>
@@ -2657,7 +2654,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5154108062446123722">Tetapan lanjutan untuk <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Subjek</translation>
-<translation id="5154917547274118687">Memori</translation>
 <translation id="5157635116769074044">Pin halaman ini pada Skrin Mula...</translation>
 <translation id="5158593464696388225">Gagal menyimpan imej.</translation>
 <translation id="5158983316805876233">Gunakan proksi yang sama untuk semua protokol</translation>
@@ -2910,6 +2906,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5527463195266282916">Mencuba untuk merendahkan sambungan.</translation>
 <translation id="5527474464531963247">Anda juga boleh memilih rangkaian lain.</translation>
 <translation id="5528368756083817449">Pengurus Penanda Halaman</translation>
+<translation id="5530766185686772672">Tutup tab inkognito</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> ingin</translation>
 <translation id="5534304873398226603">Buang foto atau video</translation>
@@ -4163,7 +4160,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="7544853251252956727">Rombak</translation>
 <translation id="7545415673537747415">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain daripada <ph name="BEGIN_LINK" />Kawalan Aktiviti Google<ph name="END_LINK" />.</translation>
 <translation id="7547317915858803630">Amaran: tetapan <ph name="PRODUCT_NAME" /> anda disimpan pada pemacu rangkaian. Perkara ini mungkin mengakibatkan keperlahanan, keranapan, malah kehilangan data.</translation>
-<translation id="7547483330017600937">Bangunkan pada <ph name="DEVICE_TYPE" /> anda. Anda boleh menjalankan apl natif kegemaran anda dan alat barisan perintah dengan lancar dan selamat.
+<translation id="7547483330017600937">Bangunkan pada <ph name="DEVICE_TYPE" /> anda. Anda boleh menjalankan apl natif kegemaran anda dan alat garis perintah dengan lancar dan selamat.
 
 Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZE" /> data.</translation>
 <translation id="7548856833046333824">Lemonad</translation>
@@ -4425,7 +4422,6 @@ Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZ
 <translation id="7959074893852789871">Fail mengandungi berbilang sijil, beberapa daripadanya tidak diimport:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Perkhidmatan lokasi Google menggunakan sumber seperti Wi-Fi untuk membantu menganggar lokasi peranti anda dengan lebih cepat dan lebih tepat. Apabila anda menghidupkan perkhidmatan lokasi Google, peranti anda memasuki mod yang menggunakan Wi-Fi untuk memberikan maklumat lokasi. Anda boleh mematikan ciri ini dalam tetapan lokasi pada bila-bila masa.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Tidak sama sekali</translation>
-<translation id="7965010376480416255">Memori Kongsi</translation>
 <translation id="7966241909927244760">S&amp;alin Alamat Imej</translation>
 <translation id="7968742106503422125">Baca dan ubah suai data yang anda salin dan tampal</translation>
 <translation id="7968833647796919681">Dayakan pengumpulan data prestasi</translation>
@@ -4988,7 +4984,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8871696467337989339">Anda menggunakan bendera baris perintah yang tidak disokong: <ph name="BAD_FLAG" />. Kestabilan dan keselamatan akan terjejas.</translation>
 <translation id="8871974300055371298">Tetapan kandungan</translation>
 <translation id="8872155268274985541">Fail manifes kemas kini luar Kiosk yang tidak sah dijumpai. Gagal mengemas kini apl Kiosk. Sila alih keluar batang USB.</translation>
-<translation id="8872506776304248286">Buka dalam apl</translation>
 <translation id="8874184842967597500">Tidak bersambung</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Jana kata laluan...</translation>

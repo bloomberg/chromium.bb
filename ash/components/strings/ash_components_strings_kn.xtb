@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">ನೀವು ಹಿಂದೆ ಬಳಸುತ್ತಿದ್ದ ಕೀಬೋರ್ಡ್ ಭಾಷೆಗೆ ಬದಲಾಯಿಸಿ.</translation>
 <translation id="1195667586424773550">ಟ್ಯಾಬ್‌ನ ವಿಳಾಸ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="1204450209689312104">ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಹೊಸ ವಿಂಡೋ ತೆರೆಯಿರಿ</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಮುದ್ರಿಸಿ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ಅಥವಾ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ಅಥವಾ <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="2010818616644390445">ವಿಂಡೋದಲ್ಲಿ ಕೊನೆಯ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
+<translation id="2088054208777350526">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಿ</translation>
 <translation id="2145908266289632567">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡುವಿಕೆ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 ರಿಂದ =</translation>
 <translation id="2181097965834437145">ಬುಕ್‌ಮಾರ್ಕ್‌ ಪಟ್ಟಿಗಳನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ವಿಳಾಸ ಪಟ್ಟಿಯನ್ನು ಗಮನಿಸಿ</translation>
 <translation id="3288816184963444640">ಪ್ರಸ್ತುತ ವಿಂಡೋ ಮುಚ್ಚಿ</translation>
-<translation id="3356202203145076517">ನೀವು ಇತ್ತೀಚೆಗೆ ಕಡಿಮೆ ಬಳಸಿದ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3407560819924487926">ಹೊಸ ಕಾರ್ಯ ನಿರ್ವಾಹಕವನ್ನು ತೆರೆಯುತ್ತದೆ</translation>
 <translation id="3422679037938588196">ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಹಿಂದಿನದಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ಅಥವಾ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 ರಿಂದ 8 ರವರೆಗೆ</translation>
 <translation id="3837047332182291558">ಕೀಬೋರ್ಡ್ ಅನ್ನು ಪ್ರಕಾಶಮಾನವಾಗಿ ಮಾಡಿ (ಬ್ಯಾಕ್‌‌ಲಿಟ್‌‌ ಕೀಬೋರ್ಡ್‌ಗಳಿಗಾಗಿ ಮಾತ್ರ)</translation>
 <translation id="3976863468609830880">ನಿಮ್ಮ ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಕೊನೆಯ ಐಕಾನ್ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
+<translation id="4026843240379844265">ಸಕ್ರಿಯ ವಿಂಡೋವನ್ನು ಡಿಸ್‌ಪ್ಲೇಗಳ ನಡುವೆ ಸರಿಸಿ</translation>
 <translation id="4035482366624727273">ಪುಟದಲ್ಲಿರುವ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="4060703249685950734">ನೀವು ಮುಚ್ಚಿದ ಕೊನೆಯ ಟ್ಯಾಬ್‌ ಅಥವಾ ವಿಂಡೋವನ್ನು ಮರುತೆರೆಯಿರಿ</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ಅನ್ನು ಒತ್ತಿ ಹಿಡಿದುಕೊಳ್ಳಿ, ನೀವು ತೆರೆಯಲು ಬಯಸುವ ವಿಂಡೋವನ್ನು ಪಡೆಯುವವರೆಗೂ <ph name="TAB" /> ಅನ್ನು ಟ್ಯಾಪ್‌ ಮಾಡುತ್ತ ಇರಿ ನಂತರ ಬಿಡುಗಡೆಗೊಳಿಸಿ.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
 <translation id="7020813747703216897">ಯಾವುದೇ ಹೊಂದಾಣಿಕೆಯ ಫಲಿತಾಂಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="7025325401470358758">ಮುಂದಿನ ಫಲಕ</translation>
+<translation id="7237562915163138771">ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ವೆಬ್‌ ವಿಳಾಸವನ್ನು ಟೈಪ್‌ ಮಾಡಿ, ನಂತರ <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> ಅನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> ಅಥವಾ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">ನಿಮ್ಮ ಮುಂದಿನ ಅಕ್ಷರವನ್ನು ಅಳಿಸಿ (ಫಾರ್ವಡ್ ಅಳಿಸಿ)</translation>
 <translation id="766326951329901120">ಖಾಲಿ ಪಠ್ಯದಂತೆ ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ವಿಷಯವನ್ನು ಅಂಟಿಸಿ</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">ಟ್ಯಾಬ್ ಪಟ್ಟಿಯಲ್ಲಿನ ಖಾಲಿ ವಲಯಕ್ಕೆ ಲಿಂಕ್ ಎಳೆಯಿರಿ</translation>
 <translation id="8389638407792712197">ಹೊಸ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8429696719963529183">F ಕೀಗಳನ್ನು ಬಳಸಿ (F1 ನಿಂದ F12)</translation>
+<translation id="8537650670971624753">ಹುಡುಕಾಟ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="85690795166292698">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="8609384513243082612">ಹೊಸ ಟ್ಯಾಬ್ ತೆರೆಯಿರಿ</translation>
 <translation id="8644639153978066712">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಮರೆಮಾಡಿದ ಫೈಲ್‌ಗಳನ್ನು ಪ್ರದರ್ಶಿಸಿ</translation>

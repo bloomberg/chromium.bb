@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="2898082584336937987">Установіть Chromium на телефоні. Ми надішлемо SMS на ваш телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Перезапустіть Chromium упродовж дня}one{Перезапустіть Chromium упродовж # дня}few{Перезапустіть Chromium упродовж # днів}many{Перезапустіть Chromium упродовж # днів}other{Перезапустіть Chromium упродовж # дня}}</translation>
 <translation id="2977470724722393594">У вас остання версія Chromium</translation>
 <translation id="3032787606318309379">Додавання в Chromium...</translation>
 <translation id="3046695367536568084">Щоб користуватися додатками, потрібно ввійти в Chromium. Це дозволяє веб-переглядачу Chromium синхронізувати ваші додатки, закладки, історію, паролі й інші налаштування на різних пристроях.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="4224199872375172890">У вас остання версія Chromium.</translation>
 <translation id="4230135487732243613">Пов’язати ваші дані Chromium із цим обліковим записом?</translation>
+<translation id="4260985389288095068">На вашому комп’ютері виявлено зловмисне програмне забезпечення. Chromium може видалити його та відновити налаштування для роботи веб-переглядача у звичайному режимі.</translation>
 <translation id="4271805377592243930">Отримати довідку щодо Chromium</translation>
 <translation id="4285930937574705105">Не вдалося встановити через невизначену помилку. Якщо Chromium зараз запущено, закрийте його та повторіть спробу.</translation>
 <translation id="4330585738697551178">Відомо, що цей модуль конфліктує з Chromium.</translation>
+<translation id="4407044323746248786">Усе одно вийти з Chromium?</translation>
 <translation id="4421155425831608516">Адміністратор цього пристрою вимкнув вхід у Chromium.</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium перезапуститься через годину}one{Chromium перезапуститься через # годину}few{Chromium перезапуститься через # години}many{Chromium перезапуститься через # годин}other{Chromium перезапуститься через # години}}</translation>
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4469812139324097969">Chromium застарів, оскільки протягом якогось часу його не перезапускали. Оновлення доступне та буде застосоване одразу після перезапуску.</translation>
 <translation id="4488554488975128561">Ви можете зробити Chromium безпечнішим і простішим у користуванні, автоматично надсилаючи в Google деяку інформацію про систему та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Отримати довідку щодо ОС Chromium</translation>
 <translation id="4708774505295300557">Хтось раніше входив у Chromium на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Створіть нового користувача Chromium, щоб зберігати свою інформацію окремо.</translation>
 <translation id="4714956846925717402">Відкривайте Chromium швидше</translation>
+<translation id="4746050847053251315">Усе одно вийти з Chromium?</translation>
 <translation id="4888717733111232871">Вхідне правило для Chromium дозволяє трафік mDNS.</translation>
 <translation id="4943838377383847465">Chromium у фоновому режимі.</translation>
 <translation id="4987820182225656817">Гості можуть анонімно користуватися Chromium.</translation>

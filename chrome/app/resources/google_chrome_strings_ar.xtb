@@ -43,6 +43,7 @@
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
+<translation id="2094919256425865063">‏هل تريد إنهاء Chrome على أي حال؟</translation>
 <translation id="2120620239521071941">‏سيعمل هذا على حذف <ph name="ITEMS_COUNT" /> من العناصر من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏ساعد في تحسين Chrome بالإبلاغ عن <ph name="BEGIN_LINK" />الإعدادات الحالية<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك.</translation>
@@ -106,6 +107,7 @@
 <translation id="3735758079232443276">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏إزالة من Chrome</translation>
+<translation id="3844992844761326777">‏هناك برنامج ضار على جهاز الكمبيوتر. يمكن لمتصفح Chrome إزالته واستعادة إعداداتك لكي يعمل متصفحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="386202838227397562">‏يُرجى إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3873044882194371212">‏فتح الرابط في نافذة تصفح متخفٍ في Chrome</translation>
@@ -140,6 +142,7 @@
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
 <translation id="4804732725083176494">‏عطَّل مشرف هذا الجهاز تسجيل الدخول إلى Chrome.</translation>
+<translation id="4833487314064352405">{0,plural, =1{‏إعادة تشغيل Chrome خلال يوم واحد}zero{‏إعادة تشغيل Chrome خلال # يوم}two{‏إعادة تشغيل Chrome خلال يومين (#)}few{‏إعادة تشغيل Chrome خلال # أيام}many{‏إعادة تشغيل Chrome خلال # يومًا}other{‏إعادة تشغيل Chrome خلال # يوم}}</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="4895437082222824641">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
@@ -148,6 +151,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="5037239767309817516">‏يُرجى إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
+<translation id="5131923704757666404">{0,plural, =1{‏ستتم إعادة تشغيل Chrome خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل Chrome خلال # ساعة}two{‏ستتم إعادة تشغيل Chrome خلال ساعتين (#)}few{‏ستتم إعادة تشغيل Chrome خلال # ساعات}many{‏ستتم إعادة تشغيل Chrome خلال # ساعةً}other{‏ستتم إعادة تشغيل Chrome خلال # ساعة}}</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
 <translation id="5166975452760862670">‏يتم عرض Google Chrome بهذه اللغة</translation>
 <translation id="5170938038195470297">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Google Chrome.
@@ -192,6 +196,7 @@
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome محدّث.</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
+<translation id="677276454032249905">‏هل تريد الخروج من Chrome على أي حال؟</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="686561893457936865">‏إمكانية استخدام Chrome في كل مكان</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>

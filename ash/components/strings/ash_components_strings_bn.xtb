@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">আপনি যে কীবোর্ড ভাষা ব্যবহার করছিলেন সেটিতে পরিবর্তন করুন।</translation>
 <translation id="1195667586424773550">ট্যাব অ্যাড্রেস বারে লিঙ্কটি টেনে আনুন</translation>
 <translation id="1204450209689312104">ছদ্মবেশী মোডে একটি নতুন উইন্ডো খুলুন</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">আপনার বর্তমান পৃষ্ঠাটি প্রিন্ট করুন</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> অথবা <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> অথবা <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">পরের ট্যাবে যান</translation>
 <translation id="2010818616644390445">উইন্ডোটির শেষ ট্যাবে যান</translation>
+<translation id="2088054208777350526">কীবোর্ড শর্টকাটগুলি সার্চ করুন</translation>
 <translation id="2145908266289632567">টেক্সট সম্পাদনা</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> ১ থেকে =</translation>
 <translation id="2181097965834437145">বুকমার্ক বার দেখুন অথবা লুকান</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ফোকাস ঠিকানা দণ্ড</translation>
 <translation id="3288816184963444640">বর্তমান উইন্ডোটি বন্ধ করুন</translation>
-<translation id="3356202203145076517">আপনি সম্প্রতি ব্যবহার করেছেন এমন উইন্ডোটি খুলুন</translation>
 <translation id="3407560819924487926">টাস্ক ম্যানেজার আনুন</translation>
 <translation id="3422679037938588196">আপনার সার্চের জন্য আগের ম্যাচে যান</translation>
 <translation id="344577624355799426"><ph name="ALT" /> অথবা <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ১ থেকে ৮ পর্যন্ত</translation>
 <translation id="3837047332182291558">কীবোর্ডের উজ্জ্বলতা বাড়ান (ব্যাকলিট কীবোর্ডের জন্য)</translation>
 <translation id="3976863468609830880">আপনার শেল্ফে শেষ আইকনটি ক্লিক করুন</translation>
+<translation id="4026843240379844265">ডিসপ্লের মধ্যে সক্রিয় উইন্ডোটি সরান</translation>
 <translation id="4035482366624727273">পৃষ্ঠাতে থাকা সবকিছুই বেছে নিন</translation>
 <translation id="4060703249685950734">আপনার বন্ধ করা শেষ ট্যাব অথবা উইন্ডোটি খুলুন</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> বোতাম টিপে ধরে রেখে যে উইন্ডোটি খুলতে চান সেটি বেছে নেওয়ার জন্য <ph name="TAB" /> বোতাামটি বারবার টিপুন এবং তারপর উইন্ডোটি বেছে নেওয়া হয়ে গেলে আঙুল তুলে নিন।</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="7020813747703216897">মিলে যাওয়া কোনও ফলাফল খুঁজে পাওয়া যায়নি</translation>
 <translation id="7025325401470358758">পরবর্তী ফলক</translation>
+<translation id="7237562915163138771">অ্যাড্রেস বারে ওয়েব অ্যাড্রেস টাইপ করুন, তারপর <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> টিপুন</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> অথবা <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">পরের অক্ষরটি মুছুন (সামনের দিকে মুছুন)</translation>
 <translation id="766326951329901120">ক্লিপবোর্ড থেকে সাধারণ টেক্সট হিসেবে কন্টেন্ট পেস্ট করুন</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">ট্যাব বারের ফাঁকা অঞ্চলে একটি লিঙ্ক টেনে আনুন</translation>
 <translation id="8389638407792712197">নতুন উইন্ডো খুলুন</translation>
 <translation id="8429696719963529183">F কীগুলি ব্যবহার করুন (F1 থেকে F12)</translation>
+<translation id="8537650670971624753">সার্চ মোডটি ছেড়ে যান</translation>
 <translation id="85690795166292698">একটি নতুন ট্যাবে লিঙ্কটি খুলুন</translation>
 <translation id="8609384513243082612">নতুন ট্যাব খুলুন</translation>
 <translation id="8644639153978066712">ফাইল অ্যাপে লুকিয়ে থাকা ফাইলগুলি ডিসপ্লে করুন</translation>

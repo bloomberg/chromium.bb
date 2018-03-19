@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Prelazak na prethodno korišteni jezik tipkovnice.</translation>
 <translation id="1195667586424773550">Povlačenje veze na adresnu traku kartice</translation>
 <translation id="1204450209689312104">Otvaranje novog prozora u anonimnom načinu</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Ispis trenutačne stranice</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ili <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -47,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusiraj adresnu traku</translation>
 <translation id="3288816184963444640">Zatvaranje trenutačnog prozora</translation>
-<translation id="3356202203145076517">Otvaranje prozora koji najdulje niste koristili</translation>
 <translation id="3407560819924487926">Prikazivanje upravitelja zadataka</translation>
 <translation id="3422679037938588196">Prelazak na prethodno podudaranje za pretraživanje</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ili <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>

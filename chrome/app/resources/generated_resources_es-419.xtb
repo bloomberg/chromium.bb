@@ -78,6 +78,7 @@
 <translation id="1114525161406758033">Suspender cuando se cierre la tapa</translation>
 <translation id="1115018219887494029">Smart Lock para Chromebook (Beta)</translation>
 <translation id="1116694919640316211">Acerca de</translation>
+<translation id="1116779635164066733">La extensión "<ph name="NAME" />" administra esta configuración.</translation>
 <translation id="1119069657431255176">Archivo tar comprimido en Bzip2</translation>
 <translation id="1119447706177454957">Error interno</translation>
 <translation id="1122198203221319518">&amp;Herramientas</translation>
@@ -118,6 +119,7 @@
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="117624967391683467">Copiando <ph name="FILE_NAME" />…</translation>
+<translation id="1177138678118607465">Es posible que Google use tu historial de navegación para personalizar Búsqueda, los anuncios y otros servicios de Google. Puedes cambiar esta configuración en cualquier momento en myaccount.google.com.</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1181037720776840403">Eliminar</translation>
@@ -372,6 +374,7 @@
 <translation id="155865706765934889">Panel táctil</translation>
 <translation id="1559235587769913376">Introducir caracteres Unicode</translation>
 <translation id="1566049601598938765">Sitio web</translation>
+<translation id="1567387640189251553">Se conectó otro teclado desde la última vez que ingresaste tu contraseña. Es posible que alguien esté intentando determinar qué teclas presionaste.</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
 <translation id="1568067597247500137">Silenciar el sitio</translation>
 <translation id="1568323446248056064">Abrir configuración de pantalla</translation>
@@ -566,6 +569,7 @@
 <translation id="1850508293116537636">Girar &amp;a la derecha</translation>
 <translation id="1851361118452499663">Mis fotos</translation>
 <translation id="1852799913675865625">Se produjo un error al intentar leer el archivo: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1856715684130786728">Agregar ubicación...</translation>
 <translation id="1856813161013948396">Para omitir la pantalla bloqueada, presiona el sensor de huellas digitales. Haz clic para configurar esta función.</translation>
 <translation id="1858585891038687145">Confiar en este certificado para identificar fabricantes de software</translation>
@@ -625,7 +629,6 @@
 <translation id="1962233722219655970">Esta página usa una aplicación con tecnología Native Client que no funciona en tu computadora.</translation>
 <translation id="1962969542251276847">Bloquear pantalla</translation>
 <translation id="1963227389609234879">Eliminar todo</translation>
-<translation id="1965328510789761112">Memoria privada</translation>
 <translation id="1965624977906726414">No requiere permisos especiales.</translation>
 <translation id="1970368523891847084">Accediste al modo de video</translation>
 <translation id="197288927597451399">Conservar</translation>
@@ -728,7 +731,6 @@
 <translation id="2136573720723402846">Habilitar desbloqueo mediante huella digital</translation>
 <translation id="2137068468602026500">En Navegador web, haz clic en <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">La conexión a "<ph name="DEVICE_NAME" />" sigue en curso</translation>
-<translation id="2139186145475833000">Agregar a la pantalla principal</translation>
 <translation id="214169863967063661">Abrir configuración de apariencia</translation>
 <translation id="2142328300403846845">Abrir vínculo como</translation>
 <translation id="214353449635805613">Región de captura de pantalla</translation>
@@ -1060,6 +1062,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="264810637653812429">No se encontraron dispositivos compatibles.</translation>
 <translation id="2648831393319960979">El dispositivo se está agregando a la cuenta. Este proceso podría demorar un momento.</translation>
 <translation id="2649045351178520408">Cadena de certificados ASCII con codificación Base64</translation>
+<translation id="2653033005692233957">Error en la búsqueda</translation>
 <translation id="2653266418988778031">Si eliminas un certificado de una Entidad de certificación (CA), tu navegador ya no confiará en ningún certificado emitido por esa Entidad.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="265390580714150011">Valor de campo</translation>
@@ -1212,6 +1215,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="284805635805850872">¿Deseas quitar software dañino?</translation>
 <translation id="2849362176025371110">Envía a Google datos de uso y diagnóstico automáticamente. Puedes cambiar esta opción en cualquier momento en la <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> de tu dispositivo. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
+<translation id="284975061945174219">Se produjo un error en la limpieza</translation>
 <translation id="2849936225196189499">Crítico</translation>
 <translation id="2850124913210091882">Crear una copia de seguridad</translation>
 <translation id="2850541429955027218">Agregar tema</translation>
@@ -2041,7 +2045,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="4114360727879906392">Ventana anterior</translation>
 <translation id="4115002065223188701">La red está fuera de alcance</translation>
 <translation id="4115080753528843955">Algunos servicios de contenido usan identificadores únicos para autorizar el acceso a contenido protegido</translation>
-<translation id="411666854932687641">Memoria privada</translation>
 <translation id="4120817667028078560">Ruta de acceso demasiado larga</translation>
 <translation id="4121428309786185360">Vence el</translation>
 <translation id="412730574613779332">Elástico</translation>
@@ -2095,7 +2098,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235813040357936597">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancelar acceso</translation>
-<translation id="4240511609794012987">Memoria compartida</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4242577469625748426">Se produjo un error al instalar la configuración de la política en el dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar más apps para la pluma stylus</translation>
@@ -2593,6 +2595,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5067867186035333991">Preguntar si <ph name="HOST" /> quiere acceder al micrófono</translation>
 <translation id="5068918910148307423">No permitir que los sitios cerrados recientemente terminen de enviar y recibir datos</translation>
+<translation id="507021118007633031"><ph name="APP_NAME" /> para <ph name="DEVICE_TYPE" /></translation>
 <translation id="5072052264945641674">Ajustar el tamaño del cursor</translation>
 <translation id="5072836811783999860">Mostrar favoritos administrados</translation>
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
@@ -2647,7 +2650,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="5154108062446123722">Configuración avanzada para <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Sujeto</translation>
-<translation id="5154917547274118687">Memoria</translation>
 <translation id="5157635116769074044">Fijar esta página a la pantalla de inicio…</translation>
 <translation id="5158593464696388225">Se produjo un error al guardar la imagen.</translation>
 <translation id="5158983316805876233">Utilizar el mismo proxy para todos los protocolos</translation>
@@ -2900,6 +2902,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="5527463195266282916">Se ha intentado instalar una versión anterior de la extensión.</translation>
 <translation id="5527474464531963247">También puedes seleccionar otra red.</translation>
 <translation id="5528368756083817449">Administrador de favoritos</translation>
+<translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> quiere</translation>
 <translation id="5534304873398226603">Descartar foto o video</translation>
@@ -3488,6 +3491,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="645705751491738698">Continuar con el bloqueo de JavaScript</translation>
 <translation id="6458308652667395253">Administrar el bloqueo de JavaScript...</translation>
 <translation id="6459488832681039634">Usar la selección para buscar</translation>
+<translation id="6459799433792303855">La ventana activa se movió a otra pantalla.</translation>
 <translation id="6460601847208524483">Buscar siguiente</translation>
 <translation id="6462082050341971451">¿Todavía estás ahí?</translation>
 <translation id="6463795194797719782">&amp;Edición</translation>
@@ -3573,6 +3577,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="6596745167571172521">Inhabilitar el bloqueo de mayúsculas</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
 <translation id="6597017209724497268">Muestras</translation>
+<translation id="6602353599068390226">mover la ventana a otra pantalla</translation>
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y derecha para navegar.</translation>
 <translation id="660380282187945520">F9</translation>
 <translation id="6605847144724004692">Todavía no tiene una calificación de los usuarios.</translation>
@@ -3895,6 +3900,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="7119389851461848805">encendido</translation>
 <translation id="7120865473764644444">No se pudo conectar al servidor de sincronización. Intentando nuevamente…</translation>
 <translation id="7121362699166175603">Borra el historial y las sugerencias de autocompletado en la barra de direcciones. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7123360114020465152">Ya no es compatible</translation>
 <translation id="71243390042171582">Se actualizó hace <ph name="MINUTES" /> min</translation>
 <translation id="7124929488592184705">Se produjo un error al imprimir el documento <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;unidad de búsqueda&lt;/em&gt;</translation>
@@ -4151,6 +4157,9 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="7544853251252956727">Reproducir aleatoriamente</translation>
 <translation id="7545415673537747415">Controla la forma en que Google usa tu historial de búsqueda para personalizar Búsqueda, Ads y otros servicios de Google en <ph name="BEGIN_LINK" />Controles de actividad de Google<ph name="END_LINK" />.</translation>
 <translation id="7547317915858803630">Advertencia: La configuración de <ph name="PRODUCT_NAME" /> se almacena en una unidad de red, lo que puede provocar ralentizaciones, fallas o, incluso, la pérdida de datos.</translation>
+<translation id="7547483330017600937">Desarrolla en tu <ph name="DEVICE_TYPE" />. Puedes ejecutar tus herramientas de línea de comandos y apps nativas favoritas al instante y de forma segura.
+
+La instalación de <ph name="APP_NAME" /> descargará <ph name="DOWNLOAD_SIZE" /> de datos.</translation>
 <translation id="7548856833046333824">Limonada</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Se descargó <ph name="FILE_NAME" /> correctamente.</translation>
@@ -4348,6 +4357,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="786073089922909430">Servicio: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> sincronizado</translation>
+<translation id="7870730066603611552">Revisar las opciones de sincronización después de la configuración</translation>
 <translation id="7870790288828963061">No se encontraron aplicaciones de kiosco con una versión más reciente. No hay nada para actualizar. Desconecta el dispositivo USB.</translation>
 <translation id="7874357055309047713">Ejecutar siempre en todos los sitios</translation>
 <translation id="7877451762676714207">Error de servidor desconocido. Inténtalo nuevamente o comunícate con el administrador del servidor.</translation>
@@ -4409,7 +4419,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="7959074893852789871">El archivo contenía múltiples certificados. Algunos fueron importados:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />El servicio de ubicación de Google usa ciertas fuentes, como redes Wi-Fi, para calcular la ubicación de tu dispositivo con más rapidez y precisión. Al activar los servicios de ubicación de Google, el dispositivo entrará en un modo que usa las redes Wi-Fi para proporcionar información sobre la ubicación. Puedes desactivar esta configuración de la ubicación en cualquier momento.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="7965010376480416255">Memoria compartida</translation>
 <translation id="7966241909927244760">Copiar dirección de la imagen</translation>
 <translation id="7968742106503422125">Leer y modificar los datos copiados y pegados</translation>
 <translation id="7968833647796919681">Habilitar recopilación de datos de rendimiento</translation>
@@ -4886,6 +4895,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8725178340343806893">Favoritos/Favoritos</translation>
 <translation id="8726206820263995930">Se produjo un error al recuperar la configuración de la política del servidor: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727142376512517020">No volver a mostrar</translation>
+<translation id="8727344521467137076">Se detectó software dañino en tu computadora. Chrome lo está quitando y restaurará tu configuración para que el navegador vuelva a funcionar con normalidad.</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8732030010853991079">Para usar esta extensión, haz clic en este ícono.</translation>
 <translation id="8732212173949624846">Leer y cambiar el historial de navegación en todos los dispositivos a los que accediste.</translation>
@@ -4971,7 +4981,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8871696467337989339">Estás utilizando una marca de línea de comandos no admitida: <ph name="BAD_FLAG" />. Esto afectará la estabilidad y la seguridad.</translation>
 <translation id="8871974300055371298">Configuración de contenido</translation>
 <translation id="8872155268274985541">Se encontró un archivo de manifiesto de actualización externa de la aplicación de kiosco no válido. No se pudo actualizar la aplicación de kiosco. Desconecta el dispositivo USB.</translation>
-<translation id="8872506776304248286">Abrir en la app</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8876309039915144086">Generar contraseña…</translation>
@@ -5096,6 +5105,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9066782832737749352">Texto a voz</translation>
 <translation id="9070219033670098627">Cambiar de persona</translation>
 <translation id="907148966137935206">No permitir que los sitios muestren ventanas emergentes (recomendado)</translation>
+<translation id="9071637495340542136">Instalando <ph name="APP_NAME" />…</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> te permite acceder automáticamente a las apps y los sitios aptos con las contraseñas que guardaste.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

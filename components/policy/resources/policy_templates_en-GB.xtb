@@ -1100,12 +1100,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
-<translation id="4459359100627756769">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
-      This setting should only be used by G Suite users using a SSO/SMAL system.
-
-      If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
-      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4476769083125004742">If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.</translation>

@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">LOOBU</translation>
 <translation id="15373452373711364">Suur hiirekursor</translation>
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
+<translation id="1567387640189251553">Pärast parooli viimast sisestamist on ühendatud teine klaviatuur. See võib üritada varastada teie klahvivajutusi.</translation>
 <translation id="1608626060424371292">Eemalda see kasutaja</translation>
 <translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Kahjuks ei saanud teie parooli kinnitada. Märkus: kui muutsite parooli hiljuti, rakendub uus parool pärast väljalogimist. Kasutage siin vana parooli.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tegumihalduri avamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
+<translation id="1928739107511554905">Värskenduse hankimiseks kasutage puuteekraani, et oma Chromebook koos ühendatud klaviatuuriga taaskäivitada.</translation>
 <translation id="1942830294380034169">Ülevoolunupp</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Peata vahekaardi <ph name="TAB_NAME" /> ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="2144487987174258011">Taaskäivitage Adobe Flash Playeri värskendamiseks</translation>
+<translation id="2191905770366256395">Eemaldatav klaviatuur vajab kriitilist värskendust</translation>
 <translation id="2208323208084708176">Ühendatud töölaua režiim</translation>
 <translation id="2220572644011485463">PIN-kood või parool</translation>
 <translation id="225680501294068881">Seadmete skannimine ...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="3893630138897523026">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="3899995891769452915">Häälsisend</translation>
+<translation id="3900355044994618856">Teie seanss lõpeb <ph name="SESSION_TIME_REMAINING" /> pärast</translation>
 <translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="394485226368336402">Heliseaded</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
+<translation id="5136175204352732067">Ühendatud on teine klaviatuur</translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5207949376430453814">Tekstisisestusmärgi esiletõstmine</translation>
 <translation id="5222676887888702881">Logi välja</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Kõrvaklapid</translation>
 <translation id="5978382165065462689">Ekraani juhtimise jagamine kaugabi kaudu.</translation>
 <translation id="5980301590375426705">Välju külastajaseansist</translation>
+<translation id="598882571027504733">Värskenduse hankimiseks taaskäivitage Chromebook koos ühendatud klaviatuuriga.</translation>
 <translation id="5992218262414051481">Suure kontrastsusega režiim on lubatud. Vajutage selle väljalülitamiseks uuesti klahvikombinatsiooni Ctrl + otsinguklahv + H.</translation>
 <translation id="6018164090099858612">Peeglirežiimist väljumine</translation>
 <translation id="6043212731627905357">See monitor ei toimi teie seadmega <ph name="DEVICE_TYPE" /> (seda monitori ei toetata).</translation>
@@ -258,6 +264,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7067196344162293536">Automaatne pööramine</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
+<translation id="7131634465328662194">Teid logitakse automaatselt välja.</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
@@ -318,6 +325,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="8652175077544655965">Sulgege seaded</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
+<translation id="8734991477317290293">See võib üritada varastada teie klahvivajutusi</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="8814715559352963456">Kui teisaldate aknad teisele töölauale, võib tagajärjeks olla ootamatu toimimine.
 

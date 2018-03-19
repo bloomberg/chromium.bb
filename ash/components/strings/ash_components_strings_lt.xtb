@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Perjungti į ankstesnę naudotą klaviatūros kalbą.</translation>
 <translation id="1195667586424773550">Nuvilkite nuorodą į skirtuko adreso juostą</translation>
 <translation id="1204450209689312104">Atidaryti naują langą inkognito režimu</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Spausdinti dabartinį puslapį</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> arba <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> arba <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Eiti į kitą skirtuką</translation>
 <translation id="2010818616644390445">Eiti į paskutinį skirtuką lange</translation>
+<translation id="2088054208777350526">Sparčiųjų klavišų paieška</translation>
 <translation id="2145908266289632567">Teksto Redagavimas</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> nuo 1 iki =</translation>
 <translation id="2181097965834437145">Rodyti arba slėpti žymių juostą</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusuoti adreso juostą</translation>
 <translation id="3288816184963444640">Uždaryti esamą langą</translation>
-<translation id="3356202203145076517">Atidaryti langą, kurį paskutiniu metu naudojote rečiausiai</translation>
 <translation id="3407560819924487926">Rodyti užduočių tvarkytuvę</translation>
 <translation id="3422679037938588196">Eiti į ankstesnę paieškos atitiktį</translation>
 <translation id="344577624355799426"><ph name="ALT" /> arba <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> nuo 1 iki 8</translation>
 <translation id="3837047332182291558">Pašviesinti klaviatūrą (skirta tik klaviatūroms su foniniu apšvietimu)</translation>
 <translation id="3976863468609830880">Spustelėti paskutinę piktogramą lentynoje</translation>
+<translation id="4026843240379844265">Aktyvaus lango perkėlimas iš vieno ekrano į kitą</translation>
 <translation id="4035482366624727273">Pasirinkti viską puslapyje</translation>
 <translation id="4060703249685950734">Iš naujo atidaryti paskutinį uždarytą skirtuką arba langą</translation>
 <translation id="4090342722461256974">Paspauskite ir palaikykite <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, palieskite <ph name="TAB" />, kol pateksite į norimą atidaryti langą, tada atleiskite.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="7020813747703216897">Nerasta atitinkamų rezultatų</translation>
 <translation id="7025325401470358758">Kitas polangis</translation>
+<translation id="7237562915163138771">Įveskite žiniatinklio adresą adreso juostoje, tada paspauskite <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> arba <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Ištrinti kitą raidę (ištrinti į priekį)</translation>
 <translation id="766326951329901120">Įklijuoti turinį iš iškarpinės kaip grynąjį tekstą</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Nuvilkite nuorodą į tuščią sritį skirtuko juostelėje</translation>
 <translation id="8389638407792712197">Atidaryti naują langą</translation>
 <translation id="8429696719963529183">Naudoti F klavišus (F1–F12)</translation>
+<translation id="8537650670971624753">Išeiti iš paieškos režimo</translation>
 <translation id="85690795166292698">Atidaryti nuorodą naujame skirtuke</translation>
 <translation id="8609384513243082612">Atidaryti naują skirtuką</translation>
 <translation id="8644639153978066712">Pateikti paslėptus failus Failų programoje</translation>

@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">이전에 사용한 키보드 언어로 전환</translation>
 <translation id="1195667586424773550">링크를 탭의 검색주소창으로 드래그하세요.</translation>
 <translation id="1204450209689312104">시크릿 모드로 새 창 열기</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">현재 페이지를 인쇄</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 또는 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 또는 <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">다음 탭으로 이동</translation>
 <translation id="2010818616644390445">창의 마지막 탭으로 이동</translation>
+<translation id="2088054208777350526">단축키 검색</translation>
 <translation id="2145908266289632567">텍스트 편집</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1부터 =</translation>
 <translation id="2181097965834437145">북마크바 표시 또는 숨기기</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">주소 표시줄로 이동</translation>
 <translation id="3288816184963444640">현재 창 닫기</translation>
-<translation id="3356202203145076517">가장 오래전에 열었던 창 열기</translation>
 <translation id="3407560819924487926">작업 관리자 호출</translation>
 <translation id="3422679037938588196">검색과 일치하는 이전 항목으로 이동</translation>
 <translation id="344577624355799426"><ph name="ALT" /> 또는 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1부터 8</translation>
 <translation id="3837047332182291558">키보드 밝게(백라이트 키보드만 해당)</translation>
 <translation id="3976863468609830880">실행기의 마지막 아이콘 클릭</translation>
+<translation id="4026843240379844265">디스플레이 간 활성 창 이동</translation>
 <translation id="4035482366624727273">페이지 내용 모두 선택</translation>
 <translation id="4060703249685950734">마지막으로 닫았던 탭이나 창 다시 열기</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />를 길게 누르고 열려는 창으로 이동할 때까지 <ph name="TAB" />을 탭한 후 놓습니다.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">접근성</translation>
 <translation id="7020813747703216897">일치하는 결과 없음</translation>
 <translation id="7025325401470358758">다음 창</translation>
+<translation id="7237562915163138771">검색주소창에 웹 주소를 입력하고 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> 키를 누릅니다.</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> 또는 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">다음 글자를 삭제(앞으로 삭제)</translation>
 <translation id="766326951329901120">클립보드의 콘텐츠를 일반 텍스트로 붙여넣기</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">링크를 탭 표시줄의 빈 영역으로 드래그</translation>
 <translation id="8389638407792712197">새 창 열기</translation>
 <translation id="8429696719963529183">F 키(F1~F12) 사용</translation>
+<translation id="8537650670971624753">검색 모드 종료</translation>
 <translation id="85690795166292698">새 탭에서 링크 열기</translation>
 <translation id="8609384513243082612">새 탭 열기</translation>
 <translation id="8644639153978066712">파일 앱에 숨겨진 파일 표시하기</translation>

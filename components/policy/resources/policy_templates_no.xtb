@@ -152,6 +152,11 @@
 <translation id="1503487916067509762">Aktiverer blokkering av innsetting fra tredjepartsprogramvare</translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
+<translation id="1519337829779572350">Denne innstillingen er avviklet. Bruk SafeBrowsingExtendedReportingEnabled i stedet. Å aktivere eller deaktivere SafeBrowsingExtendedReportingEnabled tilsvarer å angi SafeBrowsingExtendedReportingOptInAllowed som «false» (usann).
+
+      Hvis denne regelen angis som «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Googles tjenere. Hvis denne innstillingen er «true» (sann) eller ikke er konfigurert, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
+
+      Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
@@ -295,6 +300,15 @@
       Denne regelen aktiverer varsler for å informere brukeren om at nettleseren må eller bør startes på nytt. Hvis regelen ikke er angitt, varsler <ph name="PRODUCT_NAME" /> brukeren om at det er nødvendig med en omstart ved hjelp av diskrete endringer i menyen. Hvis regelen er angitt som «Recommended» (anbefalt), ser brukeren en gjentakende advarsel om at en omstart er anbefalt. Brukeren kan avvise advarselen for å utsette omstarten. Hvis regelen er angitt som «Required» (obligatorisk), ser brukeren en gjentakende advarsel om at en tvungen omstart utføres når varselperioden er utløpt. Denne perioden er som standard 7 dager og kan konfigureres via regelen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Brukerens økt gjenopprettes etter omstarten.</translation>
+<translation id="2075434678547407637">Lar deg styre om videoer kan spilles automatisk (uten brukernes samtykke) sammen med lydinnhold i <ph name="PRODUCT_NAME" />.
+
+      Hvis regelen er angitt som «true» (sann), kan <ph name="PRODUCT_NAME" /> spille av medier automatisk.
+      Hvis regelen er angitt som «false» (usann), kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk.
+
+      Som standard kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk.
+
+      Hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, gjelder endringen bare for nye faner som åpnes. Det kan derfor hende at enkelte faner fortsatt følger den tidligere regelen.
+      </translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
@@ -1046,6 +1060,7 @@
       Hvis denne innstillingen ikke angis, kan brukeren velge å vise eller skjule snarveien til appene fra hurtigmenyen i bokmerkefeltet.
 
       Hvis denne innstillingen konfigureres, kan ikke brukeren endre den, og snarveien til appene vises enten alltid eller aldri.</translation>
+<translation id="4432762137771104529">Slå på utvidet rapportering for Safe Browsing</translation>
 <translation id="443454694385851356">Eldre (usikre)</translation>
 <translation id="443665821428652897">Tøm nettsteddata når nettleseren lukkes (foreldet)</translation>
 <translation id="4439336120285389675">Spesifiser en liste over avviklede nettplattformfunksjoner som skal slås på igjen midlertidig.
@@ -1058,12 +1073,6 @@
       </translation>
 <translation id="4442582539341804154">Aktiver lås når enheten blir inaktiv eller suspendert</translation>
 <translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
-<translation id="4459359100627756769">Konfigurer listen over nettadresser for bedriftspålogging (bare HTTP og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å gjenkjenne gjenbruk av passord.
-      Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SMAL-system.
-
-      Hvis denne innstillingen er aktivert, registrerer tjenesten for passordbeskyttelse fingeravtrykk for passord på disse nettadressene, for å gjenkjenne gjenbruk av passord.
-      Hvis denne innstillingen er deaktivert eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykk for passord på https://accounts.google.com.
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
 <translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
 <translation id="4476769083125004742">Hvis denne regelen er angitt som <ph name="BLOCK_GEOLOCATION_SETTING" />, kan ikke Android-apper bruke posisjonsinformasjon. Hvis du angir en annen verdi for denne regelen, eller hvis du ikke angir noen ting, blir brukeren bedt om samtykke når Android-apper prøver å få tilgang til posisjonsinformasjon.</translation>
@@ -1256,6 +1265,19 @@
 
       Vær oppmerksom på at passord kan bli eldre enn det spesifiserte antallet dager hvis klienten har vært uten nett over lengre tid.</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
+<translation id="5106504910236139235">Slår på utvidet rapportering for Safe Browsing i <ph name="PRODUCT_NAME" /> og hindrer at brukerne kan endre denne innstillingen.
+
+      Utvidet rapportering sender noe systeminformasjon og sideinnhold til Googles tjenere for å bidra til å oppdage farlige apper og nettsteder.
+
+      Hvis innstillingen er angitt som «true» (sann), blir rapporter opprettet og sendt etter behov (for eksempel når det vises sikkerhetsrelaterte interstitial-elementer).
+
+      Hvis innstillingen er angitt som «false» (usann), sendes det aldri rapporter.
+
+      Hvis denne regelen er angitt som «true» (sann) eller «false» (usann), kan ikke brukerne endre innstillingen.
+
+      Hvis denne regelen ikke er angitt, kan brukerne endre innstillingen og bestemme om rapporter skal sendes eller ikke.
+
+      Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing</translation>
 <translation id="5108031557082757679">Deaktiverte bedriftsskrivere</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
@@ -1815,6 +1837,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Spesifiserer flaggene som skal brukes når <ph name="PRODUCT_NAME" /> starter. De spesifiserte flaggene brukes bare på påloggingsskjermen. Flagg som angis via denne regelen, videreføres ikke til brukerøkter.</translation>
 <translation id="685769593149966548">Fremtvinger bruk av strengt nivå for Begrenset innhold-modus på YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 eller nyere</translation>
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
@@ -2017,6 +2040,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
+<translation id="733838170182967492">Tillat automatisk avspilling av medier</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="7343497214039883642">Konfigurasjonsfil for enheter på bedriftsskriver</translation>
 <translation id="7384999953864505698">Tillater QUIC-protokollen</translation>
@@ -2032,7 +2056,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen er slått av, kan ikke brukeren bruke stavekontroll. SpellcheckLanguage-regelen ignoreres også når denne regelen er slått av.
       </translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
-<translation id="7458437477941640506">Ikke utfør noen rollback til målversjonen hvis OS-versjonen er nyere. Oppdateringer er også slått av.</translation>
+<translation id="7458437477941640506">Ikke utfør rollback til målversjonen hvis OS-versjonen er nyere. Oppdateringer er også slått av.</translation>
 <translation id="7469554574977894907">Aktiver søkeforslag</translation>
 <translation id="7474249562477552702">Hvorvidt SHA-1-signerte sertifikater som utstedes av lokale klareringsankre er tillatt eller ikke</translation>
 <translation id="7485481791539008776">Regler for valg av standardskriver</translation>
@@ -2331,7 +2355,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="841977920223099909">Utløser for advarsel om passordbeskyttelse</translation>
 <translation id="8424255554404582727">Angi standardverdien for skjermrotasjon. Denne brukes hver gang enheten starter på nytt</translation>
 <translation id="8426231401662877819">Rotér skjermen 90 grader med klokken</translation>
-<translation id="8433423491036718210">Konfigurer listen over bedriftspåloggingsadresser hvor tjenesten for passordbeskyttelse skal fange inn fingeravtrykk for passord.</translation>
+<translation id="8433423491036718210">Konfigurer listen over bedriftspåloggingsadresser hvor tjenesten for passordbeskyttelse skal registrere fingeravtrykk for passord.</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
 <translation id="8459216513698220096">Angir om og hvordan brukerinnstillinger fra datamaskin-GPO-er behandles.
 
@@ -2576,6 +2600,13 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
 <translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Lar deg styre om virtuelle maskiner kan kjøre i Chrome OS.
+
+      Hvis regelen er angitt som «true» (sann), kan enheten kjøre virtuelle maskiner.
+      Hvis regelen er angitt som «false» (usann), kan ikke enheten kjøre virtuelle maskiner.
+      Når denne regelen endres til «false» (usann), gjelder det for nye virtuelle maskiner. Virtuelle maskiner som allerede kjører, blir ikke slått av.
+      Når denne regelen ikke er angitt på en administrert enhet, kan den aktuelle enheten kjøre virtuelle maskiner.
+      Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
 <translation id="982497069985795632">Aktiver stavekontrollen</translation>
 </translationbundle>

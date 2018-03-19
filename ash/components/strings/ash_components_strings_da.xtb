@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Skift til det forrige tastatursprog, du har brugt.</translation>
 <translation id="1195667586424773550">Træk linket til adresselinjen på fanen</translation>
 <translation id="1204450209689312104">Åbn et nyt vindue i inkognitotilstand</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Udskriv den aktuelle side</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> eller <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Gå til næste fane</translation>
 <translation id="2010818616644390445">Gå til den sidste fane i vinduet</translation>
+<translation id="2088054208777350526">Søg efter tastaturgenveje</translation>
 <translation id="2145908266289632567">Tekstredigering</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 til =</translation>
 <translation id="2181097965834437145">Vis eller skjul bogmærkelinjen</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokuser på adresselinje</translation>
 <translation id="3288816184963444640">Luk det aktuelle vindue</translation>
-<translation id="3356202203145076517">Åbn det vindue, du har brugt for længst tid siden</translation>
 <translation id="3407560819924487926">Se Jobliste</translation>
 <translation id="3422679037938588196">Gå til det forrige match for din søgning</translation>
 <translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til 8</translation>
 <translation id="3837047332182291558">Skru op for tastaturets lys (gælder kun for tastaturer med bagbelyste taster)</translation>
 <translation id="3976863468609830880">Klik på det sidste ikon på din hylde</translation>
+<translation id="4026843240379844265">Flyt det aktive vindue fra skærm til skærm</translation>
 <translation id="4035482366624727273">Markér alt på siden</translation>
 <translation id="4060703249685950734">Genåbn den sidste fane eller det sidste vindue, du lukkede</translation>
 <translation id="4090342722461256974">Hold <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> nede, og tryk på <ph name="TAB" />, indtil det vindue, du vil åbne, vises. Giv derefter slip på tasterne</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="7020813747703216897">Der blev ikke fundet nogen matchende resultater</translation>
 <translation id="7025325401470358758">Næste rude</translation>
+<translation id="7237562915163138771">Skriv en webadresse i adresselinjen, og tryk derefter på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Slet det næste bogstav (slet fremad)</translation>
 <translation id="766326951329901120">Indsæt indholdet fra udklipsholderen som almindelig tekst</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Træk linket til et tomt område på fanelinjen</translation>
 <translation id="8389638407792712197">Åbn et nyt vindue</translation>
 <translation id="8429696719963529183">Brug F-tasterne (F1 til F12)</translation>
+<translation id="8537650670971624753">Afslut søgetilstand</translation>
 <translation id="85690795166292698">Åbn linket på en ny fane</translation>
 <translation id="8609384513243082612">Åbn en ny fane</translation>
 <translation id="8644639153978066712">Vis skjulte filer i appen Filer</translation>

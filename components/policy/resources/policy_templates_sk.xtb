@@ -153,7 +153,7 @@
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
 <translation id="1519337829779572350">Podpora tohto nastavenia bola ukončená, použite namiesto neho SafeBrowsingExtendedReportingEnabled. Povolenie alebo zakázanie parametra SafeBrowsingExtendedReportingEnabled je rovnaké ako nastavenie parametra SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
 
-      Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Google. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktoré pomáha zisťovať nebezpečné aplikácie a weby.
+      Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Google. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktorá pomáha zisťovať nebezpečné aplikácie a weby.
 
       Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
@@ -1072,7 +1072,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nie je nastavené, používateľ si môže vybrať, či sa majú skratku aplikácií zobrazovať v kontextovej ponuke panela záložiek.
 
       Ak je toto pravidlo nakonfigurované, nemôže ho používateľ zmeniť a skratka aplikácií sa zobrazí buď vždy, alebo nikdy.</translation>
-<translation id="4432762137771104529">Povolenie rozšírených prehľadov Bezpečného prehliadania</translation>
+<translation id="4432762137771104529">Povolenie rozšírených hlásení Bezpečného prehliadania</translation>
 <translation id="443454694385851356">Staré (nezabezpečené)</translation>
 <translation id="443665821428652897">Po vypnutí prehliadača vymazať údaje stránok (zastarané)</translation>
 <translation id="4439336120285389675">Určuje zoznam zastaraných funkcií webovej platformy, ktoré budú znova dočasne povolené.
@@ -1085,12 +1085,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       </translation>
 <translation id="4442582539341804154">Povoliť zámok, ak je zariadenie nečinné alebo pozastavené</translation>
 <translation id="4449545651113180484">Otočiť obrazovku v smere hodinových ručičiek o 270 stupňov</translation>
-<translation id="4459359100627756769">Nastavuje zoznam podnikových prihlasovacích webových adries (iba schémy HTTP a HTTPS). Na týchto webových adresách sa bude zaznamenávať digitálny odtlačok hesla, ktorý sa použije na rozpoznanie opätovného použitia hesla.
-      Toto nastavenie by mali aktivovať iba používatelia služby GSuite používajúci systém SSO/SMAL.
-
-      Ak toto nastavenie aktivujete, služba ochrany hesla zaznamená digitálny odtlačok hesla na týchto webových adresách na účely rozpoznania opätovného použitia hesla.
-      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesla bude zaznamenávať iba digitálne odtlačky hesiel na adrese https://accounts.google.com.
-      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
 <translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
 <translation id="4476769083125004742">Ak je toto pravidlo nastavené na možnosť <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikácie pre Android nebudú môcť pristupovať k informáciám o polohe. Ak nastavíte toto pravidlo na akúkoľvek inú hodnotu alebo ho ponecháte nenastavené, používateľ bude požiadaný o súhlas s prístupom aplikácie k informáciám o polohe.</translation>
@@ -1298,17 +1292,17 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Upozorňujeme, že heslá môžu byť staršie ako zadaný počet dní, ak je klient dlhší čas offline.</translation>
 <translation id="5105313908130842249">Oneskorenie uzamknutia obrazovky pri napájaní z batérie</translation>
-<translation id="5106504910236139235">Umožňuje povoliť rozšírené prehľady Bezpečného prehliadania v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľom toto nastavenie meniť.
+<translation id="5106504910236139235">Umožňuje povoliť rozšírené hlásenia Bezpečného prehliadania v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľom toto nastavenie meniť.
 
-      Prostredníctvom rozšírených prehľadov sa na servery Googlu odosielajú niektoré informácie o systéme a obsah stránok, ktoré sa používajú na rozpoznávanie nebezpečných aplikácií a webov.
+      Prostredníctvom rozšírených hlásení sa na servery Googlu odosielajú niektoré informácie o systéme a obsah stránok, ktoré sa používajú na rozpoznávanie nebezpečných aplikácií a webov.
 
-      Ak pre toto nastavenie zadáte hodnotu True, prehľady sa budú vytvárať a podľa potreby odosielať (napríklad po zobrazení bezpečnostnej intersticiálnej reklamy).
+      Ak pre toto nastavenie zadáte hodnotu True, hlásenia sa budú vytvárať a podľa potreby odosielať (napríklad po zobrazení bezpečnostnej intersticiálnej reklamy).
 
-      Ak ho nastavíte na hodnotu False, prehľady sa nebudú odosielať.
+      Ak ho nastavíte na hodnotu False, hlásenia sa nebudú odosielať.
 
       Ak ho nastavíte na hodnotu True alebo False, používateľ ho nebude môcť upraviť.
 
-      Ak toto pravidlo ponecháte nenastavené, používateľ ho bude môcť zmeniť a rozhodovať, či sa majú prehľady odosielať.
+      Ak toto pravidlo ponecháte nenastavené, používateľ ho bude môcť zmeniť a rozhodovať, či sa majú hlásenia odosielať.
 
       Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Zakázané podnikové tlačiarne zariadenia</translation>

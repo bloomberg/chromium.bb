@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Canvia a l'idioma de teclat que has utilitzat anteriorment.</translation>
 <translation id="1195667586424773550">Arrossega l'enllaç a la barra d'adreces de la pestanya</translation>
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Imprimeix la pàgina actual</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> i després <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Ves a la pestanya següent</translation>
 <translation id="2010818616644390445">Ves a l'última pestanya de la finestra</translation>
+<translation id="2088054208777350526">Cerca tecles de drecera</translation>
 <translation id="2145908266289632567">Edició de text</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> de l'1 a =</translation>
 <translation id="2181097965834437145">Mostra o amaga la barra d'adreces d'interès</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Mou el focus a la barra d'adreces</translation>
 <translation id="3288816184963444640">Tanca la finestra actual</translation>
-<translation id="3356202203145076517">Obre la finestra que s'ha utilitzat més recentment</translation>
 <translation id="3407560819924487926">Obre el gestor de tasques</translation>
 <translation id="3422679037938588196">Ves al resultat anterior de la cerca</translation>
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> de l'1 al 8</translation>
 <translation id="3837047332182291558">Augmenta la brillantor del teclat (només als teclats retroil·luminats)</translation>
 <translation id="3976863468609830880">Fes clic a la darrera icona del prestatge</translation>
+<translation id="4026843240379844265">Mou la finestra activa entre pantalles</translation>
 <translation id="4035482366624727273">Selecciona tot el contingut de la pàgina</translation>
 <translation id="4060703249685950734">Torna a obrir la darrera pestanya o finestra que s'ha tancat</translation>
 <translation id="4090342722461256974">Mantén premudes les tecles <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, toca <ph name="TAB" /> fins a arribar a la finestra que vulguis obrir i deixa anar les tecles.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="7020813747703216897">No s'ha trobat cap resultat coincident</translation>
 <translation id="7025325401470358758">Subfinestra següent</translation>
+<translation id="7237562915163138771">Escriu una adreça web a la barra d'adreces i prem <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Suprimeix la lletra següent (supressió cap endavant)</translation>
 <translation id="766326951329901120">Enganxa el contingut del porta-retalls com a text sense format</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Arrossega l'enllaç a una àrea buida de la barra de pestanyes</translation>
 <translation id="8389638407792712197">Obre una finestra nova</translation>
 <translation id="8429696719963529183">Fes servir les tecles de funció (F1 a F12)</translation>
+<translation id="8537650670971624753">Surt del mode de cerca</translation>
 <translation id="85690795166292698">Obre l'enllaç en una pestanya nova</translation>
 <translation id="8609384513243082612">Obre una pestanya nova</translation>
 <translation id="8644639153978066712">Mostra els fitxers amagats a l'aplicació Fitxers</translation>

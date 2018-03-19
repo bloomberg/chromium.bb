@@ -242,6 +242,7 @@ dators</translation>
 <translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
 <translation id="6441316101718669559">Šajā platformā netiek atbalstīta darbvirsmas integrācija. Jūs joprojām varat izmantot lietojumprogrammu, taču lietotāja pieredze nebūs pietiekami laba.</translation>
+<translation id="6502629188777329097">Droša piekļuve datoram</translation>
 <translation id="652218476070540101">Notiek šī datora PIN atjaunināšana…</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6541219117979389420">Lietojumprogrammu žurnālos var būt ietverta privāta informācija, tostarp jūsu identitāte (e-pasta adrese) un Google diska failu un mapju nosaukumi un rekvizīti.</translation>
@@ -290,6 +291,7 @@ dators</translation>
 <translation id="7672203038394118626">Šim datoram tika atspējoti attālie savienojumi.</translation>
 <translation id="7678209621226490279">Dokot kreisajā pusē</translation>
 <translation id="7693372326588366043">Atsvaidzināt saimniekdatoru sarakstu</translation>
+<translation id="7714222945760997814">Ziņot par šo problēmu</translation>
 <translation id="7782471917492991422">Lūdzu, pārbaudiet datora barošanas pārvaldības iestatījumus: datoram ir jābūt konfigurētam tā, lai netiktu aktivizēts miega režīms, kad dators netiek lietots.</translation>
 <translation id="7810127880729796595">Rādīt statistiku (savienojums: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Trūkst dažu nepieciešamo komponentu. Pārbaudiet, vai izmantojat jaunāko Chrome versiju un mēģiniet vēlreiz.</translation>

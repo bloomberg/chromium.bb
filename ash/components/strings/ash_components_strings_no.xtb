@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Bytt til det forrige tastaturspråket du brukte.</translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Skriv ut den aktive siden</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> eller <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Gå til neste fane</translation>
 <translation id="2010818616644390445">Gå til den siste fanen i vinduet</translation>
+<translation id="2088054208777350526">Søk etter hurtigtaster</translation>
 <translation id="2145908266289632567">Tekstredigering</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 til og med =</translation>
 <translation id="2181097965834437145">Vis eller skjul bokmerkeraden</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
 <translation id="3288816184963444640">Lukk det aktive vinduet</translation>
-<translation id="3356202203145076517">Åpne det siste vinduet du brukte</translation>
 <translation id="3407560819924487926">Hent frem oppgavebehandlingen</translation>
 <translation id="3422679037938588196">Gå til det forrige treffet for søket</translation>
 <translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til og med 8</translation>
 <translation id="3837047332182291558">Øk lysstyrken på tastaturlyset (bare for tastaturer med bakgrunnslys)</translation>
 <translation id="3976863468609830880">Klikk på det siste ikonet på hyllen</translation>
+<translation id="4026843240379844265">Flytt det aktive vinduet mellom skjermer</translation>
 <translation id="4035482366624727273">Merk alt på siden</translation>
 <translation id="4060703249685950734">Åpne den siste fanen eller det siste vinduet du lukket, på nytt</translation>
 <translation id="4090342722461256974">Trykk og hold på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, trykk på <ph name="TAB" /> til du kommer til vinduet du vil åpne, og slipp tastene.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="7020813747703216897">Ingen treff</translation>
 <translation id="7025325401470358758">Neste rute</translation>
+<translation id="7237562915163138771">Skriv inn en nettadresse i adressefeltet, og trykk på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Slett neste bokstav (slett fremover)</translation>
 <translation id="766326951329901120">Lim inn innholdet fra utklippstavlen som ren tekst</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>
 <translation id="8389638407792712197">Åpne et nytt vindu</translation>
 <translation id="8429696719963529183">Bruk F-tastene (F1 til F12)</translation>
+<translation id="8537650670971624753">Avslutt søkemodusen</translation>
 <translation id="85690795166292698">Åpne linken i en ny fane</translation>
 <translation id="8609384513243082612">Åpne en ny fane</translation>
 <translation id="8644639153978066712">Vis skjulte filer i Filer-appen</translation>

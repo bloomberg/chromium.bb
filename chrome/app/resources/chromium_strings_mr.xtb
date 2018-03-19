@@ -52,6 +52,7 @@
 <translation id="2886012850691518054">पर्यायी: स्वयंचलितपणे वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chromium ला अधिक चांगले करण्यात मदत करा.</translation>
 <translation id="2898082584336937987">आपल्या फोनवर Chromium इंस्टॉल करा. आम्ही आपल्या या फोनवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">&amp;Chromium बद्दल</translation>
+<translation id="2943431542152338750">{0,plural, =1{एका दिवसामध्ये Chromium रीलाँच करा}one{ # दिवसामध्ये Chromium रीलाँच करा}other{ # दिवसांमध्ये Chromium रीलाँच करा}}</translation>
 <translation id="2977470724722393594">Chromium अद्ययावत आहे</translation>
 <translation id="3032787606318309379">Chromium वर जोडत आहे...</translation>
 <translation id="3046695367536568084">अॅप्स वापरण्यासाठी Chromium मध्ये आपल्याला साइन इन करण्याची आवश्यकता आहे. हे डिव्हाइसेसवर आपले अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज संकालित करण्याची Chromium ला अनुमती देते.</translation>
@@ -91,11 +92,14 @@
 <translation id="4222580632002216401">आपण आता Chromium वर साइन इन केले आहे! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
 <translation id="4224199872375172890">Chromium अद्ययावत आहे.</translation>
 <translation id="4230135487732243613">या खात्यावर आपल्या Chromium डेटा चा दुवा साधायचा?</translation>
+<translation id="4260985389288095068">तुमच्या काँप्युटरवर धोकादायक सॉफ्टवेअर आढळले आहे. Chromium ते काढून टाकू शकते आणि तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रीस्टोअर करू शकते.</translation>
 <translation id="4271805377592243930">Chromium सह मदत मिळवा</translation>
 <translation id="4285930937574705105">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="4330585738697551178">हे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
+<translation id="4407044323746248786">Chromium मधून कसेही बाहेर पडायचे?</translation>
 <translation id="4421155425831608516">या डीव्हाइसच्या प्रशासकाने Chromium मध्ये साइन इन बंद केले आहे.</translation>
 <translation id="4423735387467980091">Chromium सानुकूल करा आणि नियंत्रित करा</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium एका तासात रीलाँच होईल}one{Chromium # तासामध्ये पुन्हा रीलाँच होईल}other{Chromium # तासांमध्ये पुन्हा रीलाँच होईल}}</translation>
 <translation id="4458285410772214805">कृपया हा बदल प्रभावी होण्यासाठी साइन आउट करा आणि साइन इन करा.</translation>
 <translation id="4469812139324097969">Chromium कालबाह्य झाले आहे कारण हे काही क्षणात पुन्हा लाँच झाले नाही. एक अपडेट उपलब्ध आहे आणि आपण पुन्हा लाँच केल्यावर ते लगेच लागू होईल.</translation>
 <translation id="4488554488975128561">धोकादायम अ‍ॅप्स आणि साइट शोधण्यात मदत करण्यासाठी Google ला काही सिस्टम माहिती आणि पृष्ठ सामग्री स्वयंचलितपणे पाठवून आपण Chromium सुरक्षित आणि वापरण्यास सुलभ बनविण्यात मदत करू शकता.</translation>
@@ -106,6 +110,7 @@
 <translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
 <translation id="4708774505295300557">कोणीतरी यापूर्वी या संगणकावरील Chromium मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून साइन इन केले. कृपया आपली माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chromium वापरकर्ता तयार करा.</translation>
 <translation id="4714956846925717402">Chromium वर अधिक जलद या</translation>
+<translation id="4746050847053251315">Chromium कसेही बंद करायचे?</translation>
 <translation id="4888717733111232871">mDNS रहदारीस अनुमती देण्यासाठी Chromium साठी अंतर्गामी नियम.</translation>
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>

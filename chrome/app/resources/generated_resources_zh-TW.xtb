@@ -78,6 +78,7 @@
 <translation id="1114525161406758033">蓋上機蓋時進入休眠狀態</translation>
 <translation id="1115018219887494029">Chromebook 專用 Smart Lock (測試版)</translation>
 <translation id="1116694919640316211">關於</translation>
+<translation id="1116779635164066733">這項設定是由「<ph name="NAME" />」擴充功能強制執行。</translation>
 <translation id="1119069657431255176">Bzip2 壓縮 tar 封存</translation>
 <translation id="1119447706177454957">內部錯誤</translation>
 <translation id="1122198203221319518">工具(&amp;T)</translation>
@@ -118,6 +119,7 @@
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1175364870820465910">列印(&amp;P)...</translation>
 <translation id="117624967391683467">正在複製 <ph name="FILE_NAME" />...</translation>
+<translation id="1177138678118607465">Google 可能會使用你的瀏覽紀錄，為你提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。你隨時可以前往 myaccount.google.com/activitycontrols/search 變更這項設定</translation>
 <translation id="1177863135347784049">自訂</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -375,6 +377,7 @@
 <translation id="155865706765934889">觸控板</translation>
 <translation id="1559235587769913376">輸入 Unicode 字元</translation>
 <translation id="1566049601598938765">網站</translation>
+<translation id="1567387640189251553">自你上次輸入密碼後，裝置已連接其他鍵盤。你的按鍵行為可能會遭到側錄。</translation>
 <translation id="1567993339577891801">JavaScript 控制台</translation>
 <translation id="1568067597247500137">關閉網站音訊</translation>
 <translation id="1568323446248056064">開啟顯示裝置設定</translation>
@@ -569,6 +572,7 @@
 <translation id="1850508293116537636">順時針旋轉(&amp;C)</translation>
 <translation id="1851361118452499663">我的相片</translation>
 <translation id="1852799913675865625">嘗試讀取檔案時發生錯誤：<ph name="ERROR_TEXT" /></translation>
+<translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1856715684130786728">新增位置...</translation>
 <translation id="1856813161013948396">輕觸指紋感應器即可略過螢幕鎖定。按一下以進行設定。</translation>
 <translation id="1858585891038687145">信任這個用於識別軟體製造商的憑證</translation>
@@ -628,7 +632,6 @@
 <translation id="1962233722219655970">這個網頁使用無法在你電腦上運行的 Native Client 應用程式。</translation>
 <translation id="1962969542251276847">鎖定螢幕</translation>
 <translation id="1963227389609234879">全部移除</translation>
-<translation id="1965328510789761112">專用記憶體</translation>
 <translation id="1965624977906726414">沒有特殊權限。</translation>
 <translation id="1970368523891847084">已進入影片模式</translation>
 <translation id="197288927597451399">保留</translation>
@@ -731,7 +734,6 @@
 <translation id="2136573720723402846">啟用指紋解鎖功能</translation>
 <translation id="2137068468602026500">在「網路瀏覽器」之下，按一下 [Microsoft Edge]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">仍在連線至「<ph name="DEVICE_NAME" />」</translation>
-<translation id="2139186145475833000">加到主畫面</translation>
 <translation id="214169863967063661">開啟顯示外觀設定</translation>
 <translation id="2142328300403846845">以其他身分開啟連結</translation>
 <translation id="214353449635805613">螢幕擷取畫面區域</translation>
@@ -1063,6 +1065,7 @@
 <translation id="264810637653812429">找不到相容的裝置。</translation>
 <translation id="2648831393319960979">正在將裝置新增到你的帳戶中，這可能需要幾分鐘的時間...</translation>
 <translation id="2649045351178520408">Base64 編碼 ASCII，憑證鏈結</translation>
+<translation id="2653033005692233957">搜尋失敗</translation>
 <translation id="2653266418988778031">如果你刪除了憑證授權單位 (CA) 的憑證，你的瀏覽器就不會再信任該憑證授權單位所核發的任何憑證。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="265390580714150011">欄位值</translation>
@@ -1215,6 +1218,7 @@
 <translation id="284805635805850872">要移除有害軟體嗎？</translation>
 <translation id="2849362176025371110">自動將診斷資料和使用資料傳送給 Google。您隨時可以在裝置<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中變更這項設定。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
+<translation id="284975061945174219">清理失敗</translation>
 <translation id="2849936225196189499">重要</translation>
 <translation id="2850124913210091882">備份</translation>
 <translation id="2850541429955027218">新增主題</translation>
@@ -2043,7 +2047,6 @@
 <translation id="4114360727879906392">上一個視窗</translation>
 <translation id="4115002065223188701">偵測不到網路</translation>
 <translation id="4115080753528843955">部分內容服務會使用唯一識別碼來授予受保護內容的存取權</translation>
-<translation id="411666854932687641">隱私記憶體</translation>
 <translation id="4120817667028078560">路徑名稱過長</translation>
 <translation id="4121428309786185360">到期日</translation>
 <translation id="412730574613779332">彈力俠</translation>
@@ -2097,7 +2100,6 @@
 <translation id="4235200303672858594">整個畫面</translation>
 <translation id="4235813040357936597">為<ph name="PROFILE_NAME" />新增帳戶</translation>
 <translation id="4235965441080806197">取消登入</translation>
-<translation id="4240511609794012987">共用記憶體</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="4242577469625748426">無法在裝置上安裝政策設定：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">尋找其他觸控筆應用程式</translation>
@@ -2594,6 +2596,7 @@
 <translation id="5063480226653192405">用量</translation>
 <translation id="5067867186035333991">當 <ph name="HOST" /> 要求存取麥克風時詢問我。</translation>
 <translation id="5068918910148307423">禁止最近關閉的網站完成資料的傳送及接收</translation>
+<translation id="507021118007633031"><ph name="DEVICE_TYPE" /> 專用「<ph name="APP_NAME" />」</translation>
 <translation id="5072052264945641674">調整游標大小</translation>
 <translation id="5072836811783999860">顯示受管理書籤</translation>
 <translation id="5074318175948309511">你可能需要重新載入這個網頁，新設定才會生效。</translation>
@@ -2648,7 +2651,6 @@
 <translation id="5154108062446123722">「<ph name="PRINTING_DESTINATION" />」進階設定</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">主體</translation>
-<translation id="5154917547274118687">記憶體</translation>
 <translation id="5157635116769074044">將網頁固定到開始畫面...</translation>
 <translation id="5158593464696388225">無法儲存圖片。</translation>
 <translation id="5158983316805876233">對所有通訊協定使用相同的 Proxy</translation>
@@ -2901,6 +2903,7 @@
 <translation id="5527463195266282916">試圖降級外掛程式。</translation>
 <translation id="5527474464531963247">你也可以選取其他網路。</translation>
 <translation id="5528368756083817449">書籤管理員</translation>
+<translation id="5530766185686772672">關閉無痕式分頁</translation>
 <translation id="5532223876348815659">通用</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> 要求下列權限：</translation>
 <translation id="5534304873398226603">捨棄相片或影片</translation>
@@ -3488,6 +3491,7 @@
 <translation id="645705751491738698">繼續封鎖 JavaScript</translation>
 <translation id="6458308652667395253">管理封鎖 JavaScript 設定...</translation>
 <translation id="6459488832681039634">使用所選範圍尋找</translation>
+<translation id="6459799433792303855">使用中的視窗已移至其他畫面。</translation>
 <translation id="6460601847208524483">尋找下一個項目</translation>
 <translation id="6462082050341971451">你還在線上嗎？</translation>
 <translation id="6463795194797719782">編輯(&amp;E)</translation>
@@ -3573,6 +3577,7 @@
 <translation id="6596745167571172521">停用 Caps Lock 鍵</translation>
 <translation id="6596816719288285829">IP 位址</translation>
 <translation id="6597017209724497268">個樣本</translation>
+<translation id="6602353599068390226">將視窗移至其他畫面</translation>
 <translation id="6602956230557165253">使用向左鍵和向右鍵瀏覽。</translation>
 <translation id="660380282187945520">F9</translation>
 <translation id="6605847144724004692">還沒有任何使用者給予評分。</translation>
@@ -3895,6 +3900,7 @@
 <translation id="7119389851461848805">電源鍵</translation>
 <translation id="7120865473764644444">無法連上同步處理伺服器。重試中...</translation>
 <translation id="7121362699166175603">將歷史紀錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽紀錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
+<translation id="7123360114020465152">已停止支援</translation>
 <translation id="71243390042171582"><ph name="MINUTES" /> 分鐘前更新</translation>
 <translation id="7124929488592184705">列印「<ph name="DOCUMENT_NAME" />」時發生錯誤</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」- 搜尋雲端硬碟</translation>
@@ -4149,6 +4155,9 @@
 <translation id="7544853251252956727">隨機播放</translation>
 <translation id="7545415673537747415">Google 會使用您的瀏覽紀錄為您提供個人化的搜尋服務、廣告內容和其他各項 Google 服務，而您可以透過 <ph name="BEGIN_LINK" />Google 活動控制項<ph name="END_LINK" />對這項行為進行控管。</translation>
 <translation id="7547317915858803630">警告：你的 <ph name="PRODUCT_NAME" /> 設定均儲存在網路硬碟中。這麼做可能導致速度變慢、當機，甚至資料遺失。</translation>
+<translation id="7547483330017600937">在 <ph name="DEVICE_TYPE" /> 上開發。你可以順利執行自己常用的內建應用程式和指令列工具，並確保安全無虞。
+
+安裝「<ph name="APP_NAME" />」會下載 <ph name="DOWNLOAD_SIZE" /> 的資料。</translation>
 <translation id="7548856833046333824">檸檬汁</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432"><ph name="FILE_NAME" /> 下載失敗</translation>
@@ -4345,6 +4354,7 @@
 <translation id="786073089922909430">服務：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">下載(&amp;D)</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - 已配對</translation>
+<translation id="7870730066603611552">設定後查看同步處理選項</translation>
 <translation id="7870790288828963061">找不到新版 Kiosk 應用程式，沒有可更新的內容。請移除 USB 隨身碟。</translation>
 <translation id="7874357055309047713">一律在所有網站上執行</translation>
 <translation id="7877451762676714207">不明的伺服器錯誤。請再試一次，或與伺服器管理員聯絡。</translation>
@@ -4406,7 +4416,6 @@
 <translation id="7959074893852789871">檔案含有多個憑證，但某些無法匯入：</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Google 的定位服務會使用 Wi‑Fi 這類資源，以便快速精確地判斷裝置的所在位置。開啟 Google 的定位服務後，裝置將會進入使用 Wi‑Fi 提供位置資訊的模式。你隨時可以在位置資訊設定中關閉這個模式。<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">一律不要</translation>
-<translation id="7965010376480416255">共用記憶體</translation>
 <translation id="7966241909927244760">複製圖片位址(&amp;O)</translation>
 <translation id="7968742106503422125">讀取及修改你複製和貼上的資料</translation>
 <translation id="7968833647796919681">啟用效能資料收集</translation>
@@ -4882,6 +4891,7 @@
 <translation id="8725178340343806893">我的收藏/書籤</translation>
 <translation id="8726206820263995930">從伺服器擷取政策設定時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="8727142376512517020">不要再顯示這個對話方塊</translation>
+<translation id="8727344521467137076">在你的電腦上發現有害軟體。Chrome 正在進行移除，並且會還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8732030010853991079">按一下這個圖示，即可使用這項擴充功能。</translation>
 <translation id="8732212173949624846">讀取及變更你已登入的所有裝置上的瀏覽紀錄</translation>
@@ -4967,7 +4977,6 @@
 <translation id="8871696467337989339">你正在使用不受支援的命令列標幟：<ph name="BAD_FLAG" />。這可能會危及穩定性與安全性。</translation>
 <translation id="8871974300055371298">內容設定</translation>
 <translation id="8872155268274985541">找到的 Kiosk 外部更新資訊清單檔案無效，無法更新 Kiosk 應用程式。請移除 USB 隨身碟。</translation>
-<translation id="8872506776304248286">在應用程式中開啟</translation>
 <translation id="8874184842967597500">未連線</translation>
 <translation id="8876215549894133151">格式：</translation>
 <translation id="8876309039915144086">產生密碼...</translation>
@@ -5092,6 +5101,7 @@
 <translation id="9066782832737749352">文字轉語音</translation>
 <translation id="9070219033670098627">切換使用者</translation>
 <translation id="907148966137935206">不允許任何網站顯示彈出式視窗 (建議)</translation>
+<translation id="9071637495340542136">正在安裝「<ph name="APP_NAME" />」...</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> 會使用您儲存的密碼，讓您自動登入符合資格的網站和應用程式。</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">藍牙</translation>

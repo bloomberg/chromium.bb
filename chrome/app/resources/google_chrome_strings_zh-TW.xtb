@@ -41,6 +41,7 @@
 <translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
+<translation id="2094919256425865063">確定要關閉 Chrome 嗎？</translation>
 <translation id="2120620239521071941">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
 <translation id="2123055963409958220">只要回報<ph name="BEGIN_LINK" />目前的設定<ph name="END_LINK" />，就能助我們一臂之力，讓 Chrome 更臻完美</translation>
 <translation id="216054706567564023">在手機上安裝 Chrome。我們會傳送簡訊到你的帳戶備援電話號碼。</translation>
@@ -104,6 +105,7 @@
 <translation id="3735758079232443276">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">從 Chrome 中移除...</translation>
+<translation id="3844992844761326777">在你的電腦上發現有害軟體。Chrome 可予以移除並還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">在 Chrome 無痕式視窗中開啟連結(&amp;G)</translation>
@@ -138,6 +140,7 @@
 <translation id="4771048833395599659">這個檔案可能不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
 <translation id="4804732725083176494">這部裝置的管理員停用了 Chrome 的登入功能。</translation>
+<translation id="4833487314064352405">{0,plural, =1{在 1 天內重新啟動 Chrome}other{在 # 天內重新啟動 Chrome}}</translation>
 <translation id="4891791193823137474">讓 Google Chrome 在背景執行</translation>
 <translation id="4895437082222824641">在新的 Chrome 分頁中開啟連結(&amp;T)</translation>
 <translation id="4921569541910214635">如果你與他人共用電腦，現在可以依自己的喜好和習慣設定 Chrome。</translation>
@@ -146,6 +149,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome 無法同步處理你的資料，請更新你的同步通關密語。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome 將於 1 小時後重新啟動}other{Chrome 將於 # 小時後重新啟動}}</translation>
 <translation id="5132929315877954718">幫你的 Google Chrome 物色各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="5166975452760862670">Google Chrome 的介面文字已設為這種語言</translation>
 <translation id="5170938038195470297">由於你的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。這表示你可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
@@ -190,6 +194,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
+<translation id="677276454032249905">仍要結束 Chrome 嗎？</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
 <translation id="686561893457936865">隨時隨地都能使用 Chrome</translation>
 <translation id="6885412569789873916">Chrome 測試版應用程式</translation>

@@ -153,6 +153,11 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1503487916067509762">Active le blocage de l'injection de logiciels tiers</translation>
 <translation id="1504431521196476721">Attestation à distance</translation>
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
+
+      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. En revanche, si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs sont autorisés à envoyer des informations système et le contenu de pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
@@ -299,6 +304,14 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Cette règle active l'envoi de notifications pour avertir l'utilisateur qu'un redémarrage du navigateur est recommandé ou requis. Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> indique à l'utilisateur, par le biais de modifications discrètes du menu, qu'un redémarrage est nécessaire. Si elle est définie sur "Recommandé", un avertissement récurrent s'affiche, indiquant qu'un redémarrage est recommandé. L'utilisateur peut ignorer cet avertissement et redémarrer le navigateur plus tard. Si elle est définie sur "Requis", un avertissement récurrent s'affiche, indiquant que le redémarrage du navigateur sera forcé à l'issue de la période de notification. Par défaut, ce délai est de sept jours, et peut être configuré à l'aide du paramètre <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La session de l'utilisateur est restaurée après le redémarrage.</translation>
+<translation id="2075434678547407637">Permet de définir si des vidéos avec du contenu audio peuvent être lues automatiquement (sans le consentement de l'utilisateur) dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle est définie sur "True", la lecture automatique de contenu multimédia est autorisée dans <ph name="PRODUCT_NAME" />.
+      Si cette règle est définie sur "False", la lecture automatique de contenu multimédia n'est pas autorisée dans <ph name="PRODUCT_NAME" />.
+      Par défaut, la lecture automatique de contenu multimédia n'est pas autorisée dans <ph name="PRODUCT_NAME" />.
+
+      Notez que si cette règle est modifiée pendant que <ph name="PRODUCT_NAME" /> est en cours d'exécution, elle ne s'applique qu'aux onglets ouverts après cette modification. Il est donc possible que les onglets ouverts avant appliquent encore l'ancien paramètre.
+      </translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2077273864382355561">Délai d'arrêt de l'écran (batterie)</translation>
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
@@ -1083,6 +1096,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Si cette règle n'est pas définie, l'utilisateur peut décider d'afficher ou de masquer le raccourci des applications dans le menu contextuel de la barre des favoris.
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier, et le raccourci des applications est soit toujours visible, soit toujours masqué.</translation>
+<translation id="4432762137771104529">Autoriser la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
 <translation id="443454694385851356">Anciens types de chiffrement (option non sécurisée)</translation>
 <translation id="443665821428652897">Effacer les données de sites à la fermeture du navigateur (obsolète)</translation>
 <translation id="4439336120285389675">Répertorier les fonctionnalités abandonnées de la plate-forme en ligne à réactiver provisoirement.
@@ -1095,12 +1109,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
-<translation id="4459359100627756769">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est capturée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
-      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
-
-      Si ce paramètre est activé, le service de protection par mot de passe capture l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Si ce paramètre est désactivé, le service de protection par mot de passe ne capture que l'empreinte numérique du mot de passe sur https://accounts.google.com.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="4476769083125004742">Si cette règle est définie sur "<ph name="BLOCK_GEOLOCATION_SETTING" />", les applications Android n'ont pas accès aux informations de localisation. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, l'utilisateur est invité à donner son autorisation lorsqu'une application Android requiert ces informations.</translation>
@@ -1308,6 +1316,19 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Notez que la validité des mots de passe peut dépasser le délai spécifié en cas de mise hors connexion du client pendant une période plus longue.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
+<translation id="5106504910236139235">Active la création de rapports détaillées dans le cadre de la navigation sécurisée dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier cette règle.
+
+      Ces rapports détaillés fournissent aux serveurs Google des informations système et du contenu de pages qui aident à détecter les applications et les sites dangereux.
+
+      Si cette règle est définie sur "True", des rapports sont créés et envoyés si nécessaire (ex. : lorsqu'un interstitiel de sécurité est affiché).
+
+      Si cette règle est définie sur "False", aucun rapport n'est envoyé.
+
+      Si cette règle est définie sur "True" ou "False", l'utilisateur ne peut pas modifier le paramètre correspondant.
+
+      Si cette règle n'est pas définie, l'utilisateur peut la configurer afin de spécifier si des rapports doivent être envoyés ou non.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
@@ -1872,6 +1893,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
       Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne sont pas répercutés dans les sessions utilisateur.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 ou version ultérieure</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
 
       Les informations relatives à la mémoire sont tout de même consignées sur cette page, quelle que soit l'option retenue, mais les tailles indiquées sont
@@ -2081,6 +2103,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 
       Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
+<translation id="733838170182967492">Autorise la lecture automatique de contenus multimédias</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7343497214039883642">Fichier de configuration des imprimantes d'entreprise pour des appareils</translation>
 <translation id="7384999953864505698">Permet d'utiliser le protocole QUIC</translation>
@@ -2653,6 +2676,13 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Active la connexion forcée pour <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
+
+      Si cette règle est définie sur "True", l'appareil est autorisé à exécuter des machines virtuelles.
+      Si cette règle est définie sur "False", l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Si vous modifiez cette règle en la définissant sur "False", elle est appliquée aux machines virtuelles qui vont être lancées, mais elle n'arrête pas celles qui le sont déjà.
+      Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Les appareils non gérés sont autorisés à exécuter des machines virtuelles.</translation>
 <translation id="944817693306670849">Définir la taille du cache disque</translation>
 <translation id="982497069985795632">Activer la vérification orthographique</translation>
 </translationbundle>

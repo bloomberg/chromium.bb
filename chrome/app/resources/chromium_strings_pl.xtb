@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="2898082584336937987">Zainstaluj Chromium na telefonie. Wyślemy SMS-a na Twój telefon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">&amp;Chromium – informacje</translation>
+<translation id="2943431542152338750">{0,plural, =1{Uruchom Chromium ponownie jutro}few{Uruchom Chromium ponownie za # dni}many{Uruchom Chromium ponownie za # dni}other{Uruchom Chromium ponownie za # dnia}}</translation>
 <translation id="2977470724722393594">Masz aktualną wersję Chromium</translation>
 <translation id="3032787606318309379">Dodawanie do Chromium...</translation>
 <translation id="3046695367536568084">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chromium, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
@@ -88,11 +89,14 @@
 <translation id="4222580632002216401">Jesteś zalogowany w Chromium. Administrator wyłączył synchronizację.</translation>
 <translation id="4224199872375172890">Masz aktualną wersję Chromium.</translation>
 <translation id="4230135487732243613">Połączyć Twoje dane Chromium z tym kontem?</translation>
+<translation id="4260985389288095068">Na Twoim komputerze jest szkodliwe oprogramowanie. Przeglądarka Chromium może je usunąć i przywrócić ustawienia, by znów mogła działać normalnie.</translation>
 <translation id="4271805377592243930">Pomoc do Chromium</translation>
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="4330585738697551178">Znane są przypadki konfliktu tego modułu z Chromium.</translation>
+<translation id="4407044323746248786">Zamknąć Chromium mimo to?</translation>
 <translation id="4421155425831608516">Logowanie się w Chromium zostało wyłączone przez administratora tego urządzenia.</translation>
 <translation id="4423735387467980091">Dostosowywanie i kontrolowanie Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium uruchomi się ponownie za godzinę}few{Chromium uruchomi się ponownie za # godziny}many{Chromium uruchomi się ponownie za # godzin}other{Chromium uruchomi się ponownie za # godziny}}</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4469812139324097969">Chromium jest nieaktualny, ponieważ od pewnego czasu nie był uruchamiany. Dostępna jest aktualizacja, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
 <translation id="4488554488975128561">Możesz przyczynić się do zwiększenia bezpieczeństwa i komfortu korzystania z Chromium, automatycznie wysyłając do Google pewne informacje o systemie i część zawartości stron, by pomóc w wykrywaniu niebezpiecznych aplikacji i witryn.</translation>
@@ -103,6 +107,7 @@
 <translation id="469338717132742108">Skorzystaj z pomocy dotyczącej systemu operacyjnego Chromium</translation>
 <translation id="4708774505295300557">Ktoś zalogował się wcześniej w Chromium na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Utwórz nowego użytkownika Chromium, by Twoje informacje były przechowywane oddzielnie.</translation>
 <translation id="4714956846925717402">Szybciej uruchamiaj Chromium</translation>
+<translation id="4746050847053251315">Zamknąć Chromium mimo to?</translation>
 <translation id="4888717733111232871">Reguła dla ruchu przychodzącego w Chromium zezwalająca na ruch mDNS.</translation>
 <translation id="4943838377383847465">Chromium jest w trybie działania w tle</translation>
 <translation id="4987820182225656817">Goście mogą korzystać z Chromium, nie pozostawiając żadnych danych.</translation>

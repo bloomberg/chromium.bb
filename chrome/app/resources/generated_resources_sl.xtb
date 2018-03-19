@@ -573,6 +573,7 @@
 <translation id="1850508293116537636">&amp;Zasukaj v smeri urinega kazalca</translation>
 <translation id="1851361118452499663">Moje fotografije</translation>
 <translation id="1852799913675865625">Pri poskusu branja datoteke je prišlo do napake: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="1856715684130786728">Dodaj lokacijo ...</translation>
 <translation id="1856813161013948396">Preskočitev zaklenjenega zaslona z dotikom tipala prstnih odtisov. Kliknite, če želite konfigurirati.</translation>
 <translation id="1858585891038687145">Zaupaj temu potrdilu za prepoznavanje proizvajalcev programske opreme</translation>
@@ -632,7 +633,6 @@
 <translation id="1962233722219655970">Ta stran uporablja aplikacijo s tehnologijo Native Client, ki ne deluje v vašem računalniku.</translation>
 <translation id="1962969542251276847">Zakleni zaslon</translation>
 <translation id="1963227389609234879">Odstrani vse</translation>
-<translation id="1965328510789761112">Zasebni pomnilnik</translation>
 <translation id="1965624977906726414">Nima posebnih dovoljenj.</translation>
 <translation id="1970368523891847084">Izbran je način za videoposnetke</translation>
 <translation id="197288927597451399">Obdrži</translation>
@@ -735,7 +735,6 @@
 <translation id="2136573720723402846">Omogočanje odklepanja s prstnim odtisom</translation>
 <translation id="2137068468602026500">V razdelku »Brskalnik« kliknite <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Povezava z napravo »<ph name="DEVICE_NAME" />« še vedno poteka</translation>
-<translation id="2139186145475833000">Dodajanje na začetni zaslon</translation>
 <translation id="214169863967063661">Odpiranje nastavitev videza</translation>
 <translation id="2142328300403846845">Odpiranje povezave kot</translation>
 <translation id="214353449635805613">Napravi posnetek zaslona trenutnega območja</translation>
@@ -2050,7 +2049,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4114360727879906392">Prejšnje okno</translation>
 <translation id="4115002065223188701">Omrežje zunaj dosega</translation>
 <translation id="4115080753528843955">Nekatere storitve za zagotavljanje vsebine uporabljajo enolične identifikatorje zaradi pooblaščanja dostopa do zaščitene vsebine</translation>
-<translation id="411666854932687641">Zasebni pomnilnik</translation>
 <translation id="4120817667028078560">Pot je predolga</translation>
 <translation id="4121428309786185360">Velja do</translation>
 <translation id="412730574613779332">Super junak</translation>
@@ -2104,7 +2102,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4235200303672858594">Celoten zaslon</translation>
 <translation id="4235813040357936597">Dodaj račun za <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Prekliči prijavo</translation>
-<translation id="4240511609794012987">Pomnilnik v skupni rabi</translation>
 <translation id="4242533952199664413">Odpri nastavitve</translation>
 <translation id="4242577469625748426">Namestitev nastavitev pravilnika v napravi ni uspela: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Iskanje več aplikacij za pisalo</translation>
@@ -2657,7 +2654,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="5154108062446123722">Dodatne nastavitve za: <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Subjekt</translation>
-<translation id="5154917547274118687">Pomnilnik</translation>
 <translation id="5157635116769074044">Pripni to stran na začetni zaslon ...</translation>
 <translation id="5158593464696388225">Slike ni bilo mogoče shraniti.</translation>
 <translation id="5158983316805876233">Uporabi isti proxy za vse protokole</translation>
@@ -2910,6 +2906,7 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="5527463195266282916">Poskus spremembe razširitve v starejšo različico.</translation>
 <translation id="5527474464531963247">Izberete lahko tudi drugo omrežje.</translation>
 <translation id="5528368756083817449">Upravitelj zaznamkov</translation>
+<translation id="5530766185686772672">Zapri zavih. brez bel. zgo.</translation>
 <translation id="5532223876348815659">Globalno</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> želi</translation>
 <translation id="5534304873398226603">Zavrzi fotografijo ali videoposnetek</translation>
@@ -4426,7 +4423,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7959074893852789871">Datoteka je vsebovala več potrdil in nekatera niso bila uvožena:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Googlova lokacijska storitev si pomaga z viri, kot so omrežja Wi-Fi, za hitrejše in natančnejše določanje lokacije. Ko vklopite Googlove lokacijske storitve, vaša naprava preklopi v način, ki uporablja omrežja Wi-Fi za posredovanje podatkov o lokaciji. To lahko kadar koli izklopite v nastavitvah lokacije.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Nikoli</translation>
-<translation id="7965010376480416255">Pomnilnik za skupno rabo</translation>
 <translation id="7966241909927244760">Kopiraj naslov slike</translation>
 <translation id="7968742106503422125">Branje in spreminjanje podatkov, ki jih kopirate in prilepite</translation>
 <translation id="7968833647796919681">Omogoči zbiranje podatkov o učinkovitosti delovanja</translation>
@@ -4988,7 +4984,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8871696467337989339">Uporabljate nepodprto zastavico ukazne vrstice: <ph name="BAD_FLAG" />. Ogroženi bosta stabilnost in varnost.</translation>
 <translation id="8871974300055371298">Nastavitve vsebine</translation>
 <translation id="8872155268274985541">Najdena je bila neveljavna zunanja datoteka manifesta za posodobitev za kiosk. Posodobitev aplikacije za kiosk ni uspela. Odstranite ključek USB.</translation>
-<translation id="8872506776304248286">Odpri v aplikaciji</translation>
 <translation id="8874184842967597500">Povezava ni vzpostavljena</translation>
 <translation id="8876215549894133151">Oblika:</translation>
 <translation id="8876309039915144086">Ustvari geslo ...</translation>

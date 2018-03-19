@@ -150,6 +150,11 @@
 <translation id="1503487916067509762">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
+<translation id="1519337829779572350">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
+
+      如果將這項政策設為 False，使用者就無法選擇將部分系統資訊和網頁內容傳送至 Google 伺服器；如果設為 True 或未設定，使用者就可以將部分系統資訊和網頁內容傳送至「安全瀏覽」服務，協助偵測危險的應用程式和網站。
+
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中顯示以下網址模式</translation>
@@ -289,6 +294,14 @@
       這項政策設定可啟用通知，藉此建議或要求使用者重新啟動瀏覽器。如果不予設定，<ph name="PRODUCT_NAME" /> 會以細微的選單變更讓使用者知道瀏覽器需要重新啟動。如果設為「Recommended」(建議)，瀏覽器會定期顯示警告，建議使用者重新啟動。如果不想立即重新啟動，使用者可以關閉這項警告。如果設為「Required」(必要)，瀏覽器會定期顯示警告，告知使用者瀏覽器將於通知期過後強制重新啟動。通知期預設為七天，可透過 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策設定加以設定。
 
       使用者的工作階段會在瀏覽器重新啟動後恢復。</translation>
+<translation id="2075434678547407637">讓你控制 <ph name="PRODUCT_NAME" /> 中的影片能否自動播放音訊內容 (不需使用者同意)。
+
+      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 即可自動播放媒體。
+      如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法自動播放媒體。
+      根據預設，<ph name="PRODUCT_NAME" /> 不能自動播放媒體。
+
+      請注意，如果 <ph name="PRODUCT_NAME" /> 正在執行中，而這項政策發生變更，則只有新開啟的分頁會套用變更後的政策。因此，部分分頁仍可能執行先前行為。
+      </translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
@@ -1031,6 +1044,7 @@
       如果未設定這項政策，使用者可以選擇要在書籤列內容選單中顯示或隱藏應用程式捷徑。
 
       如果設定這項政策，使用者無法變更，且應用程式捷徑會一律顯示或不顯示。</translation>
+<translation id="4432762137771104529">啟用安全瀏覽模式的進階回報功能</translation>
 <translation id="443454694385851356">舊版 (不安全)</translation>
 <translation id="443665821428652897">瀏覽器關閉時清除網站資料 (已淘汰)</translation>
 <translation id="4439336120285389675">指定要暫時重新啟用的已淘汰網路平台功能清單。
@@ -1043,12 +1057,6 @@
       </translation>
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
 <translation id="4449545651113180484">將畫面以順時針方向旋轉 270 度</translation>
-<translation id="4459359100627756769">設定企業登入網址 (僅限 HTTP 和 HTTPS 配置) 清單。系統會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      只有使用 SSO/SMAL 系統的 G Suite 使用者可使用這項設定。
-
-      如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4476769083125004742">如果將這項政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 應用程式將無法存取位置資訊。如果將這項政策設為任何其他值或不予設定，當 Android 應用程式要存取位置資訊時，會詢問使用者是否同意。</translation>
@@ -1241,6 +1249,19 @@
 
       請注意，如果用戶端有很長一段時間處於離線狀態，則即使已過了指定的天數，密碼也可能不會變更。</translation>
 <translation id="5105313908130842249">在電池供電環境下執行時的螢幕鎖定延遲時間</translation>
+<translation id="5106504910236139235">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽模式的進階回報功能，並禁止使用者變更這項設定。
+
+      進階回報功能會將部分系統資訊和網頁內容傳送至 Google 伺服器，協助偵測危險的應用程式和網站。
+
+      如果將這項設定設為 True，系統會視需要 (例如當安全性插頁顯示時) 建立並傳送報告。
+
+      如果將這項設定設為 False，系統則一律不會傳送報告。
+
+      將這項政策設為 True 或 False 時，使用者將無法修改設定。
+
+      如果未設定這項政策，使用者即可變更設定，自行決定是否要傳送報告。
+
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="5108031557082757679">已停用企業裝置印表機</translation>
 <translation id="5130288486815037971">是否在 TLS 中啟用 RC4 加密套件</translation>
 <translation id="5141670636904227950">設定啟用的螢幕放大鏡在登入畫面的預設類型</translation>
@@ -1763,6 +1784,7 @@
 
       指定要在 <ph name="PRODUCT_NAME" /> 啟動時套用的設定。系統僅會在進入登入畫面時套用指定的設定。透過這個政策所指定的設定不會反映在使用者工作階段中。</translation>
 <translation id="685769593149966548">強制執行高度的 YouTube 嚴格篩選模式</translation>
+<translation id="686079137349561371">Microsoft Windows 7 以上版本</translation>
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 
       無論其選項值為何，系統都會在網頁上回報記憶體資訊；但基於安全性考量，系統會限制回報的資料量以及更新頻率。如要取得即時準確資料，請使用 Telemetry 等工具。</translation>
@@ -1953,6 +1975,7 @@
 
       如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
+<translation id="733838170182967492">允許自動播放媒體</translation>
 <translation id="7340034977315324840">回報裝置活動時間</translation>
 <translation id="7343497214039883642">裝置專用企業印表機設定檔</translation>
 <translation id="7384999953864505698">允許 QUIC 通訊協定</translation>
@@ -2483,6 +2506,13 @@
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME" /> 使用者資料目錄</translation>
 <translation id="934390688529359269">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能</translation>
+<translation id="938916311528680351">讓你控制虛擬機器能否在 Chrome 作業系統上執行。
+
+      如果將這項政策設為 True，裝置將可以執行虛擬機器。
+      如果將這項政策設為 False，裝置將無法執行虛擬機器。
+      將這項政策變更為 False 後，系統會禁止裝置啟動新的虛擬機器，但不會關閉已在執行中的虛擬機器。
+      在受管理的裝置上，如果不設定這項政策，裝置將可以執行虛擬機器。
+      未受管理的裝置可以執行虛擬機器。</translation>
 <translation id="944817693306670849">設定磁碟快取大小</translation>
 <translation id="982497069985795632">啟用拼字檢查</translation>
 </translationbundle>

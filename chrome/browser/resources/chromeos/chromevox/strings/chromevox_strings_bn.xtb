@@ -177,7 +177,7 @@
 <translation id="2800780099804980316">কোনো পূর্ববর্তী স্তর ১ শিরোনাম নেই৷</translation>
 <translation id="280499067616661124">ChromeVox পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="2808001342598757276">স্ক্রীনে আলো বাড়ান</translation>
-<translation id="2811019999044652585">স্ক্রীনের অন্যান্য অংশে যেমন সরঞ্জাম দণ্ড বা সিস্টেম ট্রেতে যাওয়ার জন্য কন্ট্রোল + ফরোয়ার্ড টিপুন। Chromebook এ ফরোয়ার্ড কী সংখ্যা ২ কী এর ঠিক উপরে।</translation>
+<translation id="2811019999044652585">স্ক্রীনের অন্যান্য অংশে যেমন টুল দণ্ড বা সিস্টেম ট্রেতে যাওয়ার জন্য কন্ট্রোল + ফরোয়ার্ড টিপুন। Chromebook এ ফরোয়ার্ড কী সংখ্যা ২ কী এর ঠিক উপরে।</translation>
 <translation id="2811204574343810641">সারি</translation>
 <translation id="2816654101880605877">কোনো পরবর্তী স্লাইডার নেই৷</translation>
 <translation id="2841013758207633010">সময়</translation>
@@ -473,7 +473,7 @@
 <translation id="5080758118274074384">দুবার ক্লিক করা হয়েছে</translation>
 <translation id="5087864757604726239">ফিরুন</translation>
 <translation id="5098541983634824365">গ্রিড ত্যাগ করছে৷</translation>
-<translation id="5102981729317424850">সরঞ্জাম দণ্ড</translation>
+<translation id="5102981729317424850">টুল দণ্ড</translation>
 <translation id="5105050547967751155">rq</translation>
 <translation id="5106547198195128110">এই নতুন রিলিজে আমরা কিছু আকর্ষণীয় পরিবর্তন নিয়ে এসেছি; নতুন কি আছে তা এখানে দেওয়া হল:</translation>
 <translation id="5110983769041734144">কোনো পরবর্তী ফর্ম ক্ষেত্র নেই৷</translation>
@@ -588,7 +588,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="5999630716831179808">ভয়েসগুলি</translation>
 <translation id="6006050241733874051">রূপ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ব্যাকস্ল্যাশ}one{#টি ব্যাকস্ল্যাশ}other{#টি ব্যাকস্ল্যাশ}}</translation>
-<translation id="6037602951055904232">প্যান ফরোয়ার্ড</translation>
+<translation id="6037602951055904232">প্যান ফরওয়ার্ড</translation>
 <translation id="6042826534790431634">চালু করতে Search+Space টিপুন।</translation>
 <translation id="6044160928851315051">স্ক্রীনে আলো কমান</translation>
 <translation id="605761629541007221">গাঢ় অক্ষর শেষ</translation>

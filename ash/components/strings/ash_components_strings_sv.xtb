@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Byt till det tangentbordsspråk som du använde tidigare.</translation>
 <translation id="1195667586424773550">Dra länken till flikens adressfält</translation>
 <translation id="1204450209689312104">Öppna ett nytt fönster i inkognitoläge</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Skriv ut den aktuella sidan</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> eller <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sedan <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Öppna nästa flik</translation>
 <translation id="2010818616644390445">Öppna den sista fliken i fönstret</translation>
+<translation id="2088054208777350526">Sök efter kortkommandon</translation>
 <translation id="2145908266289632567">Textredigering</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 till =</translation>
 <translation id="2181097965834437145">Visa eller dölj bokmärkesfältet</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusera på adressfältet</translation>
 <translation id="3288816184963444640">Stäng aktuellt fönster</translation>
-<translation id="3356202203145076517">Öppna fönstret som det har gått längst tid sedan du använde</translation>
 <translation id="3407560819924487926">Öppna aktivitetshanteraren</translation>
 <translation id="3422679037938588196">Hitta föregående träff för sökningen</translation>
 <translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 till 8</translation>
 <translation id="3837047332182291558">Starkare belysning (endast tangentbord med belysning underifrån)</translation>
 <translation id="3976863468609830880">Klicka på den sista ikonen i översikten</translation>
+<translation id="4026843240379844265">Flytta det aktiva fönstret mellan skärmar</translation>
 <translation id="4035482366624727273">Markera allt på sidan</translation>
 <translation id="4060703249685950734">Öppna den senast stängda fliken eller det senast stängda fönstret igen</translation>
 <translation id="4090342722461256974">Tryck och håll <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, tryck på <ph name="TAB" /> tills du når fönstret som du vill öppna och släpp sedan tangenten.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="7020813747703216897">Inga matchande sökresultat hittades</translation>
 <translation id="7025325401470358758">Nästa ruta</translation>
+<translation id="7237562915163138771">Ange en webbadress i adressfältet och tryck sedan på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Radera nästa bokstav (radera framåt)</translation>
 <translation id="766326951329901120">Klistra in innehållet i Urklipp som oformaterad text</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Dra länken till ett tomt område i flikhuvudet</translation>
 <translation id="8389638407792712197">Öppna nytt fönster</translation>
 <translation id="8429696719963529183">Använd F-tangenterna (F1 till F12)</translation>
+<translation id="8537650670971624753">Avsluta sökläget</translation>
 <translation id="85690795166292698">Öppna länken på en ny flik</translation>
 <translation id="8609384513243082612">Öppna ny flik</translation>
 <translation id="8644639153978066712">Visa dolda filer i appen Filer</translation>

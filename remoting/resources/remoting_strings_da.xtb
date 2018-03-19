@@ -242,9 +242,10 @@ Pc</translation>
 <translation id="6381670701864002291">Noget andet.</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
 <translation id="6441316101718669559">Skrivebordsintegration understøttes ikke på denne platform. Du kan fortsat bruge denne applikation, men brugeroplevelsen vil være forringet.</translation>
+<translation id="6502629188777329097">Opret sikker computeradgang</translation>
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="6527303717912515753">Del</translation>
-<translation id="6541219117979389420">Logfiler for applikationer kan indeholde private oplysninger, bl.a. din identitet (mailadresse) og navne og egenskaber for filer og mapper i Google Drev.</translation>
+<translation id="6541219117979389420">Logfiler for apps kan indeholde private oplysninger, bl.a. din identitet (mailadresse) og navne og egenskaber for filer og mapper i Google Drev.</translation>
 <translation id="6542902059648396432">Rapportér et problem…</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6570205395680337606">Nulstil applikationen. Du vil miste alt arbejde, der ikke er gemt.</translation>
@@ -290,6 +291,7 @@ Pc</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="7678209621226490279">Fastgør til venstre</translation>
 <translation id="7693372326588366043">Opdater listen over værter</translation>
+<translation id="7714222945760997814">Rapportér dette</translation>
 <translation id="7782471917492991422">Kontrollér indstillingerne for strømstyring på din computer, og sørg for, at den ikke er konfigureret til at gå i dvale, når den er inaktiv.</translation>
 <translation id="7810127880729796595">Vis statistik (forbindelse: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Nogle obligatoriske komponenter mangler. Kontrollér, at du har den nyeste version af Chrome, og prøv igen.</translation>
@@ -316,7 +318,7 @@ Pc</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8355326866731426344">Denne adgangskode udløber om <ph name="TIMEOUT" /></translation>
-<translation id="8355485110405946777">Inkluder logfiler for applikationer for at hjælpe os med at løse problemet (logfiler kan indeholde private oplysninger).</translation>
+<translation id="8355485110405946777">Inkluder logfiler for apps for at hjælpe os med at løse problemet (logfiler kan indeholde private oplysninger).</translation>
 <translation id="837021510621780684">Fra denne computer</translation>
 <translation id="8383794970363966105">Hvis du vil bruge Chromoting, skal du føje en Google-konto til din enhed.</translation>
 <translation id="8386846956409881180">Hosten er konfigureret med ugyldige OAuth-loginoplysninger.</translation>

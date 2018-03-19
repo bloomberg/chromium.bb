@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="2898082584336937987">ติดตั้ง Chromium ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">เกี่ยวกับ &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{เปิด Chromium ขึ้นมาใหม่ภายใน 1 วัน}other{เปิด Chromium ขึ้นมาใหม่ภายใน # วัน}}</translation>
 <translation id="2977470724722393594">Chromium อัปเดตแล้ว</translation>
 <translation id="3032787606318309379">กำลังเพิ่มลงใน Chromium...</translation>
 <translation id="3046695367536568084">คุณจะต้องลงชื่อเข้าใช้ Chromium เพื่อใช้แอป ซึ่งจะช่วยให้ Chromium สามารถซิงค์แอป บุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ระหว่างอุปกรณ์ได้</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">ขณะนี้คุณลงชื่อเข้าใช้ Chromium แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
 <translation id="4224199872375172890">Chromium อัปเดตแล้ว</translation>
 <translation id="4230135487732243613">เชื่อมโยงข้อมูล Chromium กับบัญชีนี้ไหม</translation>
+<translation id="4260985389288095068">พบซอฟต์แวร์อันตรายในคอมพิวเตอร์ของคุณ Chromium สามารถนำซอฟต์แวร์ดังกล่าวออกและคืนการตั้งค่าเดิมเพื่อให้เบราว์เซอร์ทำงานเป็นปกติอีกครั้ง</translation>
 <translation id="4271805377592243930">รับความช่วยเหลือเกี่ยวกับ Chromium</translation>
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4330585738697551178">เป็นที่ทราบกันว่าโมดูลนี้ขัดแย้งกับ Chromium</translation>
+<translation id="4407044323746248786">ออกจาก Chromium ใช่ไหม</translation>
 <translation id="4421155425831608516">ผู้ดูแลระบบอุปกรณ์เครื่องนี้ปิดไม่ให้ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium จะเปิดขึ้นมาใหม่ภายใน 1 ชั่วโมง}other{Chromium จะเปิดขึ้นมาใหม่ภายใน # ชั่วโมง}}</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4469812139324097969">Chromium ล้าสมัยเพราะไม่ได้เปิดใหม่มาระยะหนึ่งแล้ว มีเวอร์ชันอัปเดตพร้อมใช้งานและระบบจะนำเวอร์ชันอัปเดตดังกล่าวไปใช้เมื่อคุณเปิดเครื่องใหม่</translation>
 <translation id="4488554488975128561">คุณสามารถช่วยปรับปรุงให้ Chromium ปลอดภัยและใช้งานง่ายขึ้นด้วยการส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตราย</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">รับความช่วยเหลือเกี่ยวกับ Chromium OS</translation>
 <translation id="4708774505295300557">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chromium ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chromium ใหม่เพื่อเก็บข้อมูลแยก</translation>
 <translation id="4714956846925717402">ใช้ Chromium ได้เร็วขึ้น</translation>
+<translation id="4746050847053251315">ปิด Chromium ใช่ไหม</translation>
 <translation id="4888717733111232871">กฎขาเข้าสำหรับ Chromium เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="4943838377383847465">Chromium กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="4987820182225656817">ผู้เยี่ยมชมสามารถใช้ Chromium โดยไม่ทิ้งร่องรอยไว้</translation>

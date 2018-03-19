@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরও ভালো করতে সহায়তা করুন৷</translation>
 <translation id="2898082584336937987">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">&amp;Chromium সম্পর্কে</translation>
+<translation id="2943431542152338750">{0,plural, =1{একদিনের মধ্যে Chromium রিলঞ্চ করুন}one{# দিনের মধ্যে Chromium রিলঞ্চ করুন}other{# দিনের মধ্যে Chromium রিলঞ্চ করুন}}</translation>
 <translation id="2977470724722393594">Chromium আপ-টু-ডেট আছে</translation>
 <translation id="3032787606318309379">Chromium-এ জুড়ছে...</translation>
 <translation id="3046695367536568084">অ্যাপ্লিকেশানগুলি ব্যবহার করতে আপনাকে Chromium এ প্রবেশ করতে হবে৷ এটি Chromium কে ডিভাইসগুলি জুড়ে আপনার অ্যাপ্লিকেশান, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্য সেটিংসগুলিকে সিঙ্ক করতে অনুমতি দেয়৷</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">আপনি এখন Chromium এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="4224199872375172890">Chromium আপ-টু-ডেট আছে৷</translation>
 <translation id="4230135487732243613">এই অ্যাকাউন্টে আপনার Chromium ডেটা লিঙ্ক করবেন?</translation>
+<translation id="4260985389288095068">আপনার কম্পিউটারে ক্ষতিকর সফ্টওয়্যার আছে। Chromium এটিকে সরিয়ে দিতে পারে এবং আপনার সেটিংস রিস্টোর করতে পারে যাতে আপনার ব্রাউজার আবার স্বাভাবিকভাবে কাজ করে।</translation>
 <translation id="4271805377592243930">Chromium সম্পর্কে সহায়তা পান</translation>
 <translation id="4285930937574705105">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ বর্তমানে Chromium চালু থাকলেও, দয়া করে এটি বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="4330585738697551178">এই মডিউল Chromium-এর সঙ্গে বিরোধের জন্য জ্ঞাত হয়৷</translation>
+<translation id="4407044323746248786">তা স্বত্তেও Chromium ছেড়ে যাবেন?</translation>
 <translation id="4421155425831608516">এই ডিভাইসের প্রশাসক Chromium এর মাধ্যমে সাইন-ইন করা অক্ষম করেছেন।</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
+<translation id="4449801103833300785">{0,plural, =1{এক ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}}</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে প্রস্থান করুন এবং পুনরায় প্রবেশ করুন৷</translation>
 <translation id="4469812139324097969">Chromium পুরানো হয়ে গেছে কারণ কিছু সময় ধরে এটিকে পুনঃলঞ্চ করা হয়নি। একটি আপডেট উপলব্ধ রয়েছে এবং আপনি পুনঃলঞ্চ করার সাথে সাথেই এটি প্রয়োগ করা হবে।</translation>
 <translation id="4488554488975128561">বিপজ্জনক অ্যাপ্লিকেশান এবং সাইট শনাক্ত করতে সহায়তা দিতে স্বয়ংক্রিয়ভাবে কিছু তথ্য ও পৃষ্ঠা সামগ্রী Google এ পাঠানোর মাধ্যমে Chromium কে আরও নিরাপদ ও সহজে ব্যবহারযোগ্য করে তুলতে সাহায্য করতে পারেন।</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Chromium OS সম্পর্কে সহায়তা পান</translation>
 <translation id="4708774505295300557">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST" /> হিসাবে Chromium এ প্রবেশ করেছেন। আপনার তথ্য পৃথক রাখার জন্য অনুগ্রহ করে একটি Chromium ব্যবহারকারী তৈরি করুন।</translation>
 <translation id="4714956846925717402">Chromium এ আরও দ্রুত যান</translation>
+<translation id="4746050847053251315">তা স্বত্তেও Chromium বন্ধ করবেন?</translation>
 <translation id="4888717733111232871">mDNS ট্রাফিকের অনুমতি দিতে Chromium এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="4943838377383847465">Chromium পটভূমিতে চলছে৷</translation>
 <translation id="4987820182225656817">অতিথিগণ কোনো কিছুর জন্য অভাব বোধ না করেই Chromium ব্যবহার করতে পারবেন৷</translation>

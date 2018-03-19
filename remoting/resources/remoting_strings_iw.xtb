@@ -25,7 +25,7 @@
 <translation id="1480046233931937785">שותפים לעשייה</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
-<translation id="1546934824884762070">אירעה שגיאה לא צפויה. דווח על בעיה זו למפתחים.</translation>
+<translation id="1546934824884762070">אירעה שגיאה לא צפויה. דיווח על בעיה זו למפתחים.</translation>
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
@@ -55,7 +55,7 @@
 למידע על פרטיות, עדיין במדיניות הפרטיות של Google ‏(http://goo.gl/SyrVzj) ומדיניות הפרטיות של Chrome ‏(http://goo.gl/0uXE5d).</translation>
 <translation id="2124408767156847088">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח שולחן עבודה מרוחק של Chrome. פנה למנהל המערכת שלך לקבלת סיוע.</translation>
-<translation id="2220529011494928058">דווח על בעיה</translation>
+<translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
 <translation id="2235518894410572517">שתף מחשב זה ואפשר למשתמש אחר להציג את התוכן שלו ולשלוט בו.</translation>
 <translation id="2246783206985865117">ההגדרה הזו מנוהלת על ידי מדיניות הדומיין שלך.</translation>
@@ -164,7 +164,7 @@
 <translation id="4619978527973181021">קבל והתקן</translation>
 <translation id="4635770493235256822">מכשירים מרוחקים</translation>
 <translation id="4660011489602794167">הצגת מקלדת</translation>
-<translation id="4703302905453407178">רכיב נדרש הפסיק לפעול. דווח על בעיה זו למפתחים.</translation>
+<translation id="4703302905453407178">רכיב נדרש הפסיק לפעול. דיווח על בעיה זו למפתחים.</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
 <translation id="4706355010316049867">‏שולחן עבודה
 מרוחק
@@ -246,7 +246,7 @@ Chrome
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
 <translation id="6527303717912515753">שתף</translation>
 <translation id="6541219117979389420">‏יומני יישומים עשויים לכלול פרטים אישיים, כולל הזהות שלך (כתובת אימייל) וגם השמות והתכונות של קבצים ותיקיות ב-Google Drive.</translation>
-<translation id="6542902059648396432">דווח על בעיה...</translation>
+<translation id="6542902059648396432">דיווח על בעיה...</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6570205395680337606">אפס את היישום. תאבד עבודות שלא נשמרו.</translation>
 <translation id="6572345186230665992">‏ל-Mac ‏(OS X Mavericks מגירסה 10.9 ואילך)</translation>

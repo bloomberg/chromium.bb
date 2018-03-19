@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">جا‌به‌جایی به زبان قبلی صفحه‌کلید که استفاده می‌کردید.</translation>
 <translation id="1195667586424773550">کشیدن پیوند به نوار نشانی برگه</translation>
 <translation id="1204450209689312104">باز کردن پنجره جدید در حالت ناشناس</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">چاپ صفحه کنونی</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> یا <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> یا <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">رفتن به برگه بعدی</translation>
 <translation id="2010818616644390445">رفتن به آخرین برگه در پنجره</translation>
+<translation id="2088054208777350526">جستجوی میان‌برهای صفحه‌کلید</translation>
 <translation id="2145908266289632567">ویرایش نوشتار</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> ۱ تا =</translation>
 <translation id="2181097965834437145">نشان دادن یا پنهان کردن نوار نشانک‌ها</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">فوکوس نوار آدرس</translation>
 <translation id="3288816184963444640">بستن پنجره فعلی</translation>
-<translation id="3356202203145076517">باز کردن پنجره‌ای که اخیراً استفاده کرده‌اید</translation>
 <translation id="3407560819924487926">باز کردن مدیر فعالیت‌ها</translation>
 <translation id="3422679037938588196">رفتن به مورد منطبق قبلی با جستجویتان</translation>
 <translation id="344577624355799426"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ۱ تا ۸</translation>
 <translation id="3837047332182291558">روشن‌تر کردن صفحه‌کلید (فقط برای صفحه‌کلیدهایی که نور پس‌زمینه دارند)</translation>
 <translation id="3976863468609830880">کلیک کردن آخرین نماد در قفسه</translation>
+<translation id="4026843240379844265">جابه‌جایی پنجره فعال بین نمایشگرها</translation>
 <translation id="4035482366624727273">انتخاب همه چیز در صفحه</translation>
 <translation id="4060703249685950734">دوباره باز کردن آخرین برگه یا پنجره‌ای که بسته بودید</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> را فشار دهید و نگه‌دارید، روی <ph name="TAB" /> ضربه بزنید تا به پنجره‌ای که می‌خواهید باز شود برسید، سپس آن را رها کنید.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="7020813747703216897">هیچ نتیجه منطبقی پیدا نشد</translation>
 <translation id="7025325401470358758">چارچوب بعدی</translation>
+<translation id="7237562915163138771">نشانی وبی را در نوار نشانی تایپ کنید و سپس <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> را فشار دهید</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">حذف حرف بعدی (حذف بعدی)</translation>
 <translation id="766326951329901120">جای‌گذاری محتوا از کلیپ‌بورد به عنوان نوشتار ساده</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">کشیدن پیوند به قسمتی خالی در نوار برگه</translation>
 <translation id="8389638407792712197">باز کردن پنجره جدید</translation>
 <translation id="8429696719963529183">‏استفاده از کلیدهای F ‏(F1 تا F12)</translation>
+<translation id="8537650670971624753">خروج از حالت جستجو</translation>
 <translation id="85690795166292698">بازکردن پیوند در یک برگه جدید</translation>
 <translation id="8609384513243082612">بازکردن برگه جدید</translation>
 <translation id="8644639153978066712">‏نمایش فایل‌های مخفی در برنامه Files</translation>

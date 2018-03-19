@@ -45,6 +45,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
+<translation id="2094919256425865063">Quit Chrome anyway?</translation>
 <translation id="2120620239521071941">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Help make Chrome better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Install Chrome on your phone. We’ll send an SMS to your account recovery phone number.</translation>
@@ -199,6 +200,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
+<translation id="677276454032249905">Exit Chrome anyway?</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="686561893457936865">Take Chrome everywhere</translation>
 <translation id="6885412569789873916">Chrome Beta Apps</translation>
