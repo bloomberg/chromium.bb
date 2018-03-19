@@ -645,8 +645,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
   TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-  if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block,
-                       cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, inter_block, cm->reduced_tx_set_used) > 1 &&
       ((!cm->seg.enabled && cm->base_qindex > 0) ||
        (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
       !mbmi->skip &&

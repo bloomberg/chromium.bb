@@ -719,9 +719,8 @@ static INLINE int get_ext_tx_set(TX_SIZE tx_size, int is_inter,
   return ext_tx_set_index[is_inter][set_type];
 }
 
-static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
+static INLINE int get_ext_tx_types(TX_SIZE tx_size, int is_inter,
                                    int use_reduced_set) {
-  (void)bs;
   const int set_type = get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
   return av1_num_ext_tx_set[set_type];
 }

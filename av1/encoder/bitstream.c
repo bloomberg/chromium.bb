@@ -828,8 +828,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
                                     cm->reduced_tx_set_used);
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
       ((!cm->seg.enabled && cm->base_qindex > 0) ||
        (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
       !mbmi->skip &&

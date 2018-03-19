@@ -4646,8 +4646,8 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               int blk_row, int blk_col, int plane,
-                              BLOCK_SIZE bsize, TX_SIZE tx_size,
-                              FRAME_COUNTS *counts, uint8_t allow_update_cdf) {
+                              TX_SIZE tx_size, FRAME_COUNTS *counts,
+                              uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int is_inter = is_inter_block(mbmi);
   FRAME_CONTEXT *fc = xd->tile_ctx;
@@ -4659,7 +4659,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
   if (plane > 0) return;
   TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
-  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);

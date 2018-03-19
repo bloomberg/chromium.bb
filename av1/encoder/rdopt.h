@@ -155,8 +155,8 @@ int av1_active_v_edge(const struct AV1_COMP *cpi, int mi_col, int mi_step);
 int av1_active_edge_sb(const struct AV1_COMP *cpi, int mi_row, int mi_col);
 
 int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
-                     const MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
-                     TX_SIZE tx_size, TX_TYPE tx_type);
+                     const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
+                     TX_TYPE tx_type);
 
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int blk_row, int blk_col, int eob,

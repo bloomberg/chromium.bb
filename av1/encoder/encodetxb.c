@@ -610,7 +610,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -636,7 +635,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-  cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
+  cost += av1_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
 
   int eob_cost = get_eob_cost(eob, eob_costs, coeff_costs, tx_type);
   cost += eob_cost;
@@ -1218,8 +1217,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
   assert(width == (1 << bwl));
-  const int tx_type_cost =
-      av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
+  const int tx_type_cost = av1_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
   TxbInfo txb_info = {
     qcoeff,   levels,       dqcoeff,    tcoeff,  dequant, shift,
     tx_size,  txs_ctx,      tx_type,    bwl,     width,   height,
@@ -1346,8 +1344,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   av1_txb_init_levels(tcoeff, width, height, levels);
-  av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
-                           tx_size, td->counts, allow_update_cdf);
+  av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, tx_size, td->counts,
+                           allow_update_cdf);
 #if CONFIG_ENTROPY_STATS
   av1_update_eob_context(cdf_idx, eob, tx_size, tx_type, plane_type, ec_ctx,
                          td->counts, allow_update_cdf);

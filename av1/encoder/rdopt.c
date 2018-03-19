@@ -2296,15 +2296,15 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
 
 // TODO(angiebird): use this function whenever it's possible
 int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
-                     const MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
-                     TX_SIZE tx_size, TX_TYPE tx_type) {
+                     const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
+                     TX_TYPE tx_type) {
   if (plane > 0) return 0;
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
 
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
-  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+  if (get_ext_tx_types(tx_size, is_inter, cm->reduced_tx_set_used) > 1 &&
       !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
     const int ext_tx_set =
         get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
