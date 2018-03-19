@@ -3263,7 +3263,6 @@ crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-re
 
 # Sheriff failures 2018-02-19
 crbug.com/771643 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
-crbug.com/813462 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.convert.to.blob.html [ Pass Timeout ]
 
 # Sheriff failures 2018-02-20
 crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
