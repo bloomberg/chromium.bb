@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -13,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/controls/webview/webview.h"
@@ -24,9 +26,17 @@ const char kSimplePage[] = "/focus/page_with_focus.html";
 
 class BrowserViewFocusTest : public InProcessBrowserTest {
  public:
+  BrowserViewFocusTest() = default;
+  ~BrowserViewFocusTest() override = default;
+
   bool IsViewFocused(ViewID vid) {
     return ui_test_utils::IsViewFocused(browser(), vid);
   }
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewFocusTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, BrowsersRememberFocus) {
