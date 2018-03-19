@@ -189,9 +189,6 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
         last_used_browser_state->GetPrefs());
     variations_service->PerformPreMainMessageLoopStartup();
   }
-
-  translate::TranslateDownloadManager::RequestLanguageList(
-      last_used_browser_state->GetPrefs());
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {

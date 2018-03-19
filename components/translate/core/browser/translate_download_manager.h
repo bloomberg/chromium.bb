@@ -18,8 +18,6 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 }
 
-class PrefService;
-
 namespace translate {
 
 // Manages the downloaded resources for Translate, such as the translate script
@@ -62,11 +60,6 @@ class TranslateDownloadManager {
     DCHECK(sequence_checker_.CalledOnValidSequence());
     return script_.get();
   }
-
-  // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if prefs::kOfferTranslateEnabled is
-  // set to false.
-  static void RequestLanguageList(PrefService* prefs);
 
   // Fills |languages| with the list of languages that the translate server can
   // translate to and from. May cause a language list request unless
