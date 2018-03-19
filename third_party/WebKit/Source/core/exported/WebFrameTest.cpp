@@ -12587,7 +12587,7 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
 
   WebLocalFrame* LocalMainFrame() { return web_view_helper_->LocalMainFrame(); }
 
-  LocalFrameView* LocalFrameView() {
+  LocalFrameView* GetLocalFrameView() {
     return web_view_helper_->LocalMainFrame()->GetFrameView();
   }
 
@@ -12619,7 +12619,7 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
 
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
-    return LocalFrameView()->GetPaintArtifactCompositorForTesting();
+    return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
   }
   FrameTestHelpers::TestWebViewClient web_view_client_;
   std::unique_ptr<FrameTestHelpers::WebViewHelper> web_view_helper_;
@@ -12703,7 +12703,7 @@ TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
 
   WebView()->UpdateAllLifecyclePhases();
 
-  auto* scrollable_area = LocalFrameView()->LayoutViewportScrollableArea();
+  auto* scrollable_area = GetLocalFrameView()->LayoutViewportScrollableArea();
   EXPECT_NE(nullptr, scrollable_area);
 
   EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
