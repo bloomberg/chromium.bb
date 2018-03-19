@@ -789,6 +789,11 @@ const char kStatsCollectionController[] =
 // If the cache needs to allocate more, skia will purge previous entries.
 const char kSkiaFontCacheLimitMb[] = "skia-font-cache-limit-mb";
 
+// Specifies the max number of bytes that should be used by the skia resource
+// cache. The previous entries are purged from the cache when the memory useage
+// exceeds this limit.
+const char kSkiaResourceCacheLimitMb[] = "skia-resource-cache-limit-mb";
+
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 

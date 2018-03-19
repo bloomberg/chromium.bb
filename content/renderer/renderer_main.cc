@@ -153,6 +153,15 @@ int RendererMain(const MainFunctionParams& parameters) {
       SkGraphics::SetFontCacheLimit(font_cache_limit * kMB);
     }
   }
+
+  size_t resource_cache_limit;
+  if (process_command_line.HasSwitch(switches::kSkiaResourceCacheLimitMb)) {
+    if (base::StringToSizeT(process_command_line.GetSwitchValueASCII(
+                                switches::kSkiaResourceCacheLimitMb),
+                            &resource_cache_limit)) {
+      SkGraphics::SetResourceCacheTotalByteLimit(resource_cache_limit * kMB);
+    }
+  }
 #endif
 
   // This function allows pausing execution using the --renderer-startup-dialog
