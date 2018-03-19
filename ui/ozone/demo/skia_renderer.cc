@@ -85,13 +85,13 @@ void SkiaRenderer::RenderFrame() {
   if (!sk_surface_) {
     GrGLFramebufferInfo framebuffer_info;
     framebuffer_info.fFBOID = 0;
+    framebuffer_info.fFormat = GL_RGBA8;
     GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
-                                        kRGBA_8888_GrPixelConfig,
                                         framebuffer_info);
 
     sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context_.get(), render_target, kBottomLeft_GrSurfaceOrigin, nullptr,
-        &surface_props);
+        gr_context_.get(), render_target, kBottomLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType, nullptr, &surface_props);
   }
 
   if (use_ddl_) {
