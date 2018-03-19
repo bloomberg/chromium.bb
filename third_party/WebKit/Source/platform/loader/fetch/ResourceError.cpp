@@ -93,6 +93,7 @@ ResourceError::ResourceError(
 
 ResourceError::ResourceError(const WebURLError& error)
     : error_code_(error.reason()),
+      extended_error_code_(error.extended_reason()),
       failing_url_(error.url()),
       is_access_check_(error.is_web_security_violation()),
       has_copy_in_cache_(error.has_copy_in_cache()),
@@ -104,6 +105,7 @@ ResourceError::ResourceError(const WebURLError& error)
 ResourceError ResourceError::Copy() const {
   ResourceError error_copy(error_code_, failing_url_.Copy(),
                            cors_error_status_);
+  error_copy.extended_error_code_ = extended_error_code_;
   error_copy.has_copy_in_cache_ = has_copy_in_cache_;
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_access_check_ = is_access_check_;
@@ -120,7 +122,7 @@ ResourceError::operator WebURLError() const {
     return WebURLError(*cors_error_status_, has_copy_in_cache, failing_url_);
   }
 
-  return WebURLError(error_code_, has_copy_in_cache,
+  return WebURLError(error_code_, extended_error_code_, has_copy_in_cache,
                      is_access_check_
                          ? WebURLError::IsWebSecurityViolation::kTrue
                          : WebURLError::IsWebSecurityViolation::kFalse,
@@ -169,8 +171,8 @@ void ResourceError::InitializeDescription() {
   if (error_code_ == net::ERR_TEMPORARILY_THROTTLED) {
     localized_description_ = WebString::FromASCII(kThrottledErrorDescription);
   } else {
-    localized_description_ =
-        WebString::FromASCII(net::ErrorToString(error_code_));
+    localized_description_ = WebString::FromASCII(
+        net::ExtendedErrorToString(error_code_, extended_error_code_));
   }
 }
 

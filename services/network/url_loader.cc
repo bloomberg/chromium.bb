@@ -690,6 +690,11 @@ void URLLoader::NotifyCompleted(int error_code) {
 
   URLLoaderCompletionStatus status;
   status.error_code = error_code;
+  if (error_code == net::ERR_QUIC_PROTOCOL_ERROR) {
+    net::NetErrorDetails details;
+    url_request_->PopulateNetErrorDetails(&details);
+    status.extended_error_code = details.quic_connection_error;
+  }
   status.exists_in_cache = url_request_->response_info().was_cached;
   status.completion_time = base::TimeTicks::Now();
   status.encoded_data_length = url_request_->GetTotalReceivedBytes();
