@@ -6,5 +6,6 @@ source_set("constants") {
   sources = [
     "constants.cc",
     "constants.h",
+    "result_codes.h",
   ]
 }
