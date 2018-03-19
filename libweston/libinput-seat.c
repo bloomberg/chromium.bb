@@ -58,6 +58,27 @@ get_udev_seat(struct udev_input *input, struct libinput_device *device)
 	return udev_seat_get_named(input, seat_name);
 }
 
+static struct weston_output *
+output_find_by_head_name(struct weston_compositor *compositor,
+			 const char *head_name)
+{
+	struct weston_output *output;
+	struct weston_head *head;
+
+	if (!head_name)
+		return NULL;
+
+	/* only enabled outputs */
+	wl_list_for_each(output, &compositor->output_list, link) {
+		wl_list_for_each(head, &output->head_list, output_link) {
+			if (strcmp(head_name, head->name) == 0)
+				return output;
+		}
+	}
+
+	return NULL;
+}
+
 static void
 device_added(struct udev_input *input, struct libinput_device *libinput_device)
 {
@@ -95,11 +116,10 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 	output_name = libinput_device_get_output_name(libinput_device);
 	if (output_name) {
 		device->output_name = strdup(output_name);
-		wl_list_for_each(output, &c->output_list, link)
-			if (output->name &&
-			    strcmp(output->name, device->output_name) == 0)
-				evdev_device_set_output(device, output);
-	} else if (device->output == NULL && !wl_list_empty(&c->output_list)) {
+		output = output_find_by_head_name(c, output_name);
+		evdev_device_set_output(device, output);
+	} else if (!wl_list_empty(&c->output_list)) {
+		/* default assignment to an arbitrary output */
 		output = container_of(c->output_list.next,
 				      struct weston_output, link);
 		evdev_device_set_output(device, output);
@@ -363,15 +383,26 @@ notify_output_create(struct wl_listener *listener, void *data)
 					      output_create_listener);
 	struct evdev_device *device;
 	struct weston_output *output = data;
+	struct weston_output *found;
 
 	wl_list_for_each(device, &seat->devices_list, link) {
-		if (device->output_name &&
-		    strcmp(output->name, device->output_name) == 0) {
-			evdev_device_set_output(device, output);
+		/* If we find any input device without an associated output
+		 * or an output name to associate with, just tie it with the
+		 * output we got here - the default assingment.
+		 */
+		if (!device->output_name) {
+			if (!device->output)
+				evdev_device_set_output(device, output);
+
+			continue;
 		}
 
-		if (device->output_name == NULL && device->output == NULL)
-			evdev_device_set_output(device, output);
+		/* Update all devices' output associations, may they gain or
+		 * lose it.
+		 */
+		found = output_find_by_head_name(output->compositor,
+						 device->output_name);
+		evdev_device_set_output(device, found);
 	}
 }
 
