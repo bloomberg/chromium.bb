@@ -580,6 +580,18 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       return;
   }
 
+  // TODO(dcastagna): Handle odd positioned video frame input, see
+  // https://crbug.com/638906.
+  // TODO(emircan): Eliminate odd size video frame input cases as they are not
+  // valid, see https://crbug.com/webrtc/9033.
+  if ((video_frame->visible_rect().x() & 1) ||
+      (video_frame->visible_rect().y() & 1) ||
+      (video_frame->coded_size().width() & 1) ||
+      (video_frame->coded_size().height() & 1)) {
+    std::move(frame_ready_cb).Run(video_frame);
+    return;
+  }
+
   frame_copy_requests_.emplace_back(video_frame, std::move(frame_ready_cb));
   if (frame_copy_requests_.size() == 1u)
     StartCopy(video_frame);

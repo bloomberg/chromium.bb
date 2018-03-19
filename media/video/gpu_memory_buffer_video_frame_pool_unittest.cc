@@ -96,7 +96,8 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
 
   static scoped_refptr<VideoFrame> CreateTestYUVVideoFrame(
       int dimension,
-      size_t bit_depth = 8) {
+      size_t bit_depth = 8,
+      int visible_rect_crop = 0) {
     const int kDimension = 10;
     // Data buffers are overdimensioned to acommodate up to 16bpc samples.
     static uint8_t y_data[2 * kDimension * kDimension] = {0};
@@ -108,18 +109,20 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     DCHECK_LE(dimension, kDimension);
     const gfx::Size size(dimension, dimension);
 
-    scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::WrapExternalYuvData(format,              // format
-                                        size,                // coded_size
-                                        gfx::Rect(size),     // visible_rect
-                                        size,                // natural_size
-                                        size.width(),        // y_stride
-                                        size.width() / 2,    // u_stride
-                                        size.width() / 2,    // v_stride
-                                        y_data,              // y_data
-                                        u_data,              // u_data
-                                        v_data,              // v_data
-                                        base::TimeDelta());  // timestamp
+    scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
+        format,  // format
+        size,    // coded_size
+        gfx::Rect(visible_rect_crop, visible_rect_crop,
+                  size.width() - visible_rect_crop,
+                  size.height() - visible_rect_crop),  // visible_rect
+        size,                                          // natural_size
+        size.width(),                                  // y_stride
+        size.width() / 2,                              // u_stride
+        size.width() / 2,                              // v_stride
+        y_data,                                        // y_data
+        u_data,                                        // u_data
+        v_data,                                        // v_data
+        base::TimeDelta());                            // timestamp
     EXPECT_TRUE(video_frame);
     return video_frame;
   }
@@ -166,6 +169,19 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
   EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
   EXPECT_EQ(3u, frame->NumTextures());
   EXPECT_EQ(3u, gles2_->gen_textures_count());
+}
+
+// Tests the current workaround for odd positioned video frame input. Once
+// https://crbug.com/638906 is fixed, output should be different.
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrameWithOddOrigin) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(9, 8, 1);
+  scoped_refptr<VideoFrame> frame;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::BindOnce(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_EQ(software_frame.get(), frame.get());
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOne10BppHardwareFrame) {
