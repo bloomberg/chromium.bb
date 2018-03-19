@@ -11,6 +11,7 @@
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/service.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace assistant {
@@ -79,7 +80,8 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
 }
 
 void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
-  subscribers_.ForAllPtrs([&url](auto* ptr) { ptr->OnOpenUrlResponse(url); });
+  subscribers_.ForAllPtrs(
+      [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
 
 }  // namespace assistant
