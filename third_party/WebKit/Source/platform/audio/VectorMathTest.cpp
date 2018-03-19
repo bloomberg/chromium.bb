@@ -32,7 +32,7 @@ constexpr size_t kMaxByteAlignment = kMaxBitAlignment / 8u;
 constexpr size_t kMaxStride = 2u;
 
 constexpr MemoryLayout kMemoryLayouts[] = {
-    {kMaxByteAlignment / 2u - kMaxByteAlignment / 4u, 1u},
+    {kMaxByteAlignment / 4u, 1u},
     {kMaxByteAlignment / 2u, 1u},
     {kMaxByteAlignment / 2u + kMaxByteAlignment / 4u, 1u},
     {kMaxByteAlignment, 1u},
@@ -75,7 +75,7 @@ class TestVector {
     // These types are used by std::iterator_traits used by std::equal used by
     // TestVector::operator==.
     using difference_type = ptrdiff_t;
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
     using pointer = T*;
     using reference = T&;
     using value_type = T;
@@ -91,6 +91,15 @@ class TestVector {
       ++(*this);
       return iter;
     }
+    Iterator& operator--() {
+      p_ -= stride_;
+      return *this;
+    }
+    Iterator operator--(int) {
+      Iterator iter = *this;
+      --(*this);
+      return iter;
+    }
     bool operator==(const Iterator& other) const { return p_ == other.p_; }
     bool operator!=(const Iterator& other) const { return !(*this == other); }
     T& operator*() const { return *p_; }
@@ -101,6 +110,8 @@ class TestVector {
   };
 
  public:
+  using ReverseIterator = std::reverse_iterator<Iterator>;
+
   // These types are used internally by Google Test.
   using const_iterator = Iterator;
   using iterator = Iterator;
@@ -117,6 +128,8 @@ class TestVector {
 
   Iterator begin() const { return Iterator(p_, stride()); }
   Iterator end() const { return Iterator(p_ + size() * stride(), stride()); }
+  ReverseIterator rbegin() const { return ReverseIterator(end()); }
+  ReverseIterator rend() const { return ReverseIterator(begin()); }
   const MemoryLayout* memory_layout() const { return memory_layout_; }
   T* p() const { return p_; }
   size_t size() const { return size_; }
@@ -175,15 +188,25 @@ GetPrimaryVectors(const T* base) {
 template <typename T>
 std::array<TestVector<T>, 2u> GetSecondaryVectors(
     T* base,
-    const TestVector<const float>& primary_vector) {
+    const MemoryLayout* primary_memory_layout,
+    size_t size) {
   std::array<TestVector<T>, 2u> vectors;
-  const MemoryLayout* primary_memory_layout = primary_vector.memory_layout();
   const MemoryLayout* other_memory_layout =
       &kMemoryLayouts[primary_memory_layout == &kMemoryLayouts[0]];
   CHECK_NE(primary_memory_layout, other_memory_layout);
-  vectors[0] = TestVector<T>(base, primary_vector);
-  vectors[1] = TestVector<T>(base, other_memory_layout, primary_vector.size());
+  CHECK_NE(primary_memory_layout->byte_alignment,
+           other_memory_layout->byte_alignment);
+  vectors[0] = TestVector<T>(base, primary_memory_layout, size);
+  vectors[1] = TestVector<T>(base, other_memory_layout, size);
   return vectors;
+}
+
+template <typename T>
+std::array<TestVector<T>, 2u> GetSecondaryVectors(
+    T* base,
+    const TestVector<const float>& primary_vector) {
+  return GetSecondaryVectors(base, primary_vector.memory_layout(),
+                             primary_vector.size());
 }
 
 class VectorMathTest : public ::testing::Test {
@@ -194,8 +217,9 @@ class VectorMathTest : public ::testing::Test {
         (kMaxStride * kMaxVectorSizeInBytes + kMaxByteAlignment - 1u) /
         sizeof(float),
     kFullyFiniteSource = 4u,
-    kFullyNonNanSource = 5u,
-    kSourceCount = 6u
+    kFullyFiniteSource2 = 5u,
+    kFullyNonNanSource = 6u,
+    kSourceCount = 7u
   };
 
   // Get a destination buffer containing initially uninitialized floats.
@@ -219,7 +243,7 @@ class VectorMathTest : public ::testing::Test {
     std::uniform_int_distribution<size_t> index_distribution(
         0u, kFloatArraySize / 2u - 1u);
     for (size_t i = 0u; i < kSourceCount; ++i) {
-      if (i == kFullyFiniteSource)
+      if (i == kFullyFiniteSource || i == kFullyFiniteSource2)
         continue;
       sources_[i][index_distribution(generator)] = INFINITY;
       sources_[i][index_distribution(generator)] = -INFINITY;
@@ -235,6 +259,46 @@ class VectorMathTest : public ::testing::Test {
 
 float VectorMathTest::destinations_[kDestinationCount][kFloatArraySize];
 float VectorMathTest::sources_[kSourceCount][kFloatArraySize];
+
+TEST_F(VectorMathTest, Conv) {
+  for (const auto& source : GetPrimaryVectors(GetSource(kFullyFiniteSource))) {
+    if (source.stride() != 1)
+      continue;
+    for (size_t filter_size : {3u, 20u, 32u, 64u, 128u}) {
+      // The maximum number of frames which could be processed here is
+      // |source.size() - filter_size + 1|. However, in order to test
+      // optimization paths, |frames_to_process| should be optimal (divisible
+      // by a power of 2) whenever |filter_size| is optimal. Therefore, let's
+      // process only |source.size() - filter_size| frames here.
+      if (filter_size >= source.size())
+        break;
+      size_t frames_to_process = source.size() - filter_size;
+      // The stride of a convolution filter must be -1. Let's first create
+      // a reversed filter whose stride is 1.
+      TestVector<const float> reversed_filter(
+          GetSource(kFullyFiniteSource2), source.memory_layout(), filter_size);
+      // The filter begins from the reverse beginning of the reversed filter
+      // and grows downwards.
+      const float* filter_p = &*reversed_filter.rbegin();
+      TestVector<float> expected_dest(
+          GetDestination(0u), source.memory_layout(), frames_to_process);
+      for (size_t i = 0u; i < frames_to_process; ++i) {
+        expected_dest[i] = 0u;
+        for (size_t j = 0u; j < filter_size; ++j)
+          expected_dest[i] += source[i + j] * *(filter_p - j);
+      }
+      for (auto& dest : GetSecondaryVectors(
+               GetDestination(1u), source.memory_layout(), frames_to_process)) {
+        Conv(source.p(), 1, filter_p, -1, dest.p(), 1, frames_to_process,
+             filter_size);
+        for (size_t i = 0u; i < frames_to_process; ++i) {
+          EXPECT_NEAR(expected_dest[i], dest[i],
+                      1e-3 * std::abs(expected_dest[i]));
+        }
+      }
+    }
+  }
+}
 
 TEST_F(VectorMathTest, Vadd) {
   for (const auto& source1 : GetPrimaryVectors(GetSource(0u))) {

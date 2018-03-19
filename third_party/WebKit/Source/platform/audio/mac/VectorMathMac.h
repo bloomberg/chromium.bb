@@ -19,6 +19,23 @@ namespace Mac {
 // our namespaced function names, so we must handle this case differently. Other
 // architectures (64bit, ARM, etc.) do not include this header file.
 
+static ALWAYS_INLINE void Conv(const float* source_p,
+                               int source_stride,
+                               const float* filter_p,
+                               int filter_stride,
+                               float* dest_p,
+                               int dest_stride,
+                               size_t frames_to_process,
+                               size_t filter_size) {
+#if defined(ARCH_CPU_X86)
+  ::conv(source_p, source_stride, filter_p, filter_stride, dest_p, dest_stride,
+         frames_to_process, filter_size);
+#else
+  vDSP_conv(source_p, source_stride, filter_p, filter_stride, dest_p,
+            dest_stride, frames_to_process, filter_size);
+#endif
+}
+
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
                                const float* source2p,

@@ -6,10 +6,13 @@
 #define VectorMathX86_h
 
 #include "base/cpu.h"
+#include "platform/audio/AudioArray.h"
 #include "platform/audio/VectorMathScalar.h"
 #include "platform/audio/cpu/x86/VectorMathAVX.h"
 #include "platform/audio/cpu/x86/VectorMathSSE.h"
 #include "platform/wtf/Assertions.h"
+
+#include <xmmintrin.h>
 
 namespace blink {
 namespace VectorMath {
@@ -89,6 +92,70 @@ SplitFramesToProcess(const float* source_p, size_t frames_to_process) {
   // Process the remaining frames separately.
   counts.scalar = frames_to_process;
   return counts;
+}
+
+static ALWAYS_INLINE void Conv(const float* source_p,
+                               int source_stride,
+                               const float* filter_p,
+                               int filter_stride,
+                               float* dest_p,
+                               int dest_stride,
+                               size_t frames_to_process,
+                               size_t filter_size) {
+  // Only contiguous convolution is implemented. Correlation (positive
+  // |filter_stride|) and support for non-contiguous vectors are not
+  // implemented.
+  DCHECK_EQ(1, source_stride);
+  DCHECK_EQ(-1, filter_stride);
+  DCHECK_EQ(1, dest_stride);
+
+  size_t kernel_size = filter_size;
+  const float* input_p = source_p + kernel_size - 1;
+  const float* kernel_p = filter_p + 1 - kernel_size;
+
+  size_t i = 0;
+
+  // Convolution using SSE2. Currently only do this if both |kernel_size| and
+  // |frames_to_process| are multiples of 4. If not, use Scalar::Conv.
+
+  if ((kernel_size % 4 == 0) && (frames_to_process % 4 == 0)) {
+    // AudioFloatArray's are always aligned on at least a 32-byte boundary.
+    AudioFloatArray kernel_buffer(4 * kernel_size);
+    __m128* kernel_reversed = reinterpret_cast<__m128*>(kernel_buffer.Data());
+
+    // Reverse the kernel and repeat each value across a vector
+    for (i = 0; i < kernel_size; ++i) {
+      kernel_reversed[i] = _mm_set1_ps(kernel_p[kernel_size - i - 1]);
+    }
+
+    const float* input_start_p = input_p - kernel_size + 1;
+
+    // Do convolution with 4 inputs at a time.
+    for (i = 0; i < frames_to_process; i += 4) {
+      __m128 convolution_sum;
+
+      convolution_sum = _mm_setzero_ps();
+
+      // |kernel_size| is a multiple of 4 so we can unroll the loop by 4,
+      // manually.
+      for (size_t k = 0; k < kernel_size; k += 4) {
+        size_t data_offset = i + k;
+
+        for (size_t m = 0; m < 4; ++m) {
+          __m128 source_block;
+          __m128 product;
+
+          source_block = _mm_loadu_ps(input_start_p + data_offset + m);
+          product = _mm_mul_ps(kernel_reversed[k + m], source_block);
+          convolution_sum = _mm_add_ps(convolution_sum, product);
+        }
+      }
+      _mm_storeu_ps(dest_p + i, convolution_sum);
+    }
+  } else {
+    Scalar::Conv(source_p, source_stride, filter_p, filter_stride, dest_p,
+                 dest_stride, frames_to_process, filter_size);
+  }
 }
 
 static ALWAYS_INLINE void Vadd(const float* source1p,
