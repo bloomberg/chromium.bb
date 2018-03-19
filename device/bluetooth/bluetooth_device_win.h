@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,11 +18,6 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
-#include "net/log/net_log_source.h"
-
-namespace net {
-class NetLog;
-}
 
 namespace device {
 
@@ -36,10 +33,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
   explicit BluetoothDeviceWin(
       BluetoothAdapterWin* adapter,
       const BluetoothTaskManagerWin::DeviceState& device_state,
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-      const scoped_refptr<BluetoothSocketThread>& socket_thread,
-      net::NetLog* net_log,
-      const net::NetLogSource& net_log_source);
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<BluetoothSocketThread> socket_thread);
   ~BluetoothDeviceWin() override;
 
   // BluetoothDevice override
@@ -139,8 +134,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThread> socket_thread_;
-  net::NetLog* net_log_;
-  net::NetLogSource net_log_source_;
 
   // The Bluetooth class of the device, a bitmask that may be decoded using
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
