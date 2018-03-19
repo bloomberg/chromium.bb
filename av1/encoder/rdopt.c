@@ -2476,7 +2476,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int n;
   int start_tx;
   int depth;
-  int64_t best_rd = INT64_MAX, last_rd = INT64_MAX;
+  int64_t best_rd = INT64_MAX;
   const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bs);
   TX_SIZE best_tx_size = max_rect_tx_size;
   TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
@@ -2497,45 +2497,20 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16, 0);
 
-  last_rd = INT64_MAX;
   for (n = start_tx; depth <= MAX_TX_DEPTH;
        depth++, n = sub_tx_size_map[0][n]) {
-    TX_TYPE tx_start = DCT_DCT;
-    TX_TYPE tx_end = TX_TYPES;
-    // The tx_type becomes dummy when lv_map is on. The tx_type search will be
-    // performed in search_txk_type()
-    tx_end = DCT_DCT + 1;
-    TX_TYPE tx_type;
-    for (tx_type = tx_start; tx_type < tx_end; ++tx_type) {
-      RD_STATS this_rd_stats;
-      if (skip_txfm_search(cpi, x, bs, tx_type, n)) continue;
+    RD_STATS this_rd_stats;
+    if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
+    rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n);
+    x->rd_model = FULL_TXFM_RD;
 
-      if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
-      rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n);
-      x->rd_model = FULL_TXFM_RD;
-
-      // Early termination in transform size search.
-      if (cpi->sf.tx_size_search_breakout &&
-          (rd == INT64_MAX ||
-           (this_rd_stats.skip == 1 && tx_type != DCT_DCT && n != start_tx) ||
-           (n != (int)start_tx && rd > last_rd))) {
-        break;
-      }
-
-      last_rd = rd;
-      ref_best_rd = AOMMIN(rd, ref_best_rd);
-      if (rd < best_rd) {
-        memcpy(best_txk_type, mbmi->txk_type,
-               sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
-        memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
-        best_tx_size = n;
-        best_rd = rd;
-        *rd_stats = this_rd_stats;
-      }
-#if !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
-      const int is_inter = is_inter_block(mbmi);
-      if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
-#endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+    if (rd < best_rd) {
+      memcpy(best_txk_type, mbmi->txk_type,
+             sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
+      memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
+      best_tx_size = n;
+      best_rd = rd;
+      *rd_stats = this_rd_stats;
     }
     if (n == TX_4X4) break;
   }
