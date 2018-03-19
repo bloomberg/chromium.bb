@@ -49,6 +49,7 @@ struct Model {
   bool background_loaded = false;
   bool supports_selection = true;
   bool needs_keyboard_update = false;
+  bool overflow_menu_enabled = false;
 
   // WebVR state.
   WebVrModel web_vr;

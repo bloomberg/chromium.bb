@@ -63,12 +63,13 @@ static constexpr float kUrlBarRelativeOffset = -0.45f;
 static constexpr float kUrlBarVerticalOffsetDMM = -0.516f;
 static constexpr float kUrlBarRotationRad = gfx::DegToRad(-10.0f);
 static constexpr float kUrlBarFontHeightDMM = 0.027f;
-static constexpr float kUrlBarIconSizeDMM = 0.038f;
-static constexpr float kUrlBarBackButtonWidthDMM = 0.087f;
-static constexpr float kUrlBarBackButtonIconOffsetDMM = 0.0045f;
+static constexpr float kUrlBarButtonSizeDMM = 0.064f;
+static constexpr float kUrlBarButtonIconSizeDMM = 0.038f;
+static constexpr float kUrlBarEndButtonIconOffsetDMM = 0.0045f;
+static constexpr float kUrlBarEndButtonWidthDMM = 0.088f;
 static constexpr float kUrlBarSeparatorWidthDMM = 0.002f;
-static constexpr float kUrlBarOriginRegionWidthDMM = 0.583f;
-static constexpr float kUrlBarOriginContentWidthDMM = 0.543f;
+static constexpr float kUrlBarOriginRegionWidthDMM = 0.492f;
+static constexpr float kUrlBarOriginContentWidthDMM = 0.452f;
 static constexpr float kUrlBarOriginContentOffsetDMM = 0.020f;
 static constexpr float kUrlBarFieldSpacingDMM = 0.014f;
 static constexpr float kUrlBarOfflineIconTextSpacingDMM = 0.004f;
@@ -77,6 +78,9 @@ static constexpr float kUrlBarOriginFadeWidth = 0.044f;
 static constexpr float kUrlBarOriginMinimumPathWidth = 0.044f;
 static constexpr float kUrlBarBackplaneTopPadding = 0.065f;
 static constexpr float kUrlBarBackplanePadding = 0.005f;
+static constexpr float kUrlBarItemCornerRadiusDMM = 0.006f;
+static constexpr float kUrlBarButtonIconScaleFactor =
+    kUrlBarButtonIconSizeDMM / kUrlBarButtonSizeDMM;
 
 static constexpr float kOverlayPlaneDistance = 2.3f;
 
@@ -221,7 +225,6 @@ static constexpr int kOmniboxTransitionMs = 300;
 
 static constexpr float kOmniboxTextFieldIconSizeDMM = 0.05f;
 static constexpr float kOmniboxTextFieldIconButtonSizeDMM = 0.064f;
-static constexpr float kOmniboxTextFieldIconButtonRadiusDMM = 0.006f;
 static constexpr float kOmniboxTextFieldIconButtonHoverOffsetDMM = 0.012f;
 static constexpr float kOmniboxTextFieldRightMargin =
     ((kOmniboxHeightDMM - kOmniboxTextFieldIconButtonSizeDMM) / 2);
@@ -304,6 +307,14 @@ static constexpr float kRepositionFrameEdgePadding = 0.04f;
 static constexpr float kRepositionFrameMaxOpacity = 0.6f;
 static constexpr float kRepositionFrameHitPlaneTopPadding = 0.5f;
 static constexpr float kRepositionFrameTransitionDurationMs = 300;
+
+static constexpr float kOverflowMenuOffset = 0.016f;
+static constexpr float kOverflowMenuMinimumWidth = 0.312f;
+static constexpr float kOverflowButtonRegionHeight = 0.088f;
+static constexpr float kOverflowButtonXOffset = 0.016f;
+static constexpr float kOverflowMenuYPadding = 0.012f;
+static constexpr float kOverflowMenuItemHeight = 0.080f;
+static constexpr float kOverflowMenuItemXPadding = 0.024f;
 
 }  // namespace vr
 

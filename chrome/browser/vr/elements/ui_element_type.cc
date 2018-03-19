@@ -38,6 +38,8 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeSnackbarDescription",
     "kTypeCursorBackground",
     "kTypeCursorForeground",
+    "kTypeOverflowMenuButton",
+    "kTypeOverflowMenuItem",
 };
 
 static_assert(

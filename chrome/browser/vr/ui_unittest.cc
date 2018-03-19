@@ -60,6 +60,8 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kUrlBarSeparator,
     kUrlBarOriginRegion,
     kUrlBarOriginContent,
+    kUrlBarOverflowButton,
+    kUrlBarOverflowButtonIcon,
     kController,
     kReticle,
     kLaser,
