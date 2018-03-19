@@ -251,7 +251,7 @@ void FFTFrame::AddConstantGroupDelay(double sample_frame_delay) {
 
 void FFTFrame::Multiply(const FFTFrame& frame) {
   FFTFrame& frame1 = *this;
-  FFTFrame& frame2 = const_cast<FFTFrame&>(frame);
+  const FFTFrame& frame2 = frame;
 
   float* real_p1 = frame1.RealData();
   float* imag_p1 = frame1.ImagData();

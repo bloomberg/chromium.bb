@@ -53,7 +53,7 @@ class PLATFORM_EXPORT FFTConvolver {
   // The input to output latency is equal to fftSize / 2
   //
   // Processing in-place is allowed...
-  void Process(FFTFrame* fft_kernel,
+  void Process(const FFTFrame* fft_kernel,
                const float* source_p,
                float* dest_p,
                size_t frames_to_process);

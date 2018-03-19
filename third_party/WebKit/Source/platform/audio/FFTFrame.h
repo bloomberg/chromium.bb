@@ -70,8 +70,10 @@ class PLATFORM_EXPORT FFTFrame {
   void DoFFT(const float* data);
   void DoInverseFFT(float* data);
 
-  float* RealData() const { return const_cast<float*>(real_data_.Data()); }
-  float* ImagData() const { return const_cast<float*>(imag_data_.Data()); }
+  float* RealData() { return real_data_.Data(); }
+  const float* RealData() const { return real_data_.Data(); }
+  float* ImagData() { return imag_data_.Data(); }
+  const float* ImagData() const { return imag_data_.Data(); }
 
   unsigned FftSize() const { return fft_size_; }
   unsigned Log2FFTSize() const { return log2fft_size_; }

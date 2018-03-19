@@ -81,7 +81,7 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
 
   AudioChannel* Channel(unsigned channel) { return channels_[channel].get(); }
   const AudioChannel* Channel(unsigned channel) const {
-    return const_cast<AudioBus*>(this)->channels_[channel].get();
+    return channels_[channel].get();
   }
   AudioChannel* ChannelByType(unsigned type);
   const AudioChannel* ChannelByType(unsigned type) const;
