@@ -30,30 +30,33 @@ class BrowserViewWranglerTest : public PlatformTest {
 };
 
 TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
-  BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
-            initWithBrowserState:chrome_browser_state_.get()
+  // |thread_bundle_| must outlive all objects created by BVC, because those
+  // objects may rely on threading API in dealloc.
+  @autoreleasepool {
+    BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
+              initWithBrowserState:chrome_browser_state_.get()
 
-                tabModelObserver:nil
-      applicationCommandEndpoint:(id<ApplicationCommands>)nil];
+                  tabModelObserver:nil
+        applicationCommandEndpoint:(id<ApplicationCommands>)nil];
+    // Test that BVC and tab model are created on demand.
+    BrowserViewController* bvc = [wrangler mainBVC];
+    EXPECT_NE(bvc, nil);
 
-  // Test that BVC and tab model are created on demand.
-  BrowserViewController* bvc = [wrangler mainBVC];
-  EXPECT_NE(bvc, nil);
+    TabModel* tabModel = [wrangler mainTabModel];
+    EXPECT_NE(tabModel, nil);
 
-  TabModel* tabModel = [wrangler mainTabModel];
-  EXPECT_NE(tabModel, nil);
+    // Test that once created the BVC and tab model aren't re-created.
+    EXPECT_EQ(bvc, [wrangler mainBVC]);
+    EXPECT_EQ(tabModel, [wrangler mainTabModel]);
 
-  // Test that once created the BVC and tab model aren't re-created.
-  EXPECT_EQ(bvc, [wrangler mainBVC]);
-  EXPECT_EQ(tabModel, [wrangler mainTabModel]);
+    // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
+    // objects.
+    EXPECT_NE(bvc, [wrangler otrBVC]);
+    EXPECT_NE(tabModel, [wrangler otrTabModel]);
+    EXPECT_TRUE([wrangler otrTabModel].browserState->IsOffTheRecord());
 
-  // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
-  // objects.
-  EXPECT_NE(bvc, [wrangler otrBVC]);
-  EXPECT_NE(tabModel, [wrangler otrTabModel]);
-  EXPECT_TRUE([wrangler otrTabModel].browserState->IsOffTheRecord());
-
-  [wrangler shutdown];
+    [wrangler shutdown];
+  }
 }
 
 }  // namespace
