@@ -1243,7 +1243,11 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     ref_buf_idx[ref_idx] = buf_idx;
     ref_order_hint[ref_idx] = order_hint;
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+    if (get_relative_dist(cm, order_hint, cur_order_hint) > 0)
+#else
     if (order_hint > cur_order_hint)
+#endif
       cm->ref_frame_side[ref_frame] = 1;
     else if (order_hint == cur_order_hint)
       cm->ref_frame_side[ref_frame] = -1;
@@ -1262,15 +1266,30 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     --ref_stamp;
   }
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  if (get_relative_dist(cm, ref_order_hint[BWDREF_FRAME - LAST_FRAME],
+                        cur_order_hint) > 0) {
+#else
   if (ref_order_hint[BWDREF_FRAME - LAST_FRAME] > cur_order_hint) {
+#endif
     if (motion_field_projection(cm, BWDREF_FRAME, 0)) --ref_stamp;
   }
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  if (get_relative_dist(cm, ref_order_hint[ALTREF2_FRAME - LAST_FRAME],
+                        cur_order_hint) > 0) {
+#else
   if (ref_order_hint[ALTREF2_FRAME - LAST_FRAME] > cur_order_hint) {
+#endif
     if (motion_field_projection(cm, ALTREF2_FRAME, 0)) --ref_stamp;
   }
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  if (get_relative_dist(cm, ref_order_hint[ALTREF_FRAME - LAST_FRAME],
+                        cur_order_hint) > 0 &&
+#else
   if (ref_order_hint[ALTREF_FRAME - LAST_FRAME] > cur_order_hint &&
+#endif
       ref_stamp >= 0)
     if (motion_field_projection(cm, ALTREF_FRAME, 0)) --ref_stamp;
 
@@ -1547,9 +1566,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
 
       const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
 #if CONFIG_EXPLICIT_ORDER_HINT
-      if ((ref_frame_offset[0] >= 0 &&
+      if ((ref_frame_offset[0] != -1 &&
            get_relative_dist(cm, ref_offset, ref_frame_offset[0]) < 0) &&
-          (ref_frame_offset[1] < 0 ||
+          (ref_frame_offset[1] == -1 ||
            get_relative_dist(cm, ref_offset, ref_frame_offset[1]) > 0)) {
 #else
       if (ref_offset < ref_frame_offset[0] &&
@@ -1560,7 +1579,7 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
         ref_idx[1] = i;
       }
     }
-    if (ref_frame_offset[1] >= 0) {
+    if (ref_frame_offset[1] != -1) {
       cm->is_skip_mode_allowed = 1;
       cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
       cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
@@ -1671,7 +1690,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     // Confirm both LAST_FRAME and GOLDEN_FRAME are valid forward reference
     // frames.
 #if CONFIG_EXPLICIT_ORDER_HINT
-  if (lst_frame_sort_idx < 0 || lst_frame_sort_idx >= cur_frame_sort_idx) {
+  if (lst_frame_sort_idx == -1 || lst_frame_sort_idx >= cur_frame_sort_idx) {
 #else
   if (lst_frame_offset < 0 || lst_frame_offset >= cur_frame_offset) {
 #endif
@@ -1679,7 +1698,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
                        "Inter frame requests a look-ahead frame as LAST");
   }
 #if CONFIG_EXPLICIT_ORDER_HINT
-  if (gld_frame_sort_idx < 0 || gld_frame_sort_idx >= cur_frame_sort_idx) {
+  if (gld_frame_sort_idx == -1 || gld_frame_sort_idx >= cur_frame_sort_idx) {
 #else
   if (gld_frame_offset < 0 || gld_frame_offset >= cur_frame_offset) {
 #endif
