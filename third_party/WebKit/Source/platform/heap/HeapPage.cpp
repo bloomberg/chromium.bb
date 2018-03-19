@@ -38,7 +38,6 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"
 #include "platform/heap/MarkingVerifier.h"
-#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
@@ -1636,64 +1635,6 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   return header;
 }
 
-#if DCHECK_IS_ON()
-static bool IsUninitializedMemory(void* object_pointer, size_t object_size) {
-  // Scan through the object's fields and check that they are all zero.
-  Address* object_fields = reinterpret_cast<Address*>(object_pointer);
-  for (size_t i = 0; i < object_size / sizeof(Address); ++i) {
-    if (object_fields[i])
-      return false;
-  }
-  return true;
-}
-#endif
-
-static void MarkPointer(MarkingVisitor* visitor, HeapObjectHeader* header) {
-  const GCInfo* gc_info = ThreadHeap::GcInfo(header->GcInfoIndex());
-  if (gc_info->HasVTable() && !VTableInitialized(header->Payload())) {
-    // We hit this branch when a GC strikes before GarbageCollected<>'s
-    // constructor runs.
-    //
-    // class A : public GarbageCollected<A> { virtual void f() = 0; };
-    // class B : public A {
-    //   B() : A(foo()) { };
-    // };
-    //
-    // If foo() allocates something and triggers a GC, the vtable of A
-    // has not yet been initialized. In this case, we should mark the A
-    // object without tracing any member of the A object.
-    visitor->MarkHeaderNoTracing(header);
-#if DCHECK_IS_ON()
-    DCHECK(IsUninitializedMemory(header->Payload(), header->PayloadSize()));
-#endif
-  } else {
-    visitor->MarkHeader(header, gc_info->trace_);
-  }
-}
-
-void NormalPage::CheckAndMarkPointer(MarkingVisitor* visitor, Address address) {
-#if DCHECK_IS_ON()
-  DCHECK(Contains(address));
-#endif
-  HeapObjectHeader* header = FindHeaderFromAddress(address);
-  if (!header)
-    return;
-  MarkPointer(visitor, header);
-}
-
-#if DCHECK_IS_ON()
-void NormalPage::CheckAndMarkPointer(MarkingVisitor* visitor,
-                                     Address address,
-                                     MarkedPointerCallbackForTesting callback) {
-  DCHECK(Contains(address));
-  HeapObjectHeader* header = FindHeaderFromAddress(address);
-  if (!header)
-    return;
-  if (!callback(header))
-    MarkPointer(visitor, header);
-}
-#endif
-
 void NormalPage::TakeSnapshot(base::trace_event::MemoryAllocatorDump* page_dump,
                               ThreadState::GCSnapshotInfo& info,
                               HeapSnapshotInfo& heap_info) {
@@ -1787,29 +1728,6 @@ void LargeObjectPage::PoisonUnmarkedObjects() {
   HeapObjectHeader* header = GetHeapObjectHeader();
   if (!header->IsMarked())
     ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
-}
-#endif
-
-void LargeObjectPage::CheckAndMarkPointer(MarkingVisitor* visitor,
-                                          Address address) {
-#if DCHECK_IS_ON()
-  DCHECK(Contains(address));
-#endif
-  if (!ContainedInObjectPayload(address))
-    return;
-  MarkPointer(visitor, GetHeapObjectHeader());
-}
-
-#if DCHECK_IS_ON()
-void LargeObjectPage::CheckAndMarkPointer(
-    MarkingVisitor* visitor,
-    Address address,
-    MarkedPointerCallbackForTesting callback) {
-  DCHECK(Contains(address));
-  if (!ContainedInObjectPayload(address))
-    return;
-  if (!callback(GetHeapObjectHeader()))
-    MarkPointer(visitor, GetHeapObjectHeader());
 }
 #endif
 
