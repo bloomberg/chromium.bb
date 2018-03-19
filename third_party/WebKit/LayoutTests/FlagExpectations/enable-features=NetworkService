@@ -48,18 +48,10 @@ Bug(none) fast/xsl/import-after-comment.xml [ Skip ]
 Bug(none) fast/xsl/xslt-multiple-relative-import.xml [ Skip ]
 Bug(none) fast/xsl/xslt-nested-stylesheets.xml [ Skip ]
 Bug(none) fast/xsl/xslt-second-level-import.xml [ Skip ]
-Bug(none) http/tests/devtools/sources/compile-javascript.js [ Failure Timeout ]
-crbug.com/778542 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Failure ]
-crbug.com/778542 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Failure Pass ]
-crbug.com/778542 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-open-function-call.js [ Failure ]
-crbug.com/778542 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-grouped-invalidations.js [ Failure ]
+
 crbug.com/721408 http/tests/devtools/network/load-resource-for-frontend.js [ Failure Timeout ]
-crbug.com/721408 http/tests/devtools/network/long-script-content.js  [ Crash ]
-crbug.com/721408 http/tests/devtools/network/network-datareceived.js [ Failure ]
-crbug.com/721408 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network-data-length.js [ Failure ]
-crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.js [ Failure ]
-crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs.js [ Failure Timeout ]
+
 Bug(none) http/tests/media/video-buffered.html [ Timeout ]
 Bug(none) http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 Bug(none) http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass ]
@@ -87,12 +79,7 @@ Bug(none) http/tests/serviceworker/chromium/register-error-messages.html [ Failu
 Bug(none) http/tests/websocket/cookie-document-to-ws.html [ Failure ]
 Bug(none) http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
 Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
-Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
-
-# The parent or opener frame might be out-of-process:
-crbug.com/805310 http/tests/devtools/oopif/oopif-targets.js [ Pass Failure Timeout ]
-crbug.com/805310 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout ]
 
 # Plugin throttle is not implemented.
 crbug.com/764474 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html [ Failure ]
@@ -104,14 +91,6 @@ crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affec
 crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-allowed.html [ Failure ]
 crbug.com/764474 fast/loader/reload-zero-byte-plugin.html [ Failure ]
 crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeout ]
-
-# Started flaking after test was rewritten in r517585.
-Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
-
-# Started flaking after https://chromium-review.googlesource.com/864265.
-# Text-diff: total-byte-weight: {{true => false}}
-Bug(none) http/tests/devtools/audits2/audits2-limited-run.js [ Failure ]
-Bug(none) http/tests/devtools/audits2/audits2-successful-run.js [ Failure ]
 
 # Started failing @ r529490
 Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
