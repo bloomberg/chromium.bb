@@ -6,7 +6,9 @@
 
 import argparse
 import collections
+import contextlib
 import json
+import logging
 import tempfile
 import os
 import sys
@@ -361,6 +363,56 @@ def upload_to_google_bucket(html, bucket, dest):
         authenticated_link=True)
 
 
+def ui_screenshot_set(json_path):
+  with open(json_path) as json_file:
+    json_object = json.loads(json_file.read())
+  if not 'per_iteration_data' in json_object:
+    # This will be reported as an error by result_details, no need to duplicate.
+    return None
+  ui_screenshots = []
+  for testsuite_run in json_object['per_iteration_data']:
+    for _, test_runs in testsuite_run.iteritems():
+      for test_run in test_runs:
+        if 'ui screenshot' in test_run['links']:
+          screenshot_link = test_run['links']['ui screenshot']
+          if screenshot_link.startswith('file:'):
+            with contextlib.closing(urllib.urlopen(screenshot_link)) as f:
+              test_screenshots = json.load(f)
+          else:
+            # Assume anything that isn't a file link is a google storage link
+            screenshot_string = google_storage_helper.read_from_link(
+                screenshot_link)
+            if not screenshot_string:
+              logging.error('Bad screenshot link %s', screenshot_link)
+              continue
+            test_screenshots = json.loads(
+                screenshot_string)
+          ui_screenshots.extend(test_screenshots)
+
+  if ui_screenshots:
+    return json.dumps(ui_screenshots)
+  return None
+
+
+def upload_screenshot_set(json_path, test_name, bucket, builder_name,
+                          build_number):
+  screenshot_set = ui_screenshot_set(json_path)
+  if not screenshot_set:
+    return None
+  dest = google_storage_helper.unique_name(
+    'screenshots_%s_%s_%s' % (test_name, builder_name, build_number),
+    suffix='.json')
+  with tempfile.NamedTemporaryFile(suffix='.json') as temp_file:
+    temp_file.write(screenshot_set)
+    temp_file.flush()
+    return google_storage_helper.upload(
+        name=dest,
+        filepath=temp_file.name,
+        bucket='%s/json' % bucket,
+        content_type='application/json',
+        authenticated_link=True)
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--json-file', help='Path of json file.')
@@ -455,16 +507,28 @@ def main():
       'Result details link do not match. The link returned by get_url_link'
       ' should be the same as that returned by upload.')
 
+  ui_screenshot_link = upload_screenshot_set(json_file, args.test_name,
+      args.bucket, builder_name, build_number)
+
+
   if args.output_json:
     with open(json_file) as original_json_file:
       json_object = json.load(original_json_file)
       json_object['links'] = {
           'result_details (logcats, flakiness links)': result_details_link
       }
+
+      if ui_screenshot_link:
+        json_object['links']['ui screenshots'] = ui_screenshot_link
+
       with open(args.output_json, 'w') as f:
         json.dump(json_object, f)
   else:
-    print result_details_link
+    print 'Result Details: %s' % result_details_link
+
+    if ui_screenshot_link:
+      print 'UI Screenshots %s' % ui_screenshot_link
+
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -39,6 +39,7 @@ from py_utils import contextlib_ext
 from py_utils import tempfile_ext
 import tombstones
 
+
 with host_paths.SysPath(
     os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party'), 0):
   import jinja2  # pylint: disable=import-error
@@ -74,8 +75,6 @@ EXTRA_TRACE_FILE = ('org.chromium.base.test.BaseJUnit4ClassRunner.TraceFile')
 
 _EXTRA_TEST_LIST = (
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList')
-
-UI_CAPTURE_DIRS = ['chromium_tests_root', 'UiCapture']
 
 FEATURE_ANNOTATION = 'Feature'
 RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
@@ -126,7 +125,6 @@ class LocalDeviceInstrumentationTestRun(
     super(LocalDeviceInstrumentationTestRun, self).__init__(
         env, test_instance)
     self._flag_changers = {}
-    self._ui_capture_dir = dict()
     self._replace_package_contextmanager = None
 
   #override
@@ -253,21 +251,8 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
-      @trace_event.traced
-      def setup_ui_capture_dir(dev):
-        # Make sure the UI capture directory exists and is empty by deleting
-        # and recreating it.
-        # TODO (aberent) once DeviceTempDir exists use it here.
-        self._ui_capture_dir[dev] = posixpath.join(
-            dev.GetExternalStoragePath(),
-            *UI_CAPTURE_DIRS)
-
-        if dev.PathExists(self._ui_capture_dir[dev]):
-          dev.RunShellCommand(['rm', '-rf', self._ui_capture_dir[dev]])
-        dev.RunShellCommand(['mkdir', self._ui_capture_dir[dev]])
-
       steps += [set_debug_app, edit_shared_prefs, push_test_data,
-                create_flag_changer, setup_ui_capture_dir]
+                create_flag_changer]
 
       def bind_crash_handler(step, dev):
         return lambda: crash_handler.RetryOnSystemCrash(step, dev)
@@ -372,7 +357,14 @@ class LocalDeviceInstrumentationTestRun(
         device.adb, suffix='.png', dir=device.GetExternalStoragePath())
     extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
 
-    extras[EXTRA_UI_CAPTURE_DIR] = self._ui_capture_dir[device]
+    # Set up the screenshot directory. This needs to be done for each test so
+    # that we only get screenshots created by that test. It has to be on
+    # external storage since the default location doesn't allow file creation
+    # from the instrumentation test app on Android L and M.
+    ui_capture_dir = device_temp_file.NamedDeviceTemporaryDirectory(
+        device.adb,
+        dir=device.GetExternalStoragePath())
+    extras[EXTRA_UI_CAPTURE_DIR] = ui_capture_dir.name
 
     if self._env.trace_output:
       trace_device_file = device_temp_file.DeviceTempFile(
@@ -450,114 +442,116 @@ class LocalDeviceInstrumentationTestRun(
         time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
         device.serial)
 
-    with self._env.output_manager.ArchivedTempfile(
-        stream_name, 'logcat') as logcat_file:
-      try:
-        with logcat_monitor.LogcatMonitor(
-            device.adb,
-            filter_specs=local_device_environment.LOGCAT_FILTERS,
-            output_file=logcat_file.name,
-            transform_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
-          with _LogTestEndpoints(device, test_name):
-            with contextlib_ext.Optional(
-                trace_event.trace(test_name),
-                self._env.trace_output):
-              output = device.StartInstrumentation(
-                  target, raw=True, extras=extras, timeout=timeout, retries=0)
-      finally:
-        logmon.Close()
-
-    if logcat_file.Link():
-      logging.info('Logcat saved to %s', logcat_file.Link())
-
-    duration_ms = time_ms() - start_ms
-
-    with contextlib_ext.Optional(
-        trace_event.trace('ProcessResults'),
-        self._env.trace_output):
-      output = self._test_instance.MaybeDeobfuscateLines(output)
-      # TODO(jbudorick): Make instrumentation tests output a JSON so this
-      # doesn't have to parse the output.
-      result_code, result_bundle, statuses = (
-          self._test_instance.ParseAmInstrumentRawOutput(output))
-      results = self._test_instance.GenerateTestResults(
-          result_code, result_bundle, statuses, start_ms, duration_ms,
-          device.product_cpu_abi, self._test_instance.symbolizer)
-
-    if self._env.trace_output:
-      self._SaveTraceData(trace_device_file, device, test['class'])
-
-    def restore_flags():
-      if flags_to_add:
-        self._flag_changers[str(device)].Restore()
-
-    def restore_timeout_scale():
-      if test_timeout_scale:
-        valgrind_tools.SetChromeTimeoutScale(
-            device, self._test_instance.timeout_scale)
-
-    def handle_coverage_data():
-      if self._test_instance.coverage_directory:
-        device.PullFile(coverage_directory,
-            self._test_instance.coverage_directory)
-        device.RunShellCommand(
-            'rm -f %s' % posixpath.join(coverage_directory, '*'),
-            check_return=True, shell=True)
-
-    def handle_render_test_data():
-      if _IsRenderTest(test):
-        # Render tests do not cause test failure by default. So we have to check
-        # to see if any failure images were generated even if the test does not
-        # fail.
-        try:
-          self._ProcessRenderTestResults(
-              device, render_tests_device_output_dir, results)
-        finally:
-          device.RemovePath(render_tests_device_output_dir,
-                            recursive=True, force=True)
-
-    def pull_ui_screen_captures():
-      screenshots = []
-      for filename in device.ListDirectory(self._ui_capture_dir[device]):
-        if filename.endswith('.json'):
-          screenshots.append(pull_ui_screenshot(filename))
-      if screenshots:
-        json_archive_name = 'ui_capture_%s_%s.json' % (
-            test_name.replace('#', '.'),
-            time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
-        with self._env.output_manager.ArchivedTempfile(
-            json_archive_name, 'ui_capture', output_manager.Datatype.JSON
-            ) as json_archive:
-          json.dump(screenshots, json_archive)
-        for result in results:
-          result.SetLink('ui screenshot', json_archive.Link())
-
-    def pull_ui_screenshot(filename):
-      source_dir = self._ui_capture_dir[device]
-      json_path = posixpath.join(source_dir, filename)
-      json_data = json.loads(device.ReadFile(json_path))
-      image_file_path = posixpath.join(source_dir, json_data['location'])
+    with ui_capture_dir:
       with self._env.output_manager.ArchivedTempfile(
-          json_data['location'], 'ui_capture', output_manager.Datatype.PNG
-          ) as image_archive:
-        device.PullFile(image_file_path, image_archive.name)
-      json_data['image_link'] = image_archive.Link()
-      return json_data
+          stream_name, 'logcat') as logcat_file:
+        try:
+          with logcat_monitor.LogcatMonitor(
+              device.adb,
+              filter_specs=local_device_environment.LOGCAT_FILTERS,
+              output_file=logcat_file.name,
+              transform_func=self._test_instance.MaybeDeobfuscateLines
+              ) as logmon:
+            with _LogTestEndpoints(device, test_name):
+              with contextlib_ext.Optional(
+                  trace_event.trace(test_name),
+                  self._env.trace_output):
+                output = device.StartInstrumentation(
+                    target, raw=True, extras=extras, timeout=timeout, retries=0)
+        finally:
+          logmon.Close()
 
-    # While constructing the TestResult objects, we can parallelize several
-    # steps that involve ADB. These steps should NOT depend on any info in
-    # the results! Things such as whether the test CRASHED have not yet been
-    # determined.
-    post_test_steps = [restore_flags, restore_timeout_scale,
-                       handle_coverage_data, handle_render_test_data,
-                       pull_ui_screen_captures]
-    if self._env.concurrent_adb:
-      post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
-          reraiser_thread.ReraiserThread(f) for f in post_test_steps)
-      post_test_step_thread_group.StartAll(will_block=True)
-    else:
-      for step in post_test_steps:
-        step()
+      if logcat_file.Link():
+        logging.info('Logcat saved to %s', logcat_file.Link())
+
+      duration_ms = time_ms() - start_ms
+
+      with contextlib_ext.Optional(
+          trace_event.trace('ProcessResults'),
+          self._env.trace_output):
+        output = self._test_instance.MaybeDeobfuscateLines(output)
+        # TODO(jbudorick): Make instrumentation tests output a JSON so this
+        # doesn't have to parse the output.
+        result_code, result_bundle, statuses = (
+            self._test_instance.ParseAmInstrumentRawOutput(output))
+        results = self._test_instance.GenerateTestResults(
+            result_code, result_bundle, statuses, start_ms, duration_ms,
+            device.product_cpu_abi, self._test_instance.symbolizer)
+
+      if self._env.trace_output:
+        self._SaveTraceData(trace_device_file, device, test['class'])
+
+      def restore_flags():
+        if flags_to_add:
+          self._flag_changers[str(device)].Restore()
+
+      def restore_timeout_scale():
+        if test_timeout_scale:
+          valgrind_tools.SetChromeTimeoutScale(
+              device, self._test_instance.timeout_scale)
+
+      def handle_coverage_data():
+        if self._test_instance.coverage_directory:
+          device.PullFile(coverage_directory,
+              self._test_instance.coverage_directory)
+          device.RunShellCommand(
+              'rm -f %s' % posixpath.join(coverage_directory, '*'),
+              check_return=True, shell=True)
+
+      def handle_render_test_data():
+        if _IsRenderTest(test):
+          # Render tests do not cause test failure by default. So we have to
+          # check to see if any failure images were generated even if the test
+          # does not fail.
+          try:
+            self._ProcessRenderTestResults(
+                device, render_tests_device_output_dir, results)
+          finally:
+            device.RemovePath(render_tests_device_output_dir,
+                              recursive=True, force=True)
+
+      def pull_ui_screen_captures():
+        screenshots = []
+        for filename in device.ListDirectory(ui_capture_dir.name):
+          if filename.endswith('.json'):
+            screenshots.append(pull_ui_screenshot(filename))
+        if screenshots:
+          json_archive_name = 'ui_capture_%s_%s.json' % (
+              test_name.replace('#', '.'),
+              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+          with self._env.output_manager.ArchivedTempfile(
+              json_archive_name, 'ui_capture', output_manager.Datatype.JSON
+              ) as json_archive:
+            json.dump(screenshots, json_archive)
+          for result in results:
+            result.SetLink('ui screenshot', json_archive.Link())
+
+      def pull_ui_screenshot(filename):
+        source_dir = ui_capture_dir.name
+        json_path = posixpath.join(source_dir, filename)
+        json_data = json.loads(device.ReadFile(json_path))
+        image_file_path = posixpath.join(source_dir, json_data['location'])
+        with self._env.output_manager.ArchivedTempfile(
+            json_data['location'], 'ui_capture', output_manager.Datatype.PNG
+            ) as image_archive:
+          device.PullFile(image_file_path, image_archive.name)
+        json_data['image_link'] = image_archive.Link()
+        return json_data
+
+      # While constructing the TestResult objects, we can parallelize several
+      # steps that involve ADB. These steps should NOT depend on any info in
+      # the results! Things such as whether the test CRASHED have not yet been
+      # determined.
+      post_test_steps = [restore_flags, restore_timeout_scale,
+                         handle_coverage_data, handle_render_test_data,
+                         pull_ui_screen_captures]
+      if self._env.concurrent_adb:
+        post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
+            reraiser_thread.ReraiserThread(f) for f in post_test_steps)
+        post_test_step_thread_group.StartAll(will_block=True)
+      else:
+        for step in post_test_steps:
+          step()
 
     for result in results:
       if logcat_file:

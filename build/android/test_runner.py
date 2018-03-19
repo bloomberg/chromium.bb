@@ -937,6 +937,16 @@ def RunTestsInPlatformMode(args):
         results_detail_file.flush()
       logging.critical('TEST RESULTS: %s', results_detail_file.Link())
 
+      ui_screenshots = test_results_presentation.ui_screenshot_set(
+          json_file.name)
+      if ui_screenshots:
+        with out_manager.ArchivedTempfile(
+            'ui_screenshots.json',
+            'ui_capture',
+            output_manager.Datatype.JSON) as ui_screenshot_file:
+          ui_screenshot_file.write(ui_screenshots)
+        logging.critical('UI Screenshots: %s', ui_screenshot_file.Link())
+
   if args.command == 'perf' and (args.steps or args.single_step):
     return 0
 
