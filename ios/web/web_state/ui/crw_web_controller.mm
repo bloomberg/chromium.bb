@@ -880,7 +880,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           forNavigation:(WKNavigation*)navigation;
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
-- (void)handleCancelledError:(NSError*)error;
+- (void)handleCancelledError:(NSError*)error
+               forNavigation:(WKNavigation*)navigation;
 
 // Used to decide whether a load that generates errors with the
 // NSURLErrorCancelled code should be cancelled.
@@ -1975,6 +1976,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)loadCancelled {
+  // TODO(crbug.com/821995):  Check if this function should be removed.
   if (_loadPhase != web::PAGE_LOADED) {
     _loadPhase = web::PAGE_LOADED;
     if (!_isHalted) {
@@ -2872,6 +2874,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
     }
 
+    // TODO(crbug.com/820201): Launching External Applications shouldn't happen
+    // here.
     // External application launcher needs |isNavigationTypeLinkActivated| to
     // decide if the user intended to open the application by clicking on a
     // link.
@@ -2911,7 +2915,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
 
   if (error.code == NSURLErrorCancelled) {
-    [self handleCancelledError:error];
+    [self handleCancelledError:error forNavigation:navigation];
     // NSURLErrorCancelled errors that aren't handled by aborting the load will
     // automatically be retried by the web view, so early return in this case.
     return;
@@ -3016,7 +3020,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
 }
 
-- (void)handleCancelledError:(NSError*)error {
+- (void)handleCancelledError:(NSError*)error
+               forNavigation:(WKNavigation*)navigation {
   if ([self shouldCancelLoadForCancelledError:error]) {
     [self loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
@@ -3027,6 +3032,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
       if ([self shouldLoadURLInNativeView:lastCommittedURL]) {
         [self loadCurrentURLInNativeView];
       }
+    }
+    web::NavigationContextImpl* navigationContext =
+        [_navigationStates contextForNavigation:navigation];
+
+    if ([_navigationStates stateForNavigation:navigation] ==
+        web::WKNavigationState::PROVISIONALY_FAILED) {
+      _webStateImpl->OnNavigationFinished(navigationContext);
     }
   }
 }
@@ -4442,7 +4454,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
   if ([_pendingNavigationInfo cancelled]) {
-    [self handleCancelledError:error];
+    [self handleCancelledError:error forNavigation:navigation];
   } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
