@@ -29,56 +29,6 @@ int av1_get_tx_scale(const TX_SIZE tx_size) {
 // NOTE: The implementation of all inverses need to be aware of the fact
 // that input and output could be the same buffer.
 
-static void iidtx4_c(const tran_low_t *input, tran_low_t *output) {
-  for (int i = 0; i < 4; ++i) {
-    output[i] = (tran_low_t)dct_const_round_shift(input[i] * Sqrt2);
-  }
-}
-
-#define FLIPUD_PTR(dest, stride, size)       \
-  do {                                       \
-    (dest) = (dest) + ((size)-1) * (stride); \
-    (stride) = -(stride);                    \
-  } while (0)
-
-static void maybe_flip_strides(uint8_t **dst, int *dstride, tran_low_t **src,
-                               int *sstride, TX_TYPE tx_type, int sizey,
-                               int sizex) {
-  // Note that the transpose of src will be added to dst. In order to LR
-  // flip the addends (in dst coordinates), we UD flip the src. To UD flip
-  // the addends, we UD flip the dst.
-  switch (tx_type) {
-    case DCT_DCT:
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case IDTX:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST: break;
-    case FLIPADST_DCT:
-    case FLIPADST_ADST:
-    case V_FLIPADST:
-      // flip UD
-      FLIPUD_PTR(*dst, *dstride, sizey);
-      break;
-    case DCT_FLIPADST:
-    case ADST_FLIPADST:
-    case H_FLIPADST:
-      // flip LR
-      FLIPUD_PTR(*src, *sstride, sizex);
-      break;
-    case FLIPADST_FLIPADST:
-      // flip UD
-      FLIPUD_PTR(*dst, *dstride, sizey);
-      // flip LR
-      FLIPUD_PTR(*src, *sstride, sizex);
-      break;
-    default: assert(0); break;
-  }
-}
-
 static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
                                   int stride, int bsx, int bsy, TX_TYPE tx_type,
                                   int bd) {
@@ -92,67 +42,6 @@ static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
         dest[c] = highbd_clip_pixel_add(dest[c], input[c] >> shift, bd);
       dest += stride;
       input += bsx;
-    }
-  }
-}
-
-void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                         const TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  if (tx_type == DCT_DCT) {
-    aom_idct4x4_16_add(input, dest, stride);
-    return;
-  }
-  static const transform_2d IHT_4[] = {
-    { aom_idct4_c, aom_idct4_c },    // DCT_DCT  = 0
-    { aom_iadst4_c, aom_idct4_c },   // ADST_DCT = 1
-    { aom_idct4_c, aom_iadst4_c },   // DCT_ADST = 2
-    { aom_iadst4_c, aom_iadst4_c },  // ADST_ADST = 3
-    { aom_iadst4_c, aom_idct4_c },   // FLIPADST_DCT
-    { aom_idct4_c, aom_iadst4_c },   // DCT_FLIPADST
-    { aom_iadst4_c, aom_iadst4_c },  // FLIPADST_FLIPADST
-    { aom_iadst4_c, aom_iadst4_c },  // ADST_FLIPADST
-    { aom_iadst4_c, aom_iadst4_c },  // FLIPADST_ADST
-    { iidtx4_c, iidtx4_c },          // IDTX
-    { aom_idct4_c, iidtx4_c },       // V_DCT
-    { iidtx4_c, aom_idct4_c },       // H_DCT
-    { aom_iadst4_c, iidtx4_c },      // V_ADST
-    { iidtx4_c, aom_iadst4_c },      // H_ADST
-    { aom_iadst4_c, iidtx4_c },      // V_FLIPADST
-    { iidtx4_c, aom_iadst4_c },      // H_FLIPADST
-  };
-
-  tran_low_t tmp[4][4];
-  tran_low_t out[4][4];
-  tran_low_t *outp = &out[0][0];
-  int outstride = 4;
-
-  // inverse transform row vectors
-  for (int i = 0; i < 4; ++i) {
-    IHT_4[tx_type].rows(input, out[i]);
-    input += 4;
-  }
-
-  // transpose
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      tmp[j][i] = out[i][j];
-    }
-  }
-
-  // inverse transform column vectors
-  for (int i = 0; i < 4; ++i) {
-    IHT_4[tx_type].cols(tmp[i], out[i]);
-  }
-
-  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 4, 4);
-
-  // Sum with the destination
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      int d = i * stride + j;
-      int s = j * outstride + i;
-      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 4));
     }
   }
 }

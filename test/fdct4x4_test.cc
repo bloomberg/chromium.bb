@@ -225,15 +225,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&fht4x4_10, &iht4x4_10, DCT_DCT, AOM_BITS_10, 16),
         make_tuple(&fht4x4_10, &iht4x4_10, ADST_DCT, AOM_BITS_10, 16),
         make_tuple(&fht4x4_10, &iht4x4_10, DCT_ADST, AOM_BITS_10, 16),
-        make_tuple(&fht4x4_10, &iht4x4_10, ADST_ADST, AOM_BITS_10, 16),
-        make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, DCT_DCT, AOM_BITS_8,
-                   16),
-        make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, ADST_DCT, AOM_BITS_8,
-                   16),
-        make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, DCT_ADST, AOM_BITS_8,
-                   16),
-        make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, ADST_ADST, AOM_BITS_8,
-                   16)));
+        make_tuple(&fht4x4_10, &iht4x4_10, ADST_ADST, AOM_BITS_10, 16)));
 
 INSTANTIATE_TEST_CASE_P(
     C, Trans4x4WHT,
@@ -252,18 +244,5 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_sse2,
                                  DCT_DCT, AOM_BITS_8, 16)));
 #endif
-
-#if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4HT,
-    ::testing::Values(make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
-                                 DCT_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
-                                 ADST_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
-                                 DCT_ADST, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
-                                 ADST_ADST, AOM_BITS_8, 16)));
-#endif  // HAVE_SSE2
 
 }  // namespace

@@ -79,12 +79,6 @@ specialize qw/av1_wiener_convolve_add_src avx2/;
 specialize qw/av1_highbd_wiener_convolve_add_src ssse3/;
 specialize qw/av1_highbd_wiener_convolve_add_src avx2/;
 
-#
-# Inverse dct
-#
-add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-specialize qw/av1_iht4x4_16_add sse2/;
-
 # directional intra predictor functions
 add_proto qw/void av1_dr_prediction_z1/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int dx, int dy";
 add_proto qw/void av1_dr_prediction_z2/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int upsample_left, int dx, int dy";
@@ -112,11 +106,6 @@ specialize qw/av1_highbd_convolve8_horiz/, "$sse2_x86_64";
 
 add_proto qw/void av1_highbd_convolve8_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
 specialize qw/av1_highbd_convolve8_vert/, "$sse2_x86_64";
-
-#
-# dct
-#
-add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 #inv txfm
 add_proto qw/void av1_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
