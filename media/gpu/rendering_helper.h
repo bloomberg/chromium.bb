@@ -55,7 +55,8 @@ struct RenderingHelperParams {
   RenderingHelperParams(const RenderingHelperParams& other);
   ~RenderingHelperParams();
 
-  // The rendering FPS.
+  // The target rendering FPS. A value of 0 makes the RenderingHelper return
+  // frames immediately.
   int rendering_fps;
 
   // The number of windows. We play each stream in its own window
