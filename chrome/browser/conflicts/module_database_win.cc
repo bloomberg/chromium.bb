@@ -141,9 +141,6 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
     return;
   }
 
-  has_started_processing_ = true;
-  idle_timer_.Reset();
-
   auto* module_info =
       FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp);
 
@@ -201,8 +198,12 @@ ModuleDatabase::ModuleInfo* ModuleDatabase::FindOrCreateModuleInfo(
       std::forward_as_tuple());
 
   // New modules must be inspected.
-  if (result.second)
+  if (result.second) {
+    has_started_processing_ = true;
+    idle_timer_.Reset();
+
     module_inspector_.AddModule(result.first->first);
+  }
 
   return &(*result.first);
 }
