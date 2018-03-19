@@ -80,6 +80,7 @@
  *   SITE_SETTINGS_MICROPHONE: (undefined|!settings.Route),
  *   SITE_SETTINGS_MIDI_DEVICES: (undefined|!settings.Route),
  *   SITE_SETTINGS_NOTIFICATIONS: (undefined|!settings.Route),
+ *   SITE_SETTINGS_PAYMENT_HANDLER: (undefined|!settings.Route),
  *   SITE_SETTINGS_PDF_DOCUMENTS: (undefined|!settings.Route),
  *   SITE_SETTINGS_POPUPS: (undefined|!settings.Route),
  *   SITE_SETTINGS_PROTECTED_CONTENT: (undefined|!settings.Route),
@@ -335,6 +336,10 @@ cr.define('settings', function() {
           r.SITE_SETTINGS.createChild('pdfDocuments');
       r.SITE_SETTINGS_PROTECTED_CONTENT =
           r.SITE_SETTINGS.createChild('protectedContent');
+      if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
+        r.SITE_SETTINGS_PAYMENT_HANDLER =
+            r.SITE_SETTINGS.createChild('paymentHandler');
+      }
 
       // <if expr="chromeos">
       if (pageVisibility.dateTime !== false) {

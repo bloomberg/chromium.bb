@@ -395,9 +395,9 @@
     </div>
     <template is="dom-if" if="[[enableClipboardContentSetting_]]">
       <div id="clipboard" class="settings-box two-line"
-           category$="[[ContentSettingsTypes.CLIPBOARD]]"
-           data-route="SITE_SETTINGS_CLIPBOARD" on-click="onTapNavigate_"
-           actionable>
+          category$="[[ContentSettingsTypes.CLIPBOARD]]"
+          data-route="SITE_SETTINGS_CLIPBOARD" on-click="onTapNavigate_"
+          actionable>
         <iron-icon icon="settings:clipboard"></iron-icon>
         <div class="middle">
           $i18n{siteSettingsClipboard}
@@ -411,6 +411,27 @@
         <paper-icon-button-light class="subpage-arrow">
           <button aria-label="$i18n{siteSettingsClipboard}"
               aria-describedby="clipboardSecondary"></button>
+        </paper-icon-button-light>
+      </div>
+    </template>
+    <template is="dom-if" if="[[enablePaymentHandlerContentSetting_]]">
+      <div id="paymentHandler" class="settings-box two-line"
+           category$="[[ContentSettingsTypes.PAYMENT_HANDLER]]"
+           data-route="SITE_SETTINGS_PAYMENT_HANDLER" on-click="onTapNavigate_"
+           actionable>
+        <iron-icon icon="settings:payment-handler"></iron-icon>
+        <div class="middle">
+          $i18n{siteSettingsPaymentHandler}
+          <div class="secondary" id="paymentHandlerSecondary">
+            [[defaultSettingLabel_(
+                default_.paymentHandler,
+                '$i18nPolymer{siteSettingsPaymentHandlerAllow}',
+                '$i18nPolymer{siteSettingsPaymentHandlerBlock}')]]
+          </div>
+        </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{siteSettingsPaymentHandler}"
+              aria-describedby="paymentHandlerSecondary"></button>
         </paper-icon-button-light>
       </div>
     </template>

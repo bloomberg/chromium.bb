@@ -34,6 +34,7 @@ settings.ContentSettingsTypes = {
   ADS: 'ads',
   CLIPBOARD: 'clipboard',
   SENSORS: 'sensors',
+  PAYMENT_HANDLER: 'payment-handler',
 };
 
 /**

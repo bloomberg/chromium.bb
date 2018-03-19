@@ -121,6 +121,14 @@ Polymer({
     },
 
     /** @private */
+    enablePaymentHandlerContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
+      }
+    },
+
+    /** @private */
     enableSensorsContentSetting_: {
       type: Boolean,
       readOnly: true,
