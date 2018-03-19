@@ -26,6 +26,7 @@ namespace autofill {
 struct Suggestion;
 
 extern const base::Feature kAutofillAlwaysFillAddresses;
+extern const base::Feature kAutofillAutoDismissableUpstreamBubble;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
@@ -80,6 +81,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 // Returns whether the new Autofill credit card popup layout experiment is
 // enabled.
 bool IsAutofillCreditCardPopupLayoutExperimentEnabled();
+
+// Returns whether the experiment to make the credit card Upstream bubble non
+// sticky is enabled.
+bool IsAutofillAutoDismissableUpstreamBubbleExperimentEnabled();
 
 // Returns whether Autofill credit card last used date display experiment is
 // enabled.

@@ -26,6 +26,8 @@ namespace autofill {
 
 const base::Feature kAutofillAlwaysFillAddresses{
     "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillAutoDismissableUpstreamBubble{
+    "AutofillAutoDismissableUpstreamBubble", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreateDataForTest{
     "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAssist{
@@ -117,6 +119,10 @@ bool IsAutofillCreditCardAssistEnabled() {
 
 bool IsAutofillCreditCardPopupLayoutExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardPopupLayout);
+}
+
+bool IsAutofillAutoDismissableUpstreamBubbleExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillAutoDismissableUpstreamBubble);
 }
 
 bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled() {
