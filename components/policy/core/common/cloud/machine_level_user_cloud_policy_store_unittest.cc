@@ -38,7 +38,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
   ~MachineLevelUserCloudPolicyStoreTest() override {}
 
   void SetUp() override {
-    ASSERT_TRUE(tmp_user_data_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(tmp_policy_dir_.CreateUniqueTempDir());
     store_ = CreateStore();
   }
 
@@ -46,7 +46,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
     std::unique_ptr<MachineLevelUserCloudPolicyStore> store =
         MachineLevelUserCloudPolicyStore::Create(
             PolicyBuilder::kFakeToken, PolicyBuilder::kFakeDeviceId,
-            tmp_user_data_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
+            tmp_policy_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
     store->AddObserver(&observer_);
     return store;
   }
@@ -59,7 +59,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
 
   std::unique_ptr<MachineLevelUserCloudPolicyStore> store_;
 
-  base::ScopedTempDir tmp_user_data_dir_;
+  base::ScopedTempDir tmp_policy_dir_;
   UserPolicyBuilder policy_;
   MockCloudPolicyStoreObserver observer_;
 
@@ -119,15 +119,10 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadWithNoFile) {
 TEST_F(MachineLevelUserCloudPolicyStoreTest, StorePolicy) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
-  const base::FilePath policy_path =
-      tmp_user_data_dir_.GetPath()
-          .Append(FILE_PATH_LITERAL("Policy"))
-          .Append(FILE_PATH_LITERAL("Machine Level User Cloud Policy"));
-  const base::FilePath signing_key_path =
-      tmp_user_data_dir_.GetPath()
-          .Append(FILE_PATH_LITERAL("Policy"))
-          .Append(
-              FILE_PATH_LITERAL("Machine Level User Cloud Policy Signing Key"));
+  const base::FilePath policy_path = tmp_policy_dir_.GetPath().Append(
+      FILE_PATH_LITERAL("Machine Level User Cloud Policy"));
+  const base::FilePath signing_key_path = tmp_policy_dir_.GetPath().Append(
+      FILE_PATH_LITERAL("Machine Level User Cloud Policy Signing Key"));
   EXPECT_FALSE(base::PathExists(policy_path));
   EXPECT_FALSE(base::PathExists(signing_key_path));
 
