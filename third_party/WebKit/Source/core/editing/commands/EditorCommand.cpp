@@ -260,7 +260,7 @@ class EditorInternalCommand {
   EditingTriState (*state)(LocalFrame&, Event*);
   String (*value)(const EditorInternalCommand&, LocalFrame&, Event*);
   bool is_text_insertion;
-  bool (*canExecute)(LocalFrame&, EditorCommandSource);
+  bool (*can_execute)(LocalFrame&, EditorCommandSource);
 };
 
 static const bool kNotTextInsertion = false;
@@ -3554,16 +3554,8 @@ Editor::Command::Command(const EditorInternalCommand* command,
 
 bool Editor::Command::Execute(const String& parameter,
                               Event* triggering_event) const {
-  // TODO(yosin) We should move this logic into |canExecute()| member function
-  // in |EditorInternalCommand| to replace |allowExecutionWhenDisabled|.
-  // |allowExecutionWhenDisabled| is for "Copy", "Cut" and "Paste" commands
-  // only.
-  if (!IsEnabled(triggering_event)) {
-    // Let certain commands be executed when performed explicitly even if they
-    // are disabled.
-    if (!IsSupported() || !frame_ || !command_->canExecute(*frame_, source_))
-      return false;
-  }
+  if (!CanExecute(triggering_event))
+    return false;
 
   if (source_ == EditorCommandSource::kMenuOrKeyBinding) {
     InputEvent::InputType input_type =
@@ -3588,6 +3580,12 @@ bool Editor::Command::Execute(const String& parameter,
 
 bool Editor::Command::Execute(Event* triggering_event) const {
   return Execute(String(), triggering_event);
+}
+
+bool Editor::Command::CanExecute(Event* triggering_event) const {
+  if (IsEnabled(triggering_event))
+    return true;
+  return IsSupported() && frame_ && command_->can_execute(*frame_, source_);
 }
 
 bool Editor::Command::IsSupported() const {

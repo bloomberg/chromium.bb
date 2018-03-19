@@ -112,6 +112,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                  Event* triggering_event = nullptr) const;
     bool Execute(Event* triggering_event) const;
 
+    bool CanExecute(Event* triggering_event = nullptr) const;
     bool IsSupported() const;
     bool IsEnabled(Event* triggering_event = nullptr) const;
 
