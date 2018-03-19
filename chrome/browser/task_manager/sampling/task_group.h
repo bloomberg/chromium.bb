@@ -78,7 +78,7 @@ class TaskGroup {
   void set_footprint_bytes(int64_t footprint) { memory_footprint_ = footprint; }
   int64_t footprint_bytes() const { return memory_footprint_; }
 #if defined(OS_CHROMEOS)
-  int64_t swapped_bytes() const { return memory_usage_.swapped_bytes; }
+  int64_t swapped_bytes() const { return swapped_mem_bytes_; }
 #endif
   int64_t gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
@@ -124,7 +124,7 @@ class TaskGroup {
 #endif  // defined(OS_LINUX)
 
   void OnCpuRefreshDone(double cpu_usage);
-  void OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage);
+  void OnSwappedMemRefreshDone(int64_t swapped_mem_bytes);
   void OnProcessPriorityDone(bool is_backgrounded);
   void OnIdleWakeupsRefreshDone(int idle_wakeups_per_second);
 
@@ -158,7 +158,7 @@ class TaskGroup {
   double platform_independent_cpu_usage_;
   base::Time start_time_;     // Only calculated On Windows now.
   base::TimeDelta cpu_time_;  // Only calculated On Windows now.
-  MemoryUsageStats memory_usage_;
+  int64_t swapped_mem_bytes_;
   int64_t memory_footprint_;
   int64_t gpu_memory_;
   base::MemoryState memory_state_;
