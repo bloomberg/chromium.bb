@@ -50,10 +50,10 @@ CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
   if (position.X().IsAuto())
     return CSSIdentifierValue::Create(CSSValueAuto);
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ZoomAdjustedPixelValueForLength(position.X(), style));
-  list->Append(*ZoomAdjustedPixelValueForLength(position.Y(), style));
-  return list;
+  return CSSValuePair::Create(
+      ZoomAdjustedPixelValueForLength(position.X(), style),
+      ZoomAdjustedPixelValueForLength(position.Y(), style),
+      CSSValuePair::kKeepIdenticalValues);
 }
 
 CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
