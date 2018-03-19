@@ -294,14 +294,6 @@ views::View* LoginUserView::TestApi::tap_button() const {
   return view_->tap_button_;
 }
 
-views::View* LoginUserView::TestApi::dropdown() const {
-  return view_->user_dropdown_;
-}
-
-LoginBubble* LoginUserView::TestApi::menu() const {
-  return view_->user_menu_.get();
-}
-
 bool LoginUserView::TestApi::is_opaque() const {
   return view_->is_opaque_;
 }
@@ -321,25 +313,15 @@ int LoginUserView::WidthForLayoutStyle(LoginDisplayStyle style) {
   return 0;
 }
 
-LoginUserView::LoginUserView(
-    LoginDisplayStyle style,
-    bool show_dropdown,
-    bool show_domain,
-    const OnTap& on_tap,
-    const OnRemoveWarningShown& on_remove_warning_shown,
-    const OnRemove& on_remove)
-    : on_tap_(on_tap),
-      on_remove_warning_shown_(on_remove_warning_shown),
-      on_remove_(on_remove),
-      display_style_(style) {
-  // show_dropdown can only be true when the user view is rendering in large
-  // mode.
+LoginUserView::LoginUserView(LoginDisplayStyle style,
+                             bool show_dropdown,
+                             bool show_domain,
+                             const OnTap& on_tap)
+    : on_tap_(on_tap), display_style_(style) {
+  // show_dropdown and show_domain can only be true when the user view is
+  // rendering in large mode.
   DCHECK(!show_dropdown || style == LoginDisplayStyle::kLarge);
   DCHECK(!show_domain || style == LoginDisplayStyle::kLarge);
-  // |on_remove_warning_shown| and |on_remove| is only available iff
-  // |show_dropdown| is true.
-  DCHECK(show_dropdown == !!on_remove_warning_shown);
-  DCHECK(show_dropdown == !!on_remove);
 
   user_image_ = new UserImage(GetImageSize(style));
   user_label_ = new UserLabel(style);
@@ -496,7 +478,7 @@ void LoginUserView::ButtonPressed(views::Button* sender,
           current_user_->basic_user_info->type, current_user_->is_device_owner,
           user_dropdown_ /*anchor_view*/, user_dropdown_ /*bubble_opener*/,
           current_user_->can_remove /*show_remove_user*/,
-          on_remove_warning_shown_, on_remove_);
+          base::OnceClosure() /*do_remove_user*/);
     } else {
       user_menu_->Close();
     }

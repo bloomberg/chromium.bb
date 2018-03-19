@@ -24,15 +24,8 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     user_ = CreateUser("user@domain.com");
-
-    LoginAuthUserView::Callbacks auth_callbacks;
-    auth_callbacks.on_auth = base::DoNothing();
-    auth_callbacks.on_easy_unlock_icon_hovered = base::DoNothing();
-    auth_callbacks.on_easy_unlock_icon_tapped = base::DoNothing();
-    auth_callbacks.on_tap = base::DoNothing();
-    auth_callbacks.on_remove_warning_shown = base::DoNothing();
-    auth_callbacks.on_remove = base::DoNothing();
-    view_ = new LoginAuthUserView(user_, auth_callbacks);
+    view_ = new LoginAuthUserView(user_, base::DoNothing(), base::DoNothing(),
+                                  base::DoNothing(), base::DoNothing());
 
     // We proxy |view_| inside of |container_| so we can control layout.
     container_ = new views::View();

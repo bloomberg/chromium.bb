@@ -169,7 +169,7 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
   EXPECT_EQ(test_api.primary_auth()->auth_methods(),
             (auth_method | LoginAuthUserView::AUTH_TAP));
   EXPECT_CALL(*client, AttemptUnlock(primary_user));
-  generator.MoveMouseTo(MakeLoginAuthTestApi(contents, AuthTarget::kPrimary)
+  generator.MoveMouseTo(MakeLoginPrimaryAuthTestApi(contents)
                             .user_view()
                             ->GetBoundsInScreen()
                             .CenterPoint());

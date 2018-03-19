@@ -44,30 +44,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     LoginAuthUserView* const view_;
   };
 
-  using OnAuthCallback = base::RepeatingCallback<void(bool auth_success)>;
-  using OnEasyUnlockIconTapped = base::RepeatingClosure;
-  using OnEasyUnlockIconHovered = base::RepeatingClosure;
-
-  struct Callbacks {
-    Callbacks();
-    ~Callbacks();
-
-    // Executed whenever an authentication result is available, such as when the
-    // user submits a password or taps the user icon when AUTH_TAP is enabled.
-    OnAuthCallback on_auth;
-    // Called when the user taps the user view and AUTH_TAP is not enabled.
-    LoginUserView::OnTap on_tap;
-    // Called when the remove user warning message has been shown.
-    LoginUserView::OnRemoveWarningShown on_remove_warning_shown;
-    // Called when the user should be removed. The callback should do the actual
-    // removal.
-    LoginUserView::OnRemove on_remove;
-    // Called when the easy unlock icon is hovered.
-    OnEasyUnlockIconHovered on_easy_unlock_icon_hovered;
-    // Called when the easy unlock icon is tapped.
-    OnEasyUnlockIconTapped on_easy_unlock_icon_tapped;
-  };
-
   // Flags which describe the set of currently visible auth methods.
   enum AuthMethods {
     AUTH_NONE = 0,           // No extra auth methods.
@@ -76,8 +52,23 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     AUTH_TAP = 1 << 2,       // Tap to unlock.
   };
 
+  using OnAuthCallback = base::Callback<void(bool auth_success)>;
+  using OnEasyUnlockIconTapped = base::RepeatingClosure;
+  using OnEasyUnlockIconHovered = base::RepeatingClosure;
+
+  // |on_auth| is executed whenever an authentication result is available, such
+  // as when the user submits a password or taps the user icon when AUTH_TAP is
+  // enabled.
+  //
+  // |on_tap| is called when the user taps the user view and AUTH_TAP is not
+  // enabled.
+  //
+  // None of the callbacks can be null.
   LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
-                    const Callbacks& callbacks);
+                    const OnAuthCallback& on_auth,
+                    const LoginUserView::OnTap& on_tap,
+                    const OnEasyUnlockIconHovered& on_easy_unlock_icon_hovered,
+                    const OnEasyUnlockIconTapped& on_easy_unlock_icon_tapped);
   ~LoginAuthUserView() override;
 
   // Set the displayed set of auth methods. |auth_methods| contains or-ed

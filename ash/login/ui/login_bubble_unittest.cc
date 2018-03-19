@@ -69,14 +69,12 @@ class LoginBubbleTest : public LoginTestBase {
     LoginTestBase::TearDown();
   }
 
-  void ShowUserMenu(base::OnceClosure on_remove_show_warning,
-                    base::OnceClosure on_remove) {
+  void ShowUserMenu(base::OnceClosure on_remove) {
     bool show_remove_user = !on_remove.is_null();
     bubble_->ShowUserMenu(
         base::string16() /*username*/, base::string16() /*email*/,
         user_manager::UserType::USER_TYPE_REGULAR, false /*is_owner*/,
-        container_, bubble_opener_, show_remove_user,
-        std::move(on_remove_show_warning), std::move(on_remove));
+        container_, bubble_opener_, show_remove_user, std::move(on_remove));
   }
 
   // Owned by test widget view hierarchy.
@@ -120,7 +118,7 @@ TEST_F(LoginBubbleTest, BubbleKeyEventHandling) {
   EXPECT_FALSE(bubble_->IsVisible());
 
   // Verifies that key event on the bubble opener view won't close the bubble.
-  ShowUserMenu(base::OnceClosure(), base::OnceClosure());
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   bubble_opener_->RequestFocus();
   generator.PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
@@ -143,7 +141,7 @@ TEST_F(LoginBubbleTest, BubbleMouseEventHandling) {
   EXPECT_FALSE(bubble_->IsVisible());
 
   // Verifies that mouse event on the bubble opener view won't close the bubble.
-  ShowUserMenu(base::OnceClosure(), base::OnceClosure());
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   generator.MoveMouseTo(bubble_opener_->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
@@ -172,7 +170,7 @@ TEST_F(LoginBubbleTest, BubbleGestureEventHandling) {
 
   // Verifies that gesture event on the bubble opener view won't close the
   // bubble.
-  ShowUserMenu(base::OnceClosure(), base::OnceClosure());
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   generator.GestureTapAt(bubble_opener_->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(bubble_->IsVisible());
@@ -194,7 +192,7 @@ TEST_F(LoginBubbleTest, LoginButtonRipple) {
             views::InkDropHostView::InkDropMode::ON);
 
   // Show the bubble to activate the ripple effect.
-  ShowUserMenu(base::OnceClosure(), base::OnceClosure());
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   EXPECT_TRUE(ink_drop_api.HasInkDrop());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
@@ -218,14 +216,9 @@ TEST_F(LoginBubbleTest, LoginButtonRipple) {
 // callback.
 TEST_F(LoginBubbleTest, RemoveUserRequiresTwoActivations) {
   // Show the user menu.
-  bool remove_warning_called = false;
   bool remove_called = false;
-  ShowUserMenu(
-      base::BindOnce(
-          [](bool* remove_warning_called) { *remove_warning_called = true; },
-          &remove_warning_called),
-      base::BindOnce([](bool* remove_called) { *remove_called = true; },
-                     &remove_called));
+  ShowUserMenu(base::BindOnce(
+      [](bool* remove_called) { *remove_called = true; }, &remove_called));
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Focus the remove user button.
@@ -235,20 +228,14 @@ TEST_F(LoginBubbleTest, RemoveUserRequiresTwoActivations) {
   remove_user_button->RequestFocus();
   EXPECT_TRUE(remove_user_button->HasFocus());
 
+  // Click it twice. Verify only the second click fires the callback.
   auto click = [&]() {
     EXPECT_TRUE(remove_user_button->HasFocus());
     GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   };
-
-  // First click calls remove warning.
   EXPECT_NO_FATAL_FAILURE(click());
-  EXPECT_TRUE(remove_warning_called);
   EXPECT_FALSE(remove_called);
-  remove_warning_called = false;
-
-  // Second click calls remove.
   EXPECT_NO_FATAL_FAILURE(click());
-  EXPECT_FALSE(remove_warning_called);
   EXPECT_TRUE(remove_called);
 }
 

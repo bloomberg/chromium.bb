@@ -74,8 +74,6 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
   void FocusLockScreenApps(bool reverse) override;
   void ShowGaiaSignin() override;
-  void OnRemoveUserWarningShown() override;
-  void RemoveUser(const AccountId& account_id) override;
 
  private:
   // Lock screen mojo service in ash.
