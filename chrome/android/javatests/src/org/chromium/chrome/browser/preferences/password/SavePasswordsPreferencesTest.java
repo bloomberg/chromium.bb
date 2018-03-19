@@ -1693,6 +1693,7 @@ public class SavePasswordsPreferencesTest {
                 .check(matches(isDisplayed()));
 
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
+        Espresso.onView(withId(R.id.search_src_text)).perform(click(), closeSoftKeyboard());
 
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions))
                 .check(doesNotExist());
