@@ -178,10 +178,21 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
   DCHECK(web_state_);
   DCHECK(delegate_);
   DCHECK(session_);
+
+  observer_ = [NSNotificationCenter.defaultCenter
+      addObserverForName:UIApplicationWillResignActiveNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* _Nonnull) {
+                if (state_ == State::kInProgress) {
+                  has_performed_background_download_ = true;
+                }
+              }];
 }
 
 DownloadTaskImpl::~DownloadTaskImpl() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  [NSNotificationCenter.defaultCenter removeObserver:observer_];
   for (auto& observer : observers_)
     observer.OnDownloadDestroyed(this);
 
@@ -290,6 +301,10 @@ base::string16 DownloadTaskImpl::GetSuggestedFilename() const {
                                    /*default_name=*/"document");
 }
 
+bool DownloadTaskImpl::HasPerformedBackgroundDownload() const {
+  return has_performed_background_download_;
+}
+
 void DownloadTaskImpl::AddObserver(DownloadTaskObserver* observer) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!observers_.HasObserver(observer));
@@ -385,6 +400,10 @@ void DownloadTaskImpl::GetWKCookies(
 void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(writer_);
+
+  has_performed_background_download_ =
+      UIApplication.sharedApplication.applicationState !=
+      UIApplicationStateActive;
 
   NSURL* url = net::NSURLWithGURL(GetOriginalUrl());
   session_task_ = [session_ dataTaskWithURL:url];

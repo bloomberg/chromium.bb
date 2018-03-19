@@ -102,6 +102,10 @@ class DownloadTask {
   // Suggested name for the downloaded file.
   virtual base::string16 GetSuggestedFilename() const = 0;
 
+  // Returns true if the last download operation was fully or partially
+  // performed while the application was not active.
+  virtual bool HasPerformedBackgroundDownload() const = 0;
+
   // Adds and Removes DownloadTaskObserver. Clients must remove self from
   // observers before the task is destroyed.
   virtual void AddObserver(DownloadTaskObserver* observer) = 0;

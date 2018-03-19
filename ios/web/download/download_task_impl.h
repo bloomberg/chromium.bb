@@ -72,6 +72,7 @@ class DownloadTaskImpl : public DownloadTask {
   std::string GetMimeType() const override;
   ui::PageTransition GetTransitionType() const override;
   base::string16 GetSuggestedFilename() const override;
+  bool HasPerformedBackgroundDownload() const override;
   void AddObserver(DownloadTaskObserver* observer) override;
   void RemoveObserver(DownloadTaskObserver* observer) override;
   ~DownloadTaskImpl() override;
@@ -115,11 +116,15 @@ class DownloadTaskImpl : public DownloadTask {
   std::string content_disposition_;
   std::string mime_type_;
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
+  bool has_performed_background_download_ = false;
 
   const WebState* web_state_ = nullptr;
   Delegate* delegate_ = nullptr;
   NSURLSession* session_ = nil;
   NSURLSessionTask* session_task_ = nil;
+
+  // Observes UIApplicationWillResignActiveNotification notifications.
+  id<NSObject> observer_ = nil;
 
   base::WeakPtrFactory<DownloadTaskImpl> weak_factory_;
 
