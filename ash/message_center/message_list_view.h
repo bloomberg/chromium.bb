@@ -88,7 +88,14 @@ class ASH_EXPORT MessageListView : public views::View,
 
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
-  void ExpandTopNotification();
+
+  // For given notification, expand it if it is allowed to be expanded and is
+  // never manually expanded:
+  // For other notifications, collapse if it's never manually expanded.
+  void ExpandSpecifiedNotificationAndCollapseOthers(
+      message_center::MessageView* target_view);
+
+  void ExpandTopNotificationAndCollapseOthers();
 
   // Animates all notifications to align with the top of the last closed
   // notification.
