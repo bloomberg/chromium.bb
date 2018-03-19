@@ -3466,13 +3466,13 @@ static const EditorInternalCommand* InternalCommand(
   return &kEditorCommands[command_index];
 }
 
-Editor::Command Editor::CreateCommand(const String& command_name) {
+Editor::Command Editor::CreateCommand(const String& command_name) const {
   return Command(InternalCommand(command_name),
                  EditorCommandSource::kMenuOrKeyBinding, frame_);
 }
 
 Editor::Command Editor::CreateCommand(const String& command_name,
-                                      EditorCommandSource source) {
+                                      EditorCommandSource source) const {
   return Command(InternalCommand(command_name), source, frame_);
 }
 

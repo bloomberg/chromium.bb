@@ -137,10 +137,9 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     EditorCommandSource source_;
     Member<LocalFrame> frame_;
   };
-  Command CreateCommand(
-      const String&
-          command_name);  // Command source is CommandFromMenuOrKeyBinding.
-  Command CreateCommand(const String& command_name, EditorCommandSource);
+  Command CreateCommand(const String& command_name)
+      const;  // Command source is CommandFromMenuOrKeyBinding.
+  Command CreateCommand(const String& command_name, EditorCommandSource) const;
 
   // |Editor::executeCommand| is implementation of |WebFrame::executeCommand|
   // rather than |Document::execCommand|.
