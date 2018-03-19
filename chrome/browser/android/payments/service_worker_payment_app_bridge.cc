@@ -311,6 +311,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobjectArray>& jmethod_data,
+    jboolean jmay_crawl_for_installable_payment_apps,
     const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -323,6 +324,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS),
       ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data),
+      jmay_crawl_for_installable_payment_apps,
       base::BindOnce(&OnGotAllPaymentApps,
                      ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                      ScopedJavaGlobalRef<jobject>(env, jcallback)),

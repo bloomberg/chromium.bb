@@ -71,11 +71,12 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @Override
     public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
-            PaymentAppFactory.PaymentAppCreatedCallback callback) {
+            boolean mayCrawl, PaymentAppFactory.PaymentAppCreatedCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         nativeGetAllPaymentApps(webContents,
-                methodData.values().toArray(new PaymentMethodData[methodData.size()]), callback);
+                methodData.values().toArray(new PaymentMethodData[methodData.size()]), mayCrawl,
+                callback);
     }
 
     /**
@@ -202,7 +203,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
      * @param callback         Called after the payment app is finished running.
      * @param appName          The installable app name.
-     * @param appIcon          The installable app icon.
+     * @param icon             The installable app icon.
      * @param swUri            The URI to get the app's service worker js script.
      * @param scope            The scope of the service worker that should be registered.
      * @param useCache         Whether to use cache when registering the service worker.
@@ -409,7 +410,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     private static native void nativeGetAllPaymentApps(WebContents webContents,
-            PaymentMethodData[] methodData, PaymentAppFactory.PaymentAppCreatedCallback callback);
+            PaymentMethodData[] methodData, boolean mayCrawlForInstallablePaymentApps,
+            PaymentAppFactory.PaymentAppCreatedCallback callback);
 
     private static native void nativeHasServiceWorkerPaymentApps(
             HasServiceWorkerPaymentAppsCallback callback);

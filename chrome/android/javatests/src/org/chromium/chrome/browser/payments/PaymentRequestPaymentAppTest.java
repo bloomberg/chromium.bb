@@ -89,7 +89,7 @@ public class PaymentRequestPaymentAppTest {
             throws InterruptedException, ExecutionException, TimeoutException {
         final TestPay app = new TestPay("https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, callback) -> {
+                (webContents, methodNames, mayCrawlUnused, callback) -> {
                     callback.onPaymentAppCreated(app);
                     callback.onAllPaymentAppsCreated();
                 });
@@ -111,7 +111,7 @@ public class PaymentRequestPaymentAppTest {
             throws InterruptedException, ExecutionException, TimeoutException {
         final TestPay app = new TestPay("https://bobpay.com", NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, callback) -> {
+                (webContents, methodNames, mayCrawlUnused, callback) -> {
                     callback.onPaymentAppCreated(app);
                     callback.onAllPaymentAppsCreated();
                 });
