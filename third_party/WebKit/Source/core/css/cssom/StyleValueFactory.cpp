@@ -70,6 +70,12 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       return CSSUnsupportedStyleValue::Create(property_id, value);
     case CSSPropertyTransform:
       return CSSTransformValue::FromCSSValue(value);
+    case CSSPropertyOffsetAnchor:
+    case CSSPropertyOffsetPosition:
+      // offset-anchor and offset-position can be 'auto'
+      if (value.IsIdentifierValue())
+        return CreateStyleValue(value);
+      FALLTHROUGH;
     case CSSPropertyObjectPosition:
       return CSSPositionValue::FromCSSValue(value);
     case CSSPropertyAlignItems: {

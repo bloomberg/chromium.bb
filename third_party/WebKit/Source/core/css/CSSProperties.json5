@@ -1906,6 +1906,8 @@
       default_value: "LengthPoint(Length(kAuto), Length(kAuto))",
       type_name: "LengthPoint",
       converter: "ConvertPositionOrAuto",
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Position"]
     },
     {
       name: "offset-distance",
@@ -1915,6 +1917,7 @@
       field_template: "<length>",
       default_value: "Length(0, kFixed)",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "offset-path",
@@ -1927,6 +1930,8 @@
       default_value: "nullptr",
       type_name: "BasicShape",
       converter: "ConvertOffsetPath",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "offset-position",
@@ -1939,6 +1944,8 @@
       default_value: "LengthPoint(Length(kAuto), Length(kAuto))",
       type_name: "LengthPoint",
       converter: "ConvertPositionOrAuto",
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Position"]
     },
     {
       name: "offset-rotate",
