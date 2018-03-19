@@ -473,4 +473,45 @@ public class WebVrTransitionTest {
         framework.simulateRendererKilled();
         Assert.assertTrue("Browser is in VR", VrShellDelegate.isInVr());
     }
+
+    /**
+     * Tests that window.rAF continues to fire when we have a non-exclusive session.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testWindowRafFiresDuringNonExclusiveSession() throws InterruptedException {
+        mXrTestFramework.loadUrlAndAwaitInitialization(
+                XrTestFramework.getHtmlTestFile(
+                        "test_window_raf_fires_during_non_exclusive_session"),
+                PAGE_LOAD_TIMEOUT_S);
+        XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
+        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that non-exclusive sessions stop receiving rAFs during an exclusive session, but resume
+     * once the exclusive session ends.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testNonExclusiveStopsDuringExclusive() throws InterruptedException {
+        mXrTestFramework.loadUrlAndAwaitInitialization(
+                XrTestFramework.getHtmlTestFile("test_non_exclusive_stops_during_exclusive"),
+                PAGE_LOAD_TIMEOUT_S);
+        XrTestFramework.executeStepAndWait(
+                "stepBeforeExclusive()", mXrTestFramework.getFirstTabWebContents());
+        TransitionUtils.enterPresentationOrFail(mXrTestFramework);
+        XrTestFramework.executeStepAndWait(
+                "stepDuringExclusive()", mXrTestFramework.getFirstTabWebContents());
+        TransitionUtils.forceExitVr();
+        XrTestFramework.executeStepAndWait(
+                "stepAfterExclusive()", mXrTestFramework.getFirstTabWebContents());
+        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+    }
 }
