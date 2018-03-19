@@ -109,6 +109,8 @@ void WindowTreeClientPrivate::SetTree(ui::mojom::WindowTree* window_tree) {
 void WindowTreeClientPrivate::SetWindowManagerClient(
     ui::mojom::WindowManagerClient* client) {
   tree_client_impl_->window_manager_client_ = client;
+  // Mirrors what CreateForWindowManager() does.
+  tree_client_impl_->CreatePlatformEventSourceIfNecessary();
 }
 
 bool WindowTreeClientPrivate::HasPointerWatcher() {

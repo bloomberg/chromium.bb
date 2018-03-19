@@ -73,6 +73,7 @@ class InFlightChange;
 class InFlightFocusChange;
 class InFlightPropertyChange;
 class InFlightVisibleChange;
+class PlatformEventSourceMus;
 class MusContextFactory;
 class WindowMus;
 class WindowPortMus;
@@ -243,6 +244,9 @@ class AURA_EXPORT WindowTreeClient
       ui::mojom::WindowTreeClientRequest request = nullptr,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
       bool create_discardable_memory = true);
+
+  // Creates a PlatformEventSourceMus if not created yet.
+  void CreatePlatformEventSourceIfNecessary();
 
   void RegisterWindowMus(WindowMus* window);
 
@@ -736,6 +740,10 @@ class AURA_EXPORT WindowTreeClient
   // Temporary while we have mushrome, once we switch to mash this can be
   // removed.
   bool install_drag_drop_client_ = true;
+
+#if defined(USE_OZONE)
+  std::unique_ptr<PlatformEventSourceMus> platform_event_source_;
+#endif
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 

@@ -78,6 +78,8 @@ class EVENTS_EXPORT PlatformEventSource {
   // current message-loop iteration.
   virtual uint32_t DispatchEvent(PlatformEvent platform_event);
 
+  base::ObserverList<PlatformEventObserver>& observers() { return observers_; }
+
  private:
   friend class ScopedEventDispatcher;
   friend class test::PlatformEventSourceTestAPI;
