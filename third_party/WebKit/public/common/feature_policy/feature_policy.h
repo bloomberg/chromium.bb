@@ -36,17 +36,17 @@ namespace blink {
 // Features which can be controlled by policy are defined by instances of enum
 // mojom::FeaturePolicyFeature, declared in |feature_policy.mojom|.
 //
-// Whitelists
+// Allowlists
 // ----------
-// Whitelists are collections of origins, although two special terms can be used
+// Allowlists are collections of origins, although two special terms can be used
 // when declaring them:
 //   "self" refers to the orgin of the frame which is declaring the policy.
-//   "*" refers to all origins; any origin will match a whitelist which contains
-//     it.
+//   "*" refers to all origins; any origin will match an allowlist which
+//   contains it.
 //
 // Declarations
 // ------------
-// A feature policy declaration is a mapping of a feature name to a whitelist.
+// A feature policy declaration is a mapping of a feature name to an allowlist.
 // A set of declarations is a declared policy.
 //
 // Inherited Policy
@@ -82,7 +82,7 @@ namespace blink {
 // determined by the feature's default policy. (Again, see the comments in
 // FeaturePolicy::DefaultPolicy for details)
 
-// This struct holds feature policy whitelist data that needs to be replicated
+// This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
 // NOTE: These types are used for replication frame state between processes.
@@ -109,29 +109,30 @@ bool BLINK_COMMON_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
 
 class BLINK_COMMON_EXPORT FeaturePolicy {
  public:
-  // Represents a collection of origins which make up a whitelist in a feature
+  // Represents a collection of origins which make up an allowlist in a feature
   // policy. This collection may be set to match every origin (corresponding to
   // the "*" syntax in the policy string, in which case the Contains() method
   // will always return true.
+  // TODO(crbug.com/822317): Rename to Allowlist
   class BLINK_COMMON_EXPORT Whitelist final {
    public:
     Whitelist();
     Whitelist(const Whitelist& rhs);
     ~Whitelist();
 
-    // Adds a single origin to the whitelist.
+    // Adds a single origin to the allowlist.
     void Add(const url::Origin& origin);
 
-    // Adds all origins to the whitelist.
+    // Adds all origins to the allowlist.
     void AddAll();
 
-    // Returns true if the given origin has been added to the whitelist.
+    // Returns true if the given origin has been added to the allowlist.
     bool Contains(const url::Origin& origin) const;
 
-    // Returns true if the whitelist matches all origins.
+    // Returns true if the allowlist matches all origins.
     bool MatchesAll() const;
 
-    // Returns list of origins in the whitelist.
+    // Returns list of origins in the allowlist.
     const std::vector<url::Origin>& Origins() const;
 
    private:
@@ -141,7 +142,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // The FeaturePolicy::FeatureDefault enum defines the default enable state for
   // a feature when neither it nor any parent frame have declared an explicit
-  // policy. The three possibilities map directly to Feature Policy Whitelist
+  // policy. The three possibilities map directly to Feature Policy Allowlist
   // semantics.
   enum class FeatureDefault {
     // Equivalent to []. If this default policy is in effect for a frame, then
@@ -178,7 +179,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   bool IsFeatureEnabledForOrigin(mojom::FeaturePolicyFeature feature,
                                  const url::Origin& origin) const;
 
-  // Returns the whitelist of a given feature by this policy.
+  // Returns the allowlist of a given feature by this policy.
   const Whitelist GetWhitelistForFeature(
       mojom::FeaturePolicyFeature feature) const;
 
@@ -209,7 +210,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   url::Origin origin_;
 
-  // Map of feature names to declared whitelists. Any feature which is missing
+  // Map of feature names to declared allowlists. Any feature which is missing
   // from this map should use the inherited policy.
   std::map<mojom::FeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
 
