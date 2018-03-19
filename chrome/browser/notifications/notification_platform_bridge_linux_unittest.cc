@@ -477,7 +477,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
           [=](const NotificationRequest& request) {
             std::string file_name;
             EXPECT_TRUE(RE2::FullMatch(
-                request.body, "\\<img src=\\\"(.+)\\\" alt=\\\".*\\\"/\\>",
+                request.body,
+                "\\<img src=\\\"file://(.+)\\\" alt=\\\".*\\\"/\\>",
                 &file_name));
             std::string file_contents;
             EXPECT_TRUE(base::ReadFileToString(base::FilePath(file_name),
