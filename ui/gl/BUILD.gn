@@ -11,9 +11,10 @@ import("//ui/ozone/ozone.gni")
 import("//testing/test.gni")
 
 declare_args() {
-  enable_swiftshader = (is_win || (is_linux && use_x11) ||
-                        (is_chromeos && ozone_platform_x11)) &&
-                       (target_cpu == "x86" || target_cpu == "x64")
+  enable_swiftshader =
+      (is_win || (is_linux && use_x11) || (is_mac && use_egl) ||
+       (is_chromeos && ozone_platform_x11)) &&
+      (target_cpu == "x86" || target_cpu == "x64")
 }
 
 use_glx = use_x11 || ozone_platform_x11
@@ -332,6 +333,7 @@ component("gl") {
       data_deps += [
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
+        "//third_party/swiftshader",
       ]
     }
   }

@@ -182,7 +182,8 @@ GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
 GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
                                            unsigned internalformat) {
 #if BUILDFLAG(USE_EGL_ON_MAC)
-  if (GLContext::GetCurrent()->GetVersionInfo()->is_angle) {
+  if (GLContext::GetCurrent()->GetVersionInfo()->is_angle ||
+      GLContext::GetCurrent()->GetVersionInfo()->is_swiftshader) {
     return new GLImageIOSurfaceEGL(size, internalformat);
   }
 #endif  // BUILDFLAG(USE_EGL_ON_MAC)
