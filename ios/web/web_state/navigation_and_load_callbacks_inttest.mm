@@ -144,6 +144,35 @@ ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
   EXPECT_EQ(url, item->GetURL());
 }
 
+// Verifies correctness of |NavigationContext| (|arg1|) passed to
+// |DidFinishNavigation| for navigation canceled due to a rejected response.
+// Asserts that |NavigationContext| the same as |context|.
+ACTION_P4(VerifyResponseRejectedFinishedContext,
+          web_state,
+          url,
+          context,
+          nav_id) {
+  ASSERT_EQ(*context, arg1);
+  EXPECT_EQ(web_state, arg0);
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  // When the response is rejected discard non committed items is called and
+  // no item should be committed.
+  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  EXPECT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_FALSE(web_state->IsLoading());
+}
+
 // Verifies correctness of |NavigationContext| (|arg1|) for navigations via POST
 // HTTP methods passed to |DidStartNavigation|. Stores |NavigationContext| in
 // |context| pointer.
@@ -1234,8 +1263,10 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowResponse) {
           &nav_id));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(false));
-  // TODO(crbug.com/809557): DidFinishNavigation should be called.
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyResponseRejectedFinishedContext(web_state(), url,
+                                                      &context, &nav_id));
   web::test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
     return !web_state()->IsLoading();

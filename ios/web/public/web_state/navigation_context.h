@@ -47,8 +47,9 @@ class NavigationContext {
   virtual bool IsSameDocument() const = 0;
 
   // Whether the navigation has committed. Navigations that end up being
-  // downloads or return 204/205 response codes do not commit (i.e. the
-  // WebState stays at the existing URL).
+  // downloads, return 204/205 response codes or their response is rejected by
+  // the policy decider do not commit (i.e. the WebState stays at the existing
+  // URL).
   // This returns true for either successful commits or error pages that
   // replace the previous page, and false for errors that leave the user on the
   // previous page.
