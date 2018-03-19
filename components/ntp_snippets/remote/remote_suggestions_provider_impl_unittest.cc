@@ -31,7 +31,7 @@
 #include "base/timer/timer.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category.h"
@@ -69,7 +69,7 @@
 
 using base::TestMockTimeTaskRunner;
 using image_fetcher::ImageFetcher;
-using image_fetcher::ImageFetcherDelegate;
+using image_fetcher::MockImageFetcher;
 using ntp_snippets::test::FetchedCategoryBuilder;
 using ntp_snippets::test::RemoteSuggestionBuilder;
 using testing::_;
@@ -162,22 +162,16 @@ std::unique_ptr<RemoteSuggestion> CreateTestRemoteSuggestion(
   return RemoteSuggestion::CreateFromProto(snippet_proto);
 }
 
-using ServeImageCallback = base::Callback<void(
-    const std::string&,
-    base::Callback<void(const std::string&,
-                        const gfx::Image&,
-                        const image_fetcher::RequestMetadata&)>)>;
-
 void ServeOneByOneImage(
-    image_fetcher::ImageFetcherDelegate* notify,
     const std::string& id,
-    base::Callback<void(const std::string&,
-                        const gfx::Image&,
-                        const image_fetcher::RequestMetadata&)> callback) {
+    image_fetcher::ImageFetcher::ImageDataFetcherCallback* image_data_callback,
+    image_fetcher::ImageFetcher::ImageFetcherCallback* callback) {
+  std::move(*image_data_callback)
+      .Run("1-by-1-image-data", image_fetcher::RequestMetadata());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, id, gfx::test::CreateImage(1, 1),
-                            image_fetcher::RequestMetadata()));
-  notify->OnImageDataFetched(id, "1-by-1-image-data");
+      FROM_HERE,
+      base::BindOnce(std::move(*callback), id, gfx::test::CreateImage(1, 1),
+                     image_fetcher::RequestMetadata()));
 }
 
 gfx::Image FetchImage(RemoteSuggestionsProviderImpl* provider,
@@ -195,21 +189,6 @@ gfx::Image FetchImage(RemoteSuggestionsProviderImpl* provider,
   run_loop.Run();
   return result;
 }
-
-class MockImageFetcher : public ImageFetcher {
- public:
-  MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
-  MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
-  MOCK_METHOD1(SetImageDownloadLimit,
-               void(base::Optional<int64_t> max_download_bytes));
-  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
-  MOCK_METHOD4(StartOrQueueNetworkRequest,
-               void(const std::string&,
-                    const GURL&,
-                    const ImageFetcherCallback&,
-                    const net::NetworkTrafficAnnotationTag&));
-  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
-};
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
@@ -412,7 +391,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     auto image_fetcher = std::make_unique<NiceMock<MockImageFetcher>>();
 
     image_fetcher_ = image_fetcher.get();
-    EXPECT_CALL(*image_fetcher, SetImageFetcherDelegate(_));
     ON_CALL(*image_fetcher, GetImageDecoder())
         .WillByDefault(Return(&image_decoder_));
     EXPECT_FALSE(observer_);
@@ -1342,10 +1320,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, "id"))));
 
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  ServeImageCallback serve_one_by_one_image_callback =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .WillOnce(WithArgs<0, 2>(
+  auto serve_one_by_one_image_callback =
+      base::BindRepeating(&ServeOneByOneImage);
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+      .WillOnce(WithArgs<0, 2, 3>(
           Invoke(CreateFunctor(serve_one_by_one_image_callback))));
 
   gfx::Image image = FetchImage(provider.get(), MakeArticleID("id"));
@@ -1414,10 +1392,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       Status::Success(), std::move(fetched_categories));
 
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  ServeImageCallback serve_one_by_one_image_callback =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .WillOnce(WithArgs<0, 2>(
+  auto serve_one_by_one_image_callback =
+      base::BindRepeating(&ServeOneByOneImage);
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+      .WillOnce(WithArgs<0, 2, 3>(
           Invoke(CreateFunctor(serve_one_by_one_image_callback))));
 
   gfx::Image image = FetchImage(provider.get(), MakeArticleID("id"));
@@ -1584,11 +1562,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                         Status::Success(), std::move(fetched_categories));
   // Make sure images of both batches are available. This is to sanity check our
   // assumptions for the test are right.
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
       .Times(2)
-      .WillRepeatedly(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+      .WillRepeatedly(WithArgs<0, 2, 3>(
+          Invoke(CreateFunctor(base::BindRepeating(&ServeOneByOneImage)))));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   gfx::Image image = FetchImage(provider.get(), MakeArticleID("http://id-1"));
   ASSERT_FALSE(image.IsEmpty());
@@ -1750,10 +1727,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
   // Load the image to store it in the database.
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .WillOnce(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+      .WillOnce(WithArgs<0, 2, 3>(
+          Invoke(CreateFunctor(base::BindRepeating(&ServeOneByOneImage)))));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   gfx::Image image =
       FetchImage(provider.get(), MakeArticleID("http://site.com"));
@@ -1877,10 +1853,9 @@ TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
   // Load the image to store it in the database.
   // TODO(tschumann): Introduce some abstraction to nicely work with image
   // fetching expectations.
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .WillOnce(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+      .WillOnce(WithArgs<0, 2, 3>(
+          Invoke(CreateFunctor(base::BindRepeating(&ServeOneByOneImage)))));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   gfx::Image image = FetchImage(provider.get(), MakeArticleID("http://first/"));
   EXPECT_FALSE(image.IsEmpty());
@@ -2142,12 +2117,11 @@ TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
 
   gfx::Image image;
   MockFunction<void(const gfx::Image&)> image_fetched;
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
   {
     InSequence s;
-    EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-        .WillOnce(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+    EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+        .WillOnce(WithArgs<0, 2, 3>(
+            Invoke(CreateFunctor(base::BindRepeating(&ServeOneByOneImage)))));
     EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
   }
 
@@ -2280,11 +2254,10 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldClearOrphanedImagesOnRestart) {
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
                         Status::Success(), std::move(fetched_categories));
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
 
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .WillOnce(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+  EXPECT_CALL(*image_fetcher(), FetchImageAndData_(_, _, _, _, _))
+      .WillOnce(WithArgs<0, 2, 3>(
+          Invoke(CreateFunctor(base::BindRepeating(&ServeOneByOneImage)))));
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
 
   gfx::Image image = FetchImage(provider.get(), MakeArticleID(kSuggestionUrl));

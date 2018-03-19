@@ -64,6 +64,7 @@ source_set("unit_tests") {
     ":suggestions",
     "//base/test:test_support",
     "//components/image_fetcher/core",
+    "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",

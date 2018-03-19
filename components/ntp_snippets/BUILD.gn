@@ -227,6 +227,7 @@ source_set("unit_tests") {
     "//components/gcm_driver",
     "//components/gcm_driver/instance_id",
     "//components/image_fetcher/core",
+    "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto:test_support",
     "//components/ntp_snippets/remote/proto",
     "//components/offline_pages/core",

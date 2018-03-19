@@ -37,11 +37,6 @@ class ImageFetcherImpl : public ImageFetcher {
                    net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
 
-  // Sets the |delegate| of the ImageFetcherImpl. The |delegate| has to be alive
-  // during the lifetime of the ImageFetcherImpl object. It is the caller's
-  // responsibility to ensure this.
-  void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) override;
-
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name) override;
 
@@ -50,10 +45,11 @@ class ImageFetcherImpl : public ImageFetcher {
   void SetImageDownloadLimit(
       base::Optional<int64_t> max_download_bytes) override;
 
-  void StartOrQueueNetworkRequest(
+  void FetchImageAndData(
       const std::string& id,
       const GURL& image_url,
-      const ImageFetcherCallback& callback,
+      ImageDataFetcherCallback image_data_callback,
+      ImageFetcherCallback image_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   ImageDecoder* GetImageDecoder() override;
@@ -62,21 +58,22 @@ class ImageFetcherImpl : public ImageFetcher {
   // State related to an image fetch (id, pending callbacks).
   struct ImageRequest {
     ImageRequest();
-    ImageRequest(const ImageRequest& other);
     ~ImageRequest();
-
-    void swap(ImageRequest* other) {
-      std::swap(id, other->id);
-      std::swap(callbacks, other->callbacks);
-    }
+    ImageRequest(ImageRequest&& other);
 
     std::string id;
+    // These have the default value if the image data has not yet been fetched.
+    RequestMetadata request_metadata;
+    std::string image_data;
     // Queue for pending callbacks, which may accumulate while the request is in
     // flight.
-    std::vector<ImageFetcherCallback> callbacks;
+    std::vector<ImageFetcherCallback> image_callbacks;
+    std::vector<ImageDataFetcherCallback> image_data_callbacks;
+
+    DISALLOW_COPY_AND_ASSIGN(ImageRequest);
   };
 
-  using ImageRequestMap = std::map<const GURL, ImageRequest>;
+  using ImageRequestMap = std::map<GURL, ImageRequest>;
 
   // Processes image URL fetched events. This is the continuation method used
   // for creating callbacks that are passed to the ImageDataFetcher.
@@ -89,8 +86,6 @@ class ImageFetcherImpl : public ImageFetcher {
   void OnImageDecoded(const GURL& image_url,
                       const RequestMetadata& metadata,
                       const gfx::Image& image);
-
-  ImageFetcherDelegate* delegate_;
 
   gfx::Size desired_image_frame_size_;
 

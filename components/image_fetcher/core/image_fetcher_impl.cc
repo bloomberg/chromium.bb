@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -15,24 +16,16 @@ namespace image_fetcher {
 ImageFetcherImpl::ImageFetcherImpl(
     std::unique_ptr<ImageDecoder> image_decoder,
     net::URLRequestContextGetter* url_request_context)
-    : delegate_(nullptr),
-      url_request_context_(url_request_context),
+    : url_request_context_(url_request_context),
       image_decoder_(std::move(image_decoder)),
       image_data_fetcher_(new ImageDataFetcher(url_request_context_.get())) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 
 ImageFetcherImpl::ImageRequest::ImageRequest() {}
-
-ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
-    default;
+ImageFetcherImpl::ImageRequest::ImageRequest(ImageRequest&& other) = default;
 
 ImageFetcherImpl::ImageRequest::~ImageRequest() {}
-
-void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
-  DCHECK(delegate);
-  delegate_ = delegate;
-}
 
 void ImageFetcherImpl::SetDataUseServiceName(
     DataUseServiceName data_use_service_name) {
@@ -48,10 +41,11 @@ void ImageFetcherImpl::SetImageDownloadLimit(
   image_data_fetcher_->SetImageDownloadLimit(max_download_bytes);
 }
 
-void ImageFetcherImpl::StartOrQueueNetworkRequest(
+void ImageFetcherImpl::FetchImageAndData(
     const std::string& id,
     const GURL& image_url,
-    const ImageFetcherCallback& callback,
+    ImageDataFetcherCallback image_data_callback,
+    ImageFetcherCallback image_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   // Before starting to fetch the image. Look for a request in progress for
   // |image_url|, and queue if appropriate.
@@ -59,8 +53,13 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
   if (it == pending_net_requests_.end()) {
     ImageRequest request;
     request.id = id;
-    request.callbacks.push_back(callback);
-    pending_net_requests_[image_url].swap(&request);
+    if (image_callback) {
+      request.image_callbacks.push_back(std::move(image_callback));
+    }
+    if (image_data_callback) {
+      request.image_data_callbacks.push_back(std::move(image_data_callback));
+    }
+    pending_net_requests_.emplace(image_url, std::move(request));
 
     image_data_fetcher_->FetchImageData(
         image_url,
@@ -68,27 +67,52 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
                    image_url),
         traffic_annotation);
   } else {
+    ImageRequest* request = &it->second;
     // Request in progress. Register as an interested callback.
     // TODO(treib,markusheintz): We're not guaranteed that the ID also matches.
     //                           We probably have to store them all.
-    it->second.callbacks.push_back(callback);
+    if (image_callback) {
+      request->image_callbacks.push_back(std::move(image_callback));
+    }
+    // Call callback if data is already fetched, otherwise register it for
+    // later.
+    if (image_data_callback) {
+      if (!request->image_data.empty()) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(image_data_callback), request->image_data,
+                           request->request_metadata));
+      } else {
+        request->image_data_callbacks.push_back(std::move(image_data_callback));
+      }
+    }
   }
 }
 
 void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
                                          const std::string& image_data,
                                          const RequestMetadata& metadata) {
-  // Inform the ImageFetcherDelegate.
-  if (delegate_) {
-    auto it = pending_net_requests_.find(image_url);
-    DCHECK(it != pending_net_requests_.end());
-    delegate_->OnImageDataFetched(it->second.id, image_data);
+  auto it = pending_net_requests_.find(image_url);
+  DCHECK(it != pending_net_requests_.end());
+  ImageRequest* request = &it->second;
+  DCHECK(request->image_data.empty());
+  DCHECK_EQ(RequestMetadata::RESPONSE_CODE_INVALID,
+            request->request_metadata.http_response_code);
+  request->image_data = image_data;
+  request->request_metadata = metadata;
+  for (auto& callback : request->image_data_callbacks) {
+    std::move(callback).Run(request->image_data, request->request_metadata);
   }
+  request->image_data_callbacks.clear();
 
-  image_decoder_->DecodeImage(
-      image_data, desired_image_frame_size_,
-      base::Bind(&ImageFetcherImpl::OnImageDecoded, base::Unretained(this),
-                 image_url, metadata));
+  if (!request->image_callbacks.empty()) {
+    image_decoder_->DecodeImage(
+        image_data, desired_image_frame_size_,
+        base::BindRepeating(&ImageFetcherImpl::OnImageDecoded,
+                            base::Unretained(this), image_url, metadata));
+  } else {
+    pending_net_requests_.erase(it);
+  }
 }
 
 void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
@@ -99,18 +123,13 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
   DCHECK(image_iter != pending_net_requests_.end());
   ImageRequest* request = &image_iter->second;
 
-  // Run all callbacks
-  for (const auto& callback : request->callbacks) {
-    if (callback)
-      callback.Run(request->id, image, metadata);
-  }
-
-  // Inform the ImageFetcherDelegate.
-  if (delegate_) {
-    delegate_->OnImageFetched(request->id, image);
+  // Run all image callbacks.
+  for (auto& callback : request->image_callbacks) {
+    std::move(callback).Run(request->id, image, metadata);
   }
 
   // Erase the completed ImageRequest.
+  DCHECK(request->image_data_callbacks.empty());
   pending_net_requests_.erase(image_iter);
 }
 

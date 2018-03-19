@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "ui/gfx/image/image_skia.h"
@@ -30,7 +29,8 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
-}
+struct RequestMetadata;
+}  // namespace image_fetcher
 
 namespace suggestions {
 
@@ -39,16 +39,17 @@ class SuggestionsProfile;
 
 // A class used to fetch server images asynchronously and manage the caching
 // layer (both in memory and on disk).
-class ImageManager : public image_fetcher::ImageFetcherDelegate {
+class ImageManager {
  public:
   typedef std::vector<ImageData> ImageDataVector;
-  using ImageCallback = base::Callback<void(const GURL&, const gfx::Image&)>;
+  using ImageCallback =
+      base::RepeatingCallback<void(const GURL&, const gfx::Image&)>;
 
   ImageManager(
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<leveldb_proto::ProtoDatabase<ImageData>> database,
       const base::FilePath& database_dir);
-  ~ImageManager() override;
+  virtual ~ImageManager();
 
   virtual void Initialize(const SuggestionsProfile& suggestions);
 
@@ -57,12 +58,6 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
 
   // Should be called from the UI thread.
   virtual void GetImageForURL(const GURL& url, ImageCallback callback);
-
- protected:
-  // Methods inherited from image_fetcher::ImageFetcherDelegate
-
-  // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const std::string& url, const gfx::Image& image) override;
 
  private:
   friend class MockImageManager;
@@ -77,8 +72,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   // Used for testing.
   ImageManager();
 
-  typedef std::vector<base::Callback<void(const GURL&, const gfx::Image&)> >
-      CallbackVector;
+  typedef std::vector<ImageCallback> CallbackVector;
   typedef base::hash_map<std::string, scoped_refptr<base::RefCountedMemory>>
       ImageMap;
 
@@ -106,14 +100,14 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
                          const GURL& image_url,
                          ImageCallback callback);
 
-  void ServeFromCacheOrNetwork(
-      const GURL& url, const GURL& image_url, ImageCallback callback);
+  void ServeFromCacheOrNetwork(const GURL& url,
+                               const GURL& image_url,
+                               ImageCallback callback);
 
-  void OnCacheImageDecoded(
-      const GURL& url,
-      const GURL& image_url,
-      const ImageCallback& callback,
-      std::unique_ptr<SkBitmap> bitmap);
+  void OnCacheImageDecoded(const GURL& url,
+                           const GURL& image_url,
+                           const ImageCallback& callback,
+                           std::unique_ptr<SkBitmap> bitmap);
 
   // Returns null if the |url| had no entry in the cache.
   scoped_refptr<base::RefCountedMemory> GetEncodedImageFromCache(
@@ -133,6 +127,11 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   void LoadEntriesInCache(std::unique_ptr<ImageDataVector> entries);
 
   void ServePendingCacheRequests();
+
+  void SaveImageAndForward(const ImageCallback& image_callback,
+                           const std::string& url,
+                           const gfx::Image& image,
+                           const image_fetcher::RequestMetadata& metadata);
 
   // Map from URL to image URL. Should be kept up to date when a new
   // SuggestionsProfile is available.

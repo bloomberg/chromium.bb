@@ -188,7 +188,7 @@ void AccountFetcherService::ScheduleNextRefresh() {
   DCHECK(network_fetches_enabled_);
 
   const base::TimeDelta time_since_update = base::Time::Now() - last_updated_;
-  if(time_since_update > kRefreshFromTokenServiceDelay) {
+  if (time_since_update > kRefreshFromTokenServiceDelay) {
     RefreshAllAccountsAndScheduleNext();
   } else {
     timer_.Start(FROM_HERE, kRefreshFromTokenServiceDelay - time_since_update,
@@ -267,7 +267,6 @@ AccountFetcherService::GetOrCreateImageFetcher() {
   if (!image_fetcher_) {
     image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
         std::move(image_decoder_), signin_client_->GetURLRequestContext());
-    image_fetcher_->SetImageFetcherDelegate(this);
   }
   return image_fetcher_.get();
 }
@@ -305,9 +304,10 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
         })");
   GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
       picture_url, kAccountImageDownloadSize, true /* no_silhouette */));
-  GetOrCreateImageFetcher()->StartOrQueueNetworkRequest(
-      account_id, image_url_with_size,
-      image_fetcher::ImageFetcher::ImageFetcherCallback(), traffic_annotation);
+  auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
+                                      base::Unretained(this));
+  GetOrCreateImageFetcher()->FetchImage(account_id, image_url_with_size,
+                                        callback, traffic_annotation);
 }
 
 void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
@@ -326,8 +326,7 @@ void AccountFetcherService::OnUserInfoFetchFailure(
 void AccountFetcherService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   TRACE_EVENT1("AccountFetcherService",
-               "AccountFetcherService::OnRefreshTokenAvailable",
-               "account_id",
+               "AccountFetcherService::OnRefreshTokenAvailable", "account_id",
                account_id);
   DVLOG(1) << "AVAILABLE " << account_id;
 
@@ -347,8 +346,7 @@ void AccountFetcherService::OnRefreshTokenAvailable(
 void AccountFetcherService::OnRefreshTokenRevoked(
     const std::string& account_id) {
   TRACE_EVENT1("AccountFetcherService",
-               "AccountFetcherService::OnRefreshTokenRevoked",
-               "account_id",
+               "AccountFetcherService::OnRefreshTokenRevoked", "account_id",
                account_id);
   DVLOG(1) << "REVOKED " << account_id;
 
@@ -367,7 +365,9 @@ void AccountFetcherService::OnRefreshTokensLoaded() {
   MaybeEnableNetworkFetches();
 }
 
-void AccountFetcherService::OnImageFetched(const std::string& id,
-                                           const gfx::Image& image) {
+void AccountFetcherService::OnImageFetched(
+    const std::string& id,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata&) {
   account_tracker_service_->SetAccountImage(id, image);
 }

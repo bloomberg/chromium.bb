@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/suggestions/image_encoder.h"
@@ -28,8 +28,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
-using image_fetcher::ImageFetcher;
-using image_fetcher::ImageFetcherDelegate;
+using image_fetcher::MockImageFetcher;
 
 namespace suggestions {
 
@@ -42,24 +41,9 @@ using leveldb_proto::test::FakeDB;
 
 typedef std::map<std::string, ImageData> EntryMap;
 
-void AddEntry(const ImageData& d, EntryMap* map) { (*map)[d.url()] = d; }
-
-class MockImageFetcher : public ImageFetcher {
- public:
-  MockImageFetcher() {}
-  virtual ~MockImageFetcher() {}
-  MOCK_METHOD4(StartOrQueueNetworkRequest,
-               void(const std::string&,
-                    const GURL&,
-                    const ImageFetcherCallback&,
-                    const net::NetworkTrafficAnnotationTag&));
-  MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
-  MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
-  MOCK_METHOD1(SetImageDownloadLimit,
-               void(base::Optional<int64_t> max_download_bytes));
-  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
-  MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
-};
+void AddEntry(const ImageData& d, EntryMap* map) {
+  (*map)[d.url()] = d;
+}
 
 class ImageManagerTest : public testing::Test {
  public:
@@ -112,7 +96,8 @@ class ImageManagerTest : public testing::Test {
     return data;
   }
 
-  void OnImageAvailable(base::RunLoop* loop, const GURL& url,
+  void OnImageAvailable(base::RunLoop* loop,
+                        const GURL& url,
                         const gfx::Image& image) {
     if (!image.IsEmpty()) {
       num_callback_valid_called_++;
@@ -124,7 +109,6 @@ class ImageManagerTest : public testing::Test {
 
   ImageManager* CreateImageManager(FakeDB<ImageData>* fake_db) {
     mock_image_fetcher_ = new StrictMock<MockImageFetcher>();
-    EXPECT_CALL(*mock_image_fetcher_, SetImageFetcherDelegate(_));
     return new ImageManager(base::WrapUnique(mock_image_fetcher_),
                             base::WrapUnique(fake_db),
                             FakeDB<ImageData>::DirectoryForTestDB());
@@ -177,7 +161,7 @@ TEST_F(ImageManagerTest, GetImageForURLNetwork) {
   InitializeDefaultImageMapAndDatabase(image_manager_.get(), fake_db_);
 
   // We expect the fetcher to go to network and call the callback.
-  EXPECT_CALL(*mock_image_fetcher_, StartOrQueueNetworkRequest(_, _, _, _));
+  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _, _));
 
   // Fetch existing URL.
   base::RunLoop run_loop;

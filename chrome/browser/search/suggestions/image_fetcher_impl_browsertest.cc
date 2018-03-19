@@ -15,7 +15,6 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +23,6 @@
 
 using image_fetcher::ImageFetcher;
 using image_fetcher::ImageFetcherImpl;
-using image_fetcher::ImageFetcherDelegate;
 
 namespace suggestions {
 
@@ -36,37 +34,15 @@ const char kInvalidImagePath[] = "/DOESNOTEXIST";
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
-
-class TestImageFetcherDelegate : public ImageFetcherDelegate {
- public:
-  TestImageFetcherDelegate()
-    : num_delegate_valid_called_(0),
-      num_delegate_null_called_(0) {}
-  ~TestImageFetcherDelegate() override {}
-
-  // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const std::string& id, const gfx::Image& image) override {
-    if (!image.IsEmpty()) {
-      num_delegate_valid_called_++;
-    } else {
-      num_delegate_null_called_++;
-    }
-  };
-
-  int num_delegate_valid_called() { return num_delegate_valid_called_; }
-  int num_delegate_null_called() { return num_delegate_null_called_; }
-
- private:
-  int num_delegate_valid_called_;
-  int num_delegate_null_called_;
-};
-
 }  // namespace
 
 class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
  protected:
   ImageFetcherImplBrowserTest()
-      : num_callback_valid_called_(0), num_callback_null_called_(0) {
+      : num_callback_valid_called_(0),
+        num_callback_null_called_(0),
+        num_data_callback_valid_called_(0),
+        num_data_callback_null_called_(0) {
     test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
 
@@ -78,7 +54,6 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
     ImageFetcherImpl* fetcher =
         new ImageFetcherImpl(std::make_unique<suggestions::ImageDecoderImpl>(),
                              browser()->profile()->GetRequestContext());
-    fetcher->SetImageFetcherDelegate(&delegate_);
     return fetcher;
   }
 
@@ -94,12 +69,23 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
     loop->Quit();
   }
 
-  void StartOrQueueNetworkRequestHelper(const GURL& image_url) {
+  void OnImageDataAvailable(const std::string& image_data,
+                            const image_fetcher::RequestMetadata& metadata) {
+    if (!image_data.empty()) {
+      num_data_callback_valid_called_++;
+    } else {
+      num_data_callback_null_called_++;
+    }
+  }
+
+  void FetchImageAndDataHelper(const GURL& image_url) {
     std::unique_ptr<ImageFetcherImpl> image_fetcher_(CreateImageFetcher());
 
     base::RunLoop run_loop;
-    image_fetcher_->StartOrQueueNetworkRequest(
+    image_fetcher_->FetchImageAndData(
         kTestUrl, image_url,
+        base::BindOnce(&ImageFetcherImplBrowserTest::OnImageDataAvailable,
+                       base::Unretained(this)),
         base::Bind(&ImageFetcherImplBrowserTest::OnImageAvailable,
                    base::Unretained(this), &run_loop),
         TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -109,8 +95,10 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
   int num_callback_valid_called_;
   int num_callback_null_called_;
 
+  int num_data_callback_valid_called_;
+  int num_data_callback_null_called_;
+
   net::EmbeddedTestServer test_server_;
-  TestImageFetcherDelegate delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImplBrowserTest);
@@ -118,35 +106,35 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, NormalFetch) {
   GURL image_url(test_server_.GetURL(kTestImagePath).spec());
-  StartOrQueueNetworkRequestHelper(image_url);
+  FetchImageAndDataHelper(image_url);
 
   EXPECT_EQ(1, num_callback_valid_called_);
   EXPECT_EQ(0, num_callback_null_called_);
-  EXPECT_EQ(1, delegate_.num_delegate_valid_called());
-  EXPECT_EQ(0, delegate_.num_delegate_null_called());
+  EXPECT_EQ(1, num_data_callback_valid_called_);
+  EXPECT_EQ(0, num_data_callback_null_called_);
 }
 
 IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, MultipleFetch) {
   GURL image_url(test_server_.GetURL(kTestImagePath).spec());
 
   for (int i = 0; i < 5; i++) {
-    StartOrQueueNetworkRequestHelper(image_url);
+    FetchImageAndDataHelper(image_url);
   }
 
   EXPECT_EQ(5, num_callback_valid_called_);
   EXPECT_EQ(0, num_callback_null_called_);
-  EXPECT_EQ(5, delegate_.num_delegate_valid_called());
-  EXPECT_EQ(0, delegate_.num_delegate_null_called());
+  EXPECT_EQ(5, num_data_callback_valid_called_);
+  EXPECT_EQ(0, num_data_callback_null_called_);
 }
 
 IN_PROC_BROWSER_TEST_F(ImageFetcherImplBrowserTest, InvalidFetch) {
   GURL invalid_image_url(test_server_.GetURL(kInvalidImagePath).spec());
-  StartOrQueueNetworkRequestHelper(invalid_image_url);
+  FetchImageAndDataHelper(invalid_image_url);
 
   EXPECT_EQ(0, num_callback_valid_called_);
   EXPECT_EQ(1, num_callback_null_called_);
-  EXPECT_EQ(0, delegate_.num_delegate_valid_called());
-  EXPECT_EQ(1, delegate_.num_delegate_null_called());
+  EXPECT_EQ(0, num_data_callback_valid_called_);
+  EXPECT_EQ(1, num_data_callback_null_called_);
 }
 
 }  // namespace suggestions

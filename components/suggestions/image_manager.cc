@@ -32,15 +32,6 @@ std::unique_ptr<SkBitmap> DecodeImage(
                                            encoded_data->size());
 }
 
-// Wraps an ImageManager callback so that it can be used with the ImageFetcher.
-void WrapCallback(
-    const suggestions::ImageManager::ImageCallback& wrapped_callback,
-    const std::string& url,
-    const gfx::Image& image,
-    const image_fetcher::RequestMetadata& metadata) {
-  wrapped_callback.Run(GURL(url), image);
-}
-
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("suggestions_image_manager", R"(
         semantics {
@@ -90,7 +81,6 @@ ImageManager::ImageManager(
           {base::TaskPriority::USER_VISIBLE})),
       database_ready_(false),
       weak_ptr_factory_(this) {
-  image_fetcher_->SetImageFetcherDelegate(this);
   database_->Init(kDatabaseUMAClientName, database_dir,
                   leveldb_proto::CreateSimpleOptions(),
                   base::Bind(&ImageManager::OnDatabaseInit,
@@ -142,17 +132,23 @@ void ImageManager::GetImageForURL(const GURL& url, ImageCallback callback) {
   ServeFromCacheOrNetwork(url, image_url, callback);
 }
 
-void ImageManager::OnImageFetched(const std::string& url,
-                                  const gfx::Image& image) {
+void ImageManager::SaveImageAndForward(
+    const ImageCallback& image_callback,
+    const std::string& url,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   // |image| can be empty if image fetch was unsuccessful.
   if (!image.IsEmpty())
     SaveImage(url, *image.ToSkBitmap());
+
+  image_callback.Run(GURL(url), image);
 }
 
 bool ImageManager::GetImageURL(const GURL& url, GURL* image_url) {
   DCHECK(image_url);
   std::map<GURL, GURL>::iterator it = image_url_map_.find(url);
-  if (it == image_url_map_.end()) return false;  // Not found.
+  if (it == image_url_map_.end())
+    return false;  // Not found.
   *image_url = it->second;
   return true;
 }
@@ -175,16 +171,17 @@ void ImageManager::QueueCacheRequest(const GURL& url,
   pending_cache_requests_[url] = request;
 }
 
-void ImageManager::OnCacheImageDecoded(
-    const GURL& url,
-    const GURL& image_url,
-    const ImageCallback& callback,
-    std::unique_ptr<SkBitmap> bitmap) {
+void ImageManager::OnCacheImageDecoded(const GURL& url,
+                                       const GURL& image_url,
+                                       const ImageCallback& callback,
+                                       std::unique_ptr<SkBitmap> bitmap) {
   if (bitmap.get()) {
     callback.Run(url, gfx::Image::CreateFrom1xBitmap(*bitmap));
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(
-        url.spec(), image_url, base::Bind(&WrapCallback, callback),
+    image_fetcher_->FetchImage(
+        url.spec(), image_url,
+        base::BindRepeating(&ImageManager::SaveImageAndForward,
+                            base::Unretained(this), callback),
         kTrafficAnnotation);
   }
 }
@@ -198,10 +195,9 @@ scoped_refptr<base::RefCountedMemory> ImageManager::GetEncodedImageFromCache(
   return nullptr;
 }
 
-void ImageManager::ServeFromCacheOrNetwork(
-    const GURL& url,
-    const GURL& image_url,
-    ImageCallback callback) {
+void ImageManager::ServeFromCacheOrNetwork(const GURL& url,
+                                           const GURL& image_url,
+                                           ImageCallback callback) {
   scoped_refptr<base::RefCountedMemory> encoded_data =
       GetEncodedImageFromCache(url);
   if (encoded_data.get()) {
@@ -211,8 +207,10 @@ void ImageManager::ServeFromCacheOrNetwork(
         base::Bind(&ImageManager::OnCacheImageDecoded,
                    weak_ptr_factory_.GetWeakPtr(), url, image_url, callback));
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(
-        url.spec(), image_url, base::Bind(&WrapCallback, callback),
+    image_fetcher_->FetchImage(
+        url.spec(), image_url,
+        base::BindRepeating(&ImageManager::SaveImageAndForward,
+                            base::Unretained(this), callback),
         kTrafficAnnotation);
   }
 }
@@ -229,7 +227,8 @@ void ImageManager::SaveImage(const std::string& url, const SkBitmap& bitmap) {
   // Update the image map.
   image_map_.insert({url, encoded_data});
 
-  if (!database_ready_) return;
+  if (!database_ready_)
+    return;
 
   // Save the resulting bitmap to the database.
   ImageData data;
