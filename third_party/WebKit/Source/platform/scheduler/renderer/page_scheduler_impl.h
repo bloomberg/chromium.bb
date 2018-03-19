@@ -16,8 +16,8 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "platform/scheduler/renderer/page_scheduler.h"
-#include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {

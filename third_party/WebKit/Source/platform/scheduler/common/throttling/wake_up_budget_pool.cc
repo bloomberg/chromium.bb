@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/wake_up_budget_pool.h"
+#include "platform/scheduler/common/throttling/wake_up_budget_pool.h"
 
 #include <cstdint>
 
-#include "platform/scheduler/renderer/task_queue_throttler.h"
+#include "platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {

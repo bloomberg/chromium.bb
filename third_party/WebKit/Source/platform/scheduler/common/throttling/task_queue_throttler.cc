@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/task_queue_throttler.h"
+#include "platform/scheduler/common/throttling/task_queue_throttler.h"
 
 #include <cstdint>
 
@@ -11,9 +11,9 @@
 #include "base/optional.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/renderer/budget_pool.h"
+#include "platform/scheduler/common/throttling/budget_pool.h"
+#include "platform/scheduler/common/throttling/throttled_time_domain.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/throttled_time_domain.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
 namespace blink {
@@ -284,10 +284,7 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
 CPUTimeBudgetPool* TaskQueueThrottler::CreateCPUTimeBudgetPool(
     const char* name) {
   CPUTimeBudgetPool* time_budget_pool = new CPUTimeBudgetPool(
-      name,
-      this,
-      tracing_controller_,
-      tick_clock_->NowTicks());
+      name, this, tracing_controller_, tick_clock_->NowTicks());
   budget_pools_[time_budget_pool] = base::WrapUnique(time_budget_pool);
   return time_budget_pool;
 }
