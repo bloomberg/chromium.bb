@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -42,11 +43,13 @@ class DetachedResourceRequest {
   static void CreateAndStart(content::BrowserContext* browser_context,
                              const GURL& url,
                              const GURL& first_party_for_cookies,
+                             net::URLRequest::ReferrerPolicy referer_policy,
                              OnResultCallback cb = base::DoNothing());
 
  private:
   DetachedResourceRequest(const GURL& url,
                           const GURL& site_for_cookies,
+                          net::URLRequest::ReferrerPolicy referer_policy,
                           OnResultCallback cb);
 
   static void Start(std::unique_ptr<DetachedResourceRequest> request,

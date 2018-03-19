@@ -150,6 +150,8 @@ public class CustomTabsConnection {
     @VisibleForTesting
     static final String PARALLEL_REQUEST_REFERRER_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_REFERRER";
+    static final String PARALLEL_REQUEST_REFERRER_POLICY_KEY =
+            "android.support.customtabs.PARALLEL_REQUEST_REFERRER_POLICY";
     @VisibleForTesting
     static final String PARALLEL_REQUEST_URL_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_URL";
@@ -930,8 +932,11 @@ public class CustomTabsConnection {
         if (!mClientManager.getAllowParallelRequestForSession(session)) return;
         Uri referrer = intent.getParcelableExtra(PARALLEL_REQUEST_REFERRER_KEY);
         Uri url = intent.getParcelableExtra(PARALLEL_REQUEST_URL_KEY);
+        int policy =
+                intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, WebReferrerPolicy.DEFAULT);
         if (referrer == null || url == null) return;
-        startParallelRequest(session, url, referrer);
+        if (policy < 0 || policy > WebReferrerPolicy.LAST) policy = WebReferrerPolicy.DEFAULT;
+        startParallelRequest(session, url, referrer, policy);
     }
 
     /** @return Whether {@code session} can create a parallel request for a given
@@ -957,12 +962,14 @@ public class CustomTabsConnection {
      * @param session Calling context session.
      * @param url URL to send the request to.
      * @param referrer Referrer (and first party for cookies) to use.
+     * @param referrerPolicy Referrer policy for the parallel request.
      * @return Whether the request started. False if the session is not authorized to use the
      *         provided origin, if Chrome hasn't been initialized, or the feature is disabled.
      *         Also fails if the URL is neither HTTPS not HTTP.
      */
     @VisibleForTesting
-    boolean startParallelRequest(CustomTabsSessionToken session, Uri url, Uri referrer) {
+    boolean startParallelRequest(CustomTabsSessionToken session, Uri url, Uri referrer,
+            @WebReferrerPolicy int referrerPolicy) {
         ThreadUtils.assertOnUiThread();
         if (url.toString().equals("") || !isValid(url)
                 || !canDoParallelRequest(session, referrer)) {
@@ -970,7 +977,7 @@ public class CustomTabsConnection {
         }
 
         nativeCreateAndStartDetachedResourceRequest(
-                Profile.getLastUsedProfile(), url.toString(), referrer.toString());
+                Profile.getLastUsedProfile(), url.toString(), referrer.toString(), referrerPolicy);
         return true;
     }
 
@@ -1540,5 +1547,5 @@ public class CustomTabsConnection {
     }
 
     private static native void nativeCreateAndStartDetachedResourceRequest(
-            Profile profile, String url, String origin);
+            Profile profile, String url, String origin, @WebReferrerPolicy int referrerPolicy);
 }

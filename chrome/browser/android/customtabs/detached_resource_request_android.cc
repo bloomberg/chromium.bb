@@ -8,7 +8,9 @@
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "content/public/common/referrer.h"
 #include "jni/CustomTabsConnection_jni.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
 namespace customtabs {
@@ -18,7 +20,8 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& profile,
     const base::android::JavaParamRef<jstring>& url,
-    const base::android::JavaParamRef<jstring>& origin) {
+    const base::android::JavaParamRef<jstring>& origin,
+    jint referrer_policy) {
   DCHECK(profile && url && origin);
 
   Profile* native_profile = ProfileAndroid::FromProfileAndroid(profile);
@@ -29,8 +32,12 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
   DCHECK(native_url.is_valid());
   DCHECK(native_origin.is_valid());
 
-  DetachedResourceRequest::CreateAndStart(native_profile, native_url,
-                                          native_origin);
+  // Java only knows about the blink referrer policy.
+  net::URLRequest::ReferrerPolicy url_request_referrer_policy =
+      content::Referrer::ReferrerPolicyForUrlRequest(
+          static_cast<blink::WebReferrerPolicy>(referrer_policy));
+  DetachedResourceRequest::CreateAndStart(
+      native_profile, native_url, native_origin, url_request_referrer_policy);
 }
 
 }  // namespace customtabs
