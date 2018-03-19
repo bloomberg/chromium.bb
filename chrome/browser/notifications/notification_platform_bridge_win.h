@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_H_
 
 #include <windows.ui.notifications.h>
+
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 namespace base {
 class CommandLine;
+class SequencedTaskRunner;
 }
 
 class NotificationPlatformBridgeWinImpl;
@@ -61,8 +61,6 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, GetDisplayed);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleSettings);
-
-  void PostTaskToTaskRunnerThread(base::OnceClosure closure) const;
 
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.
