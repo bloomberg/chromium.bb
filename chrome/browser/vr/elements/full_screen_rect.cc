@@ -16,7 +16,7 @@ void FullScreenRect::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
   gfx::Transform m;
   m.Scale3d(2.0f, 2.0f, 1.0f);
-  renderer->DrawGradientQuad(m, edge_color(), center_color(), gfx::PointF(),
+  renderer->DrawGradientQuad(m, edge_color(), center_color(),
                              computed_opacity(), size(), corner_radii());
 }
 

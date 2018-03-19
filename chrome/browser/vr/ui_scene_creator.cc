@@ -945,9 +945,6 @@ void UiSceneCreator::CreateContentQuad() {
   auto hit_plane = Create<InvisibleHitTarget>(kBackplane, kPhaseBackplanes);
   hit_plane->SetSize(kBackplaneSize, kSceneHeight);
   hit_plane->set_contributes_to_parent_bounds(false);
-  hit_plane->set_cursor_type(kCursorReposition);
-
-  hit_plane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
 
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
@@ -1034,9 +1031,62 @@ void UiSceneCreator::CreateContentQuad() {
                         const EditedText& value) { e->UpdateInput(value); },
                      base::Unretained(main_content.get()))));
 
+  auto frame = Create<Rect>(kContentFrame, kPhaseForeground);
+  frame->set_hit_testable(true);
+  frame->set_bounds_contain_children(true);
+  frame->set_padding(kRepositionFrameEdgePadding, kRepositionFrameTopPadding,
+                     kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
+  frame->set_corner_radius(kContentCornerRadius);
+  frame->set_bounds_contain_padding(false);
+  frame->SetTransitionedProperties({LOCAL_OPACITY});
+  frame->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kRepositionFrameTransitionDurationMs));
+  VR_BIND_COLOR(model_, frame.get(), &ColorScheme::content_reposition_frame,
+                &Rect::SetColor);
+  frame->AddBinding(std::make_unique<Binding<gfx::PointF>>(
+      VR_BIND_LAMBDA(
+          [](Model* model, UiElement* e) {
+            HitTestRequest request;
+            request.ray_origin = model->controller.laser_origin;
+            request.ray_target = model->reticle.target_point;
+            HitTestResult result;
+            e->HitTest(request, &result);
+            return gfx::PointF(
+                result.local_hit_point.x() * e->stale_size().width(),
+                result.local_hit_point.y() * e->stale_size().height());
+          },
+          base::Unretained(model_), base::Unretained(frame.get())),
+      VR_BIND_LAMBDA(
+          [](Rect* e, const gfx::PointF& value) {
+            gfx::RectF inner(e->stale_size());
+            inner.Inset(kRepositionFrameEdgePadding, kRepositionFrameTopPadding,
+                        kRepositionFrameEdgePadding,
+                        kRepositionFrameEdgePadding);
+            gfx::RectF outer(e->stale_size());
+            outer.Inset(
+                kRepositionFrameEdgePadding,
+                kRepositionFrameTopPadding - kRepositionFrameHitPlaneTopPadding,
+                kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
+            const bool is_on_frame =
+                outer.Contains(value) && !inner.Contains(value);
+            e->SetLocalOpacity(is_on_frame ? 1.0f : 0.0f);
+          },
+          base::Unretained(frame.get()))));
+
+  auto plane =
+      Create<InvisibleHitTarget>(kContentFrameHitPlane, kPhaseForeground);
+  plane->set_bounds_contain_children(true);
+  plane->set_bounds_contain_padding(false);
+  plane->set_corner_radius(kContentCornerRadius);
+  plane->set_cursor_type(kCursorReposition);
+  plane->set_padding(0, kRepositionFrameHitPlaneTopPadding, 0, 0);
+  plane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
+
   shadow->AddChild(std::move(main_content));
   resizer->AddChild(std::move(shadow));
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(resizer));
+  plane->AddChild(std::move(resizer));
+  frame->AddChild(std::move(plane));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(frame));
 
   // Limit reticle distance to a sphere based on maximum content distance.
   scene_->set_background_distance(kFullscreenDistance *
@@ -1688,20 +1738,11 @@ void UiSceneCreator::CreateUrlBar() {
   scaler->set_contributes_to_parent_bounds(false);
   scene_->AddUiElement(kUrlBarPositioner, std::move(scaler));
 
-  auto backplane =
-      Create<InvisibleHitTarget>(kUrlBarBackplane, kPhaseBackplanes);
-  backplane->set_bounds_contain_children(true);
-  backplane->set_contributes_to_parent_bounds(false);
-  backplane->set_padding(kUrlBarBackplanePadding, kUrlBarBackplaneTopPadding,
-                         kUrlBarBackplanePadding, kUrlBarBackplanePadding);
-  backplane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
-  VR_BIND_VISIBILITY(backplane, !model->fullscreen_enabled());
-  scene_->AddUiElement(kUrlBarDmmRoot, std::move(backplane));
-
   auto url_bar = Create<UiElement>(kUrlBar, kPhaseNone);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
-  scene_->AddUiElement(kUrlBarBackplane, std::move(url_bar));
+  VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
+  scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
 
   auto layout =
       Create<LinearLayout>(kUrlBarLayout, kPhaseNone, LinearLayout::kRight);
@@ -2185,7 +2226,8 @@ void UiSceneCreator::CreateCloseButton() {
   element->set_contributes_to_parent_bounds(false);
   element->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
-  element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);
+  element->set_y_anchoring(BOTTOM);
+  element->SetTranslate(0, kCloseButtonRelativeOffset, -kCloseButtonDistance);
   VR_BIND_BUTTON_COLORS(model_, element.get(), &ColorScheme::button_colors,
                         &DiscButton::SetButtonColors);
 
@@ -2195,9 +2237,7 @@ void UiSceneCreator::CreateCloseButton() {
   element->AddBinding(
       VR_BIND(bool, Model, model_, model->fullscreen_enabled(), UiElement,
               element.get(),
-              view->SetTranslate(0,
-                                 value ? kCloseButtonFullscreenVerticalOffset
-                                       : kCloseButtonVerticalOffset,
+              view->SetTranslate(0, kCloseButtonRelativeOffset,
                                  value ? -kCloseButtonFullscreenDistance
                                        : -kCloseButtonDistance)));
   element->AddBinding(VR_BIND(
@@ -2404,6 +2444,7 @@ void UiSceneCreator::CreateFullscreenToast() {
   auto parent = CreateTransientParent(kExclusiveScreenToastTransientParent,
                                       kToastTimeoutSeconds, false);
   parent->set_contributes_to_parent_bounds(false);
+  parent->set_y_anchoring(TOP);
   VR_BIND_VISIBILITY(parent, model->fullscreen_enabled());
   scene_->AddUiElement(k2dBrowsingForeground, std::move(parent));
 

@@ -49,6 +49,8 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kBackgroundBottom,
     kCeiling,
     kFloor,
+    kContentFrame,
+    kContentFrameHitPlane,
     kContentQuad,
     kContentQuadShadow,
     kBackplane,
@@ -457,6 +459,8 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kControllerHomeButton);
   visible_in_fullscreen.insert(kLaser);
   visible_in_fullscreen.insert(kReticle);
+  visible_in_fullscreen.insert(kContentFrame);
+  visible_in_fullscreen.insert(kContentFrameHitPlane);
 
   CreateScene(kNotInCct, kNotInWebVr);
 

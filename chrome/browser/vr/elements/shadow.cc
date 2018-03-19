@@ -140,7 +140,7 @@ void Shadow::Render(UiElementRenderer* renderer,
 void Shadow::LayOutChildren() {
   DCHECK(!children().empty());
   gfx::Point3F p;
-  children().front()->LocalTransform().TransformPoint(&p);
+  children().back()->LocalTransform().TransformPoint(&p);
   DCHECK_GE(kMaximumChildDepth, p.z());
   depth_ = base::ClampToRange(p.z() / kMaximumChildDepth, 0.0f, 1.0f);
   // This is an arbitrary function that quickly accelerates from 0 toward 1.
@@ -149,7 +149,7 @@ void Shadow::LayOutChildren() {
               gfx::Tween::FloatValueBetween(depth_, kYMinShadowGradientFactor,
                                             kYMaxShadowGradientFactor));
   if (children().size() == 1u)
-    set_corner_radius(children().front()->corner_radii().MaxRadius());
+    set_corner_radius(children().back()->corner_radii().MaxRadius());
 }
 
 Shadow::Renderer::Renderer()

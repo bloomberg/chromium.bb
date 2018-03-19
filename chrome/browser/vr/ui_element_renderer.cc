@@ -77,15 +77,13 @@ void UiElementRenderer::DrawGradientQuad(
     const gfx::Transform& model_view_proj_matrix,
     const SkColor edge_color,
     const SkColor center_color,
-    const gfx::PointF& center_position,
     float opacity,
     const gfx::SizeF& element_size,
     const CornerRadii& radii) {
   TRACE_EVENT0("gpu", "UiElementRenderer::DrawGradientQuad");
   FlushIfNecessary(gradient_quad_renderer_.get());
   gradient_quad_renderer_->Draw(model_view_proj_matrix, edge_color,
-                                center_color, center_position, opacity,
-                                element_size, radii);
+                                center_color, opacity, element_size, radii);
 }
 
 void UiElementRenderer::DrawGradientGridQuad(

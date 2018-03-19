@@ -110,9 +110,7 @@ static constexpr float kWebVrToastDistance = 1.0f;
 static constexpr float kToastWidthDMM = 0.512f;
 static constexpr float kToastHeightDMM = 0.064f;
 static constexpr float kToastOffsetDMM = 0.004f;
-static constexpr float kFullScreenToastOffsetDMM =
-    kFullscreenVerticalOffsetDMM + kFullscreenHeightDMM / 2 + kToastHeightDMM +
-    0.004f;
+static constexpr float kFullScreenToastOffsetDMM = 0.1f;
 static constexpr float kExclusiveScreenToastXPaddingDMM = 0.017f;
 static constexpr float kExclusiveScreenToastYPaddingDMM = 0.02f;
 static constexpr float kExclusiveScreenToastCornerRadiusDMM = 0.004f;
@@ -132,6 +130,7 @@ static constexpr float kButtonDiameterDMM = 0.088f;
 static constexpr float kButtonZOffsetHoverDMM = 0.048f;
 
 static constexpr float kCloseButtonDistance = 2.4f;
+static constexpr float kCloseButtonRelativeOffset = -0.8f;
 static constexpr float kCloseButtonVerticalOffset =
     kFullscreenVerticalOffset - (kFullscreenHeight * 0.5f) - 0.35f;
 static constexpr float kCloseButtonDiameter =
@@ -298,6 +297,13 @@ static constexpr float kRepositionCursorSize = 1.2f;
 
 static constexpr float kMinResizerScale = 0.5f;
 static constexpr float kMaxResizerScale = 1.5f;
+
+static constexpr float kRepositionFrameTolerance = 0.3f;
+static constexpr float kRepositionFrameTopPadding = 0.25f;
+static constexpr float kRepositionFrameEdgePadding = 0.04f;
+static constexpr float kRepositionFrameMaxOpacity = 0.6f;
+static constexpr float kRepositionFrameHitPlaneTopPadding = 0.5f;
+static constexpr float kRepositionFrameTransitionDurationMs = 300;
 
 }  // namespace vr
 

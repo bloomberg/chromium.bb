@@ -137,6 +137,8 @@ struct ColorScheme {
   SkColor reposition_label;
   SkColor reposition_label_background;
 
+  SkColor content_reposition_frame;
+
   SkColor cursor_background_center;
   SkColor cursor_background_edge;
   SkColor cursor_foreground;

@@ -29,6 +29,10 @@ class Resizer : public UiElement {
   void SetEnabled(bool enabled);
   void Reset();
 
+#ifndef NDEBUG
+  void DumpGeometry(std::ostringstream* os) const override;
+#endif
+
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;

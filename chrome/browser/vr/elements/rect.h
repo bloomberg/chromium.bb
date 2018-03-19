@@ -38,18 +38,18 @@ class Rect : public UiElement {
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const override;
 
-  void set_center_point(const gfx::PointF& center_point) {
-    center_point_ = center_point;
-  }
+  void SetLocalOpacity(float opacity);
+
+  void NotifyClientFloatAnimated(float value,
+                                 int target_property_id,
+                                 cc::KeyframeModel* keyframe_model) override;
 
  private:
   SkColor center_color_ = SK_ColorWHITE;
   SkColor edge_color_ = SK_ColorWHITE;
 
-  // This is the center point of the gradient, in aspect-corrected, local
-  // coordinates. That is, {0, 0} is always the center of the quad, and the
-  // longer extent always varies between -0.5 and 0.5.
-  gfx::PointF center_point_;
+  // This value is not inherited by descendants.
+  float local_opacity_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(Rect);
 };

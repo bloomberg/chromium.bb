@@ -89,6 +89,40 @@ TEST(UiElement, BoundsContainChildren) {
   EXPECT_FLOAT_EQ(-3.9, p.y());
 }
 
+TEST(UiElement, IgnoringAsymmetricPadding) {
+  // This test ensures that when we ignore asymmetric padding that we don't
+  // accidentally shift the location of the parent; it should stay put.
+  auto a = std::make_unique<UiElement>();
+  a->set_bounds_contain_children(true);
+
+  auto b = std::make_unique<UiElement>();
+  b->set_bounds_contain_children(true);
+  b->set_bounds_contain_padding(false);
+  b->set_padding(0.0f, 5.0f, 0.0f, 0.0f);
+
+  auto c = std::make_unique<UiElement>();
+  c->set_bounds_contain_children(true);
+  c->set_bounds_contain_padding(false);
+  c->set_padding(0.0f, 2.0f, 0.0f, 0.0f);
+
+  auto d = std::make_unique<UiElement>();
+  d->SetSize(0.5f, 0.5f);
+
+  c->AddChild(std::move(d));
+  c->DoLayOutChildren();
+  b->AddChild(std::move(c));
+  b->DoLayOutChildren();
+  a->AddChild(std::move(b));
+  a->DoLayOutChildren();
+
+  a->UpdateWorldSpaceTransformRecursive();
+
+  gfx::Point3F p;
+  a->world_space_transform().TransformPoint(&p);
+
+  EXPECT_VECTOR3DF_EQ(gfx::Point3F(), p);
+}
+
 TEST(UiElement, BoundsContainScaledChildren) {
   auto a = std::make_unique<UiElement>();
   a->SetSize(0.4, 0.3);
