@@ -326,6 +326,15 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
                                                &response_head.charset);
 
+  // TODO(https://crbug.com/803774): Resource timing for signed exchange
+  // loading is not speced yet. https://github.com/WICG/webpackage/issues/156
+  response_head.load_timing.request_start_time = base::Time::Now();
+  base::TimeTicks now(base::TimeTicks::Now());
+  response_head.load_timing.request_start = now;
+  response_head.load_timing.send_start = now;
+  response_head.load_timing.send_end = now;
+  response_head.load_timing.receive_headers_end = now;
+
   std::string mi_header_value;
   if (!response_head.headers->EnumerateHeader(nullptr, kMiHeader,
                                               &mi_header_value)) {
