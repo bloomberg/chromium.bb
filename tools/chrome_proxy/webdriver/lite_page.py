@@ -158,6 +158,7 @@ class LitePage(IntegrationTest):
       # Need to force lite page so target page doesn't fallback to Lo-Fi
       test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
       test_driver.AddChromeArg('--enable-data-reduction-proxy-lite-page')
+      test_driver.AddChromeArg('--data-reduction-proxy-experiment=alt6')
 
       # This page is long and has many media resources.
       test_driver.LoadURL('http://check.googlezip.net/metrics/index.html')
