@@ -13,6 +13,7 @@ namespace scheduler {
 WorkerSchedulerProxy::WorkerSchedulerProxy(WebFrameScheduler* frame_scheduler) {
   throttling_observer_handle_ = frame_scheduler->AddThrottlingObserver(
       WebFrameScheduler::ObserverType::kWorkerScheduler, this);
+  parent_frame_type_ = GetFrameOriginType(frame_scheduler);
 }
 
 WorkerSchedulerProxy::~WorkerSchedulerProxy() {

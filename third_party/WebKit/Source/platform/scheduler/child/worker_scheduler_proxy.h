@@ -12,6 +12,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/child/page_visibility_state.h"
+#include "platform/scheduler/renderer/frame_origin_type.h"
 #include "platform/wtf/WTF.h"
 
 namespace blink {
@@ -39,8 +40,13 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
 
   // Should be accessed only from the main thread or during init.
   WebFrameScheduler::ThrottlingState throttling_state() const {
-    DCHECK(WTF::IsMainThread() || !initialized_);
+    DCHECK(IsMainThread() || !initialized_);
     return throttling_state_;
+  }
+
+  FrameOriginType parent_frame_type() const {
+    DCHECK(IsMainThread() || !initialized_);
+    return parent_frame_type_;
   }
 
  private:
@@ -57,6 +63,8 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
       throttling_observer_handle_;
 
   bool initialized_ = false;
+
+  FrameOriginType parent_frame_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerProxy);
 };

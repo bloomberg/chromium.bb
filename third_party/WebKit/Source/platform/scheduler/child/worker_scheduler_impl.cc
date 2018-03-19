@@ -69,8 +69,10 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
   load_tracker_.Resume(thread_start_time_);
   helper_->AddTaskTimeObserver(this);
 
-  if (proxy)
+  if (proxy) {
+    worker_metrics_helper_.SetParentFrameType(proxy->parent_frame_type());
     proxy->OnWorkerSchedulerCreated(GetWeakPtr());
+  }
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);

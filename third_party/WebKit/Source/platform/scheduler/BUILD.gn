@@ -98,6 +98,8 @@ blink_platform_sources("scheduler") {
     "renderer/auto_advancing_virtual_time_domain.h",
     "renderer/deadline_task_runner.cc",
     "renderer/deadline_task_runner.h",
+    "renderer/frame_origin_type.cc",
+    "renderer/frame_origin_type.h",
     "renderer/frame_status.cc",
     "renderer/frame_status.h",
     "renderer/idle_time_estimator.cc",

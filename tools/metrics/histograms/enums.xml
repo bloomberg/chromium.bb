@@ -37768,6 +37768,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Audio and video"/>
 </enum>
 
+<enum name="RendererSchedulerFrameOriginType">
+  <int value="0" label="MainFrame"/>
+  <int value="1" label="SameOriginFrame"/>
+  <int value="2" label="CrossOriginFrame"/>
+</enum>
+
 <enum name="RendererSchedulerFrameType">
   <obsolete>
     Superseded by RendererSchedulerFrameType2 as of 11/2017.
