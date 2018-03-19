@@ -161,13 +161,13 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     String source_code;
     std::unique_ptr<Vector<char>> cached_meta_data;
     LoadResult result = LoadResult::kNotHandled;
-    result = LoadingScriptFromInstalledScriptsManager(
+    result = LoadScriptFromInstalledScriptsManager(
         complete_url, &response_url, &source_code, &cached_meta_data);
 
     // If the script wasn't provided by the InstalledScriptsManager, load from
     // ResourceLoader.
     if (result == LoadResult::kNotHandled) {
-      result = LoadingScriptFromClassicScriptLoader(
+      result = LoadScriptFromClassicScriptLoader(
           complete_url, &response_url, &source_code, &cached_meta_data);
     }
 
@@ -197,7 +197,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
 }
 
 WorkerGlobalScope::LoadResult
-WorkerGlobalScope::LoadingScriptFromInstalledScriptsManager(
+WorkerGlobalScope::LoadScriptFromInstalledScriptsManager(
     const KURL& script_url,
     KURL* out_response_url,
     String* out_source_code,
@@ -227,7 +227,7 @@ WorkerGlobalScope::LoadingScriptFromInstalledScriptsManager(
 }
 
 WorkerGlobalScope::LoadResult
-WorkerGlobalScope::LoadingScriptFromClassicScriptLoader(
+WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
     const KURL& script_url,
     KURL* out_response_url,
     String* out_source_code,
