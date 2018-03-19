@@ -13,6 +13,8 @@ namespace blink {
 class CORE_EXPORT PendingInvalidations final {
  public:
   PendingInvalidations() = default;
+  PendingInvalidations(PendingInvalidations&&) = default;
+  PendingInvalidations& operator=(PendingInvalidations&&) = default;
 
   InvalidationSetVector& Descendants() { return descendants_; }
   const InvalidationSetVector& Descendants() const { return descendants_; }
