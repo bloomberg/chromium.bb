@@ -32,9 +32,9 @@
 
 namespace {
 
-class AlertIndicatorButtonTest : public CocoaTest {
+class AlertIndicatorButtonTestCocoa : public CocoaTest {
  public:
-  AlertIndicatorButtonTest()
+  AlertIndicatorButtonTestCocoa()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -89,6 +89,6 @@ class AlertIndicatorButtonTest : public CocoaTest {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_VIEW(AlertIndicatorButtonTest, button_)
+TEST_VIEW(AlertIndicatorButtonTestCocoa, button_)
 
 }  // namespace

@@ -51,9 +51,6 @@ DeviceChooserContentView::BluetoothStatusContainer::BluetoothStatusContainer(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN_TOOLTIP));
   re_scan_button_->SetFocusForPlatform();
   re_scan_button_->set_tag(kReScanButtonTag);
-  // Ensures that the focus will never cycle to the help button, because that's
-  // rarely useful and can look weird.
-  re_scan_button_->set_request_focus_on_press(true);
   AddChildView(re_scan_button_);
 
   throbber_ = new views::Throbber();
@@ -304,6 +301,11 @@ void DeviceChooserContentView::ButtonPressed(views::Button* sender,
   if (sender->tag() == kHelpButtonTag) {
     chooser_controller_->OpenHelpCenterUrl();
   } else if (sender->tag() == kReScanButtonTag) {
+    // Refreshing will cause the table view to yield focus, which
+    // will land on the help button. Instead, briefly let the
+    // rescan button take focus. When it hides itself, focus will
+    // advance to the "Cancel" button as desired.
+    sender->RequestFocus();
     chooser_controller_->RefreshOptions();
   } else {
     NOTREACHED();
