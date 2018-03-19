@@ -2037,13 +2037,8 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
-#if defined(OS_CHROMEOS)
-  // TODO(mcasas): remove this check, http://crbug.com/771345.
-  if (base::FeatureList::IsEnabled(features::kUseMonitorColorSpace))
+  if (!Display::HasForceColorProfile())
     new_display.set_color_space(display_info.color_space());
-#else
-  new_display.set_color_space(display_info.color_space());
-#endif
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
     new_display.set_accelerometer_support(
