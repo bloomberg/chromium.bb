@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "components/variations/variations_crash_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -23,7 +24,7 @@ namespace {
 class TestFieldTrialObserver : public base::FieldTrialList::Observer {
  public:
   TestFieldTrialObserver() {}
-  ~TestFieldTrialObserver() override {}
+  ~TestFieldTrialObserver() override { ClearCrashKeysInstanceForTesting(); }
 
   // base::FieldTrial::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,

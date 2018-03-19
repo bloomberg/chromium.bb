@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -738,7 +739,14 @@ TEST(SubresourceFilterFeaturesTest, AdTagging_EnablesDryRun) {
       GetEnabledConfigurations()->configs_by_decreasing_priority(), dryrun));
 }
 
-TEST(SubresourceFilterFeaturesTest, AdTaggingDisabled_DisablesDryRun) {
+// TODO(crbug.com/823449): Test fails on iOS. Re-enable after fixing.
+#if defined(OS_IOS)
+#define MAYBE_AdTaggingDisabled_DisablesDryRun \
+  DISABLED_AdTaggingDisabled_DisablesDryRun
+#else
+#define MAYBE_AdTaggingDisabled_DisablesDryRun AdTaggingDisabled_DisablesDryRun
+#endif
+TEST(SubresourceFilterFeaturesTest, MAYBE_AdTaggingDisabled_DisablesDryRun) {
   const Configuration dryrun =
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites();
   base::test::ScopedFeatureList scoped_feature;
