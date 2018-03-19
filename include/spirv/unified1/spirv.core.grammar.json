@@ -4561,6 +4561,7 @@
           "enumerant" : "StencilRefReplacingEXT",
           "value" : 5027,
           "capabilities" : [ "StencilExportEXT" ],
+          "extensions" : [ "SPV_EXT_shader_stencil_export" ],
           "version" : "None"
         }
       ]
@@ -5527,6 +5528,7 @@
         {
           "enumerant" : "ExplicitInterpAMD",
           "value" : 4999,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
@@ -5882,42 +5884,50 @@
         {
           "enumerant" : "BaryCoordNoPerspAMD",
           "value" : 4992,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordNoPerspCentroidAMD",
           "value" : 4993,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordNoPerspSampleAMD",
           "value" : 4994,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordSmoothAMD",
           "value" : 4995,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordSmoothCentroidAMD",
           "value" : 4996,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordSmoothSampleAMD",
           "value" : 4997,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "BaryCoordPullModelAMD",
           "value" : 4998,
+          "extensions" : [ "SPV_AMD_shader_explicit_vertex_parameter" ],
           "version" : "None"
         },
         {
           "enumerant" : "FragStencilRefEXT",
           "value" : 5014,
           "capabilities" : [ "StencilExportEXT" ],
+          "extensions" : [ "SPV_EXT_shader_stencil_export" ],
           "version" : "None"
         },
         {
