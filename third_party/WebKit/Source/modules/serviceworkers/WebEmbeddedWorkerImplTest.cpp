@@ -36,7 +36,7 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   MOCK_METHOD0(WorkerContextFailedToStart, void());
   MOCK_METHOD0(WorkerScriptLoaded, void());
 
-  void DidEvaluateWorkerScript(bool /* success */) override {
+  void DidEvaluateClassicScript(bool /* success */) override {
     script_evaluated_event_.Signal();
   }
 

@@ -54,8 +54,6 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     return;
   }
 
-  // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
-  // something like that (e.g., WillEvaluateModuleScript()).
   // Step 4: "Run a module script given script."
   ScriptValue error = modulator_->ExecuteModule(
       module_script, Modulator::CaptureEvalErrorFlag::kReport);

@@ -182,7 +182,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
                                                 cached_meta_data.get()));
-    ReportingProxy().WillEvaluateImportedScript(
+    ReportingProxy().WillEvaluateImportedClassicScript(
         source_code.length(), cached_meta_data ? cached_meta_data->size() : 0);
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
@@ -311,14 +311,14 @@ void WorkerGlobalScope::EvaluateClassicScript(
       CreateWorkerScriptCachedMetadataHandler(script_url,
                                               cached_meta_data.get());
   DCHECK(!source_code.IsNull());
-  ReportingProxy().WillEvaluateWorkerScript(
+  ReportingProxy().WillEvaluateClassicScript(
       source_code.length(),
       cached_meta_data.get() ? cached_meta_data->size() : 0);
   bool success = ScriptController()->Evaluate(
       ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
                        script_url),
       nullptr /* error_event */, v8_cache_options_);
-  ReportingProxy().DidEvaluateWorkerScript(success);
+  ReportingProxy().DidEvaluateClassicScript(success);
 }
 
 void WorkerGlobalScope::ImportModuleScript(

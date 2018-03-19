@@ -117,7 +117,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
         installed_scripts_manager->GetScriptData(script_url, &script_data);
     if (status == InstalledScriptsManager::ScriptStatus::kFailed) {
       // This eventually terminates the worker thread.
-      ReportingProxy().DidEvaluateWorkerScript(false);
+      ReportingProxy().DidEvaluateClassicScript(false);
       return;
     }
 
@@ -180,7 +180,7 @@ void ServiceWorkerGlobalScope::RecordScriptSize(size_t script_size,
   script_cached_metadata_total_size_ += cached_metadata_size;
 }
 
-void ServiceWorkerGlobalScope::DidEvaluateWorkerScript() {
+void ServiceWorkerGlobalScope::DidEvaluateClassicScript() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, script_count_histogram,
                                   ("ServiceWorker.ScriptCount", 1, 1000, 50));
   script_count_histogram.Count(script_count_);

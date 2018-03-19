@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   void CountImportedScript(size_t script_size, size_t cached_metadata_size);
 
   // Called when the main worker script is evaluated.
-  void DidEvaluateWorkerScript();
+  void DidEvaluateClassicScript();
 
   // ServiceWorkerGlobalScope.idl
   ServiceWorkerClients* clients();

@@ -116,7 +116,7 @@ class WebServiceWorkerContextClient {
 
   // Called when initial script evaluation finished. |success| is true if the
   // evaluation completed with no uncaught exception.
-  virtual void DidEvaluateWorkerScript(bool success) {}
+  virtual void DidEvaluateClassicScript(bool success) {}
 
   // Called when the worker context is initialized. This is probably called
   // after WorkerContextStarted(). (WorkerThread::InitializeOnWorkerThread()

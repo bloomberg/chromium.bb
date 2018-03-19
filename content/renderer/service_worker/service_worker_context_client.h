@@ -132,7 +132,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
-  void DidEvaluateWorkerScript(bool success) override;
+  void DidEvaluateClassicScript(bool success) override;
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;

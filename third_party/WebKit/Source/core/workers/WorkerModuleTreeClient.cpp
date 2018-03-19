@@ -33,8 +33,6 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   // algorithm's asynchronous completion, with script being the asynchronous
   // completion value." ...
 
-  // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
-  // something like that (e.g., WillEvaluateModuleScript()).
   ScriptValue error = modulator_->ExecuteModule(
       module_script, Modulator::CaptureEvalErrorFlag::kReport);
   WorkerGlobalScope* global_scope =
