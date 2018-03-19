@@ -574,24 +574,24 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
   waitable_event.Wait();
 }
 
-void ServiceWorkerGlobalScopeProxy::WillEvaluateWorkerScript(
+void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
 }
 
-void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedScript(
+void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   worker_global_scope_->CountImportedScript(script_size, cached_metadata_size);
 }
 
-void ServiceWorkerGlobalScopeProxy::DidEvaluateWorkerScript(bool success) {
+void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->DidEvaluateWorkerScript();
-  Client().DidEvaluateWorkerScript(success);
+  WorkerGlobalScope()->DidEvaluateClassicScript();
+  Client().DidEvaluateClassicScript(success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {

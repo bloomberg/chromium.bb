@@ -35,7 +35,7 @@ class SharedWorkerReportingProxy final
                             const String& message,
                             SourceLocation*) override;
   void PostMessageToPageInspector(int session_id, const WTF::String&) override;
-  void DidEvaluateWorkerScript(bool success) override {}
+  void DidEvaluateClassicScript(bool success) override {}
   void DidCloseWorkerGlobalScope() override;
   void WillDestroyWorkerGlobalScope() override {}
   void DidTerminateWorkerThread() override;

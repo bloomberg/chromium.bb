@@ -115,7 +115,7 @@ void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
   worker_global_scope_ = ToWorkerGlobalScope(global_scope);
 }
 
-void DedicatedWorkerObjectProxy::DidEvaluateWorkerScript(bool success) {
+void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
       *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,

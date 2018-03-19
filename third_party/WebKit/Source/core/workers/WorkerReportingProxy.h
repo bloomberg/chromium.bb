@@ -79,30 +79,24 @@ class CORE_EXPORT WorkerReportingProxy {
   // This may block until CSP/ReferrerPolicy are set on the main thread
   // since they are required for script evaluation, which happens soon after
   // this function is called.
-  // Called before WillEvaluateWorkerScript().
+  // Called before WillEvaluateClassicScript().
   virtual void DidLoadInstalledScript(
       const ContentSecurityPolicyResponseHeaders&,
       const String& referrer_policy_on_worker_thread) {}
 
-  // [classic script only]
-  // Invoked when the worker script is about to be evaluated on
-  // WorkerThread::InitializeOnWorkerThread.
-  virtual void WillEvaluateWorkerScript(size_t script_size,
-                                        size_t cached_metadata_size) {}
+  // Invoked when the main classic script is about to be evaluated.
+  virtual void WillEvaluateClassicScript(size_t script_size,
+                                         size_t cached_metadata_size) {}
 
-  // [classic script only]
-  // Invoked when an imported script is about to be evaluated.
-  virtual void WillEvaluateImportedScript(size_t script_size,
-                                          size_t cached_metadata_size) {}
+  // Invoked when an imported classic script is about to be evaluated.
+  virtual void WillEvaluateImportedClassicScript(size_t script_size,
+                                                 size_t cached_metadata_size) {}
 
-  // [classic script only]
-  // Invoked when the worker script is evaluated on
-  // WorkerThread::InitializeOnWorkerThread. |success| is true if the evaluation
-  // completed with no uncaught exception.
-  virtual void DidEvaluateWorkerScript(bool success) {}
+  // Invoked when the main classic script is evaluated. |success| is true if the
+  // evaluation completed with no uncaught exception.
+  virtual void DidEvaluateClassicScript(bool success) {}
 
-  // [module script only]
-  // Invoked when the module script is evaluated. |success| is true if the
+  // Invoked when the main module script is evaluated. |success| is true if the
   // evaluation completed with no uncaught exception.
   virtual void DidEvaluateModuleScript(bool success) {}
 

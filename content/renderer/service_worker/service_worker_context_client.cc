@@ -924,7 +924,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
 }
 
-void ServiceWorkerContextClient::DidEvaluateWorkerScript(bool success) {
+void ServiceWorkerContextClient::DidEvaluateClassicScript(bool success) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   (*instance_host_)->OnScriptEvaluated(success);
 

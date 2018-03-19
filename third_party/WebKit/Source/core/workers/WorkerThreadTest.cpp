@@ -34,17 +34,17 @@ class MockWorkerReportingProxy final : public WorkerReportingProxy {
 
   MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
   MOCK_METHOD0(DidInitializeWorkerContext, void());
-  MOCK_METHOD2(WillEvaluateWorkerScriptMock,
+  MOCK_METHOD2(WillEvaluateClassicScriptMock,
                void(size_t scriptSize, size_t cachedMetadataSize));
-  MOCK_METHOD1(DidEvaluateWorkerScript, void(bool success));
+  MOCK_METHOD1(DidEvaluateClassicScript, void(bool success));
   MOCK_METHOD0(DidCloseWorkerGlobalScope, void());
   MOCK_METHOD0(WillDestroyWorkerGlobalScope, void());
   MOCK_METHOD0(DidTerminateWorkerThread, void());
 
-  void WillEvaluateWorkerScript(size_t script_size,
-                                size_t cached_metadata_size) override {
+  void WillEvaluateClassicScript(size_t script_size,
+                                 size_t cached_metadata_size) override {
     script_evaluation_event_.Signal();
-    WillEvaluateWorkerScriptMock(script_size, cached_metadata_size);
+    WillEvaluateClassicScriptMock(script_size, cached_metadata_size);
   }
 
   void WaitUntilScriptEvaluation() { script_evaluation_event_.Wait(); }
@@ -108,8 +108,9 @@ class WorkerThreadTest : public ::testing::Test {
   void ExpectReportingCalls() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateWorkerScriptMock(_, _)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateWorkerScript(true)).Times(1);
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
+        .Times(1);
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(true)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
     EXPECT_CALL(*lifecycle_observer_, ContextDestroyed(_)).Times(1);
@@ -119,9 +120,10 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext())
         .Times(AtMost(1));
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateWorkerScriptMock(_, _))
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(AtMost(1));
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateWorkerScript(_)).Times(AtMost(1));
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(_))
+        .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope())
         .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
@@ -131,8 +133,9 @@ class WorkerThreadTest : public ::testing::Test {
   void ExpectReportingCallsForWorkerForciblyTerminated() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateWorkerScriptMock(_, _)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidEvaluateWorkerScript(false)).Times(1);
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
+        .Times(1);
+    EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(false)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
     EXPECT_CALL(*lifecycle_observer_, ContextDestroyed(_)).Times(1);

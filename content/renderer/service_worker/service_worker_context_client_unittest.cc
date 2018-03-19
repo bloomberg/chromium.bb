@@ -287,7 +287,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   std::unique_ptr<ServiceWorkerContextClient> context_client;
   context_client = CreateContextClient(&pipes);
   context_client->WorkerContextStarted(&mock_proxy);
-  context_client->DidEvaluateWorkerScript(true /* success */);
+  context_client->DidEvaluateClassicScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -318,7 +318,7 @@ TEST_F(ServiceWorkerContextClientTest,
       CreateContextClient(&pipes);
   MockWebServiceWorkerContextProxy mock_proxy;
   context_client->WorkerContextStarted(&mock_proxy);
-  context_client->DidEvaluateWorkerScript(true /* success */);
+  context_client->DidEvaluateClassicScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -357,7 +357,7 @@ TEST_F(ServiceWorkerContextClientTest,
       CreateContextClient(&pipes);
   MockWebServiceWorkerContextProxy mock_proxy;
   context_client->WorkerContextStarted(&mock_proxy);
-  context_client->DidEvaluateWorkerScript(true /* success */);
+  context_client->DidEvaluateClassicScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
@@ -406,7 +406,7 @@ TEST_F(ServiceWorkerContextClientTest,
       CreateContextClient(&pipes);
   MockWebServiceWorkerContextProxy mock_proxy;
   context_client->WorkerContextStarted(&mock_proxy);
-  context_client->DidEvaluateWorkerScript(true /* success */);
+  context_client->DidEvaluateClassicScript(true /* success */);
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
   bool is_idle = false;
