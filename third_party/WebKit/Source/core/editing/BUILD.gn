@@ -329,6 +329,7 @@ jumbo_source_set("unit_tests") {
     "GranularityStrategyTest.cpp",
     "InlineBoxPositionTest.cpp",
     "LayoutSelectionTest.cpp",
+    "LocalCaretRectBiDiTest.cpp",
     "LocalCaretRectTest.cpp",
     "PositionIteratorTest.cpp",
     "PositionTest.cpp",
