@@ -23,7 +23,10 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
   AcceleratedVideoDecoder() {}
   virtual ~AcceleratedVideoDecoder() {}
 
-  virtual void SetStream(const uint8_t* ptr, size_t size) = 0;
+  // Set the buffer at |ptr| of |size| bytes as the current source of encoded
+  // stream data. Pictures produced as a result of this call should be assigned
+  // the passed stream |id|.
+  virtual void SetStream(int32_t id, const uint8_t* ptr, size_t size) = 0;
 
   // Have the decoder flush its state and trigger output of all previously
   // decoded surfaces. Return false on failure.

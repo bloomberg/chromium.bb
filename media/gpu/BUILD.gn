@@ -304,6 +304,7 @@ source_set("common") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
     "accelerated_video_decoder.h",
+    "codec_picture.h",
     "format_utils.cc",
     "format_utils.h",
     "gpu_video_decode_accelerator_helpers.h",

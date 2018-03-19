@@ -12,7 +12,6 @@
 namespace media {
 
 class VP9Picture;
-class VaapiDecodeSurface;
 class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
@@ -36,9 +35,6 @@ class VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
                        Vp9FrameContext* frame_ctx) override;
 
  private:
-  scoped_refptr<VaapiDecodeSurface> VP9PictureToVaapiDecodeSurface(
-      const scoped_refptr<VP9Picture>& pic);
-
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   VaapiVideoDecodeAccelerator* vaapi_dec_;
 

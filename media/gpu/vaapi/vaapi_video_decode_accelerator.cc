@@ -25,7 +25,7 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
-#include "media/gpu/vaapi/vaapi_decode_surface.h"
+#include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
@@ -335,7 +335,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
       SharedMemoryRegion* const shm = curr_input_buffer_->shm();
       VLOGF(4) << "New |curr_input_buffer|, id " << curr_input_buffer_->id()
                << " size: " << shm->size() << "B";
-      decoder_->SetStream(static_cast<uint8_t*>(shm->memory()), shm->size());
+      decoder_->SetStream(curr_input_buffer_->id(),
+                          static_cast<uint8_t*>(shm->memory()), shm->size());
     }
   }
 
@@ -797,21 +798,24 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
   return false;
 }
 
-bool VaapiVideoDecodeAccelerator::DecodeSurface(
-    const scoped_refptr<VaapiDecodeSurface>& dec_surface) {
-  const bool result = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
-      dec_surface->va_surface()->id());
+bool VaapiVideoDecodeAccelerator::DecodeVASurface(
+    const scoped_refptr<VASurface>& va_surface) {
+  const bool result =
+      vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface->id());
   if (!result)
     VLOGF(1) << "Failed decoding picture";
   return result;
 }
 
-void VaapiVideoDecodeAccelerator::SurfaceReady(
-    const scoped_refptr<VaapiDecodeSurface>& dec_surface) {
+void VaapiVideoDecodeAccelerator::VASurfaceReady(
+    const scoped_refptr<VASurface>& va_surface,
+    int32_t bitstream_id,
+    const gfx::Rect& visible_rect) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::SurfaceReady,
-                              weak_this_, dec_surface));
+        FROM_HERE,
+        base::Bind(&VaapiVideoDecodeAccelerator::VASurfaceReady, weak_this_,
+                   va_surface, bitstream_id, visible_rect));
     return;
   }
 
@@ -826,13 +830,12 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
 
   pending_output_cbs_.push(
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
-                 dec_surface->va_surface(), dec_surface->bitstream_id(),
-                 dec_surface->visible_rect()));
+                 va_surface, bitstream_id, visible_rect));
 
   TryOutputSurface();
 }
 
-scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::CreateSurface() {
+scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
@@ -845,7 +848,7 @@ scoped_refptr<VaapiDecodeSurface> VaapiVideoDecodeAccelerator::CreateSurface() {
       vaapi_wrapper_->va_surface_format(), va_surface_release_cb_));
   available_va_surfaces_.pop_front();
 
-  return new VaapiDecodeSurface(curr_input_buffer_->id(), va_surface);
+  return va_surface;
 }
 
 // static

@@ -105,9 +105,9 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   ~H264Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
+  void SetStream(int32_t id, const uint8_t* ptr, size_t size) override;
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
-  void SetStream(const uint8_t* ptr, size_t size) override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
@@ -230,6 +230,9 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
 
   // DPB in use.
   H264DPB dpb_;
+
+  // Current stream buffer id; to be assigned to pictures decoded from it.
+  int32_t stream_id_ = -1;
 
   // Picture currently being processed/decoded.
   scoped_refptr<H264Picture> curr_pic_;

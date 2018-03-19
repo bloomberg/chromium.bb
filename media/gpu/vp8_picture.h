@@ -6,28 +6,27 @@
 #define MEDIA_GPU_VP8_PICTURE_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "ui/gfx/geometry/rect.h"
+#include "media/filters/vp8_parser.h"
+#include "media/gpu/codec_picture.h"
 
 namespace media {
 
 class V4L2VP8Picture;
 class VaapiVP8Picture;
 
-class VP8Picture : public base::RefCountedThreadSafe<VP8Picture> {
+class VP8Picture : public CodecPicture {
  public:
   VP8Picture();
 
   virtual V4L2VP8Picture* AsV4L2VP8Picture();
   virtual VaapiVP8Picture* AsVaapiVP8Picture();
 
-  // The visible size of picture.
-  gfx::Rect visible_rect;
+  std::unique_ptr<Vp8FrameHeader> frame_hdr;
 
  protected:
-  friend class base::RefCountedThreadSafe<VP8Picture>;
-  virtual ~VP8Picture();
+  ~VP8Picture() override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(VP8Picture);
 };
 

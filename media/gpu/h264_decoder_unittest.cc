@@ -119,13 +119,15 @@ void H264DecoderTest::SetInputFrameFiles(
 AcceleratedVideoDecoder::DecodeResult H264DecoderTest::Decode() {
   while (true) {
     auto result = decoder_->Decode();
+    int32_t bitstream_id = 0;
     if (result != AcceleratedVideoDecoder::kRanOutOfStreamData ||
         input_frame_files_.empty())
       return result;
     auto input_file = GetTestDataFilePath(input_frame_files_.front());
     input_frame_files_.pop();
     CHECK(base::ReadFileToString(input_file, &bitstream_));
-    decoder_->SetStream(reinterpret_cast<const uint8_t*>(bitstream_.data()),
+    decoder_->SetStream(bitstream_id++,
+                        reinterpret_cast<const uint8_t*>(bitstream_.data()),
                         bitstream_.size());
   }
 }

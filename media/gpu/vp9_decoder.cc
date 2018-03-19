@@ -26,11 +26,13 @@ VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator)
 
 VP9Decoder::~VP9Decoder() = default;
 
-void VP9Decoder::SetStream(const uint8_t* ptr, size_t size) {
+void VP9Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
   DCHECK(ptr);
   DCHECK(size);
 
-  DVLOG(4) << "New input stream at: " << (void*)ptr << " size: " << size;
+  DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
+           << " size: " << size;
+  stream_id_ = id;
   parser_.SetStream(ptr, size);
 }
 
@@ -149,7 +151,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     }
     DVLOG(2) << "Render resolution: " << new_render_rect.ToString();
 
-    pic->visible_rect = new_render_rect;
+    pic->set_visible_rect(new_render_rect);
+    pic->set_bitstream_id(stream_id_);
     pic->frame_hdr.reset(curr_frame_hdr_.release());
 
     if (!DecodeAndOutputPicture(pic)) {

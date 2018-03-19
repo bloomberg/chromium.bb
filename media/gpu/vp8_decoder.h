@@ -67,9 +67,9 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   ~VP8Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
+  void SetStream(int32_t id, const uint8_t* ptr, size_t size) override;
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
-  void SetStream(const uint8_t* ptr, size_t size) override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
@@ -94,6 +94,9 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   scoped_refptr<VP8Picture> last_frame_;
   scoped_refptr<VP8Picture> golden_frame_;
   scoped_refptr<VP8Picture> alt_frame_;
+
+  // Current stream buffer id; to be assigned to pictures decoded from it.
+  int32_t stream_id_ = -1;
 
   const uint8_t* curr_frame_start_;
   size_t frame_size_;

@@ -5,7 +5,7 @@
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
 
 #include "media/gpu/h264_dpb.h"
-#include "media/gpu/vaapi/vaapi_decode_surface.h"
+#include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
@@ -37,22 +37,6 @@ static const uint8_t kZigzagScan8x8[64] = {
 
 }  // namespace
 
-class VaapiH264Picture : public H264Picture {
- public:
-  explicit VaapiH264Picture(scoped_refptr<VaapiDecodeSurface> surface)
-      : dec_surface_(surface) {}
-
-  VaapiH264Picture* AsVaapiH264Picture() override { return this; }
-  scoped_refptr<VaapiDecodeSurface> dec_surface() { return dec_surface_; }
-
- private:
-  ~VaapiH264Picture() override {}
-
-  scoped_refptr<VaapiDecodeSurface> dec_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiH264Picture);
-};
-
 VaapiH264Accelerator::VaapiH264Accelerator(
     VaapiVideoDecodeAccelerator* vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
@@ -69,7 +53,7 @@ VaapiH264Accelerator::~VaapiH264Accelerator() {
 
 scoped_refptr<H264Picture> VaapiH264Accelerator::CreateH264Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<VaapiDecodeSurface> va_surface = vaapi_dec_->CreateSurface();
+  const auto va_surface = vaapi_dec_->CreateVASurface();
   if (!va_surface)
     return nullptr;
 
@@ -307,20 +291,17 @@ bool VaapiH264Accelerator::SubmitSlice(const H264PPS* pps,
 bool VaapiH264Accelerator::SubmitDecode(const scoped_refptr<H264Picture>& pic) {
   VLOGF(4) << "Decoding POC " << pic->pic_order_cnt;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      H264PictureToVaapiDecodeSurface(pic);
 
-  return vaapi_dec_->DecodeSurface(dec_surface);
+  return vaapi_dec_->DecodeVASurface(pic->AsVaapiH264Picture()->va_surface());
 }
 
 bool VaapiH264Accelerator::OutputPicture(
     const scoped_refptr<H264Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      H264PictureToVaapiDecodeSurface(pic);
-  dec_surface->set_visible_rect(pic->visible_rect);
-  vaapi_dec_->SurfaceReady(dec_surface);
 
+  const VaapiH264Picture* vaapi_pic = pic->AsVaapiH264Picture();
+  vaapi_dec_->VASurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
+                             vaapi_pic->visible_rect());
   return true;
 }
 
@@ -329,25 +310,13 @@ void VaapiH264Accelerator::Reset() {
   vaapi_wrapper_->DestroyPendingBuffers();
 }
 
-scoped_refptr<VaapiDecodeSurface>
-VaapiH264Accelerator::H264PictureToVaapiDecodeSurface(
-    const scoped_refptr<H264Picture>& pic) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VaapiH264Picture* vaapi_pic = pic->AsVaapiH264Picture();
-  CHECK(vaapi_pic);
-  return vaapi_pic->dec_surface();
-}
-
 void VaapiH264Accelerator::FillVAPicture(VAPictureH264* va_pic,
                                          scoped_refptr<H264Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VASurfaceID va_surface_id = VA_INVALID_SURFACE;
 
-  if (!pic->nonexisting) {
-    scoped_refptr<VaapiDecodeSurface> dec_surface =
-        H264PictureToVaapiDecodeSurface(pic);
-    va_surface_id = dec_surface->va_surface()->id();
-  }
+  if (!pic->nonexisting)
+    va_surface_id = pic->AsVaapiH264Picture()->va_surface()->id();
 
   va_pic->picture_id = va_surface_id;
   va_pic->frame_idx = pic->frame_num;
