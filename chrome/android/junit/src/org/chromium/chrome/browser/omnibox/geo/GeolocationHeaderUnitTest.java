@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
@@ -157,10 +158,13 @@ public class GeolocationHeaderUnitTest {
 
     @Test
     public void testEncodeProtoVisibleNetworksEmptyOrNull() {
-        VisibleNetworks visibleNetworks =
-                VisibleNetworks.create(null, null, new HashSet<>(), new HashSet<>());
-        assertNull(GeolocationHeader.encodeProtoVisibleNetworks(visibleNetworks));
         assertNull(GeolocationHeader.encodeProtoVisibleNetworks(null));
+        assertNull(GeolocationHeader.encodeProtoVisibleNetworks(
+                VisibleNetworks.create(null, null, null, null)));
+        assertNull(GeolocationHeader.encodeProtoVisibleNetworks(
+                VisibleNetworks.create(null, null, new HashSet<>(), new HashSet<>())));
+        assertNotNull(GeolocationHeader.encodeProtoVisibleNetworks(VisibleNetworks.create(
+                null, null, null, new HashSet<>(Arrays.asList(VISIBLE_CELL2)))));
     }
 
     @Test

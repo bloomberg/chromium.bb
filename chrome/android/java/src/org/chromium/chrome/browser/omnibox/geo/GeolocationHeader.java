@@ -745,7 +745,7 @@ public class GeolocationHeader {
     @VisibleForTesting
     static String encodeProtoVisibleNetworks(@Nullable VisibleNetworks visibleNetworks) {
         VisibleNetworks visibleNetworksToEncode = trimVisibleNetworks(visibleNetworks);
-        if (visibleNetworksToEncode == null) {
+        if (visibleNetworksToEncode == null || visibleNetworksToEncode.isEmpty()) {
             // No data to encode.
             return null;
         }
@@ -753,12 +753,6 @@ public class GeolocationHeader {
         VisibleCell connectedCell = visibleNetworksToEncode.connectedCell();
         Set<VisibleWifi> visibleWifis = visibleNetworksToEncode.allVisibleWifis();
         Set<VisibleCell> visibleCells = visibleNetworksToEncode.allVisibleCells();
-
-        if (connectedWifi == null && visibleWifis == null && visibleWifis.isEmpty()
-                && connectedCell == null && visibleCells == null && visibleCells.isEmpty()) {
-            // No data to encode.
-            return null;
-        }
 
         PartnerLocationDescriptor.LocationDescriptor.Builder locationDescriptorBuilder =
                 PartnerLocationDescriptor.LocationDescriptor.newBuilder()
