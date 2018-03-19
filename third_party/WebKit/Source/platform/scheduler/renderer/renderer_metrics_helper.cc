@@ -98,6 +98,12 @@ RendererMetricsHelper::RendererMetricsHelper(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic"),
       per_frame_status_duration_reporter_(DURATION_PER_FRAME_TYPE_METRIC_NAME),
       per_task_type_duration_reporter_(DURATION_PER_TASK_TYPE_METRIC_NAME),
+      no_use_case_per_task_type_duration_reporter_(
+          DURATION_PER_TASK_TYPE_METRIC_NAME ".UseCaseNone"),
+      loading_per_task_type_duration_reporter_(
+          DURATION_PER_TASK_TYPE_METRIC_NAME ".UseCaseLoading"),
+      input_handling_per_task_type_duration_reporter_(
+          DURATION_PER_TASK_TYPE_METRIC_NAME ".UseCaseInputHandling"),
       foreground_per_task_type_duration_reporter_(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Foreground"),
       background_per_task_type_duration_reporter_(
@@ -369,8 +375,17 @@ void RendererMetricsHelper::RecordTaskMetrics(
                               frame_status, FrameStatus::kCount);
   }
 
-  per_task_use_case_duration_reporter_.RecordTask(
-      renderer_scheduler_->main_thread_only().current_use_case, duration);
+  UseCase use_case = renderer_scheduler_->main_thread_only().current_use_case;
+  per_task_use_case_duration_reporter_.RecordTask(use_case, duration);
+  if (use_case == UseCase::kNone) {
+    no_use_case_per_task_type_duration_reporter_.RecordTask(task_type,
+                                                            duration);
+  } else if (use_case == UseCase::kLoading) {
+    loading_per_task_type_duration_reporter_.RecordTask(task_type, duration);
+  } else {
+    input_handling_per_task_type_duration_reporter_.RecordTask(task_type,
+                                                               duration);
+  }
 }
 
 void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
