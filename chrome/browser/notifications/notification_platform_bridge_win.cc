@@ -18,7 +18,9 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/hash.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -707,7 +709,8 @@ void NotificationPlatformBridgeWin::Display(
       notification, /*include_body_image=*/true, /*include_small_image=*/true,
       /*include_icon_images=*/true);
 
-  PostTaskToTaskRunnerThread(
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::Display, impl_,
                      notification_type, profile_id, is_incognito,
                      std::move(notification_copy), std::move(metadata)));
@@ -716,16 +719,17 @@ void NotificationPlatformBridgeWin::Display(
 void NotificationPlatformBridgeWin::Close(const std::string& profile_id,
                                           const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PostTaskToTaskRunnerThread(
-      base::BindOnce(&NotificationPlatformBridgeWinImpl::Close, impl_,
-                     notification_id, profile_id));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&NotificationPlatformBridgeWinImpl::Close,
+                                impl_, notification_id, profile_id));
 }
 
 void NotificationPlatformBridgeWin::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     const GetDisplayedNotificationsCallback& callback) const {
-  PostTaskToTaskRunnerThread(
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::GetDisplayed, impl_,
                      profile_id, incognito, callback));
 }
@@ -733,7 +737,8 @@ void NotificationPlatformBridgeWin::GetDisplayed(
 void NotificationPlatformBridgeWin::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PostTaskToTaskRunnerThread(
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::SetReadyCallback,
                      impl_, std::move(callback)));
 }
@@ -779,22 +784,18 @@ bool NotificationPlatformBridgeWin::NativeNotificationEnabled() {
          base::FeatureList::IsEnabled(features::kNativeNotifications);
 }
 
-void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(
-    base::OnceClosure closure) const {
-  bool success = task_runner_->PostTask(FROM_HERE, std::move(closure));
-  DCHECK(success);
-}
-
 void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
     NotificationCommon::Operation operation,
     winui::Notifications::IToastNotification* notification,
     winui::Notifications::IToastActivatedEventArgs* args,
     const base::Optional<bool>& by_user) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PostTaskToTaskRunnerThread(base::BindOnce(
-      &NotificationPlatformBridgeWinImpl::ForwardHandleEventForTesting, impl_,
-      operation, base::Unretained(notification), base::Unretained(args),
-      by_user));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &NotificationPlatformBridgeWinImpl::ForwardHandleEventForTesting,
+          impl_, operation, base::Unretained(notification),
+          base::Unretained(args), by_user));
 }
 
 void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(

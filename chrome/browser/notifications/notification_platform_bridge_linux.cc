@@ -268,8 +268,10 @@ class NotificationPlatformBridgeLinuxImpl
         gfx::Image(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                        IDR_PRODUCT_LOGO_256))
             .As1xPNGBytes();
-    PostTaskToTaskRunnerThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::InitOnTaskRunner, this));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::InitOnTaskRunner,
+                       this));
   }
 
   void Display(
@@ -285,16 +287,19 @@ class NotificationPlatformBridgeLinuxImpl
         notification, body_images_supported_.value(),
         /*include_small_image=*/false, /*include_icon_images=*/false);
 
-    PostTaskToTaskRunnerThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::DisplayOnTaskRunner, this,
-        notification_type, profile_id, is_incognito,
-        std::move(notification_copy)));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &NotificationPlatformBridgeLinuxImpl::DisplayOnTaskRunner, this,
+            notification_type, profile_id, is_incognito,
+            std::move(notification_copy)));
   }
 
   void Close(const std::string& profile_id,
              const std::string& notification_id) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    PostTaskToTaskRunnerThread(
+    task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&NotificationPlatformBridgeLinuxImpl::CloseOnTaskRunner,
                        this, profile_id, notification_id));
   }
@@ -304,9 +309,11 @@ class NotificationPlatformBridgeLinuxImpl
       bool incognito,
       const GetDisplayedNotificationsCallback& callback) const override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    PostTaskToTaskRunnerThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::GetDisplayedOnTaskRunner, this,
-        profile_id, incognito, callback));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &NotificationPlatformBridgeLinuxImpl::GetDisplayedOnTaskRunner,
+            this, profile_id, incognito, callback));
   }
 
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override {
@@ -320,8 +327,10 @@ class NotificationPlatformBridgeLinuxImpl
 
   void CleanUp() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    PostTaskToTaskRunnerThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::CleanUpOnTaskRunner, this));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &NotificationPlatformBridgeLinuxImpl::CleanUpOnTaskRunner, this));
   }
 
  private:
@@ -385,20 +394,6 @@ class NotificationPlatformBridgeLinuxImpl
     body_images_supported_ = body_images_supported;
   }
 
-  void PostTaskToUiThread(base::OnceClosure closure) const {
-    DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    bool success = content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE, std::move(closure));
-    DCHECK(success);
-  }
-
-  void PostTaskToTaskRunnerThread(base::OnceClosure closure) const {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(task_runner_);
-    bool success = task_runner_->PostTask(FROM_HERE, std::move(closure));
-    DCHECK(success);
-  }
-
   // Sets up the D-Bus connection.
   void InitOnTaskRunner() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -440,9 +435,11 @@ class NotificationPlatformBridgeLinuxImpl
           ConnectionInitializationStatusCode::MISSING_REQUIRED_CAPABILITIES);
       return;
     }
-    PostTaskToUiThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
-        base::ContainsKey(capabilities_, kCapabilityBodyImages)));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
+            base::ContainsKey(capabilities_, kCapabilityBodyImages)));
 
     dbus::MethodCall get_server_information_call(kFreedesktopNotificationsName,
                                                  "GetServerInformation");
@@ -731,7 +728,9 @@ class NotificationPlatformBridgeLinuxImpl
       if (data->profile_id == profile_id && data->is_incognito == incognito)
         displayed->insert(data->notification_id);
     }
-    PostTaskToUiThread(base::BindOnce(callback, std::move(displayed), true));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(callback, std::move(displayed), true));
   }
 
   NotificationData* FindNotificationData(const std::string& notification_id,
@@ -762,15 +761,18 @@ class NotificationPlatformBridgeLinuxImpl
     return nullptr;
   }
 
-  void ForwardNotificationOperation(NotificationData* data,
+  void ForwardNotificationOperation(const base::Location& location,
+                                    NotificationData* data,
                                     NotificationCommon::Operation operation,
                                     const base::Optional<int>& action_index,
                                     const base::Optional<bool>& by_user) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    PostTaskToUiThread(base::BindOnce(
-        ForwardNotificationOperationOnUiThread, operation,
-        data->notification_type, data->origin_url, data->notification_id,
-        action_index, by_user, data->profile_id, data->is_incognito));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, location,
+        base::BindOnce(ForwardNotificationOperationOnUiThread, operation,
+                       data->notification_type, data->origin_url,
+                       data->notification_id, action_index, by_user,
+                       data->profile_id, data->is_incognito));
   }
 
   void OnActionInvoked(dbus::Signal* signal) {
@@ -788,13 +790,13 @@ class NotificationPlatformBridgeLinuxImpl
       return;
 
     if (action == kDefaultButtonId) {
-      ForwardNotificationOperation(data, NotificationCommon::CLICK,
+      ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLICK,
                                    base::nullopt /* action_index */,
                                    base::nullopt /* by_user */);
     } else if (action == kSettingsButtonId) {
-      ForwardNotificationOperation(data, NotificationCommon::SETTINGS,
-                                   base::nullopt /* action_index */,
-                                   base::nullopt /* by_user */);
+      ForwardNotificationOperation(
+          FROM_HERE, data, NotificationCommon::SETTINGS,
+          base::nullopt /* action_index */, base::nullopt /* by_user */);
     } else if (action == kCloseButtonId) {
       CloseOnTaskRunner(data->profile_id, data->notification_id);
     } else {
@@ -805,7 +807,7 @@ class NotificationPlatformBridgeLinuxImpl
       size_t id_zero_based = id - data->action_start;
       if (id_zero_based >= n_buttons)
         return;
-      ForwardNotificationOperation(data, NotificationCommon::CLICK,
+      ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLICK,
                                    id_zero_based, base::nullopt /* by_user */);
     }
   }
@@ -822,7 +824,7 @@ class NotificationPlatformBridgeLinuxImpl
       return;
 
     // TODO(peter): Can we support |by_user| appropriately here?
-    ForwardNotificationOperation(data, NotificationCommon::CLOSE,
+    ForwardNotificationOperation(FROM_HERE, data, NotificationCommon::CLOSE,
                                  base::nullopt /* action_index */,
                                  true /* by_user */);
     notifications_.erase(data);
@@ -847,10 +849,12 @@ class NotificationPlatformBridgeLinuxImpl
         "Notifications.Linux.BridgeInitializationStatus",
         static_cast<int>(status),
         static_cast<int>(ConnectionInitializationStatusCode::NUM_ITEMS));
-    PostTaskToUiThread(base::BindOnce(
-        &NotificationPlatformBridgeLinuxImpl::
-            OnConnectionInitializationFinishedOnUiThread,
-        this, status == ConnectionInitializationStatusCode::SUCCESS));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotificationPlatformBridgeLinuxImpl::
+                           OnConnectionInitializationFinishedOnUiThread,
+                       this,
+                       status == ConnectionInitializationStatusCode::SUCCESS));
   }
 
   void OnSignalConnected(const std::string& interface_name,
