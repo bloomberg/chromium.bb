@@ -98,6 +98,7 @@ def package_ios_framework_using_gn(out_dir='out/Framework', extra_options=''):
       build_dir = os.path.join("out", target_dir)
       gn_args = 'target_os="ios" enable_websockets=false ' \
                 'is_cronet_build=true is_component_build=false ' \
+                'use_crash_key_stubs=true ' \
                 'disable_file_support=true disable_ftp_support=true ' \
                 'include_transport_security_state_preload_list=false ' \
                 'ios_deployment_target="9.0" ' \
