@@ -623,6 +623,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["sideways", "mixed", "upright"],
+      typedom_types: ["Keyword"],
       default_value: "mixed",
       getter: "GetTextOrientation",
       custom_apply_functions_value: true,
@@ -1867,6 +1868,7 @@
         "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
         "exclusion", "hue", "saturation", "color", "luminosity"
       ],
+      typedom_types: ["Keyword"],
       default_value: "normal",
       name_for_methods: "BlendMode",
       type_name: "WebBlendMode",
@@ -1877,6 +1879,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["fill", "contain", "cover", "none", "scale-down"],
+      typedom_types: ["Keyword"],
       default_value: "fill",
       getter: "GetObjectFit",
     },
@@ -2622,6 +2625,7 @@
       keywords: [
         "auto", "fixed"
       ],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
