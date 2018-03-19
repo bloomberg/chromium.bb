@@ -436,10 +436,6 @@ DesktopAutomationHandler.prototype = {
         evt.target.state[StateType.EDITABLE])
       return;
 
-    // Skip richly editables.
-    if (evt.target.state[StateType.RICHLY_EDITABLE])
-      return;
-
     // Delegate to the edit text handler if this is an editable.
     if (evt.target.state[StateType.EDITABLE]) {
       this.onEditableChanged_(evt);
