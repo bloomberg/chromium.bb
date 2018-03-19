@@ -52,6 +52,7 @@
 -SitePerProcessHitTestBrowserTest.SubframeTouchEventRouting*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestPointerEventsNone*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestTest*
+-SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 
 #### Compositor Frame Submission
@@ -67,6 +68,7 @@
 
 #### Tab Capture
 # Copy Surface timing out http://crbug.com/785257
+-GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.CopyFromSurface*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestHiDPI.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCapture.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI.*

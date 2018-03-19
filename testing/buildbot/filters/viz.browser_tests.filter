@@ -104,3 +104,6 @@
 -UserInitiatedRunsDisabled*
 -UserInitiatedRunsEnabled*
 -WithVaryingSeeds/ChromeCleanerPromptUserTest.*
+
+# Mac shutdown error. https://crbug.com/823276
+-PluginPowerSaverBrowserTest.SmallerThanPlayIcon
