@@ -5,6 +5,7 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -71,8 +72,13 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
+  if (Shell::GetAshConfig() == ash::Config::MASH) {
+    // Flag warning tray is not currently used in non-MASH environments, because
+    // mus will roll out via experiment/Finch trial and showing the tray would
+    // reveal the experiment state to users.
+    flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
+    status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
+  }
 
   // The layout depends on the number of children, so build it once after
   // adding all of them.
@@ -119,7 +125,8 @@ void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
   palette_tray_->UpdateAfterShelfAlignmentChange();
   overview_button_tray_->UpdateAfterShelfAlignmentChange();
-  flag_warning_tray_->UpdateAfterShelfAlignmentChange();
+  if (flag_warning_tray_)
+    flag_warning_tray_->UpdateAfterShelfAlignmentChange();
   status_area_widget_delegate_->UpdateLayout();
 }
 
@@ -176,7 +183,8 @@ void StatusAreaWidget::SchedulePaint() {
   ime_menu_tray_->SchedulePaint();
   palette_tray_->SchedulePaint();
   overview_button_tray_->SchedulePaint();
-  flag_warning_tray_->SchedulePaint();
+  if (flag_warning_tray_)
+    flag_warning_tray_->SchedulePaint();
 }
 
 const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
