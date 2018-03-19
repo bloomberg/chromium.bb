@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/test/mock_media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/test/mock_cma_backend_factory.h"
 
 namespace chromecast {
 namespace media {
 
-MockMediaPipelineBackendFactory::MockMediaPipelineBackendFactory() = default;
-MockMediaPipelineBackendFactory::~MockMediaPipelineBackendFactory() = default;
+MockCmaBackendFactory::MockCmaBackendFactory() = default;
+MockCmaBackendFactory::~MockCmaBackendFactory() = default;
 
 }  // namespace media
 }  // namespace chromecast

@@ -16,7 +16,7 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
-#include "chromecast/media/cma/test/mock_media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/test/mock_cma_backend_factory.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/task_runner.h"
 #include "media/audio/mock_audio_source_callback.h"
@@ -209,8 +209,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     metrics::InitializeMetricsHelperForTesting();
 
     CHECK(media_thread_.Start());
-    auto backend_factory =
-        std::make_unique<NiceMock<MockMediaPipelineBackendFactory>>();
+    auto backend_factory = std::make_unique<NiceMock<MockCmaBackendFactory>>();
     ON_CALL(*backend_factory, CreateBackend(_))
         .WillByDefault(Invoke([this](const MediaPipelineDeviceParams& params) {
           auto backend = std::make_unique<FakeCmaBackend>(params);
@@ -257,7 +256,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   base::Thread media_thread_;
   std::unique_ptr<CastAudioManager> audio_manager_;
-  // MockMediaPipelineBackendFactory* backend_factory_;
   FakeCmaBackend* media_pipeline_backend_;
   // AudioParameters used to create AudioOutputStream.
   // Tests can modify these parameters before calling CreateStream.

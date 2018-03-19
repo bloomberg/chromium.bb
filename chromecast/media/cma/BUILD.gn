@@ -23,12 +23,12 @@ cast_source_set("test_support") {
     "test/frame_segmenter_for_test.h",
     "test/mock_cma_backend.cc",
     "test/mock_cma_backend.h",
+    "test/mock_cma_backend_factory.cc",
+    "test/mock_cma_backend_factory.h",
     "test/mock_frame_consumer.cc",
     "test/mock_frame_consumer.h",
     "test/mock_frame_provider.cc",
     "test/mock_frame_provider.h",
-    "test/mock_media_pipeline_backend_factory.cc",
-    "test/mock_media_pipeline_backend_factory.h",
   ]
 
   deps = [

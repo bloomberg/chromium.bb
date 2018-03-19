@@ -16,7 +16,7 @@
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_factory.h"
+#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -64,7 +64,7 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
       backend_->Stop();
   }
 
-  void Open(MediaPipelineBackendFactory* backend_factory,
+  void Open(CmaBackendFactory* backend_factory,
             OpenCompletionCallback completion_cb) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(backend_factory);

@@ -50,7 +50,7 @@ void VideoModeSwitchCompletionCb(const ::media::PipelineStatusCB& init_cb,
 }  // namespace
 
 CastRenderer::CastRenderer(
-    MediaPipelineBackendFactory* backend_factory,
+    CmaBackendFactory* backend_factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const std::string& audio_device_id,
     VideoModeSwitcher* video_mode_switcher,
