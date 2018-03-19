@@ -30,6 +30,11 @@ U2fRequest::U2fRequest(service_manager::Connector* connector,
       weak_factory_(this) {
   for (const auto transport : transports) {
     auto discovery = FidoDiscovery::Create(transport, connector);
+    if (discovery == nullptr) {
+      // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
+      // non-HID transports are configured.
+      continue;
+    }
     discovery->AddObserver(this);
     discoveries_.push_back(std::move(discovery));
   }

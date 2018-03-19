@@ -101,7 +101,7 @@ namespace internal {
 class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
  public:
   ScopedFidoDiscoveryFactory();
-  ~ScopedFidoDiscoveryFactory();
+  virtual ~ScopedFidoDiscoveryFactory();
 
  protected:
   virtual std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
