@@ -5,7 +5,9 @@
 #ifndef ResizeObserver_h
 #define ResizeObserver_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -21,7 +23,11 @@ class V8ResizeObserverCallback;
 
 // ResizeObserver represents ResizeObserver javascript api:
 // https://github.com/WICG/ResizeObserver/
-class CORE_EXPORT ResizeObserver final : public ScriptWrappable {
+class CORE_EXPORT ResizeObserver final
+    : public ScriptWrappable,
+      public ActiveScriptWrappable<ResizeObserver>,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -37,8 +43,7 @@ class CORE_EXPORT ResizeObserver final : public ScriptWrappable {
   static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
   static ResizeObserver* Create(Document&, Delegate*);
 
-  virtual ~ResizeObserver() = default;
-  ;
+  ~ResizeObserver() override = default;
 
   // API methods
   void observe(Element*);
@@ -52,6 +57,10 @@ class CORE_EXPORT ResizeObserver final : public ScriptWrappable {
   void ClearObservations();
   void ElementSizeChanged();
   bool HasElementSizeChanged() { return element_size_changed_; }
+
+  // ContextClient override:
+  bool HasPendingActivity() const override;
+
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 

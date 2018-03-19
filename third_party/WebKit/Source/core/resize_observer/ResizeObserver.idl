@@ -9,6 +9,7 @@ callback ResizeObserverCallback = void (sequence<ResizeObserverEntry> entries, R
 // https://wicg.github.io/ResizeObserver/#resize-observer-interface
 
 [
+    ActiveScriptWrappable,
     Constructor(ResizeObserverCallback callback),
     ConstructorCallWith=Document,
     RuntimeEnabled=ResizeObserver
