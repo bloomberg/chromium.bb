@@ -133,10 +133,6 @@ vars = {
   # and whatever else without interference from each other.
   'freetype_revision': '713d68ee9f47cc8df56e47fa2f54b191bb8c3186',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling HarfBuzz
-  # and whatever else without interference from each other.
-  'harfbuzz_revision': '957e7756634a4fdf1654041e20e883cf964ecac9',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
   'catapult_revision': 'd0c8b3b7d24ca75878b77d4d8bab2d71a3265aab',
@@ -385,9 +381,6 @@ deps = {
 
   'src/third_party/freetype/src':
     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
-
-  'src/third_party/harfbuzz-ng/src':
-    Var('chromium_git') + '/external/github.com/harfbuzz/harfbuzz.git' + '@' + Var('harfbuzz_revision'),
 
   # Chrome OS touchpad gestures library.
   'src/third_party/gestures/gestures': {
