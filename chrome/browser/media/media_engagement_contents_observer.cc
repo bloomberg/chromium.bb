@@ -161,9 +161,18 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   if (session_ && session_->IsSameOriginWith(new_origin))
     return;
 
+  // Only get the opener if the navigation originated from a link.
+  content::WebContents* opener = nullptr;
+  if (ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                   ui::PAGE_TRANSITION_LINK) ||
+      ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                   ui::PAGE_TRANSITION_RELOAD)) {
+    opener = GetOpener();
+  }
+
   bool was_restored =
       navigation_handle->GetRestoreType() != content::RestoreType::NONE;
-  session_ = GetOrCreateSession(new_origin, GetOpener(), was_restored);
+  session_ = GetOrCreateSession(new_origin, opener, was_restored);
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState(base::Clock* clock)
@@ -529,6 +538,7 @@ content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
         browser->tab_strip_model()->GetIndexOfWebContents(web_contents());
     if (index == TabStripModel::kNoTab)
       continue;
+
     // Whether or not the |opener| is null, this is the right tab strip.
     return browser->tab_strip_model()->GetOpenerOfWebContentsAt(index);
   }

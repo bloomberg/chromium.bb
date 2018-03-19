@@ -146,8 +146,8 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     WaitForWasRecentlyAudible();
   }
 
-  void OpenTab(const GURL& url) {
-    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  void OpenTab(const GURL& url, ui::PageTransition transition) {
+    NavigateParams params(browser(), url, transition);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     // params.opener does not need to be set in the context of this test because
     // it will use the current tab by default.
@@ -158,8 +158,12 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     content::WaitForLoadStop(params.target_contents);
   }
 
-  void OpenTabAndwaitForPlayAndAudible(const GURL& url) {
-    OpenTab(url);
+  void OpenTabAsLink(const GURL& url) {
+    OpenTab(url, ui::PAGE_TRANSITION_LINK);
+  }
+
+  void OpenTabAndWaitForPlayAndAudible(const GURL& url) {
+    OpenTabAsLink(url);
 
     WaitForPlay();
     WaitForWasRecentlyAudible();
@@ -222,7 +226,7 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(content::ExecuteScript(GetWebContents(), script));
   }
 
-  void OpenTab() {
+  void OpenTabAsLink() {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL("chrome://about"),
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -414,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        RecordEngagement_NotVisible) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
-  OpenTab();
+  OpenTabAsLink();
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
   ExpectScores(1, 1, 1, 1);
@@ -423,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        RecordEngagement_NotVisible_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
-  OpenTab();
+  OpenTabAsLink();
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
   ExpectScores(1, 1, 1, 1);
@@ -557,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
-  OpenTab(GURL("about:blank"));
+  OpenTabAsLink(GURL("about:blank"));
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
@@ -572,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, SessionNewTabSameURL) {
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
-  OpenTabAndwaitForPlayAndAudible(url);
+  OpenTabAndWaitForPlayAndAudible(url);
   AdvanceMeaningfulPlaybackTime();
 
   browser()->tab_strip_model()->CloseAllTabs();
@@ -587,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, SessionNewTabSameOrigin) {
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
-  OpenTabAndwaitForPlayAndAudible(other_url);
+  OpenTabAndWaitForPlayAndAudible(other_url);
   AdvanceMeaningfulPlaybackTime();
 
   browser()->tab_strip_model()->CloseAllTabs();
@@ -602,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, SessionNewTabCrossOrigin) {
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
-  OpenTabAndwaitForPlayAndAudible(other_url);
+  OpenTabAndWaitForPlayAndAudible(other_url);
   AdvanceMeaningfulPlaybackTime();
 
   browser()->tab_strip_model()->CloseAllTabs();
@@ -619,13 +623,13 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible(url, false);
   AdvanceMeaningfulPlaybackTime();
 
-  OpenTabAndwaitForPlayAndAudible(other_url);
+  OpenTabAndWaitForPlayAndAudible(other_url);
   AdvanceMeaningfulPlaybackTime();
 
   CloseTab();
   ASSERT_EQ(other_url, GetWebContents()->GetLastCommittedURL());
 
-  OpenTabAndwaitForPlayAndAudible(url);
+  OpenTabAndWaitForPlayAndAudible(url);
   AdvanceMeaningfulPlaybackTime();
 
   browser()->tab_strip_model()->CloseAllTabs();
@@ -642,6 +646,25 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementPreloadBrowserTest,
 
   // The list should be loaded now.
   EXPECT_TRUE(MediaEngagementPreloadedList::GetInstance()->loaded());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       SessionNewTabNavigateSameURLWithOpener_Typed) {
+  const GURL& url = http_server().GetURL("/engagement_test.html");
+
+  LoadTestPageAndWaitForPlayAndAudible(url, false);
+  AdvanceMeaningfulPlaybackTime();
+
+  OpenTab(url, ui::PAGE_TRANSITION_TYPED);
+  WaitForPlay();
+  WaitForWasRecentlyAudible();
+  AdvanceMeaningfulPlaybackTime();
+
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  // The new tab should only count as the same visit if we visited that tab
+  // through a link or reload (duplicate tab).
+  ExpectScores(2, 2, 2, 2);
 }
 
 class MediaEngagementPrerenderBrowserTest : public MediaEngagementBrowserTest {
