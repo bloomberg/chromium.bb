@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_empty_state_view.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -306,11 +307,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-  int titleStringID = IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_TITLE;
-  int bodyStringID = IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_BODY;
   viewController.emptyStateView =
-      [self createEmptyStateViewWithTitleStringID:titleStringID
-                                     bodyStringID:bodyStringID];
+      [[TabGridEmptyStateView alloc] initWithPage:TabGridPageIncognitoTabs];
   viewController.theme = GridThemeDark;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -341,11 +339,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-  int titleStringID = IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_TITLE;
-  int bodyStringID = IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_BODY;
   viewController.emptyStateView =
-      [self createEmptyStateViewWithTitleStringID:titleStringID
-                                     bodyStringID:bodyStringID];
+      [[TabGridEmptyStateView alloc] initWithPage:TabGridPageRegularTabs];
   viewController.theme = GridThemeLight;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -393,44 +388,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
         constraintEqualToAnchor:self.view.widthAnchor]
   ];
   [NSLayoutConstraint activateConstraints:constraints];
-}
-
-// Creates an empty state view.
-- (UIView*)createEmptyStateViewWithTitleStringID:(int)titleStringID
-                                    bodyStringID:(int)bodyStringID {
-  UIView* view = [[UIView alloc] init];
-  UILabel* topLabel = [[UILabel alloc] init];
-  topLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  topLabel.text = l10n_util::GetNSString(titleStringID);
-  topLabel.textColor = UIColorFromRGB(kTabGridEmptyStateTitleTextColor);
-  topLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
-  topLabel.adjustsFontForContentSizeCategory = YES;
-  topLabel.numberOfLines = 0;
-  topLabel.textAlignment = NSTextAlignmentCenter;
-  [view addSubview:topLabel];
-  UILabel* bottomLabel = [[UILabel alloc] init];
-  bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  bottomLabel.text = l10n_util::GetNSString(bodyStringID);
-  bottomLabel.textColor = UIColorFromRGB(kTabGridEmptyStateBodyTextColor);
-  bottomLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  bottomLabel.adjustsFontForContentSizeCategory = YES;
-  bottomLabel.numberOfLines = 0;
-  bottomLabel.textAlignment = NSTextAlignmentCenter;
-  [view addSubview:bottomLabel];
-  NSArray* constraints = @[
-    [topLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-    [topLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
-    [topLabel.bottomAnchor
-        constraintEqualToAnchor:view.centerYAnchor
-                       constant:-kTabGridEmptyStateVerticalMargin / 2.0f],
-    [bottomLabel.topAnchor
-        constraintEqualToAnchor:view.centerYAnchor
-                       constant:kTabGridEmptyStateVerticalMargin / 2.0f],
-    [bottomLabel.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
-    [bottomLabel.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
-  ];
-  [NSLayoutConstraint activateConstraints:constraints];
-  return view;
 }
 
 // Adds the top toolbar and sets constraints.
@@ -503,10 +460,12 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self.view addSubview:button];
   self.floatingButton = button;
   NSArray* constraints = @[
-    [button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
-                                          constant:-10.0f],
-    [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
-                                        constant:-10.0f]
+    [button.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor
+                       constant:-kTabGridFloatingButtonHorizontalInset],
+    [button.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor
+                       constant:-kTabGridFloatingButtonVerticalInset]
   ];
   [NSLayoutConstraint activateConstraints:constraints];
 }
