@@ -26,7 +26,8 @@ ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
 
 ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
                                Document& document)
-    : callback_(callback),
+    : ContextClient(&document),
+      callback_(callback),
       skipped_observations_(false),
       element_size_changed_(false) {
   DCHECK(callback_);
@@ -35,7 +36,8 @@ ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
 }
 
 ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
-    : delegate_(delegate),
+    : ContextClient(&document),
+      delegate_(delegate),
       skipped_observations_(false),
       element_size_changed_(false) {
   DCHECK(delegate_);
@@ -171,6 +173,10 @@ void ResizeObserver::ElementSizeChanged() {
     controller_->ObserverChanged();
 }
 
+bool ResizeObserver::HasPendingActivity() const {
+  return !observations_.IsEmpty();
+}
+
 void ResizeObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(delegate_);
@@ -178,6 +184,7 @@ void ResizeObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_observations_);
   visitor->Trace(controller_);
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 void ResizeObserver::TraceWrappers(
