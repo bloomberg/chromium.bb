@@ -197,6 +197,11 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
   EXPECT_EQ(200, resource_response().headers->response_code());
   EXPECT_EQ("text/html", resource_response().mime_type);
   EXPECT_EQ("utf-8", resource_response().charset);
+  EXPECT_FALSE(resource_response().load_timing.request_start_time.is_null());
+  EXPECT_FALSE(resource_response().load_timing.request_start.is_null());
+  EXPECT_FALSE(resource_response().load_timing.send_start.is_null());
+  EXPECT_FALSE(resource_response().load_timing.send_end.is_null());
+  EXPECT_FALSE(resource_response().load_timing.receive_headers_end.is_null());
 
   std::string payload;
   int rv = ReadPayloadStream(&payload);
