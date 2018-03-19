@@ -263,37 +263,69 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   if (skia_image->alphaType() == alpha_type)
     return image;
 
-  SkImageInfo info = GetSkImageInfo(image.get());
-  info = info.makeAlphaType(alpha_type);
+  // Premul/unpremul are performed in gamma-corrected space, using arithmetic
+  // that assumes linear space. It is an incorrect implementation that has
+  // become the de facto standard on the web. Therefore, the legacy behavior
+  // must be maintained to ensure backward compatibility. Historically, passing
+  // nullptr as the color space to SkImage::readPixels() enforces alpha
+  // disposition to be done in non-linear space, using arithmetic that assumes
+  // otherwise, but we want to avoid passing nullptr color space
+  // (crbug.com/811318). Therefore, to premul, we draw on a surface or use
+  // SkColorSpaceXform, and to unpremul, we read back the pixels and unpremul
+  // manually. These always result in a GPU readback, which cannot be avoided
+  // for now (crbug.com/740197).
 
-  // For premul to unpremul, we have to readback the pixels.
-  // For unpremul to premul, we can either readback the pixels or draw onto a
-  // surface. As shown  in
-  // https://fiddle.skia.org/c/1ec3c61ed08f7863d43b9f49ab120a0a, drawing on a
-  // surface and getting a snapshot is slower if the image is small. Therefore,
-  // for small images (< 128x128 pixels), we still do read back.
-  if (alpha_type == kUnpremul_SkAlphaType ||
-      (image->width() * image->height() < 16384)) {
-    // Set the color space of the ImageInfo to nullptr to unpremul in gamma
-    // encoded space
-    scoped_refptr<Uint8Array> dst_pixels =
-        CopyImageData(image, info.makeColorSpace(nullptr));
-    if (!dst_pixels)
-      return nullptr;
+  SkImageInfo info = GetSkImageInfo(image.get());
+  unsigned num_pixels = image->Size().Area();
+
+  if (alpha_type == kUnpremul_SkAlphaType) {
+    info = info.makeAlphaType(kUnpremul_SkAlphaType);
+    scoped_refptr<Uint8Array> dst_pixels = nullptr;
+    bool manual_unpremul_needed =
+        skia_image->colorSpace() && !skia_image->colorSpace()->gammaIsLinear();
+    if (manual_unpremul_needed) {
+      dst_pixels = CopyImageData(image);
+      if (!dst_pixels)
+        return nullptr;
+      // Unpremul manaually. This code assumes that if gamma is not linear,
+      // the pixel format is 8888. This is true for now since Skia does not
+      // support drawing wide gamut images with sRGB gamma curve.
+      // TODO(zakerinasab): Generalize this code to do manual unpremul on half
+      // floats. crbug.com/822724.
+      int alpha = 0;
+      for (unsigned i = 0; i < num_pixels; i++) {
+        alpha = dst_pixels->Data()[i * 4 + 3];
+        dst_pixels->Data()[i * 4] =
+            std::round(dst_pixels->Data()[i * 4] * 255.0 / alpha);
+        dst_pixels->Data()[i * 4 + 1] =
+            std::round(dst_pixels->Data()[i * 4 + 1] * 255.0 / alpha);
+        dst_pixels->Data()[i * 4 + 2] =
+            std::round(dst_pixels->Data()[i * 4 + 2] * 255.0 / alpha);
+      }
+    } else {
+      dst_pixels = CopyImageData(image, info);
+      if (!dst_pixels)
+        return nullptr;
+    }
     return StaticBitmapImage::Create(std::move(dst_pixels), info);
   }
 
-  // Draw on a surface. Avoid sRGB gamma transfer curve.
-  if (SkColorSpace::Equals(info.colorSpace(), SkColorSpace::MakeSRGB().get()))
-    info = info.makeColorSpace(nullptr);
-  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
-  if (!surface)
+  // Use SkColorSpaceXform to premul. This code path supports 8888 and half
+  // float pixel stroage.
+  scoped_refptr<Uint8Array> dst_pixels = CopyImageData(image);
+  if (!dst_pixels)
     return nullptr;
-  SkPaint paint;
-  paint.setBlendMode(SkBlendMode::kSrc);
-  surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
-  return StaticBitmapImage::Create(surface->makeImageSnapshot(),
-                                   image->ContextProviderWrapper());
+  SkColorSpace* color_space = SkColorSpace::MakeSRGBLinear().get();
+  SkColorSpaceXform::ColorFormat color_format =
+      SkColorSpaceXform::kRGBA_8888_ColorFormat;
+  if (info.colorType() == kRGBA_F16_SkColorType)
+    color_format = SkColorSpaceXform::kRGBA_F16_ColorFormat;
+  SkColorSpaceXform::Apply(color_space, color_format,
+                           (void*)(dst_pixels->Data()), color_space,
+                           color_format, (void*)(dst_pixels->Data()),
+                           num_pixels, SkColorSpaceXform::kPremul_AlphaOp);
+  info = info.makeAlphaType(kPremul_SkAlphaType);
+  return StaticBitmapImage::Create(std::move(dst_pixels), info);
 }
 
 void freePixels(const void*, void* pixels) {

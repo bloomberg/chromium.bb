@@ -128,6 +128,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
 
     SkImageInfo dst_info =
         SkImageInfo::MakeN32Premul(image_for_compositor->width(), 1);
+    dst_info = dst_info.makeColorSpace(sk_image->refColorSpace());
     size_t row_bytes = image_for_compositor->width() * 4;
 
     // Copy from SkImage into |bitmap|, while flipping the Y axis.
