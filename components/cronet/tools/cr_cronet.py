@@ -133,6 +133,7 @@ def main():
       'use_platform_icu_alternatives=true '+ \
       'enable_reporting=false '+ \
       'is_component_build=false ' + \
+      'use_crash_key_stubs=true ' + \
       'ignore_elf32_limitations=true use_partition_alloc=false ' + \
       'include_transport_security_state_preload_list=false '
 
