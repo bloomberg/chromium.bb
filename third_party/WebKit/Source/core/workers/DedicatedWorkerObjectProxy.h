@@ -79,6 +79,8 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
+  void DidEvaluateWorkerScript(bool success) override;
+  void DidEvaluateModuleScript(bool success) override;
   void WillDestroyWorkerGlobalScope() override;
 
  protected:

@@ -115,6 +115,20 @@ void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
   worker_global_scope_ = ToWorkerGlobalScope(global_scope);
 }
 
+void DedicatedWorkerObjectProxy::DidEvaluateWorkerScript(bool success) {
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
+                      messaging_proxy_weak_ptr_, success));
+}
+
+void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
+                      messaging_proxy_weak_ptr_, success));
+}
+
 void DedicatedWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
   worker_global_scope_ = nullptr;
 }

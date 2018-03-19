@@ -51,6 +51,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
   // These methods come from worker context thread via
   // DedicatedWorkerObjectProxy and are called on the parent context thread.
+  void DidEvaluateScript(bool success);
   void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
                                  Vector<MessagePortChannel>,
                                  const v8_inspector::V8StackTraceId&);
@@ -82,7 +83,12 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   // because the worker object is reachable from the persistent reference.
   WeakMember<DedicatedWorker> worker_object_;
 
-  // Tasks are queued here until there's a thread object created.
+  // Set once the initial script evaluation has been completed and it's ready
+  // to dispatch events (e.g., Message events) on the worker global scope.
+  bool was_script_evaluated_ = false;
+
+  // Tasks are queued here until worker scripts are evaluated on the worker
+  // global scope.
   struct QueuedTask;
   Vector<QueuedTask> queued_early_tasks_;
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerMessagingProxy);
