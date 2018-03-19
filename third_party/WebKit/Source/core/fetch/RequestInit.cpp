@@ -235,8 +235,7 @@ void RequestInit::CheckEnumValues(
     } else if (*referrer_policy_string == "unsafe-url") {
       referrer_.referrer_policy = kReferrerPolicyAlways;
     } else if (*referrer_policy_string == "strict-origin-when-cross-origin") {
-      referrer_.referrer_policy =
-          kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      referrer_.referrer_policy = kReferrerPolicyStrictOriginWhenCrossOrigin;
     } else {
       exception_state.ThrowTypeError("Invalid referrer policy");
       return;

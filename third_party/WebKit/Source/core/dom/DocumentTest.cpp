@@ -508,7 +508,7 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
       {"same-origin", kReferrerPolicySameOrigin, false},
       {"strict-origin", kReferrerPolicyStrictOrigin, false},
       {"strict-origin-when-cross-origin",
-       kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, false},
+       kReferrerPolicyStrictOriginWhenCrossOrigin, false},
       {"unsafe-url", kReferrerPolicyAlways},
   };
 

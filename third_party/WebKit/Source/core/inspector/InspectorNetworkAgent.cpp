@@ -399,7 +399,7 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
       return protocol::Network::Request::ReferrerPolicyEnum::SameOrigin;
     case kReferrerPolicyStrictOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case kReferrerPolicyStrictOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           StrictOriginWhenCrossOrigin;
   }

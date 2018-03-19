@@ -637,7 +637,7 @@ String Request::getReferrerPolicy() const {
       return "same-origin";
     case kReferrerPolicyStrictOrigin:
       return "strict-origin";
-    case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case kReferrerPolicyStrictOriginWhenCrossOrigin:
       return "strict-origin-when-cross-origin";
   }
   NOTREACHED();

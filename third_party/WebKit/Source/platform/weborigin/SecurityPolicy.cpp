@@ -86,8 +86,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
   ReferrerPolicy referrer_policy_no_default = referrer_policy;
   if (referrer_policy_no_default == kReferrerPolicyDefault) {
     if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
-      referrer_policy_no_default =
-          kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      referrer_policy_no_default = kReferrerPolicyStrictOriginWhenCrossOrigin;
     } else {
       referrer_policy_no_default = kReferrerPolicyNoReferrerWhenDowngrade;
     }
@@ -143,7 +142,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
                           : origin + "/",
                       referrer_policy_no_default);
     }
-    case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
+    case kReferrerPolicyStrictOriginWhenCrossOrigin: {
       scoped_refptr<const SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
@@ -316,7 +315,7 @@ bool SecurityPolicy::ReferrerPolicyFromString(
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "strict-origin-when-cross-origin")) {
-    *result = kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    *result = kReferrerPolicyStrictOriginWhenCrossOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "no-referrer-when-downgrade") ||
@@ -381,6 +380,6 @@ STATIC_ASSERT_ENUM(kWebReferrerPolicySameOrigin, kReferrerPolicySameOrigin);
 STATIC_ASSERT_ENUM(kWebReferrerPolicyStrictOrigin, kReferrerPolicyStrictOrigin);
 STATIC_ASSERT_ENUM(
     kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-    kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);
+    kReferrerPolicyStrictOriginWhenCrossOrigin);
 
 }  // namespace blink

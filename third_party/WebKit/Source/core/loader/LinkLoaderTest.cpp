@@ -315,7 +315,7 @@ constexpr ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
     kReferrerPolicyOriginWhenCrossOrigin,
     kReferrerPolicySameOrigin,
     kReferrerPolicyStrictOrigin,
-    kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    kReferrerPolicyStrictOriginWhenCrossOrigin,
     kReferrerPolicyNever};
 
 class LinkLoaderPreloadReferrerPolicyTest
