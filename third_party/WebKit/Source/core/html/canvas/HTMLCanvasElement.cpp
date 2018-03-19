@@ -301,8 +301,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 
   LayoutObject* layout_object = GetLayoutObject();
   if (layout_object && Is2d() && !context_->CreationAttributes().alpha) {
-    // In the alpha false case, canvas is initially opaque even though there is
-    // no ImageBuffer, so we need to trigger an invalidation.
+    // In the alpha false case, canvas is initially opaque, so we need to
+    // trigger an invalidation.
     DidDraw();
   }
 
@@ -389,7 +389,10 @@ void HTMLCanvasElement::FinalizeFrame() {
 
   // FinalizeFrame indicates the end of a script task that may have rendered
   // into the canvas, now is a good time to unlock cache entries.
-  if (auto* resource_provider = ResourceProvider())
+  auto* resource_provider = canvas2d_bridge_
+                                ? canvas2d_bridge_->GetResourceProvider()
+                                : ResourceProviderForWebGL();
+  if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
   if (canvas2d_bridge_) {
@@ -454,7 +457,7 @@ void HTMLCanvasElement::DisableAcceleration(
   }
 
   if (bridge && canvas2d_bridge_) {
-    ReplaceExistingCanvas2DBuffer(std::move(bridge));
+    ReplaceExisting2dLayerBridge(std::move(bridge));
     UpdateMemoryUsage();
   }
 
@@ -550,7 +553,7 @@ void HTMLCanvasElement::Reset() {
 
   dirty_rect_ = FloatRect();
 
-  bool had_image_buffer = HasImageBuffer();
+  bool had_resource_provider = HasResourceProvider();
 
   unsigned w = 0;
   AtomicString value = getAttribute(widthAttr);
@@ -574,7 +577,7 @@ void HTMLCanvasElement::Reset() {
 
   // If the size of an existing buffer matches, we can just clear it instead of
   // reallocating.  This optimization is only done for 2D canvases for now.
-  if (had_image_buffer && old_size == new_size && Is2d()) {
+  if (had_resource_provider && old_size == new_size && Is2d()) {
     if (!resource_provider_is_clear_) {
       resource_provider_is_clear_ = true;
       context_->ClearRect(0, 0, width(), height());
@@ -594,7 +597,7 @@ void HTMLCanvasElement::Reset() {
         if (GetLayoutBox() && GetLayoutBox()->HasAcceleratedCompositing())
           GetLayoutBox()->ContentChanged(kCanvasChanged);
       }
-      if (had_image_buffer)
+      if (had_resource_provider)
         layout_object->SetShouldDoFullPaintInvalidation();
     }
   }
@@ -668,7 +671,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
     canvas2d_bridge_->SetFilterQuality(filter_quality);
   }
 
-  if (HasImageBuffer() && !resource_provider_is_clear_)
+  if (HasResourceProvider() && !resource_provider_is_clear_)
     PaintTiming::From(GetDocument()).MarkFirstContentfulPaint();
 
   if (!PaintsIntoCanvasBuffer() && !GetDocument().Printing())
@@ -681,14 +684,8 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
     return;
   }
 
-  // TODO(junov): Paint is currently only implemented by ImageBitmap contexts.
-  // We could improve the abstraction by making all context types paint
-  // themselves (implement paint()).
-  if (context_->Paint(context, PixelSnappedIntRect(r)))
-    return;
-
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
-  if (HasImageBuffer()) {
+  if (HasResourceProvider()) {
     if (!context.ContextDisabled()) {
       SkBlendMode composite_operator =
           !context_ || context_->CreationAttributes().alpha
@@ -696,7 +693,10 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
               : SkBlendMode::kSrc;
       FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
       scoped_refptr<StaticBitmapImage> snapshot =
-          NewImageSnapshot(kPreferAcceleration);
+          canvas2d_bridge_
+              ? canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration)
+              : (webgl_resource_provider_ ? webgl_resource_provider_->Snapshot()
+                                          : nullptr);
       if (snapshot) {
         // GraphicsContext cannot handle gpu resource serialization.
         snapshot = snapshot->MakeUnaccelerated();
@@ -732,7 +732,7 @@ bool HTMLCanvasElement::IsAnimated2d() const {
 void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   size_ = size;
   did_fail_to_create_resource_provider_ = false;
-  DiscardImageBuffer();
+  DiscardResourceProvider();
   ClearCopiedImage();
   if (Is2d() && context_->isContextLost()) {
     context_->DidSetSurfaceSize();
@@ -1031,15 +1031,9 @@ HTMLCanvasElement::CreateUnaccelerated2dBuffer() {
   return nullptr;
 }
 
-CanvasResourceProvider* HTMLCanvasElement::ResourceProvider() const {
-  if (canvas2d_bridge_)
-    return canvas2d_bridge_->GetResourceProvider();
-  return webgl_resource_provider_.get();
-}
-
-void HTMLCanvasElement::CreateImageBufferInternal(
+void HTMLCanvasElement::CreateCanvas2DLayerBridgeInternal(
     std::unique_ptr<Canvas2DLayerBridge> external_canvas2d_bridge) {
-  DCHECK(!canvas2d_bridge_ && !webgl_resource_provider_);
+  DCHECK(Is2d() && !canvas2d_bridge_);
 
   did_fail_to_create_resource_provider_ = true;
   resource_provider_is_clear_ = true;
@@ -1051,7 +1045,7 @@ void HTMLCanvasElement::CreateImageBufferInternal(
   if (external_canvas2d_bridge) {
     if (external_canvas2d_bridge->IsValid())
       canvas2d_bridge_ = std::move(external_canvas2d_bridge);
-  } else if (Is2d()) {
+  } else {
     if (ShouldAccelerate(kNormalAccelerationCriteria)) {
       canvas2d_bridge_ = CreateAccelerated2dBuffer(&msaa_sample_count);
     }
@@ -1060,28 +1054,14 @@ void HTMLCanvasElement::CreateImageBufferInternal(
     }
   }
 
-  if (Is3d()) {
-    webgl_resource_provider_ = CanvasResourceProvider::Create(
-        size_, CanvasResourceProvider::kAcceleratedResourceUsage,
-        SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
-    if (!webgl_resource_provider_)
-      return;
+  if (canvas2d_bridge_) {
+    canvas2d_bridge_->SetCanvasResourceHost(this);
   } else {
-    DCHECK(Is2d());
-    if (canvas2d_bridge_) {
-      canvas2d_bridge_->SetCanvasResourceHost(this);
-    } else {
-      return;
-    }
+    return;
   }
 
   did_fail_to_create_resource_provider_ = false;
   UpdateMemoryUsage();
-
-  if (Is3d()) {
-    // Early out for WebGL canvases
-    return;
-  }
 
   // Enabling MSAA overrides a request to disable antialiasing. This is true
   // regardless of whether the rendering mode is accelerated or not. For
@@ -1114,49 +1094,48 @@ void HTMLCanvasElement::TraceWrappers(
   HTMLElement::TraceWrappers(visitor);
 }
 
-PaintCanvas* HTMLCanvasElement::DrawingCanvas() {
-  if (!TryCreateImageBuffer())
-    return nullptr;
-  if (canvas2d_bridge_)
-    return canvas2d_bridge_->Canvas();
-  if (webgl_resource_provider_)
-    return webgl_resource_provider_->Canvas();
-  NOTREACHED();
-  return nullptr;
-}
-
 void HTMLCanvasElement::DisableDeferral(DisableDeferralReason reason) {
   if (canvas2d_bridge_)
     canvas2d_bridge_->DisableDeferral(reason);
 }
 
-PaintCanvas* HTMLCanvasElement::ExistingDrawingCanvas() const {
-  if (canvas2d_bridge_)
-    return canvas2d_bridge_->Canvas();
-  if (webgl_resource_provider_)
-    return webgl_resource_provider_->Canvas();
-  return nullptr;
-}
-
-bool HTMLCanvasElement::TryCreateImageBuffer() {
-  DCHECK(context_);
-  DCHECK(!HasImageBitmapContext());
-  if (!HasImageBuffer() && !did_fail_to_create_resource_provider_) {
-    CreateImageBufferInternal(nullptr);
-    if (did_fail_to_create_resource_provider_ && Is2d() && !Size().IsEmpty()) {
+Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
+  DCHECK(Is2d());
+  if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {
+    CreateCanvas2DLayerBridgeInternal(nullptr);
+    if (did_fail_to_create_resource_provider_ && !Size().IsEmpty()) {
       context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
     }
   }
-  return HasImageBuffer();
+  return canvas2d_bridge_.get();
 }
 
-void HTMLCanvasElement::CreateImageBufferUsingSurfaceForTesting(
-    std::unique_ptr<Canvas2DLayerBridge> surface,
+CanvasResourceProvider*
+HTMLCanvasElement::GetOrCreateCanvasResourceProviderForWebGL() {
+  DCHECK(Is3d());
+  if (!webgl_resource_provider_ && !did_fail_to_create_resource_provider_) {
+    resource_provider_is_clear_ = true;
+    if (IsValidImageSize(Size())) {
+      webgl_resource_provider_ = CanvasResourceProvider::Create(
+          size_, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
+    }
+    if (!webgl_resource_provider_) {
+      did_fail_to_create_resource_provider_ = true;
+    } else {
+      UpdateMemoryUsage();
+    }
+  }
+  return webgl_resource_provider_.get();
+}
+
+void HTMLCanvasElement::CreateCanvas2DLayerBridgeForTesting(
+    std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
-  DiscardImageBuffer();
+  DiscardResourceProvider();
   SetIntegralAttribute(widthAttr, size.Width());
   SetIntegralAttribute(heightAttr, size.Height());
-  CreateImageBufferInternal(std::move(surface));
+  CreateCanvas2DLayerBridgeInternal(std::move(bridge));
 }
 
 scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
@@ -1186,14 +1165,18 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
   // The concept of SourceDrawingBuffer is valid on only WebGL.
   if (context_->Is3d())
     need_to_update |= context_->PaintRenderingResultsToCanvas(source_buffer);
-  if (need_to_update && TryCreateImageBuffer()) {
-    copied_image_ = NewImageSnapshot(hint);
+  if (need_to_update) {
+    if (Is2d() && GetOrCreateCanvas2DLayerBridge()) {
+      copied_image_ = canvas2d_bridge_->NewImageSnapshot(hint);
+    } else if (Is3d() && GetOrCreateCanvasResourceProviderForWebGL()) {
+      copied_image_ = webgl_resource_provider_->Snapshot();
+    }
     UpdateMemoryUsage();
   }
   return copied_image_;
 }
 
-void HTMLCanvasElement::DiscardImageBuffer() {
+void HTMLCanvasElement::DiscardResourceProvider() {
   canvas2d_bridge_.reset();
   webgl_resource_provider_.reset();
   dirty_rect_ = FloatRect();
@@ -1218,7 +1201,7 @@ void HTMLCanvasElement::PageVisibilityChanged() {
   if (hidden) {
     ClearCopiedImage();
     if (Is3d()) {
-      DiscardImageBuffer();
+      DiscardResourceProvider();
     }
   }
 }
@@ -1243,14 +1226,14 @@ void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
 void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
   if (CanvasHeuristicParameters::kEnableAccelerationToAvoidReadbacks &&
       SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() &&
-      source->IsAccelerated() && TryCreateImageBuffer() && canvas2d_bridge_ &&
+      source->IsAccelerated() && GetOrCreateCanvas2DLayerBridge() &&
       !canvas2d_bridge_->IsAccelerated() &&
       ShouldAccelerate(kIgnoreResourceLimitCriteria)) {
     int msaa_sample_count = 0;
     std::unique_ptr<Canvas2DLayerBridge> surface =
         CreateAccelerated2dBuffer(&msaa_sample_count);
     if (surface) {
-      ReplaceExistingCanvas2DBuffer(std::move(surface));
+      ReplaceExisting2dLayerBridge(std::move(surface));
       UpdateMemoryUsage();
       SetNeedsCompositingUpdate();
     }
@@ -1297,7 +1280,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   if (Is3d()) {
     // Because WebGL sources always require making a copy of the back buffer, we
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
-    // cached copy of the backing in the canvas's ImageBuffer.
+    // cached copy of the backing in the canvas's resource provider.
     RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
     if (webgl_resource_provider_) {
       image = webgl_resource_provider_->Snapshot();
@@ -1548,7 +1531,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   externally_allocated_memory_ = externally_allocated_memory;
 }
 
-void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
+void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
     std::unique_ptr<Canvas2DLayerBridge> new_buffer) {
   if (canvas2d_bridge_) {
     scoped_refptr<StaticBitmapImage> image =
@@ -1566,15 +1549,6 @@ void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
   new_buffer->DidRestoreCanvasMatrixClipStack(new_buffer->Canvas());
   canvas2d_bridge_ = std::move(new_buffer);
   canvas2d_bridge_->SetCanvasResourceHost(this);
-}
-
-scoped_refptr<StaticBitmapImage> HTMLCanvasElement::NewImageSnapshot(
-    AccelerationHint hint) {
-  if (canvas2d_bridge_)
-    return canvas2d_bridge_->NewImageSnapshot(hint);
-  if (webgl_resource_provider_)
-    return webgl_resource_provider_->Snapshot();
-  return nullptr;
 }
 
 bool HTMLCanvasElement::HasImageBitmapContext() const {

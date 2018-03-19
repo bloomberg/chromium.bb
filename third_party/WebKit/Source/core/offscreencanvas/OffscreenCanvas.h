@@ -85,7 +85,7 @@ class CORE_EXPORT OffscreenCanvas final
     disable_reading_from_canvas_ = true;
   }
 
-  void DiscardImageBuffer() override;
+  void DiscardResourceProvider() override;
   CanvasResourceProvider* GetResourceProvider() const {
     return resource_provider_.get();
   }

@@ -1479,15 +1479,15 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->TryCreateImageBuffer())
+  if (!canvas()->GetOrCreateCanvasResourceProviderForWebGL())
     return false;
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->ResourceProvider(),
-                                             source_buffer)) {
+  if (!CopyRenderingResultsFromDrawingBuffer(
+          canvas()->ResourceProviderForWebGL(), source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
     // handle before reaching this point.  If that assumption ever stops holding
@@ -4997,9 +4997,10 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     const IntRect& source_sub_rectangle) {
   if (!canvas->Is3d()) {
     if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target) &&
-        canvas->TryCreateImageBuffer()) {
+        canvas->GetOrCreateCanvas2DLayerBridge()) {
       scoped_refptr<StaticBitmapImage> image =
-          canvas->Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration);
+          canvas->GetCanvas2DLayerBridge()->NewImageSnapshot(
+              kPreferAcceleration);
       if (!!image && image->CopyToTexture(
                          ContextGL(), target, target_texture,
                          unpack_premultiply_alpha_, unpack_flip_y_,

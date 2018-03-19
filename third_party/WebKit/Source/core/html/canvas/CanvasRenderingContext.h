@@ -176,9 +176,6 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return IntSize(0, 0);
   }
 
-  // ImageBitmap-specific interface
-  virtual bool Paint(GraphicsContext&, const IntRect&) { return false; }
-
   // OffscreenCanvas-specific methods
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 

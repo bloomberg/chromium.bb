@@ -87,8 +87,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   int Width() const final;
   int Height() const final;
 
-  bool HasCanvas2DBuffer() const final;
-  bool CanCreateCanvas2DBuffer() const final;
+  bool CanCreateCanvas2dResourceProvider() const final;
   CanvasResourceProvider* GetCanvasResourceProvider() const;
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
