@@ -61,6 +61,24 @@ namespace Impl = Scalar;
 #endif
 }  // namespace
 
+void Conv(const float* source_p,
+          int source_stride,
+          const float* filter_p,
+          int filter_stride,
+          float* dest_p,
+          int dest_stride,
+          size_t frames_to_process,
+          size_t filter_size) {
+  // Only contiguous convolution is implemented by all implementations.
+  // Correlation (positive |filter_stride|) and support for non-contiguous
+  // vectors are not implemented by all implementations.
+  DCHECK_EQ(1, source_stride);
+  DCHECK_EQ(-1, filter_stride);
+  DCHECK_EQ(1, dest_stride);
+  Impl::Conv(source_p, source_stride, filter_p, filter_stride, dest_p,
+             dest_stride, frames_to_process, filter_size);
+}
+
 void Vadd(const float* source1p,
           int source_stride1,
           const float* source2p,

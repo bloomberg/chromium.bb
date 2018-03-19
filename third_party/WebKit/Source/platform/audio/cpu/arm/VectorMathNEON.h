@@ -15,6 +15,9 @@ namespace blink {
 namespace VectorMath {
 namespace NEON {
 
+// TODO: Consider optimizing this.
+using Scalar::Conv;
+
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
                                const float* source2p,

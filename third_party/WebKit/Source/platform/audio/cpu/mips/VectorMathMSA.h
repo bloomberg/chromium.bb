@@ -14,6 +14,11 @@ namespace blink {
 namespace VectorMath {
 namespace MSA {
 
+// TODO: Consider optimizing these.
+using Scalar::Conv;
+using Scalar::Vsvesq;
+using Scalar::Zvmul;
+
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
                                const float* source2p,
@@ -205,24 +210,6 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
   }
 
   Scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
-}
-
-static ALWAYS_INLINE void Vsvesq(const float* source_p,
-                                 int source_stride,
-                                 float* sum_p,
-                                 size_t frames_to_process) {
-  Scalar::Vsvesq(source_p, source_stride, sum_p, frames_to_process);
-}
-
-static ALWAYS_INLINE void Zvmul(const float* real1p,
-                                const float* imag1p,
-                                const float* real2p,
-                                const float* imag2p,
-                                float* real_dest_p,
-                                float* imag_dest_p,
-                                size_t frames_to_process) {
-  Scalar::Zvmul(real1p, imag1p, real2p, imag2p, real_dest_p, imag_dest_p,
-                frames_to_process);
 }
 
 }  // namespace MSA
