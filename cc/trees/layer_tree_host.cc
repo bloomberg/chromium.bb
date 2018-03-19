@@ -28,6 +28,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
@@ -1079,7 +1080,11 @@ void LayerTreeHost::SetViewportSizeAndScale(
   if (changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
+#if defined(OS_MACOSX)
+    // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
+    // be.
     CHECK(!has_pushed_local_surface_id_ || !local_surface_id_.is_valid());
+#endif
   }
 }
 
