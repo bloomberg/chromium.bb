@@ -36,9 +36,9 @@ void MockLoginScreenClient::AuthenticateUser(
 }
 
 std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient() {
-  LoginScreenController* controller = Shell::Get()->login_screen_controller();
   auto client = std::make_unique<MockLoginScreenClient>();
-  controller->SetClient(client->CreateInterfacePtrAndBind());
+  Shell::Get()->login_screen_controller()->SetClient(
+      client->CreateInterfacePtrAndBind());
   return client;
 }
 

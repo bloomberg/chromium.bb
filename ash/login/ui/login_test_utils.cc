@@ -11,14 +11,24 @@ LockContentsView::TestApi MakeLockContentsViewTestApi(LockContentsView* view) {
   return LockContentsView::TestApi(view);
 }
 
-LoginAuthUserView::TestApi MakeLoginPrimaryAuthTestApi(LockContentsView* view) {
-  return LoginAuthUserView::TestApi(
-      MakeLockContentsViewTestApi(view).primary_auth());
+LoginAuthUserView::TestApi MakeLoginAuthTestApi(LockContentsView* view,
+                                                AuthTarget target) {
+  switch (target) {
+    case AuthTarget::kPrimary:
+      return LoginAuthUserView::TestApi(
+          MakeLockContentsViewTestApi(view).primary_auth());
+    case AuthTarget::kSecondary:
+      return LoginAuthUserView::TestApi(
+          MakeLockContentsViewTestApi(view).opt_secondary_auth());
+  }
+
+  NOTREACHED();
 }
 
-LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view) {
+LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view,
+                                                    AuthTarget target) {
   return LoginPasswordView::TestApi(
-      MakeLoginPrimaryAuthTestApi(view).password_view());
+      MakeLoginAuthTestApi(view, target).password_view());
 }
 
 mojom::LoginUserInfoPtr CreateUser(const std::string& email) {

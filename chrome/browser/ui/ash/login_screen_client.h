@@ -69,6 +69,8 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
   void FocusLockScreenApps(bool reverse) override;
   void ShowGaiaSignin() override;
+  void OnRemoveUserWarningShown() override;
+  void RemoveUser(const AccountId& account_id) override;
 
   // Wrappers around the mojom::LockScreen interface.
   void ShowLockScreen(ash::mojom::LoginScreen::ShowLockScreenCallback on_shown);

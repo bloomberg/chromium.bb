@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_user_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/scroll_view.h"
@@ -21,7 +22,6 @@ class BoxLayout;
 namespace ash {
 
 class HoverNotifier;
-class LoginUserView;
 class ScrollBar;
 
 // Scrollable list of the users. Stores the list of login user views. Can be
@@ -41,18 +41,24 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
     ScrollableUsersListView* const view_;
   };
 
-  using OnUserViewTap = base::RepeatingCallback<void(int)>;
+  // TODO(jdufault): Pass AccountId or LoginUserView* instead of index.
+  using ActionWithUser = base::RepeatingCallback<void(int)>;
 
   // Initializes users list with rows for all |users|. The |display_style| is
   // used to determine layout and sizings. |on_user_view_tap| callback is
   // invoked whenever user row is tapped.
   ScrollableUsersListView(const std::vector<mojom::LoginUserInfoPtr>& users,
-                          const OnUserViewTap& on_user_view_tap,
+                          const ActionWithUser& on_tap_user,
                           LoginDisplayStyle display_style);
   ~ScrollableUsersListView() override;
 
   // Returns user view at |index| if it exists or nullptr otherwise.
-  LoginUserView* GetUserViewAtIndex(int index);
+  int user_count() const { return static_cast<int>(user_views_.size()); }
+  LoginUserView* user_view_at(int index) {
+    DCHECK_GE(index, 0);
+    DCHECK_LT(index, user_count());
+    return user_views_[index];
+  }
 
   // views::View:
   void Layout() override;

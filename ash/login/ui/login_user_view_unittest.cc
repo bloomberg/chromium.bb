@@ -25,10 +25,20 @@ class LoginUserViewUnittest : public LoginTestBase {
   LoginUserView* AddUserView(LoginDisplayStyle display_style,
                              bool show_dropdown) {
     // TODO(crbug.com/809635): Add test case for show_domain.
+    LoginUserView::OnRemoveWarningShown on_remove_warning_shown;
+    LoginUserView::OnRemove on_remove;
+    if (show_dropdown) {
+      on_remove_warning_shown = base::BindRepeating(
+          &LoginUserViewUnittest::OnRemoveWarningShown, base::Unretained(this));
+      on_remove = base::BindRepeating(&LoginUserViewUnittest::OnRemove,
+                                      base::Unretained(this));
+    }
+
     auto* view =
         new LoginUserView(display_style, show_dropdown, false /*show_domain*/,
                           base::BindRepeating(&LoginUserViewUnittest::OnTapped,
-                                              base::Unretained(this)));
+                                              base::Unretained(this)),
+                          on_remove_warning_shown, on_remove);
     mojom::LoginUserInfoPtr user = CreateUser("foo@foo.com");
     view->UpdateForUser(user, false /*animate*/);
     container_->AddChildView(view);
@@ -52,11 +62,15 @@ class LoginUserViewUnittest : public LoginTestBase {
   }
 
   int tap_count_ = 0;
+  int remove_show_warning_count_ = 0;
+  int remove_count_ = 0;
 
   views::View* container_ = nullptr;  // Owned by test widget view hierarchy.
 
  private:
   void OnTapped() { ++tap_count_; }
+  void OnRemoveWarningShown() { ++remove_show_warning_count_; }
+  void OnRemove() { ++remove_count_; }
 
   DISALLOW_COPY_AND_ASSIGN(LoginUserViewUnittest);
 };
