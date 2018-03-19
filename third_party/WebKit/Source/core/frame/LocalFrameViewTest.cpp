@@ -54,12 +54,13 @@ class LocalFrameViewTest
       : ScopedRootLayerScrollingForTest(GetParam()),
         RenderingTest(SingleChildLocalFrameClient::Create()),
         chrome_client_(new AnimationMockChromeClient) {
-    EXPECT_CALL(ChromeClient(), AttachRootGraphicsLayer(_, _))
+    EXPECT_CALL(GetAnimationMockChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
   }
 
   ~LocalFrameViewTest() {
-    ::testing::Mock::VerifyAndClearExpectations(&ChromeClient());
+    ::testing::Mock::VerifyAndClearExpectations(
+        &GetAnimationMockChromeClient());
   }
 
   ChromeClient& GetChromeClient() const override { return *chrome_client_; }
@@ -69,7 +70,9 @@ class LocalFrameViewTest
     EnableCompositing();
   }
 
-  AnimationMockChromeClient& ChromeClient() const { return *chrome_client_; }
+  AnimationMockChromeClient& GetAnimationMockChromeClient() const {
+    return *chrome_client_;
+  }
 
  private:
   Persistent<AnimationMockChromeClient> chrome_client_;
@@ -81,28 +84,28 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
                                                   "color: green");
-  ChromeClient().has_scheduled_animation_ = false;
+  GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(ChromeClient().has_scheduled_animation_);
+  EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 
 TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
-  ChromeClient().has_scheduled_animation_ = false;
+  GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument()
       .getElementById("a")
       ->GetLayoutObject()
       ->SetShouldDoFullPaintInvalidation();
-  EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
-  ChromeClient().has_scheduled_animation_ = false;
+  EXPECT_TRUE(GetAnimationMockChromeClient().has_scheduled_animation_);
+  GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument()
       .getElementById("a")
       ->GetLayoutObject()
       ->SetShouldDoFullPaintInvalidation();
-  EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
-  ChromeClient().has_scheduled_animation_ = false;
+  EXPECT_TRUE(GetAnimationMockChromeClient().has_scheduled_animation_);
+  GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(ChromeClient().has_scheduled_animation_);
+  EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
@@ -110,14 +113,14 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 TEST_P(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
   SetBodyInnerHTML("<div style='width:1000px;height:1000px'></div>");
 
-  EXPECT_CALL(ChromeClient(),
+  EXPECT_CALL(GetAnimationMockChromeClient(),
               MockSetToolTip(GetDocument().GetFrame(), String(), _));
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(1, 1), kUserScroll);
 
   // Programmatic scrolling should not dismiss the tooltip, so setToolTip
   // should not be called for this invocation.
-  EXPECT_CALL(ChromeClient(),
+  EXPECT_CALL(GetAnimationMockChromeClient(),
               MockSetToolTip(GetDocument().GetFrame(), String(), _))
       .Times(0);
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
