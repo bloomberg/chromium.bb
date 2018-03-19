@@ -32,6 +32,7 @@ interface URLLoaderFactory {
   // TODO: once MojoLoading is only codepath and we have one factory per frame,
   // remove this.
   // |request_id| is for compatibility with the existing Chrome IPC.
+  // A pair (routing_id, request_id) is assumed to be unique within one factory.
   CreateLoaderAndStart(URLLoader& loader,
                        int32 routing_id,
                        int32 request_id,

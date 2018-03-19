@@ -1059,7 +1059,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         frame_tree_node->current_frame_host(), true /* is_navigation */,
         &factory_request);
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-            frame_tree_node, &factory_request)) {
+            frame_tree_node->current_frame_host(), true, &factory_request)) {
       use_proxy = true;
     }
     if (use_proxy) {

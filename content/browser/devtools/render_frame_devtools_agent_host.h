@@ -71,7 +71,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                              mojom::BeginNavigationParams* begin_params,
                              bool* report_raw_headers);
   static bool WillCreateURLLoaderFactory(
-      FrameTreeNode* frame_tree_node,
+      RenderFrameHostImpl* rfh,
+      bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* loader_factory_request);
 
   static void OnNavigationRequestWillBeSent(

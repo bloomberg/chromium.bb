@@ -102,7 +102,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(request), options, url_request, report_raw_headers,
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      process_id_, resource_scheduler_client_,
+      process_id_, request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder));
 }
 

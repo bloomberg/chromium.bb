@@ -264,6 +264,7 @@ interface NetworkServiceClient {
   // needs to be called.
   OnAuthRequired(uint32 process_id,
                  uint32 routing_id,
+                 uint32 request_id,
                  url.mojom.Url url,
                  bool first_auth_attempt,
                  AuthChallengeInfo auth_info) => (AuthCredentials? credentials);
@@ -281,6 +282,7 @@ interface NetworkServiceClient {
   // called.
   OnCertificateRequested(uint32 process_id,
                          uint32 routing_id,
+                         uint32 request_id,
                          network.mojom.SSLCertRequestInfo cert_info) => (
                              network.mojom.X509Certificate x509_certificate,
                              array<uint16> algorithm_preferences,
@@ -291,6 +293,7 @@ interface NetworkServiceClient {
   // request is resumed. Otherwise it's cancelled with the given error.
   OnSSLCertificateError(uint32 process_id,
                         uint32 routing_id,
+                        uint32 request_id,
                         int32 resource_type,
                         url.mojom.Url url,
                         SSLInfo ssl_info,
