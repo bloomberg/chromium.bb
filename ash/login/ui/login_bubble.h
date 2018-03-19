@@ -52,7 +52,8 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
                     views::View* anchor_view,
                     LoginButton* bubble_opener,
                     bool show_remove_user,
-                    base::OnceClosure do_remove_user);
+                    base::OnceClosure on_remove_user_warning_shown,
+                    base::OnceClosure on_remove_user_requested);
 
   // Shows a tooltip.
   void ShowTooltip(const base::string16& message, views::View* anchor_view);

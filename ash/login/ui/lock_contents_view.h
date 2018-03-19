@@ -213,6 +213,11 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // the actual user may change.
   void SwapToAuthUser(int user_index);
 
+  // Warning to remove a user is shown.
+  void OnRemoveUserWarningShown(bool is_primary);
+  // Remove one of the auth users.
+  void RemoveUser(bool is_primary);
+
   // Called after the auth user change has taken place.
   void OnAuthUserChanged();
 

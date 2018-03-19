@@ -101,23 +101,31 @@ LoginPinView* LoginAuthUserView::TestApi::pin_view() const {
   return view_->pin_view_;
 }
 
-LoginAuthUserView::LoginAuthUserView(
-    const mojom::LoginUserInfoPtr& user,
-    const OnAuthCallback& on_auth,
-    const LoginUserView::OnTap& on_tap,
-    const OnEasyUnlockIconHovered& on_easy_unlock_icon_hovered,
-    const OnEasyUnlockIconTapped& on_easy_unlock_icon_tapped)
+LoginAuthUserView::Callbacks::Callbacks() {}
+
+LoginAuthUserView::Callbacks::~Callbacks() {}
+
+LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
+                                     const Callbacks& callbacks)
     : NonAccessibleView(kLoginAuthUserViewClassName),
-      on_auth_(on_auth),
-      on_tap_(on_tap),
+      on_auth_(callbacks.on_auth),
+      on_tap_(callbacks.on_tap),
       weak_factory_(this) {
+  DCHECK(callbacks.on_auth);
+  DCHECK(callbacks.on_tap);
+  DCHECK(callbacks.on_remove_warning_shown);
+  DCHECK(callbacks.on_remove);
+  DCHECK(callbacks.on_easy_unlock_icon_hovered);
+  DCHECK(callbacks.on_easy_unlock_icon_tapped);
   DCHECK_NE(user->basic_user_info->type,
             user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
   // Build child views.
   user_view_ = new LoginUserView(
       LoginDisplayStyle::kLarge, true /*show_dropdown*/, false /*show_domain*/,
-      base::Bind(&LoginAuthUserView::OnUserViewTap, base::Unretained(this)));
+      base::BindRepeating(&LoginAuthUserView::OnUserViewTap,
+                          base::Unretained(this)),
+      callbacks.on_remove_warning_shown, callbacks.on_remove);
 
   password_view_ = new LoginPasswordView();
   password_view_->SetPaintToLayer();  // Needed for opacity animation.
@@ -137,7 +145,8 @@ LoginAuthUserView::LoginAuthUserView(
       base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)),
       base::Bind(&LoginPinView::OnPasswordTextChanged,
                  base::Unretained(pin_view_)),
-      on_easy_unlock_icon_hovered, on_easy_unlock_icon_tapped);
+      callbacks.on_easy_unlock_icon_hovered,
+      callbacks.on_easy_unlock_icon_tapped);
 
   // Child views animate outside view bounds.
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
