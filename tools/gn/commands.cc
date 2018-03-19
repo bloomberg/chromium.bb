@@ -5,8 +5,10 @@
 #include "tools/gn/commands.h"
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
@@ -381,8 +383,22 @@ const Target* ResolveTargetFromCommandLineString(
     Setup* setup,
     const std::string& label_string) {
   // Need to resolve the label after we know the default toolchain.
+  std::string temp_label = label_string;
+#if defined(OS_WIN)
+  // Git bash will remove the first "/" in "//" paths
+  // Fix "//" paths, but not absolute and relative paths
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+
+  if (env->HasVar("MSYSTEM") && // Only for MinGW based shells like Git Bash
+      temp_label[0] == '/' && // Only fix for //foo paths, not /f:oo paths
+      (temp_label.length() < 2 ||
+        (temp_label[1] != '/' && (temp_label.length() < 3 ||
+                                  temp_label[1] != ':' ))))
+    temp_label.insert(0, "/");
+#endif
+
   Label default_toolchain = setup->loader()->default_toolchain_label();
-  Value arg_value(nullptr, label_string);
+  Value arg_value(nullptr, temp_label);
   Err err;
   Label label = Label::Resolve(SourceDirForCurrentDirectory(
                                    setup->build_settings().root_path()),
