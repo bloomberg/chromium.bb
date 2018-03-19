@@ -838,7 +838,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
     cm->last_frame_seg_map = NULL;
   }
   // Read update flags
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // These frames can't use previous frames, so must signal map + features
     seg->update_map = 1;
     seg->temporal_update = 0;
@@ -2407,9 +2407,8 @@ static int read_global_motion_params(WarpedMotionParams *params,
 static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   for (int frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     const WarpedMotionParams *ref_params =
-        (cm->error_resilient_mode || cm->prev_frame == NULL)
-            ? &default_warp_params
-            : &cm->prev_frame->global_motion[frame];
+        cm->prev_frame ? &cm->prev_frame->global_motion[frame]
+                       : &default_warp_params;
     int good_params = read_global_motion_params(
         &cm->global_motion[frame], ref_params, rb, cm->allow_high_precision_mv);
     if (!good_params) {
@@ -2913,13 +2912,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
 
     cm->prev_frame = get_prev_frame(cm);
-    if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
-      if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
-          cm->frame_refs[cm->primary_ref_frame].idx < 0) {
-        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                           "Reference frame containing this frame's initial "
-                           "frame context is unavailable.");
-      }
+    if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
+        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Reference frame containing this frame's initial "
+                         "frame context is unavailable.");
     }
 
     if (!cm->intra_only && pbi->need_resync != 1) {
@@ -3029,16 +3026,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     av1_setup_past_independence(cm);
-    av1_setup_frame_contexts(cm);
-  } else if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
-    // The default coefficient CDFs depend on base_qindex. So, in order to
-    // ensure that we don't depend on the frame decoding order, we explicitly
-    // reset the coefficient CDFs with the value of base_qindex for this frame.
-    *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-    av1_default_coef_probs(cm);
-    cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
   }
 
   setup_segmentation(cm, rb);

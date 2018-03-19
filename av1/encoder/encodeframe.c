@@ -4253,9 +4253,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       int pframe;
       cm->global_motion[frame] = default_warp_params;
       const WarpedMotionParams *ref_params =
-          (cm->error_resilient_mode || cm->prev_frame == NULL)
-              ? &default_warp_params
-              : &cm->prev_frame->global_motion[frame];
+          cm->prev_frame ? &cm->prev_frame->global_motion[frame]
+                         : &default_warp_params;
       // check for duplicate buffer
       for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;

@@ -349,10 +349,9 @@ static void setup_frame(AV1_COMP *cpi) {
   } else {
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
         cm->frame_refs[cm->primary_ref_frame].idx < 0) {
-      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-      // Ensure the coefficient CDFs are correct
-      av1_default_coef_probs(cm);
-      cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
+      av1_setup_past_independence(cm);
+      cm->seg.update_map = 1;
+      cm->seg.update_data = 1;
       cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
     } else {
       *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
@@ -4407,14 +4406,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
-    if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+    if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
+        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
-    } else if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-               cm->frame_refs[cm->primary_ref_frame].idx < 0) {
-      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-      av1_default_coef_probs(cm);
-      cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
     }
 
     // Variance adaptive and in frame q adjustment experiments are mutually

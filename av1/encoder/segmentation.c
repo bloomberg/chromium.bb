@@ -211,8 +211,8 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   for (int i = 0; i < MAX_SEGMENTS; ++i)
     no_pred_cost += no_pred_segcounts[i] * seg_id_cost[i];
 
-  // Key frames cannot use temporal prediction
-  if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
+  // Frames without past dependency cannot use temporal prediction
+  if (cm->primary_ref_frame != PRIMARY_REF_NONE) {
     int pred_flag_cost[SEG_TEMPORAL_PRED_CTXS][2];
     for (int i = 0; i < SEG_TEMPORAL_PRED_CTXS; ++i)
       av1_cost_tokens_from_cdf(pred_flag_cost[i], segp->pred_cdf[i], NULL);

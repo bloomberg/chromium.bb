@@ -2121,7 +2121,7 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (!seg->enabled) return;
 
   // Write update flags
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     assert(seg->update_map == 1);
     seg->temporal_update = 0;
     assert(seg->update_data == 1);
@@ -2882,9 +2882,8 @@ static void write_global_motion(AV1_COMP *cpi,
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
     const WarpedMotionParams *ref_params =
-        (cm->error_resilient_mode || cm->prev_frame == NULL)
-            ? &default_warp_params
-            : &cm->prev_frame->global_motion[frame];
+        cm->prev_frame ? &cm->prev_frame->global_motion[frame]
+                       : &default_warp_params;
     write_global_motion_params(&cm->global_motion[frame], ref_params, wb,
                                cm->allow_high_precision_mv);
     // TODO(sarahparker, debargha): The logic in the commented out code below
