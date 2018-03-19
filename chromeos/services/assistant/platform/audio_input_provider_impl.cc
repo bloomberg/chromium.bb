@@ -79,7 +79,7 @@ AudioInputImpl::AudioInputImpl(mojom::AudioInputPtr audio_input)
     : binding_(this) {
   mojom::AudioInputObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
-  audio_input->AddAudioInputObserver(std::move(observer));
+  audio_input->AddObserver(std::move(observer));
 }
 
 AudioInputImpl::~AudioInputImpl() = default;
