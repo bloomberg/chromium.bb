@@ -271,11 +271,6 @@ public class BottomSheet
         View getToolbarView();
 
         /**
-         * @return Whether or not the content is themed for incognito (i.e. dark colors).
-         */
-        boolean isIncognitoThemedContent();
-
-        /**
          * @return The vertical scroll offset of the content view.
          */
         int getVerticalScrollOffset();
@@ -793,11 +788,8 @@ public class BottomSheet
 
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
-        int colorId = content == null || !content.isIncognitoThemedContent()
-                ? R.color.modern_primary_color
-                : R.color.incognito_primary_color;
-        if (!mIsSheetOpen || (content != null && content.isIncognitoThemedContent())
-                || (mSheetContent != null && mSheetContent.isIncognitoThemedContent())) {
+        int colorId = R.color.modern_primary_color;
+        if (!mIsSheetOpen) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
             // background color is needed on the toolbar holder to prevent a blank rectangle from
             // appearing during the content transition.
