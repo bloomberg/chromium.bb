@@ -251,7 +251,8 @@ class IntegrationTest(unittest.TestCase):
       try:
         response = LocalRenderer.Render(_ToPosixPath(filename))
         self.assertTrue(response.status == 200 or response.status == 302,
-                        'Got %s when rendering %s' % (response.status, path))
+                        'Got %s when rendering %s' % (response.status,
+                                                      _ToPosixPath(filename)))
         self.assertTrue(response.content != '' or response.status == 302)
       finally:
         print('Took %s seconds' % (time.time() - start_time))
