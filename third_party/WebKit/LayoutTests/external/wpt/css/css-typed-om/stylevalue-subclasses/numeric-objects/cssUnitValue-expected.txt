@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS Constructing CSSUnitValue with an empty string as the unit throws a TypeError
-PASS Constructing CSSUnitValue with an invalid unit as the unit throws a TypeError
+PASS Constructing CSSUnitValue with an unknown unit throws a TypeError
+PASS Constructing CSSUnitValue with a empty string unit throws a TypeError
 PASS CSSUnitValue can be constructed with number
 PASS CSSUnitValue can be constructed with percent
 PASS CSSUnitValue can be constructed with em
