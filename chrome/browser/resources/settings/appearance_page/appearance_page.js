@@ -274,7 +274,7 @@ Polymer({
    * @private
    */
   themeChanged_: function(themeId, useSystemTheme) {
-    if (themeId) {
+    if (themeId.length > 0) {
       assert(!useSystemTheme);
 
       this.browserProxy_.getThemeInfo(themeId).then(info => {

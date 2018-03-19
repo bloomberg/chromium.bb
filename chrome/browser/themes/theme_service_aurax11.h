@@ -21,6 +21,7 @@ class ThemeServiceAuraX11 : public ThemeService {
   bool IsSystemThemeDistinctFromDefaultTheme() const override;
   bool UsingDefaultTheme() const override;
   bool UsingSystemTheme() const override;
+  void FixInconsistentPreferencesIfNeeded() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraX11);

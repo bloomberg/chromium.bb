@@ -171,6 +171,10 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   virtual bool ShouldUseNativeFrame() const;
   bool HasCustomImage(int id) const;
 
+  // If there is an inconsistency in preferences, change preferences to a
+  // consistent state.
+  virtual void FixInconsistentPreferencesIfNeeded();
+
   Profile* profile() const { return profile_; }
 
   void set_ready() { ready_ = true; }

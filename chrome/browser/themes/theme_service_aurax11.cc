@@ -101,3 +101,14 @@ bool ThemeServiceAuraX11::UsingSystemTheme() const {
   return theme_supplier &&
          theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;
 }
+
+void ThemeServiceAuraX11::FixInconsistentPreferencesIfNeeded() {
+  PrefService* prefs = profile()->GetPrefs();
+
+  // When using the system theme, the theme ID should match the default. Give
+  // precedence to the non-default theme specified.
+  if (GetThemeID() != ThemeService::kDefaultThemeID &&
+      prefs->GetBoolean(prefs::kUsesSystemTheme)) {
+    prefs->SetBoolean(prefs::kUsesSystemTheme, false);
+  }
+}
