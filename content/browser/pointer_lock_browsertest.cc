@@ -510,4 +510,37 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   EXPECT_EQ(17, deltaY);
 }
 
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWidgetHidden) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetView());
+
+  WaitForChildFrameSurfaceReady(child->current_frame_host());
+
+  // Request a pointer lock on the child frame's body.
+  EXPECT_TRUE(ExecuteScript(child, "document.body.requestPointerLock()"));
+
+  // Child frame should have been granted pointer lock.
+  bool locked = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(child,
+                                          "window.domAutomationController.send("
+                                          "document.pointerLockElement == "
+                                          "document.body);",
+                                          &locked));
+  EXPECT_TRUE(locked);
+  EXPECT_TRUE(child_view->IsMouseLocked());
+  EXPECT_EQ(child_view->host(), web_contents()->GetMouseLockWidget());
+
+  child_view->Hide();
+
+  // Child frame should've released the mouse lock when hidden.
+  EXPECT_FALSE(child_view->IsMouseLocked());
+  EXPECT_EQ(nullptr, web_contents()->GetMouseLockWidget());
+}
+
 }  // namespace content
