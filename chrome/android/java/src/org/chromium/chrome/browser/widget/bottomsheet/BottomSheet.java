@@ -262,13 +262,6 @@ public class BottomSheet
         View getContentView();
 
         /**
-         * Gets the {@link View}s that need additional padding applied to them to accommodate other
-         * UI elements, such as the transparent bottom navigation menu.
-         * @return The {@link View}s that need additional padding applied to them.
-         */
-        List<View> getViewsForPadding();
-
-        /**
          * Get the {@link View} that contains the toolbar specific to the content being
          * displayed. If null is returned, the omnibox is used.
          *

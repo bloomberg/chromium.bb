@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -27,8 +26,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.content.browser.BrowserStartupController;
-
-import java.util.List;
 
 /**
  * Provides content to be displayed inside of the Home tab of bottom sheet.
@@ -197,11 +194,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Override
     public View getContentView() {
         return mView;
-    }
-
-    @Override
-    public List<View> getViewsForPadding() {
-        return CollectionUtil.newArrayList(mRecyclerView);
     }
 
     @Override
