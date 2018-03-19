@@ -8,6 +8,7 @@
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/html/parser/TextResourceDecoderForFuzzing.h"
 #include "core/media_type_names.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/testing/FuzzedDataProvider.h"
 
@@ -23,6 +24,10 @@ std::unique_ptr<CachedDocumentParameters> CachedDocumentParametersForFuzzing(
   document_parameters->viewport_meta_zero_values_quirk =
       fuzzed_data.ConsumeBool();
   document_parameters->viewport_meta_enabled = fuzzed_data.ConsumeBool();
+  document_parameters->integrity_features =
+      fuzzed_data.ConsumeBool()
+          ? SubresourceIntegrity::IntegrityFeatures::kDefault
+          : SubresourceIntegrity::IntegrityFeatures::kSignatures;
   return document_parameters;
 }
 
