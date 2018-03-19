@@ -264,6 +264,9 @@ void NexeLoadManager::NexeDidCrash() {
   // have been received and we'll just get an EOF indication.
 
   base::SharedMemory shmem(crash_info_shmem_handle_, true);
+  // When shmem goes out of scope, the handle will be closed. Invalidate
+  // our handle so our destructor doesn't try to close it again.
+  crash_info_shmem_handle_ = base::SharedMemoryHandle();
   if (shmem.Map(kNaClCrashInfoShmemSize)) {
     uint32_t crash_log_length;
     // We cast the length value to volatile here to prevent the compiler from
