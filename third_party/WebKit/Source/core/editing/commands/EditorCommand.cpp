@@ -817,8 +817,10 @@ void ClipboardCommands::WriteSelectionToPasteboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
   const String plain_text = frame.SelectedTextForClipboard();
-  Pasteboard::GeneralPasteboard()->WriteHTML(html, url, plain_text,
-                                             CanSmartCopyOrDelete(frame));
+  Pasteboard::GeneralPasteboard()->WriteHTML(
+      html, url, plain_text,
+      CanSmartCopyOrDelete(frame) ? Pasteboard::kCanSmartReplace
+                                  : Pasteboard::kCannotSmartReplace);
 }
 
 bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,

@@ -69,7 +69,8 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
       << "We should be pasting into something editable.";
 
   Pasteboard* pasteboard = Pasteboard::GeneralPasteboard();
-  pasteboard->WriteHTML(html_to_paste, BlankURL(), "", false);
+  pasteboard->WriteHTML(html_to_paste, BlankURL(), "",
+                        Pasteboard::kCannotSmartReplace);
   EXPECT_TRUE(frame.GetEditor().ExecuteCommand("Paste"));
 
   return body->InnerHTMLAsString();
