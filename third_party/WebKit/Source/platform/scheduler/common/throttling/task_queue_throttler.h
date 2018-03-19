@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_TASK_QUEUE_THROTTLER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_TASK_QUEUE_THROTTLER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
 
 #include <set>
 #include <unordered_map>
@@ -16,16 +16,16 @@
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/child/cancelable_closure_holder.h"
-#include "platform/scheduler/renderer/budget_pool.h"
-#include "platform/scheduler/renderer/cpu_time_budget_pool.h"
-#include "platform/scheduler/renderer/wake_up_budget_pool.h"
+#include "platform/scheduler/common/throttling/budget_pool.h"
+#include "platform/scheduler/common/throttling/cpu_time_budget_pool.h"
+#include "platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace blink {
 namespace scheduler {
@@ -96,9 +96,8 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
  public:
   // We use tracing controller from RendererSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
-  TaskQueueThrottler(
-      RendererSchedulerImpl* renderer_scheduler,
-      TraceableVariableController* tracing_controller);
+  TaskQueueThrottler(RendererSchedulerImpl* renderer_scheduler,
+                     TraceableVariableController* tracing_controller);
 
   ~TaskQueueThrottler() override;
 
@@ -156,6 +155,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
   void AsValueInto(base::trace_event::TracedValue* state,
                    base::TimeTicks now) const;
+
  private:
   struct Metadata {
     Metadata() : throttling_ref_count(0) {}
@@ -200,9 +200,9 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   base::RepeatingCallback<void(TaskQueue*, base::TimeTicks)>
       forward_immediate_work_callback_;
   scoped_refptr<TaskQueue> control_task_queue_;
-  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
+  RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   TraceableVariableController* tracing_controller_;  // NOT OWNED
-  base::TickClock* tick_clock_;                // NOT OWNED
+  base::TickClock* tick_clock_;                      // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
 
   CancelableClosureHolder pump_throttled_tasks_closure_;
@@ -219,4 +219,4 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_TASK_QUEUE_THROTTLER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_

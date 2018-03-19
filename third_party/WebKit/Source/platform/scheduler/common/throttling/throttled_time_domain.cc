@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/throttled_time_domain.h"
+#include "platform/scheduler/common/throttling/throttled_time_domain.h"
 
 namespace blink {
 namespace scheduler {

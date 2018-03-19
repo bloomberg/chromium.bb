@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/task_queue_throttler.h"
+#include "platform/scheduler/common/throttling/task_queue_throttler.h"
 
 #include <stddef.h>
 
@@ -16,8 +16,8 @@
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager.h"
+#include "platform/scheduler/common/throttling/budget_pool.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
