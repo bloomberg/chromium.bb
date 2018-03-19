@@ -190,39 +190,37 @@ bool GetSwitchValueAsInt(const base::CommandLine& command_line,
   }
 }
 
-cc::LayerSelectionBound ConvertWebSelectionBound(
-    const WebSelection& web_selection,
-    bool is_start) {
-  cc::LayerSelectionBound cc_bound;
-  if (web_selection.IsNone())
-    return cc_bound;
+gfx::SelectionBound::Type ConvertFromWebSelectionBoundType(
+    blink::WebSelectionBound::Type type) {
+  if (type == blink::WebSelectionBound::Type::kSelectionLeft)
+    return gfx::SelectionBound::Type::LEFT;
+  if (type == blink::WebSelectionBound::Type::kSelectionRight)
+    return gfx::SelectionBound::Type::RIGHT;
+  // if WebSelection is not a range (caret or none),
+  // The type of gfx::SelectionBound should be CENTER.
+  DCHECK_EQ(type, blink::WebSelectionBound::Type::kCaret);
+  return gfx::SelectionBound::Type::CENTER;
+}
 
-  const blink::WebSelectionBound& web_bound =
-      is_start ? web_selection.Start() : web_selection.end();
-  DCHECK(web_bound.layer_id);
-  cc_bound.type = gfx::SelectionBound::CENTER;
-  if (web_selection.IsRange()) {
-    if (is_start) {
-      cc_bound.type = web_bound.is_text_direction_rtl
-                          ? gfx::SelectionBound::RIGHT
-                          : gfx::SelectionBound::LEFT;
-    } else {
-      cc_bound.type = web_bound.is_text_direction_rtl
-                          ? gfx::SelectionBound::LEFT
-                          : gfx::SelectionBound::RIGHT;
-    }
-  }
-  cc_bound.layer_id = web_bound.layer_id;
-  cc_bound.edge_top = gfx::Point(web_bound.edge_top_in_layer);
-  cc_bound.edge_bottom = gfx::Point(web_bound.edge_bottom_in_layer);
-  cc_bound.hidden = web_bound.hidden;
+cc::LayerSelectionBound ConvertFromWebSelectionBound(
+    const blink::WebSelectionBound& bound) {
+  cc::LayerSelectionBound cc_bound;
+  DCHECK(bound.layer_id);
+
+  cc_bound.type = ConvertFromWebSelectionBoundType(bound.type);
+  cc_bound.layer_id = bound.layer_id;
+  cc_bound.edge_top = gfx::Point(bound.edge_top_in_layer);
+  cc_bound.edge_bottom = gfx::Point(bound.edge_bottom_in_layer);
+  cc_bound.hidden = bound.hidden;
   return cc_bound;
 }
 
-cc::LayerSelection ConvertWebSelection(const WebSelection& web_selection) {
+cc::LayerSelection ConvertFromWebSelection(const WebSelection& web_selection) {
+  if (web_selection.IsNone())
+    return cc::LayerSelection();
   cc::LayerSelection cc_selection;
-  cc_selection.start = ConvertWebSelectionBound(web_selection, true);
-  cc_selection.end = ConvertWebSelectionBound(web_selection, false);
+  cc_selection.start = ConvertFromWebSelectionBound(web_selection.Start());
+  cc_selection.end = ConvertFromWebSelectionBound(web_selection.end());
   return cc_selection;
 }
 
@@ -910,7 +908,7 @@ void RenderWidgetCompositor::ClearViewportLayers() {
 
 void RenderWidgetCompositor::RegisterSelection(
     const blink::WebSelection& selection) {
-  layer_tree_host_->RegisterSelection(ConvertWebSelection(selection));
+  layer_tree_host_->RegisterSelection(ConvertFromWebSelection(selection));
 }
 
 void RenderWidgetCompositor::ClearSelection() {
