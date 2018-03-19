@@ -55,6 +55,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   const network::mojom::FetchRedirectMode redirect_mode_;
   const network::mojom::RequestContextFrameType frame_type_;
   const WebURLRequest::RequestContext request_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink
