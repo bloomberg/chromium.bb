@@ -82,6 +82,15 @@
   // NO-OP to disable highlighting and only allow selection.
 }
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.itemIdentifier = nil;
+  self.title = nil;
+  self.icon = nil;
+  self.snapshot = nil;
+  self.selected = NO;
+}
+
 #pragma mark - Accessibility
 
 - (BOOL)isAccessibilityElement {
