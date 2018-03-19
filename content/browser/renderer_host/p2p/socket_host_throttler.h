@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 
 namespace rtc {
-class RateLimiter;
+class DataRateLimiter;
 }
 
 namespace content {
@@ -31,7 +31,7 @@ class CONTENT_EXPORT P2PMessageThrottler {
   void SetSendIceBandwidth(int bandwith_kbps);
 
  private:
-  std::unique_ptr<rtc::RateLimiter> rate_limiter_;
+  std::unique_ptr<rtc::DataRateLimiter> rate_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PMessageThrottler);
 };
