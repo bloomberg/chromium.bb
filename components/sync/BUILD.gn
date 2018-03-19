@@ -1062,6 +1062,7 @@ if (is_android) {
     deps = [
       ":test_support_proto_java_prepare",
     ]
+    generate_lite = true
   }
 
   android_library("sync_java_test_support") {

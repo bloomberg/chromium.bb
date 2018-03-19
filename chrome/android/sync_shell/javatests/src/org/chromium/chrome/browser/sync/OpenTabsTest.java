@@ -242,37 +242,42 @@ public class OpenTabsTest {
         }
     }
 
-    private EntitySpecifics makeSessionEntity(String tag, String clientName, int numTabs) {
-        EntitySpecifics specifics = new EntitySpecifics();
-        specifics.session = new SessionSpecifics();
-        specifics.session.sessionTag = tag;
-        specifics.session.header = new SessionHeader();
-        specifics.session.header.clientName = clientName;
-        specifics.session.header.deviceType = SyncEnums.TYPE_PHONE;
-        SessionWindow window = new SessionWindow();
-        window.windowId = 0;
-        window.selectedTabIndex = 0;
-        window.tab = new int[numTabs];
+    private SessionWindow makeSessionWindow(int numTabs) {
+        SessionWindow.Builder windowBuilder =
+                SessionWindow.newBuilder().setWindowId(0).setSelectedTabIndex(0);
         for (int i = 0; i < numTabs; i++) {
-            window.tab[i] = i;
+            windowBuilder.addTab(i); // Updates |windowBuilder| internal state.
         }
-        specifics.session.header.window = new SessionWindow[] { window };
-        return specifics;
+        return windowBuilder.build();
+    }
+
+    private EntitySpecifics makeSessionEntity(String tag, String clientName, int numTabs) {
+        SessionSpecifics session =
+                SessionSpecifics.newBuilder()
+                        .setSessionTag(tag)
+                        .setHeader(SessionHeader.newBuilder()
+                                           .setClientName(clientName)
+                                           .setDeviceType(SyncEnums.DeviceType.TYPE_PHONE)
+                                           .addWindow(makeSessionWindow(numTabs))
+                                           .build())
+                        .build();
+        return EntitySpecifics.newBuilder().setSession(session).build();
     }
 
     private EntitySpecifics makeTabEntity(String tag, String url, int id) {
-        EntitySpecifics specifics = new EntitySpecifics();
-        specifics.session = new SessionSpecifics();
-        specifics.session.sessionTag = tag;
-        specifics.session.tabNodeId = id;
-        SessionTab tab = new SessionTab();
-        tab.tabId = id;
-        tab.currentNavigationIndex = 0;
-        TabNavigation nav = new TabNavigation();
-        nav.virtualUrl = url;
-        tab.navigation = new TabNavigation[] { nav };
-        specifics.session.tab = tab;
-        return specifics;
+        SessionSpecifics session =
+                SessionSpecifics.newBuilder()
+                        .setSessionTag(tag)
+                        .setTabNodeId(id)
+                        .setTab(SessionTab.newBuilder()
+                                        .setTabId(id)
+                                        .setCurrentNavigationIndex(0)
+                                        .addNavigation(TabNavigation.newBuilder()
+                                                               .setVirtualUrl(url)
+                                                               .build())
+                                        .build())
+                        .build();
+        return EntitySpecifics.newBuilder().setSession(session).build();
     }
 
     private void deleteServerTabsForClient(String clientName) throws JSONException {
