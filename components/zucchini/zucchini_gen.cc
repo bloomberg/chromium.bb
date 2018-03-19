@@ -21,7 +21,6 @@
 #include "components/zucchini/equivalence_map.h"
 #include "components/zucchini/heuristic_ensemble_matcher.h"
 #include "components/zucchini/image_index.h"
-#include "components/zucchini/label_manager.h"
 #include "components/zucchini/patch_writer.h"
 #include "components/zucchini/suffix_array.h"
 #include "components/zucchini/targets_affinity.h"

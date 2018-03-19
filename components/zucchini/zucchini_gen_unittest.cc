@@ -12,7 +12,6 @@
 #include "components/zucchini/equivalence_map.h"
 #include "components/zucchini/image_index.h"
 #include "components/zucchini/image_utils.h"
-#include "components/zucchini/label_manager.h"
 #include "components/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
