@@ -491,6 +491,14 @@ crbug.com/800359 external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Slo
 
 crbug.com/808185 [ Win Release ] http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Slow ]
 
+# OffscreenCanvas non-virtual convert-to-blob tests
+# These two tests are running without idle-task support in non-virtual
+# environment; we are testing whether they can switch to force-encoding mode
+# after waiting for idle task to start for a threshold time. Therefore, we
+# intentionally mark them as slow tests to allow the waiting to finish.
+crbug.com/817091 external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Slow ]
+crbug.com/817091 external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.w.html [ Slow ]
+
 crbug.com/808153 fast/webgl/texImage-imageBitmap-from-blob-resize.html [ Slow ]
 
 # This test is very CPU intensive, as it parses a lot of IDL in JS. It's slow

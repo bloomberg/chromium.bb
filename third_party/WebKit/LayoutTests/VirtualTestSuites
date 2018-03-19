@@ -22,6 +22,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "external/wpt/offscreen-canvas/convert-to-blob",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "compositing/visibility",
     "args": ["--enable-threaded-compositing"]
   },
