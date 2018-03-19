@@ -756,9 +756,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonWindowLeak) {
   EXPECT_EQ(browser2, test_browser);
 }
 
+// TODO(crbug.com/822071): Flaky on Windows 7 (dbg) bot.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SingletonIncognitoLeak DISABLED_SingletonIncognitoLeak
+#else
+#define MAYBE_SingletonIncognitoLeak SingletonIncognitoLeak
+#endif
 // Tests that a disposition of SINGLETON_TAB cannot see across anonymity,
 // except for certain non-incognito affinity URLs (e.g. settings).
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SingletonIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
@@ -807,9 +813,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonIncognitoLeak) {
   EXPECT_EQ(browser(), test_browser);
 }
 
+// TODO(crbug.com/822071): Flaky on Windows 7 (dbg) bot.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SwitchToTabIncognitoLeak DISABLED_SwitchToTabIncognitoLeak
+#else
+#define MAYBE_SwitchToTabIncognitoLeak SwitchToTabIncognitoLeak
+#endif
 // Tests that a disposition of SWITCH_TAB cannot see across anonymity,
 // except for certain non-incognito affinity URLs (e.g. settings).
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_SwitchToTabIncognitoLeak) {
   Browser* orig_browser;
 
   // Navigate to a site.
