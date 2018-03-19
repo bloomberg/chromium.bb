@@ -13,6 +13,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
                   cc::RenderFrameMetadata>::
     Read(content::mojom::RenderFrameMetadataDataView data,
          cc::RenderFrameMetadata* out) {
+  out->root_background_color = data.root_background_color();
   return data.ReadRootScrollOffset(&out->root_scroll_offset);
 }
 

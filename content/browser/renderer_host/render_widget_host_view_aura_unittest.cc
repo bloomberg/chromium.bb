@@ -25,6 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -50,6 +51,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -136,8 +138,6 @@ namespace content {
 void InstallDelegatedFrameHostClient(
     RenderWidgetHostViewAura* render_widget_host_view,
     std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client);
-
-namespace {
 
 constexpr uint64_t kFrameIndexStart =
     viz::CompositorFrameSinkSupport::kFrameIndexStart;
@@ -352,6 +352,11 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return event_handler()->pointer_state();
   }
 
+  void SetRenderFrameMetadata(cc::RenderFrameMetadata metadata) {
+    host()->render_frame_metadata_provider()->SetLastRenderFrameMetadataForTest(
+        metadata);
+  }
+
   bool resize_locked() const {
     return delegated_frame_host_client_->resize_locked();
   }
@@ -478,8 +483,6 @@ enum WheelScrollingMode {
   kWheelScrollLatching,
   kAsyncWheelEvents,
 };
-
-}  // namespace
 
 class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
@@ -2759,11 +2762,10 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
       gfx::Rect());
   view_->SetSize(frame_size);
   view_->Show();
-  viz::CompositorFrame frame =
-      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size));
-  frame.metadata.root_background_color = SK_ColorRED;
-  view_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
-
+  cc::RenderFrameMetadata metadata;
+  metadata.root_background_color = SK_ColorRED;
+  view_->SetRenderFrameMetadata(metadata);
+  view_->OnRenderFrameMetadataChanged();
   ui::Layer* parent_layer = view_->GetNativeView()->layer();
 
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), parent_layer->bounds());

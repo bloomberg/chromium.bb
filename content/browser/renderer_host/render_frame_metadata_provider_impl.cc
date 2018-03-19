@@ -58,6 +58,11 @@ void RenderFrameMetadataProviderImpl::OnFrameTokenFrameSubmissionForTesting() {
     observer.OnRenderFrameSubmission();
 }
 
+void RenderFrameMetadataProviderImpl::SetLastRenderFrameMetadataForTest(
+    cc::RenderFrameMetadata metadata) {
+  last_render_frame_metadata_ = metadata;
+}
+
 void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
     uint32_t frame_token,
     const cc::RenderFrameMetadata& metadata) {
