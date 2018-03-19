@@ -572,9 +572,6 @@ public class ChromeTabbedActivity
                 isShowingPromo = SigninPromoUtil.launchSigninPromoIfNeeded(this)
                         || DataReductionPromoScreen.launchDataReductionPromo(
                                    this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
-                if (!isShowingPromo && getBottomSheet() != null) {
-                    getBottomSheet().showColdStartHelpBubble();
-                }
             } else {
                 preferenceManager.setPromosSkippedOnFirstStart(true);
             }
@@ -802,8 +799,6 @@ public class ChromeTabbedActivity
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
             mLayoutManager.addOverviewModeObserver(this);
-
-            if (getBottomSheet() != null) getBottomSheet().setLayoutManagerChrome(mLayoutManager);
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
             initializeCompositorContent(mLayoutManager, findViewById(R.id.url_bar),

@@ -1414,7 +1414,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetector.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetMetrics.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetObserver.java",
-  "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomeIphBubbleController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomeIphMenuHeader.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/EmptyBottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/displaystyle/MarginResizer.java",
