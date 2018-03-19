@@ -149,7 +149,7 @@ class DocumentWebSocketChannelTest : public PageTestBase {
     return static_cast<WebSocketHandleClient*>(channel_.Get());
   }
 
-  WebCallbacks<void, const WebString&>* WebCallbacks() {
+  WebCallbacks<void, const WebString&>* GetWebCallbacks() {
     return channel_.Get();
   }
 
@@ -831,7 +831,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), DoInitialize(_));
   EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
   EXPECT_CALL(*handshake_throttle_,
-              ThrottleHandshake(WebURL(url()), _, WebCallbacks()));
+              ThrottleHandshake(WebURL(url()), _, GetWebCallbacks()));
   EXPECT_CALL(*handshake_throttle_, Destructor());
   Channel()->Connect(url(), "");
 }
@@ -849,7 +849,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleSucceedsFirst) {
   }
   Channel()->Connect(url(), "");
   checkpoint.Call(1);
-  WebCallbacks()->OnSuccess();
+  GetWebCallbacks()->OnSuccess();
   checkpoint.Call(2);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
 }
@@ -869,7 +869,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, HandshakeSucceedsFirst) {
   checkpoint.Call(1);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
   checkpoint.Call(2);
-  WebCallbacks()->OnSuccess();
+  GetWebCallbacks()->OnSuccess();
 }
 
 // This happens if JS code calls close() during the handshake.
@@ -979,7 +979,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
     EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
   }
   Channel()->Connect(url(), "");
-  WebCallbacks()->OnError("Connection blocked by throttle");
+  GetWebCallbacks()->OnError("Connection blocked by throttle");
 }
 
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
@@ -993,7 +993,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   }
   Channel()->Connect(url(), "");
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
-  WebCallbacks()->OnError("Connection blocked by throttle");
+  GetWebCallbacks()->OnError("Connection blocked by throttle");
 }
 
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
