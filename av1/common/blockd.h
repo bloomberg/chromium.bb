@@ -662,8 +662,6 @@ static TX_TYPE intra_mode_to_tx_type_context(const MB_MODE_INFO *mbmi,
              : _intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
 }
 
-#define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
-
 static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 
 static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
@@ -691,12 +689,8 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
   const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
   const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
-#if USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   (void)bs;
   if (tx_size_sqr_up > TX_32X32) return EXT_TX_SET_DCTONLY;
-#else
-  if (tx_size_sqr_up > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
-#endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (use_reduced_set)
