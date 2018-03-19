@@ -38,7 +38,6 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
-#include "net/base/escape.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -196,7 +195,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
 
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_string = "data:text/html;charset=utf-8,";
-  url_string.append(net::EscapeQueryParamValue(html, false));
+  url_string.append(html);
   GURL url(url_string);
   WebURLRequest request(url);
   request.SetCheckForBrowserSideNavigation(false);

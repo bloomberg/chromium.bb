@@ -428,12 +428,7 @@ base::StringPiece GURL::HostNoBracketsPiece() const {
 }
 
 std::string GURL::GetContent() const {
-  if (!is_valid_)
-    return std::string();
-  std::string content = ComponentString(parsed_.GetContent());
-  if (!SchemeIs(url::kJavaScriptScheme) && parsed_.ref.len >= 0)
-    content.erase(content.size() - parsed_.ref.len - 1);
-  return content;
+  return is_valid_ ? ComponentString(parsed_.GetContent()) : std::string();
 }
 
 bool GURL::HostIsIPAddress() const {

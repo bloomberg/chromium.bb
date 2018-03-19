@@ -25,23 +25,25 @@ bool DataURL::Parse(const GURL& url,
                     std::string* mime_type,
                     std::string* charset,
                     std::string* data) {
-  if (!url.is_valid() || !url.has_scheme())
+  if (!url.is_valid())
     return false;
 
   DCHECK(mime_type->empty());
   DCHECK(charset->empty());
+  std::string::const_iterator begin = url.spec().begin();
+  std::string::const_iterator end = url.spec().end();
 
-  std::string content = url.GetContent();
+  std::string::const_iterator after_colon = std::find(begin, end, ':');
+  if (after_colon == end)
+    return false;
+  ++after_colon;
 
-  std::string::const_iterator begin = content.begin();
-  std::string::const_iterator end = content.end();
-
-  std::string::const_iterator comma = std::find(begin, end, ',');
+  std::string::const_iterator comma = std::find(after_colon, end, ',');
   if (comma == end)
     return false;
 
   std::vector<base::StringPiece> meta_data =
-      base::SplitStringPiece(base::StringPiece(begin, comma), ";",
+      base::SplitStringPiece(base::StringPiece(after_colon, comma), ";",
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   auto iter = meta_data.cbegin();

@@ -228,15 +228,7 @@ TEST(DataURLTest, Parse) {
       true,
       "text/plain",
       "utf-8",
-      "\xE2\x80\x8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1"},
-
-    // The 'data' of a data URI does not include any ref it has.
-    {
-      "data:text/plain,this/is/a/test/%23include/#dontinclude",
-      true,
-      "text/plain",
-      "",
-      "this/is/a/test/#include/"},
+      "\xE2\x80\x8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1"}
 
     // TODO(darin): add more interesting tests
   };

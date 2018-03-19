@@ -15,7 +15,6 @@
 #include "base/process/process_handle.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
@@ -120,9 +119,7 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          accessibility_mode,
                                          ax::mojom::Event::kLoadComplete);
-  std::string encoded_html;
-  base::ReplaceChars(html, "#", "%23", &encoded_html);
-  GURL html_data_url("data:text/html," + encoded_html);
+  GURL html_data_url("data:text/html," + html);
   NavigateToURL(shell(), html_data_url);
   waiter.WaitForNotification();
 }

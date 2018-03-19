@@ -164,8 +164,8 @@ class ProtocolHandlerUtilTest : public PlatformTest,
 TEST_F(ProtocolHandlerUtilTest, GetResponseDataSchemeTest) {
   NSURLResponse* response;
   // MIME type and charset are correctly carried over.
-  response = BuildDataURLResponse("?mime=type'", "$(charset-*", "content");
-  CheckDataResponse(response, "?mime=type'", "$(charset-*");
+  response = BuildDataURLResponse("#mime=type'", "$(charset-*", "content");
+  CheckDataResponse(response, "#mime=type'", "$(charset-*");
   // Missing values are treated as default values.
   response = BuildDataURLResponse("", "", "content");
   CheckDataResponse(response, kTextPlain, kAscii);
