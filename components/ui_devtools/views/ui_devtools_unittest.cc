@@ -344,7 +344,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
   }
 
   void HideHighlight(int root_window_index) {
-    dom_agent_->hideHighlight();
+    overlay_agent_->hideHighlight();
     DCHECK_GE(root_window_index, 0);
     DCHECK_LE(root_window_index,
               static_cast<int>(dom_agent()->root_windows().size()));
@@ -387,7 +387,7 @@ TEST_F(UIDevToolsTest, FindElementIdTargetedByPoint) {
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
-  EXPECT_NE(0, dom_agent()->FindElementIdTargetedByPoint(
+  EXPECT_NE(0, overlay_agent()->FindElementIdTargetedByPoint(
                    gfx::Point(1, 1), GetPrimaryRootWindow()));
 }
 
@@ -402,18 +402,20 @@ TEST_F(UIDevToolsTest, OneUIElementContainsAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int outside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int outside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       outside_rect.origin(), GetPrimaryRootWindow());
-  int inside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int inside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       inside_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(outside_rect_id, inside_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(outside_rect_id,
+                                                   inside_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(inside_rect_id, outside_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(inside_rect_id,
+                                                   outside_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_outside(
       dom_agent()
@@ -427,7 +429,7 @@ TEST_F(UIDevToolsTest, OneUIElementContainsAnother) {
 
   EXPECT_EQ(element_outside.second, outside_rect);
   EXPECT_EQ(element_inside.second, inside_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_CONTAINS_R2);
 }
 
@@ -442,18 +444,20 @@ TEST_F(UIDevToolsTest, OneUIElementStaysHorizontalAndLeftOfAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int outside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int outside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       outside_rect.origin(), GetPrimaryRootWindow());
-  int inside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int inside_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       inside_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(outside_rect_id, inside_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(outside_rect_id,
+                                                   inside_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(inside_rect_id, outside_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(inside_rect_id,
+                                                   outside_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_outside(
       dom_agent()
@@ -467,7 +471,7 @@ TEST_F(UIDevToolsTest, OneUIElementStaysHorizontalAndLeftOfAnother) {
 
   EXPECT_EQ(element_outside.second, outside_rect);
   EXPECT_EQ(element_inside.second, inside_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_HORIZONTAL_FULL_LEFT_R2);
 }
 
@@ -484,20 +488,20 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyTopLeftOfAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int top_left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int top_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       top_left_rect.origin(), GetPrimaryRootWindow());
-  int bottom_right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int bottom_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       bottom_right_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
-                                               bottom_right_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
+                                                   bottom_right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(bottom_right_rect_id,
-                                               top_left_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(bottom_right_rect_id,
+                                                   top_left_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_top_left(
       dom_agent()
@@ -511,7 +515,7 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyTopLeftOfAnother) {
 
   EXPECT_EQ(element_top_left.second, top_left_rect);
   EXPECT_EQ(element_bottom_right.second, bottom_right_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_TOP_FULL_LEFT_R2);
 }
 
@@ -528,21 +532,21 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyBottomLeftOfAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int bottom_left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int bottom_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       bottom_left_rect.origin(), GetPrimaryRootWindow());
-  int top_right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int top_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       top_right_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
-                                               top_right_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
+                                                   top_right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(top_right_rect_id,
-                                               bottom_left_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(top_right_rect_id,
+                                                   bottom_left_rect_id);
 
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_top_left(
       dom_agent()
@@ -556,7 +560,7 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyBottomLeftOfAnother) {
 
   EXPECT_EQ(element_top_left.second, bottom_left_rect);
   EXPECT_EQ(element_bottom_right.second, top_right_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_BOTTOM_FULL_LEFT_R2);
 }
 
@@ -573,20 +577,20 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyTopLeftOfAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int top_left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int top_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       top_left_rect.origin(), GetPrimaryRootWindow());
-  int bottom_right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int bottom_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       bottom_right_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
-                                               bottom_right_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(top_left_rect_id,
+                                                   bottom_right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(bottom_right_rect_id,
-                                               top_left_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(bottom_right_rect_id,
+                                                   top_left_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_top_left(
       dom_agent()
@@ -600,7 +604,7 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyTopLeftOfAnother) {
 
   EXPECT_EQ(element_top_left.second, top_left_rect);
   EXPECT_EQ(element_bottom_right.second, bottom_right_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_TOP_PARTIAL_LEFT_R2);
 }
 
@@ -617,20 +621,20 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyBottomLeftOfAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int bottom_left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int bottom_left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       bottom_left_rect.origin(), GetPrimaryRootWindow());
-  int top_right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int top_right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       top_right_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
-                                               top_right_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
+                                                   top_right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(top_right_rect_id,
-                                               bottom_left_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(top_right_rect_id,
+                                                   bottom_left_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_bottom_left(
       dom_agent()
@@ -644,7 +648,7 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyBottomLeftOfAnother) {
 
   EXPECT_EQ(element_bottom_left.second, bottom_left_rect);
   EXPECT_EQ(element_top_right.second, top_right_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_BOTTOM_PARTIAL_LEFT_R2);
 }
 
@@ -659,18 +663,18 @@ TEST_F(UIDevToolsTest, OneUIElementIntersectsAnother) {
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  int left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int left_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       left_rect.origin(), GetPrimaryRootWindow());
-  int right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+  int right_rect_id = overlay_agent()->FindElementIdTargetedByPoint(
       right_rect.origin(), GetPrimaryRootWindow());
-  dom_agent()->ShowDistancesInHighlightOverlay(left_rect_id, right_rect_id);
+  overlay_agent()->ShowDistancesInHighlightOverlay(left_rect_id, right_rect_id);
 
   HighlightRectsConfiguration highlight_rect_config =
-      dom_agent()->highlight_rect_config();
+      overlay_agent()->highlight_rect_config();
 
   // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
-  dom_agent()->ShowDistancesInHighlightOverlay(right_rect_id, left_rect_id);
-  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+  overlay_agent()->ShowDistancesInHighlightOverlay(right_rect_id, left_rect_id);
+  DCHECK_EQ(highlight_rect_config, overlay_agent()->highlight_rect_config());
 
   const std::pair<aura::Window*, gfx::Rect> element_left(
       dom_agent()
@@ -684,7 +688,7 @@ TEST_F(UIDevToolsTest, OneUIElementIntersectsAnother) {
 
   EXPECT_EQ(element_left.second, left_rect);
   EXPECT_EQ(element_right.second, right_rect);
-  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+  DCHECK_EQ(overlay_agent()->highlight_rect_config(),
             HighlightRectsConfiguration::R1_INTERSECTS_R2);
 }
 
@@ -699,7 +703,7 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
 
   gfx::Point p(1, 1);
   int node_id =
-      dom_agent()->FindElementIdTargetedByPoint(p, GetPrimaryRootWindow());
+      overlay_agent()->FindElementIdTargetedByPoint(p, GetPrimaryRootWindow());
 
   EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
   EXPECT_EQ(0, GetOverlayNodeHighlightRequestedCount(node_id));
