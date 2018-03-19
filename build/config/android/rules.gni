@@ -723,6 +723,8 @@ if (enable_java_templates) {
   #     false. (see build/android/gyp/generate_v14_compatible_resources.py)
   #   shared_resources: If true make a resource package that can be loaded by a
   #     different application at runtime to access the package's resources.
+  #   app_as_shared_lib: If true make a resource package that can be loaded as
+  #     both shared_resources and normal application.
   #   r_text_file: (optional) path to pre-generated R.txt to be used when
   #     generating R.java instead of resource-based aapt-generated one.
   #   create_srcjar: If false, does not create an R.java file. Needed only for
@@ -790,15 +792,17 @@ if (enable_java_templates) {
       }
     }
 
-    prepare_resources(target_name) {
+    process_resources(target_name) {
       forward_variables_from(invoker,
                              [
+                               "app_as_shared_lib",
                                "android_manifest",
                                "custom_package",
                                "deps",
                                "generated_resource_dirs",
                                "generated_resource_files",
                                "resource_dirs",
+                               "shared_resources",
                                "v14_skip",
                              ])
       if (!defined(deps)) {
@@ -1147,8 +1151,8 @@ if (enable_java_templates) {
       _deps += invoker.deps
     }
 
-    _prepare_resources_target = "${target_name}__prepare_resources"
-    prepare_resources(_prepare_resources_target) {
+    _process_resources_target = "${target_name}__process_resources"
+    process_resources(_process_resources_target) {
       deps = _deps + [ ":$_build_config_target_name" ]
       build_config = _build_config
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
@@ -1178,7 +1182,7 @@ if (enable_java_templates) {
         srcjar_deps = []
       }
       srcjar_deps += [
-        ":$_prepare_resources_target",
+        ":$_process_resources_target",
 
         # This dep is required for any targets that depend on //base:base_java.
         "//base:base_build_config_gen",
@@ -2010,11 +2014,12 @@ if (enable_java_templates) {
           "$_base_path.resources.main-dex-proguard.txt"
     }
     _generated_proguard_config = "$_base_path.resources.proguard.txt"
-    _compile_resources_target = "${_template_name}__compile_resources"
-    compile_resources(_compile_resources_target) {
+    _process_resources_target = "${_template_name}__process_resources"
+    process_resources(_process_resources_target) {
       forward_variables_from(invoker,
                              [
                                "alternative_android_sdk_jar",
+                               "app_as_shared_lib",
                                "shared_resources",
                                "support_zh_hk",
                                "aapt_locale_whitelist",
@@ -2031,6 +2036,7 @@ if (enable_java_templates) {
       }
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
+      generate_constant_ids = true
       proguard_file = _generated_proguard_config
       if (_enable_multidex) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
@@ -2050,13 +2056,13 @@ if (enable_java_templates) {
             get_label_info(invoker.shared_resources_whitelist_target, "name")
         shared_resources_whitelist =
             "${_whitelist_gen_dir}/${_whitelist_target_name}" +
-            "__compile_resources_R.txt"
+            "__process_resources_R.txt"
         deps += [
-          "${invoker.shared_resources_whitelist_target}__compile_resources",
+          "${invoker.shared_resources_whitelist_target}__process_resources",
         ]
       }
     }
-    _srcjar_deps += [ ":$_compile_resources_target" ]
+    _srcjar_deps += [ ":$_process_resources_target" ]
 
     if (_native_libs_deps != []) {
       _enable_chromium_linker_tests = false
@@ -2234,7 +2240,7 @@ if (enable_java_templates) {
                                ])
         deps = _deps + [
                  ":$_build_config_target",
-                 ":$_compile_resources_target",
+                 ":$_process_resources_target",
                  ":$_java_target",
                ]
         inputs = [
@@ -2292,7 +2298,7 @@ if (enable_java_templates) {
 
       if (_enable_multidex) {
         extra_main_dex_proguard_config = _generated_proguard_main_dex_config
-        deps += [ ":$_compile_resources_target" ]
+        deps += [ ":$_process_resources_target" ]
       }
 
       # All deps are already included in _dex_sources when proguard is used.
@@ -2420,7 +2426,7 @@ if (enable_java_templates) {
       incremental_deps = _deps + [
                            ":$_merge_manifest_target",
                            ":$_build_config_target",
-                           ":$_compile_resources_target",
+                           ":$_process_resources_target",
                          ]
 
       # This target generates the input file _all_resources_zip_path.
@@ -2428,7 +2434,7 @@ if (enable_java_templates) {
                ":$_merge_manifest_target",
                ":$_build_config_target",
                ":$_final_dex_target_name",
-               ":$_compile_resources_target",
+               ":$_process_resources_target",
              ]
 
       if (_native_libs_deps != [] ||
