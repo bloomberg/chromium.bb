@@ -26,6 +26,7 @@
 #include "net/quic/test_tools/simple_data_producer.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 
+using std::string;
 using testing::_;
 using testing::InSequence;
 using testing::Return;
@@ -1066,7 +1067,7 @@ TEST_F(QuicPacketGeneratorTest, ConnectionCloseFrameLargerThanPacketSize) {
   frame->error_code = QUIC_PACKET_WRITE_ERROR;
   char buf[2000] = {};
   QuicStringPiece error_details(buf, 2000);
-  frame->error_details = error_details.as_string();
+  frame->error_details = string(error_details);
   generator_.AddControlFrame(QuicFrame(frame));
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());

@@ -847,14 +847,6 @@ bool QuicSession::ShouldYield(QuicStreamId stream_id) {
   return write_blocked_streams()->ShouldYield(stream_id);
 }
 
-void QuicSession::NeuterUnencryptedStreamData() {
-  QuicCryptoStream* crypto_stream = GetMutableCryptoStream();
-  crypto_stream->NeuterUnencryptedStreamData();
-  if (!crypto_stream->HasPendingRetransmission()) {
-    streams_with_pending_retransmission_.erase(kCryptoStreamId);
-  }
-}
-
 QuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
   DCHECK(!QuicContainsKey(static_stream_map_, stream_id))

@@ -22,6 +22,7 @@
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
+using std::string;
 
 namespace net {
 
@@ -105,7 +106,7 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
   QuicStringPiece nonce = client_nonce;
   QuicString nonce_storage;
   if (!server_nonce.empty()) {
-    nonce_storage = client_nonce.as_string() + server_nonce.as_string();
+    nonce_storage = string(client_nonce) + string(server_nonce);
     nonce = nonce_storage;
   }
 
@@ -197,7 +198,7 @@ bool CryptoUtils::ExportKeyingMaterial(QuicStringPiece subkey_secret,
     return false;
   }
   uint32_t context_length = static_cast<uint32_t>(context.length());
-  QuicString info = label.as_string();
+  QuicString info = string(label);
   info.push_back('\0');
   info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
   info.append(context.data(), context.length());

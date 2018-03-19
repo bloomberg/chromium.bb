@@ -26,6 +26,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_data_producer.h"
 
+using std::string;
 using testing::_;
 using testing::Return;
 using testing::Truly;
@@ -63,8 +64,8 @@ class TestEncrypter : public QuicEncrypter {
                      size_t max_output_length) override {
     version_ = version;
     packet_number_ = packet_number;
-    associated_data_ = associated_data.as_string();
-    plaintext_ = plaintext.as_string();
+    associated_data_ = string(associated_data);
+    plaintext_ = string(plaintext);
     memcpy(output, plaintext.data(), plaintext.length());
     *output_length = plaintext.length();
     return true;
@@ -109,8 +110,8 @@ class TestDecrypter : public QuicDecrypter {
                      size_t max_output_length) override {
     version_ = version;
     packet_number_ = packet_number;
-    associated_data_ = associated_data.as_string();
-    ciphertext_ = ciphertext.as_string();
+    associated_data_ = string(associated_data);
+    ciphertext_ = string(ciphertext);
     memcpy(output, ciphertext.data(), ciphertext.length());
     *output_length = ciphertext.length();
     return true;

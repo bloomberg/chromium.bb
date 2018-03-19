@@ -23,6 +23,7 @@
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 
+using std::string;
 
 namespace net {
 namespace test {
@@ -132,7 +133,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressDifferentCerts) {
   QuicStringPiece different_common_certs(
       reinterpret_cast<const char*>(&set_hash), sizeof(set_hash));
   QuicString compressed3 = QuicCryptoServerConfigPeer::CompressChain(
-      &compressed_certs_cache, chain, different_common_certs.as_string(),
+      &compressed_certs_cache, chain, string(different_common_certs),
       cached_certs, common_sets.get());
   EXPECT_EQ(compressed_certs_cache.Size(), 3u);
 }

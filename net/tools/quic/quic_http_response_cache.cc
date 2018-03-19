@@ -277,7 +277,7 @@ void QuicHttpResponseCache::InitializeFromDirectory(
       }
       push_resources.push_back(ServerPushInfo(url, response->headers().Clone(),
                                               kV3LowestPriority,
-                                              response->body().as_string()));
+                                              (string(response->body()))));
     }
     MaybeAddServerPushResources(resource_file->host(), resource_file->path(),
                                 push_resources);
@@ -330,11 +330,11 @@ void QuicHttpResponseCache::AddResponseImpl(QuicStringPiece host,
 
 string QuicHttpResponseCache::GetKey(QuicStringPiece host,
                                      QuicStringPiece path) const {
-  string host_string = host.as_string();
+  string host_string = string(host);
   size_t port = host_string.find(':');
   if (port != string::npos)
     host_string = string(host_string.c_str(), port);
-  return host_string + path.as_string();
+  return host_string + string(path);
 }
 
 void QuicHttpResponseCache::MaybeAddServerPushResources(
@@ -359,7 +359,7 @@ void QuicHttpResponseCache::MaybeAddServerPushResources(
     }
     string host = push_resource.request_url.host();
     if (host.empty()) {
-      host = request_host.as_string();
+      host = string(request_host);
     }
     string path = push_resource.request_url.path();
     bool found_existing_response = false;

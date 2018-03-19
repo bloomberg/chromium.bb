@@ -105,12 +105,8 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   // Invalid data copy.
   QuicDataWriter writer3(4000, buf, HOST_BYTE_ORDER);
   EXPECT_FALSE(send_buffer_.WriteStreamData(3000, 1024, &writer3));
-  if (GetQuicReloadableFlag(quic_use_write_index)) {
-    EXPECT_DFATAL(send_buffer_.WriteStreamData(0, 4000, &writer3),
-                  "Writer fails to write.");
-  } else {
-    EXPECT_FALSE(send_buffer_.WriteStreamData(0, 4000, &writer3));
-  }
+  EXPECT_DFATAL(send_buffer_.WriteStreamData(0, 4000, &writer3),
+                "Writer fails to write.");
 
   send_buffer_.OnStreamDataConsumed(3840);
   EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
@@ -264,9 +260,6 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
 }
 
 TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
-  if (!GetQuicReloadableFlag(quic_use_write_index)) {
-    return;
-  }
   char buf[4000];
   QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
   // With data buffered, index points to the 1st slice of data.
