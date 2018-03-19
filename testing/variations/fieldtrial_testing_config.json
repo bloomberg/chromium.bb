@@ -1794,7 +1794,7 @@
             ]
         }
     ],
-    "LowPriorityIframes": [
+    "LowPriorityIframes2": [
         {
             "platforms": [
                 "linux",
