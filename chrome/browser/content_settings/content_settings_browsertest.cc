@@ -473,19 +473,6 @@ class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
     content_settings_map->SetDefaultContentSetting(
         CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PepperContentSettingsSpecialCasesTest::SetUpCommandLine(command_line);
-    // ClientHintsPersistent feature queries the status of JavaScript content
-    // setting on every page load. When JavaScript is blocked, this results in
-    // tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT) always
-    // returning true in RunJavaScriptBlockedTest() method. This interferes with
-    // the execution of the test.
-    // TODO: https://crbug.com/822553: Make these tests compatible with the
-    // client hints feature.
-    command_line->AppendSwitchASCII("disable-blink-features",
-                                    "ClientHintsPersistent");
-  }
 };
 
 // A sanity check to verify that the plugin that is used as a baseline below
