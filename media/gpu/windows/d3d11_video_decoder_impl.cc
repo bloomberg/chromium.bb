@@ -205,7 +205,8 @@ void D3D11VideoDecoderImpl::DoDecode() {
       return;
     }
     accelerated_video_decoder_->SetStream(
-        (const uint8_t*)current_buffer_->data(), current_buffer_->data_size());
+        -1, (const uint8_t*)current_buffer_->data(),
+        current_buffer_->data_size());
   }
 
   while (true) {

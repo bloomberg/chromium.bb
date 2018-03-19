@@ -4,7 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 
-#include "media/gpu/vaapi/vaapi_decode_surface.h"
+#include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp9_picture.h"
@@ -17,22 +17,6 @@
   } while (0)
 
 namespace media {
-
-class VaapiVP9Picture : public VP9Picture {
- public:
-  explicit VaapiVP9Picture(scoped_refptr<VaapiDecodeSurface> surface)
-      : dec_surface_(surface) {}
-
-  VaapiVP9Picture* AsVaapiVP9Picture() override { return this; }
-  scoped_refptr<VaapiDecodeSurface> dec_surface() { return dec_surface_; }
-
- private:
-  ~VaapiVP9Picture() override {}
-
-  scoped_refptr<VaapiDecodeSurface> dec_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiVP9Picture);
-};
 
 VaapiVP9Accelerator::VaapiVP9Accelerator(
     VaapiVideoDecodeAccelerator* vaapi_dec,
@@ -50,7 +34,8 @@ VaapiVP9Accelerator::~VaapiVP9Accelerator() {
 
 scoped_refptr<VP9Picture> VaapiVP9Accelerator::CreateVP9Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<VaapiDecodeSurface> va_surface = vaapi_dec_->CreateSurface();
+
+  const auto va_surface = vaapi_dec_->CreateVASurface();
   if (!va_surface)
     return nullptr;
 
@@ -79,16 +64,12 @@ bool VaapiVP9Accelerator::SubmitDecode(
 
   CHECK_EQ(ref_pictures.size(), arraysize(pic_param.reference_frames));
   for (size_t i = 0; i < arraysize(pic_param.reference_frames); ++i) {
-    VASurfaceID va_surface_id;
     if (ref_pictures[i]) {
-      scoped_refptr<VaapiDecodeSurface> surface =
-          VP9PictureToVaapiDecodeSurface(ref_pictures[i]);
-      va_surface_id = surface->va_surface()->id();
+      pic_param.reference_frames[i] =
+          ref_pictures[i]->AsVaapiVP9Picture()->GetVASurfaceID();
     } else {
-      va_surface_id = VA_INVALID_SURFACE;
+      pic_param.reference_frames[i] = VA_INVALID_SURFACE;
     }
-
-    pic_param.reference_frames[i] = va_surface_id;
   }
 
 #define FHDR_TO_PP_PF1(a) pic_param.pic_fields.bits.a = frame_hdr->a
@@ -178,18 +159,15 @@ bool VaapiVP9Accelerator::SubmitDecode(
                                     frame_hdr->frame_size, non_const_ptr))
     return false;
 
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      VP9PictureToVaapiDecodeSurface(pic);
-
-  return vaapi_dec_->DecodeSurface(dec_surface);
+  return vaapi_dec_->DecodeVASurface(pic->AsVaapiVP9Picture()->va_surface());
 }
 
 bool VaapiVP9Accelerator::OutputPicture(const scoped_refptr<VP9Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      VP9PictureToVaapiDecodeSurface(pic);
-  dec_surface->set_visible_rect(pic->visible_rect);
-  vaapi_dec_->SurfaceReady(dec_surface);
+
+  const VaapiVP9Picture* vaapi_pic = pic->AsVaapiVP9Picture();
+  vaapi_dec_->VASurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
+                             vaapi_pic->visible_rect());
   return true;
 }
 
@@ -202,15 +180,6 @@ bool VaapiVP9Accelerator::GetFrameContext(const scoped_refptr<VP9Picture>& pic,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED() << "Frame context update not supported";
   return false;
-}
-
-scoped_refptr<VaapiDecodeSurface>
-VaapiVP9Accelerator::VP9PictureToVaapiDecodeSurface(
-    const scoped_refptr<VP9Picture>& pic) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VaapiVP9Picture* vaapi_pic = pic->AsVaapiVP9Picture();
-  CHECK(vaapi_pic);
-  return vaapi_pic->dec_surface();
 }
 
 }  // namespace media

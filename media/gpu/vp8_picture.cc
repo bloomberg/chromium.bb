@@ -6,9 +6,9 @@
 
 namespace media {
 
-VP8Picture::VP8Picture() {}
+VP8Picture::VP8Picture() = default;
 
-VP8Picture::~VP8Picture() {}
+VP8Picture::~VP8Picture() = default;
 
 V4L2VP8Picture* VP8Picture::AsV4L2VP8Picture() {
   return nullptr;

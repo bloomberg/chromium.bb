@@ -27,13 +27,15 @@ bool VP8Decoder::Flush() {
   return true;
 }
 
-void VP8Decoder::SetStream(const uint8_t* ptr, size_t size) {
+void VP8Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
   DCHECK(ptr);
   DCHECK(size);
 
+  DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
+           << " size: " << size;
+  stream_id_ = id;
   curr_frame_start_ = ptr;
   frame_size_ = size;
-  DVLOG(4) << "New input stream at: " << (void*)ptr << " size: " << size;
 }
 
 void VP8Decoder::Reset() {
@@ -94,7 +96,9 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
   if (!curr_pic_)
     return kRanOutOfSurfaces;
 
-  curr_pic_->visible_rect = gfx::Rect(pic_size_);
+  curr_pic_->set_visible_rect(gfx::Rect(pic_size_));
+  curr_pic_->set_bitstream_id(stream_id_);
+
   if (!DecodeAndOutputCurrentFrame())
     return kDecodeError;
 

@@ -177,7 +177,8 @@ bool H264Decoder::InitCurrPicture(const H264SliceHeader* slice_hdr) {
            sizeof(curr_pic_->ref_pic_marking));
   }
 
-  curr_pic_->visible_rect = visible_rect_;
+  curr_pic_->set_visible_rect(visible_rect_);
+  curr_pic_->set_bitstream_id(stream_id_);
 
   return true;
 }
@@ -1308,11 +1309,13 @@ bool H264Decoder::ProcessCurrentSlice() {
     return H264Decoder::kDecodeError;  \
   } while (0)
 
-void H264Decoder::SetStream(const uint8_t* ptr, size_t size) {
+void H264Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
   DCHECK(ptr);
   DCHECK(size);
 
-  DVLOG(4) << "New input stream at: " << (void*)ptr << " size: " << size;
+  DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
+           << " size: " << size;
+  stream_id_ = id;
   parser_.SetStream(ptr, size);
 }
 

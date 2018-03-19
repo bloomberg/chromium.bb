@@ -134,7 +134,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // be outputted in the same order as SurfaceReady calls. To do so, the
   // surfaces are put on decoder_display_queue_ and sent to output in that
   // order once all preceding surfaces are sent.
-  void SurfaceReady(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
+  void SurfaceReady(int32_t bitstream_id,
+                    const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   //
   // Internal methods of this class.
@@ -339,9 +340,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void ReusePictureBufferTask(int32_t picture_buffer_id,
                               std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
 
-  // Called to actually send |dec_surface| to the client, after it is decoded
-  // preserving the order in which it was scheduled via SurfaceReady().
-  void OutputSurface(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
+  // Called to actually send |dec_surface| to the client - as a result of
+  // decoding the stream in |bitstream_id| - after it is decoded preserving
+  // the order in which it was scheduled via SurfaceReady().
+  void OutputSurface(int32_t bitstream_id,
+                     const scoped_refptr<V4L2DecodeSurface>& dec_surface);
 
   // Goes over the |decoder_display_queue_| and sends all buffers from the
   // front of the queue that are already decoded to the client, in order.
@@ -418,8 +421,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 
   // Queue storing decode surfaces ready to be output as soon as they are
-  // decoded. The surfaces must be output in order they are queued.
-  base::queue<scoped_refptr<V4L2DecodeSurface>> decoder_display_queue_;
+  // decoded, together with the bitstream_id from which they were decoded,
+  // in order to be able to pass it back to the client.
+  // The surfaces must be output in order they are queued.
+  base::queue<std::pair<int32_t, scoped_refptr<V4L2DecodeSurface>>>
+      decoder_display_queue_;
 
   // Decoder state.
   State state_;

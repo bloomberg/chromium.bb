@@ -14,7 +14,6 @@
 namespace media {
 
 class H264Picture;
-class VaapiDecodeSurface;
 class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
@@ -45,9 +44,6 @@ class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
   void Reset() override;
 
  private:
-  scoped_refptr<VaapiDecodeSurface> H264PictureToVaapiDecodeSurface(
-      const scoped_refptr<H264Picture>& pic);
-
   void FillVAPicture(VAPictureH264* va_pic, scoped_refptr<H264Picture> pic);
   int FillVARefFramesFromDPB(const H264DPB& dpb,
                              VAPictureH264* va_pics,

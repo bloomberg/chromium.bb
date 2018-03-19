@@ -12,7 +12,6 @@
 namespace media {
 
 class VP8Picture;
-class VaapiDecodeSurface;
 class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
@@ -32,9 +31,6 @@ class VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
   bool OutputPicture(const scoped_refptr<VP8Picture>& pic) override;
 
  private:
-  scoped_refptr<VaapiDecodeSurface> VP8PictureToVaapiDecodeSurface(
-      const scoped_refptr<VP8Picture>& pic);
-
   const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   VaapiVideoDecodeAccelerator* vaapi_dec_;
 
