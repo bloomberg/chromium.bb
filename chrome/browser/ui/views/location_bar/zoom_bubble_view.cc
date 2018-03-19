@@ -10,6 +10,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/platform_util.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -112,6 +114,86 @@ class ZoomValue : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(ZoomValue);
 };
 
+views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return nullptr;  // Cocoa browsers always use anchor rects instead of views.
+#endif
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!is_fullscreen ||
+      browser_view->immersive_mode_controller()->IsRevealed()) {
+    LocationBarView* location_bar = browser_view->GetLocationBarView();
+    return ui::MaterialDesignController::IsSecondaryUiMaterial()
+               ? static_cast<views::View*>(location_bar)
+               : static_cast<views::View*>(location_bar->zoom_view());
+  }
+  return nullptr;
+#else  // OS_MACOSX && !MAC_VIEWS_BROWSER
+  return nullptr;
+#endif
+}
+
+ImmersiveModeController* GetImmersiveModeControllerForBrowser(
+    Browser* browser) {
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return nullptr;
+#endif
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  return browser_view->immersive_mode_controller();
+#else
+  return nullptr;
+#endif
+}
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+void ParentToViewsBrowser(Browser* browser,
+                          ZoomBubbleView* zoom_bubble,
+                          views::View* anchor_view,
+                          content::WebContents* web_contents) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  // If we do not have an anchor view, parent the bubble to the content area.
+  if (!anchor_view)
+    zoom_bubble->set_parent_window(web_contents->GetNativeView());
+
+  views::Widget* zoom_bubble_widget =
+      views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
+  if (zoom_bubble_widget && anchor_view) {
+    browser_view->GetLocationBarView()->zoom_view()->OnBubbleWidgetCreated(
+        zoom_bubble_widget);
+  }
+}
+#endif
+
+#if defined(OS_MACOSX)
+void ParentToCocoaBrowser(Browser* browser, ZoomBubbleView* zoom_bubble) {
+  gfx::NativeView parent =
+      platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
+  DCHECK(parent);
+  zoom_bubble->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  zoom_bubble->set_parent_window(parent);
+  views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
+}
+#endif
+
+void ParentToBrowser(Browser* browser,
+                     ZoomBubbleView* zoom_bubble,
+                     views::View* anchor_view,
+                     content::WebContents* web_contents) {
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    ParentToCocoaBrowser(browser, zoom_bubble);
+  else
+    ParentToViewsBrowser(browser, zoom_bubble, anchor_view, web_contents);
+#elif defined(OS_MACOSX)
+  ParentToCocoaBrowser(browser, zoom_bubble);
+#else
+  ParentToViewsBrowser(browser, zoom_bubble, anchor_view, web_contents);
+#endif
+}
+
 }  // namespace
 
 // static
@@ -129,20 +211,10 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   DCHECK(browser->window() &&
          browser->exclusive_access_manager()->fullscreen_controller());
 
-  views::View* anchor_view = nullptr;
-  ImmersiveModeController* immersive_mode_controller = nullptr;
   bool is_fullscreen = browser->window()->IsFullscreen();
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (!is_fullscreen ||
-      browser_view->immersive_mode_controller()->IsRevealed()) {
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-      anchor_view = browser_view->GetLocationBarView();
-    else
-      anchor_view = browser_view->GetLocationBarView()->zoom_view();
-  }
-  immersive_mode_controller = browser_view->immersive_mode_controller();
-#endif
+  views::View* anchor_view = GetAnchorViewForBrowser(browser, is_fullscreen);
+  ImmersiveModeController* immersive_mode_controller =
+      GetImmersiveModeControllerForBrowser(browser);
 
   // Find the extension that initiated the zoom change, if any.
   zoom::ZoomController* zoom_controller =
@@ -173,25 +245,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
             ->extension());
   }
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-  // If we do not have an anchor view, parent the bubble to the content area.
-  if (!anchor_view)
-    zoom_bubble_->set_parent_window(web_contents->GetNativeView());
-
-  views::Widget* zoom_bubble_widget =
-      views::BubbleDialogDelegateView::CreateBubble(zoom_bubble_);
-  if (zoom_bubble_widget && anchor_view) {
-    browser_view->GetLocationBarView()->zoom_view()->OnBubbleWidgetCreated(
-        zoom_bubble_widget);
-  }
-#else
-  gfx::NativeView parent =
-      platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
-  DCHECK(parent);
-  zoom_bubble_->set_arrow(views::BubbleBorder::TOP_RIGHT);
-  zoom_bubble_->set_parent_window(parent);
-  views::BubbleDialogDelegateView::CreateBubble(zoom_bubble_);
-#endif
+  ParentToBrowser(browser, zoom_bubble_, anchor_view, web_contents);
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen)
