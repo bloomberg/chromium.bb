@@ -64,6 +64,20 @@ bool CompareN32Pixels(void* actual_pixels,
 
 }  // namespace
 
+#define EXPECT_TRACED_RECT(x, y, width, height, rect_list) \
+  do {                                                     \
+    ASSERT_EQ(4u, rect_list->GetSize());                   \
+    double d;                                              \
+    EXPECT_TRUE((rect_list)->GetDouble(0, &d));            \
+    EXPECT_EQ(x, d);                                       \
+    EXPECT_TRUE((rect_list)->GetDouble(1, &d));            \
+    EXPECT_EQ(y, d);                                       \
+    EXPECT_TRUE((rect_list)->GetDouble(2, &d));            \
+    EXPECT_EQ(width, d);                                   \
+    EXPECT_TRUE((rect_list)->GetDouble(3, &d));            \
+    EXPECT_EQ(height, d);                                  \
+  } while (false)
+
 TEST(DisplayItemListTest, SingleUnpairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
@@ -399,15 +413,10 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
     // The real contents of the traced value is in here.
     {
       const base::ListValue* list;
-      double d;
 
       // The layer_rect field is present by empty.
       ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      ASSERT_EQ(4u, list->GetSize());
-      EXPECT_TRUE(list->GetDouble(0, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(1, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(2, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(3, &d) && d == 0) << d;
+      EXPECT_TRACED_RECT(0, 0, 0, 0, list);
 
       // The items list is there but empty.
       ASSERT_TRUE(params_dict->GetList("items", &list));
@@ -426,15 +435,10 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
     // The real contents of the traced value is in here.
     {
       const base::ListValue* list;
-      double d;
 
       // The layer_rect field is present by empty.
       ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      ASSERT_EQ(4u, list->GetSize());
-      EXPECT_TRUE(list->GetDouble(0, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(1, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(2, &d) && d == 0) << d;
-      EXPECT_TRUE(list->GetDouble(3, &d) && d == 0) << d;
+      EXPECT_TRACED_RECT(0, 0, 0, 0, list);
 
       // The items list is not there since we asked for no ops.
       ASSERT_FALSE(params_dict->GetList("items", &list));
@@ -463,10 +467,11 @@ TEST(DisplayItemListTest, AsValueWithOps) {
     PaintFlags red_paint;
     red_paint.setColor(SK_ColorRED);
 
-    list->push<SaveOp>();
+    list->push<SaveLayerOp>(nullptr, &red_paint);
     list->push<TranslateOp>(static_cast<float>(offset.x()),
                             static_cast<float>(offset.y()));
     list->push<DrawRectOp>(SkRect::MakeWH(4, 4), red_paint);
+    list->push<RestoreOp>();
 
     list->EndPaintOfUnpaired(bounds);
   }
@@ -490,28 +495,35 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
     // The real contents of the traced value is in here.
     {
-      const base::ListValue* list;
-      double d;
-
+      const base::ListValue* layer_rect;
       // The layer_rect field is present and has the bounds of the rtree.
-      ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      ASSERT_EQ(4u, list->GetSize());
-      EXPECT_TRUE(list->GetDouble(0, &d) && d == 2) << d;
-      EXPECT_TRUE(list->GetDouble(1, &d) && d == 3) << d;
-      EXPECT_TRUE(list->GetDouble(2, &d) && d == 8) << d;
-      EXPECT_TRUE(list->GetDouble(3, &d) && d == 9) << d;
+      ASSERT_TRUE(params_dict->GetList("layer_rect", &layer_rect));
+      EXPECT_TRACED_RECT(2, 3, 8, 9, layer_rect);
 
       // The items list has 3 things in it since we built 3 visual rects.
-      ASSERT_TRUE(params_dict->GetList("items", &list));
-      EXPECT_EQ(6u, list->GetSize());
+      const base::ListValue* items;
+      ASSERT_TRUE(params_dict->GetList("items", &items));
+      ASSERT_EQ(7u, items->GetSize());
 
-      for (int i = 0; i < 6; ++i) {
+      const char* expected_names[] = {"Save",      "Concat",   "SaveLayer",
+                                      "Translate", "DrawRect", "Restore",
+                                      "Restore"};
+      bool expected_has_skp[] = {false, true, true, true, true, false, false};
+
+      for (int i = 0; i < 7; ++i) {
         const base::DictionaryValue* item_dict;
+        ASSERT_TRUE(items->GetDictionary(i, &item_dict));
 
-        ASSERT_TRUE(list->GetDictionary(i, &item_dict));
+        const base::ListValue* visual_rect;
+        ASSERT_TRUE(item_dict->GetList("visual_rect", &visual_rect));
+        EXPECT_TRACED_RECT(2, 3, 8, 9, visual_rect);
 
-        // The SkPicture for each item exists.
-        EXPECT_TRUE(
+        std::string name;
+        EXPECT_TRUE(item_dict->GetString("name", &name));
+        EXPECT_EQ(expected_names[i], name);
+
+        EXPECT_EQ(
+            expected_has_skp[i],
             item_dict->GetString("skp64", static_cast<std::string*>(nullptr)));
       }
     }
@@ -528,15 +540,9 @@ TEST(DisplayItemListTest, AsValueWithOps) {
     // The real contents of the traced value is in here.
     {
       const base::ListValue* list;
-      double d;
-
       // The layer_rect field is present and has the bounds of the rtree.
       ASSERT_TRUE(params_dict->GetList("layer_rect", &list));
-      ASSERT_EQ(4u, list->GetSize());
-      EXPECT_TRUE(list->GetDouble(0, &d) && d == 2) << d;
-      EXPECT_TRUE(list->GetDouble(1, &d) && d == 3) << d;
-      EXPECT_TRUE(list->GetDouble(2, &d) && d == 8) << d;
-      EXPECT_TRUE(list->GetDouble(3, &d) && d == 9) << d;
+      EXPECT_TRACED_RECT(2, 3, 8, 9, list);
 
       // The items list is not present since we asked for no ops.
       ASSERT_FALSE(params_dict->GetList("items", &list));

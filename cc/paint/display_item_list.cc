@@ -115,8 +115,12 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->BeginArray("items");
 
     PlaybackParams params(nullptr, SkMatrix::I());
+    const auto& bounds = rtree_.GetAllBoundsForTracing();
+    size_t i = 0;
     for (const PaintOp* op : PaintOpBuffer::Iterator(&paint_op_buffer_)) {
       state->BeginDictionary();
+      state->SetString("name", PaintOpTypeToString(op->GetType()));
+      MathUtil::AddToTracedValue("visual_rect", bounds[i++], state.get());
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =
@@ -124,9 +128,11 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
       op->Raster(canvas, params);
       sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
-      std::string b64_picture;
-      PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
-      state->SetString("skp64", b64_picture);
+      if (picture->approximateOpCount()) {
+        std::string b64_picture;
+        PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
+        state->SetString("skp64", b64_picture);
+      }
 
       state->EndDictionary();
     }

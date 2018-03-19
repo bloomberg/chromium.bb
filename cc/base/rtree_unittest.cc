@@ -110,6 +110,7 @@ TEST(RTreeTest, SortedResults) {
 TEST(RTreeTest, GetBoundsEmpty) {
   RTree<size_t> rtree;
   EXPECT_EQ(gfx::Rect(), rtree.GetBounds());
+  EXPECT_TRUE(rtree.GetAllBoundsForTracing().empty());
 }
 
 TEST(RTreeTest, GetBoundsNonOverlapping) {
@@ -121,6 +122,7 @@ TEST(RTreeTest, GetBoundsNonOverlapping) {
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
+  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, GetBoundsOverlapping) {
@@ -132,6 +134,7 @@ TEST(RTreeTest, GetBoundsOverlapping) {
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, BuildAfterReset) {
@@ -147,10 +150,12 @@ TEST(RTreeTest, BuildAfterReset) {
   // Resetting should give the same as an empty rtree.
   rtree.Reset();
   EXPECT_EQ(gfx::Rect(), rtree.GetBounds());
+  EXPECT_TRUE(rtree.GetAllBoundsForTracing().empty());
 
   // Should be able to rebuild from a reset rtree.
   rtree.Build(rects);
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, Payload) {
