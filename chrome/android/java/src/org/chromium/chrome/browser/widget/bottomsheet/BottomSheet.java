@@ -103,46 +103,6 @@ public class BottomSheet
     }
 
     /**
-     * A specialized FrameLayout that is capable of ignoring all user input based on the state of
-     * the bottom sheet.
-     */
-    public static class TouchRestrictingFrameLayout extends FrameLayout {
-        /** A handle to the bottom sheet. */
-        private BottomSheet mBottomSheet;
-
-        public TouchRestrictingFrameLayout(Context context, AttributeSet atts) {
-            super(context, atts);
-        }
-
-        /**
-         * @param sheet The bottom sheet.
-         */
-        public void setBottomSheet(BottomSheet sheet) {
-            mBottomSheet = sheet;
-        }
-
-        /**
-         * @return Whether touch is enabled.
-         */
-        private boolean isTouchDisabled() {
-            return mBottomSheet == null || mBottomSheet.isRunningContentSwapAnimation()
-                    || mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_SCROLLING;
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent event) {
-            if (isTouchDisabled()) return false;
-            return super.onInterceptTouchEvent(event);
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            if (isTouchDisabled()) return false;
-            return super.onTouchEvent(event);
-        }
-    }
-
-    /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
      */
