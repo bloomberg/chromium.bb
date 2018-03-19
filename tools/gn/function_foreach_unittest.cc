@@ -73,3 +73,28 @@ TEST(FunctionForeach, MarksIdentAsUsed) {
   EXPECT_TRUE(setup.scope()->CheckForUnusedVars(&err));
   EXPECT_FALSE(err.has_error());
 }
+
+// Checks that the list can be modified during iteration without crashing.
+TEST(FunctionForeach, ListModification) {
+  TestWithScope setup;
+  TestParseInput input_grow(
+      "a = [1, 2]\n"
+      "foreach(i, a) {\n"
+      "  print(i)\n"
+      "  if (i <= 8) {\n"
+      "    a += [ i + 2 ]\n"
+      "  }\n"
+      "}\n"
+      "print(a)");
+  ASSERT_FALSE(input_grow.has_error());
+
+  Err err;
+  input_grow.parsed()->Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error()) << err.message();
+
+  // The result of the loop should have been unaffected by the mutations of
+  // the list variable inside the loop, but the modifications made to it
+  // should have been persisted.
+  EXPECT_EQ("1\n2\n[1, 2, 3, 4]\n", setup.print_output());
+  setup.print_output().clear();
+}
