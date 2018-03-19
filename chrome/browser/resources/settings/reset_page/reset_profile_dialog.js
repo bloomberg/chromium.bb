@@ -115,7 +115,12 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.cancel();
+    this.cancel();
+  },
+
+  cancel: function() {
+    if (this.$.dialog.open)
+      this.$.dialog.cancel();
   },
 
   /** @private */
