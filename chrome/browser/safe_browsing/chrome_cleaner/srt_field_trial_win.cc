@@ -43,7 +43,7 @@ const base::Feature kRebootPromptDialogFeature{
     "RebootPromptDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserInitiatedChromeCleanupsFeature{
-    "UserInitiatedChromeCleanups", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UserInitiatedChromeCleanups", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(b/786964): Rename this to remove ByBitness from the feature name once
 // all test scripts have been updated.
