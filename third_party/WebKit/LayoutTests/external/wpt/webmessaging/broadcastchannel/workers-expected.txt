@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS BroadcastChannel works in workers
-PASS BroadcastChannel works in shared workers
-PASS Closing and re-opening a channel works.
-FAIL BroadcastChannel created after a worker self.close() workerCode.toSource is not a function
-Harness: the test ran to completion.
-
