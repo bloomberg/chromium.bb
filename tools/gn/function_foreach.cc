@@ -4,7 +4,6 @@
 
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
-#include "tools/gn/parse_node_value_adapter.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 
@@ -21,8 +20,9 @@ const char kForEach_Help[] =
     }
 
   Executes the loop contents block over each item in the list, assigning the
-  loop_var to each item in sequence. The loop_var will be a copy so assigning
-  to it will not mutate the list.
+  loop_var to each item in sequence. The <loop_var> will be a copy so assigning
+  to it will not mutate the list. The loop will iterate over a copy of <list>
+  so mutating it inside the loop will not affect iteration.
 
   The block does not introduce a new scope, so that variable assignments inside
   the loop will be visible once the loop terminates.
@@ -65,11 +65,15 @@ Value RunForEach(Scope* scope,
   }
   base::StringPiece loop_var(identifier->value().value());
 
-  // Extract the list to iterate over.
-  ParseNodeValueAdapter list_adapter;
-  if (!list_adapter.InitForType(scope, args_vector[1].get(), Value::LIST, err))
+  // Extract the list to iterate over. Always copy in case the code changes
+  // the list variable inside the loop.
+  Value list_value = args_vector[1]->Execute(scope, err);
+  if (err->has_error())
     return Value();
-  const std::vector<Value>& list = list_adapter.get().list_value();
+  list_value.VerifyTypeIs(Value::Type::LIST, err);
+  if (err->has_error())
+    return Value();
+  const std::vector<Value>& list = list_value.list_value();
 
   // Block to execute.
   const BlockNode* block = function->block();
