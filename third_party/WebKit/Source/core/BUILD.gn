@@ -2110,6 +2110,7 @@ jumbo_source_set("unit_tests") {
     "workers/DedicatedWorkerTest.cpp",
     "workers/MainThreadWorkletTest.cpp",
     "workers/ThreadedWorkletTest.cpp",
+    "workers/WorkerFetchTestHelper.h",
     "workers/WorkerModuleFetchCoordinatorTest.cpp",
     "workers/WorkerThreadTest.cpp",
     "workers/WorkerThreadTestHelper.h",
