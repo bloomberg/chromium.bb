@@ -145,8 +145,9 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
       (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
           ? kRGBA_F16_SkColorType
           : kRGBA_8888_SkColorType;
-  SkImageInfo info = SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
-                                       kUnpremul_SkAlphaType);
+  SkImageInfo info = SkImageInfo::Make(
+      rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
+      color_params.GetSkColorSpaceForSkSurfaces());
   sk_sp<SkImage> sk_image = src_image->PaintImageForCurrentFrame().GetSkImage();
   bool read_pixels_successful = sk_image->readPixels(
       info, result.Data(), info.minRowBytes(), rect.X(), rect.Y());

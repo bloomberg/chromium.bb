@@ -63,16 +63,17 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   }
   unsigned char* pixels = frame_resource->shared_bitmap_->pixels();
   DCHECK(pixels);
-  SkImageInfo image_info = SkImageInfo::Make(
-      width_, height_, kN32_SkColorType,
-      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  if (image_info.isEmpty())
-    return;
   // TODO(xlai): Optimize to avoid copying pixels. See crbug.com/651456.
   // However, in the case when |image| is texture backed, this function call
   // does a GPU readback which is required.
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (sk_image->bounds().isEmpty())
+    return;
+  SkImageInfo image_info = SkImageInfo::Make(
+      width_, height_, kN32_SkColorType,
+      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
+      sk_image->refColorSpace());
+  if (image_info.isEmpty())
     return;
   bool read_pixels_successful =
       sk_image->readPixels(image_info, pixels, image_info.minRowBytes(), 0, 0);
