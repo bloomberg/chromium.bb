@@ -7,6 +7,7 @@
 
 #include "platform/scheduler/child/metrics_helper.h"
 #include "platform/scheduler/child/worker_task_queue.h"
+#include "platform/scheduler/renderer/frame_origin_type.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
 #include "public/platform/TaskType.h"
 
@@ -26,11 +27,19 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
 
   using MetricsHelper::SetThreadType;
 
+  void SetParentFrameType(FrameOriginType frame_type);
+
  private:
   TaskDurationMetricReporter<TaskType>
       dedicated_worker_per_task_type_duration_reporter_;
   TaskDurationMetricReporter<TaskType>
       dedicated_worker_per_task_type_cpu_duration_reporter_;
+  TaskDurationMetricReporter<FrameOriginType>
+      dedicated_worker_per_parent_frame_status_duration_reporter_;
+  TaskDurationMetricReporter<FrameOriginType>
+      background_dedicated_worker_per_parent_frame_status_duration_reporter_;
+
+  base::Optional<FrameOriginType> parent_frame_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerMetricsHelper);
 };

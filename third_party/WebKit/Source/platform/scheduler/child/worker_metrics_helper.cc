@@ -4,6 +4,8 @@
 
 #include "platform/scheduler/child/worker_metrics_helper.h"
 
+#include "platform/scheduler/child/process_state.h"
+
 namespace blink {
 namespace scheduler {
 
@@ -12,9 +14,18 @@ WorkerMetricsHelper::WorkerMetricsHelper()
       dedicated_worker_per_task_type_duration_reporter_(
           "RendererScheduler.TaskDurationPerTaskType.DedicatedWorker"),
       dedicated_worker_per_task_type_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerTaskType.DedicatedWorker") {}
+          "RendererScheduler.TaskCPUDurationPerTaskType.DedicatedWorker"),
+      dedicated_worker_per_parent_frame_status_duration_reporter_(
+          "RendererScheduler.TaskDurationPerFrameOriginType.DedicatedWorker"),
+      background_dedicated_worker_per_parent_frame_status_duration_reporter_(
+          "RendererScheduler.TaskDurationPerFrameOriginType.DedicatedWorker."
+          "Background") {}
 
 WorkerMetricsHelper::~WorkerMetricsHelper() {}
+
+void WorkerMetricsHelper::SetParentFrameType(FrameOriginType frame_type) {
+  parent_frame_type_ = frame_type;
+}
 
 void WorkerMetricsHelper::RecordTaskMetrics(
     WorkerTaskQueue* queue,
@@ -28,6 +39,8 @@ void WorkerMetricsHelper::RecordTaskMetrics(
   MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time,
                                          thread_time);
 
+  bool backgrounded = internal::ProcessState::Get()->is_process_backgrounded;
+
   if (thread_type_ == WebThreadType::kDedicatedWorkerThread) {
     TaskType task_type = static_cast<TaskType>(task.task_type());
     dedicated_worker_per_task_type_duration_reporter_.RecordTask(
@@ -35,6 +48,16 @@ void WorkerMetricsHelper::RecordTaskMetrics(
     if (thread_time) {
       dedicated_worker_per_task_type_cpu_duration_reporter_.RecordTask(
           task_type, thread_time.value());
+    }
+
+    if (parent_frame_type_) {
+      dedicated_worker_per_parent_frame_status_duration_reporter_.RecordTask(
+          parent_frame_type_.value(), end_time - start_time);
+
+      if (backgrounded) {
+        background_dedicated_worker_per_parent_frame_status_duration_reporter_
+            .RecordTask(parent_frame_type_.value(), end_time - start_time);
+      }
     }
   }
 }
