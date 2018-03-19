@@ -1,11 +1,17 @@
 #!/bin/sh
 set -eu
 
+RET=0
 LIB=${WAYLAND_EGL_LIB}
 
-if [ ! -f "$LIB" ]; then
-	echo "The test binary \"$LIB\" does no exist"
-	exit 1
+if ! test -f "$LIB"; then
+	echo "Test binary \"$LIB\" does not exist"
+	exit 99
+fi
+
+if ! test -n "$NM"; then
+	echo "nm environment variable not set"
+	exit 99
 fi
 
 AVAIL_FUNCS="$($NM -D --format=bsd --defined-only $LIB | awk '{print $3}')"
@@ -32,7 +38,11 @@ NEW_ABI=$(echo "$AVAIL_FUNCS" | while read func; do
     echo $func
 done)
 
-test ! -n "$NEW_ABI" || echo "New ABI detected - If intentional, update the test."; echo "$NEW_ABI"
+if test -n "$NEW_ABI"; then
+	echo "New ABI detected - If intentional, update the test."
+	echo "$NEW_ABI"
+	RET=1
+fi
 
 REMOVED_ABI=$(echo "$REQ_FUNCS" | while read func; do
     echo "$AVAIL_FUNCS" | grep -q "^$func$" && continue
@@ -40,5 +50,10 @@ REMOVED_ABI=$(echo "$REQ_FUNCS" | while read func; do
     echo $func
 done)
 
-test ! -n "$REMOVED_ABI" || echo "ABI break detected - Required symbol(s) no longer exported!"; echo "$REMOVED_ABI"
-test ! -n "$NEW_ABI" || test ! -n "$REMOVED_ABI"
+if test -n "$REMOVED_ABI"; then
+	echo "ABI break detected - Required symbol(s) no longer exported!"
+	echo "$REMOVED_ABI"
+	RET=1
+fi
+
+exit $RET
