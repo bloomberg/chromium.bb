@@ -16,10 +16,10 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_SRC_FILES := \
 	amdgpu.c \
-	cirrus.c \
 	drv.c \
 	evdi.c \
 	exynos.c \
+	helpers_array.c \
 	helpers.c \
 	i915.c \
 	marvell.c \
@@ -27,12 +27,14 @@ LOCAL_SRC_FILES := \
 	meson.c \
 	msm.c \
 	nouveau.c \
+	radeon.c \
 	rockchip.c \
 	tegra.c \
 	udl.c \
 	vc4.c \
 	vgem.c \
-	virtio_gpu.c
+	virtio_dumb.c \
+	virtio_virgl.c
 
 include $(MINIGBM_GRALLOC_MK)
 
@@ -54,6 +56,7 @@ LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := $(TARGET_SHLIB_SUFFIX)
+LOCAL_SHARED_LIBRARIES += libnativewindow libsync liblog
 include $(BUILD_SHARED_LIBRARY)
 
-#endif
+endif
