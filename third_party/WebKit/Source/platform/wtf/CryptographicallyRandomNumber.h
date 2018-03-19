@@ -33,8 +33,6 @@
 
 namespace WTF {
 
-WTF_EXPORT void SetAlwaysZeroRandomSourceForTesting();
-
 // These functions are threadsafe.
 WTF_EXPORT uint32_t CryptographicallyRandomNumber();
 WTF_EXPORT void CryptographicallyRandomValues(void* buffer, size_t length);
