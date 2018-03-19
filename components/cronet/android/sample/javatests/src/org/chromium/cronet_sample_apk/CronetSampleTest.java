@@ -11,47 +11,29 @@ import android.os.ConditionVariable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.AndroidJUnit4;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.Feature;
-import org.chromium.net.test.EmbeddedTestServer;
-
 /**
  * Base test class for all CronetSample based tests.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AndroidJUnit4.class)
 public class CronetSampleTest {
-    private EmbeddedTestServer mTestServer;
-    private String mUrl;
+    private final String mUrl = "http://localhost";
 
     @Rule
     public ActivityTestRule<CronetSampleActivity> mActivityTestRule =
             new ActivityTestRule<>(CronetSampleActivity.class, false, false);
 
-    @Before
-    public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mUrl = mTestServer.getURL("/echo?status=200");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-    }
-
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testLoadUrl() throws Exception {
         CronetSampleActivity activity = launchCronetSampleWithUrl(mUrl);
 
@@ -70,7 +52,8 @@ public class CronetSampleTest {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().equals("Completed " + mUrl + " (200)")) {
+                if (s.toString().startsWith("Failed " + mUrl
+                            + " (Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED")) {
                     done.open();
                 }
             }
