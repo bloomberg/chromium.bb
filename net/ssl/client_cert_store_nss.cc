@@ -20,6 +20,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "crypto/nss_crypto_module_delegate.h"
+#include "crypto/nss_util.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -166,6 +167,8 @@ void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
         password_delegate,
     const CertFilter& cert_filter,
     ClientCertIdentityList* identities) {
+  crypto::EnsureNSSInit();
+
   CERTCertList* found_certs =
       CERT_FindUserCertsByUsage(CERT_GetDefaultCertDB(), certUsageSSLClient,
                                 PR_FALSE, PR_FALSE, password_delegate.get());
