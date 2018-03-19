@@ -39,6 +39,10 @@ class WebsiteSettingsInfo {
 
     // Settings scoped to the combination of the origin of the requesting
     // frame and the origin of the top level frame.
+    //
+    // This is deprecated with Permission Delegation and should not be used.
+    // Specifically, UI (e.g. prompts, page actions, etc.) should generally only
+    // change settings for the top level origin and not for embedded origins.
     REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE
   };
 
