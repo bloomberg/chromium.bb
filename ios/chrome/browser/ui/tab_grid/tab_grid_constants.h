@@ -24,6 +24,14 @@ extern const CGFloat kTabGridToolbarHorizontalInset;
 // The distance between the title and body of the empty state view.
 extern const CGFloat kTabGridEmptyStateVerticalMargin;
 
+// The insets from the edges for empty state.
+extern const CGFloat kTabGridEmptyStateVerticalInset;
+extern const CGFloat kTabGridEmptyStateHorizontalInset;
+
+// The insets from the edges for the floating button.
+extern const CGFloat kTabGridFloatingButtonVerticalInset;
+extern const CGFloat kTabGridFloatingButtonHorizontalInset;
+
 // Intrinsic heights of the tab grid toolbars.
 extern const CGFloat kTabGridTopToolbarHeight;
 extern const CGFloat kTabGridBottomToolbarHeight;
