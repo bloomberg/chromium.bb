@@ -14,6 +14,7 @@
 #include "extensions/shell/browser/shell_app_view_guest_delegate.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_virtual_keyboard_delegate.h"
+#include "extensions/shell/browser/shell_web_view_guest_delegate.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "extensions/shell/browser/api/file_system/shell_file_system_delegate.h"
@@ -33,6 +34,11 @@ void ShellExtensionsAPIClient::AttachWebContentsHelpers(
 AppViewGuestDelegate* ShellExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ShellAppViewGuestDelegate();
+}
+
+WebViewGuestDelegate* ShellExtensionsAPIClient::CreateWebViewGuestDelegate(
+    WebViewGuest* web_view_guest) const {
+  return new ShellWebViewGuestDelegate();
 }
 
 std::unique_ptr<VirtualKeyboardDelegate>
