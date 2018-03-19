@@ -100,7 +100,8 @@ WorkerOrWorkletModuleFetchCoordinatorProxy::
     : coordinator_(coordinator),
       outside_settings_task_runner_(outside_settings_task_runner),
       inside_settings_task_runner_(inside_settings_task_runner) {
-  DCHECK(coordinator_);
+  // TODO(nhiroki): Add DCHECK(coordinator_) after making SharedWorker and
+  // ServiceWorker pass the valid coordinator (https://crbug.com/680046).
   DCHECK(outside_settings_task_runner_);
   DCHECK(inside_settings_task_runner_);
   DCHECK(inside_settings_task_runner_->RunsTasksInCurrentSequence());

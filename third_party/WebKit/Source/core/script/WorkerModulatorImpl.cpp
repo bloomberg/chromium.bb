@@ -5,6 +5,8 @@
 #include "core/script/WorkerModulatorImpl.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/loader/modulescript/WorkerOrWorkletModuleScriptFetcher.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/bindings/V8ThrowException.h"
 
 namespace blink {
@@ -19,10 +21,9 @@ WorkerModulatorImpl::WorkerModulatorImpl(
     : ModulatorImplBase(std::move(script_state)) {}
 
 ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher() {
-  // TODO(nhiroki): Support module loading for workers.
-  // (https://crbug.com/680046)
-  NOTIMPLEMENTED();
-  return nullptr;
+  auto* global_scope = ToWorkerGlobalScope(GetExecutionContext());
+  return new WorkerOrWorkletModuleScriptFetcher(
+      global_scope->ModuleFetchCoordinatorProxy());
 }
 
 void WorkerModulatorImpl::ResolveDynamically(const String& specifier,

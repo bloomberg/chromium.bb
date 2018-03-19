@@ -20,6 +20,7 @@
 #include "core/workers/WorkerClassicScriptLoader.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
+#include "core/workers/WorkerModuleFetchCoordinator.h"
 #include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -81,7 +82,9 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
     : AbstractWorker(context),
       script_url_(script_url),
       options_(options),
-      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)) {
+      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)),
+      module_fetch_coordinator_(WorkerModuleFetchCoordinator::Create(
+          ToDocument(context)->Fetcher())) {
   DCHECK(IsMainThread());
   DCHECK(script_url_.IsValid());
   DCHECK(context_proxy_);
@@ -156,6 +159,7 @@ void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
   DCHECK(IsMainThread());
   if (classic_script_loader_)
     classic_script_loader_->Cancel();
+  module_fetch_coordinator_->Dispose();
   terminate();
 }
 
@@ -221,9 +225,6 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
   base::UnguessableToken devtools_worker_token =
       document->GetFrame() ? document->GetFrame()->GetDevToolsFrameToken()
                            : base::UnguessableToken::Create();
-  // TODO(nhiroki); Set the coordinator for module fetch.
-  // (https://crbug.com/680046)
-  WorkerOrWorkletModuleFetchCoordinator* module_fetch_coordinator = nullptr;
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
@@ -231,7 +232,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       CreateWorkerClients(), document->AddressSpace(),
       OriginTrialContext::GetTokens(document).get(), devtools_worker_token,
       std::make_unique<WorkerSettings>(document->GetSettings()),
-      kV8CacheOptionsDefault, module_fetch_coordinator,
+      kV8CacheOptionsDefault, module_fetch_coordinator_.Get(),
       ConnectToWorkerInterfaceProvider(document,
                                        SecurityOrigin::Create(script_url_)));
 }
@@ -242,6 +243,7 @@ const AtomicString& DedicatedWorker::InterfaceName() const {
 
 void DedicatedWorker::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_proxy_);
+  visitor->Trace(module_fetch_coordinator_);
   AbstractWorker::Trace(visitor);
 }
 
