@@ -393,6 +393,7 @@ android_apk("cronet_jni_apk") {
   android_manifest = "sample/AndroidManifest.xml"
   deps = [
     ":cronet_impl_all_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
 }
 
