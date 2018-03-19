@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">SCHLIESSEN</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1550523713251050646">Für weitere Optionen klicken</translation>
+<translation id="1567387640189251553">Seit der letzten Eingabe Ihres Passwortes wurde eine andere Tastatur angeschlossen. Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen.</translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
 <translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Ihr Passwort konnte immer noch nicht bestätigt werden. Hinweis: Falls Sie Ihr Passwort kürzlich geändert haben, wird Ihr neues Passwort übernommen, sobald Sie sich abmelden. Bitte verwenden Sie hier das alte Passwort.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische Klicks</translation>
+<translation id="1928739107511554905">Sie können das Update vornehmen, indem Sie den Touchscreen verwenden, um das Chromebook mit angeschlossener Tastatur neu zu starten.</translation>
 <translation id="1942830294380034169">Überlaufschaltfläche</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Streamen von <ph name="TAB_NAME" /> an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
+<translation id="2191905770366256395">Wichtiges Update für Ihre abnehmbare Tastatur</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
 <translation id="2220572644011485463">PIN oder Passwort</translation>
 <translation id="225680501294068881">Nach Geräten wird gesucht...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
 <translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="3899995891769452915">Spracheingabe</translation>
+<translation id="3900355044994618856">Ihre Sitzung wird in <ph name="SESSION_TIME_REMAINING" /> beendet</translation>
 <translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
 <translation id="394485226368336402">Audioeinstellungen</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
+<translation id="5136175204352732067">Andere Tastatur angeschlossen</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5222676887888702881">Abmelden</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Kopfhörer</translation>
 <translation id="5978382165065462689">Sie teilen sich die Bildschirmsteuerung per Remote-Unterstützung.</translation>
 <translation id="5980301590375426705">Gastsitzung beenden</translation>
+<translation id="598882571027504733">Sie können das Update vornehmen, indem Sie das Chromebook mit angeschlossener Tastatur neu starten.</translation>
 <translation id="5992218262414051481">Modus mit hohem Kontrast aktiviert. Drücken Sie Strg + Suche + H, um ihn zu deaktivieren.</translation>
 <translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
@@ -258,6 +264,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7067196344162293536">Automatisch drehen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
+<translation id="7131634465328662194">Sie werden automatisch abgemeldet.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
@@ -318,6 +325,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8652175077544655965">Einstellungen schließen</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
+<translation id="8734991477317290293">Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="8814715559352963456">Durch das Verschieben des Fensters auf einen anderen Desktop kann unerwartetes Verhalten auftreten.
 

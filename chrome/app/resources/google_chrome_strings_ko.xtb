@@ -45,6 +45,7 @@
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
+<translation id="2094919256425865063">Chrome을 종료하시겠습니까?</translation>
 <translation id="2120620239521071941">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />현재 설정<ph name="END_LINK" />을 보고하여 Chrome 개선에 참여</translation>
 <translation id="216054706567564023">휴대전화에 Chrome을 설치하세요. 계정 복구 전화번호로 SMS를 보내 드리겠습니다.</translation>
@@ -108,6 +109,7 @@
 <translation id="3735758079232443276">Chrome을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome에서 삭제...</translation>
+<translation id="3844992844761326777">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome에서 이 소프트웨어를 삭제하고 설정을 복원하여 브라우저가 다시 정상적으로 작동하도록 할 수 있습니다.</translation>
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
@@ -142,6 +144,7 @@
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="4804732725083176494">이 기기의 관리자에 의해 Chrome 로그인이 사용 중지되었습니다.</translation>
+<translation id="4833487314064352405">{0,plural, =1{하루 안에 Chrome 다시 시작}other{#일 안에 Chrome 다시 시작}}</translation>
 <translation id="4891791193823137474">백그라운드에서 Chrome을 실행</translation>
 <translation id="4895437082222824641">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
@@ -150,6 +153,7 @@
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="5028489144783860647">Chrome에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
 <translation id="5037239767309817516">변경사항을 적용하려면 모든 Chrome 창을 닫은 다음 다시 시작하시기 바랍니다.</translation>
+<translation id="5131923704757666404">{0,plural, =1{1시간 후에 Chrome 다시 시작}other{#시간 후에 Chrome 다시 시작}}</translation>
 <translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
 <translation id="5166975452760862670">현재 Chrome에서 사용 중인 언어</translation>
 <translation id="5170938038195470297">최신 버전의 Chrome에서 가져온 사용자 프로필이기 때문에 사용할 수 없습니다.
@@ -196,6 +200,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6634887557811630702">Chrome이 최신 버전입니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
+<translation id="677276454032249905">Chrome을 종료하시겠습니까?</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="686561893457936865">어디에서나 Chrome 사용</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>

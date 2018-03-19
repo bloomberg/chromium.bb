@@ -146,6 +146,11 @@
 <translation id="1503487916067509762">Ativa o bloqueio de injeção de softwares de terceiros</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Esta definição está obsoleta. Use SafeBrowsingExtendedReportingEnabled. A ativação ou desativação de SafeBrowsingExtendedReportingEnabled equivale à definição de SafeBrowsingExtendedReportingOptInAllowed como falsa.
+
+      Definir esta política como falsa impede que os usuários optem por enviar algumas informações do sistema e conteúdo da página aos servidores do Google. Se essa configuração for verdadeira ou se não for definida, os usuários poderão enviar algumas informações do sistema e conteúdo da página ao serviço Navegação segura para ajudar a detectar apps e sites perigosos.
+
+      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o serviço Navegação segura.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
@@ -285,6 +290,14 @@
       A definição desta política ativa notificações para informar ao usuário que a reinicialização do navegador é recomendada ou necessária. Se a política não for definida, o <ph name="PRODUCT_NAME" /> indicará ao usuário que a reinicialização precisa ser feita por meio de alterações sutis no menu. Se definida como "Recomendado", um aviso recorrente será exibido ao usuário indicando que a reinicialização é recomendada. O usuário pode dispensar esse aviso para adiar a reinicialização. Se definida como "Obrigatório", um aviso recorrente será exibido ao usuário indicando que a reinicialização do navegador será forçada assim que o período de notificação passar. Esse período tem, por padrão, sete dias e pode ser definido na configuração da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       A sessão do usuário é restaurada após a reinicialização.</translation>
+<translation id="2075434678547407637">Permite que você controle se os vídeos serão reproduzidos automaticamente (sem o consentimento do usuário) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
+
+      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá reproduzir mídia de forma automática.
+      Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> não poderá reproduzir mídia de forma automática.
+      Por padrão, o <ph name="PRODUCT_NAME" /> não pode reproduzir mídia de forma automática.
+
+      Se o <ph name="PRODUCT_NAME" /> estiver sendo executado e essa política mudar, ela será aplicada apenas a novas guias abertas. Assim, algumas guias ainda podem ter o comportamento anterior.
+      </translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
@@ -1025,6 +1038,7 @@
       Se essa política não for definida, o usuário poderá optar por mostrar ou ocultar os atalhos dos aplicativos no menu de contexto da barra de favoritos.
 
       Se essa política for configurada, o usuário não poderá alterá-la, e os atalhos dos aplicativos serão sempre exibidos ou nunca exibidos.</translation>
+<translation id="4432762137771104529">Ativar relatórios estendidos do Navegação segura</translation>
 <translation id="443454694385851356">Legado (não seguro)</translation>
 <translation id="443665821428652897">Limpar dados do site ao fechar o navegador (obsoleto)</translation>
 <translation id="4439336120285389675">Especificar uma lista de recursos de uso suspenso da plataforma Web para reativar temporariamente.
@@ -1037,12 +1051,6 @@
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo entrar no modo ocioso ou suspenso</translation>
 <translation id="4449545651113180484">Girar tela no sentido horário em 270 graus</translation>
-<translation id="4459359100627756769">Configura a lista de URLs de login corporativos (apenas esquemas HTTP e HTTPS). A autenticação da senha será capturada nesses URLs e usada para a detecção de reutilização de senha.
-      Esta definição deve ser usada somente pelos usuários do GSuite que usem um sistema SSO/SMAL.
-
-      Se esta definição for ativada, o serviço de proteção de senha fará a captura da autenticação da senha nesses URLs para a detecção de reutilização de senhas.
-      Se esta definição for desativada ou não for definida, o serviço de proteção de senha fará a captura da autenticação da senha apenas em https://accounts.google.com.
-      Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
 <translation id="4476769083125004742">Se esta política for definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, os apps Android não poderão acessar as informações de local. Se você configurar essa política para qualquer outro valor ou deixá-la sem definição, será solicitado o consentimento do usuário quando um app Android quiser acessar as informações de local.</translation>
@@ -1235,6 +1243,19 @@
 
       As senhas poderão ficar mais antigas que o número de dias especificado se o cliente ficar off-line por um período mais longo.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
+<translation id="5106504910236139235">Ativa os relatórios estendidos do serviço Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os usuários mudem essa configuração.
+
+      Os relatórios estendidos enviam algumas informações do sistema e conteúdo da página aos servidores do Google para ajudar a detectar apps e sites perigosos.
+
+      Se a configuração for definida como verdadeira, os relatórios serão criados e enviados sempre que necessário (por exemplo, quando um intersticial de segurança é exibido).
+
+      Se a configuração for definida como falsa, os relatórios nunca serão enviados.
+
+      Se essa política for definida como verdadeira ou falsa, o usuário não poderá modificar a configuração.
+
+      Se essa política não for definida, o usuário poderá alterar a configuração e decidir se os relatórios serão ou não enviados.
+
+      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o serviço Navegação segura.</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
 <translation id="5130288486815037971">Se os pacotes de criptografia RC4 em TLS estão ativados ou não</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa padrão ativada na tela de login</translation>
@@ -1254,7 +1275,7 @@
       fora desse intervalo serão fixados nessa faixa.</translation>
 <translation id="5182055907976889880">Configura o Google Drive no <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Permite especificar quais extensões não estão sujeitas à lista negra. Um valor da lista negra de * significa que todas as extensões estão na lista negra, e que os usuários só podem instalar extensões listadas na lista branca. Por padrão, todas as extensões estão na lista branca, mas se todas as extensões forem incluídas na lista negra pela política, a lista branca poderá ser usada para substituir a política.</translation>
-<translation id="519247340330463721">Configura as políticas relacionadas à política Safe Browsing.</translation>
+<translation id="519247340330463721">Configura as políticas relacionadas ao Safe Browsing.</translation>
 <translation id="5192837635164433517">Permite o uso de páginas de erro alternativas, incorporadas a <ph name="PRODUCT_NAME" /> (por exemplo, "página não encontrada") e impede que usuários alterem esta configuração. Se ativar esta configuração, páginas de erro alternativas serão utilizadas. Se você desativar esta configuração, páginas de erro alternativas nunca são utilizadas. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituir essa configuração em <ph name="PRODUCT_NAME" />. Se esta política for deixada sem definição, ela será ativada, mas o usuário será capaz de modificá-la.</translation>
 <translation id="5196805177499964601">Bloquear modo de desenvolvedor.
 
@@ -1267,13 +1288,13 @@
 <translation id="5247006254130721952">Bloquear downloads perigosos</translation>
 <translation id="5248863213023520115">Define os tipos de criptografia permitidos com solicitações de tíquetes do Kerberos a partir de um servidor <ph name="MS_AD_NAME" />.
 
-      Se a política for definida como "Todos", os tipos de codificação AES "aes256-cts-hmac-sha1-96" e "aes128-cts-hmac-sha1-96", bem como o tipo de codificação RC4 "rc4-hmac" serão permitidos. A codificação AES terá prioridade se o servidor for compatível com os dois tipos. A codificação RC4 não é segura e, se possível, o servidor deverá ser reconfigurado para ser compatível com a codificação AES.
+      Se a política for definida como "Todos", os tipos de codificação AES "aes256-cts-hmac-sha1-96" e "aes128-cts-hmac-sha1-96", bem como o tipo de codificação RC4 "rc4-hmac", serão permitidos. A codificação AES terá prioridade se o servidor for compatível com os dois tipos. A codificação RC4 não é segura e, se possível, o servidor deverá ser reconfigurado para ser compatível com a codificação AES.
 
       Se a política for definida como "Forte" ou não for definida, somente os tipos de codificação AES serão permitidos.
 
       Se a política for definida como "Legado", apenas o tipo de codificação RC4 será permitido. Essa opção não é segura e deverá ser necessária apenas em circunstâncias muito específicas.
 
-      Consulte também https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
+      Consulte também https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types (em inglês).</translation>
 <translation id="5255162913209987122">Pode ser recomendada</translation>
 <translation id="527237119693897329">Permite especificar quais hosts de mensagens nativas não devem ser carregados.
 
@@ -1752,6 +1773,7 @@
 
       Especifica os sinalizadores a serem aplicados ao <ph name="PRODUCT_NAME" /> quando ele for iniciado. Os sinalizadores especificados são aplicados apenas na tela de login. Os sinalizadores definidos por meio desta política não são propagados em sessões de usuário.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 ou versão posterior</translation>
 <translation id="687046793986382807">Esta política foi desativada a partir da versão 35 do <ph name="PRODUCT_NAME" />.
 
       De alguma forma, as informações da memória são reportadas à página, independentemente do valor da opção. No entanto, os tamanhos reportados são
@@ -1943,6 +1965,7 @@
 
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
+<translation id="733838170182967492">Permite reprodução automática de mídia</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
@@ -2478,6 +2501,13 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="924557436754151212">Importar senhas salvas do navegador padrão na primeira execução</translation>
 <translation id="930930237275114205">Configura o diretório de dados do usuário do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ativa o login forçado no <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Permite que você controle se máquinas virtuais podem ser executadas no Chrome OS.
+
+      Se a política for definida como verdadeira, o dispositivo poderá executar máquinas virtuais.
+      Se a política for definida como falsa, o dispositivo não poderá executar máquinas virtuais.
+      Quando essa política é alterada para falsa, ela se aplica apenas a novas máquinas virtuais, mas não desliga máquinas virtuais que estejam em execução.
+      Quando essa política não é definida em um dispositivo gerenciado, o dispositivo pode executar máquinas virtuais.
+      Dispositivos não gerenciados podem executar máquinas virtuais.</translation>
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
 <translation id="982497069985795632">Ativar verificação ortográfica</translation>
 </translationbundle>

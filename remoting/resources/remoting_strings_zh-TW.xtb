@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>
+<translation id="6502629188777329097">安全存取你的電腦</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6541219117979389420">應用程式紀錄可能含有私人資訊，包括您的身分 (電子郵件地址)，以及 Google 雲端硬碟檔案與資料夾的名稱和屬性。</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="7678209621226490279">靠左固定</translation>
 <translation id="7693372326588366043">重新整理主機清單</translation>
+<translation id="7714222945760997814">回報這個問題</translation>
 <translation id="7782471917492991422">請檢查電腦的電源管理設定，確認電腦在閒置時不會進入休眠狀態。</translation>
 <translation id="7810127880729796595">顯示統計資料 (連線品質：<ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">找不到部分必要元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>

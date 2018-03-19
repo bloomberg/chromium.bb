@@ -190,6 +190,7 @@
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="461440297010471931">目前的搜尋引擎是 Google</translation>
+<translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620246317052452550">你看過的網頁</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
@@ -317,6 +318,7 @@
 <translation id="6914783257214138813">凡是可查看匯出的檔案的使用者都能看到你的密碼。</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6973630695168034713">資料夾</translation>
+<translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="7029809446516969842">密碼</translation>
@@ -366,6 +368,7 @@
 <translation id="7971521879845308059">封鎖彈出式視窗</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="8019783059653722575">可讓你儲存並上傳相片。</translation>
+<translation id="802154636333426148">下載失敗</translation>
 <translation id="8023878949384262191">展開這個專區。</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
 <translation id="806745655614357130">分開保留我的資料</translation>
@@ -376,6 +379,7 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8272426682713568063">信用卡</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8328777765163860529">關閉全部</translation>
 <translation id="8381750437846184350">控管 Google 使用您瀏覽紀錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>

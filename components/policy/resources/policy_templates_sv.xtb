@@ -153,6 +153,11 @@
 <translation id="1503487916067509762">Aktiverar blockering av kodinjicering från tredjepartsprogram</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME" /> och senare.</translation>
+<translation id="1519337829779572350">Inställningen har fasats ut. Använd SafeBrowsingExtendedReportingEnabled i stället. Att aktivera eller inaktivera SafeBrowsingExtendedReportingEnabled motsvarar att ställa in SafeBrowsingExtendedReportingOptInAllowed på falskt.
+
+      Om den här policyn är inställd på falskt kan inte användare välja att skicka viss systeminformation och visst sidinnehåll till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka viss systeminformation och visst sidinnehåll till Säker webbsökning i syfte att identifiera skadliga appar och webbplatser.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
@@ -298,6 +303,14 @@
       Med den här principen kan användaren få en avisering om att webbläsaren bör eller måste startas om. Om principen lämnas utan inställning framgår det av en diskret ändring i menyn i <ph name="PRODUCT_NAME" /> att omstart krävs. Med inställningen Rekommenderas visas ett återkommande meddelande för användaren att en omstart rekommenderas. Användaren kan ignorera meddelandet och skjuta upp omstarten. Med inställningen Krävs visas ett återkommande meddelande om att webbläsaren kommer att startas om efter en viss tid. Tidsperioden är sju dagar som standard och kan konfigureras via principen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Användarens session återställs efter omstarten.</translation>
+<translation id="2075434678547407637">Ger dig möjlighet att styra om videor får spelas upp automatiskt (utan användarens tillstånd) tillsammans med ljudinnehåll i <ph name="PRODUCT_NAME" />.
+
+      Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> spela upp media automatiskt.
+      Om principen är inställd på falskt får <ph name="PRODUCT_NAME" /> inte spela upp media automatiskt.
+      <ph name="PRODUCT_NAME" /> får inte spela upp media automatiskt som standard.
+
+      Observera att om <ph name="PRODUCT_NAME" /> körs när principen ändras tillämpas den endast på nya flikar som öppnas. Därför kan den tidigare inställningen gälla för vissa flikar.
+      </translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2077273864382355561">Skärmavstängningstid när enheten drivs av batteriet</translation>
 <translation id="2082205219176343977">Konfigurera lägsta tillåtna Chrome-version för enheten.</translation>
@@ -1075,6 +1088,7 @@
       Om principen inte anges kan användaren välja att visa eller dölja genvägen Appar via bokmärkesfältets snabbmeny.
 
       Om principen har konfigurerats kan användaren inte ändra den, utan genvägen Appar kommer antingen alltid att visas eller aldrig att visas.</translation>
+<translation id="4432762137771104529">Aktivera utökad rapportering för Säker webbsökning</translation>
 <translation id="443454694385851356">Äldre (osäker)</translation>
 <translation id="443665821428652897">Ta bort webbplatsdata när webbläsaren avslutas</translation>
 <translation id="4439336120285389675">Ange en lista över utfasade webbplattformsfunktioner som ska kunna återaktiveras tillfälligt.
@@ -1087,12 +1101,6 @@
       </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
-<translation id="4459359100627756769">Konfigurera listan över företagets inloggningsadresser (endast HTTP- och HTTPS-scheman). Signaturer för lösenord registreras på webbadresserna och används för att upptäcka återanvändning av lösenord.
-      Inställningen bör endast användas av G Suit-användare med SSO/SMAL-system.
-
-      Om inställningen är aktiverad registrerar tjänsten för lösenordsskydd signaturer för lösenord på webbadresserna i syfte att upptäcka återanvändning av lösenord.
-      Om inställningen är inaktiverad eller inte angiven registrerar tjänsten för lösenordsskydd endast signaturer för lösenord på https://accounts.google.com.
-      Principen är inte tillgänglig för Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
 <translation id="4476769083125004742">Om den här principen är inställd på <ph name="BLOCK_GEOLOCATION_SETTING" /> får Android-appar inte tillgång till platsinformation. Om principen är inställd på något annat eller lämnas utan inställning blir användaren tillfrågad om han eller hon vill ge Android-appen tillgång till platsinformationen när det blir aktuellt.</translation>
@@ -1299,6 +1307,19 @@
 
       Observera att om klienten har varit offline en längre tid kan lösenorden vara äldre än det angivna antalet dagar.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
+<translation id="5106504910236139235">Aktiverar Utökad rapportering för Säker webbsökning för <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Med Utökad rapportering skickas viss systeminformation och sidinnehåll till Googles servrar i syfte att identifiera skadliga appar och webbplatser.
+
+      Om inställningen är inställd på sant skapas rapporter och skickas vid behov (till exempel när mellansideannons om säkerhet visas).
+
+      Om inställningen är inställd på falskt skickas inga rapporter.
+
+      Om principen är inställd på sant eller falskt kan användare inte ändra inställningen.
+
+      Om inget värde har angetts för principen kan användare ändra inställningen och bestämma om rapporter ska skickas eller inte.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Inaktiverade skrivare för företagsenheter</translation>
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
@@ -1862,6 +1883,7 @@
 
       Anger vilka flaggor som ska användas i <ph name="PRODUCT_NAME" /> när produkten startas. De angivna flaggorna tillämpas endast på inloggningsskärmen. Flaggor som angetts via principen tillämpas inte på användarsessioner.</translation>
 <translation id="685769593149966548">Gör strikt begränsat läge på YouTube obligatoriskt</translation>
+<translation id="686079137349561371">Microsoft Windows 7 eller senare</translation>
 <translation id="687046793986382807">Denna princip används inte från och med <ph name="PRODUCT_NAME" /> version 35. 
 
       Minnesinfo rapporteras ändå till sidan, oavsett värdealternativ, men de storlekar som
@@ -2069,6 +2091,7 @@
 
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
+<translation id="733838170182967492">Tillåter automatisk uppspelning av media</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="7343497214039883642">Skivarkonfigurationsfil för företagsenheter</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
@@ -2638,6 +2661,13 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Aktiverar tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Ger dig möjlighet att styra om virtuella maskiner får köras på Chrome OS.
+
+      Om principen är inställd på sant får enheten köra virtuella maskiner.
+      Om principen är inställd på falskt får enheten inte köra virtuella maskiner.
+      När inställningen för principen ändras till falskt tillämpas den på nya virtuella maskiner men stänger inte av virtuella maskiner som redan körs.
+      Om ett värde för inställningen inte anges på en hanterad enhet får enheten köra virtuella maskiner.
+      Virtuella maskiner får köras på enheter som inte hanteras.</translation>
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
 <translation id="982497069985795632">Aktivera stavningskontroll</translation>
 </translationbundle>

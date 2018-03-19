@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Eelmisele kasutatud klaviatuurikeelele vahetamine.</translation>
 <translation id="1195667586424773550">Lohistage link vahelehe aadressiribale</translation>
 <translation id="1204450209689312104">Uue akna avamine inkognito režiimis</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Aktiivse lehe printimine</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT1" /> <ph name="SEPARATOR2" /> <ph name="G" /> või <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /> <ph name="SEPARATOR1" /> <ph name="ALT" /> <ph name="SEPARATOR2" /> <ph name="L" />, seejärel <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="TAB" /> või <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Järgmisele vahelehele liikumine</translation>
 <translation id="2010818616644390445">Aknas viimasele vahelehele liikumine</translation>
+<translation id="2088054208777350526">Klaviatuuri otseteede otsing</translation>
 <translation id="2145908266289632567">Teksti muutmine</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /> <ph name="SEPARATOR" /> 1 kuni =</translation>
 <translation id="2181097965834437145">Järjehoidjariba kuvamine või peitmine</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Keskendub aadressiribale</translation>
 <translation id="3288816184963444640">Praeguse akna sulgemine</translation>
-<translation id="3356202203145076517">Viimati kasutatud akna avamine</translation>
 <translation id="3407560819924487926">Tegumihalduri esiletoomine</translation>
 <translation id="3422679037938588196">Otsingu eelmise vaste juurde liikumine</translation>
 <translation id="344577624355799426"><ph name="ALT" /> või <ph name="SEARCH" /> <ph name="SEPARATOR" /> <ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /> <ph name="SEPARATOR" /> 1–8</translation>
 <translation id="3837047332182291558">Klaviatuuri eredamaks muutmine (ainult taustvalgusega klaviatuuride puhul)</translation>
 <translation id="3976863468609830880">Riiulis viimasel ikoonil klõpsamine</translation>
+<translation id="4026843240379844265">Aktiivse akna teisaldamine ekraanide vahel</translation>
 <translation id="4035482366624727273">Kogu lehe sisu valimine</translation>
 <translation id="4060703249685950734">Viimasena suletud vahelehe või akna uuesti avamine</translation>
 <translation id="4090342722461256974">Vajutage pikalt klahvikombinatsiooni <ph name="ALT" /> <ph name="SEPARATOR" /> <ph name="SHIFT" />, puudutage klahvi <ph name="TAB" />, kuni näete akent, mille soovite avada, seejärel vabastage klahv.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="7020813747703216897">Sobivaid tulemusi ei leitud</translation>
 <translation id="7025325401470358758">Järgmine paan</translation>
+<translation id="7237562915163138771">Sisestage veebiaadress aadressiribale ja vajutage klahvikombinatsiooni <ph name="ALT" /> <ph name="SEPARATOR" /> <ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> või <ph name="SEARCH" /> <ph name="SEPARATOR" /> <ph name="UP" /></translation>
 <translation id="7439718573248533901">Järgmise tähe kustutamine (edasisuunas kustutamine)</translation>
 <translation id="766326951329901120">Lõikelaua sisu lihttekstina kleepimine</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Lohistage link vahelehtede ribal tühjale alale</translation>
 <translation id="8389638407792712197">Uue akna avamine</translation>
 <translation id="8429696719963529183">F-klahvide kasutamine (F1–F12)</translation>
+<translation id="8537650670971624753">Välju otsingurežiimist</translation>
 <translation id="85690795166292698">Lingi avamine uuel vahelehel</translation>
 <translation id="8609384513243082612">Uue vahelehe avamine</translation>
 <translation id="8644639153978066712">Peidetud failide kuvamine rakenduses Failid</translation>

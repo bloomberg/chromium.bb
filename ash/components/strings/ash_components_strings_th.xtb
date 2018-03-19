@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">สลับเป็นภาษาของแป้นพิมพ์ที่คุณใช้ก่อนหน้านี้</translation>
 <translation id="1195667586424773550">ลากลิงก์ไปยังแถบที่อยู่ของแท็บ</translation>
 <translation id="1204450209689312104">เปิดหน้าต่างใหม่ในโหมดไม่ระบุตัวตน</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">พิมพ์หน้าเว็บปัจจุบัน</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> หรือ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> หรือ <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">ไปที่แท็บถัดไป</translation>
 <translation id="2010818616644390445">ไปที่แท็บสุดท้ายในหน้าต่าง</translation>
+<translation id="2088054208777350526">ค้นหาแป้นพิมพ์ลัด</translation>
 <translation id="2145908266289632567">การแก้ไขข้อความ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 จนถึง =</translation>
 <translation id="2181097965834437145">แสดงหรือซ่อนแถบบุ๊กมาร์ก</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
 <translation id="3288816184963444640">ปิดหน้าต่างปัจจุบัน</translation>
-<translation id="3356202203145076517">เปิดหน้าต่างที่คุณใช้ล่าสุด</translation>
 <translation id="3407560819924487926">เรียกใช้ตัวจัดการงาน</translation>
 <translation id="3422679037938588196">ไปยังรายการก่อนหน้าที่ตรงกับการค้นหา</translation>
 <translation id="344577624355799426"><ph name="ALT" /> หรือ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 จนถึง 8</translation>
 <translation id="3837047332182291558">เพิ่มแสงแป้นพิมพ์ (เฉพาะแป้นพิมพ์เรืองแสง)</translation>
 <translation id="3976863468609830880">คลิกไอคอนสุดท้ายบนชั้นวาง</translation>
+<translation id="4026843240379844265">ย้ายหน้าต่างที่ใช้งานไปยังหน้าจอต่างๆ</translation>
 <translation id="4035482366624727273">เลือกทุกอย่างในหน้าเว็บ</translation>
 <translation id="4060703249685950734">เปิดแท็บหรือหน้าต่างที่คุณปิดล่าสุดขึ้นมาอีกครั้ง</translation>
 <translation id="4090342722461256974">กด <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ค้างไว้แล้วแตะ <ph name="TAB" /> จนกว่าคุณจะไปถึงหน้าต่างที่ต้องการเปิดแล้วจึงปล่อย</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="7020813747703216897">ไม่พบผลการค้นหาที่ตรงกัน</translation>
 <translation id="7025325401470358758">แผงถัดไป</translation>
+<translation id="7237562915163138771">พิมพ์ที่อยู่เว็บในแถบที่อยู่แล้วกด <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> หรือ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">ลบอักษรถัดไป (ลบไปข้างหน้า)</translation>
 <translation id="766326951329901120">วางเนื้อหาจากคลิปบอร์ดเป็นข้อความธรรมดา</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">ลากลิงก์ไปยังพื้นที่ว่างบนแนวแท็บ</translation>
 <translation id="8389638407792712197">เปิดหน้าต่างใหม่</translation>
 <translation id="8429696719963529183">ใช้ปุ่ม F (F1 ถึง F12)</translation>
+<translation id="8537650670971624753">ออกจากโหมดค้นหา</translation>
 <translation id="85690795166292698">เปิดลิงก์ในแท็บใหม่</translation>
 <translation id="8609384513243082612">เปิดแท็บใหม่</translation>
 <translation id="8644639153978066712">แสดงไฟล์ที่ซ่อนอยู่ในแอปไฟล์</translation>

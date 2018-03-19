@@ -572,6 +572,7 @@
 <translation id="1850508293116537636">Zakreni u &amp;smjeru kretanja kazaljke na satu</translation>
 <translation id="1851361118452499663">Moje fotografije</translation>
 <translation id="1852799913675865625">Došlo je do pogreške pri pokušaju čitanja datoteke: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Nova anonimna kartica</translation>
 <translation id="1856715684130786728">Dodaj lokaciju...</translation>
 <translation id="1856813161013948396">Preskočite zaključan zaslon tako što ćete dodirnuti senzor otiska prsta. Kliknite da biste konfigurirali.</translation>
 <translation id="1858585891038687145">Vjeruj ovom certifikatu za identifikaciju proizvođača softvera</translation>
@@ -631,7 +632,6 @@
 <translation id="1962233722219655970">Ova stranica upotrebljava aplikaciju izvornog klijenta koja ne funkcionira na vašem računalu.</translation>
 <translation id="1962969542251276847">Zaključaj zaslon</translation>
 <translation id="1963227389609234879">Ukloni sve</translation>
-<translation id="1965328510789761112">Privatna memorija</translation>
 <translation id="1965624977906726414">Nema posebne dozvole.</translation>
 <translation id="1970368523891847084">Ušli ste u način videozapisa</translation>
 <translation id="197288927597451399">Zadrži</translation>
@@ -734,7 +734,6 @@
 <translation id="2136573720723402846">Omogući otključavanje otiskom prsta</translation>
 <translation id="2137068468602026500">U odjeljku Web-preglednik kliknite <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Povezivanje s uređajem "<ph name="DEVICE_NAME" />" još je u tijeku</translation>
-<translation id="2139186145475833000">Dodaj na početni zaslon</translation>
 <translation id="214169863967063661">Otvorite postavke izgleda</translation>
 <translation id="2142328300403846845">Otvori vezu kao</translation>
 <translation id="214353449635805613">Snimka zaslona područja</translation>
@@ -2049,7 +2048,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4114360727879906392">Prethodni prozor</translation>
 <translation id="4115002065223188701">Mreža je izvan dometa</translation>
 <translation id="4115080753528843955">Neke usluge sadržaja upotrebljavaju jedinstvene identifikatore radi autorizacije pristupa zaštićenom sadržaju</translation>
-<translation id="411666854932687641">Privatna memorija</translation>
 <translation id="4120817667028078560">Putanja je predugačka</translation>
 <translation id="4121428309786185360">Ističe</translation>
 <translation id="412730574613779332">Elastični</translation>
@@ -2103,7 +2101,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4235200303672858594">Cijeli zaslon</translation>
 <translation id="4235813040357936597">Dodaj račun za profil <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Otkaži prijavu</translation>
-<translation id="4240511609794012987">Dijeljena memorija</translation>
 <translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="4242577469625748426">Instalacija postavki pravila nije uspjela na uređaju: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Pronađite više aplikacija pisaljke</translation>
@@ -2656,7 +2653,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5154108062446123722">Napredne postavke za <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Predmet</translation>
-<translation id="5154917547274118687">Memorija</translation>
 <translation id="5157635116769074044">Prikvači ovu stranicu na početni zaslon...</translation>
 <translation id="5158593464696388225">Slika nije spremljena.</translation>
 <translation id="5158983316805876233">Koristi isti proxy za sve protokole</translation>
@@ -2909,6 +2905,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5527463195266282916">Pokušaj vraćanja proširenja na stariju verziju.</translation>
 <translation id="5527474464531963247">Također možete odabrati neku drugu mrežu.</translation>
 <translation id="5528368756083817449">Upravitelj oznaka</translation>
+<translation id="5530766185686772672">Zatvori anonimne kartice</translation>
 <translation id="5532223876348815659">Globalno</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> želi</translation>
 <translation id="5534304873398226603">Odbaci fotografiju ili videozapis</translation>
@@ -4424,7 +4421,6 @@ Instaliranjem aplikacije <ph name="APP_NAME" /> preuzet će se <ph name="DOWNLOA
 <translation id="7959074893852789871">Datoteka je sadržavala više certifikata, a neki od njih nisu uvezeni:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Googleova usluga lokacije upotrebljava izvore kao što je Wi‑Fi za bržu i precizniju procjenu lokacije vašeg uređaja. Kada uključite Googleove usluge lokacije, vaš uređaj prelazi na način rada koji upotrebljava Wi-Fi za pružanje podataka o lokaciji. To možete isključiti u postavkama lokacije kada god želite.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Nikad</translation>
-<translation id="7965010376480416255">Dijeljena memorija</translation>
 <translation id="7966241909927244760">K&amp;opiraj adresu slike</translation>
 <translation id="7968742106503422125">čitati i izmjenjivati podatke koje kopirate i lijepite</translation>
 <translation id="7968833647796919681">Omogući prikupljanje podataka o izvedbi</translation>
@@ -4987,7 +4983,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8871696467337989339">Koristite nepodržanu oznaku naredbenog retka: <ph name="BAD_FLAG" />. Ugrožena je stabilnost i sigurnost.</translation>
 <translation id="8871974300055371298">Postavke sadržaja</translation>
 <translation id="8872155268274985541">Pronađena je nevažeća datoteka manifesta vanjskog ažuriranja kioska. Aplikacija kioska nije ažurirana. Uklonite USB privjesak.</translation>
-<translation id="8872506776304248286">Otvori u aplikaciji</translation>
 <translation id="8874184842967597500">Niste povezani</translation>
 <translation id="8876215549894133151">Oblik:</translation>
 <translation id="8876309039915144086">Generiranje zaporke...</translation>

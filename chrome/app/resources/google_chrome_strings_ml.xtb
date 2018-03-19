@@ -45,6 +45,7 @@
 <translation id="2063848847527508675">അപ്‌ഡേറ്റ് പ്രയോഗത്തിൽ വരുത്താൻ Chrome OS പുനഃരാരംഭിക്കേണ്ടതുണ്ട്.</translation>
 <translation id="2077129598763517140">ലഭ്യമാകുമ്പോൾ ഹാർഡ്‌വെയർ ത്വരിതപ്പെടുത്തൽ ഉപയോഗിക്കുക</translation>
 <translation id="2084710999043359739">Chrome-ലേക്ക് ചേർക്കുക</translation>
+<translation id="2094919256425865063">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
 <translation id="2120620239521071941">ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് <ph name="ITEMS_COUNT" /> ഇനങ്ങൾ ഇല്ലാതാക്കും. പിന്നീട് നിങ്ങളുടെ വിവരങ്ങൾ വീണ്ടെടുക്കാൻ, <ph name="USER_EMAIL" /> എന്നയാളായി Chrome‌-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />നിലവിലെ ക്രമീകരണം<ph name="END_LINK" /> റിപ്പോർട്ടുചെയ്‌തുകൊണ്ട് Chrome മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
 <translation id="216054706567564023">നിങ്ങളുടെ ഫോണിൽ Chrome ഇൻസ്‌റ്റാൾ ചെയ്യുക. അക്കൗണ്ട് വീണ്ടെടുക്കൽ ഫോൺ നമ്പറിലേക്ക് ഞങ്ങളൊരു SMS അയയ്‌ക്കും.</translation>
@@ -108,6 +109,7 @@
 <translation id="3735758079232443276">നിങ്ങൾ Chrome ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ "<ph name="EXTENSION_NAME" />" വിപുലീകരണം മാറ്റി.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome-ൽ നിന്ന് നീക്കംചെയ്യുക...</translation>
+<translation id="3844992844761326777">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ ദോഷകരമായ സോഫ്‌റ്റ്‌വെയറുണ്ട്. നിങ്ങളുടെ ബ്രൗസർ വീണ്ടും സാധാരണ രീതിയിൽ പ്രവർത്തിപ്പിക്കാൻ, Chrome-ന് ഇത് നീക്കം ചെയ്യാനും ക്രമീകരണം പുനഃസ്ഥാപിക്കാനും കഴിയും.</translation>
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome ആൾ&amp;മാറാട്ട വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
@@ -142,6 +144,7 @@
 <translation id="4771048833395599659">ഈ ഫയൽ അപകടകരമാകാൻ ഇടയുള്ളതിനാൽ Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>
 <translation id="4794050651896644714">Chrome-ൽ വിശദാംശങ്ങൾ സംരക്ഷിക്കുക</translation>
 <translation id="4804732725083176494">Chrome-ലേക്കുള്ള സൈൻ ഇൻ ചെയ്യൽ, ഈ ഉപകരണത്തിന്‍റെ അഡ്‌മിനി‌സ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
+<translation id="4833487314064352405">{0,plural, =1{ഒരു ദിവസത്തിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കുക}other{# ദിവസത്തിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കുക}}</translation>
 <translation id="4891791193823137474">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
 <translation id="4895437082222824641">പുതിയ Chrome &amp;ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="4921569541910214635">ഒരു കമ്പ്യൂട്ടർ പങ്കിടണോ? ഇപ്പോൾ നിങ്ങൾക്ക് ഇഷ്‌ടപ്പെട്ട രീതിയിൽ Chrome സജ്ജീകരിക്കാനാകും.</translation>
@@ -150,6 +153,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല. നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് അപ്‌ഡേറ്റ് ചെയ്യുക.</translation>
 <translation id="5037239767309817516">ഈ മാറ്റങ്ങള്‍ നടപ്പിലാകുന്നതിനായി ദയവായി എല്ലാ Google Chrome വിന്‍ഡോകളും അടച്ച് ഇത് വീണ്ടും സമാരംഭിക്കുക.</translation>
+<translation id="5131923704757666404">{0,plural, =1{ഒരു മണിക്കൂറിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കും}other{# മണിക്കൂറിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കും}}</translation>
 <translation id="5132929315877954718">Google Chrome-നായി മികച്ച അപ്ലിക്കേഷനുകളും വിപുലീകരണങ്ങളും തീമുകളും കണ്ടെത്തുക.</translation>
 <translation id="5166975452760862670">Google Chrome ഈ ഭാഷയിൽ പ്രദർശിപ്പിച്ചിരിക്കുന്നു</translation>
 <translation id="5170938038195470297">നിങ്ങളുടെ പ്രൊഫൈൽ Google Chrome-ന്റെ ഒരു പുതിയ പതിപ്പിൽ നിന്നായതിനാൽ ഉപയോഗിക്കാൻ കഴിയില്ല.
@@ -196,6 +200,7 @@
 <translation id="6600954340915313787">Chrome-ലേക്ക് പ്കർത്തി</translation>
 <translation id="6634887557811630702">Google Chrome കാലികമാണ്.</translation>
 <translation id="6676384891291319759">ഇന്റര്‍‌നെറ്റ് ആക്‌സസ് ചെയ്യുക</translation>
+<translation id="677276454032249905">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
 <translation id="683440813066116847">mDNS ട്രാഫിക് അനുവദിക്കാൻ Google Chrome കാനറിയ്‌ക്കുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>
 <translation id="686561893457936865">എല്ലായിടത്ത് നിന്നും Chrome ഉപയോഗിക്കുക</translation>
 <translation id="6885412569789873916">Chrome ബീറ്റ ആപ്പുകൾ</translation>

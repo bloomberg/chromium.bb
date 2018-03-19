@@ -53,6 +53,7 @@
 <translation id="2886012850691518054">ከተፈለገ፦ የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን ወደ Google በራስ-ሰር በመላክ Chromium የተሻለ እንዲሆን ያግዙ።</translation>
 <translation id="2898082584336937987">Chromiumን በእርስዎ ስልክ ላይ ይጫኑት። አንድ ኤስኤምኤስ ወደዚህ ስልክዎ እንልካለን፦ <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">ስለ &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{በአንድ ቀን ውስጥ Chromiumን ዳግመኛ አስጀምር}one{በ# ቀናት ውስጥ Chromiumን ዳግመኛ አስጀምር}other{በ# ቀናት ውስጥ Chromiumን ዳግመኛ አስጀምር}}</translation>
 <translation id="2977470724722393594">Chromium የተዘመነ ነው</translation>
 <translation id="3032787606318309379">ወደ Chromium በማከል ላይ...</translation>
 <translation id="3046695367536568084">መተግበሪያዎችን ለመጠቀም ወደ Chromium መግባት አለብዎት። ይሄ Chromium መተግበሪያዎችዎን፣ ዕልባቶችዎን፣ ታሪክዎን፣ የይለፍ ቃላትዎን እና ሌሎች ቅንብሮችዎን በተለያዩ መሣሪያዎች ላይ እንዲያመሳስል ያስችለዋል።</translation>
@@ -92,11 +93,14 @@
 <translation id="4222580632002216401">አሁን ወደ Chromium ገብተዋል! ማመሳሰል በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="4224199872375172890">Chromium የተዘመነ ነው።</translation>
 <translation id="4230135487732243613">የChromium ውሂዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
+<translation id="4260985389288095068">በእርስዎ ኮምፒውተር ላይ ጎጂ ሶፍትዌር አለ። Chromium የእርስዎን አሰሳ እንደገና በጤናማነት እንዲሠራ ለማድረግ ሊያስወግደው እና የእርስዎን ቅንብሮች እንደነበሩ ሊመልሳቸውይችላል።</translation>
 <translation id="4271805377592243930">Chromium ላይ እገዛ ያግኙ</translation>
 <translation id="4285930937574705105">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Chromium አሁን እያሄደ ከሆነ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
 <translation id="4330585738697551178">ይህ ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
+<translation id="4407044323746248786">የሆነው ሆኖ ከChromium ይወጣ?</translation>
 <translation id="4421155425831608516">ወደ Chromium መግባት በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል።</translation>
 <translation id="4423735387467980091">Chromiumን ያብጁ እና ይቆጣጠሩ</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium በአንድ ሰዓት ውስጥ እንደገና ይጀምራል}one{በ# ሰዓቶች ውስጥ Chromium እንደገና ይጀምራል}other{በ# ሰዓቶች ውስጥ Chromium እንደገና ይጀምራል}}</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4469812139324097969">Chromium ለሆነ ጊዜ ያህል ዳግም ስላልተጀመረ ጊዜው አልፎበታል። አንድ ዝማኔ አለ እና ልክ ዳግም ሲያስጀምሩት ይተገበራል።</translation>
 <translation id="4488554488975128561">አደገኛ መተግበሪያዎች እና ጣቢያዎች እንዲገኙ ለማገዝ አንዳንድ የሥርዓት መረጃን እና የገጽ ይዘትን ለGoogle በመላክ Chromium ደህንነቱ ይበልጥ የተጠበቀ እና ለመጠቀም ይበልጥ የቀለለ እንዲሆን ማድረግ ይችላሉ።</translation>
@@ -107,6 +111,7 @@
 <translation id="469338717132742108">Chromium OS ላይ እገዛ ያግኙ</translation>
 <translation id="4708774505295300557">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST" /> ሆነው ገብተዋል። የእርስዎን መረጃ ለይተው ለማስቀመጥ እባክዎ አዲስ የChromium ተጠቃሚ ይፍጠሩ።</translation>
 <translation id="4714956846925717402">ወደ Chromium በፍጥነት ይግቡ</translation>
+<translation id="4746050847053251315">የሆነው ሆኖ Chromium ይቁም?</translation>
 <translation id="4888717733111232871">Chromium ለmDNS ትራፊክ ለመፍቀድ የውስጥ ደንብ።</translation>
 <translation id="4943838377383847465">Chromium በጀርባ ሁነታ ላይ ነው።</translation>
 <translation id="4987820182225656817">እንግዳዎች ማንኛውንም ነገር ወደኋላ ሳይተዉ Chromium መጠቀም ይችላሉ።</translation>

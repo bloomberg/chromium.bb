@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opcional: Ayúdanos a mejorar Chromium enviando estadísticas de uso e informes de errores a Google de manera automática.</translation>
 <translation id="2898082584336937987">Instala Chromium en el teléfono. Te enviaremos un SMS a ese dispositivo: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Volver a iniciar Chromium en el transcurso de un día}other{Volver a iniciar Chromium en el transcurso de # días}}</translation>
 <translation id="2977470724722393594">Chromium está actualizado.</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes acceder a Chromium. De este modo, Chromium puede sincronizar las aplicaciones, los favoritos, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
@@ -88,11 +89,14 @@
 <translation id="4222580632002216401">Accediste a Chromium. El administrador inhabilitó la sincronización.</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
 <translation id="4230135487732243613">¿Quieres vincular los datos de Chromium a esta cuenta?</translation>
+<translation id="4260985389288095068">Se encontró software dañino en tu computadora. Chromium puede quitarlo y restablecer la configuración para que el navegador vuelva a funcionar correctamente.</translation>
 <translation id="4271805377592243930">Obtener ayuda con Chromium</translation>
 <translation id="4285930937574705105">No se pudo completar la instalación debido a un error no identificado. Si Chromium se está ejecutando en este momento, ciérralo e intenta nuevamente.</translation>
 <translation id="4330585738697551178">Este módulo provoca un conflicto con Chromium.</translation>
+<translation id="4407044323746248786">¿Deseas salir de Chromium de todos modos?</translation>
 <translation id="4421155425831608516">El administrador de este dispositivo inhabilitó el acceso a Chromium.</translation>
 <translation id="4423735387467980091">Personaliza y controla Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium se volverá a iniciar en una hora}other{Chromium se volverá a iniciar en # horas}}</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4469812139324097969">Chromium no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="4488554488975128561">Puedes ayudar a que Chromium sea más seguro y fácil de usar si envías de forma automática información del sistema y contenido de la página a Google para ayudar a detectar apps y sitios peligrosos.</translation>
@@ -103,6 +107,7 @@
 <translation id="469338717132742108">Obtener ayuda con el Sistema operativo Chromium</translation>
 <translation id="4708774505295300557">Alguien accedió anteriormente a Chromium en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuario de Chromium nuevo para mantener tu información por separado.</translation>
 <translation id="4714956846925717402">Cómo acceder a Chromium más rápido</translation>
+<translation id="4746050847053251315">¿Deseas salir de Chromium de todos modos?</translation>
 <translation id="4888717733111232871">Regla de entrada para que Chromium permita el tráfico mDNS.</translation>
 <translation id="4943838377383847465">Chromium está en modo de segundo plano</translation>
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada detrás.</translation>

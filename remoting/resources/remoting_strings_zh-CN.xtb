@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>
+<translation id="6502629188777329097">安全地访问您的计算机</translation>
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6541219117979389420">应用日志可能包含私人信息，其中包括您的身份信息（电子邮件地址）以及 Google 云端硬盘中的文件和文件夹的名称及属性。</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
 <translation id="7678209621226490279">固定到左侧</translation>
 <translation id="7693372326588366043">刷新主机列表</translation>
+<translation id="7714222945760997814">报告此问题</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
 <translation id="7810127880729796595">显示统计信息（连接：<ph name="QUALITY" />）</translation>
 <translation id="7836926030608666805">缺少某些必需的组件。请确保您运行的是最新版本的 Chrome，然后重试。</translation>

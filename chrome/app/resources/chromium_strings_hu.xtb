@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
 <translation id="2898082584336937987">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a következő telefonszámra: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
+<translation id="2943431542152338750">{0,plural, =1{A Chromiumot 1 napon belül újra kell indítani}other{A Chromiumot # napon belül újra kell indítani}}</translation>
 <translation id="2977470724722393594">A Chromium naprakész</translation>
 <translation id="3032787606318309379">Hozzáadás a Chromiumhoz...</translation>
 <translation id="3046695367536568084">Alkalmazások használatához be kell jelentkeznie a Chromiumba. A Chromium így szinkronizálni tudja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait az eszközök között.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Bejelentkezett a Chromiumba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="4224199872375172890">A Chromium naprakész.</translation>
 <translation id="4230135487732243613">Társítja Chromium-adatait ezzel a fiókkal?</translation>
+<translation id="4260985389288095068">Kártékony szoftver található a számítógépen. A Chromium képes a szoftver eltávolítására, és arra, hogy visszaállítsa a beállításokat, így a böngésző újra a megszokott módon működhet.</translation>
 <translation id="4271805377592243930">Segítség a Chromium használatával kapcsolatban</translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
+<translation id="4407044323746248786">Biztosan kilép a Chromiumból?</translation>
 <translation id="4421155425831608516">A Chromium böngészőbe való bejelentkezést letiltotta az eszköz rendszergazdája.</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
+<translation id="4449801103833300785">{0,plural, =1{A Chromium 1 órán belül újraindul}other{A Chromium # órán belül újraindul}}</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4469812139324097969">A Chromium elavult, mert nem volt újraindítva egy ideje. Megjelent egy frissítés, amelyik az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="4488554488975128561">A rendszer-információk és oldaltartalmak automatikus küldésével segítséget nyújthat a Google-nak a Chromium használatának biztonságosabbá és egyszerűbbé tételéhez, illetve a veszélyes alkalmazások és webhelyek felderítéséhez.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Segítség a Chromium OS használatával kapcsolatban</translation>
 <translation id="4708774505295300557">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chromiumba erről a számítógépről. Az adatai elkülönítéséhez hozzon létre új Chromium-felhasználót.</translation>
 <translation id="4714956846925717402">A Chromium gyorsabb elérése</translation>
+<translation id="4746050847053251315">Biztosan kilép a Chromiumból?</translation>
 <translation id="4888717733111232871">Bejövő szabály a Chromiumhoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="4943838377383847465">A Chromium háttérmódban van.</translation>
 <translation id="4987820182225656817">A vendégek úgy használhatják a Chromiumot, hogy nem hagynak hátra semmit.</translation>

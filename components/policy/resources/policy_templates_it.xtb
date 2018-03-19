@@ -147,6 +147,11 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1503487916067509762">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Questa impostazione è obsoleta. Utilizza invece SafeBrowsingExtendedReportingEnabled. L'attivazione o la disattivazione di SafeBrowsingExtendedReportingEnabled equivale a impostare SafeBrowsingExtendedReportingOptInAllowed su false.
+
+      L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni di sistema e i contenuti della pagina. Se questa impostazione viene configurata su true o non viene configurata, gli utenti potranno inviare alcune informazioni di sistema e i contenuti della pagina a Navigazione sicura per contribuire a rilevare app e siti pericolosi.
+
+      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
@@ -278,6 +283,14 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
+<translation id="2075434678547407637">Permette di controllare se i video possono essere riprodotti automaticamente (senza il consenso dell'utente) con contenuti audio in <ph name="PRODUCT_NAME" />.
+
+      Se la norma è impostata su true, i contenuti multimediali possono essere riprodotti automaticamente in <ph name="PRODUCT_NAME" />.
+      Se la norma è impostata su false, i contenuti multimediali non possono essere riprodotti automaticamente in <ph name="PRODUCT_NAME" />.
+      Per impostazione predefinita, <ph name="PRODUCT_NAME" /> non consente la riproduzione automatica dei contenuti multimediali.
+
+      Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e l'impostazione della norma cambia, la modifica interesserà solo le nuove schede aperte. Pertanto alcune schede potrebbero ancora avere il comportamento precedente.
+      </translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2077273864382355561">Ritardo disattivazione schermo in caso di utilizzo della batteria</translation>
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
@@ -1003,6 +1016,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4418726081189202489">Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> non può più inviare query occasionali a un server di Google per recuperare un timestamp preciso. Queste query vengono attivate se questa norma viene impostata su True o non viene configurata.</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
 <translation id="4429220551923452215">Attiva o disattiva la scorciatoia per le app nella barra dei Preferiti. Se questa norma non è impostata, l'utente può scegliere di mostrare o nascondere la scorciatoia per le app dal menu contestuale della barra dei Preferiti. Se la norma è configurata, l'utente non può modificarla e la scorciatoia per le app viene mostrata sempre oppure non viene mostrata mai.</translation>
+<translation id="4432762137771104529">Attiva rapporti estesi su Navigazione sicura</translation>
 <translation id="443454694385851356">Precedente (non sicuro)</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
 <translation id="4439336120285389675">Consente di specificare un elenco di funzioni ritirate della piattaforma web da riattivare temporaneamente.
@@ -1015,12 +1029,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       </translation>
 <translation id="4442582539341804154">Attiva il blocco quando lo stato del dispositivo diventa inattivo o sospeso</translation>
 <translation id="4449545651113180484">Ruota lo schermo in senso orario di 270°</translation>
-<translation id="4459359100627756769">Configura l'elenco di URL di accesso aziendale (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
-      Questa impostazione deve essere usata solo da utenti G Suite che adoperano un sistema SSO/SMAL.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
-      Se questa impostazione è disattiva o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo sulla pagina https://accounts.google.com.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
 <translation id="4476769083125004742">Se la norma viene impostata su <ph name="BLOCK_GEOLOCATION_SETTING" />, le app Android non possono accedere ai dati sulla posizione. Se la norma viene impostata su qualsiasi altro valore o non viene impostata, all'utente viene chiesta l'autorizzazione quando un'app Android vuole accedere ai dati sulla posizione.</translation>
@@ -1211,6 +1219,19 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Tieni presente che le password potrebbero durare più a lungo rispetto ai giorni specificati se il client è offline per un periodo più lungo di tempo.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
+<translation id="5106504910236139235">Attiva i rapporti estesi su Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
+
+      I rapporti estesi inviano ai server di Google alcune informazioni di sistema e i contenuti della pagina per contribuire a rilevare app e siti pericolosi.
+
+      Se l'impostazione è configurata su true, i rapporti verranno creati e inviati a seconda delle necessità (ad esempio, quando viene mostrato un annuncio interstitial di sicurezza).
+
+      Se l'impostazione è configurata su false, i rapporti non vengono inviati.
+
+      Se la norma è impostata su true o false, l'utente non potrà modificare l'impostazione.
+
+      Se la norma non viene impostata, l'utente potrà modificare l'impostazione e decidere se inviare rapporti o meno.
+
+      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
 <translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
@@ -1725,6 +1746,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 
       Consente di specificare i flag da applicare all'avvio di <ph name="PRODUCT_NAME" />. I flag specificati vengono applicati soltanto alla schermata di accesso. I flag impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
 <translation id="685769593149966548">Imponi Livello massimo della Modalità con restrizioni per YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 o versioni successive</translation>
 <translation id="687046793986382807">Questa norma è stata ritirata a partire dalla versione 35 di <ph name="PRODUCT_NAME" />.
 
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
@@ -1910,6 +1932,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
+<translation id="733838170182967492">Consente la riproduzione automatica dei contenuti multimediali</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
 <translation id="7384999953864505698">Consente il protocollo QUIC</translation>
@@ -2435,6 +2458,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="930930237275114205">Imposta la directory dei dati utente di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Consente di attivare l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Ti consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
+
+      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
+      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
+      Quando l'impostazione di questa norma viene modificata in false, la norma consente di avviare le nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
+      Quando questa norma non è impostata su un dispositivo gestito, il dispositivo potrà eseguire macchine virtuali.
+      I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="944817693306670849">Imposta dimensioni cache su disco</translation>
 <translation id="982497069985795632">Attiva il controllo ortografico</translation>
 </translationbundle>

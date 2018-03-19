@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Włącz poprzednio ustawiony język klawiatury.</translation>
 <translation id="1195667586424773550">Przeciągnij link na pasek adresu na karcie</translation>
 <translation id="1204450209689312104">Otwórz nowe okno w trybie incognito</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Wydrukuj bieżącą stronę</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> lub <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> lub <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Przejdź do następnej karty</translation>
 <translation id="2010818616644390445">Przejdź do ostatniej karty w oknie</translation>
+<translation id="2088054208777350526">Znajdź skróty klawiszowe</translation>
 <translation id="2145908266289632567">Edytowanie tekstu</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> od 1 do =</translation>
 <translation id="2181097965834437145">Pokaż lub ukryj pasek zakładek</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Zaznacz pasek adresu</translation>
 <translation id="3288816184963444640">Zamknij bieżące okno</translation>
-<translation id="3356202203145076517">Otwórz ostatnio używane okno</translation>
 <translation id="3407560819924487926">Otwórz menedżera zadań</translation>
 <translation id="3422679037938588196">Przejdź do poprzedniego wyrażenia pasującego do zapytania</translation>
 <translation id="344577624355799426"><ph name="ALT" /> lub <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> od 1 do 8</translation>
 <translation id="3837047332182291558">Rozjaśnij klawiaturę (dotyczy tylko klawiatur podświetlanych)</translation>
 <translation id="3976863468609830880">Kliknij ostatnią ikonę na półce</translation>
+<translation id="4026843240379844265">Przenieś aktywne okno na inny ekran</translation>
 <translation id="4035482366624727273">Zaznacz całą zawartość strony</translation>
 <translation id="4060703249685950734">Przywróć ostatnią zamkniętą kartę lub ostatnie zamknięte okno</translation>
 <translation id="4090342722461256974">Naciśnij i przytrzymaj <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, naciskaj <ph name="TAB" />, aż przejdziesz do okna, które chcesz otworzyć, i zwolnij klawisze.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="7020813747703216897">Nie znaleziono pasujących wyników</translation>
 <translation id="7025325401470358758">Następny panel</translation>
+<translation id="7237562915163138771">Wpisz adres internetowy w pasku adresu i naciśnij <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> lub <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Usuń następny znak (usuwanie do przodu)</translation>
 <translation id="766326951329901120">Wklej zawartość schowka jako zwykły tekst</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>
 <translation id="8389638407792712197">Otwórz nowe okno</translation>
 <translation id="8429696719963529183">Użyj klawiszy funkcyjnych (od F1 do F12)</translation>
+<translation id="8537650670971624753">Zamknij tryb wyszukiwania</translation>
 <translation id="85690795166292698">Otwórz link w nowej karcie</translation>
 <translation id="8609384513243082612">Otwórz nową kartę</translation>
 <translation id="8644639153978066712">Pokaż ukryte pliki w aplikacji Pliki</translation>

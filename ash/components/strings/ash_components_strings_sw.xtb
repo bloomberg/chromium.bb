@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Tumia lugha ya kibodi ya awali uliyokuwa ukitumia.</translation>
 <translation id="1195667586424773550">Buruta kiungo hadi kwenye sehemu ya anwani katika kichupo</translation>
 <translation id="1204450209689312104">Fungua dirisha jipya katika hali fiche</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Chapisha ukurasa wa sasa</translation>
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> au <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> au <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Nenda kwenye kichupo kinachofuata</translation>
 <translation id="2010818616644390445">Nenda kwenye kichupo cha mwisho katika dirisha</translation>
+<translation id="2088054208777350526">Tafuta njia za mikato ya kibodi</translation>
 <translation id="2145908266289632567">Kubadilisha Maandishi</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 hadi =</translation>
 <translation id="2181097965834437145">Onyesha au ufiche sehemu ya alamisho</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Lenga upau anwani</translation>
 <translation id="3288816184963444640">Funga dirisha la sasa</translation>
-<translation id="3356202203145076517">Fungua dirisha ambalo hukutumia zaidi hivi karibuni</translation>
 <translation id="3407560819924487926">Fungua kidhibiti cha shughuli kwenye Chrome</translation>
 <translation id="3422679037938588196">Rudi kwenye utafutaji wa awali unaolingana na utafutaji wako</translation>
 <translation id="344577624355799426"><ph name="ALT" /> au <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 hadi 8</translation>
 <translation id="3837047332182291558">Ongeza mwangaza wa kibodi (katika kibodi zenye mwanga wa nyuma pekee)</translation>
 <translation id="3976863468609830880">Bofya aikoni ya mwisho kwenye rafu yako</translation>
+<translation id="4026843240379844265">Sogeza dirisha linalotumika kati ya skrini</translation>
 <translation id="4035482366624727273">Chagua kila kitu kwenye ukurasa</translation>
 <translation id="4060703249685950734">Fungua tena kichupo au dirisha la mwisho ulilofunga</translation>
 <translation id="4090342722461256974">Bonyesha na ushikilie <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, gusa <ph name="TAB" /> hadi utakapoona dirisha ambalo ungependa kufungua kisha uachilie.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Upatikanaji</translation>
 <translation id="7020813747703216897">Haikupata matokeo yoyote yanayolingana</translation>
 <translation id="7025325401470358758">Kidirisha kinachofuata</translation>
+<translation id="7237562915163138771">Andika anwani ya tovuti kwenye sehemu ya anwani, kisha ubonyeze <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> au <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Futa herufi inayofuata (futa kuelekea mbele)</translation>
 <translation id="766326951329901120">Bandika maudhui kutoka ubao wa kunakili katika muundo wa maandishi dhahiri</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Buruta kiungo kwenye sehemu tupu katika ukanda wa vichupo</translation>
 <translation id="8389638407792712197">Fungua dirisha jipya</translation>
 <translation id="8429696719963529183">Tumia vitufe vya F (F1 hadi F12)</translation>
+<translation id="8537650670971624753">Funga hali ya utafutaji</translation>
 <translation id="85690795166292698">Fungua kiungo katika kichupo kipya</translation>
 <translation id="8609384513243082612">Fungua kichupo kipya</translation>
 <translation id="8644639153978066712">Onyesha faili zilizofichwa katika programu ya Faili</translation>

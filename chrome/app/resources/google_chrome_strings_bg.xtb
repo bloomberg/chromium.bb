@@ -43,6 +43,7 @@
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
 <translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2084710999043359739">Добавяне</translation>
+<translation id="2094919256425865063">Изход от Chrome въпреки това?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Помогнете за подобряването на Chrome, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Инсталирайте Chrome на телефона си. Ще изпратим SMS на телефонния номер за възстановяване на профила ви.</translation>
@@ -106,6 +107,7 @@
 <translation id="3735758079232443276">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при стартиране на Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Премахване от Chrome...</translation>
+<translation id="3844992844761326777">На компютъра ви има опасен софтуер. Chrome може да го премахне и да възстанови настройките ви, така че браузърът отново да заработи нормално.</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
@@ -140,6 +142,7 @@
 <translation id="4771048833395599659">Chrome блокира този файл, тъй като може да е опасен.</translation>
 <translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
 <translation id="4804732725083176494">Функцията за влизане в Chrome е деактивирана от администратора на това устройство.</translation>
+<translation id="4833487314064352405">{0,plural, =1{Повторно стартиране на Chrome след един ден}other{Повторно стартиране на Chrome след # дни}}</translation>
 <translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
 <translation id="4895437082222824641">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
@@ -148,6 +151,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome ще стартира отново след един час}other{Chrome ще стартира отново след # часа}}</translation>
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome се показва на този език</translation>
 <translation id="5170938038195470297">Потребителският ви профил не може да се използва, защото е от по-нова версия на Google Chrome. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chrome.</translation>
@@ -190,6 +194,7 @@
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
+<translation id="677276454032249905">Искате да излезете от Chrome въпреки това?</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
 <translation id="686561893457936865">Използвайте Chrome навсякъде</translation>
 <translation id="6885412569789873916">Приложения за Chrome бета</translation>

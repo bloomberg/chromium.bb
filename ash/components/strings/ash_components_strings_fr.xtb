@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Revenir à la langue du clavier que vous utilisiez auparavant.</translation>
 <translation id="1195667586424773550">Faites glisser le lien vers la barre d'adresse de l'onglet</translation>
 <translation id="1204450209689312104">Ouvrir une nouvelle fenêtre en mode navigation privée</translation>
+<translation id="1293699935367580298">Échap</translation>
 <translation id="1299858300159559687">Imprimer la page active</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ou <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Accéder à l'onglet suivant</translation>
 <translation id="2010818616644390445">Accéder au dernier onglet dans la fenêtre</translation>
+<translation id="2088054208777350526">Rechercher des raccourcis clavier</translation>
 <translation id="2145908266289632567">Modification de texte</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> de "1" à "="</translation>
 <translation id="2181097965834437145">Afficher ou masquer la barre de favoris</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Activer la barre d'adresse</translation>
 <translation id="3288816184963444640">Fermer la fenêtre active</translation>
-<translation id="3356202203145076517">Ouvrir la fenêtre que vous avez utilisée le moins récemment</translation>
 <translation id="3407560819924487926">Ouvrir le gestionnaire de tâches</translation>
 <translation id="3422679037938588196">Accéder à la correspondance précédente du terme recherché</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" />1 à 8</translation>
 <translation id="3837047332182291558">Augmenter la luminosité du clavier (claviers rétroéclairés uniquement)</translation>
 <translation id="3976863468609830880">Cliquer sur la dernière icône de l'étagère</translation>
+<translation id="4026843240379844265">Transférer la fenêtre active entre des écrans</translation>
 <translation id="4035482366624727273">Sélectionner tout le contenu de la page</translation>
 <translation id="4060703249685950734">Rouvrir l'onglet ou la fenêtre que vous venez de fermer</translation>
 <translation id="4090342722461256974">Appuyez de manière prolongée sur <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, puis appuyez sur <ph name="TAB" /> pour sélectionner la fenêtre de votre choix et relâchez pour l'ouvrir.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="7020813747703216897">Aucun résultat ne correspond à votre recherche</translation>
 <translation id="7025325401470358758">Volet suivant</translation>
+<translation id="7237562915163138771">Saisissez une adresse Web dans la barre d'adresse, puis appuyez sur <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Supprimer la lettre suivante (suppression avant)</translation>
 <translation id="766326951329901120">Coller le contenu du Presse-papiers en texte brut</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Faites glisser le lien vers une zone vierge de la barre d'onglets</translation>
 <translation id="8389638407792712197">Ouvrir une nouvelle fenêtre</translation>
 <translation id="8429696719963529183">Utiliser les touches F (F1 à F12)</translation>
+<translation id="8537650670971624753">Quitter le mode Recherche</translation>
 <translation id="85690795166292698">Ouvrir le lien dans un nouvel onglet</translation>
 <translation id="8609384513243082612">Ouvrir un nouvel onglet</translation>
 <translation id="8644639153978066712">Afficher les fichiers masqués dans l'application Fichiers</translation>

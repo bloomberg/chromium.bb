@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
+<translation id="1567387640189251553">Se conectó otro teclado desde la última vez que ingresaste tu contraseña. Es posible que alguien esté intentando determinar qué teclas presionaste.</translation>
 <translation id="1608626060424371292">Eliminar este usuario</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Todavía no se pudo verificar tu contraseña. Ten en cuenta que, si cambiaste tu contraseña recientemente, podrás usar la nueva cuando salgas. Aquí deberás usar la contraseña anterior.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
+<translation id="1928739107511554905">Para obtener la actualización, usa la pantalla táctil para reiniciar tu Chromebook con el teclado conectado.</translation>
 <translation id="1942830294380034169">Botón de superposición</translation>
 <translation id="1951012854035635156">Asistente</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Detener la transmisión de <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carga lenta</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
+<translation id="2191905770366256395">Tu teclado desmontable necesita una actualización crítica</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
 <translation id="3899995891769452915">Entrada de voz</translation>
+<translation id="3900355044994618856">Tu sesión finalizará en <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configuración de audio</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Se cambió el acceso directo para activar o desactivar el Modo de contraste alto. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
+<translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5207949376430453814">Destacar el cursor de texto</translation>
 <translation id="5222676887888702881">Salir</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
 <translation id="5980301590375426705">Salir de la sesión de invitado</translation>
+<translation id="598882571027504733">Para obtener la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
 <translation id="5992218262414051481">Se habilitó el modo de contraste alto. Presiona Ctrl+Buscar+H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de espejo</translation>
 <translation id="6043212731627905357">Este monitor no es compatible con tu dispositivo <ph name="DEVICE_TYPE" />.</translation>
@@ -258,6 +264,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
+<translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
@@ -318,6 +325,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="8652175077544655965">Cerrar configuración</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
+<translation id="8734991477317290293">Es posible que alguien esté intentando determinar qué teclas presionaste</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado.
 

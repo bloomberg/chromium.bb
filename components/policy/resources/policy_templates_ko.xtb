@@ -152,6 +152,11 @@
 <translation id="1503487916067509762">타사 소프트웨어 삽입 차단 사용 설정</translation>
 <translation id="1504431521196476721">원격 인증</translation>
 <translation id="1509692106376861764">이 정책은 <ph name="PRODUCT_NAME" /> 버전 29를 기준으로 지원 중단되었습니다.</translation>
+<translation id="1519337829779572350">이 설정은 지원이 중단되었습니다. 대신 SafeBrowsingExtendedReportingEnabled를 사용하세요. SafeBrowsingExtendedReportingEnabled를 사용 또는 사용 중지하려면 SafeBrowsingExtendedReportingOptInAllowed를 False로 설정합니다.
+
+      이 정책을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송할 수 없게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자가 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
+
+      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="1522425503138261032">사이트에서 사용자 실제 위치를 추적하도록 허용</translation>
 <translation id="152657506688053119">기본 검색 공급자의 대체 URL 목록</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
@@ -297,6 +302,14 @@
       이 정책을 설정하면 사용자에게 브라우저 재실행이 필요하거나 권장된다는 알림이 전송됩니다. 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />의 메뉴가 미세하게 변경되어 재실행이 필요하다는 정보가 사용자에게 전달됩니다. 정책을 '권장'으로 설정하면 재실행하는 것이 좋다는 경고 메시지가 사용자에게 반복적으로 표시됩니다. 사용자는 이 경고를 무시하고 나중에 재실행할 수 있습니다. '필수'로 설정하면 알림 기간이 지난 후 브라우저가 강제로 재실행된다는 경고 메시지가 사용자에게 반복적으로 표시됩니다. 이 기간은 기본적으로 7일로 설정되어 있으며, <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 정책 설정을 통해 변경할 수 있습니다.
 
       재실행 후에는 사용자의 세션이 복원됩니다.</translation>
+<translation id="2075434678547407637"><ph name="PRODUCT_NAME" />에서 오디오 콘텐츠가 포함된 동영상을 사용자 동의 없이 자동 재생할지 제어할 수 있습니다.
+
+      이 정책을 True로 설정하면 <ph name="PRODUCT_NAME" />에서 미디어를 자동재생할 수 있습니다.
+      이 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />에서 미디어를 자동재생할 수 없습니다.
+      기본적으로 <ph name="PRODUCT_NAME" />에서는 미디어를 자동재생할 수 없습니다.
+
+      <ph name="PRODUCT_NAME" />이(가) 실행 중이며 이 정책이 변경되면 새로 열린 탭에만 변경사항이 적용됩니다. 따라서 일부 탭에서는 이전과 같은 행동이 계속 나타날 수 있습니다.
+      </translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2077273864382355561">배터리 전원으로 실행할 때 화면 꺼짐 지연</translation>
 <translation id="2082205219176343977">기기에 허용되는 최소 Chrome 버전을 설정합니다.</translation>
@@ -1066,6 +1079,7 @@
       이 정책을 설정하지 않으면 사용자는 북마크바 컨텍스트 메뉴에서 앱 단축키를 표시하거나 숨기도록 선택할 수 있습니다.
 
       이 정책을 설정하면 사용자는 앱 단축키 표시 여부를 변경할 수 없으며 앱 단축키는 항상 표시되거나 항상 표시되지 않습니다.</translation>
+<translation id="4432762137771104529">세이프 브라우징 확장 보고 사용 설정</translation>
 <translation id="443454694385851356">이전(안전하지 않음)</translation>
 <translation id="443665821428652897">브라우저 종료 시 사이트 데이터 지우기(지원 중단)</translation>
 <translation id="4439336120285389675">지원 중단된 웹 플랫폼 기능 중 일시적으로 다시 사용 설정할 기능을 지정합니다.
@@ -1078,12 +1092,6 @@
       </translation>
 <translation id="4442582539341804154">기기가 유휴 상태이거나 일시 중지되었을 때 잠금 기능을 사용</translation>
 <translation id="4449545651113180484">화면을 시계 방향으로 270도 회전</translation>
-<translation id="4459359100627756769">엔터프라이즈 로그인 URL(HTTP 및 HTTPS 스키마만 해당) 목록을 설정합니다. 이러한 URL에서는 비밀번호 지문이 캡처되어 비밀번호 재사용 감지에 사용됩니다.
-      이 설정은 SSO/SMAL 시스템을 사용하는 G Suite 사용자에게만 제공되어야 합니다.
-
-      이 설정을 켜면 비밀번호 보호 서비스가 비밀번호 재사용 감지 목적으로 이러한 URL에서 비밀번호 지문을 캡처합니다.
-      이 설정을 끄거나 지정하지 않으면 비밀번호 보호 서비스가 https://accounts.google.com에서만 비밀번호 지문을 캡처합니다.
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입되어 있지 않은 Windows 인스턴스에는 사용할 수 없습니다.</translation>
 <translation id="4467952432486360968">제3자 쿠키 차단</translation>
 <translation id="4474167089968829729">비밀번호 관리자에 비밀번호 저장 기능 사용</translation>
 <translation id="4476769083125004742">이 정책이 <ph name="BLOCK_GEOLOCATION_SETTING" />(으)로 설정되는 경우 Android 앱에서 위치 정보에 액세스할 수 없습니다. 이 정책을 다른 값으로 설정하거나 설정하지 않은 채로 두면 Android 앱에서 위치 정보에 액세스하려고 할 때 사용자에게 동의를 요청하는 메시지가 표시됩니다.</translation>
@@ -1290,6 +1298,19 @@
 
       클라이언트가 오랜 기간 동안 오프라인 상태를 유지하는 경우 비밀번호가 지정된 일수보다 오래 변경되지 않을 수도 있습니다.</translation>
 <translation id="5105313908130842249">배터리 전원으로 실행할 때 화면 잠금 지연</translation>
+<translation id="5106504910236139235"><ph name="PRODUCT_NAME" />의 세이프 브라우징 확장 보고를 사용하고 사용자가 이 설정을 변경할 수 없게 합니다.
+
+      확장 보고에서는 위험한 앱 및 사이트를 감지하는 데 도움이 되도록 Google 서버에 일부 시스템 정보 및 페이지 콘텐츠를 전송합니다.
+
+      이 설정을 True로 설정하면 보고서가 생성되며 필요할 때(예: 보안 화면 표시)마다 전송됩니다.
+
+      이 설정을 False로 설정하면 보고서가 전송되지 않습니다.
+
+      이 정책을 True 또는 False로 설정하면 사용자가 이 설정을 수정할 수 없습니다.
+
+      이 정책을 설정하지 않으면 사용자가 이 설정을 변경하고 보고서 전송 여부를 결정할 수 있습니다.
+
+      세이프 브라우징에 관한 자세한 내용은 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="5108031557082757679">사용 중지된 엔터프라이즈 기기 프린터</translation>
 <translation id="5130288486815037971">TLS RC4 암호화 기술이 사용하도록 설정되었는지 여부</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
@@ -1849,6 +1870,7 @@
 
       <ph name="PRODUCT_NAME" />을(를) 시작할 때 적용할 플래그를 지정합니다. 지정된 플래그는 로그인 화면에만 적용됩니다. 이 정책에서 설정된 플래그는 사용자 세션에 반영되지 않습니다.</translation>
 <translation id="685769593149966548">YouTube에 강력 제한 모드 사용</translation>
+<translation id="686079137349561371">Microsoft Windows 7 이상</translation>
 <translation id="687046793986382807">이 정책은 <ph name="PRODUCT_NAME" /> 버전 35를 기준으로 지원이 중단되었습니다.
 
       메모리 정보는 옵션 값과 관계없이 페이지에 보고되지만 보안 상의 이유로 보고되는
@@ -2057,6 +2079,7 @@
 
       이 정책을 설정하지 않으면 자동 정리는 기본 전략을 사용합니다. 현재 기본 전략은 'RemoveLRUIfDormant'입니다.</translation>
 <translation id="7336878834592315572">세션이 지속되는 동안 쿠키를 유지합니다.</translation>
+<translation id="733838170182967492">미디어 자동 재생 허용</translation>
 <translation id="7340034977315324840">기기 활동 시간 보고</translation>
 <translation id="7343497214039883642">기기에 적용되는 엔터프라이즈 프린터 설정 파일</translation>
 <translation id="7384999953864505698">QUIC 프로토콜 허용</translation>
@@ -2624,6 +2647,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉토리 설정</translation>
 <translation id="934390688529359269"><ph name="PRODUCT_NAME" /> 강제 로그인을 사용 설정합니다.</translation>
+<translation id="938916311528680351">Chrome OS에서의 가상 머신 실행 허용 여부를 제어할 수 있습니다.
+
+      이 정책을 True로 설정하면 기기에서 가상 머신을 실행할 수 있습니다.
+      이 정책을 False로 설정하면 기기에서 가상 머신을 실행할 수 없습니다.
+      이 정책을 False로 변경하면 새로운 가상 머신에 적용되며 이미 실행되고 있는 가상 머신이 종료되지는 않습니다.
+      관리되는 기기에서 이 정책을 설정하지 않으면 기기에서 가상 머신을 실행할 수 있습니다.
+      관리되지 않는 기기에서는 가상 머신을 실행할 수 있습니다.</translation>
 <translation id="944817693306670849">디스크 캐시 크기 설정</translation>
 <translation id="982497069985795632">맞춤법 검사 사용 설정</translation>
 </translationbundle>

@@ -131,7 +131,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
           Hvis denne politik ikke angives, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="1468707346106619889">Hvis denne politik er angivet som sand, er Kombineret skrivebord tilladt og
-      aktiveret som standard, hvilket giver applikationer mulighed for at fylde flere skærme.
+      aktiveret som standard, hvilket giver apps mulighed for at fylde flere skærme.
       Brugeren kan deaktivere Kombineret skrivebord for de enkelte skærme ved at fjerne markeringen af afkrydsningsfeltet ud for dem
       i skærmindstillingerne.
 
@@ -150,6 +150,11 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1503487916067509762">Der blokeres for tilføjelse af software fra tredjeparter</translation>
 <translation id="1504431521196476721">Fjernattestering</translation>
 <translation id="1509692106376861764">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29.</translation>
+<translation id="1519337829779572350">Denne indstilling er forældet. Brug SafeBrowsingExtendedReportingEnabled i stedet. Aktivering eller deaktivering af SafeBrowsingExtendedReportingEnabled svarer til at angive SafeBrowsingExtendedReportingOptInAllowed som Falsk.
+
+      Hvis politikken er angivet som Falsk, forhindres brugerne i at sende visse former for systemoplysninger og sideindhold til Googles servere. Hvis indstillingen er angivet som Sand eller ikke er angivet, kan brugerne sende visse former for systemoplysninger og sideindhold til Beskyttet browsing som en hjælp til at registrere skadelige apps og websites.
+
+      Se https://developers.google.com/safe-browsing for at få flere oplysninger om Beskyttet browsing.</translation>
 <translation id="1522425503138261032">Tillad, at websites registrerer brugernes fysiske placering</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
@@ -289,6 +294,14 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig. Hvis politikken indstilles til "Anbefalet", får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis politikken er indstillet til "Påkrævet", får brugeren vist en fast advarsel, som indikerer, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Brugerens session genoprettes efter genstarten.</translation>
+<translation id="2075434678547407637">Giver dig mulighed for at bestemme, om videoer skal afspilles automatisk (uden brugernes samtykke) med lydindhold i <ph name="PRODUCT_NAME" />.
+
+      Hvis politikken er angivet som Sand, har <ph name="PRODUCT_NAME" /> tilladelse til automatisk at afspille medier.
+      Hvis politikken er angivet som Falsk, har <ph name="PRODUCT_NAME" /> ikke tilladelse til automatisk at afspille medier.
+      <ph name="PRODUCT_NAME" /> har som standard ikke tilladelse til automatisk at afspille medier.
+
+      Bemærk! Hvis <ph name="PRODUCT_NAME" /> kører, og denne politik ændres, anvendes ændringerne kun i nye åbne faner. Nogle faner kan derfor stadig have den tidligere adfærd.
+      </translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2077273864382355561">Skærmslukforsinkelse, når batteriet bruges</translation>
 <translation id="2082205219176343977">Konfigurer den Chrome-version, der som minimum påkræves for enheden.</translation>
@@ -480,7 +493,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne udskrive.
 
-      Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive fra <ph name="PRODUCT_NAME" />. Udskrivning deaktiveres i skruenøglemenuen, udvidelser, JavaScript-applikationer osv. Det er stadig muligt at udskrive fra plugins, der omgår <ph name="PRODUCT_NAME" /> under udskrivning. For eksempel har visse Flash-applikationer mulighed for udskrivning i deres genvejsmenu, og denne deaktiveres ikke.</translation>
+      Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive fra <ph name="PRODUCT_NAME" />. Udskrivning deaktiveres i skruenøglemenuen, udvidelser, JavaScript-apps osv. Det er stadig muligt at udskrive fra plugins, der omgår <ph name="PRODUCT_NAME" /> under udskrivning. For eksempel har visse Flash-apps mulighed for udskrivning i deres genvejsmenu, og denne deaktiveres ikke.</translation>
 <translation id="2518231489509538392">Tillad afspilning af lyd</translation>
 <translation id="2521581787935130926">Vis genvej til apps i bogmærkelinjen</translation>
 <translation id="2529700525201305165">Begræns, hvilke brugere der har tilladelse til at logge ind på <ph name="PRODUCT_NAME" /></translation>
@@ -1034,6 +1047,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis denne politik ikke er angivet, kan brugeren vælge at vise eller skjule genvejen til apps i bogmærkelinjens genvejsmenu.
 
       Hvis denne politik er konfigureret, kan brugeren ikke ændre den, og genvejen for apps er enten altid vist eller altid skjult..</translation>
+<translation id="4432762137771104529">Aktivér udvidet rapportering af Beskyttet browsing</translation>
 <translation id="443454694385851356">Forældet (ikke sikkert)</translation>
 <translation id="443665821428652897">Ryd websitedata ved browserlukning (frarådes)</translation>
 <translation id="4439336120285389675">Angiv en liste over forældede funktioner på webplatformen for at genaktivere dem midlertidigt.
@@ -1046,12 +1060,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       </translation>
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
 <translation id="4449545651113180484">Roter skærmen 270 grader med uret</translation>
-<translation id="4459359100627756769">Konfigurer listen over webadresser til virksomhedslogin (kun HTTP- og HTTPS-adresser). Fingeraftryk registreres som adgangskoder på disse webadresser og anvendes til at registrere genbrug af adgangskoder.
-      Denne indstilling bør kun bruges af G Suite-brugere, der benytter et SSO/SAML-system.
-
-      Hvis denne indstilling er aktiveret, registrerer tjenesten til adgangskodebeskyttelse fingeraftryk som adgangskoder på disse webadresser med henblik på at registrere genbrug af adgangskoder.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, registrerer tjenesten til adgangskodebeskyttelse kun fingeraftryk som adgangskoder på https://accounts.google.com.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
 <translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
 <translation id="4476769083125004742">Hvis denne politik angives som <ph name="BLOCK_GEOLOCATION_SETTING" />, kan Android-apps ikke få adgang til placeringsoplysninger. Hvis du angiver denne politik til en anden værdi eller ikke angiver den, bliver brugeren bedt om at give sit samtykke, når en Android-app vil have adgang til placeringsoplysninger.</translation>
@@ -1245,6 +1253,19 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
       Bemærk, at adgangskoder kan gælde i længere tid end det angivne antal dage, hvis klienten har været offline i længere tid.</translation>
 <translation id="5105313908130842249">Skærmlåsforsinkelse, når batteriet bruges</translation>
+<translation id="5106504910236139235">Aktiverer udvidet rapportering af Beskyttet browsing for <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
+
+      Udvidet rapportering sender visse former for systemoplysninger og sideindhold til Googles servere som en hjælp til at registrere skadelige apps og websites.
+
+      Hvis indstillingen er angivet som Sand, oprettes og sendes der rapporter efter behov (f.eks. når der vises en mellemliggende sikkerhedsannonce).
+
+      Hvis indstillingen er angivet som Falsk, sendes der aldrig rapporter.
+
+      Hvis politikken er angivet som Sand eller Falsk, kan brugerne ikke ændre indstillingen.
+
+      Hvis politikken ikke angives, kan brugerne ændre indstillingen og bestemme, om der skal sendes rapporter.
+
+      Se https://developers.google.com/safe-browsing for at få flere oplysninger om Beskyttet browsing.</translation>
 <translation id="5108031557082757679">Deaktiverede virksomhedsprintere for enheder</translation>
 <translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
@@ -1761,6 +1782,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, overføres ikke til brugersessioner.</translation>
 <translation id="685769593149966548">Gennemtving Strengt begrænset tilstand på YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 eller nyere</translation>
 <translation id="687046793986382807">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 35.
 
       Hukommelsesoplysninger rapporteres dog stadigvæk til siden uanset indstillingsværdien, men de rapporterede
@@ -1948,6 +1970,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke er indstillet, anvender den automatiske oprydningsfunktion standardstrategien. Denne strategi er i øjeblikket "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
+<translation id="733838170182967492">Tillader automatisk afspilning af medier</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7343497214039883642">Fil til konfiguration af virksomhedsprintere for enheder</translation>
 <translation id="7384999953864505698">Tillader QUIC-protokol</translation>
@@ -2484,6 +2507,13 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>
 <translation id="930930237275114205">Angiv brugerdatamappe for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Aktiverer påtvungen login for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="938916311528680351">Giver dig mulighed for at bestemme, om virtuelle maskiner skal have tilladelse til at køre i Chrome OS.
+
+      Hvis politikken er angivet som Sand, har enheden tilladelse til at køre virtuelle maskiner.
+      Hvis politikken er angivet som Falsk, har enheden ikke tilladelse til at køre virtuelle maskiner.
+      Hvis indstillingen for politikken ændres til Falsk, gælder den for start af nye virtuelle maskiner, men den stopper ikke virtuelle maskiner, som allerede kører.
+      Hvis politikken ikke angives på en administreret enhed, har enheden tilladelse til at køre virtuelle maskiner.
+      Enheder, der ikke administreres, har tilladelse til at køre virtuelle maskiner.</translation>
 <translation id="944817693306670849">Angiv diskcachens størrelse</translation>
 <translation id="982497069985795632">Aktivér stavekontrol</translation>
 </translationbundle>

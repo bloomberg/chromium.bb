@@ -78,6 +78,7 @@
 <translation id="1114525161406758033">Beim Zuklappen Ruhemodus aktivieren</translation>
 <translation id="1115018219887494029">Smart Lock für Chromebooks (Beta)</translation>
 <translation id="1116694919640316211">Über</translation>
+<translation id="1116779635164066733">Diese Einstellung wird durch die Erweiterung "<ph name="NAME" />" erzwungen.</translation>
 <translation id="1119069657431255176">Bzip2-komprimiertes Tar-Archiv</translation>
 <translation id="1119447706177454957">Interner Fehler</translation>
 <translation id="1122198203221319518">&amp;Tools</translation>
@@ -118,6 +119,7 @@
 <translation id="1173894706177603556">Umbenennen</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> wird kopiert...</translation>
+<translation id="1177138678118607465">Google kann die Google-Suche, Werbung und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren. Dies lässt sich jederzeit unter myaccount.google.com/activitycontrols/search ändern.</translation>
 <translation id="1177863135347784049">Benutzerdefiniert</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="1181037720776840403">Entfernen</translation>
@@ -372,6 +374,7 @@
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="1559235587769913376">Unicode-Zeichen eingeben</translation>
 <translation id="1566049601598938765">Website</translation>
+<translation id="1567387640189251553">Seit der letzten Eingabe Ihres Passwortes wurde eine andere Tastatur angeschlossen. Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen.</translation>
 <translation id="1567993339577891801">JavaScript-Konsole</translation>
 <translation id="1568067597247500137">Website stummschalten</translation>
 <translation id="1568323446248056064">Einstellungen für Anzeigegerät öffnen</translation>
@@ -566,6 +569,7 @@
 <translation id="1850508293116537636">Im &amp;Uhrzeigersinn drehen</translation>
 <translation id="1851361118452499663">Meine Fotos</translation>
 <translation id="1852799913675865625">Beim Versuch, die Datei <ph name="ERROR_TEXT" /> zu lesen, ist ein Fehler aufgetreten.</translation>
+<translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1856715684130786728">Speicherort hinzufügen...</translation>
 <translation id="1856813161013948396">Um den Sperrbildschirm zu überspringen, tippen Sie auf den Fingerabdrucksensor. Zum Konfigurieren klicken.</translation>
 <translation id="1858585891038687145">Diesem Zertifikat zur Identifizierung von Softwareherstellern vertrauen</translation>
@@ -625,7 +629,6 @@
 <translation id="1962233722219655970">Diese Seite verwendet eine Native Client App, die auf Ihrem Computer nicht funktioniert.</translation>
 <translation id="1962969542251276847">Gesperrter Bildschirm</translation>
 <translation id="1963227389609234879">Alle entfernen</translation>
-<translation id="1965328510789761112">Privater Speicher</translation>
 <translation id="1965624977906726414">Erfordert keine besonderen Berechtigungen</translation>
 <translation id="1970368523891847084">Videomodus aktiviert</translation>
 <translation id="197288927597451399">Behalten</translation>
@@ -728,7 +731,6 @@
 <translation id="2136573720723402846">Entsperren per Fingerabdruck aktivieren</translation>
 <translation id="2137068468602026500">Klicken Sie unter "Webbrowser" auf <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Es wird weiterhin versucht, eine Verbindung zu "<ph name="DEVICE_NAME" />" herzustellen</translation>
-<translation id="2139186145475833000">Zum Startbildschirm zufügen</translation>
 <translation id="214169863967063661">Darstellungseinstellungen öffnen</translation>
 <translation id="2142328300403846845">Link öffnen als</translation>
 <translation id="214353449635805613">Screenshot-Bereich</translation>
@@ -1059,6 +1061,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="264810637653812429">Es wurden keine kompatiblen Geräte gefunden.</translation>
 <translation id="2648831393319960979">Das Gerät wird zu Ihrem Konto hinzugefügt. Bitte warten...</translation>
 <translation id="2649045351178520408">Base64-codierter ASCII-Code, Zertifikatkette</translation>
+<translation id="2653033005692233957">Fehler bei der Suche</translation>
 <translation id="2653266418988778031">Wenn Sie das Zertifikat einer Zertifizierungsstelle (CA) löschen, vertraut Ihr Server keinen von dieser Zertifizierungsstelle ausgestellten Zertifikaten mehr.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="265390580714150011">Feldwert</translation>
@@ -1211,6 +1214,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="284805635805850872">Schädliche Software entfernen?</translation>
 <translation id="2849362176025371110">Diagnose- und Nutzungsdaten automatisch an Google senden. Sie können dies jederzeit <ph name="BEGIN_LINK1" />in den Geräteeinstellungen ändern<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
+<translation id="284975061945174219">Fehler bei der Bereinigung</translation>
 <translation id="2849936225196189499">Kritisch</translation>
 <translation id="2850124913210091882">Sichern</translation>
 <translation id="2850541429955027218">Design hinzufügen</translation>
@@ -2040,7 +2044,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4114360727879906392">Vorheriges Fenster</translation>
 <translation id="4115002065223188701">Netzwerk außer Reichweite</translation>
 <translation id="4115080753528843955">Einige Inhaltsdienste verwenden eindeutige IDs, um den Zugriff auf geschützte Inhalte zu gestatten</translation>
-<translation id="411666854932687641">Privater Speicher</translation>
 <translation id="4120817667028078560">Pfad zu lang</translation>
 <translation id="4121428309786185360">Gültig bis</translation>
 <translation id="412730574613779332">Superheld</translation>
@@ -2094,7 +2097,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4235200303672858594">Gesamter Bildschirm</translation>
 <translation id="4235813040357936597">Konto für <ph name="PROFILE_NAME" /> hinzufügen</translation>
 <translation id="4235965441080806197">Anmeldung abbrechen</translation>
-<translation id="4240511609794012987">Gemeinsamer Speicher</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="4242577469625748426">Fehler beim Installieren der Richtlinieneinstellungen auf dem Gerät: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Mehr Eingabestift-Apps suchen</translation>
@@ -2592,6 +2594,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5063480226653192405">Verwendung</translation>
 <translation id="5067867186035333991">Nachfragen, wenn <ph name="HOST" /> auf Ihr Mikrofon zugreifen möchte</translation>
 <translation id="5068918910148307423">Fertigstellen des Datenversands und -empfangs von kürzlich geschlossen Websites nicht erlauben</translation>
+<translation id="507021118007633031"><ph name="APP_NAME" /> für <ph name="DEVICE_TYPE" /></translation>
 <translation id="5072052264945641674">Cursorgröße anpassen</translation>
 <translation id="5072836811783999860">Verwaltete Lesezeichen anzeigen</translation>
 <translation id="5074318175948309511">Damit die neuen Einstellungen wirksam werden, muss die Seite eventuell neu geladen werden.</translation>
@@ -2646,7 +2649,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5154108062446123722">Erweiterte Einstellungen für <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Antragsteller</translation>
-<translation id="5154917547274118687">Speicher</translation>
 <translation id="5157635116769074044">Diese Seite am Startbildschirm anheften...</translation>
 <translation id="5158593464696388225">Bild konnte nicht gespeichert werden.</translation>
 <translation id="5158983316805876233">Denselben Proxy für alle Protokolle verwenden</translation>
@@ -2899,6 +2901,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5527463195266282916">Sie haben versucht, ein Downgrade der Erweiterung auszuführen.</translation>
 <translation id="5527474464531963247">Sie können auch ein anderes Netzwerk auswählen.</translation>
 <translation id="5528368756083817449">Lesezeichenmanager</translation>
+<translation id="5530766185686772672">Inkognito-Tabs schließen</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> möchte:</translation>
 <translation id="5534304873398226603">Foto oder Video verwerfen</translation>
@@ -3487,6 +3490,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="645705751491738698">JavaScript weiterhin blockieren</translation>
 <translation id="6458308652667395253">JavaScript-Blockierung verwalten...</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
+<translation id="6459799433792303855">Aktives Fenster auf anderen Bildschirm verschoben.</translation>
 <translation id="6460601847208524483">Nächste Übereinstimmung suchen</translation>
 <translation id="6462082050341971451">Sind Sie noch da?</translation>
 <translation id="6463795194797719782">B&amp;earbeiten</translation>
@@ -3572,6 +3576,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6596745167571172521">Feststelltaste deaktivieren</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="6597017209724497268">Proben</translation>
+<translation id="6602353599068390226">Fenster auf einen anderen Bildschirm verschieben</translation>
 <translation id="6602956230557165253">Verwenden Sie zum Navigieren den Rechts- und Linkspfeil.</translation>
 <translation id="660380282187945520">F9</translation>
 <translation id="6605847144724004692">Noch nicht von Nutzern bewertet.</translation>
@@ -3894,6 +3899,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7119389851461848805">Ein/Aus</translation>
 <translation id="7120865473764644444">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden. Neuer Versuch...</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
+<translation id="7123360114020465152">Wird nicht mehr unterstützt</translation>
 <translation id="71243390042171582">Vor <ph name="MINUTES" /> Minuten aktualisiert</translation>
 <translation id="7124929488592184705">Fehler beim Drucken von <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' – &lt;em&gt;Ablage durchsuchen&lt;/em&gt;</translation>
@@ -4153,6 +4159,9 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7544853251252956727">Zufallsmix</translation>
 <translation id="7545415673537747415">In den <ph name="BEGIN_LINK" />Google-Aktivitätseinstellungen<ph name="END_LINK" /> können Sie festlegen, wie Google Ihren Browserverlauf nutzt, um die Suche, Werbung und andere Google-Dienste zu personalisieren.</translation>
 <translation id="7547317915858803630">Warnung: Ihre <ph name="PRODUCT_NAME" />-Einstellungen werden auf einem Netzlaufwerk gespeichert. Dies kann zu einer Verlangsamung, zu Abstürzen oder sogar zu Datenverlust führen.</translation>
+<translation id="7547483330017600937">Sie haben die Möglichkeit, auf Ihrem <ph name="DEVICE_TYPE" /> zu entwickeln. Sie können Ihre bevorzugten systemeigenen Apps und Befehlszeilentools nahtlos und sicher nutzen.
+
+Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE" /> heruntergeladen.</translation>
 <translation id="7548856833046333824">Cocktail</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Fehler beim Download von <ph name="FILE_NAME" /></translation>
@@ -4350,6 +4359,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="786073089922909430">Dienst: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – gekoppelt</translation>
+<translation id="7870730066603611552">Synchronisierungsoptionen nach der Einrichtung überprüfen</translation>
 <translation id="7870790288828963061">Es wurden keine Kiosk-Apps mit neuerer Version gefunden. Es sind keine Updates vorhanden. Bitte entfernen Sie den USB-Stick.</translation>
 <translation id="7874357055309047713">Immer auf allen Websites ausführen</translation>
 <translation id="7877451762676714207">Unbekannter Serverfehler. Bitte versuchen Sie es erneut oder wenden Sie sich an den Serveradministrator.</translation>
@@ -4411,7 +4421,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7959074893852789871">Die Datei enthielt mehrere Zertifikate, von denen einige nicht importiert wurden:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Der Google-Standortdienst nutzt Quellen wie WLAN, um den Standort Ihres Geräts schneller und genauer einschätzen zu können. Wenn Sie Google-Standortdienste aktivieren, schaltet das Gerät in einen Modus, in dem WLAN verwendet wird, um Standortinformationen bereitzustellen. Sie können dies jederzeit in den Standorteinstellungen deaktivieren.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Nie</translation>
-<translation id="7965010376480416255">Gemeinsamer Speicher</translation>
 <translation id="7966241909927244760">Bildadresse k&amp;opieren</translation>
 <translation id="7968742106503422125">Daten lesen und ändern, die Sie kopieren und einfügen</translation>
 <translation id="7968833647796919681">Erfassung von Leistungsdaten aktivieren</translation>
@@ -4888,6 +4897,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8725178340343806893">Favoriten/Lesezeichen</translation>
 <translation id="8726206820263995930">Fehler beim Übertragen von Richtlinieneinstellungen vom Server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727142376512517020">Nicht mehr anzeigen</translation>
+<translation id="8727344521467137076">Schädliche Software wurde auf Ihrem Computer gefunden. Chrome entfernt diese Software und stellt Ihre Einstellungen wieder her, sodass Ihr Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8732030010853991079">Klicken Sie auf dieses Symbol, um die Erweiterung zu verwenden.</translation>
 <translation id="8732212173949624846">Browserverlauf auf all Ihren angemeldeten Geräten lesen und ändern</translation>
@@ -4973,7 +4983,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8871696467337989339">Sie verwenden eine nicht unterstützte Befehlszeilenmarkierung: <ph name="BAD_FLAG" />. Dadurch werden Stabilität und Sicherheit beeinträchtigt.</translation>
 <translation id="8871974300055371298">Inhaltseinstellungen</translation>
 <translation id="8872155268274985541">Ungültige Manifestdatei für externes Kiosk-Update gefunden. Die Kiosk-App konnte nicht aktualisiert werden. Bitte entfernen Sie den USB-Stick.</translation>
-<translation id="8872506776304248286">In App öffnen</translation>
 <translation id="8874184842967597500">Nicht verbunden</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Passwort generieren...</translation>
@@ -5099,6 +5108,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9066782832737749352">Sprachausgabe</translation>
 <translation id="9070219033670098627">Person wechseln</translation>
 <translation id="907148966137935206">Anzeige von Pop-ups für keine Website zulassen (empfohlen)</translation>
+<translation id="9071637495340542136">"<ph name="APP_NAME" />" wird installiert…</translation>
 <translation id="9072550133391925347">Mit <ph name="PASSWORD_MANAGER_BRAND" /> werden Sie mit Ihren gespeicherten Passwörtern automatisch auf allen entsprechenden Websites und Apps angemeldet.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

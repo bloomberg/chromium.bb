@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">‏اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="2898082584336937987">‏بادِر بتثبيت Chromium على هاتفك. سنرسل رسالة قصيرة SMS إلى هاتفك: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">‏حو&amp;ل Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{‏إعادة تشغيل Chromium خلال يوم واحد}zero{‏إعادة تشغيل Chromium خلال # يوم}two{‏إعادة تشغيل Chromium خلال يومين (#)}few{‏إعادة تشغيل Chromium خلال # أيام}many{‏إعادة تشغيل Chromium خلال # يومًا}other{‏إعادة تشغيل Chromium خلال # يوم}}</translation>
 <translation id="2977470724722393594">‏Chromium محدّث</translation>
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
 <translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى عبر الأجهزة.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">‏لقد سجلت الدخول الآن إلى Chromium! عطّل المشرف المزامنة.</translation>
 <translation id="4224199872375172890">‏Chromium محدّث.</translation>
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
+<translation id="4260985389288095068">‏هناك برنامج ضار على جهاز الكمبيوتر. يمكن لمتصفح Chromium إزالته إعداداتك لكي يعمل متصفحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="4271805377592243930">‏الحصول على مساعدة في Chromium</translation>
 <translation id="4285930937574705105">‏تعذّر إتمام عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
+<translation id="4407044323746248786">‏هل تريد الخروج من Chromium على أي حال؟</translation>
 <translation id="4421155425831608516">‏عطَّل مشرف هذا الجهاز تسجيل الدخول إلى Chromium.</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
+<translation id="4449801103833300785">{0,plural, =1{‏ستتم إعادة تشغيل Chromium خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل Chromium خلال # ساعة}two{‏ستتم إعادة تشغيل Chromium خلال ساعتين (#)}few{‏ستتم إعادة تشغيل Chromium خلال # ساعات}many{‏ستتم إعادة تشغيل Chromium خلال # ساعةً}other{‏ستتم إعادة تشغيل Chromium خلال # ساعة}}</translation>
 <translation id="4458285410772214805">يُرجى الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4469812139324097969">‏Chromium غير محدّث لأنه لم تتم إعادة تشغيله منذ فترة. هناك تحديث متوفر وسيتم تطبيقه بمجرد إعادة تشغيله.</translation>
 <translation id="4488554488975128561">‏يمكنك المساعدة في جعل Chromium أكثر أمانًا وأسهل استخدامًا بإرسال بعض معلومات النظام ومحتوى الصفحة تلقائيًا إلى Google للمساعدة في اكتشاف التطبيقات والمواقع الضارة.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">‏الحصول على مساعدة في نظام التشغيل Chromium</translation>
 <translation id="4708774505295300557">‏سجّل شخص ما الدخول من قبل إلى Chromium على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chromium للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
 <translation id="4714956846925717402">‏الوصول إلى Chromium بشكلٍ أسرع</translation>
+<translation id="4746050847053251315">‏هل تريد إنهاء Chromium على أي حال؟</translation>
 <translation id="4888717733111232871">‏قاعدة الوارد إلى Chromium للسماح بحركة مرور mDNS.</translation>
 <translation id="4943838377383847465">‏Chromium في وضع الخلفية.</translation>
 <translation id="4987820182225656817">‏يمكن للضيف استخدام Chromium بدون أن يترك أي أثر وراءه.</translation>

@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">기타 문제</translation>
 <translation id="6398765197997659313">전체화면 닫기</translation>
 <translation id="6441316101718669559">데스크톱 통합이 이 플랫폼에서 지원되지 않습니다. 애플리케이션을 사용할 수는 있지만, 사용자 환경이 저하될 수 있습니다.</translation>
+<translation id="6502629188777329097">컴퓨터에 안전하게 액세스하기</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6541219117979389420">애플리케이션 로그는 사용자의 ID(이메일 주소)와 Google 드라이브에 있는 파일 및 폴더의 이름과 속성 등의 비공개 정보를 포함할 수 있습니다.</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
 <translation id="7678209621226490279">왼쪽에 고정</translation>
 <translation id="7693372326588366043">호스트 목록 새로고침</translation>
+<translation id="7714222945760997814">신고하기</translation>
 <translation id="7782471917492991422">컴퓨터의 전원 관리 설정을 확인하고 유휴 상태일 때 절전 모드로 전환되도록 설정되지 않았는지 확인하세요.</translation>
 <translation id="7810127880729796595">통계 보기(연결: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">일부 필수 구성요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>

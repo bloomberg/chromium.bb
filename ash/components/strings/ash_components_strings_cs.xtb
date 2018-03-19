@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Přepnout na předchozí jazyk klávesnice.</translation>
 <translation id="1195667586424773550">Přetáhněte odkaz na adresní řádek na kartě</translation>
 <translation id="1204450209689312104">Otevřít nové okno v anonymním režimu</translation>
+<translation id="1293699935367580298">Klávesa Esc</translation>
 <translation id="1299858300159559687">Vytisknout aktuální stránku</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> nebo <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> a poté <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> nebo <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Přejít na další kartu</translation>
 <translation id="2010818616644390445">Přejít na poslední kartu v okně</translation>
+<translation id="2088054208777350526">Vyhledat klávesové zkratky</translation>
 <translation id="2145908266289632567">Úpravy textu</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 až =</translation>
 <translation id="2181097965834437145">Zobrazit nebo skrýt lištu záložek</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Přepnout do adresního řádku</translation>
 <translation id="3288816184963444640">Zavřít aktuální okno</translation>
-<translation id="3356202203145076517">Otevřít nedávno použité okno</translation>
 <translation id="3407560819924487926">Otevřít správce úloh</translation>
 <translation id="3422679037938588196">Přejít na předchozí výskyt hledaného výrazu</translation>
 <translation id="344577624355799426"><ph name="ALT" /> nebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 až 8</translation>
 <translation id="3837047332182291558">Zvýšit jas klávesnice (pouze u podsvícených klávesnic)</translation>
 <translation id="3976863468609830880">Kliknout na poslední ikonu na poličce</translation>
+<translation id="4026843240379844265">Přesunout aktivní okno mezi obrazovkami</translation>
 <translation id="4035482366624727273">Vybrat veškerý obsah stránky</translation>
 <translation id="4060703249685950734">Znovu otevřít naposledy zavřenou kartu</translation>
 <translation id="4090342722461256974">Stiskněte a podržte <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> a opakovaně stiskněte klávesu <ph name="TAB" />, dokud nepřejdete na okno, které chcete otevřít. Poté klávesy uvolněte.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="7020813747703216897">Nebyly nalezeny žádné odpovídající výsledky</translation>
 <translation id="7025325401470358758">Další podokno</translation>
+<translation id="7237562915163138771">Zadejte do adresního řádku webovou adresu a poté stiskněte <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> nebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Vymazat následující písmeno (odstranění následujícího znaku).</translation>
 <translation id="766326951329901120">Vložit obsah ze schránky jako prostý text</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Přetáhněte odkaz na prázdné místo na liště karet</translation>
 <translation id="8389638407792712197">Otevřít nové okno</translation>
 <translation id="8429696719963529183">Použít funkční klávesy (F1 až F12)</translation>
+<translation id="8537650670971624753">Opustit režim vyhledávání</translation>
 <translation id="85690795166292698">Otevřít odkaz na nové kartě</translation>
 <translation id="8609384513243082612">Otevřít novou kartu</translation>
 <translation id="8644639153978066712">Zobrazit v aplikaci Soubory skryté soubory</translation>

@@ -1055,12 +1055,6 @@
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
 <translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
-<translation id="4459359100627756769">Konfigurira popis URL-ova za prijavu u organizacijama (samo sheme HTTP i HTTPS). Na tim će se URL-ovima snimati otisak prsta za zaporku koji će se upotrebljavati za otkrivanje ponovne upotrebe zaporke.
-      Ta je postavka namijenjena jedino korisnicima GSuitea koji upotrebljavaju sustav SSO/SMAL.
-
-      Ako je ta postavka omogućena, usluga zaštite zaporkom na tim će URL-ovima snimati otisak prsta za zaporku u svrhu otkrivanja ponovne upotrebe zaporke.
-      Ako se postavka onemogući ili ne postavi, zaštita zaporkom snimat će otisak prsta zaporke samo na https://accounts.google.com.
-      To pravilo nije dostupno na instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
 <translation id="4476769083125004742">Ako se to pravilo postavi na <ph name="BLOCK_GEOLOCATION_SETTING" />, Android aplikacije ne mogu pristupiti podacima o lokaciji. Ako to pravilo postavite na bilo koju drugu vrijednost ili ga ne postavite, korisniku se prikazuje upit o pristanku kada Android aplikacija želi pristupiti podacima o lokaciji.</translation>

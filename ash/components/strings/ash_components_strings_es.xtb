@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Cambiar al idioma de teclado anterior.</translation>
 <translation id="1195667586424773550">Arrastra el enlace a la barra de direcciones de la pestaña</translation>
 <translation id="1204450209689312104">Abrir una ventana nueva en modo incógnito</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Imprimir la página actual</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Ir a la siguiente pestaña</translation>
 <translation id="2010818616644390445">Ir a la última pestaña de la ventana</translation>
+<translation id="2088054208777350526">Buscar combinaciones de teclas</translation>
 <translation id="2145908266289632567">Edición de texto</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> una tecla del 1 hasta el signo =</translation>
 <translation id="2181097965834437145">Mostrar u ocultar la barra de marcadores</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Activar barra de direcciones</translation>
 <translation id="3288816184963444640">Cerrar la ventana actual</translation>
-<translation id="3356202203145076517">Abrir la ventana menos utilizada recientemente</translation>
 <translation id="3407560819924487926">Abrir el administrador de tareas</translation>
 <translation id="3422679037938588196">Ir al resultado de búsqueda anterior</translation>
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> una tecla del 1 al 8</translation>
 <translation id="3837047332182291558">Aumentar la iluminación del teclado (solo para teclados retroiluminados)</translation>
 <translation id="3976863468609830880">Hacer clic en el último icono de la estantería</translation>
+<translation id="4026843240379844265">Mover ventana activa de una pantalla a otra</translation>
 <translation id="4035482366624727273">Seleccionar todo el contenido de la página</translation>
 <translation id="4060703249685950734">Volver a abrir la última pestaña o ventana que se ha cerrado</translation>
 <translation id="4090342722461256974">Mantén pulsadas las teclas <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, toca <ph name="TAB" /> hasta llegar a la ventana que quieras abrir y suelta las teclas.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="7020813747703216897">No se han podido encontrar resultados que coincidan</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>
+<translation id="7237562915163138771">Escribe una dirección web en la barra de direcciones y pulsa <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">Eliminar la letra siguiente (eliminar hacia delante)</translation>
 <translation id="766326951329901120">Pegar el contenido del portapapeles como texto sin formato</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">Arrastra el enlace a un área en blanco de la barra de pestañas</translation>
 <translation id="8389638407792712197">Abrir nueva ventana</translation>
 <translation id="8429696719963529183">Utilizar las teclas F (de F1 a F12)</translation>
+<translation id="8537650670971624753">Salir del modo de búsqueda</translation>
 <translation id="85690795166292698">Abrir el enlace en una pestaña nueva</translation>
 <translation id="8609384513243082612">Abrir nueva pestaña</translation>
 <translation id="8644639153978066712">Mostrar archivos ocultos en la aplicación Archivos</translation>

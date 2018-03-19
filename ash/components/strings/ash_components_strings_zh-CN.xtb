@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">切换到您使用过的上一种键盘语言。</translation>
 <translation id="1195667586424773550">将链接拖到标签页的地址栏中</translation>
 <translation id="1204450209689312104">在无痕模式下打开新窗口</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">打印当前网页</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> 或<ph name="LEFT" />键</translation>
 <translation id="1996162290124031907">转到下一个标签页</translation>
 <translation id="2010818616644390445">转到窗口中的最后一个标签页</translation>
+<translation id="2088054208777350526">搜索键盘快捷键</translation>
 <translation id="2145908266289632567">文字编辑</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 至 =</translation>
 <translation id="2181097965834437145">显示或隐藏书签栏</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
 <translation id="3288816184963444640">关闭当前窗口</translation>
-<translation id="3356202203145076517">打开最近最少使用的窗口</translation>
 <translation id="3407560819924487926">启动任务管理器</translation>
 <translation id="3422679037938588196">转到上一个相符的搜索结果</translation>
 <translation id="344577624355799426"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 至 8</translation>
 <translation id="3837047332182291558">调亮键盘（仅适用于背光键盘）</translation>
 <translation id="3976863468609830880">点击任务栏中的最后一个图标</translation>
+<translation id="4026843240379844265">在各个显示屏之间移动活动窗口</translation>
 <translation id="4035482366624727273">选择网页上的全部内容</translation>
 <translation id="4060703249685950734">重新打开上次关闭的标签页或窗口</translation>
 <translation id="4090342722461256974">在按住 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> 的同时，多次点按 <ph name="TAB" /> 键直到切换至您要打开的窗口，然后松开手指。</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="7020813747703216897">找不到相符的搜索结果</translation>
 <translation id="7025325401470358758">下一窗格</translation>
+<translation id="7237562915163138771">在地址栏中输入网址，然后按 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>
 <translation id="766326951329901120">以纯文本形式粘贴剪贴板中的内容</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">将链接拖到标签栏的空白区域中</translation>
 <translation id="8389638407792712197">打开新窗口</translation>
 <translation id="8429696719963529183">使用键盘顶部的一系列功能键（F1 到 F12）</translation>
+<translation id="8537650670971624753">退出搜索模式</translation>
 <translation id="85690795166292698">在新标签页中打开链接</translation>
 <translation id="8609384513243082612">打开新标签页</translation>
 <translation id="8644639153978066712">在“文件”应用中显示处于隐藏状态的文件</translation>

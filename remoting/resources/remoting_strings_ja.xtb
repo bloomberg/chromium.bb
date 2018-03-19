@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
+<translation id="6502629188777329097">パソコンに安全にアクセス</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6541219117979389420">アプリケーション ログには、メールアドレスのような個人情報をはじめ、Google ドライブのファイルやフォルダの名前、プロパティといったプライバシーにかかわる情報が含まれる可能性があります。</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
 <translation id="7678209621226490279">左に固定</translation>
 <translation id="7693372326588366043">ホストのリストを更新します</translation>
+<translation id="7714222945760997814">この問題を報告</translation>
 <translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
 <translation id="7810127880729796595">統計情報を表示（接続状態: <ph name="QUALITY" />）</translation>
 <translation id="7836926030608666805">必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認し、もう一度お試しください。</translation>

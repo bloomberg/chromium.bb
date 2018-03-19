@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">前のページへ</translation>
 <translation id="2190355936436201913">(なし)</translation>
 <translation id="219905428774326614">ランチャー、すべてのアプリ</translation>
+<translation id="2267918077332197517">このサイトからのすべての通知をブロックする</translation>
 <translation id="2289052229480071835">画面に表示されるタップ ターゲットをタップします。</translation>
 <translation id="2295140143284145483">アンケート</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">カンマ</translation>
 <translation id="6397363302884558537">読み上げを停止</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6430678249303439055">このアプリからのすべての通知をブロックする</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="654149438358937226">通知をすべてブロックする</translation>
 <translation id="6567071839949112727">上位要素をクリック</translation>

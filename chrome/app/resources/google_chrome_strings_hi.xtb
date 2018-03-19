@@ -41,6 +41,7 @@
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
+<translation id="2094919256425865063">फिर भी Chrome छोड़ें?</translation>
 <translation id="2120620239521071941">ऐसा करने से इस डिवाइस से <ph name="ITEMS_COUNT" /> आइटम हट जाएंगे. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />अभी वाली सेटिंग<ph name="END_LINK" /> की रिपोर्ट करके Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="216054706567564023">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके खाता पुनर्प्राप्ति फ़ोन नंबर पर एक SMS भेजेंगे.</translation>
@@ -104,6 +105,7 @@
 <translation id="3735758079232443276">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome से नि‍कालें...</translation>
+<translation id="3844992844761326777">आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर है. Chrome उसे निकाल सकता है और आपकी सेटिंग बहाल कर सकता है ताकि आपका ब्राउज़र फिर से सामान्य रूप से काम करने लगे.</translation>
 <translation id="386202838227397562">कृपया सभी Google Chrome विंडो बंद करें और फिर से प्रयास करें.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome गु&amp;प्त विंडो में लिंक खोलें</translation>
@@ -138,6 +140,7 @@
 <translation id="4771048833395599659">यह फ़ाइल खतरनाक हो सकती है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
 <translation id="4804732725083176494">Chrome में साइन इन करने की सुविधा इस डिवाइस के व्‍यवस्‍थापक ने बंद कर दी है.</translation>
+<translation id="4833487314064352405">{0,plural, =1{एक दिन के अंदर Chrome को फिर से लॉन्च करें}one{# दिन के अंदर Chrome को फिर से लॉन्च करें}other{# दिन के अंदर Chrome को फिर से लॉन्च करें}}</translation>
 <translation id="4891791193823137474">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="4895437082222824641">नए Chrome &amp;टैब में लिंक खोलें</translation>
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
@@ -146,6 +149,7 @@
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
 <translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome एक घंटे के अंदर फिर से लॉन्च होगा}one{Chrome # घंटों के अंदर फिर से लॉन्च होगा}other{Chrome # घंटों के अंदर फिर से लॉन्च होगा}}</translation>
 <translation id="5132929315877954718">Google Chrome के लिए बेहतरीन ऐप्स ,गेम, एक्सटेंशन और थीम खोजें.</translation>
 <translation id="5166975452760862670">Google Chrome इस भाषा में प्रदर्शित किया जा रहा है</translation>
 <translation id="5170938038195470297">आपकी प्रोफ़ाइल का उपयोग नहीं किया जा सकता क्‍योंकि यह Google Chrome के किसी नए वर्शन से है.
@@ -190,6 +194,7 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
+<translation id="677276454032249905">फिर भी Chrome से बाहर निकलें?</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
 <translation id="6885412569789873916">Chrome बीटा ऐप्लिकेशन</translation>

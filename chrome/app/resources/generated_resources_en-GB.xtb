@@ -573,6 +573,7 @@
 <translation id="1850508293116537636">Rotate &amp;clockwise</translation>
 <translation id="1851361118452499663">My Photos</translation>
 <translation id="1852799913675865625">There was an error while trying to read the file: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1856715684130786728">Add location...</translation>
 <translation id="1856813161013948396">Skip the lock screen by just tapping the fingerprint sensor. Click to configure.</translation>
 <translation id="1858585891038687145">Trust this certificate for identifying software makers</translation>
@@ -632,7 +633,6 @@
 <translation id="1962233722219655970">This page uses a Native Client app that doesn't work on your computer.</translation>
 <translation id="1962969542251276847">Lock Screen</translation>
 <translation id="1963227389609234879">Remove All</translation>
-<translation id="1965328510789761112">Private memory</translation>
 <translation id="1965624977906726414">Has no special permissions.</translation>
 <translation id="1970368523891847084">Video mode entered</translation>
 <translation id="197288927597451399">Keep</translation>
@@ -735,7 +735,6 @@
 <translation id="2136573720723402846">Enable fingerprint unlock</translation>
 <translation id="2137068468602026500">Click <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> under Web Browser</translation>
 <translation id="2138398485845393913">Connection to '<ph name="DEVICE_NAME" />' still in progress</translation>
-<translation id="2139186145475833000">Add to Home screen</translation>
 <translation id="214169863967063661">Open appearance settings</translation>
 <translation id="2142328300403846845">Open Link as</translation>
 <translation id="214353449635805613">Screenshot region</translation>
@@ -2049,7 +2048,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4114360727879906392">Previous window</translation>
 <translation id="4115002065223188701">Network out of range</translation>
 <translation id="4115080753528843955">Some content services use unique identifiers for the purposes of authorising access to protected content</translation>
-<translation id="411666854932687641">Private Memory</translation>
 <translation id="4120817667028078560">Path too long</translation>
 <translation id="4121428309786185360">Expires On</translation>
 <translation id="412730574613779332">Speedy</translation>
@@ -2103,7 +2101,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4235200303672858594">Entire screen</translation>
 <translation id="4235813040357936597">Add Account for <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Cancel sign in</translation>
-<translation id="4240511609794012987">Shared memory</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="4242577469625748426">Failed to install policy settings on the device: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Find more stylus apps</translation>
@@ -2656,7 +2653,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5154108062446123722">Advanced settings for <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Subject</translation>
-<translation id="5154917547274118687">Memory</translation>
 <translation id="5157635116769074044">Pin this Page to Start Screen...</translation>
 <translation id="5158593464696388225">Failed to save image.</translation>
 <translation id="5158983316805876233">Use the same proxy for all protocols</translation>
@@ -2909,6 +2905,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5527463195266282916">Attempted to downgrade extension.</translation>
 <translation id="5527474464531963247">You may also select another network.</translation>
 <translation id="5528368756083817449">Bookmark Manager</translation>
+<translation id="5530766185686772672">Close incognito tabs</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> wants to</translation>
 <translation id="5534304873398226603">Discard photo or video</translation>
@@ -4425,7 +4422,6 @@ Installing the <ph name="APP_NAME" /> will download <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Google’s location service uses sources like Wi-Fi to help estimate your device’s location faster and more accurately. When you turn on Google’s location services, your device enters a mode that uses Wi-Fi to provide location information. You can turn this off in location settings at any time.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Never</translation>
-<translation id="7965010376480416255">Shared Memory</translation>
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7968742106503422125">Read and modify data that you copy and paste</translation>
 <translation id="7968833647796919681">Enable performance data collection</translation>
@@ -4987,7 +4983,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8871696467337989339">You are using an unsupported command-line flag: <ph name="BAD_FLAG" />. Stability and security will suffer.</translation>
 <translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8872155268274985541">Invalid Kiosk external update manifest file found. Failed to update Kiosk app. Please remove the USB stick.</translation>
-<translation id="8872506776304248286">Open in app</translation>
 <translation id="8874184842967597500">Not connected</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Generate password…</translation>

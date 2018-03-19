@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">Preklop na prejšnji jezik tipkovnice, ki ste ga uporabljali.</translation>
 <translation id="1195667586424773550">Povlecite povezavo v naslovno vrstico zavihka</translation>
 <translation id="1204450209689312104">Odpiranje novega okna v načinu brez beleženja zgodovine</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Tiskanje trenutne strani</translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /> <ph name="SEPARATOR1" /> <ph name="SHIFT1" /> <ph name="SEPARATOR2" /> <ph name="G" /> ali <ph name="SHIFT2" /> <ph name="SEPARATOR3" /> <ph name="ENTER" /></translation>
@@ -47,7 +48,6 @@
 <translation id="3126026824346185272">CTRL</translation>
 <translation id="3140353188828248647">Preklopi na naslovno vrstico</translation>
 <translation id="3288816184963444640">Zapiranje trenutnega okna</translation>
-<translation id="3356202203145076517">Odpiranje okna, ki ga najdlje niste uporabljali</translation>
 <translation id="3407560819924487926">Prikazovanje upravitelja opravil</translation>
 <translation id="3422679037938588196">Premik na prejšnje ujemanje za poizvedbo</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ali <ph name="SEARCH" /> <ph name="SEPARATOR" /> <ph name="DOWN" /></translation>

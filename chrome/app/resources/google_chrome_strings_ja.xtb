@@ -41,6 +41,7 @@
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
+<translation id="2094919256425865063">Chromium を終了してもよろしいですか？</translation>
 <translation id="2120620239521071941">この端末から <ph name="ITEMS_COUNT" /> 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />現在の設定<ph name="END_LINK" />を送信して Chrome の品質向上にご協力ください</translation>
 <translation id="216054706567564023">Chrome をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号に、Google より SMS をお送りします。</translation>
@@ -104,6 +105,7 @@
 <translation id="3735758079232443276">拡張機能「<ph name="EXTENSION_NAME" />」により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome から削除...</translation>
+<translation id="3844992844761326777">お使いのパソコンに有害なソフトウェアが見つかりました。Chrome ではこのソフトウェアを削除し、ブラウザを正常な動作に戻すために設定を復元することができます。</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
@@ -138,6 +140,7 @@
 <translation id="4771048833395599659">このファイルは危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="4794050651896644714">Chrome で詳細を保存する</translation>
 <translation id="4804732725083176494">Chrome へのログインは、この端末の管理者によって無効にされています。</translation>
+<translation id="4833487314064352405">{0,plural, =1{1 日以内に Chrome を再起動}other{# 日以内に Chrome を再起動}}</translation>
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="4895437082222824641">新しい Chrome タブでリンクを開く(&amp;T)</translation>
 <translation id="4921569541910214635">共有パソコンにするなど、Chrome をお好みの方法で設定できるようになりました。</translation>
@@ -146,6 +149,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome は 1 時間後に再起動されます}other{Chrome は # 時間後に再起動されます}}</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="5166975452760862670">Google Chrome はこの言語で表示されています</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
@@ -188,6 +192,7 @@
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="677276454032249905">今すぐ Chrome を終了しますか？</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="686561893457936865">どの端末でも同じ Chrome を使用できます</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>

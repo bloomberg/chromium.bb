@@ -43,6 +43,7 @@
 <translation id="2063848847527508675">Chrome OS cần được khởi động lại để áp dụng bản cập nhật.</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2084710999043359739">Thêm vào Chrome</translation>
+<translation id="2094919256425865063">Vẫn thoát khỏi Chrome?</translation>
 <translation id="2120620239521071941">Thao tác này sẽ xóa <ph name="ITEMS_COUNT" /> mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Giúp cải thiện Chrome bằng cách báo cáo <ph name="BEGIN_LINK" />cài đặt hiện tại<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Cài đặt Chrome trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới số điện thoại khôi phục tài khoản của bạn.</translation>
@@ -106,6 +107,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3735758079232443276">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Xóa khỏi Chrome...</translation>
+<translation id="3844992844761326777">Có phần mềm độc hại trên máy tính của bạn. Chrome có thể xóa phần mềm này và khôi phục cài đặt của bạn để trình duyệt có thể hoạt động bình thường trở lại.</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
@@ -141,6 +143,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4771048833395599659">Tệp này có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="4794050651896644714">Lưu chi tiết trong Chrome</translation>
 <translation id="4804732725083176494">Quản trị viên của thiết bị này đã tắt tính năng đăng nhập vào Chrome.</translation>
+<translation id="4833487314064352405">{0,plural, =1{Khởi động lại Chrome trong vòng một ngày}other{Khởi động lại Chrome trong vòng # ngày}}</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="4895437082222824641">Mở liên kết trong tab mới của Chrome</translation>
 <translation id="4921569541910214635">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chrome theo cách mình muốn.</translation>
@@ -149,6 +152,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
+<translation id="5131923704757666404">{0,plural, =1{Chrome sẽ khởi động lại sau một giờ}other{Chrome sẽ khởi động lại sau # giờ}}</translation>
 <translation id="5132929315877954718">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome được hiển thị bằng ngôn ngữ này</translation>
 <translation id="5170938038195470297">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới hơn.
@@ -193,6 +197,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6634887557811630702">Google Chrome đã được cập nhật.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
+<translation id="677276454032249905">Vẫn thoát khỏi Chrome?</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="686561893457936865">Mang Chrome tới mọi nơi</translation>
 <translation id="6885412569789873916">Ứng dụng Chrome Beta</translation>

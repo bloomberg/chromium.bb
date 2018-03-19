@@ -43,6 +43,7 @@
 <translation id="2063848847527508675">ಅಪ್‌ಡೇಟ್ ಅನ್ವಯಿಸಲು Chrome OS ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2077129598763517140">ಲಭ್ಯವಿರುವಾಗ ಹಾರ್ಡ್‌ವೇರ್ ಆಕ್ಸಲರೇಶನ್ ಬಳಸು</translation>
 <translation id="2084710999043359739">Chrome ಗೆ ಸೇರಿಸಿ</translation>
+<translation id="2094919256425865063">ಏನಾಗಲೀ Chrome ಅನ್ನು ತ್ಯಜಿಸುವುದೇ?</translation>
 <translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="216054706567564023">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ.</translation>
@@ -106,6 +107,7 @@
 <translation id="3735758079232443276">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
+<translation id="3844992844761326777">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್‌ಗಳಿವೆ. ನಿಮ್ಮ ಬ್ರೌಸರ್ ಪುನಃ ಸಾಮಾನ್ಯವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸಲು Chrome ಅವುಗಳನ್ನು ತೆಗೆದುಹಾಕಬಹುದು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಬಹುದು.</translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
@@ -140,6 +142,7 @@
 <translation id="4771048833395599659">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="4794050651896644714">Chrome ನಲ್ಲಿ ವಿವರಣೆಗಳನ್ನು ಉಳಿಸಿ</translation>
 <translation id="4804732725083176494">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರಿಂದ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವುದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
+<translation id="4833487314064352405">{0,plural, =1{ಒಂದು ದಿನ ಒಳಗೆ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ}one{# ದಿನಗಳ ಒಳಗೆ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ}other{# ದಿನಗಳ ಒಳಗೆ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ}}</translation>
 <translation id="4891791193823137474">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಯಾಗಲು ಅನುಮತಿಸಿ</translation>
 <translation id="4895437082222824641">ಹೊಸ Chrome &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4921569541910214635">ಕಂಪ್ಯೂಟರ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳುವುದೇ? ಇದೀಗ ನೀವು ಇಷ್ಟಪಡುವ ಮಾರ್ಗದ ಮೂಲಕ ಇದೀಗ ನೀವು Chrome ಹೊಂದಿಸಬಹುದು.</translation>
@@ -148,6 +151,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="5037239767309817516">ಈ ಬದಲಾವಣೆಯು ಕಾರ್ಯಗತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಎಲ್ಲ Google Chrome ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಅದನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
+<translation id="5131923704757666404">{0,plural, =1{ಗಂಟೆಯಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಗಂಟೆಯಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಗಂಟೆಯಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="5132929315877954718">Google Chrome ಸಲುವಾಗಿ ಉತ್ಕೃಷ್ಟಮಟ್ಟದ ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳು, ಗೇಮ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಹಾಗೂ ಥೀಮ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ</translation>
 <translation id="5166975452760862670">ಈ ಭಾಷೆಯಲ್ಲಿ Google Chrome ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="5170938038195470297">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯಿಂದ ಆಗಿರುವ ಕಾರಣ ಅದನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆಯ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
@@ -190,6 +194,7 @@
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6634887557811630702">Google Chrome ಅನ್ನು ನವೀಕರಿಸಿದೆ</translation>
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="677276454032249905">ಏನೇ ಆಗಲಿ Chrome ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
 <translation id="683440813066116847">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Google Chrome ಕ್ಯಾನರಿಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="686561893457936865">ಎಲ್ಲೆಡೆ Chrome ಅನ್ನು ಕೊಂಡೊಯ್ಯಿರಿ</translation>
 <translation id="6885412569789873916">Chrome ಬೀಟಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>

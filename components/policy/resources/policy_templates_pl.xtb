@@ -148,6 +148,11 @@
 <translation id="1503487916067509762">Włącza blokadę wstrzykiwania oprogramowania innych firm</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
+<translation id="1519337829779572350">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie ustawienia SafeBrowsingExtendedReportingEnabled działa tak samo jak ustawienie wartości SafeBrowsingExtendedReportingOptInAllowed na Fałsz.
+
+      Ustawienie wartości tej zasady na Fałsz uniemożliwia użytkownikom wysyłanie niektórych informacji o systemie i zawartości stron na serwery Google. Jeśli zasada ma wartość Prawda lub nie jest skonfigurowana, użytkownicy mogą wysyłać niektóre informacje o systemie i zawartości stron do usługi Bezpieczne przeglądanie w celu wykrywania niebezpiecznych aplikacji i witryn.
+
+      Więcej informacji o funkcji Bezpieczne przeglądanie znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
@@ -287,6 +292,14 @@
       Ta zasada włącza powiadomienia informujące użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki. Jeśli nie jest włączona, <ph name="PRODUCT_NAME" /> informuje użytkownika o potrzebie ponownego uruchomienia za pomocą subtelnych zmian w menu. Wybranie opcji „Zalecane” powoduje cykliczne wyświetlanie ostrzeżenia o tym, że ponowne uruchomienie jest zalecane. Użytkownik może zamknąć to ostrzeżenie, by odłożyć ponowne uruchomienie na później. Wybranie opcji „Wymagane” powoduje wyświetlanie ostrzeżenia, że ponowne uruchomienie przeglądarki zostanie wymuszone po upływie czasu powiadamiania. Domyślnie ten czas to siedem dni, a można go ustawić za pomocą zasady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesja użytkownika zostanie przywrócona po ponownym uruchomieniu.</translation>
+<translation id="2075434678547407637">Określa, czy <ph name="PRODUCT_NAME" /> może automatycznie (bez zgody użytkownika) odtwarzać filmy z dźwiękiem.
+
+      Jeśli zasada ma wartość Prawda, <ph name="PRODUCT_NAME" /> może automatycznie odtwarzać multimedia.
+      Jeśli zasada ma wartość Fałsz, <ph name="PRODUCT_NAME" /> nie może automatycznie odtwarzać multimediów.
+      Domyślnie <ph name="PRODUCT_NAME" /> nie może automatycznie odtwarzać multimediów.
+
+      Jeśli zmienisz tę zasadę, gdy <ph name="PRODUCT_NAME" /> działa, zmieniona zasada będzie obowiązywać tylko w nowych kartach. Karty otwarte wcześniej mogą działać jak dawniej.
+      </translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
 <translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
@@ -1025,6 +1038,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie jest określona, użytkownik może wybrać pokazywanie lub ukrywanie skrótów aplikacji z menu kontekstowego paska zakładek.
 
       Jeśli ta zasada jest skonfigurowana, użytkownik nie może jej zmienić, a skróty aplikacji zawsze są lub nie są pokazywane.</translation>
+<translation id="4432762137771104529">Włącz rozszerzone raporty w Bezpiecznym przeglądaniu</translation>
 <translation id="443454694385851356">Starszy typ (niebezpieczne)</translation>
 <translation id="443665821428652897">Wyczyść dane witryn w momencie zamknięcia przeglądarki (wycofana)</translation>
 <translation id="4439336120285389675">Określ listę wycofanych funkcji, które chcesz tymczasowo włączyć na platformach internetowych.
@@ -1037,12 +1051,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
-<translation id="4459359100627756769">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła, który będzie używany do wykrywania używania tych samych haseł w różnych miejscach.
-      Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SMAL.
-
-      Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł w celu wykrycia używania tych samych haseł w różnych miejscach.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł będzie rejestrować odciski cyfrowe haseł tylko na stronie https://accounts.google.com
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4476769083125004742">Ustawienie tej zasady na <ph name="BLOCK_GEOLOCATION_SETTING" /> odbiera aplikacjom na Androida dostęp do informacji o lokalizacji. Jeśli zasada ma inną wartość lub jest nieskonfigurowana, użytkownik będzie pytany o zgodę, gdy aplikacja na Androida będzie chciała uzyskać dostęp do informacji o lokalizacji.</translation>
@@ -1231,6 +1239,19 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Pamiętaj, że hasła mogą być starsze niż ustawiona liczba dni, gdy klient przez długi czas pozostawał w trybie offline.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
+<translation id="5106504910236139235">Włącza rozszerzone raporty w usłudze Bezpieczne przeglądanie <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Rozszerzone raportowanie wysyła na serwery Google pewne informacje o systemie i zawartości stron w celu wykrywania niebezpiecznych aplikacji i witryn.
+
+      Jeśli ustawienie ma wartość Prawda, raporty są tworzone i wysyłane w razie potrzeby (na przykład jeśli wyświetlane jest pełnoekranowe ostrzeżenie bezpieczeństwa).
+
+      Jeśli ustawienie ma wartość Fałsz, raporty nie są nigdy wysyłane.
+
+      Jeśli zasada ma wartość Prawda lub Fałsz, użytkownik nie może zmienić ustawienia.
+
+      Jeśli zasada nie ma wartości, użytkownik może zmienić ustawienie i zdecydować, czy wysyłać raporty.
+
+      Więcej informacji na temat Bezpiecznego przeglądania znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
@@ -1752,6 +1773,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi są używane tylko na ekranie logowania. Flagi ustawiane przez tę zasadę nie przechodzą na sesje użytkownika.</translation>
 <translation id="685769593149966548">Wymuszaj ścisły tryb ograniczonego dostępu w YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 lub nowszy</translation>
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 
       Informacje o pamięci są raportowane do strony niezależnie od ustawionej opcji, jednak wysyłane dane są kwantyzowane, a częstotliwość ich aktualizacji jest ograniczona ze względów bezpieczeństwa. Aby uzyskać precyzyjne dane w czasie rzeczywistym, użyj narzędzi telemetrycznych.</translation>
@@ -1934,6 +1956,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli nie ustawisz tej zasady, funkcja automatycznego czyszczenia korzysta z domyślnej wbudowanej strategii. Obecnie to „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
+<translation id="733838170182967492">Umożliwia autoodtwarzanie multimediów</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>
 <translation id="7384999953864505698">Zezwala na protokół QUIC</translation>
@@ -2470,6 +2493,13 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Włącza wymuszone logowanie w <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Określa, czy w Chrome OS mogą działać maszyny wirtualne.
+
+      Jeśli zasada ma wartość Prawda, maszyny wirtualne mogą działać na urządzeniu.
+      Jeśli zasada ma wartość Fałsz, maszyny wirtualne nie mogą działać na urządzeniu.
+      Jeśli zmienisz wartość tej zasady na Fałsz, nie będzie można uruchamiać nowych maszyn wirtualnych, ale już działające maszyny nie zostaną zamknięte.
+      Jeśli zasada nie jest ustawiona na urządzeniu zarządzanym, można na nim uruchamiać maszyny wirtualne.
+      Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="944817693306670849">Ustaw rozmiar dyskowej pamięci podręcznej.</translation>
 <translation id="982497069985795632">Włącz sprawdzanie pisowni</translation>
 </translationbundle>

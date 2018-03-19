@@ -41,6 +41,7 @@
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="2084710999043359739">‏הוסף ל-Chrome</translation>
+<translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
 <translation id="216054706567564023">‏התקן את Chrome בטלפון שלך, ונשלח הודעת SMS למספר שמוגדר לשחזור החשבון.</translation>
@@ -191,6 +192,7 @@
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome מעודכן.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
+<translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="686561893457936865">‏לוקחים את Chrome לכל מקום</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הביטא של Chrome</translation>

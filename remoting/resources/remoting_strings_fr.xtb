@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">Autre</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>
+<translation id="6502629188777329097">Accès sécurisé à l'ordinateur</translation>
 <translation id="652218476070540101">Mise à jour du code d'accès pour cet ordinateur en cours…</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6541219117979389420">Les journaux des applications peuvent inclure des informations confidentielles, y compris votre identité (adresse e-mail), ainsi que le nom et les propriétés des fichiers et des dossiers dans Google Drive.</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
 <translation id="7678209621226490279">Ancrer à gauche</translation>
 <translation id="7693372326588366043">Actualiser la liste des hôtes</translation>
+<translation id="7714222945760997814">Signaler</translation>
 <translation id="7782471917492991422">Veuillez vérifier les paramètres de gestion d'alimentation de votre ordinateur et vous assurer qu'il n'est pas configuré pour se mettre en veille en cas d'inactivité.</translation>
 <translation id="7810127880729796595">Afficher les statistiques (connexion : <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Certains composants nécessaires  sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Chrome, puis réessayer.</translation>

@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
 <translation id="2898082584336937987">Instalējiet pārlūku Chromium savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Palaist Chromium atkārtoti dienas laikā}zero{Palaist Chromium atkārtoti # dienu laikā}one{Palaist Chromium atkārtoti # dienas laikā}other{Palaist Chromium atkārtoti # dienu laikā}}</translation>
 <translation id="2977470724722393594">Chromium ir atjaunināts</translation>
 <translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
 <translation id="3046695367536568084">Lai izmantotu lietotnes, jums ir jāpierakstās operētājsistēmā Chromium. Tādējādi operētājsistēmā Chromium varēs sinhronizēt jūsu lietotnes, grāmatzīmes, vēsturi, paroles un citus iestatījumus visās ierīcēs.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Jūs esat pierakstījies operētājsistēmā Chromium. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
 <translation id="4224199872375172890">Chromium ir atjaunināts.</translation>
 <translation id="4230135487732243613">Vai saistīt Chromium datus ar šo kontu?</translation>
+<translation id="4260985389288095068">Jūsu datorā ir kaitīga programmatūra. Chromium var to noņemt un atjaunot jūsu iestatījumus, lai pārlūks atkal darbotos, kā paredzēts.</translation>
 <translation id="4271805377592243930">Saņemt palīdzību par Chromium</translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
+<translation id="4407044323746248786">Vai tik un tā aizvērt pārlūku Chromium?</translation>
 <translation id="4421155425831608516">Šīs ierīces administrators ir atspējojis pierakstīšanos pārlūkā Chromium.</translation>
 <translation id="4423735387467980091">Pielāgot un kontrolēt Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium tiks palaists atkārtoti pēc stundas}zero{Chromium tiks palaists atkārtoti pēc # stundām}one{Chromium tiks palaists atkārtoti pēc # stundas}other{Chromium tiks palaists atkārtoti pēc # stundām}}</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4469812139324097969">Pārlūks Chromium ir novecojis, jo jau kādu laiku tas nav restartēts. Atjauninājums ir pieejams un tiks lietots, tiklīdz veiksiet atkārtotu palaišanu.</translation>
 <translation id="4488554488975128561">Varat palīdzēt uzlabot Chromium drošību un lietošanas ērtumu, automātiski nosūtot noteiktu sistēmas informāciju un lapas saturu Google serveriem, lai palīdzētu noteikt bīstamas lietotnes un vietnes.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Saņemt palīdzību par Chromium OS</translation>
 <translation id="4708774505295300557">Kāds iepriekš pierakstījās pārlūkā Chromium šajā datorā, izmantojot e-pasta adresi <ph name="ACCOUNT_EMAIL_LAST" />. Lūdzu, izveidojiet jaunu Chromium lietotāju, lai nošķirtu savu informāciju.</translation>
 <translation id="4714956846925717402">Ātrāka piekļuve pārlūkam Chromium</translation>
+<translation id="4746050847053251315">Vai tik un tā aizvērt pārlūku Chromium?</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>
 <translation id="4943838377383847465">Chromium darbojas fona režīmā.</translation>
 <translation id="4987820182225656817">Viesi var izmantot Chromium, neatstājot nekādas pēdas.</translation>

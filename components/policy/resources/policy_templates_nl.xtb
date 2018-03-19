@@ -151,6 +151,11 @@
 <translation id="1503487916067509762">Hiermee wordt het blokkeren van software van derden ingeschakeld</translation>
 <translation id="1504431521196476721">Externe bevestiging</translation>
 <translation id="1509692106376861764">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29.</translation>
+<translation id="1519337829779572350">Deze instelling is beëindigd. Gebruik in plaats daarvan SafeBrowsingExtendedReportingEnabled. Het inschakelen of uitschakelen van SafeBrowsingExtendedReportingEnabled staat gelijk aan het instellen van SafeBrowsingExtendedReportingOptInAllowed op False (Onwaar).
+
+      Als dit beleid wordt ingesteld op false (onwaar), kunnen gebruikers geen systeeminformatie of paginacontent meer verzenden naar Google-servers. Als deze instelling is ingesteld op true (waar) of niet is ingesteld, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om gevaarlijke apps en sites te kunnen detecteren.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over SafeBrowsing.</translation>
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
@@ -293,6 +298,14 @@
       Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser opnieuw op te starten. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat de browser opnieuw moet worden opgestart via kleine wijzigingen in het menu. Als dit is ingesteld op 'Recommended', wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat het raadzaam is de browser opnieuw op te starten. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op 'Required', wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       De sessie van de gebruiker wordt hersteld zodra de browser opnieuw is opgestart.</translation>
+<translation id="2075434678547407637">Hiermee kun je bepalen of video's automatisch (zonder toestemming van gebruiker) met audiocontent in <ph name="PRODUCT_NAME" /> kunnen worden afgespeeld.
+
+      Als het beleid is ingesteld op True (Waar), is het <ph name="PRODUCT_NAME" /> toegestaan om automatisch media af te spelen.
+      Als dit beleid is ingesteld op False (Onwaar), is het <ph name="PRODUCT_NAME" /> niet toegestaan om automatisch media af te spelen.
+      Standaard is het <ph name="PRODUCT_NAME" /> niet toegestaan om automatisch media af te spelen.
+
+      Als <ph name="PRODUCT_NAME" /> wordt uitgevoerd en dit beleid wordt gewijzigd, wordt het beleid alleen toegepast op nieuw geopende tabbladen. Het is dus mogelijk dat sommige tabbladen het eerdere gedrag nog vertonen.
+      </translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
@@ -1069,6 +1082,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       Als dit beleid niet is ingesteld, kan de gebruiker kiezen om de snelkoppeling voor apps weer te geven of te verbergen via het contextmenu van de bladwijzerbalk.
 
       Als dit beleid is geconfigureerd, kan de gebruiker de instelling niet wijzigen en wordt de snelkoppeling voor apps altijd of nooit weergegeven.</translation>
+<translation id="4432762137771104529">Uitgebreide rapportage van Safe Browsing inschakelen</translation>
 <translation id="443454694385851356">Verouderd (onveilig)</translation>
 <translation id="443665821428652897">Sitegegevens wissen als de browser wordt gesloten (verouderd)</translation>
 <translation id="4439336120285389675">Een lijst met verouderde webplatformfuncties opgeven die tijdelijk kunnen worden ingeschakeld.
@@ -1081,12 +1095,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       </translation>
 <translation id="4442582539341804154">Vergrendeling inschakelen wanneer het apparaat inactief wordt of overschakelt op de slaapstand</translation>
 <translation id="4449545651113180484">Scherm 270 graden met de klok mee draaien</translation>
-<translation id="4459359100627756769">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
-      Deze instelling dient alleen te worden gebruikt door G Suite-gebruikers met een SSO/SMAL-systeem.
-
-      Als deze instelling is ingeschakeld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in wachtwoordbeheer inschakelen</translation>
 <translation id="4476769083125004742">Als dit beleid wordt ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />, hebben de Android-apps geen toegang tot locatiegegevens. Als je een andere waarde voor dit beleid instelt of het beleid niet instelt, wordt de gebruiker om toestemming gevraagd wanneer een Android-app toegang tot locatiegegevens probeert te krijgen.</translation>
@@ -1281,6 +1289,19 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Wachtwoorden kunnen ouder zijn dan de ingestelde periode als de client langere tijd offline is.</translation>
 <translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
+<translation id="5106504910236139235">Hiermee wordt de uitgebreide rapportage van Safe Browsing van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Met de functie voor uitgebreide rapportage wordt er bepaalde systeeminformatie en paginacontent naar de Google-servers verzonden om gevaarlijke apps en sites te kunnen detecteren.
+
+      Als deze instelling is ingesteld op true (waar), worden er indien nodig rapporten gemaakt en verzonden (bijvoorbeeld wanneer er een beveiligingsinterstitial wordt weergegeven).
+
+      Als dit beleid is ingesteld op false (onwaar), worden er geen rapporten verzonden.
+
+      Als dit beleid is ingesteld op true (waar) of false (onwaar), kan de gebruiker de instelling niet wijzigen.
+
+      Als dit beleid niet is ingesteld, kan de gebruiker de instelling wijzigen en bepalen of er wel of geen rapporten worden verzonden.
+
+      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="5108031557082757679">Zakelijke apparaatprinters uitgeschakeld</translation>
 <translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
@@ -1843,6 +1864,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
 <translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
+<translation id="686079137349561371">Microsoft Windows 7 of later</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
@@ -2041,6 +2063,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
+<translation id="733838170182967492">Staat automatisch afspelen van media toe</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="7343497214039883642">Configuratiebestand voor zakelijke printers voor apparaten</translation>
 <translation id="7384999953864505698">QUIC-protocol toestaan</translation>
@@ -2609,6 +2632,13 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
 <translation id="934390688529359269">Schakelt gedwongen inloggen voor <ph name="PRODUCT_NAME" /> in</translation>
+<translation id="938916311528680351">Hiermee kun je aangeven of er virtuele machines mogen worden uitgevoerd met Chrome OS.
+
+      Als het beleid is ingesteld op True (Waar), mogen virtuele machines worden uitgevoerd op het apparaat.
+      Als het beleid is ingesteld op False (Onwaar), mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Als dit beleid wordt gewijzigd naar False (Onwaar), wordt dit toegepast op nieuwe virtuele machines, maar worden reeds uitgevoerde virtuele machines niet uitgeschakeld.
+      Als dit beleid niet is ingesteld op een beheerd apparaat, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
 <translation id="982497069985795632">Spellingcontrole inschakelen</translation>
 </translationbundle>

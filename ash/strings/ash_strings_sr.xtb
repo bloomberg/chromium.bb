@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ОДБАЦИ</translation>
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
+<translation id="1567387640189251553">Нека друга тастатура је повезана откако сте последњи пут унели лозинку. Можда покушава да украде вашу комбинацију тастера.</translation>
 <translation id="1608626060424371292">Уклони овог корисника</translation>
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Жао нам је, верификација лозинке још увек није успела. Напомена: ако сте недавно променили лозинку, нова лозинка ће се применити када се одјавите. Овде користите стару лозинку.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Пречица за отварање менаџера задатака је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Аутоматски кликови</translation>
+<translation id="1928739107511554905">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастатуром на додирном екрану.</translation>
 <translation id="1942830294380034169">Дугме за додатне опције</translation>
 <translation id="1951012854035635156">Помоћник</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Заустави пребацивање картице <ph name="TAB_NAME" /> на <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
+<translation id="2191905770366256395">Треба да инсталирате важно ажурирање одвојиве тастатуре</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
 <translation id="2220572644011485463">PIN или лозинка</translation>
 <translation id="225680501294068881">Скенирање уређаја...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Двапут притисните Ctrl+Shift+Q да бисте се одјавили.</translation>
 <translation id="3893630138897523026">ChromeVox (говорне повратне информације)</translation>
 <translation id="3899995891769452915">Гласовни унос</translation>
+<translation id="3900355044994618856">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="394485226368336402">Подешавања звука</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
+<translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
 <translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
 <translation id="5207949376430453814">Истакни курсор за текст</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Слушалице</translation>
 <translation id="5978382165065462689">Делите контролу над екраном преко Даљинске помоћи.</translation>
 <translation id="5980301590375426705">Изађи из сесије госта</translation>
+<translation id="598882571027504733">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастастуром.</translation>
 <translation id="5992218262414051481">Режим високог контраста је омогућен. Притисните Ctrl + тастер за претрагу + H поново да бисте га искључили.</translation>
 <translation id="6018164090099858612">Излазак из режима са пресликавањем</translation>
 <translation id="6043212731627905357">Овај монитор није компатибилан са уређајем <ph name="DEVICE_TYPE" /> (монитор није подржан).</translation>
@@ -258,6 +264,7 @@
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
+<translation id="7131634465328662194">Одјавићемо вас аутоматски.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
@@ -318,6 +325,7 @@
 <translation id="8652175077544655965">Затворите подешавања</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
+<translation id="8734991477317290293">Можда покушава да украде вашу комбинацију тастера</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Премештање прозора на други рачунар може да доведе до неочекиваног понашања.
 

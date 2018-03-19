@@ -377,7 +377,7 @@
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="1559235587769913376">Masukkan karakter Unicode</translation>
 <translation id="1566049601598938765">Situs web</translation>
-<translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Mungkin mencoba mencuri ketukan tombol Anda.</translation>
+<translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Keyboard tersebut mungkin mencoba mencuri ketukan tombol Anda.</translation>
 <translation id="1567993339577891801">Konsol Javascript</translation>
 <translation id="1568067597247500137">Matikan notifikasi situs</translation>
 <translation id="1568323446248056064">Buka setelan perangkat layar</translation>
@@ -572,6 +572,7 @@
 <translation id="1850508293116537636">Putar &amp;searah jarum jam</translation>
 <translation id="1851361118452499663">Foto Saya</translation>
 <translation id="1852799913675865625">Terdapat kesalahan saat mencoba membaca file: <ph name="ERROR_TEXT" />.</translation>
+<translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="1856715684130786728">+ lokasi...</translation>
 <translation id="1856813161013948396">Lewati layar kunci dengan hanya menge-tap sensor sidik jari. Klik untuk mengonfigurasi.</translation>
 <translation id="1858585891038687145">Mempercayai sertifikat ini untuk mengidentifikasi pembuat software</translation>
@@ -631,7 +632,6 @@
 <translation id="1962233722219655970">Halaman ini menggunakan aplikasi Native Client yang tidak bekerja di komputer Anda.</translation>
 <translation id="1962969542251276847">Kunci Layar</translation>
 <translation id="1963227389609234879">Hapus Semua</translation>
-<translation id="1965328510789761112">Memori pribadi</translation>
 <translation id="1965624977906726414">Tidak memiliki izin khusus.</translation>
 <translation id="1970368523891847084">Masuk ke mode video</translation>
 <translation id="197288927597451399">Tetap Download</translation>
@@ -734,7 +734,6 @@
 <translation id="2136573720723402846">Aktifkan buka kunci sidik jari</translation>
 <translation id="2137068468602026500">Klik <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> di bawah Web Browser</translation>
 <translation id="2138398485845393913">Sambungan ke "<ph name="DEVICE_NAME" />" sedang dalam proses</translation>
-<translation id="2139186145475833000">Tambahkan ke Layar Utama</translation>
 <translation id="214169863967063661">Buka setelan tampilan</translation>
 <translation id="2142328300403846845">Buka Tautan sebagai</translation>
 <translation id="214353449635805613">Wilayah screenshot</translation>
@@ -2049,7 +2048,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4114360727879906392">Jendela sebelumnya</translation>
 <translation id="4115002065223188701">Jaringan di luar jangkauan</translation>
 <translation id="4115080753528843955">Beberapa layanan konten menggunakan pengenal unik untuk memberi otorisasi akses ke konten yang dilindungi</translation>
-<translation id="411666854932687641">Memori Pribadi</translation>
 <translation id="4120817667028078560">Jalur terlalu panjang</translation>
 <translation id="4121428309786185360">Kedaluwarsa pada</translation>
 <translation id="412730574613779332">Putra Super</translation>
@@ -2103,7 +2101,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4235200303672858594">Seluruh layar</translation>
 <translation id="4235813040357936597">Tambahkan Akun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Batalkan proses masuk</translation>
-<translation id="4240511609794012987">Memori bersama</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="4242577469625748426">Gagal memasang setelan kebijakan di perangkat: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Temukan aplikasi stilus lainnya</translation>
@@ -2656,7 +2653,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="5154108062446123722">Setelan lanjutan untuk <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Subjek</translation>
-<translation id="5154917547274118687">Memori</translation>
 <translation id="5157635116769074044">Sematkan halaman ini ke Layar Awal...</translation>
 <translation id="5158593464696388225">Gagal menyimpan gambar.</translation>
 <translation id="5158983316805876233">Gunakan proxy yang sama untuk semua protokol</translation>
@@ -2909,6 +2905,7 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="5527463195266282916">Berusaha menurunkan versi ekstensi.</translation>
 <translation id="5527474464531963247">Anda juga dapat memilih jaringan lain.</translation>
 <translation id="5528368756083817449">Pengelola Bookmark</translation>
+<translation id="5530766185686772672">Tutup tab penyamaran</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> ingin</translation>
 <translation id="5534304873398226603">Hapus foto atau video</translation>
@@ -4425,7 +4422,6 @@ Menginstal <ph name="APP_NAME" /> akan mendownload <ph name="DOWNLOAD_SIZE" /> d
 <translation id="7959074893852789871">File berisi beberapa sertifikat, beberapa di antaranya tidak diimpor.</translation>
 <translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Layanan lokasi Google menggunakan sumber seperti Wi-Fi untuk membantu memperkirakan lokasi perangkat dengan lebih cepat dan lebih akurat. Jika layanan lokasi Google diaktifkan, perangkat Anda masuk ke mode yang menggunakan Wi-Fi untuk memberikan informasi lokasi. Anda dapat menonaktifkan layanan ini kapan saja di setelan lokasi.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">Jangan pernah</translation>
-<translation id="7965010376480416255">Memori Bersama</translation>
 <translation id="7966241909927244760">S&amp;alin Alamat Gambar</translation>
 <translation id="7968742106503422125">Mengakses dan mengubah data yang Anda copy-paste</translation>
 <translation id="7968833647796919681">Mengaktifkan koleksi data kinerja</translation>
@@ -4987,7 +4983,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8871696467337989339">Anda menggunakan panji baris perintah yang tidak didukung: <ph name="BAD_FLAG" />. Stabilitas dan keamanan akan terganggu.</translation>
 <translation id="8871974300055371298">Setelan konten</translation>
 <translation id="8872155268274985541">File manifes pembaruan eksternal Kios yang tidak valid ditemukan. Gagal memperbarui aplikasi Kios. Lepaskan stik USB.</translation>
-<translation id="8872506776304248286">Buka di aplikasi</translation>
 <translation id="8874184842967597500">Tidak tersambung</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Buat sandi...</translation>

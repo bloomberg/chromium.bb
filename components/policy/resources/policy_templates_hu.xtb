@@ -149,6 +149,11 @@
 <translation id="1503487916067509762">Engedélyezi a harmadik felek szoftverbeszúrásának letiltását</translation>
 <translation id="1504431521196476721">Távoli tanúsítás</translation>
 <translation id="1509692106376861764">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve.</translation>
+<translation id="1519337829779572350">A beállítást megszüntettük; használja helyette a SafeBrowsingExtendedReportingEnabled házirendet. A SafeBrowsingExtendedReportingEnabled engedélyezése vagy letiltása a SafeBrowsingExtendedReportingOptInAllowed hamis értékre állításával egyezik meg.
+
+      Ha ennek a házirendnek az értéke hamis, akkor a felhasználók nem dönthetnek úgy, hogy elküldenek bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek. Ha a beállítás értéke igaz, vagy ha nincs megadva, akkor a felhasználók elküldhetnek bizonyos rendszer-információkat és oldaltartalmakat a Biztonságos Böngészés szolgáltatásnak, hogy segítsék a veszélyes alkalmazások és webhelyek észlelését.
+
+      Ha további információhoz szeretne jutni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="1522425503138261032">Engedélyezi a webhelyek számára a felhasználók fizikai helyének követését</translation>
 <translation id="152657506688053119">Az alapértelmezett keresési szolgáltató alternatív URL-jeinek listája.</translation>
 <translation id="1530812829012954197">Mindig jelenítse meg a következő URL-mintákat a gazdagép böngészőjében</translation>
@@ -288,6 +293,14 @@
       Ezen házirend-beállítás használatával a felhasználó értesítéseken keresztül tudomást szerezhet arról, hogy ajánlott, illetve szükséges a böngésző újraindítása. Ha nincs beállítva, a <ph name="PRODUCT_NAME" /> a menüben található apró módosításokkal jelzi a felhasználónak, hogy szükség van az újraindításra. Ha a házirend beállítása „Ajánlott”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára az ajánlott újraindítással kapcsolatban. A felhasználónak lehetősége van a figyelmeztetés elvetésére és az újraindítás elhalasztására. Ha a házirend beállítása „Szükséges”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára, amely szerint a rendszer kényszeríti a böngésző újraindítását az értesítési időszak lejárta után. Ez az időszak alapértelmezés szerint hét nap, és a <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> házirend-beállításnál módosítható.
 
       Az újraindítás után a rendszer visszaállítja a felhasználói munkamenetet.</translation>
+<translation id="2075434678547407637">Lehetővé teszi annak ellenőrzését, hogy a videók automatikusan lejátszhatók-e (felhasználói engedély nélkül) hangtartalommal a <ph name="PRODUCT_NAME" /> böngészőben.
+
+      Ha a házirend beállítása igaz, akkor a <ph name="PRODUCT_NAME" /> automatikusan lejátszhatja a médiatartalmakat.
+      Ha a házirend beállítása hamis, akkor a <ph name="PRODUCT_NAME" /> nem játszhatja le automatikusan a médiatartalmakat.
+      A <ph name="PRODUCT_NAME" /> alapértelmezés szerint nem játszhatja le automatikusan a médiatartalmakat.
+
+      Kérjük, vegye figyelembe, hogy amennyiben fut a <ph name="PRODUCT_NAME" />, és a házirend módosul, akkor a változás csak az újonnan megnyitott lapokon érvényesül. Emiatt egyes lapokon továbbra is a korábbi viselkedés tapasztalható.
+      </translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2077273864382355561">Képernyő kikapcsolásának késleltetése akkumulátorról való működés során</translation>
 <translation id="2082205219176343977">Az engedélyezett legrégebbi Chrome-verzió beállítása az eszközön.</translation>
@@ -1026,6 +1039,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha az irányelv nincs megadva, a felhasználó eldöntheti, hogy megjeleníti vagy elrejti az alkalmazások parancsikonját a könyvjelzősáv helyi menüjében.
 
       Ha az irányelvet megadták, a felhasználó nem változtathatja meg azt, és az alkalmazások parancsikonja vagy mindig látszik, vagy sohasem.</translation>
+<translation id="4432762137771104529">A Biztonságos Böngészés bővített jelentésének engedélyezése</translation>
 <translation id="443454694385851356">Régi (nem biztonságos)</translation>
 <translation id="443665821428652897">Webhelyadatok törlése a böngésző bezárásakor (elavult)</translation>
 <translation id="4439336120285389675">Elavult Web Platform-funkciók listájának megadása ideiglenes engedélyezéshez.
@@ -1038,12 +1052,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       </translation>
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
 <translation id="4449545651113180484">Képernyő elforgatása 270 fokkal</translation>
-<translation id="4459359100627756769">A vállalati bejelentkezési URL-ek listáját konfigurálja (csak a HTTP- és HTTPS-sémák engedélyezettek). A rendszer ezeken az URL-eken rögzíti a  jelszó ujjlenyomatát, és használja a jelszó ismételt használatának észlelésére.
-      Ezt a beállítást csak SSO/SMAL rendszerrel rendelkező G Suite-felhasználók használhatják.
-
-      Ha bekapcsolta a beállítást, akkor a jelszóvédelmi szolgáltatás rögzíti a jelszó ujjlenyomatát ezeken az URL-eken a jelszó ismételt használatának észlelése céljából.
-      Ha a beállítás le van tiltva, vagy nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás csak a https://accounts.google.com oldalon rögzíti a jelszó ujjlenyomatát.
-      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoznak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
 <translation id="4476769083125004742">Ha a házirend beállítása <ph name="BLOCK_GEOLOCATION_SETTING" />, az Android-alkalmazások nem férhetnek hozzá a helyadatokhoz. Ha a házirendet más értékre állítja, vagy ha nem ad meg beállítást, a rendszer a felhasználó beleegyezését kéri, ha valamelyik Android-alkalmazás hozzá kíván férni a helyadatokhoz.</translation>
@@ -1236,6 +1244,19 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Fontos megjegyezni, hogy a jelszavak régebbiek lehetnek a megadott napok számánál, ha a kliens annál hosszabb időn át offline állapotban volt.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
+<translation id="5106504910236139235">Engedélyezi a <ph name="PRODUCT_NAME" /> Biztonságos Böngészés bővített jelentését, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      A bővített jelentés elküld bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek, hogy a Google könnyebben észlelhesse a veszélyes alkalmazásokat és webhelyeket.
+
+      Ha a beállítás értéke igaz, akkor a jelentések létrehozása és elküldése minden olyan alkalommal megtörténik, amikor szükséges (például biztonsággal kapcsolatos közbeiktatott hirdetés megjelenítése esetén).
+
+      Ha a beállítás értéke hamis, akkor soha nem történik meg a jelentések elküldése.
+
+      Ha a házirend értéke igaz vagy hamis, akkor a felhasználó nem tudja módosítani ezt a beállítást.
+
+      Ha nincs beállítva a házirend, akkor a felhasználó módosíthatja a beállítást, és eldöntheti, hogy el szeretné-e küldeni a jelentéseket.
+
+      Ha további információhoz szeretne jutni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="5141670636904227950">A bejelentkezési képernyőn engedélyezett alapértelmezett nagyítótípus beállítása</translation>
@@ -1759,6 +1780,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Meghatározza a(z) <ph name="PRODUCT_NAME" /> böngészőre indításkor alkalmazandó jelölőket. A megadott jelölők alkalmazása csak a bejelentkezési képernyőre vonatkozik. A jelen irányelven keresztül megadott jelölők nem terjednek ki a felhasználói munkamenetekre.</translation>
 <translation id="685769593149966548">Szigorú Korlátozott mód kényszerítése a YouTube-on</translation>
+<translation id="686079137349561371">Microsoft Windows 7 vagy újabb</translation>
 <translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME" /> 35-ös verziójától kezdve megszűnt.
 
       A memóriainformációkat tartalmazó jelentéseket a beállítás értékétől függetlenül megkapja az oldal, de a jelentett méretek
@@ -1951,6 +1973,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend nincs beállítva, akkor az automatikus tisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
 <translation id="7336878834592315572">Cookie-k megtartása a munkamenet idejére</translation>
+<translation id="733838170182967492">Lehetővé teszi a médiatartalmak automatikus lejátszását</translation>
 <translation id="7340034977315324840">Az eszköz aktív idejének jelentése</translation>
 <translation id="7343497214039883642">Vállalati nyomtató eszközökre vonatkozó konfigurációs fájlja</translation>
 <translation id="7384999953864505698">Engedélyezi a QUIC-protokollt</translation>
@@ -2490,6 +2513,13 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="924557436754151212">Mentett jelszavak importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="930930237275114205">A(z) <ph name="PRODUCT_FRAME_NAME" /> felhasználói adatokat tartalmazó könyvtárának beállítása</translation>
 <translation id="934390688529359269">Engedélyezi a kényszerített bejelentkezést a(z) <ph name="PRODUCT_NAME" /> használatához</translation>
+<translation id="938916311528680351">Segítségével szabályozhatja, hogy futhatnak-e virtuális gépek a Chrome OS rendszeren.
+
+      Ha a házirend értéke igaz, az eszközön futhatnak virtuális gépek.
+      Ha a házirend értéke hamis, az eszközön nem futhatnak virtuális gépek.
+      Amikor hamis értékre állítja ezt a házirendet, a módosítás az új virtuális gépek indítására vonatkozik, de nem kapcsolja ki a már futó virtuális gépeket.
+      Ha a házirend nincs beállítva kezelt eszközön, az eszköz számára nem lesz engedélyezve a virtuális gépek futtatása.
+      A nem kezelt eszközök számára engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="944817693306670849">Lemezgyorsítótár méretének beállítása</translation>
 <translation id="982497069985795632">Helyesírás-ellenőrzés engedélyezése</translation>
 </translationbundle>

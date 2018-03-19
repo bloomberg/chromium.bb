@@ -53,6 +53,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2886012850691518054">Opsyonal: Tumulong na pahusayin ang Chromium sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika ng paggamit at mga ulat ng pag-crash.</translation>
 <translation id="2898082584336937987">I-install ang Chromium sa iyong telepono. Magpapadala kami ng SMS sa telepono mo: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Tungkol sa &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Ilunsad muli ang Chromium sa loob ng isang araw}one{Ilunsad muli ang Chromium sa loob ng # araw}other{Ilunsad muli ang Chromium sa loob ng # na araw}}</translation>
 <translation id="2977470724722393594">Napapanahon ang Chromium</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
 <translation id="3046695367536568084">Kailangang naka-sign in ka sa Chromium upang makagamit ng mga app. Nagbibigay-daan ito sa Chromium na i-sync ang iyong mga app, bookmark, kasaysayan, password at iba pang mga setting sa mga device.</translation>
@@ -92,11 +93,14 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4222580632002216401">Naka-sign in ka na ngayon sa Chromium! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="4224199872375172890">Napapanahon ang Chromium.</translation>
 <translation id="4230135487732243613">I-link ang iyong data sa Chromium sa account na ito?</translation>
+<translation id="4260985389288095068">May mapaminsalang software sa iyong computer. Maaari itong alisin ng Chromium at i-restore ang mga setting mo para mapaganang muli nang normal ang iyong browser.</translation>
 <translation id="4271805377592243930">Humingi ng tulong sa Chromium</translation>
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukang muli.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
+<translation id="4407044323746248786">Lumabas pa rin sa Chromium?</translation>
 <translation id="4421155425831608516">Na-disable ng administrator ng device na ito ang pag-sign in sa Chromium.</translation>
 <translation id="4423735387467980091">I-customize at kontrolin ang Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Malulunsad muli ang Chromium sa loob ng isang oras}one{Malulunsad muli ang Chromium sa loob ng # oras}other{Malulunsad muli ang Chromium sa loob ng # na oras}}</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4469812139324097969">Luma na ang Chromium dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="4488554488975128561">Makakatulong kang gawing mas ligtas at madaling gamitin ang Chromium sa pamamagitan ng awtomatikong pagpapadala ng ilang impormasyon ng system at content ng page sa Google upang makatulong na tumukoy ng mga mapanganib na app at site.</translation>
@@ -107,6 +111,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="469338717132742108">Humingi ng tulong sa Chromium OS</translation>
 <translation id="4708774505295300557">May nag-sign in dati sa Chromium sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST" />. Mangyaring gumawa ng bagong user ng Chromium upang ihiwalay ang iyong impormasyon.</translation>
 <translation id="4714956846925717402">Pumunta sa Chromium nang mas mabilis</translation>
+<translation id="4746050847053251315">Umalis pa rin sa Chromium?</translation>
 <translation id="4888717733111232871">Inbound na panuntunan para sa Chromium upang payagan ang trapiko ng mDNS.</translation>
 <translation id="4943838377383847465">Nasa background mode ang Chromium.</translation>
 <translation id="4987820182225656817">Makakagamit ng Chromium ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>

@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opcional: ajuda'ns a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2898082584336937987">Instal·la Chromium al telèfon. T'enviarem un SMS al telèfon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Torna a iniciar Chromium d'aquí a un dia}other{Torna a iniciar Chromium d'aquí a # dies}}</translation>
 <translation id="2977470724722393594">Chromium està actualitzat</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
 <translation id="3046695367536568084">Heu de tenir la sessió iniciada a Chromium per poder utilitzar aplicacions. D'aquesta manera, Chromium podrà sincronitzar les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres paràmetres amb la resta de dispositius.</translation>
@@ -90,11 +91,14 @@
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>
 <translation id="4230135487732243613">Voleu enllaçar les vostres dades de Chromium amb aquest compte?</translation>
+<translation id="4260985389288095068">Hi ha programari maliciós a l'ordinador. Chromium el pot suprimir i restaurar la configuració perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="4271805377592243930">Obtén ajuda per a Chromium</translation>
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
+<translation id="4407044323746248786">Vols sortir de Chromium igualment?</translation>
 <translation id="4421155425831608516">L'administrador d'aquest dispositiu ha desactivat l'inici de sessió a Chromium.</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium es reiniciarà d'aquí a una hora}other{Chromium es reiniciarà d'aquí a # hores}}</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4469812139324097969">Chromium no està actualitzat perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="4488554488975128561">Per fer que Chromium sigui més segur i més fàcil d'utilitzar, envia automàticament algunes dades del sistema i contingut de les pàgines a Google per ajudar a detectar les aplicacions i els llocs perillosos.</translation>
@@ -105,6 +109,7 @@
 <translation id="469338717132742108">Obtén ajuda per a Chromium OS</translation>
 <translation id="4708774505295300557">Algú ha iniciat anteriorment la sessió a Chromium en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuari de Chromium per mantenir la informació separada.</translation>
 <translation id="4714956846925717402">Accedeix a Chromium més de pressa</translation>
+<translation id="4746050847053251315">Vols sortir de Chromium igualment?</translation>
 <translation id="4888717733111232871">Regla d'entrada de Chromium per permetre el trànsit de mDNS.</translation>
 <translation id="4943838377383847465">Chromium està en mode de segon pla.</translation>
 <translation id="4987820182225656817">Els convidats poden utilitzar Chromium sense deixar-hi rastre.</translation>

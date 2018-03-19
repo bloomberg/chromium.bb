@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
+<translation id="1567387640189251553">Foi ligado um teclado diferente desde a última vez que introduziu a palavra-passe. É possível que esteja a tentar roubar os seus toques de teclas.</translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o Gestor de tarefas foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
+<translation id="1928739107511554905">Para obter a atualização, utilize o ecrã tátil para reiniciar o Chromebook com o teclado ligado.</translation>
 <translation id="1942830294380034169">Botão de sobrecarga</translation>
 <translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Parar a transmissão de <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
+<translation id="2191905770366256395">O teclado amovível necessita de uma atualização crítica</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
 <translation id="2220572644011485463">PIN ou palavra-passe</translation>
 <translation id="225680501294068881">A procurar dispositivos...</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
 <translation id="3899995891769452915">Entrada de texto por voz</translation>
+<translation id="3900355044994618856">A sessão termina dentro de <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="394485226368336402">Definições de áudio</translation>
 <translation id="397105322502079400">A calcular...</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
+<translation id="5136175204352732067">Teclado diferente ligado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5207949376430453814">Realçar cursor do texto</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Auscultador</translation>
 <translation id="5978382165065462689">A partilhar o controlo do seu ecrã através da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair da sessão de convidado</translation>
+<translation id="598882571027504733">Para obter a atualização, reinicie o Chromebook com o teclado ligado.</translation>
 <translation id="5992218262414051481">Modo de alto contraste ativado. Prima Ctrl + Pesquisa + H novamente para o desativar.</translation>
 <translation id="6018164090099858612">A sair do modo espelhado</translation>
 <translation id="6043212731627905357">Este monitor está em conflito com o seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
@@ -258,6 +264,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
+<translation id="7131634465328662194">A sessão será terminada automaticamente.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
@@ -318,6 +325,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8652175077544655965">Fechar definições</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
+<translation id="8734991477317290293">É possível que esteja a tentar roubar os seus toques de teclas.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado.
 

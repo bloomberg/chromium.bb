@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ЗАКРЫТЬ</translation>
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
+<translation id="1567387640189251553">После ввода пароля была подключена другая клавиатура. Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
 <translation id="1608626060424371292">Удалить профиль</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="1658406695958299976">Неверный пароль. Обратите внимание! Если вы недавно изменили пароль, но не выходили из системы, значит, новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Изменились быстрые клавиши для запуска диспетчера задач. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
+<translation id="1928739107511554905">Чтобы выполнить обновление, перезагрузите устройство Chromebook с помощью сенсорной панели, не отключая от него клавиатуру.</translation>
 <translation id="1942830294380034169">Кнопка переполнения</translation>
 <translation id="1951012854035635156">Ассистент</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Остановить трансляцию вкладки "<ph name="TAB_NAME" />" на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2144487987174258011">Перезагрузите, чтобы обновить Adobe Flash Player</translation>
+<translation id="2191905770366256395">Необходимо обновить внешнюю клавиатуру</translation>
 <translation id="2208323208084708176">Единый рабочий стол</translation>
 <translation id="2220572644011485463">PIN-код или пароль</translation>
 <translation id="225680501294068881">Поиск устройств…</translation>
@@ -137,6 +140,7 @@
 <translation id="3891340733213178823">Чтобы выйти, дважды нажмите Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
 <translation id="3899995891769452915">Голосовой ввод</translation>
+<translation id="3900355044994618856">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Подключение к <ph name="NAME" /></translation>
 <translation id="394485226368336402">Настройки звука</translation>
 <translation id="397105322502079400">Вычисление…</translation>
@@ -169,6 +173,7 @@
 <translation id="4905614135390995787">Изменились быстрые клавиши для управления режимом высокой контрастности. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Принять</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
+<translation id="5136175204352732067">Подключена другая клавиатура</translation>
 <translation id="5168181903108465623">Доступны устройства для трансляции</translation>
 <translation id="5207949376430453814">Выделять курсор при вводе текста</translation>
 <translation id="5222676887888702881">Выйти</translation>
@@ -205,6 +210,7 @@
 <translation id="5977415296283489383">Наушники</translation>
 <translation id="5978382165065462689">Доступ к экрану с помощью удаленного помощника</translation>
 <translation id="5980301590375426705">Выйти из гостевого режима</translation>
+<translation id="598882571027504733">Чтобы выполнить обновление, перезагрузите устройство Chromebook, не отключая от него клавиатуру.</translation>
 <translation id="5992218262414051481">Режим высокой контрастности включен. Чтобы отключить его, нажмите CTRL + ПОИСК + H.</translation>
 <translation id="6018164090099858612">Выход из режима трансляции…</translation>
 <translation id="6043212731627905357">Монитор не совместим с устройством <ph name="DEVICE_TYPE" />.</translation>
@@ -258,6 +264,7 @@
 <translation id="7066646422045619941">Эта сеть отключена администратором.</translation>
 <translation id="7067196344162293536">Автоповорот</translation>
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
+<translation id="7131634465328662194">После этого вы выйдете из системы.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
@@ -318,6 +325,7 @@
 <translation id="8652175077544655965">Закрыть настройки</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
+<translation id="8734991477317290293">Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">При переносе окон на другой рабочий стол иногда возникают ошибки.
 

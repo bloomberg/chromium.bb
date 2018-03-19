@@ -150,6 +150,11 @@
 <translation id="1503487916067509762">Ottaa käyttöön kolmannen osapuolen ohjelmistojen lisäämisen eston</translation>
 <translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1509692106376861764">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien.</translation>
+<translation id="1519337829779572350">Tämä asetus on vanhentunut. Sen sijaan on käytettävä asetusta SafeBrowsingExtendedReportingEnabled. Asetuksen SafeBrowsingExtendedReportingEnabled ottaminen käyttöön tai poistaminen käytöstä vastaa sitä, että SafeBrowsingExtendedReportingOptInAllowed asetetaan arvoon Epätosi.
+
+      Jos tämän käytännön arvo on Epätosi, käyttäjät eivät voi enää valita, lähetetäänkö Googlen palvelimille tietoja järjestelmästä ja sivujen sisällöstä. Jos asetuksen arvo on Tosi tai sitä ei määritetä, käyttäjät voivat lähettää Selaussuojalle tietoja järjestelmästä ja sivujen sisällöstä vaarallisten sovellusten ja sivustojen tunnistamiseksi.
+
+      Katso lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Anna sivustojen seurata käyttäjien fyysistä sijaintia</translation>
 <translation id="152657506688053119">Oletushakupalvelun vaihtoehtoiset URL-osoitteet</translation>
 <translation id="1530812829012954197">Hahmonna aina seuraavat URL-mallit isäntäselaimessa</translation>
@@ -288,6 +293,14 @@
       Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla. Jos tilana on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tilana on Vaadittu, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää, ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntoasetuksista.
 
       Käyttäjän käyttökerta palautetaan uudelleenkäynnistyksen jälkeen.</translation>
+<translation id="2075434678547407637">Voit valita, voiko <ph name="PRODUCT_NAME" /> toistaa videoita äänen kanssa automaattisesti (ilman käyttäjän hyväksyntää).
+
+      Jos käytännön arvoksi asetetaan Tosi, <ph name="PRODUCT_NAME" /> saa toistaa mediasisältöä automaattisesti.
+      Jos käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei saa toistaa mediasisältöä automaattisesti.
+      Oletuksena <ph name="PRODUCT_NAME" /> ei saa toistaa mediasisältöä automaattisesti.
+
+      Huomaa, että jos <ph name="PRODUCT_NAME" /> on käynnissä, kun tätä käytäntöä muutetaan, muutos ei vaikuta auki olleisiin välilehtiin vaan vain myöhemmin avattuihin välilehtiin.
+      </translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2077273864382355561">Ruudun sammutuksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="2082205219176343977">Määritä vanhin sallittu Chrome-versio laitteelle.</translation>
@@ -1033,6 +1046,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytäntöä ei ole määritetty, käyttäjä voi halutessaan näyttää tai piilottaa sovelluksen pikakuvakkeen kirjanmerkkipalkin kontekstivalikossa.
 
       Jos käytäntö on määritetty, käyttäjä ei voi vaikuttaa sovelluksen pikakuvakkeen näkyvyyteen.</translation>
+<translation id="4432762137771104529">Selaussuojan laajennetun raportoinnin käyttöönotto</translation>
 <translation id="443454694385851356">Vanha (suojaamaton)</translation>
 <translation id="443665821428652897">Tyhjennä sivuston tiedot selaimen sulkeutuessa (vanhentunut)</translation>
 <translation id="4439336120285389675">Määrittää listan vanhentuneista Web Platform -ominaisuuksista, jotka palautetaan tilapäisesti käyttöön.
@@ -1045,12 +1059,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       </translation>
 <translation id="4442582539341804154">Ota lukitus käyttöön, kun laite on käyttämättömänä tai virransäästötilassa</translation>
 <translation id="4449545651113180484">Kierrä näyttöä 270 astetta myötäpäivään.</translation>
-<translation id="4459359100627756769">Määritä yrityksen kirjautumisen URL-osoitteiden (vain HTTP ja HTTPS) luettelo. Salasanan tunnistetiedosto tallennetaan näihin URL-osoitteisiin, ja sitä käytetään salasanojen uudelleenkäytön tunnistamiseen.
-      Tämä asetus on tarkoitettu ainoastaan SSO/SMAL-järjestelmää käyttäville GSuite-käyttäjille.
-
-      Jos tämä asetus on käytössä, salasanojen suojauspalvelu tallentaa salasanan tunnistetiedoston näihin URL-osoitteisiin salasanojen uudelleenkäytön tunnistamiseksi.
-      Jos asetus on pois käytöstä tai sitä ei ole määritetty, salasanojen suojauspalvelu tallentaa salasanan tunnistetiedoston ainoastaan osoitteeseen https://accounts.google.com.
-      Tämä käytäntö ei ole käytettävissä Windowsin esiintymissä, joita ei ole liitetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen.</translation>
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
 <translation id="4476769083125004742">Jos tämän käytännön arvoksi on määritetty <ph name="BLOCK_GEOLOCATION_SETTING" />, Android-sovellukset eivät voi käyttää sijaintitietoja. Jos tämän käytännön arvoksi määritetään mikä tahansa muu arvo tai arvoa ei määritetä ollenkaan, käyttäjältä pyydetään suostumusta, kun Android-sovellus haluaa käyttää sijaintitietoja.</translation>
@@ -1243,6 +1251,19 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Salasanojen ikä saattaa ylittää määritellyn päivien lukumäärän, jos asiakas on ollut offline-tilassa pidemmän aikaa.</translation>
 <translation id="5105313908130842249">Ruudun lukituksen viive käytettäessä laitetta akkuvirralla</translation>
+<translation id="5106504910236139235">Ottaa käyttöön kohteen <ph name="PRODUCT_NAME" /> Selaussuojan laajennetun raportoinnin ja estää käyttäjiä muuttamasta tätä asetusta.
+
+      Laajennetussa raportoinnissa Googlen palvelimille lähetetään tietoja järjestelmästä ja sivujen sisällöstä vaarallisten sovellusten ja sivustojen tunnistamiseksi.
+
+      Jos asetuksen arvo on Tosi, raportteja luodaan ja lähetetään aina tarvittaessa (esimerkiksi kun ruudulla näytetään suojausilmoitus).
+
+      Jos asetuksen arvo on Epätosi, raportteja ei lähetetä koskaan.
+
+      Jos käytännön arvoksi asetetaan Tosi tai Epätosi, käyttäjä ei voi muuttaa asetusta.
+
+      Jos tätä käytäntöä ei aseteta, käyttäjä voi muuttaa asetusta ja päättää, lähetetäänkö raportteja.
+
+      Katso lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing</translation>
 <translation id="5108031557082757679">Käytöstä poistetut yrityslaitteiden tulostimet</translation>
 <translation id="5130288486815037971">TLS:n RC4-salaustekniikoiden käyttöönotto</translation>
 <translation id="5141670636904227950">Aseta näytön suurentajan oletustyyppi, jota käytetään kirjautumisnäytössä</translation>
@@ -1763,6 +1784,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Määrittää käytännöt, joita <ph name="PRODUCT_NAME" /> käyttää käynnistyessään. Määritettyjä käytäntöjä käytetään ainoastaan kirjautumisnäytöllä. Tämän käytännön kautta määritettyjä merkintöjä ei oteta yleisesti käyttöön käyttäjäistunnoissa.</translation>
 <translation id="685769593149966548">Pakota rajoitettu tila YouTubessa</translation>
+<translation id="686079137349561371">Microsoft Windows 7 tai uudempi</translation>
 <translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 35 alkaen.
 
       Muistitiedot ilmoitetaan sivulle huolimatta valitusta arvosta, mutta ilmoitetut koot pyöristetään ja päivitystiheyttä rajoitetaan turvallisuussyistä. Jos haluat tarkkoja reaaliaikaisia tietoja, käytä esimerkiksi Telemetry-työkalua.</translation>
@@ -1953,6 +1975,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
+<translation id="733838170182967492">Sallii mediasisällön automaattisen toiston</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7343497214039883642">Yritystulostimen määritystiedosto laitteille</translation>
 <translation id="7384999953864505698">Sallii QUIC-protokollan käytön</translation>
@@ -2492,6 +2515,13 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="924557436754151212">Tuo tallennetut salasanat oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="930930237275114205">Määritä tuotteen <ph name="PRODUCT_FRAME_NAME" /> käyttäjätietohakemisto</translation>
 <translation id="934390688529359269">Ottaa käyttöön pakotetun kirjautumisen kohteessa <ph name="PRODUCT_NAME" />.</translation>
+<translation id="938916311528680351">Tällä käytännöllä määritetään, voidaanko Chrome-käyttöjärjestelmässä suorittaa virtuaalikoneita.
+
+      Jos käytännön arvoksi asetetaan Tosi, laitteella on sallittua suorittaa virtuaalikoneita.
+      Jos käytännön arvoksi asetetaan Epätosi, laitteella ei ole sallittua suorittaa virtuaalikoneita.
+      Kun käytännön arvoksi muutetaan Epätosi, muutos koskee uusien virtuaalikoneiden käynnistämistä, mutta jo käynnissä olevia virtuaalikoneita ei sammuteta.
+      Jos tätä asetusta ei ole määritetty hallinnoidulla laitteella, laitteella on sallittua suorittaa virtuaalikoneita.
+      Ei-hallinnoiduilla laitteilla on sallittua suorittaa virtuaalikoneita.</translation>
 <translation id="944817693306670849">Aseta levyn välimuistin koko</translation>
 <translation id="982497069985795632">Ota oikeinkirjoituksen tarkistus käyttöön</translation>
 </translationbundle>

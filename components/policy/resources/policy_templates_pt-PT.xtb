@@ -150,6 +150,11 @@
 <translation id="1503487916067509762">Ativa o bloqueio de software de terceiros</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Esta definição foi descontinuada. Em alternativa, utilize SafeBrowsingExtendedReportingEnabled. Ativar ou desativar SafeBrowsingExtendedReportingEnabled é equivalente a definir SafeBrowsingExtendedReportingOptInAllowed como falsa.
+
+      Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura, de modo a ajudar a detetar aplicações e sites perigosos.
+
+      Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
@@ -289,6 +294,14 @@
       Esta definição de política ativa as notificações para informar o utilizador de que é recomendado ou necessário reiniciar o navegador. Se não estiver definida, o <ph name="PRODUCT_NAME" /> indica ao utilizador que é necessário reiniciá-lo através de alterações subtis ao respetivo menu. Se estiver definida como "Recomendado", é apresentado um aviso recorrente ao utilizador a recomendar o reinício. O utilizador pode ignorar este aviso para adiar o reinício. Se estiver definida como "Obrigatório", é apresentado um aviso recorrente ao utilizador a indicar que o reinício do navegador será forçado assim que o período da notificação passar. Por predefinição, este período é de sete dias e pode ser configurado através da definição da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       A sessão do utilizador é restaurada após o reinício.</translation>
+<translation id="2075434678547407637">Permite-lhe controlar se os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
+
+      Se a política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> está autorizado a reproduzir automaticamente conteúdo multimédia.
+      Se a política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia.
+      Por predefinição, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia.
+
+      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.
+      </translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2077273864382355561">Atraso para desligar o ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima do Chrome permitida para o dispositivo</translation>
@@ -1040,6 +1053,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política não estiver definida, o utilizador pode optar por mostrar ou ocultar o atalho de aplicações a partir do menu de contexto da barra de marcadores.
 
       Se esta política estiver configurada, o utilizador não a pode alterar e o atalho de aplicações é sempre mostrado ou nunca é mostrado.</translation>
+<translation id="4432762137771104529">Ative os relatórios alargados da Navegação segura.</translation>
 <translation id="443454694385851356">Antigos (inseguros)</translation>
 <translation id="443665821428652897">Limpar dados do site ao encerrar o navegador (eliminado)</translation>
 <translation id="4439336120285389675">Especifica uma lista de funcionalidades de plataformas Web descontinuadas a reativar temporariamente.
@@ -1052,12 +1066,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
 <translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
-<translation id="4459359100627756769">Configure a lista de URLs de início de sessão empresariais (apenas esquemas HTTP e HTTPS). A impressão digital da palavra-passe será capturada nestes URLs e utilizada para a deteção de reutilização da palavra-passe.
-      Apenas os utilizadores do G Suite com um sistema SSO/SMAL devem utilizar esta definição.
-
-      Se esta definição estiver ativada, o serviço de proteção por palavra-passe captura a impressão digital da palavra-passe nestes URLs para fins de deteção de reutilização da palavra-passe.
-      Se esta definição estiver desativada ou não estiver definida, o serviço de proteção por palavra-passe apenas captura a impressão digital da palavra-passe em https://accounts.google.com.
-      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
 <translation id="4476769083125004742">Se esta política estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, as aplicações Android não podem aceder às informações de localização. Se definir esta política com qualquer outro valor ou se a deixar por definir, é pedido a autorização ao utilizador quando uma aplicação Android pretender aceder a informações de localização.</translation>
@@ -1252,6 +1260,19 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Tenha em atenção que as palavras-passe poderão ultrapassar o número de dias especificado se o cliente estiver offline por um período de tempo mais longo.</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="5106504910236139235">Ativa os relatórios alargados da Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
+
+      Os relatórios alargados enviam algumas informações do sistema e conteúdo de páginas para os servidores da Google, de modo a ajudar a detetar aplicações e sites perigosos.
+
+      Se a opção estiver definida como verdadeira, os relatórios são criados e enviados sempre que seja necessário (por exemplo, quando é apresentado um anúncio intercalar de segurança).
+
+      Se a opção estiver definida como falsa, os relatórios nunca são enviados.
+
+      Se esta política estiver definida como verdadeira ou falsa, o utilizador não pode modificar a definição.
+
+      Se esta política não for definida, o utilizador pode alterar a definição e decidir se envia ou não os relatórios.
+
+      Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="5108031557082757679">Impressoras empresariais de dispositivos desativadas</translation>
 <translation id="5130288486815037971">Determinar se os conjuntos de cifras RC4 no TLS estão ativados</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa predefinida ativada no ecrã de início de sessão</translation>
@@ -1774,6 +1795,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Especifica os sinalizadores que devem ser aplicados ao <ph name="PRODUCT_NAME" /> quando inicia. Os sinalizadores especificados são aplicados apenas no ecrã de início de sessão. Os sinalizadores definidos através desta política não se propagam para as sessões de utilizador.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso no YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 ou posterior</translation>
 <translation id="687046793986382807">Esta política foi retirada na versão 35 do <ph name="PRODUCT_NAME" />.
 
       De qualquer forma, as informações de memória são enviadas num relatório por página, independentemente do valor da opção, mas os tamanhos dos relatórios são
@@ -1966,6 +1988,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
+<translation id="733838170182967492">Permite a reprodução automática de conteúdo multimédia.</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7343497214039883642">Ficheiro de configuração de impressoras empresariais para dispositivos</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
@@ -2521,6 +2544,13 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="924557436754151212">Importar palavras-passe guardadas a partir do navegador predefinido na primeira execução</translation>
 <translation id="930930237275114205">Definir diretório de dados do utilizador do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permite o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Permite-lhe controlar se as máquinas virtuais têm autorização para serem executadas no Chrome OS.
+
+      Se a política estiver definida como verdadeira, o dispositivo tem autorização para executar máquinas virtuais.
+      Se a política estiver definida como falsa, o dispositivo não tem autorização para executar máquinas virtuais.
+      Quando esta política é alterada para falsa, aplica-se à inicialização de novas máquinas virtuais e não encerra as que já se encontram em execução.
+      Quando esta política não está definida num dispositivo gerido, este tem autorização para executar máquinas virtuais.
+      Os dispositivos não geridos têm autorização para executar máquinas virtuais.</translation>
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
 <translation id="982497069985795632">Ativar a verificação ortográfica</translation>
 </translationbundle>

@@ -5,6 +5,7 @@
 <translation id="1126871238933253947">તમે પહેલાં ઉપયોગ કરી રહ્યા હતા તે કીબોર્ડની ભાષા પર સ્વિચ કરો.</translation>
 <translation id="1195667586424773550">ટૅબના ઍડ્રેસ બારમાં લિંકને ખેંચો</translation>
 <translation id="1204450209689312104">છૂપા મોડમાં એક નવી વિંડો ખોલો</translation>
+<translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">તમારું વર્તમાન પેજ પ્રિન્ટ કરો</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> અથવા <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
@@ -20,6 +21,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> અથવા <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">આગળના ટૅબ પર જાઓ</translation>
 <translation id="2010818616644390445">વિંડોમાં છેલ્લા ટૅબ પર જાઓ</translation>
+<translation id="2088054208777350526">કીબોર્ડ શૉર્ટકટ શોધો</translation>
 <translation id="2145908266289632567">ટેક્સ્ટમાં ફેરફાર કરવો</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 થી =</translation>
 <translation id="2181097965834437145">બુકમાર્ક બાર બતાવો અથવા છુપાવો</translation>
@@ -46,7 +48,6 @@
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
 <translation id="3288816184963444640">વર્તમાન વિંડો બંધ કરો</translation>
-<translation id="3356202203145076517">તમે તાજેતરમાં સૌથી ઓછી ઉપયોગમાં લીધી હોય તે વિંડો ખોલો</translation>
 <translation id="3407560819924487926">કાર્ય મેનેજર લાવો</translation>
 <translation id="3422679037938588196">તમારી શોધ માટેના પાછલા મેળ પર જાઓ</translation>
 <translation id="344577624355799426"><ph name="ALT" /> અથવા <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
@@ -61,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 થી 8</translation>
 <translation id="3837047332182291558">કીબોર્ડને બ્રાઇટ બનાવો (માત્ર બૅકલિટ કીબોર્ડ માટે)</translation>
 <translation id="3976863468609830880">તમારા શેલ્ફ પરના છેલ્લા આઇકન પર ક્લિક કરો</translation>
+<translation id="4026843240379844265">સક્રિય વિંડોને ડિસ્પ્લેની વચ્ચે ખસેડો</translation>
 <translation id="4035482366624727273">આ પેજ પરનું બધું પસંદ કરો</translation>
 <translation id="4060703249685950734">તમે બંધ કરેલ છેલ્લું ટૅબ અથવા વિંડો ફરીથી ખોલો</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />ને દબાવી રાખો, તમે જે વિંડો ખોલવા માગો છો તે ખુલી જાય ત્યાં સુધી <ph name="TAB" />ને ટૅપ કરો, પછી રિલીઝ કરો.</translation>
@@ -120,6 +122,7 @@
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="7020813747703216897">કોઈ મેળ ખાતા પરિણામો મળ્યાં નથી</translation>
 <translation id="7025325401470358758">આગલી પૅન</translation>
+<translation id="7237562915163138771">ઍડ્રેસ બારમાં વેબ ઍડ્રેસ ટાઇપ કરો, પછી <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> દબાવો</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> અથવા <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">આગલો અક્ષર ડિલીટ કરો (ફૉર્વર્ડ ડિલીટ કરો)</translation>
 <translation id="766326951329901120">ક્લિપબોર્ડમાંના કન્ટેન્ટને સાદી ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
@@ -135,6 +138,7 @@
 <translation id="8388247778047144397">લિંકને ટૅબ સ્ટ્રિપ પરના ખાલી વિસ્તારમાં ખેંચો</translation>
 <translation id="8389638407792712197">નવી વિંડો ખોલો</translation>
 <translation id="8429696719963529183">F કી (F1 થી F12)નો ઉપયોગ કરો</translation>
+<translation id="8537650670971624753">શોધ મોડમાંથી બહાર નીકળો</translation>
 <translation id="85690795166292698">લિંકને નવા ટૅબમાં ખોલો</translation>
 <translation id="8609384513243082612">નવું ટૅબ ખોલો</translation>
 <translation id="8644639153978066712">Files ઍપમાંની છુપાયેલી ફાઇલો પ્રદર્શિત કરો</translation>

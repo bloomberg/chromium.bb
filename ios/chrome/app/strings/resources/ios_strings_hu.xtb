@@ -190,6 +190,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="4536418791685807335">Próbáljon meg újra bejelentkezni.</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
 <translation id="461440297010471931">Keresés a Google segítségével</translation>
+<translation id="4619615317237390068">Más eszközök lapjai</translation>
 <translation id="4620246317052452550">Elolvasva</translation>
 <translation id="4636930964841734540">Információ</translation>
 <translation id="4659667755519643272">Lapváltó megnyitása</translation>
@@ -317,6 +318,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6914783257214138813">Jelszavai mindenki számára láthatók lesznek, aki hozzáfér az exportált fájlhoz.</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6973630695168034713">Mappák</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Nemrég megnyitott lapok</translation>
 <translation id="7006788746334555276">Tartalombeállítások</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
@@ -366,6 +368,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7971521879845308059">Pop-upok tiltása</translation>
 <translation id="7982789257301363584">Hálózat</translation>
 <translation id="8019783059653722575">Lehetővé teszi a fotók mentését és feltöltését.</translation>
+<translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8023878949384262191">Kibontja a panelt.</translation>
 <translation id="8059533439631660104">Összecsukja a panelt.</translation>
 <translation id="806745655614357130">Maradjanak elkülönítve az adataim</translation>
@@ -377,6 +380,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8272426682713568063">hitelkártyák
 </translation>
 <translation id="8281781826761538115">Alapértelmezett – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8328777765163860529">Összes bezárása</translation>
 <translation id="8381750437846184350">Annak szabályozása, hogy a Google hogyan használhatja fel az Ön böngészési előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására</translation>
 <translation id="842017693807136194">Bejelentkezve a következővel:</translation>
 <translation id="8428045167754449968">Város/helység</translation>

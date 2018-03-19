@@ -190,6 +190,7 @@
 <translation id="4536418791685807335">נסה להיכנס שוב.</translation>
 <translation id="457386861538956877">עוד...</translation>
 <translation id="461440297010471931">‏חיפוש באמצעות Google</translation>
+<translation id="4619615317237390068">כרטיסיות ממכשירים אחרים</translation>
 <translation id="4620246317052452550">דפים שקראת</translation>
 <translation id="4636930964841734540">מידע</translation>
 <translation id="4659667755519643272">‏היכנס אל Tab Switcher</translation>
@@ -317,6 +318,7 @@
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6973630695168034713">תיקיות</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>
 <translation id="7006788746334555276">הגדרות תוכן</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
@@ -366,6 +368,7 @@
 <translation id="7971521879845308059">חסום חלונות קופצים</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="8019783059653722575">אישור זה מאפשר לך לשמור ולהעלות תמונות.</translation>
+<translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8023878949384262191">מרחיב את הקטע.</translation>
 <translation id="8059533439631660104">מכווץ את הקטע.</translation>
 <translation id="806745655614357130">שמור בנפרד את הנתונים שלי</translation>
@@ -376,6 +379,7 @@
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8272426682713568063">כרטיסי אשראי</translation>
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8328777765163860529">סגור הכל</translation>
 <translation id="8381750437846184350">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים</translation>
 <translation id="842017693807136194">מחובר באמצעות</translation>
 <translation id="8428045167754449968">עיר / יישוב</translation>
@@ -405,7 +409,7 @@
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8881801611828450202">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="895541991026785598">דווח על בעיה</translation>
+<translation id="895541991026785598">דיווח על בעיה</translation>
 <translation id="8971089644512329999">בסדר, הבנתי</translation>
 <translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>
 <translation id="8985320356172329008">‏מחובר ל-Google בשם</translation>

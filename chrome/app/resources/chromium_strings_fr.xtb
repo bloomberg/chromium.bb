@@ -52,6 +52,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="2898082584336937987">Installez Chromium sur votre téléphone. Vous recevrez un SMS au numéro suivant : <ph name="PHONE_NUMBER" />.</translation>
 <translation id="2910007522516064972">À propos de &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Relancer Chromium d'ici un jour}one{Relancer Chromium d'ici # jour}other{Relancer Chromium d'ici # jours}}</translation>
 <translation id="2977470724722393594">Chromium est à jour</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
 <translation id="3046695367536568084">Vous devez être connecté à Chromium pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chromium sur tous vos appareils.</translation>
@@ -91,11 +92,14 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4222580632002216401">Vous êtes maintenant connecté à Chromium. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="4224199872375172890">Chromium est à jour.</translation>
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>
+<translation id="4260985389288095068">Un logiciel malveillant a été détecté sur votre ordinateur. Chromium peut le supprimer et restaurer vos paramètres pour que votre navigateur fonctionne de nouveau normalement.</translation>
 <translation id="4271805377592243930">Obtenir de l'aide avec Chromium</translation>
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="4330585738697551178">Ce module n'est pas compatible avec Chromium.</translation>
+<translation id="4407044323746248786">Quitter Chromium quand même ?</translation>
 <translation id="4421155425831608516">L'option de connexion à Chromium a été désactivée par l'administrateur de cet appareil.</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium va être relancé dans une heure}one{Chromium va être relancé dans # heure}other{Chromium va être relancé dans # heures}}</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4469812139324097969">Chromium n'est plus à jour, car il n'a pas été relancé depuis quelque temps. La mise à jour disponible sera installée dès que vous le relancerez.</translation>
 <translation id="4488554488975128561">Vous pouvez nous aider à rendre Chromium plus sûr et plus facile à utiliser en nous envoyant automatiquement des informations système et du contenu de page. Cela nous aidera à détecter les applications et les sites dangereux.</translation>
@@ -106,6 +110,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="469338717132742108">Obtenir de l'aide avec Chromium OS</translation>
 <translation id="4708774505295300557">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chromium pour séparer vos informations.</translation>
 <translation id="4714956846925717402">Accédez à Chromium plus rapidement</translation>
+<translation id="4746050847053251315">Quitter Chromium quand même ?</translation>
 <translation id="4888717733111232871">Règle de trafic entrant pour Chromium autorisant le trafic mDNS</translation>
 <translation id="4943838377383847465">Chromium est exécuté en mode arrière-plan</translation>
 <translation id="4987820182225656817">Les invités peuvent utiliser Chromium sans laisser aucune trace.</translation>

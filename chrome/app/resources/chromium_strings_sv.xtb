@@ -53,6 +53,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2898082584336937987">Installera Chromium på mobilen. Vi skickar ett sms till mobilen: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Starta om Chromium inom en dag}other{Starta om Chromium inom # dagar}}</translation>
 <translation id="2977470724722393594">Chromium är uppdaterat</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
 <translation id="3046695367536568084">Du måste vara inloggad i Chromium för att kunna använda appar. När du är inloggad kan du synkronisera appar, bokmärken, historik, lösenord och andra inställningar mellan dina enheter.</translation>
@@ -92,11 +93,14 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4222580632002216401">Nu är du inloggad på Chromium. Synkronisering har inaktiverats av administratören.</translation>
 <translation id="4224199872375172890">Chromium är uppdaterat.</translation>
 <translation id="4230135487732243613">Vill du koppla dina uppgifter i Chromium till det här kontot?</translation>
+<translation id="4260985389288095068">Det finns skadlig programvara på datorn. Chromium tar bort den och återställer inställningarna så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="4271805377592243930">Få hjälp med Chromium</translation>
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
+<translation id="4407044323746248786">Vill du avsluta Chromium ändå?</translation>
 <translation id="4421155425831608516">Inloggning i Chromium har inaktiverats av enhetens administratör.</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Om en timme startas Chromium om}other{Om # timmar startas Chromium om}}</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4469812139324097969">Chromium är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="4488554488975128561">Du kan bidra till att göra Chromium säkrare och enklare att använda genom låta viss systeminformation och visst sidinnehåll skickas till Google automatiskt i syfte att identifiera skadliga appar och webbplatser.</translation>
@@ -107,6 +111,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="469338717132742108">Få hjälp med Chromium OS</translation>
 <translation id="4708774505295300557">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chromium-användare så att dina uppgifter hålls separat.</translation>
 <translation id="4714956846925717402">Öppna Chromium snabbare</translation>
+<translation id="4746050847053251315">Vill du avsluta Chromium ändå?</translation>
 <translation id="4888717733111232871">Regel som tillåter inkommande mDNS-trafik för Chromium.</translation>
 <translation id="4943838377383847465">Chromium körs i bakgrundsläge.</translation>
 <translation id="4987820182225656817">Gäster kan använda Chromium utan att lämna spår efter sig.</translation>
