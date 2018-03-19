@@ -653,7 +653,7 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
   // error.
   DCHECK(IsProfileAuthNeeded());
 
-  OpenSyncSetup();
+  DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 }
 
 void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
