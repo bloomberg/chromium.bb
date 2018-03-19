@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -62,10 +63,14 @@ TEST(NoDestructorTest, Accessors) {
   EXPECT_EQ(0, awesome.get()->compare("awesome"));
 }
 
+// Passing initializer list to a NoDestructor like in this test
+// is ambiguous in GCC.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84849
+#if !defined(COMPILER_GCC) && !defined(__clang__)
 TEST(NoDestructorTest, InitializerList) {
   static NoDestructor<std::vector<std::string>> vector({"a", "b", "c"});
 }
-
+#endif
 }  // namespace
 
 }  // namespace base
