@@ -301,18 +301,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     if (IsExternalClearKey(key_system)) {
       RegisterClearKeyCdm(command_line);
-
-      // TODO(xhwang): Update ScopedFeatureList::InitWithFeatures() to accept
-      // vectors so that we can simplify this block.
-        if (support_experimental_cdm_interface) {
-          scoped_feature_list_.InitWithFeatures(
-              {media::kExternalClearKeyForTesting,
-               media::kSupportExperimentalCdmInterface},
-              {});
-        } else {
-          scoped_feature_list_.InitWithFeatures(
-              {media::kExternalClearKeyForTesting}, {});
-        }
+      std::vector<base::Feature> enabled_features = {
+          media::kExternalClearKeyForTesting};
+      if (support_experimental_cdm_interface)
+        enabled_features.push_back(media::kSupportExperimentalCdmInterface);
+      scoped_feature_list_.InitWithFeatures(enabled_features, {});
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
