@@ -8,7 +8,7 @@ autoheader
 aclocal
 autoconf
 automake --add-missing
-patch -p1 < ../fix-double-free.patch
+patch -p1 < ../fix-elf-size.patch
 mkdir build
 cd build
 ../configure --enable-maintainer-mode
