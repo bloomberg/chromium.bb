@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -375,6 +376,13 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Cached session history when web usage is disabled. It is used to restore
   // history into WKWebView when web usage is re-enabled.
   CRWSessionStorage* cached_session_storage_;
+
+  // The most recently restored session history that has not yet committed in
+  // the WKWebView. This is reset in OnNavigationItemCommitted().
+  CRWSessionStorage* restored_session_storage_;
+  // The title of the active navigation entry in |restored_session_storage_|.
+  // It is only valid when |restore_session_storage_| is not nil.
+  base::string16 restored_title_;
 
   // Favicons URLs received in OnFaviconUrlUpdated.
   // WebStateObserver:FaviconUrlUpdated must be called for same-document

@@ -21,6 +21,7 @@
 #import "ios/web/navigation/session_storage_builder.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
@@ -328,6 +329,11 @@ const base::string16& WebStateImpl::GetTitle() const {
   // match the WebContents implementation of this method.
   DCHECK(Configured());
   web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      !restored_title_.empty()) {
+    DCHECK(!item);
+    return restored_title_;
+  }
   return item ? item->GetTitleForDisplay() : empty_string16_;
 }
 
@@ -628,6 +634,9 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {
   [web_controller_ recordStateInHistory];
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      restored_session_storage_)
+    return restored_session_storage_;
   SessionStorageBuilder session_storage_builder;
   return session_storage_builder.BuildStorage(this);
 }
@@ -823,6 +832,13 @@ void WebStateImpl::OnNavigationItemChanged() {
 
 void WebStateImpl::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
+  // A committed navigation item indicates that NavigationManager has a new
+  // valid session history so should invalidate the cached restored session
+  // history.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    restored_session_storage_ = nil;
+    restored_title_.clear();
+  }
   for (auto& observer : observers_)
     observer.NavigationItemCommitted(this, load_details);
 }
@@ -840,6 +856,22 @@ void WebStateImpl::RemoveWebView() {
 }
 
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
+  // Session storage restore is asynchronous with WKBasedNavigationManager
+  // because it involves a page load in WKWebView. Temporarily cache the
+  // restored session so it can be returned if BuildSessionStorage() or
+  // GetTitle() is called before the actual restoration completes. This can
+  // happen to inactive tabs when a navigation in the current tab triggers the
+  // serialization of all tabs and when user clicks on tab switcher without
+  // switching to a tab.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    restored_session_storage_ = session_storage;
+    NSInteger index = session_storage.lastCommittedItemIndex;
+    if (index > -1) {
+      CRWNavigationItemStorage* item_storage =
+          session_storage.itemStorages[index];
+      restored_title_ = item_storage.title;
+    }
+  }
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);
 }

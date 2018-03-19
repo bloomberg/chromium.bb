@@ -14,8 +14,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "ios/web/navigation/placeholder_navigation_util.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
+#import "ios/web/public/crw_session_storage.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -862,6 +867,41 @@ TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   context.SetIsSameDocument(true);
   web_state_->OnNavigationFinished(&context);
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
+}
+
+// Tests that BuildSessionStorage() and GetTitle() return information about the
+// most recently restored session if no navigation item has been committed.
+TEST_F(WebStateImplTest, UncommittedRestoreSession) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kSlimNavigationManager);
+
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.lastCommittedItemIndex = 0;
+  CRWNavigationItemStorage* item_storage =
+      [[CRWNavigationItemStorage alloc] init];
+  item_storage.title = base::SysNSStringToUTF16(@"Title");
+  session_storage.itemStorages = @[ item_storage ];
+
+  web::WebState::CreateParams params(GetBrowserState());
+  WebStateImpl web_state(params, session_storage);
+
+  CRWSessionStorage* extracted_session_storage =
+      web_state.BuildSessionStorage();
+  EXPECT_EQ(0, extracted_session_storage.lastCommittedItemIndex);
+  EXPECT_EQ(1U, extracted_session_storage.itemStorages.count);
+  EXPECT_NSEQ(@"Title", base::SysUTF16ToNSString(web_state.GetTitle()));
+}
+
+TEST_F(WebStateImplTest, NoUncommittedRestoreSession) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kSlimNavigationManager);
+
+  CRWSessionStorage* session_storage = web_state_->BuildSessionStorage();
+  EXPECT_EQ(-1, session_storage.lastCommittedItemIndex);
+  EXPECT_NSEQ(@[], session_storage.itemStorages);
+  EXPECT_TRUE(web_state_->GetTitle().empty());
 }
 
 }  // namespace web
