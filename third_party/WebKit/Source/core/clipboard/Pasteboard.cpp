@@ -122,13 +122,14 @@ String Pasteboard::ReadHTML(KURL& url,
 void Pasteboard::WriteHTML(const String& markup,
                            const KURL& document_url,
                            const String& plain_text,
-                           bool can_smart_copy_or_delete) {
+                           SmartReplaceOption smart_replace_option) {
   String text = plain_text;
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   ReplaceNBSPWithSpace(text);
 
+  bool can_smart_copy_or_delete = smart_replace_option == kCanSmartReplace;
   Platform::Current()->Clipboard()->WriteHTML(markup, document_url, text,
                                               can_smart_copy_or_delete);
 }

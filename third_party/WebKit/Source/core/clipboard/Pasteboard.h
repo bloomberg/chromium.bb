@@ -64,7 +64,7 @@ class CORE_EXPORT Pasteboard {
   void WriteHTML(const String& markup,
                  const KURL& document_url,
                  const String& plain_text,
-                 bool can_smart_copy_or_delete);
+                 SmartReplaceOption);
 
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
