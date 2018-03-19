@@ -21,16 +21,6 @@
 
 namespace task_manager {
 
-// Wraps the memory usage stats values together so that it can be sent between
-// the UI and the worker threads.
-struct MemoryUsageStats {
-#if defined(OS_CHROMEOS)
-  int64_t swapped_bytes = -1;
-#endif
-
-  MemoryUsageStats() {}
-};
-
 // Defines the expensive process' stats sampler that will calculate these
 // resources on the worker thread. Objects of this class are created by the
 // TaskGroups on the UI thread, however it will be used mainly on a blocking
@@ -40,7 +30,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   // Below are the types of callbacks that are invoked on the UI thread upon
   // completion of corresponding refresh tasks on the worker thread.
   using OnCpuRefreshCallback = base::Callback<void(double)>;
-  using OnMemoryRefreshCallback = base::Callback<void(MemoryUsageStats)>;
+  using OnSwappedMemRefreshCallback = base::Callback<void(int64_t)>;
   using OnIdleWakeupsCallback = base::Callback<void(int)>;
 #if defined(OS_LINUX)
   using OnOpenFdCountCallback = base::Callback<void(int)>;
@@ -51,7 +41,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
       base::Process process,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner,
       const OnCpuRefreshCallback& on_cpu_refresh,
-      const OnMemoryRefreshCallback& on_memory_refresh,
+      const OnSwappedMemRefreshCallback& on_memory_refresh,
       const OnIdleWakeupsCallback& on_idle_wakeups,
 #if defined(OS_LINUX)
       const OnOpenFdCountCallback& on_open_fd_count,
@@ -68,7 +58,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
 
   // The refresh calls that will be done on the worker thread.
   double RefreshCpuUsage();
-  MemoryUsageStats RefreshMemoryUsage();
+  int64_t RefreshSwappedMem();
   int RefreshIdleWakeupsPerSecond();
 #if defined(OS_LINUX)
   int RefreshOpenFdCount();
@@ -88,7 +78,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
   // The UI-thread callbacks in TaskGroup to be called when their corresponding
   // refreshes on the worker thread are done.
   const OnCpuRefreshCallback on_cpu_refresh_callback_;
-  const OnMemoryRefreshCallback on_memory_refresh_callback_;
+  const OnSwappedMemRefreshCallback on_swapped_mem_refresh_callback_;
   const OnIdleWakeupsCallback on_idle_wakeups_callback_;
 #if defined(OS_LINUX)
   const OnOpenFdCountCallback on_open_fd_count_callback_;

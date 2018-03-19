@@ -28,7 +28,7 @@ namespace {
 
 // A mask for the refresh types that are done in the background thread.
 const int kBackgroundRefreshTypesMask =
-    REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY_DETAILS | REFRESH_TYPE_IDLE_WAKEUPS |
+    REFRESH_TYPE_CPU | REFRESH_TYPE_SWAPPED_MEM | REFRESH_TYPE_IDLE_WAKEUPS |
 #if defined(OS_WIN)
     REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
 #endif  // defined(OS_WIN)
@@ -93,6 +93,7 @@ TaskGroup::TaskGroup(
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
       platform_independent_cpu_usage_(0.0),
+      swapped_mem_bytes_(-1),
       memory_footprint_(-1),
       gpu_memory_(-1),
       memory_state_(base::MemoryState::UNKNOWN),
@@ -120,7 +121,7 @@ TaskGroup::TaskGroup(
         base::Process::Open(process_id_), blocking_pool_runner,
         base::Bind(&TaskGroup::OnCpuRefreshDone,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnMemoryUsageRefreshDone,
+        base::Bind(&TaskGroup::OnSwappedMemRefreshDone,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -303,11 +304,11 @@ void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU);
 }
 
-void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
+void TaskGroup::OnSwappedMemRefreshDone(int64_t swapped_mem_bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  memory_usage_ = memory_usage;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY_DETAILS);
+  swapped_mem_bytes_ = swapped_mem_bytes;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_SWAPPED_MEM);
 }
 
 void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {

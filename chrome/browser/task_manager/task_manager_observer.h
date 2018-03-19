@@ -26,8 +26,8 @@ enum RefreshType {
   REFRESH_TYPE_NONE = 0,
   REFRESH_TYPE_CPU = 1,
 
-  // Memory details currently only includes "swapped memory" on CrOS.
-  REFRESH_TYPE_MEMORY_DETAILS = 1 << 2,
+  // Only available on CrOS.
+  REFRESH_TYPE_SWAPPED_MEM = 1 << 2,
   REFRESH_TYPE_GPU_MEMORY = 1 << 3,
   REFRESH_TYPE_V8_MEMORY = 1 << 4,
   REFRESH_TYPE_SQLITE_MEMORY = 1 << 5,

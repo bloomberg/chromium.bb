@@ -40,7 +40,7 @@ TaskGroupSampler::TaskGroupSampler(
     base::Process process,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner,
     const OnCpuRefreshCallback& on_cpu_refresh,
-    const OnMemoryRefreshCallback& on_memory_refresh,
+    const OnSwappedMemRefreshCallback& on_swapped_mem_refresh,
     const OnIdleWakeupsCallback& on_idle_wakeups,
 #if defined(OS_LINUX)
     const OnOpenFdCountCallback& on_open_fd_count,
@@ -50,7 +50,7 @@ TaskGroupSampler::TaskGroupSampler(
       process_metrics_(CreateProcessMetrics(process_.Handle())),
       blocking_pool_runner_(blocking_pool_runner),
       on_cpu_refresh_callback_(on_cpu_refresh),
-      on_memory_refresh_callback_(on_memory_refresh),
+      on_swapped_mem_refresh_callback_(on_swapped_mem_refresh),
       on_idle_wakeups_callback_(on_idle_wakeups),
 #if defined(OS_LINUX)
       on_open_fd_count_callback_(on_open_fd_count),
@@ -77,13 +77,12 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
         on_cpu_refresh_callback_);
   }
 
-  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_DETAILS,
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_SWAPPED_MEM,
                                                     refresh_flags)) {
     base::PostTaskAndReplyWithResult(
-        blocking_pool_runner_.get(),
-        FROM_HERE,
-        base::Bind(&TaskGroupSampler::RefreshMemoryUsage, this),
-        on_memory_refresh_callback_);
+        blocking_pool_runner_.get(), FROM_HERE,
+        base::Bind(&TaskGroupSampler::RefreshSwappedMem, this),
+        on_swapped_mem_refresh_callback_);
   }
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -127,19 +126,17 @@ double TaskGroupSampler::RefreshCpuUsage() {
   return process_metrics_->GetPlatformIndependentCPUUsage();
 }
 
-MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
+int64_t TaskGroupSampler::RefreshSwappedMem() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
-
-  MemoryUsageStats memory_usage;
 
 #if defined(OS_CHROMEOS)
   base::WorkingSetKBytes ws_usage;
   if (process_metrics_->GetWorkingSetKBytes(&ws_usage)) {
-    memory_usage.swapped_bytes = ws_usage.swapped * 1024;
+    return ws_usage.swapped * 1024;
   }
 #endif  // defined(OS_CHROMEOS)
 
-  return memory_usage;
+  return 0;
 }
 
 int TaskGroupSampler::RefreshIdleWakeupsPerSecond() {

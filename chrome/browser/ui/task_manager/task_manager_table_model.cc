@@ -728,7 +728,7 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       break;
 
     case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
-      type = REFRESH_TYPE_MEMORY_DETAILS;
+      type = REFRESH_TYPE_SWAPPED_MEM;
       if (table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN)) {
         needs_refresh = true;
