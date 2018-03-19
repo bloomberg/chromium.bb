@@ -9,8 +9,6 @@ jumbo_source_set("latency") {
   sources = [
     "fixed_point.cc",
     "fixed_point.h",
-    "histograms.cc",
-    "histograms.h",
     "latency_histogram_macros.h",
     "latency_info.cc",
     "latency_info.h",
@@ -42,9 +40,6 @@ jumbo_source_set("test_support") {
 test("latency_unittests") {
   sources = [
     "fixed_point_unittest.cc",
-    "histograms_test_common.cc",
-    "histograms_test_common.h",
-    "histograms_unittest.cc",
     "latency_info_unittest.cc",
   ]
 
@@ -70,22 +65,4 @@ test("latency_unittests") {
       "//ui/latency/mojo:test_interfaces",
     ]
   }
-}
-
-test("latency_perftests") {
-  sources = [
-    "histograms_perftest.cc",
-    "histograms_test_common.cc",
-    "histograms_test_common.h",
-  ]
-
-  deps = [
-    ":latency",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/edk/test:run_all_unittests",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//testing/perf",
-  ]
 }
