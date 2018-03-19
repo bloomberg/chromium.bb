@@ -663,6 +663,21 @@
         'additional_compile_targets': [
           'all',
         ],
+        # This mirrors 'KitKat Phone Tester (rel)'.
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
       },
       'ToTAndroid x64': {
         'swarming': {
