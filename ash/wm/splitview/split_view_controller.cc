@@ -553,9 +553,9 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   if (reason == ActivationReason::WINDOW_DISPOSITION_CHANGED)
     return;
 
-  // Only snap window that can be snapped but hasn't been snapped.
+  // Only snap window that hasn't been snapped.
   if (!gained_active || gained_active == left_window_ ||
-      gained_active == right_window_ || !CanSnap(gained_active)) {
+      gained_active == right_window_) {
     return;
   }
 
@@ -563,6 +563,16 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   if (!base::ContainsValue(
           Shell::Get()->mru_window_tracker()->BuildMruWindowList(),
           gained_active)) {
+    return;
+  }
+
+  // If it's a user positionable window but can't be snapped, end split view
+  // mode and show the cannot snap toast.
+  if (!CanSnap(gained_active)) {
+    if (wm::GetWindowState(gained_active)->IsUserPositionable()) {
+      EndSplitView();
+      ShowAppCannotSnapToast();
+    }
     return;
   }
 

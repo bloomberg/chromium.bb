@@ -441,13 +441,10 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
   EXPECT_TRUE(split_view_divider());
   EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
 
+  // Test that activating an non-snappable window ends the split view mode.
   std::unique_ptr<aura::Window> window3(CreateNonSnappableWindow(bounds));
   wm::ActivateWindow(window3.get());
-  EXPECT_TRUE(split_view_divider());
-  EXPECT_FALSE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
-
-  EndSplitView();
-  EXPECT_TRUE(!split_view_divider());
+  EXPECT_FALSE(split_view_divider());
 }
 
 // Verifys that the bounds of the two windows in splitview are as expected.
