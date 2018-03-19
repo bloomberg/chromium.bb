@@ -182,16 +182,36 @@ bool VerifySignature(base::span<const uint8_t> sig,
   return true;
 }
 
+std::string HexDump(const std::vector<uint8_t>& msg) {
+  std::string output;
+  for (const auto& byte : msg) {
+    base::StringAppendF(&output, "%02x", byte);
+  }
+  return output;
+}
+
 base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
     const SignedExchangeHeader& header) {
+  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "GenerateSignedMessage");
+
   // GenerateSignedMessageCBOR corresponds to Step 11.4.
   base::Optional<cbor::CBORValue> cbor_val = GenerateSignedMessageCBOR(header);
-  if (!cbor_val)
+  if (!cbor_val) {
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "GenerateSignedMessage", "error",
+                     "GenerateSignedMessageCBOR failed.");
     return base::nullopt;
+  }
+
   base::Optional<std::vector<uint8_t>> cbor_message =
       cbor::CBORWriter::Write(*cbor_val);
-  if (!cbor_message)
+  if (!cbor_message) {
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                     "GenerateSignedMessage", "error",
+                     "CBORWriter::Write failed.");
     return base::nullopt;
+  }
 
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
   // Step 11. "Let message be the concatenation of the following byte strings."
@@ -203,6 +223,8 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
   // 11.4. "The text string “headers” to the CBOR representation (Section 3.4)
   // of exchange’s headers." [spec text]
   message.insert(message.end(), cbor_message->begin(), cbor_message->end());
+  TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                   "GenerateSignedMessage", "dump", HexDump(message));
   return message;
 }
 
