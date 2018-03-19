@@ -93,6 +93,9 @@ void MessageListView::AddNotificationAt(MessageView* view, int index) {
     ++real_index;
   }
 
+  if (real_index == 0)
+    ExpandSpecifiedNotificationAndCollapseOthers(view);
+
   AddChildViewAt(view, real_index);
   if (GetContentsBounds().IsEmpty())
     return;
@@ -133,6 +136,10 @@ void MessageListView::RemoveNotification(MessageView* view) {
     }
     DoUpdateIfPossible();
   }
+
+  int index = GetIndexOf(view);
+  if (index == 0)
+    ExpandTopNotificationAndCollapseOthers();
 }
 
 void MessageListView::UpdateNotification(MessageView* view,
@@ -143,6 +150,9 @@ void MessageListView::UpdateNotification(MessageView* view,
 
   int index = GetIndexOf(view);
   DCHECK_LE(0, index);  // GetIndexOf is negative if not a child.
+
+  if (index == 0)
+    ExpandSpecifiedNotificationAndCollapseOthers(view);
 
   animator_.StopAnimatingView(view);
   if (deleting_views_.find(view) != deleting_views_.end())
@@ -410,8 +420,6 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  ExpandTopNotification();
-
   AnimateNotifications();
 
   // Should calculate and set new size after calling AnimateNotifications()
@@ -426,31 +434,42 @@ void MessageListView::DoUpdateIfPossible() {
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
-void MessageListView::ExpandTopNotification() {
-  bool is_top = true;
+void MessageListView::ExpandSpecifiedNotificationAndCollapseOthers(
+    message_center::MessageView* target_view) {
+  if (!target_view->IsManuallyExpandedOrCollapsed() &&
+      target_view->IsAutoExpandingAllowed()) {
+    target_view->SetExpanded(true);
+  }
+
+  for (int i = 0; i < child_count(); ++i) {
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    // Target view is already processed above.
+    if (target_view == view)
+      continue;
+    // Skip if the view is invalid.
+    if (!IsValidChild(view))
+      continue;
+    // We don't touch if the view has been manually expanded or collapsed.
+    if (view->IsManuallyExpandedOrCollapsed())
+      continue;
+
+    // Otherwise, collapse the notification.
+    view->SetExpanded(false);
+  }
+}
+
+void MessageListView::ExpandTopNotificationAndCollapseOthers() {
+  MessageView* top_notification = nullptr;
   for (int i = 0; i < child_count(); ++i) {
     MessageView* view = static_cast<MessageView*>(child_at(i));
     if (!IsValidChild(view))
       continue;
-
-    if (view->IsManuallyExpandedOrCollapsed())
-      continue;
-
-    // For top notification:
-    // - IsAutoExpandingAllowed() == true:
-    //   Expands the notification at top if its expand status is never manually
-    //   changed if it's allowed.
-    // - IsAutoExpandingAllowed() == false:
-    //   Collapse explicitly if the notification is not allowed to expand.
-    //   This is necessary for the case that the notification is promoted to
-    //   BUNDLED type and gets not-allowed to expand.
-    // For other notifications:
-    // - Should be collapsed.
-    view->SetExpanded(is_top && view->IsAutoExpandingAllowed());
-
-    // The non first notifications is not top.
-    is_top = false;
+    top_notification = view;
+    break;
   }
+
+  if (top_notification != nullptr)
+    ExpandSpecifiedNotificationAndCollapseOthers(top_notification);
 }
 
 std::vector<int> MessageListView::ComputeRepositionOffsets(
