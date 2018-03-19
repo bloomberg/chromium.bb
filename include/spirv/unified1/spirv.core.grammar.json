@@ -3796,6 +3796,7 @@
         { "kind" : "IdRef", "name" : "'Coordinate'" }
       ],
       "capabilities" : [ "FragmentMaskAMD" ],
+      "extensions" : [ "SPV_AMD_shader_fragment_mask" ],
       "version" : "None"
     },
     {
@@ -3809,6 +3810,7 @@
         { "kind" : "IdRef", "name" : "'Fragment Index'" }
       ],
       "capabilities" : [ "FragmentMaskAMD" ],
+      "extensions" : [ "SPV_AMD_shader_fragment_mask" ],
       "version" : "None"
     },
     {
@@ -4555,6 +4557,7 @@
           "enumerant" : "PostDepthCoverage",
           "value" : 4446,
           "capabilities" : [ "SampleMaskPostDepthCoverage" ],
+          "extensions" : [ "SPV_KHR_post_depth_coverage" ],
           "version" : "None"
         },
         {
@@ -5964,6 +5967,7 @@
           "enumerant" : "FullyCoveredEXT",
           "value" : 5264,
           "capabilities" : [ "FragmentFullyCoveredEXT" ],
+          "extensions" : [ "SPV_EXT_fragment_fully_covered" ],
           "version" : "None"
         }
       ]
