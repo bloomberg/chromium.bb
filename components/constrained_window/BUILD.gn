@@ -52,7 +52,7 @@ source_set("unit_tests") {
     "constrained_window_views_unittest.cc",
   ]
 
-  if (is_mac && !mac_views_browser) {
+  if (is_mac) {
     sources += [ "test_create_native_web_modal_manager_cocoa.cc" ]
   }
 
