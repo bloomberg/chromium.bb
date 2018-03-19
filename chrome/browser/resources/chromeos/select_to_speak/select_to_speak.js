@@ -944,9 +944,15 @@ SelectToSpeak.prototype = {
           if (voices.length == 0)
             return;
 
-          voices.forEach((function(voice) {
-                           this.validVoiceNames_.add(voice.voiceName);
-                         }).bind(this));
+          voices.forEach((voice) => {
+            if (!voice.eventTypes.includes('start') ||
+                !voice.eventTypes.includes('end') ||
+                !voice.eventTypes.includes('word') ||
+                !voice.eventTypes.includes('cancelled')) {
+              return;
+            }
+            this.validVoiceNames_.add(voice.voiceName);
+          });
 
           voices.sort(function(a, b) {
             function score(voice) {
