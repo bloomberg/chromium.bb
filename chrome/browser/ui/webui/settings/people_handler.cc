@@ -651,8 +651,7 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 
   // Should only be called if the user is not already signed in or has an auth
   // error.
-  DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
-         SigninErrorControllerFactory::GetForProfile(profile_)->HasError());
+  DCHECK(IsProfileAuthNeeded());
 
   OpenSyncSetup();
 }
@@ -772,8 +771,7 @@ void PeopleHandler::OpenSyncSetup() {
   //    sync configure UI, not login UI).
   // 7) User re-enables sync after disabling it via advanced settings.
 #if !defined(OS_CHROMEOS)
-  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
-      SigninErrorControllerFactory::GetForProfile(profile_)->HasError()) {
+  if (IsProfileAuthNeeded()) {
     // User is not logged in (cases 1-2), or login has been specially requested
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.
@@ -919,10 +917,8 @@ PeopleHandler::GetSyncStatusDictionary() {
 void PeopleHandler::PushSyncPrefs() {
 #if !defined(OS_CHROMEOS)
   // Early exit if the user has not signed in yet.
-  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
-      SigninErrorControllerFactory::GetForProfile(profile_)->HasError()) {
+  if (IsProfileAuthNeeded())
     return;
-  }
 #endif
 
   ProfileSyncService* service = GetSyncService();
@@ -1050,6 +1046,11 @@ void PeopleHandler::MarkFirstSetupComplete() {
   sync_blocker_.reset();
   service->SetFirstSetupComplete();
   FireWebUIListener("sync-settings-saved");
+}
+
+bool PeopleHandler::IsProfileAuthNeeded() {
+  return !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
+         SigninErrorControllerFactory::GetForProfile(profile_)->HasError();
 }
 
 }  // namespace settings

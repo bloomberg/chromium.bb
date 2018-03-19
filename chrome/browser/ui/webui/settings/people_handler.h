@@ -198,6 +198,9 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Suppresses any further signin promos, since the user has signed in once.
   void MarkFirstSetupComplete();
 
+  // True if profile needs authentication before sync can run.
+  bool IsProfileAuthNeeded();
+
   // If we're directly loading the sync setup page, we acquire a
   // SetupInProgressHandle early in order to prevent a lapse in
   // ProfileSyncService's "SetupInProgress" status. This lapse previously
