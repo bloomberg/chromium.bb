@@ -501,9 +501,6 @@
     <dimen name="selectable_list_toolbar_nav_button_start_offset">4dp</dimen>
     <dimen name="selectable_list_search_icon_end_padding">4dp</dimen>
 
-    <!-- Bottom sheet dimensions -->
-    <dimen name="bottom_sheet_help_bubble_inset">10dp</dimen>
-
     <!-- Chrome Home dimensions -->
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
 

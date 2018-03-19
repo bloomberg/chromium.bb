@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -45,7 +44,6 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -291,10 +289,6 @@ public class BottomSheet
     /** The speed of the swipe the last time the sheet was opened. */
     private long mLastSheetOpenMicrosPerDp;
 
-    // TODO(twellington): Remove this after Chrome Home launches.
-    /** The in-product help bubble controller used to display various help bubbles. */
-    private ChromeHomeIphBubbleController mIPHBubbleController;
-
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -536,13 +530,6 @@ public class BottomSheet
     }
 
     /**
-     * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
-     */
-    public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
-        getIphBubbleController().setLayoutManagerChrome(layoutManager);
-    }
-
-    /**
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
     @VisibleForTesting
@@ -570,7 +557,6 @@ public class BottomSheet
         mTabModelSelector = activity.getTabModelSelector();
         mFullscreenManager = activity.getFullscreenManager();
 
-        getIphBubbleController().setFullscreenManager(mFullscreenManager);
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
@@ -1456,36 +1442,6 @@ public class BottomSheet
     public void onFadingViewVisibilityChanged(boolean visible) {}
 
     /**
-     * Show the in-product help bubble for the {@link BottomSheet} if it has not already been shown.
-     * This method must be called after the toolbar has had at least one layout pass.
-     */
-    public void showColdStartHelpBubble() {
-        getIphBubbleController().showColdStartHelpBubble();
-    }
-
-    /**
-     * Show the in-product help bubble for the {@link BottomSheet} if conditions are right. This
-     * method must be called after the toolbar has had at least one layout pass and
-     * ChromeFeatureList has been initialized.
-     * @param fromMenu Whether the help bubble is being displayed in response to a click on the
-     *                 IPH menu header.
-     * @param fromPullToRefresh Whether the help bubble is being displayed due to a pull to refresh.
-     */
-    public void maybeShowHelpBubble(boolean fromMenu, boolean fromPullToRefresh) {
-        getIphBubbleController().maybeShowHelpBubble(fromMenu, fromPullToRefresh);
-    }
-
-    /** Gets the IPH bubble controller, creating it if necessary. */
-    private ChromeHomeIphBubbleController getIphBubbleController() {
-        if (mIPHBubbleController == null) {
-            mIPHBubbleController =
-                    new ChromeHomeIphBubbleController(getContext(), mToolbarHolder, this);
-        }
-
-        return mIPHBubbleController;
-    }
-
-    /**
      * @return The default toolbar view.
      */
     @VisibleForTesting
@@ -1536,13 +1492,5 @@ public class BottomSheet
             o.onSheetContentChanged(content);
         }
         mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
-    }
-
-    /**
-     * @return The bottom sheet's help bubble if it exists.
-     */
-    @VisibleForTesting
-    public @Nullable TextBubble getHelpBubbleForTests() {
-        return getIphBubbleController().getHelpBubbleForTests();
     }
 }

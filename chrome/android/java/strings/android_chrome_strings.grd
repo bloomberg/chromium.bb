@@ -3206,15 +3206,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       </message>
 
       <!-- Chrome Home -->
-      <message name="IDS_BOTTOM_SHEET_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content.">
-        Pull up to see bookmarks and more
-      </message>
-      <message name="IDS_BOTTOM_SHEET_PULL_TO_REFRESH_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the address bar. “access” is a verb (imperative). The intent of the string is to help users find the address bar at the bottom of the screen.">
-        Access the address bar here
-      </message>
-      <message name="IDS_BOTTOM_SHEET_PULL_TO_REFRESH_HELP_BUBBLE_ACCESSIBILITY_MESSAGE" desc="Text displayed in a help bubble above the address bar when TalkBack is enabled. “access” is a verb (imperative). The intent of the string is to help users find the address bar at the bottom of the screen.">
-        Access the address bar at the bottom of your screen
-      </message>
      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused informing the user that the panel can be closed by swiping down.">
         Navigation panel. Swipe down to close.
       </message>
