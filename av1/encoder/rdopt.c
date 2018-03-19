@@ -9591,7 +9591,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             best_model_rd_palette = INT64_MAX;
     int skippable = 0, rate_overhead_palette = 0;
     RD_STATS rd_stats_y;
-    TX_SIZE uv_tx;
+    TX_SIZE uv_tx = TX_4X4;
     uint8_t *const best_palette_color_map =
         x->palette_buffer->best_palette_color_map;
     uint8_t *const color_map = xd->plane[0].color_index_map;
