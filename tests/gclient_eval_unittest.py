@@ -8,6 +8,7 @@ import itertools
 import logging
 import os
 import sys
+import textwrap
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,6 +17,45 @@ from third_party import schema
 
 import gclient
 import gclient_eval
+
+
+_SAMPLE_DEPS_FILE = textwrap.dedent("""\
+deps = {
+    'src/dep': Var('git_repo') + '/dep' + '@' + 'deadbeef',
+    # Some comment
+    'src/android/dep_2': {
+        'url': Var('git_repo') + '/dep_2' + '@' + Var('dep_2_rev'),
+        'condition': 'checkout_android',
+    },
+
+    'src/dep_3': Var('git_repo') + '/dep_3@' + Var('dep_3_rev'),
+
+    'src/cipd/package': {
+        'packages': [
+            {
+                'package': 'some/cipd/package',
+                'version': 'version:1234',
+            },
+            {
+                'package': 'another/cipd/package',
+                'version': 'version:5678',
+            },
+        ],
+        'condition': 'checkout_android',
+        'dep_type': 'cipd',
+    },
+}
+
+vars = {
+    'git_repo': 'https://example.com/repo.git',
+     # Some comment with bad indentation
+     'dep_2_rev': '1ced',
+     # Some more comments
+     # 1 
+     # 2
+     # 3
+    'dep_3_rev': '5p1e5',
+}""")
 
 
 class GClientEvalTest(unittest.TestCase):
@@ -82,17 +122,13 @@ class ExecTest(unittest.TestCase):
     self.assertIn(
         'invalid assignment: overrides var \'a\'', str(cm.exception))
 
-  def test_schema_unknown_key(self):
-    with self.assertRaises(schema.SchemaWrongKeyError):
-      gclient_eval.Exec('foo = "bar"', {}, {}, '<string>')
-
   def test_schema_wrong_type(self):
     with self.assertRaises(schema.SchemaError):
       gclient_eval.Exec('include_rules = {}', {}, {}, '<string>')
 
   def test_recursedeps_list(self):
     local_scope = {}
-    gclient_eval.Exec(
+    local_scope = gclient_eval.Exec(
         'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]',
         {}, local_scope,
         '<string>')
@@ -105,7 +141,7 @@ class ExecTest(unittest.TestCase):
     global_scope = {
         'Var': lambda var_name: '{%s}' % var_name,
     }
-    gclient_eval.Exec('\n'.join([
+    local_scope = gclient_eval.Exec('\n'.join([
         'vars = {',
         '  "foo": "bar",',
         '}',
@@ -167,6 +203,57 @@ class EvaluateConditionTest(unittest.TestCase):
         'invalid "and" operand \'false_var_str\' '
             '(inside \'false_var_str and true_var\')',
         str(cm.exception))
+
+
+class SetVarTest(unittest.TestCase):
+  def testSetVar(self):
+    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, {'Var': str}, {})
+
+    gclient_eval.SetVar(local_scope, 'dep_2_rev', 'c0ffee')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(
+        result,
+        _SAMPLE_DEPS_FILE.replace('1ced', 'c0ffee'))
+
+
+class SetCipdTest(unittest.TestCase):
+  def testSetCIPD(self):
+    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, {'Var': str}, {})
+
+    gclient_eval.SetCIPD(
+        local_scope, 'src/cipd/package', 'another/cipd/package', '6.789')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('5678', '6.789'))
+
+
+class SetRevisionTest(unittest.TestCase):
+  def setUp(self):
+    self.global_scope = {'Var': str}
+    self.local_scope = gclient_eval.Exec(
+        _SAMPLE_DEPS_FILE, self.global_scope, {})
+
+  def testSetRevision(self):
+    gclient_eval.SetRevision(
+        self.local_scope, self.global_scope, 'src/dep', 'deadfeed')
+    result = gclient_eval.RenderDEPSFile(self.local_scope)
+
+    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('deadbeef', 'deadfeed'))
+
+  def testSetRevisionInUrl(self):
+    gclient_eval.SetRevision(
+        self.local_scope, self.global_scope, 'src/dep_3', '0ff1ce')
+    result = gclient_eval.RenderDEPSFile(self.local_scope)
+
+    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('5p1e5', '0ff1ce'))
+
+  def testSetRevisionInVars(self):
+    gclient_eval.SetRevision(
+        self.local_scope, self.global_scope, 'src/android/dep_2', 'c0ffee')
+    result = gclient_eval.RenderDEPSFile(self.local_scope)
+
+    self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('1ced', 'c0ffee'))
 
 
 if __name__ == '__main__':

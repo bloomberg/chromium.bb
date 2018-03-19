@@ -3,17 +3,49 @@
 # found in the LICENSE file.
 
 import ast
+import cStringIO
 import collections
+import tokenize
 
 from third_party import schema
 
 
+class _NodeDict(collections.Mapping):
+  """Dict-like type that also stores information on AST nodes and tokens."""
+  def __init__(self, data, tokens=None):
+    self.data = collections.OrderedDict(data)
+    self.tokens = tokens
+
+  def __str__(self):
+    return str({k: v[0] for k, v in self.data.iteritems()})
+
+  def __getitem__(self, key):
+    return self.data[key][0]
+
+  def __iter__(self):
+    return iter(self.data)
+
+  def __len__(self):
+    return len(self.data)
+
+  def GetNode(self, key):
+    return self.data[key][1]
+
+  def _SetNode(self, key, value, node):
+    self.data[key] = (value, node)
+
+
+def _NodeDictSchema(dict_schema):
+  """Validate dict_schema after converting _NodeDict to a regular dict."""
+  return lambda d: schema.Schema(dict_schema).validate(dict(d))
+
+
 # See https://github.com/keleshev/schema for docs how to configure schema.
-_GCLIENT_DEPS_SCHEMA = {
+_GCLIENT_DEPS_SCHEMA = _NodeDictSchema({
     schema.Optional(basestring): schema.Or(
         None,
         basestring,
-        {
+        _NodeDictSchema({
             # Repo and revision to check out under the path
             # (same as if no dict was used).
             'url': basestring,
@@ -23,25 +55,25 @@ _GCLIENT_DEPS_SCHEMA = {
             schema.Optional('condition'): basestring,
 
             schema.Optional('dep_type', default='git'): basestring,
-        },
+        }),
         # CIPD package.
-        {
+        _NodeDictSchema({
             'packages': [
-                {
+                _NodeDictSchema({
                     'package': basestring,
 
                     'version': basestring,
-                }
+                })
             ],
 
             schema.Optional('condition'): basestring,
 
             schema.Optional('dep_type', default='cipd'): basestring,
-        },
+        }),
     ),
-}
+})
 
-_GCLIENT_HOOKS_SCHEMA = [{
+_GCLIENT_HOOKS_SCHEMA = [_NodeDictSchema({
     # Hook action: list of command-line arguments to invoke.
     'action': [basestring],
 
@@ -59,9 +91,9 @@ _GCLIENT_HOOKS_SCHEMA = [{
     # Optional condition string. The hook will only be run
     # if the condition evaluates to True.
     schema.Optional('condition'): basestring,
-}]
+})]
 
-_GCLIENT_SCHEMA = schema.Schema({
+_GCLIENT_SCHEMA = schema.Schema(_NodeDictSchema({
     # List of host names from which dependencies are allowed (whitelist).
     # NOTE: when not present, all hosts are allowed.
     # NOTE: scoped to current DEPS file, not recursive.
@@ -79,9 +111,9 @@ _GCLIENT_SCHEMA = schema.Schema({
 
     # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
     # Also see 'target_os'.
-    schema.Optional('deps_os'): {
+    schema.Optional('deps_os'): _NodeDictSchema({
         schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
-    },
+    }),
 
     # Path to GN args file to write selected variables.
     schema.Optional('gclient_gn_args_file'): basestring,
@@ -95,9 +127,9 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('hooks'): _GCLIENT_HOOKS_SCHEMA,
 
     # Similar to 'hooks', also keyed by OS.
-    schema.Optional('hooks_os'): {
+    schema.Optional('hooks_os'): _NodeDictSchema({
         schema.Optional(basestring): _GCLIENT_HOOKS_SCHEMA
-    },
+    }),
 
     # Rules which #includes are allowed in the directory.
     # Also see 'skip_child_includes' and 'specific_include_rules'.
@@ -123,9 +155,9 @@ _GCLIENT_SCHEMA = schema.Schema({
 
     # Mapping from paths to include rules specific for that path.
     # See 'include_rules' for more details.
-    schema.Optional('specific_include_rules'): {
+    schema.Optional('specific_include_rules'): _NodeDictSchema({
         schema.Optional(basestring): [basestring]
-    },
+    }),
 
     # List of additional OS names to consider when selecting dependencies
     # from deps_os.
@@ -136,10 +168,10 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('use_relative_paths'): bool,
 
     # Variables that can be referenced using Var() - see 'deps'.
-    schema.Optional('vars'): {
+    schema.Optional('vars'): _NodeDictSchema({
         schema.Optional(basestring): schema.Or(basestring, bool),
-    },
-})
+    }),
+}))
 
 
 def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
@@ -159,8 +191,7 @@ def _gclient_eval(node_or_string, global_scope, filename='<unknown>'):
     elif isinstance(node, ast.List):
       return list(map(_convert, node.elts))
     elif isinstance(node, ast.Dict):
-      return collections.OrderedDict(
-          (_convert(k), _convert(v))
+      return _NodeDict((_convert(k), (_convert(v), v))
           for k, v in zip(node.keys, node.values))
     elif isinstance(node, ast.Name):
       if node.id not in _allowed_names:
@@ -197,6 +228,7 @@ def Exec(content, global_scope, local_scope, filename='<unknown>'):
   if isinstance(node_or_string, ast.Expression):
     node_or_string = node_or_string.body
 
+  defined_variables = set()
   def _visit_in_module(node):
     if isinstance(node, ast.Assign):
       if len(node.targets) != 1:
@@ -210,12 +242,13 @@ def Exec(content, global_scope, local_scope, filename='<unknown>'):
                 filename, getattr(node, 'lineno', '<unknown>')))
       value = _gclient_eval(node.value, global_scope, filename=filename)
 
-      if target.id in local_scope:
+      if target.id in defined_variables:
         raise ValueError(
             'invalid assignment: overrides var %r (file %r, line %s)' % (
                 target.id, filename, getattr(node, 'lineno', '<unknown>')))
 
-      local_scope[target.id] = value
+      defined_variables.add(target.id)
+      return target.id, (value, node.value)
     else:
       raise ValueError(
           'unexpected AST node: %s %s (file %r, line %s)' % (
@@ -223,8 +256,15 @@ def Exec(content, global_scope, local_scope, filename='<unknown>'):
               getattr(node, 'lineno', '<unknown>')))
 
   if isinstance(node_or_string, ast.Module):
+    data = []
     for stmt in node_or_string.body:
-      _visit_in_module(stmt)
+      data.append(_visit_in_module(stmt))
+    tokens = {
+        token[2]: list(token)
+        for token in tokenize.generate_tokens(
+            cStringIO.StringIO(content).readline)
+    }
+    local_scope = _NodeDict(data, tokens)
   else:
     raise ValueError(
         'unexpected AST node: %s %s (file %r, line %s)' % (
@@ -333,3 +373,56 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
           'unexpected AST node: %s %s (inside %r)' % (
               node, ast.dump(node), condition))
   return _convert(main_node)
+
+
+def RenderDEPSFile(gclient_dict):
+  contents = sorted(gclient_dict.tokens.values(), key=lambda token: token[2])
+  return tokenize.untokenize(contents)
+
+
+def _UpdateAstString(tokens, node, value):
+  position = node.lineno, node.col_offset
+  tokens[position][1] = repr(value)
+  node.s = value
+
+
+def SetVar(gclient_dict, var_name, value):
+  node = gclient_dict['vars'].GetNode(var_name)
+  tokens = gclient_dict.tokens
+  _UpdateAstString(tokens, node, value)
+  gclient_dict['vars']._SetNode(var_name, value, node)
+
+
+def SetCIPD(gclient_dict, dep_name, package_name, new_version):
+  packages = [
+      package
+      for package in gclient_dict['deps'][dep_name]['packages']
+      if package['package'] == package_name
+  ]
+  assert len(packages) == 1
+  node = packages[0].GetNode('version')
+  # TODO(ehmaldonado): Support Var in package's version.
+  tokens = gclient_dict.tokens
+  new_version = 'version:' + new_version
+  _UpdateAstString(tokens, node, new_version)
+  packages[0]._SetNode('version', new_version, node)
+
+
+def SetRevision(gclient_dict, global_scope, dep_name, new_revision):
+  def _UpdateRevision(dep_dict, dep_key):
+    dep_node = dep_dict.GetNode(dep_key)
+    node = dep_node
+    if isinstance(node, ast.BinOp):
+      node = node.right
+    if isinstance(node, ast.Call):
+      SetVar(gclient_dict, node.args[0].s, new_revision)
+    else:
+      _UpdateAstString(gclient_dict.tokens, node, new_revision)
+      value = _gclient_eval(dep_node, global_scope)
+      dep_dict._SetNode(dep_key, value, dep_node)
+
+  # TODO(ehmaldonado): Support Var in dep names.
+  if isinstance(gclient_dict['deps'][dep_name], _NodeDict):
+    _UpdateRevision(gclient_dict['deps'][dep_name], 'url')
+  else:
+    _UpdateRevision(gclient_dict['deps'], dep_name)
