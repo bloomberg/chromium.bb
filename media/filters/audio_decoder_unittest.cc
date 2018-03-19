@@ -452,13 +452,6 @@ const DecodedBufferExpectations kSfxMp3Expectations[] = {
     {27188, 26122, "4.24,3.95,4.22,4.78,5.13,4.93,"},
 };
 
-// File has trailing garbage, but should still decode without error.
-const DecodedBufferExpectations kTrailingGarbageMp3Expectations[] = {
-    {0, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
-    {26122, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
-    {52244, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
-};
-
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxAdtsExpectations[] = {
     {0, 23219, "-1.90,-1.53,-0.15,1.28,1.23,-0.33,"},
@@ -513,8 +506,6 @@ const DecodedBufferExpectations kSfxOpusExpectations[] = {
 
 const TestParams kFFmpegTestParams[] = {
     {kCodecMP3, "sfx.mp3", kSfxMp3Expectations, 0, 44100, CHANNEL_LAYOUT_MONO},
-    {kCodecMP3, "trailing-garbage.mp3", kTrailingGarbageMp3Expectations, 0,
-     44100, CHANNEL_LAYOUT_MONO},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {kCodecAAC, "sfx.adts", kSfxAdtsExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},

@@ -124,33 +124,37 @@ bool MPEG1AudioStreamParser::ParseHeader(MediaLog* media_log,
            << " sample_rate_index 0x" << sample_rate_index
            << " channel_mode 0x" << channel_mode;
 
-  if (sync != 0x7ff ||
-      version == kVersionReserved ||
-      layer == kLayerReserved ||
+  if (sync != 0x7ff || version == kVersionReserved || layer == kLayerReserved ||
       bitrate_index == kBitrateFree || bitrate_index == kBitrateBad ||
       sample_rate_index == kSampleRateReserved) {
-    MEDIA_LOG(ERROR, media_log)
-        << "Invalid header data :" << std::hex << " sync 0x" << sync
-        << " version 0x" << version << " layer 0x" << layer
-        << " bitrate_index 0x" << bitrate_index << " sample_rate_index 0x"
-        << sample_rate_index << " channel_mode 0x" << channel_mode;
+    if (media_log) {
+      MEDIA_LOG(ERROR, media_log)
+          << "Invalid MP3 header data :" << std::hex << " sync 0x" << sync
+          << " version 0x" << version << " layer 0x" << layer
+          << " bitrate_index 0x" << bitrate_index << " sample_rate_index 0x"
+          << sample_rate_index << " channel_mode 0x" << channel_mode;
+    }
     return false;
   }
 
   if (layer == kLayer2 && !kIsAllowed[bitrate_index][channel_mode]) {
-    MEDIA_LOG(ERROR, media_log) << "Invalid (bitrate_index, channel_mode)"
-                                << " combination :" << std::hex
-                                << " bitrate_index " << bitrate_index
-                                << " channel_mode " << channel_mode;
+    if (media_log) {
+      MEDIA_LOG(ERROR, media_log)
+          << "Invalid MP3 (bitrate_index, channel_mode)"
+          << " combination :" << std::hex << " bitrate_index " << bitrate_index
+          << " channel_mode " << channel_mode;
+    }
     return false;
   }
 
   int bitrate = kBitrateMap[bitrate_index][kVersionLayerMap[version][layer]];
 
   if (bitrate == 0) {
-    MEDIA_LOG(ERROR, media_log) << "Invalid bitrate :" << std::hex
-                                << " version " << version << " layer " << layer
-                                << " bitrate_index " << bitrate_index;
+    if (media_log) {
+      MEDIA_LOG(ERROR, media_log)
+          << "Invalid MP3 bitrate :" << std::hex << " version " << version
+          << " layer " << layer << " bitrate_index " << bitrate_index;
+    }
     return false;
   }
 
@@ -158,12 +162,13 @@ bool MPEG1AudioStreamParser::ParseHeader(MediaLog* media_log,
 
   int frame_sample_rate = kSampleRateMap[sample_rate_index][version];
   if (frame_sample_rate == 0) {
-    MEDIA_LOG(ERROR, media_log) << "Invalid sample rate :" << std::hex
-                                << " version " << version
-                                << " sample_rate_index " << sample_rate_index;
+    if (media_log) {
+      MEDIA_LOG(ERROR, media_log)
+          << "Invalid MP3 sample rate :" << std::hex << " version " << version
+          << " sample_rate_index " << sample_rate_index;
+    }
     return false;
   }
-  header->sample_rate = frame_sample_rate;
 
   // http://teslabs.com/openplayer/docs/docs/specs/mp3_structure2.pdf
   // Table 2.1.5
@@ -187,6 +192,11 @@ bool MPEG1AudioStreamParser::ParseHeader(MediaLog* media_log,
     default:
       return false;
   }
+
+  if (!header)
+    return true;
+
+  header->sample_rate = frame_sample_rate;
   header->sample_count = samples_per_frame;
 
   // http://teslabs.com/openplayer/docs/docs/specs/mp3_structure2.pdf
