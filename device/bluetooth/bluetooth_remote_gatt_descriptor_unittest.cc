@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,11 +12,14 @@
 #include "device/bluetooth/test/bluetooth_test_android.h"
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#elif defined(OS_WIN)
+#include "device/bluetooth/test/bluetooth_test_win.h"
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
 
 namespace device {
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
 class BluetoothRemoteGattDescriptorTest : public BluetoothTest {
  public:
   // Creates adapter_, device_, service_, characteristic_,
@@ -52,10 +56,13 @@ class BluetoothRemoteGattDescriptorTest : public BluetoothTest {
   BluetoothRemoteGattDescriptor* descriptor1_ = nullptr;
   BluetoothRemoteGattDescriptor* descriptor2_ = nullptr;
 };
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
-TEST_F(BluetoothRemoteGattDescriptorTest, GetIdentifier) {
+#define MAYBE_GetIdentifier GetIdentifier
+#else
+#define MAYBE_GetIdentifier DISABLED_GetIdentifier
+#endif
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetIdentifier) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -136,10 +143,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, GetIdentifier) {
 
   EXPECT_NE(desc5->GetIdentifier(), desc6->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
-TEST_F(BluetoothRemoteGattDescriptorTest, GetUUID) {
+#define MAYBE_GetUUID GetUUID
+#else
+#define MAYBE_GetUUID DISABLED_GetUUID
+#endif
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_GetUUID) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -182,11 +192,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, GetUUID) {
   EXPECT_EQ(uuid1, descriptor1->GetUUID());
   EXPECT_EQ(uuid2, descriptor2->GetUUID());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor_Empty ReadRemoteDescriptor_Empty
+#else
+#define MAYBE_ReadRemoteDescriptor_Empty DISABLED_ReadRemoteDescriptor_Empty
+#endif
 // Tests ReadRemoteDescriptor and GetValue with empty value buffer.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Empty) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Empty) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -207,11 +220,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Empty) {
   EXPECT_EQ(empty_vector, last_read_value_);
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor_Empty WriteRemoteDescriptor_Empty
+#else
+#define MAYBE_WriteRemoteDescriptor_Empty DISABLED_WriteRemoteDescriptor_Empty
+#endif
 // Tests WriteRemoteDescriptor with empty value buffer.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Empty) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Empty) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -231,13 +247,19 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Empty) {
 
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
+#define MAYBE_ReadRemoteDescriptor_AfterDeleted \
+  ReadRemoteDescriptor_AfterDeleted
+#else
+#define MAYBE_ReadRemoteDescriptor_AfterDeleted \
+  DISABLED_ReadRemoteDescriptor_AfterDeleted
+#endif
 // Tests ReadRemoteDescriptor completing after Chrome objects are deleted.
 // macOS: Not applicable: This can never happen if CBPeripheral delegate is set
 // to nil.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_AfterDeleted) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_ReadRemoteDescriptor_AfterDeleted) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -256,13 +278,19 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_AfterDeleted) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE("Did not crash!");
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+#define MAYBE_WriteRemoteDescriptor_AfterDeleted \
+  WriteRemoteDescriptor_AfterDeleted
+#else
+#define MAYBE_WriteRemoteDescriptor_AfterDeleted \
+  DISABLED_WriteRemoteDescriptor_AfterDeleted
+#endif
 // Tests WriteRemoteDescriptor completing after Chrome objects are deleted.
 // macOS: Not applicable: This can never happen if CBPeripheral delegate is set
 // to nil.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_AfterDeleted) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_WriteRemoteDescriptor_AfterDeleted) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -281,11 +309,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_AfterDeleted) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE("Did not crash!");
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor ReadRemoteDescriptor
+#else
+#define MAYBE_ReadRemoteDescriptor DISABLED_ReadRemoteDescriptor
+#endif
 // Tests ReadRemoteDescriptor and GetValue with non-empty value buffer.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -309,11 +340,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor) {
   EXPECT_EQ(test_vector, last_read_value_);
   EXPECT_EQ(test_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor WriteRemoteDescriptor
+#else
+#define MAYBE_WriteRemoteDescriptor DISABLED_WriteRemoteDescriptor
+#endif
 // Tests WriteRemoteDescriptor with non-empty value buffer.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -331,11 +365,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor) {
 
   EXPECT_EQ(test_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor_Twice ReadRemoteDescriptor_Twice
+#else
+#define MAYBE_ReadRemoteDescriptor_Twice DISABLED_ReadRemoteDescriptor_Twice
+#endif
 // Tests ReadRemoteDescriptor and GetValue multiple times.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Twice) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadRemoteDescriptor_Twice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -368,11 +405,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Twice) {
   EXPECT_EQ(empty_vector, last_read_value_);
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor_Twice WriteRemoteDescriptor_Twice
+#else
+#define MAYBE_WriteRemoteDescriptor_Twice DISABLED_WriteRemoteDescriptor_Twice
+#endif
 // Tests WriteRemoteDescriptor multiple times.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Twice) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteRemoteDescriptor_Twice) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -403,12 +443,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Twice) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor_MultipleDescriptors \
+  ReadRemoteDescriptor_MultipleDescriptors
+#else
+#define MAYBE_ReadRemoteDescriptor_MultipleDescriptors \
+  DISABLED_ReadRemoteDescriptor_MultipleDescriptors
+#endif
 // Tests ReadRemoteDescriptor on two descriptors.
 TEST_F(BluetoothRemoteGattDescriptorTest,
-       ReadRemoteDescriptor_MultipleDescriptors) {
+       MAYBE_ReadRemoteDescriptor_MultipleDescriptors) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -440,12 +485,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(test_vector1, descriptor1_->GetValue());
   EXPECT_EQ(test_vector2, descriptor2_->GetValue());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor_MultipleDescriptors \
+  WriteRemoteDescriptor_MultipleDescriptors
+#else
+#define MAYBE_WriteRemoteDescriptor_MultipleDescriptors \
+  DISABLED_WriteRemoteDescriptor_MultipleDescriptors
+#endif
 // Tests WriteRemoteDescriptor on two descriptors.
 TEST_F(BluetoothRemoteGattDescriptorTest,
-       WriteRemoteDescriptor_MultipleDescriptors) {
+       MAYBE_WriteRemoteDescriptor_MultipleDescriptors) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -475,11 +525,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadError ReadError
+#else
+#define MAYBE_ReadError DISABLED_ReadError
+#endif
 // Tests ReadRemoteDescriptor asynchronous error.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadError) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadError) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -496,11 +549,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadError) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteError WriteError
+#else
+#define MAYBE_WriteError DISABLED_WriteError
+#endif
 // Tests WriteRemoteDescriptor asynchronous error.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteError) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteError) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -520,13 +576,16 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteError) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
+#define MAYBE_ReadSynchronousError ReadSynchronousError
+#else
+#define MAYBE_ReadSynchronousError DISABLED_ReadSynchronousError
+#endif
 // Tests ReadRemoteDescriptor synchronous error.
 // Test not relevant for macOS since descriptor read cannot generate
 // synchronous error.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadSynchronousError) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadSynchronousError) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -554,13 +613,16 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadSynchronousError) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+#define MAYBE_WriteSynchronousError WriteSynchronousError
+#else
+#define MAYBE_WriteSynchronousError DISABLED_WriteSynchronousError
+#endif
 // Tests WriteRemoteDescriptor synchronous error.
 // Test not relevant for macOS since descriptor write cannot generate
 // synchronous error.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteSynchronousError) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteSynchronousError) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -589,11 +651,16 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteSynchronousError) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor_ReadPending ReadRemoteDescriptor_ReadPending
+#else
+#define MAYBE_ReadRemoteDescriptor_ReadPending \
+  DISABLED_ReadRemoteDescriptor_ReadPending
+#endif
 // Tests ReadRemoteDescriptor error with a pending read operation.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_ReadPending) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_ReadRemoteDescriptor_ReadPending) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -620,11 +687,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_ReadPending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor_WritePending \
+  WriteRemoteDescriptor_WritePending
+#else
+#define MAYBE_WriteRemoteDescriptor_WritePending \
+  DISABLED_WriteRemoteDescriptor_WritePending
+#endif
 // Tests WriteRemoteDescriptor error with a pending write operation.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_WritePending) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_WriteRemoteDescriptor_WritePending) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -652,11 +725,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_WritePending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ReadRemoteDescriptor_WritePending \
+  ReadRemoteDescriptor_WritePending
+#else
+#define MAYBE_ReadRemoteDescriptor_WritePending \
+  DISABLED_ReadRemoteDescriptor_WritePending
+#endif
 // Tests ReadRemoteDescriptor error with a pending write operation.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_WritePending) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_ReadRemoteDescriptor_WritePending) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -683,11 +762,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_WritePending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_WriteRemoteDescriptor_ReadPending \
+  WriteRemoteDescriptor_ReadPending
+#else
+#define MAYBE_WriteRemoteDescriptor_ReadPending \
+  DISABLED_WriteRemoteDescriptor_ReadPending
+#endif
 // Tests WriteRemoteDescriptor error with a pending Read operation.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_ReadPending) {
+TEST_F(BluetoothRemoteGattDescriptorTest,
+       MAYBE_WriteRemoteDescriptor_ReadPending) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -714,14 +799,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_ReadPending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
+#define MAYBE_ReadDuringDisconnect ReadDuringDisconnect
+#else
+#define MAYBE_ReadDuringDisconnect DISABLED_ReadDuringDisconnect
+#endif
 // Tests that read requests after a device disconnects but before the
 // disconnect task runs do not result in a crash.
 // macOS: Does not apply. All events arrive on the UI Thread.
 // TODO(crbug.com/694102): Enable this test on Windows.
-TEST_F(BluetoothRemoteGattDescriptorTest, ReadDuringDisconnect) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_ReadDuringDisconnect) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -738,14 +826,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadDuringDisconnect) {
   base::RunLoop().RunUntilIdle();
   // TODO(crbug.com/621901): Test error callback was called.
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+#define MAYBE_WriteDuringDisconnect WriteDuringDisconnect
+#else
+#define MAYBE_WriteDuringDisconnect DISABLED_WriteDuringDisconnect
+#endif
 // Tests that write requests after a device disconnects but before the
 // disconnect task runs do not result in a crash.
 // macOS: Does not apply. All events arrive on the UI Thread.
 // TODO(crbug.com/694102): Enable this test on Windows.
-TEST_F(BluetoothRemoteGattDescriptorTest, WriteDuringDisconnect) {
+TEST_F(BluetoothRemoteGattDescriptorTest, MAYBE_WriteDuringDisconnect) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -763,7 +854,6 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteDuringDisconnect) {
   base::RunLoop().RunUntilIdle();
   // TODO(crbug.com/621901): Test that an error was returned.
 }
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
 // Tests NSString for descriptor value for macOS.
