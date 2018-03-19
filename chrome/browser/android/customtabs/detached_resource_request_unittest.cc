@@ -12,6 +12,7 @@
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -152,13 +153,41 @@ class DetachedResourceRequestTest : public ::testing::Test {
     std::string cookie = content::GetCookies(browser_context(), url);
     ASSERT_EQ("", cookie);
 
-    DetachedResourceRequest::CreateAndStart(browser_context(), url,
-                                            site_for_cookies);
+    DetachedResourceRequest::CreateAndStart(
+        browser_context(), url, site_for_cookies,
+        content::Referrer::GetDefaultReferrerPolicy());
     first_request_waiter.Run();
     second_request_waiter.Run();
 
     cookie = content::GetCookies(browser_context(), url);
     ASSERT_EQ("acookie", cookie);
+  }
+
+  void SetAndCheckReferrer(const std::string& initial_referrer,
+                           const std::string& expected_referrer,
+                           net::URLRequest::ReferrerPolicy policy) {
+    base::RunLoop request_completion_waiter;
+    base::RunLoop server_request_waiter;
+    HttpRequest::HeaderMap headers;
+
+    embedded_test_server()->RegisterRequestMonitor(
+        base::BindRepeating(&WatchPathAndReportHeaders, kEchoTitle, nullptr,
+                            &headers, server_request_waiter.QuitClosure()));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL url(embedded_test_server()->GetURL(kEchoTitle));
+    GURL site_for_cookies(initial_referrer);
+
+    DetachedResourceRequest::CreateAndStart(
+        browser_context(), url, site_for_cookies, policy,
+        base::BindOnce(
+            [](base::OnceClosure closure, bool success) {
+              EXPECT_TRUE(success);
+              std::move(closure).Run();
+            },
+            request_completion_waiter.QuitClosure()));
+    server_request_waiter.Run();
+    EXPECT_EQ(expected_referrer, headers["referer"]);
+    request_completion_waiter.Run();
   }
 
  private:
@@ -182,6 +211,7 @@ TEST_F(DetachedResourceRequestTest, Simple) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
       base::BindOnce(
           [](base::OnceClosure closure, bool success) {
             EXPECT_TRUE(success);
@@ -204,6 +234,7 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
       base::BindOnce(
           [](base::OnceClosure closure, bool success) {
             EXPECT_FALSE(success);
@@ -230,8 +261,9 @@ TEST_F(DetachedResourceRequestTest, MultipleRequests) {
 
   // No request coalescing, and no cache hit for a no-cache resource.
   for (int i = 0; i < 2; ++i) {
-    DetachedResourceRequest::CreateAndStart(browser_context(), url,
-                                            site_for_cookies);
+    DetachedResourceRequest::CreateAndStart(
+        browser_context(), url, site_for_cookies,
+        content::Referrer::GetDefaultReferrerPolicy());
   }
   request_waiter.Run();
   EXPECT_EQ(site_for_cookies.spec(), headers["referer"]);
@@ -250,8 +282,9 @@ TEST_F(DetachedResourceRequestTest, NoReferrerWhenDowngrade) {
   // Downgrade, as the server is over HTTP.
   GURL site_for_cookies("https://cats.google.com");
 
-  DetachedResourceRequest::CreateAndStart(browser_context(), url,
-                                          site_for_cookies);
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy());
   request_waiter.Run();
   EXPECT_EQ("", headers["referer"]);
 }
@@ -276,8 +309,9 @@ TEST_F(DetachedResourceRequestTest, FollowRedirect) {
                                           redirected_url.spec()));
   GURL site_for_cookies(embedded_test_server()->base_url());
 
-  DetachedResourceRequest::CreateAndStart(browser_context(), url,
-                                          site_for_cookies);
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy());
   first_request_waiter.Run();
   second_request_waiter.Run();
 }
@@ -304,6 +338,7 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
 
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
       base::BindOnce(
           [](base::OnceClosure closure, bool success) {
             EXPECT_TRUE(success);
@@ -314,6 +349,25 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
   request_completion_waiter.Run();
   cookie = content::GetCookies(browser_context(), url);
   ASSERT_EQ("acookie", cookie);
+}
+
+TEST_F(DetachedResourceRequestTest, DefaultReferrerPolicy) {
+  // No Referrer on downgrade.
+  SetAndCheckReferrer("https://cats.google.com", "",
+                      content::Referrer::GetDefaultReferrerPolicy());
+}
+
+TEST_F(DetachedResourceRequestTest, OriginReferrerPolicy) {
+  // Only the origin, even for downgrades.
+  SetAndCheckReferrer("https://cats.google.com/cute-cats",
+                      "https://cats.google.com/",
+                      net::URLRequest::ReferrerPolicy::ORIGIN);
+}
+
+TEST_F(DetachedResourceRequestTest, NeverClearReferrerPolicy) {
+  SetAndCheckReferrer("https://cats.google.com/cute-cats",
+                      "https://cats.google.com/cute-cats",
+                      net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER);
 }
 
 }  // namespace customtabs

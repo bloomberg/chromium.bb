@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -96,15 +97,17 @@ public class DetachedResourceRequestTest {
         CustomTabsSessionToken session = prepareSession();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Should not allow android-app:// scheme",
-                    mConnection.startParallelRequest(
-                            session, Uri.parse("android-app://this.is.an.android.app"), ORIGIN));
+                    mConnection.startParallelRequest(session,
+                            Uri.parse("android-app://this.is.an.android.app"), ORIGIN,
+                            WebReferrerPolicy.DEFAULT));
             Assert.assertFalse("Should not allow an empty URL",
-                    mConnection.startParallelRequest(session, Uri.parse(""), ORIGIN));
-            Assert.assertFalse("Should not allow an arbitrary origin",
                     mConnection.startParallelRequest(
-                            session, Uri.parse("HTTPS://foo.bar"), Uri.parse("wrong://origin")));
-            Assert.assertTrue(
-                    mConnection.startParallelRequest(session, Uri.parse("HTTP://foo.bar"), ORIGIN));
+                            session, Uri.parse(""), ORIGIN, WebReferrerPolicy.DEFAULT));
+            Assert.assertFalse("Should not allow an arbitrary origin",
+                    mConnection.startParallelRequest(session, Uri.parse("HTTPS://foo.bar"),
+                            Uri.parse("wrong://origin"), WebReferrerPolicy.DEFAULT));
+            Assert.assertTrue(mConnection.startParallelRequest(
+                    session, Uri.parse("HTTP://foo.bar"), ORIGIN, WebReferrerPolicy.DEFAULT));
         });
     }
 
@@ -125,8 +128,10 @@ public class DetachedResourceRequestTest {
         mServer.start();
 
         Uri url = Uri.parse(mServer.getURL("/echotitle"));
-        ThreadUtils.runOnUiThread(
-                () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
+        ThreadUtils.runOnUiThread(() -> {
+            Assert.assertTrue(mConnection.startParallelRequest(
+                    session, url, ORIGIN, WebReferrerPolicy.DEFAULT));
+        });
         cb.waitForCallback(0, 1);
     }
 
@@ -137,8 +142,10 @@ public class DetachedResourceRequestTest {
         CustomTabsSessionToken session = prepareSession();
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(mConnection.startParallelRequest(
+                    session, url, ORIGIN, WebReferrerPolicy.DEFAULT));
+        });
 
         String echoUrl = mServer.getURL("/echoheader?Cookie");
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, echoUrl);
@@ -162,8 +169,10 @@ public class DetachedResourceRequestTest {
             prefs.setBlockThirdPartyCookiesEnabled(true);
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(mConnection.startParallelRequest(
+                    session, url, ORIGIN, WebReferrerPolicy.DEFAULT));
+        });
 
         String echoUrl = mServer.getURL("/echoheader?Cookie");
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, echoUrl);
@@ -190,8 +199,10 @@ public class DetachedResourceRequestTest {
         final Uri origin = Uri.parse(new Origin(url).toString());
         CustomTabsSessionToken session = prepareSession(url);
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, origin)));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(mConnection.startParallelRequest(
+                    session, url, origin, WebReferrerPolicy.DEFAULT));
+        });
 
         String echoUrl = mServer.getURL("/echoheader?Cookie");
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, echoUrl);

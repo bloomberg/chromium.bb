@@ -14,6 +14,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
@@ -32,10 +33,12 @@ void DetachedResourceRequest::CreateAndStart(
     content::BrowserContext* browser_context,
     const GURL& url,
     const GURL& site_for_cookies,
+    const net::URLRequest::ReferrerPolicy referrer_policy,
     DetachedResourceRequest::OnResultCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<DetachedResourceRequest> detached_request(
-      new DetachedResourceRequest(url, site_for_cookies, std::move(cb)));
+      new DetachedResourceRequest(url, site_for_cookies, referrer_policy,
+                                  std::move(cb)));
   Start(std::move(detached_request), browser_context);
 }
 
@@ -44,6 +47,7 @@ DetachedResourceRequest::~DetachedResourceRequest() = default;
 DetachedResourceRequest::DetachedResourceRequest(
     const GURL& url,
     const GURL& site_for_cookies,
+    net::URLRequest::ReferrerPolicy referrer_policy,
     DetachedResourceRequest::OnResultCallback cb)
     : url_(url), site_for_cookies_(site_for_cookies), cb_(std::move(cb)) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -70,9 +74,10 @@ DetachedResourceRequest::DetachedResourceRequest(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "GET";
   resource_request->url = url_;
-  resource_request->referrer = site_for_cookies_;
-  resource_request->referrer_policy =
-      content::Referrer::GetDefaultReferrerPolicy();
+  // The referrer is stripped if it's not set properly initially.
+  resource_request->referrer = net::URLRequestJob::ComputeReferrerForPolicy(
+      referrer_policy, site_for_cookies_, url_);
+  resource_request->referrer_policy = referrer_policy;
   resource_request->site_for_cookies = site_for_cookies_;
   resource_request->request_initiator = url::Origin::Create(site_for_cookies_);
   resource_request->resource_type = content::RESOURCE_TYPE_SUB_RESOURCE;
