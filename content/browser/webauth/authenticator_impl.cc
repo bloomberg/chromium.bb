@@ -132,7 +132,7 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   const GURL kGstatic1 =
       GURL("https://www.gstatic.com/securitykey/origins.json");
   const GURL kGstatic2 =
-      GURL("https://www.gstatic.com/a/google.com/securitykey/origins.json");
+      GURL("https://www.gstatic.com/securitykey/a/google.com/origins.json");
   DCHECK(kGstatic1.is_valid() && kGstatic2.is_valid());
 
   if (origin.DomainIs("google.com") && !appid.has_ref() &&

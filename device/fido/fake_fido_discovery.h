@@ -123,7 +123,7 @@ class ScopedFakeFidoDiscoveryFactory
   using StartStopMode = FakeFidoDiscovery::StartStopMode;
 
   ScopedFakeFidoDiscoveryFactory();
-  ~ScopedFakeFidoDiscoveryFactory();
+  ~ScopedFakeFidoDiscoveryFactory() override;
 
   // Constructs a fake BLE/HID discovery to be returned from the next call to
   // FidoDiscovery::Create. Returns a raw pointer to the fake so that tests can

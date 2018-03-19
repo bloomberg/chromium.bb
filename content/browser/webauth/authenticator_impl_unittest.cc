@@ -17,8 +17,10 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/scoped_virtual_u2f_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -577,7 +579,7 @@ typedef struct {
   bool should_succeed;
 } OriginAppIdPair;
 
-constexpr OriginAppIdPair kInvalidAppIdCases[] = {
+constexpr OriginAppIdPair kAppIdCases[] = {
     {"https://example.com", "https://com/foo", false},
     {"https://example.com", "https://foo.com/", false},
     {"https://example.com", "http://example.com", false},
@@ -586,7 +588,6 @@ constexpr OriginAppIdPair kInvalidAppIdCases[] = {
     {"https://www.notgoogle.com",
      "https://www.gstatic.com/securitykey/origins.json", false},
 
-    /* Cannot be tested yet:
     {"https://example.com", "https://example.com", true},
     {"https://www.example.com", "https://example.com", true},
     {"https://example.com", "https://www.example.com", true},
@@ -596,16 +597,18 @@ constexpr OriginAppIdPair kInvalidAppIdCases[] = {
      "https://www.gstatic.com/securitykey/origins.json", true},
     {"https://www.google.com",
      "https://www.gstatic.com/securitykey/a/google.com/origins.json", true},
-     */
+    {"https://accounts.google.com",
+     "https://www.gstatic.com/securitykey/origins.json", true},
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, AppIdExtension) {
-  for (const auto& test_case : kInvalidAppIdCases) {
+  TestServiceManagerContext smc;
+  device::test::ScopedVirtualU2fDevice virtual_device;
+
+  for (const auto& test_case : kAppIdCases) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.appid));
-
-    CHECK(!test_case.should_succeed) << "can't test this yet";
 
     const GURL origin_url(test_case.origin);
     NavigateAndCommit(origin_url);
@@ -618,7 +621,12 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     TestGetAssertionCallback cb;
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
+
+    if (test_case.should_succeed) {
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
+    } else {
+      EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
+    }
   }
 
   // TODO(agl): test positive cases once a mock U2F device exists.

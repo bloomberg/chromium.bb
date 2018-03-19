@@ -70,6 +70,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
                                               uint8_t p2,
                                               base::span<const uint8_t> data);
 
+  // TODO(agl): this state is in the wrong place: U2fDevice objects are
+  // ephemeral so to maintain state across requests this will have to be kept
+  // elsewhere.
   // Keyed on appId/rpId hash (aka "applicationParam")
   std::map<std::vector<uint8_t>, RegistrationData> registrations_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
