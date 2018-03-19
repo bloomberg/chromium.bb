@@ -38,6 +38,8 @@ enum UiElementType {
   kTypeSnackbarDescription,
   kTypeCursorBackground,
   kTypeCursorForeground,
+  kTypeOverflowMenuButton,
+  kTypeOverflowMenuItem,
 
   // This must be last.
   kNumUiElementTypes,

@@ -155,14 +155,15 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   // Site security state icon.
   if (state_.vector_icon != nullptr) {
-    gfx::RectF icon_region(left_edge, kHeight / 2 - kUrlBarIconSizeDMM / 2,
-                           kUrlBarIconSizeDMM, kUrlBarIconSizeDMM);
+    gfx::RectF icon_region(left_edge,
+                           kHeight / 2 - kUrlBarButtonIconSizeDMM / 2,
+                           kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
     VectorIcon::DrawVectorIcon(
-        &gfx_canvas, *state_.vector_icon, ToPixels(kUrlBarIconSizeDMM),
+        &gfx_canvas, *state_.vector_icon, ToPixels(kUrlBarButtonIconSizeDMM),
         {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
         GetIconColor(state_.security_level, colors_));
     security_hit_region_ = icon_region;
-    left_edge += kUrlBarIconSizeDMM;
+    left_edge += kUrlBarButtonIconSizeDMM;
   }
 
   std::unique_ptr<gfx::RenderText> render_text;

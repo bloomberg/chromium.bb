@@ -637,6 +637,7 @@ void UiSceneCreator::CreateScene() {
   CreatePrompts();
   CreateSystemIndicators();
   CreateUrlBar();
+  CreateOverflowMenu();
   CreateLoadingIndicator();
   if (model_->update_ready_snackbar_enabled) {
     CreateSnackbars();
@@ -1753,7 +1754,7 @@ void UiSceneCreator::CreateUrlBar() {
       Create<Button>(kUrlBarBackButton, kPhaseForeground,
                      base::BindRepeating(&UiBrowserInterface::NavigateBack,
                                          base::Unretained(browser_)));
-  back_button->SetSize(kUrlBarBackButtonWidthDMM, kUrlBarHeightDMM);
+  back_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
   back_button->SetCornerRadii(
       {kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2, 0});
   back_button->set_hover_offset(0.0f);
@@ -1768,8 +1769,8 @@ void UiSceneCreator::CreateUrlBar() {
   auto back_icon =
       Create<VectorIcon>(kUrlBarBackButtonIcon, kPhaseForeground, 128);
   back_icon->SetIcon(vector_icons::kBackArrowIcon);
-  back_icon->SetSize(kUrlBarIconSizeDMM, kUrlBarIconSizeDMM);
-  back_icon->SetTranslate(kUrlBarBackButtonIconOffsetDMM, 0, 0);
+  back_icon->SetSize(kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
+  back_icon->SetTranslate(kUrlBarEndButtonIconOffsetDMM, 0, 0);
   back_icon->AddBinding(VR_BIND_FUNC(
       SkColor, Model, model_,
       model->can_navigate_back
@@ -1788,8 +1789,6 @@ void UiSceneCreator::CreateUrlBar() {
   auto origin_region = Create<Rect>(kUrlBarOriginRegion, kPhaseForeground);
   origin_region->set_hit_testable(true);
   origin_region->SetSize(kUrlBarOriginRegionWidthDMM, kUrlBarHeightDMM);
-  origin_region->SetCornerRadii(
-      {0, kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2});
   VR_BIND_COLOR(model_, origin_region.get(), &ColorScheme::element_background,
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarLayout, std::move(origin_region));
@@ -1846,6 +1845,167 @@ void UiSceneCreator::CreateUrlBar() {
   event_handlers.button_up = url_click_callback;
   hint_text->set_event_handlers(event_handlers);
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_text));
+
+  separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
+  separator->set_hit_testable(true);
+  separator->SetSize(kUrlBarSeparatorWidthDMM, kUrlBarHeightDMM);
+  VR_BIND_COLOR(model_, separator.get(), &ColorScheme::url_bar_separator,
+                &Rect::SetColor);
+  scene_->AddUiElement(kUrlBarLayout, std::move(separator));
+
+  auto overflow_button = Create<Button>(
+      kUrlBarOverflowButton, kPhaseForeground,
+      base::BindRepeating(
+          [](Model* model) { model->overflow_menu_enabled = true; },
+          base::Unretained(model_)));
+  overflow_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
+  overflow_button->SetCornerRadii(
+      {0, kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2});
+  overflow_button->set_hover_offset(0.0f);
+  overflow_button->SetSounds(kSoundButtonHover, kSoundButtonClick,
+                             audio_delegate_);
+  VR_BIND_BUTTON_COLORS(model_, overflow_button.get(),
+                        &ColorScheme::back_button, &Button::SetButtonColors);
+  scene_->AddUiElement(kUrlBarLayout, std::move(overflow_button));
+
+  auto overflow_icon =
+      Create<VectorIcon>(kUrlBarOverflowButtonIcon, kPhaseForeground, 128);
+  overflow_icon->SetIcon(kMoreVertIcon);
+  overflow_icon->SetSize(kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
+  overflow_icon->SetTranslate(-kUrlBarEndButtonIconOffsetDMM, 0, 0);
+  overflow_icon->AddBinding(VR_BIND_FUNC(
+      SkColor, Model, model_,
+      model->can_navigate_back
+          ? model->color_scheme().button_colors.foreground
+          : model->color_scheme().button_colors.foreground_disabled,
+      VectorIcon, overflow_icon.get(), SetColor));
+  scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_icon));
+}
+
+void UiSceneCreator::CreateOverflowMenu() {
+  auto overflow_backplane =
+      Create<InvisibleHitTarget>(kOverflowMenuBackplane, kPhaseForeground);
+  EventHandlers event_handlers;
+  event_handlers.button_up = base::BindRepeating(
+      [](Model* model) { model->overflow_menu_enabled = false; },
+      base::Unretained(model_));
+  overflow_backplane->set_event_handlers(event_handlers);
+  overflow_backplane->SetSize(kBackplaneSize, kBackplaneSize);
+  overflow_backplane->set_y_anchoring(TOP);
+  overflow_backplane->SetRotate(1, 0, 0, -kUrlBarRotationRad);
+  VR_BIND_VISIBILITY(overflow_backplane, model->overflow_menu_enabled);
+
+  auto overflow_menu = Create<Rect>(kOverflowMenu, kPhaseForeground);
+  overflow_menu->set_hit_testable(true);
+  overflow_menu->set_y_centering(BOTTOM);
+  overflow_menu->set_bounds_contain_children(true);
+  overflow_menu->SetTranslate(0, kOverflowMenuOffset, 0);
+  overflow_menu->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+  VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::element_background,
+                &Rect::SetColor);
+
+  auto overflow_layout =
+      Create<LinearLayout>(kOverflowMenuLayout, kPhaseNone, LinearLayout::kUp);
+
+  // The forward and refresh buttons are not in the menu layout, but appear as
+  // such. Instead, a placeholder element is inserted into the layout to make
+  // space for them, and the buttons themselves are anchored to the bottom
+  // corners of the overall layout. In the future, when we have more buttons,
+  // they may instead be placed in a linear layout (locked to one side).
+  std::vector<std::tuple<LayoutAlignment, const gfx::VectorIcon&,
+                         base::RepeatingCallback<void()>>>
+      menu_buttons = {
+          {LEFT, vector_icons::kForwardArrowIcon, base::DoNothing()},
+          {RIGHT, vector_icons::kReloadIcon, base::DoNothing()},
+      };
+  for (auto& item : menu_buttons) {
+    auto button = std::make_unique<DiscButton>(
+        base::BindRepeating(
+            [](base::RepeatingCallback<void()> callback, Model* model) {
+              model->overflow_menu_enabled = false;
+              callback.Run();
+            },
+            std::get<2>(item), base::Unretained(model_)),
+        std::get<1>(item), audio_delegate_);
+    button->SetType(kTypeOverflowMenuButton);
+    button->SetDrawPhase(kPhaseForeground);
+    button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
+    button->set_icon_scale_factor(kUrlBarButtonIconScaleFactor);
+    button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+    button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+    button->set_requires_layout(false);
+    button->set_contributes_to_parent_bounds(false);
+    button->set_x_anchoring(std::get<0>(item));
+    button->set_x_centering(std::get<0>(item));
+    button->set_y_anchoring(BOTTOM);
+    button->set_y_centering(BOTTOM);
+    button->SetTranslate(
+        kOverflowButtonXOffset * (std::get<0>(item) == RIGHT ? -1 : 1),
+        kOverflowMenuYPadding, 0);
+    VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::back_button,
+                          &Button::SetButtonColors);
+    overflow_menu->AddChild(std::move(button));
+  }
+
+  // The item that reserves space in the menu layout for the buttons.
+  auto button_spacer = Create<Rect>(kNone, kPhaseNone);
+  button_spacer->SetType(kTypeSpacer);
+  button_spacer->SetSize(kOverflowMenuMinimumWidth,
+                         kOverflowButtonRegionHeight);
+  overflow_layout->AddChild(std::move(button_spacer));
+
+  std::vector<std::pair<int, base::RepeatingCallback<void()>>> menu_items = {
+      {IDS_VR_MENU_CLOSE_INCOGNITO_TABS, base::DoNothing()},
+      {IDS_VR_MENU_NEW_INCOGNITO_TAB, base::DoNothing()},
+  };
+
+  for (auto& item : menu_items) {
+    auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
+    layout->SetType(kTypeOverflowMenuItem);
+    layout->SetDrawPhase(kPhaseNone);
+    layout->set_layout_length(kOverflowMenuMinimumWidth);
+
+    auto text =
+        Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
+    text->SetDrawPhase(kPhaseForeground);
+    text->SetText(l10n_util::GetStringUTF16(std::get<0>(item)));
+    text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+    text->SetAlignment(UiTexture::kTextAlignmentLeft);
+    layout->AddChild(std::move(text));
+
+    auto spacer = Create<Rect>(kNone, kPhaseNone);
+    spacer->SetType(kTypeSpacer);
+    spacer->SetSize(0, kOverflowMenuItemHeight);
+    spacer->set_resizable_by_layout(true);
+    layout->AddChild(std::move(spacer));
+
+    auto background = Create<Button>(
+        kNone, kPhaseForeground,
+        base::BindRepeating(
+            [](base::RepeatingCallback<void()> callback, Model* model) {
+              model->overflow_menu_enabled = false;
+              callback.Run();
+            },
+            std::get<1>(item), base::Unretained(model_)));
+    background->set_hit_testable(true);
+    background->set_bounds_contain_children(true);
+    background->set_hover_offset(0);
+    background->set_padding(kOverflowMenuItemXPadding, 0);
+    VR_BIND_BUTTON_COLORS(model_, background.get(), &ColorScheme::button_colors,
+                          &Button::SetButtonColors);
+    background->AddChild(std::move(layout));
+
+    overflow_layout->AddChild(std::move(background));
+  }
+
+  auto top_cap = Create<Rect>(kNone, kPhaseNone);
+  top_cap->SetType(kTypeSpacer);
+  top_cap->SetSize(kOverflowMenuMinimumWidth, kOverflowMenuYPadding);
+  overflow_layout->AddChild(std::move(top_cap));
+
+  overflow_menu->AddChild(std::move(overflow_layout));
+  overflow_backplane->AddChild(std::move(overflow_menu));
+  scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_backplane));
 }
 
 void UiSceneCreator::CreateLoadingIndicator() {
@@ -2115,7 +2275,7 @@ void UiSceneCreator::CreateOmnibox() {
   mic_button->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                       kOmniboxTextFieldIconButtonSizeDMM);
   mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
-  mic_button->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
+  mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
   mic_button->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate_);
 
   VR_BIND_VISIBILITY(mic_button,

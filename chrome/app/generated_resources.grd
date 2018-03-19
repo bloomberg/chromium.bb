@@ -10933,6 +10933,12 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_REPOSITION_LABEL" desc="This text appears over a window to explain to the user how to manipulate the window.">
         Move the controller to reposition. Click to finish.
       </message>
+      <message name="IDS_VR_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new incognito tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]">
+        New incognito tab
+      </message>
+      <message name="IDS_VR_MENU_CLOSE_INCOGNITO_TABS" desc="Menu item for closing all open incognito tabs. [CHAR-LIMIT=27]">
+        Close incognito tabs
+     </message>
     </if>
 
     <message name="IDS_CONFIRM_FILE_UPLOAD_TITLE" desc="Title of dialog for confirming that many files are about to be uploaded / given to the site. [ICU Syntax]">
