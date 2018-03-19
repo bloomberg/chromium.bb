@@ -3374,5 +3374,4 @@ crbug.com/681919 [ Linux Debug ] http/tests/media/media-src-suspend-after-have-m
 crbug.com/681919 [ Linux Debug ] http/tests/media/media-src-suspend-before-have-metadata.html [ Timeout Pass ]
 
 # Sheriff 2018-03-07
-crbug.com/819591 virtual/threaded/animations/hit-testing/composited-with-hit-testing.html [ Failure Pass ]
 crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Timeout ]
