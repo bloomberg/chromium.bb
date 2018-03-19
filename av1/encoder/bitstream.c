@@ -3741,6 +3741,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   }
 
   uint32_t obu_header_size = 0;
+  uint8_t *tile_data_start = dst + total_size;
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     TileInfo tile_info;
     const int is_last_row = (tile_row == tile_rows - 1);
@@ -3785,6 +3786,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
             AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
             n_log2_tiles, cm->num_tg > 1);
         total_size += curr_tg_data_size;
+        tile_data_start += curr_tg_data_size;
         new_tg = 0;
         tile_count = 0;
       }
@@ -3864,6 +3866,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         }
         curr_tg_data_size += (int)length_field_size;
         total_size += (uint32_t)length_field_size;
+        tile_data_start += length_field_size;
+#if CONFIG_OBU_FRAME
+        saved_wb->bit_buffer += length_field_size;
+#endif  // CONFIG_OBU_FRAME
 
         if (!first_tg && cm->error_resilient_mode) {
           // Make room for a duplicate Frame Header OBU.
@@ -3888,6 +3894,43 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       }
 
       total_size += tile_size;
+    }
+  }
+
+  if (have_tiles && num_tg_hdrs == 1) {
+    int tile_size_bytes = 4, unused;
+    const uint32_t tile_data_offset = (uint32_t)(tile_data_start - dst);
+    const uint32_t tile_data_size = total_size - tile_data_offset;
+
+    total_size =
+        remux_tiles(cm, tile_data_start, tile_data_size, *max_tile_size,
+                    *max_tile_col_size, &tile_size_bytes, &unused);
+    total_size += tile_data_offset;
+    assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
+    aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
+
+    // Update the OBU length if remux_tiles() reduced the size.
+    uint64_t payload_size;
+    size_t length_field_size;
+    int res =
+        aom_uleb_decode(dst + obu_header_size, total_size - obu_header_size,
+                        &payload_size, &length_field_size);
+    assert(res == 0);
+    (void)res;
+
+    const uint64_t new_payload_size =
+        total_size - obu_header_size - length_field_size;
+    if (new_payload_size != payload_size) {
+      size_t new_length_field_size;
+      res = aom_uleb_encode(new_payload_size, length_field_size,
+                            dst + obu_header_size, &new_length_field_size);
+      assert(res == 0);
+      if (new_length_field_size < length_field_size) {
+        const size_t src_offset = obu_header_size + length_field_size;
+        const size_t dst_offset = obu_header_size + new_length_field_size;
+        memmove(dst + dst_offset, dst + src_offset, payload_size);
+        total_size -= length_field_size - new_length_field_size;
+      }
     }
   }
   return (uint32_t)total_size;
