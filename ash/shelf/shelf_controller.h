@@ -41,6 +41,9 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
   ShelfController();
   ~ShelfController() override;
 
+  // Removes observers from this object's dependencies.
+  void Shutdown();
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Binds the mojom::ShelfController interface request to this object.

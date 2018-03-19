@@ -94,6 +94,16 @@ TEST_F(ShelfControllerTest, InitializesBackButtonAndAppListItemDelegate) {
   EXPECT_TRUE(model->GetShelfItemDelegate(ShelfID(kAppListId)));
 }
 
+TEST_F(ShelfControllerTest, Shutdown) {
+  // Simulate a display change occurring during shutdown (e.g. due to a screen
+  // rotation animation being canceled).
+  Shell::Get()->shelf_controller()->Shutdown();
+  display_manager()->SetDisplayRotation(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      display::Display::ROTATE_90, display::Display::RotationSource::ACTIVE);
+  // Ash does not crash during cleanup.
+}
+
 TEST_F(ShelfControllerTest, ShelfModelChangeSynchronization) {
   ShelfController* controller = Shell::Get()->shelf_controller();
 

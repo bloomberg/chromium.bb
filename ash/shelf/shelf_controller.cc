@@ -86,11 +86,9 @@ void SetShelfAlignmentFromPrefs() {
 void SetShelfBehaviorsFromPrefs() {
   // The shelf should always be bottom-aligned and not hidden in tablet mode;
   // alignment and auto-hide are assigned from prefs when tablet mode is exited.
-  // ShelfController outlives TabletModeController, hence the null check.
-  // https://crbug.com/817522
-  Shell* shell = Shell::Get();
-  if (shell->tablet_mode_controller() &&
-      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
     return;
   }
 
@@ -129,12 +127,14 @@ ShelfController::ShelfController()
 }
 
 ShelfController::~ShelfController() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  if (Shell::Get()->tablet_mode_controller())
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
   model_.DestroyItemDelegates();
+}
+
+void ShelfController::Shutdown() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 // static
