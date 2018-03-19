@@ -143,7 +143,7 @@ void MetricsServicesManager::UpdateUkmService() {
       metrics_service_client_->IsHistorySyncEnabledOnAllProfiles();
   bool is_incognito = client_->IsIncognitoSessionActive();
 
-  if (consent_given_ && sync_enabled & !is_incognito) {
+  if (consent_given_ && sync_enabled && !is_incognito) {
     ukm->EnableRecording(
         metrics_service_client_->IsExtensionSyncEnabledOnAllProfiles());
     if (may_upload_)

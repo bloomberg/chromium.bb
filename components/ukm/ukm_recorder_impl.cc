@@ -306,6 +306,10 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
       kUkmFeature, "RestrictToWhitelistedSourceIds", false);
 }
 
+bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
+  return true;
+}
+
 UkmRecorderImpl::EventAggregate::EventAggregate() = default;
 UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
 
@@ -371,7 +375,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  if (!whitelisted_entry_hashes_.empty() &&
+  if (ShouldRestrictToWhitelistedEntries() &&
       !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash)) {
     RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
     return;

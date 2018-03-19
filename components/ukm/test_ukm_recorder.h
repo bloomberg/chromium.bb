@@ -29,6 +29,7 @@ class TestUkmRecorder : public UkmRecorderImpl {
   ~TestUkmRecorder() override;
 
   bool ShouldRestrictToWhitelistedSourceIds() const override;
+  bool ShouldRestrictToWhitelistedEntries() const override;
 
   size_t sources_count() const { return sources().size(); }
 
