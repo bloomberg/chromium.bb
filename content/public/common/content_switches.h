@@ -218,6 +218,7 @@ CONTENT_EXPORT extern const char kDisableSiteIsolationTrials[];
 CONTENT_EXPORT extern const char kStartFullscreen[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 extern const char kSkiaFontCacheLimitMb[];
+extern const char kSkiaResourceCacheLimitMb[];
 CONTENT_EXPORT extern const char kTestType[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetection[];
 CONTENT_EXPORT extern const char kTouchEventFeatureDetectionAuto[];
