@@ -22,8 +22,16 @@
   *;
 }
 
--keep public class * extends android.app.Service {
-  <init>();
+-keep public class * extends org.chromium.base.process_launcher.ChildProcessService {
+  *;
+}
+
+-keep public class com.android.webview.** {
+  *;
+}
+
+-keep public class org.chromium.android_webview.** {
+  *;
 }
 
 # Used by tests for secondary dex extraction.
