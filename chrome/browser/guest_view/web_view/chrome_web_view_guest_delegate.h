@@ -27,7 +27,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   // WebViewGuestDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void OnShowContextMenu(int request_id) override;
-  bool ShouldHandleFindRequestsForEmbedder() const override;
 
   WebViewGuest* web_view_guest() const { return web_view_guest_; }
 
