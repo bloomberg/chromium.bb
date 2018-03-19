@@ -132,7 +132,9 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
+      input_ready_(&lock_),
       vaapi_picture_factory_(new VaapiPictureFactory()),
+      surfaces_available_(&lock_),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
       num_frames_at_client_(0),
@@ -287,15 +289,18 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   }
 
   TRACE_COUNTER1("media,gpu", "Vaapi input buffers", input_buffers_.size());
+  input_ready_.Signal();
 
   switch (state_) {
     case kIdle:
       state_ = kDecoding;
-      FALLTHROUGH;
-    case kDecoding:
       decoder_thread_task_runner_->PostTask(
           FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
                                 base::Unretained(this)));
+      break;
+
+    case kDecoding:
+      // Decoder already running.
       break;
 
     case kResetting:
@@ -312,67 +317,128 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   }
 }
 
+bool VaapiVideoDecodeAccelerator::GetCurrInputBuffer_Locked() {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
+
+  if (curr_input_buffer_.get())
+    return true;
+
+  // Will only wait if it is expected that in current state new buffers will
+  // be queued from the client via Decode(). The state can change during wait.
+  while (input_buffers_.empty() && (state_ == kDecoding || state_ == kIdle))
+    input_ready_.Wait();
+
+  // We could have got woken up in a different state or never got to sleep
+  // due to current state.
+  if (state_ != kDecoding && state_ != kIdle)
+    return false;
+
+  DCHECK(!input_buffers_.empty());
+  curr_input_buffer_ = std::move(input_buffers_.front());
+  input_buffers_.pop();
+  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
+
+  if (curr_input_buffer_->IsFlushRequest()) {
+    VLOGF(4) << "New flush buffer";
+    return true;
+  }
+
+  VLOGF(4) << "New |curr_input_buffer_|, id: " << curr_input_buffer_->id()
+           << " size: " << curr_input_buffer_->shm()->size() << "B";
+  decoder_->SetStream(
+      curr_input_buffer_->id(),
+      static_cast<uint8_t*>(curr_input_buffer_->shm()->memory()),
+      curr_input_buffer_->shm()->size());
+
+  return true;
+}
+
+void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
+  DCHECK(curr_input_buffer_.get());
+  curr_input_buffer_.reset();
+}
+
+// TODO(posciak): refactor the whole class to remove sleeping in wait for
+// surfaces, and reschedule DecodeTask instead.
+bool VaapiVideoDecodeAccelerator::WaitForSurfaces_Locked() {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
+
+  while (available_va_surfaces_.empty() &&
+         (state_ == kDecoding || state_ == kIdle)) {
+    surfaces_available_.Wait();
+  }
+
+  return state_ == kDecoding || state_ == kIdle;
+}
+
 void VaapiVideoDecodeAccelerator::DecodeTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(lock_);
 
-  {
-    base::AutoLock auto_lock(lock_);
-    if (state_ != kDecoding)
-      return;
+  if (state_ != kDecoding)
+    return;
+  VLOGF(4) << "Decode task";
 
-    // Extract |curr_input_buffer_| out of |input_buffers_| if we have none, and
-    // set it in |decoder_| if it isn't a Flush Request.
-    if (!curr_input_buffer_ && !input_buffers_.empty()) {
-      curr_input_buffer_ = std::move(input_buffers_.front());
-      input_buffers_.pop();
+  // Try to decode what stream data is (still) in the decoder until we run out
+  // of it.
+  while (GetCurrInputBuffer_Locked()) {
+    DCHECK(curr_input_buffer_.get());
 
-      if (curr_input_buffer_->IsFlushRequest()) {
-        VLOGF(4) << "New flush buffer";
-        FlushTask();
-        return;
-      }
-
-      SharedMemoryRegion* const shm = curr_input_buffer_->shm();
-      VLOGF(4) << "New |curr_input_buffer|, id " << curr_input_buffer_->id()
-               << " size: " << shm->size() << "B";
-      decoder_->SetStream(curr_input_buffer_->id(),
-                          static_cast<uint8_t*>(shm->memory()), shm->size());
+    if (curr_input_buffer_->IsFlushRequest()) {
+      FlushTask();
+      break;
     }
-  }
 
-  AcceleratedVideoDecoder::DecodeResult res;
-  {
-    TRACE_EVENT0("media,gpu", "VAVDA::Decode");
-    res = decoder_->Decode();
-  }
-  switch (res) {
-    case AcceleratedVideoDecoder::kAllocateNewSurfaces:
-      VLOGF(2) << "Decoder requesting a new set of surfaces";
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
-                         weak_this_, decoder_->GetRequiredNumOfPictures(),
-                         decoder_->GetPicSize()));
-      // We'll get rescheduled once ProvidePictureBuffers() finishes.
-      return;
+    AcceleratedVideoDecoder::DecodeResult res;
+    {
+      // We are OK releasing the lock here, as decoder never calls our methods
+      // directly and we will reacquire the lock before looking at state again.
+      // This is the main decode function of the decoder and while keeping
+      // the lock for its duration would be fine, it would defeat the purpose
+      // of having a separate decoder thread.
+      base::AutoUnlock auto_unlock(lock_);
+      TRACE_EVENT0("media,gpu", "VAVDA::Decode");
+      res = decoder_->Decode();
+    }
 
-    case AcceleratedVideoDecoder::kRanOutOfStreamData:
-      curr_input_buffer_.reset();
-      break;
+    switch (res) {
+      case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+        VLOGF(2) << "Decoder requesting a new set of surfaces";
+        task_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(&VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
+                       weak_this_, decoder_->GetRequiredNumOfPictures(),
+                       decoder_->GetPicSize()));
+        // We'll get rescheduled once ProvidePictureBuffers() finishes.
+        return;
 
-    case AcceleratedVideoDecoder::kRanOutOfSurfaces:
-      // We'll be rescheduled once we get a VA Surface via RecycleVASurfaceID().
-      break;
+      case AcceleratedVideoDecoder::kRanOutOfStreamData:
+        ReturnCurrInputBuffer_Locked();
+        break;
 
-    case AcceleratedVideoDecoder::kNeedContextUpdate:
-      // This shouldn't happen as we return false from IsFrameContextRequired().
-      NOTREACHED() << "Context updates not supported";
-      return;
+      case AcceleratedVideoDecoder::kRanOutOfSurfaces:
+        // No more output buffers in the decoder, try getting more or go to
+        // sleep waiting for them.
+        if (!WaitForSurfaces_Locked())
+          return;
 
-    case AcceleratedVideoDecoder::kDecodeError:
-      RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
-                                   PLATFORM_FAILURE, );
-      return;
+        break;
+
+      case AcceleratedVideoDecoder::kNeedContextUpdate:
+        // This should not happen as we return false from
+        // IsFrameContextRequired().
+        NOTREACHED() << "Context updates not supported";
+        return;
+
+      case AcceleratedVideoDecoder::kDecodeError:
+        RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
+                                     PLATFORM_FAILURE, );
+        return;
+    }
   }
 }
 
@@ -476,9 +542,7 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
   base::AutoLock auto_lock(lock_);
 
   available_va_surfaces_.push_back(va_surface_id);
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::DecodeTask,
-                                base::Unretained(this)));
+  surfaces_available_.Signal();
 }
 
 void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
@@ -503,7 +567,6 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                                      buffers.size(), &va_surface_ids),
       "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
-  available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
     uint32_t client_id = !buffers[i].client_texture_ids().empty()
@@ -533,6 +596,9 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
         pictures_.insert(std::make_pair(buffers[i].id(), std::move(picture)))
             .second;
     DCHECK(inserted);
+
+    available_va_surfaces_.push_back(va_surface_ids[i]);
+    surfaces_available_.Signal();
   }
 
   // Resume DecodeTask if it is still in decoding state.
@@ -692,7 +758,7 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
 
   // Return current input buffer, if present.
   if (curr_input_buffer_)
-    curr_input_buffer_.reset();
+    ReturnCurrInputBuffer_Locked();
 
   // And let client know that we are done with reset.
   task_runner_->PostTask(
@@ -717,6 +783,9 @@ void VaapiVideoDecodeAccelerator::Reset() {
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,
                             base::Unretained(this)));
+
+  input_ready_.Signal();
+  surfaces_available_.Signal();
 }
 
 void VaapiVideoDecodeAccelerator::FinishReset() {
@@ -778,6 +847,11 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   // TODO(mcasas): consider deleting |decoder_| on
   // |decoder_thread_task_runner_|, https://crbug.com/789160.
 
+  // Signal all potential waiters on the decoder_thread_, let them early-exit,
+  // as we've just moved to the kDestroying state, and wait for all tasks
+  // to finish.
+  input_ready_.Signal();
+  surfaces_available_.Signal();
   {
     base::AutoUnlock auto_unlock(lock_);
     decoder_thread_.Stop();
