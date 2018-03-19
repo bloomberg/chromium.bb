@@ -164,6 +164,14 @@ size_t drv_num_planes_from_format(uint32_t format);
 
 uint32_t drv_num_buffers_per_bo(struct bo *bo);
 
+#define drv_log(format, ...)                                                                       \
+	do {                                                                                       \
+		drv_log_prefix("minigbm", __FILE__, __LINE__, format, ##__VA_ARGS__);              \
+	} while (0)
+
+__attribute__((format(printf, 4, 5))) void drv_log_prefix(const char *prefix, const char *file,
+							  int line, const char *format, ...);
+
 #ifdef __cplusplus
 }
 #endif

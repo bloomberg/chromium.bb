@@ -113,10 +113,10 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 	}
 
 	if (!supported) {
-		cros_gralloc_error("Unsupported combination -- HAL format: %u, HAL usage: %u, "
-				   "drv_format: %4.4s, use_flags: %llu",
-				   format, usage, reinterpret_cast<char *>(&descriptor.drm_format),
-				   static_cast<unsigned long long>(descriptor.use_flags));
+		drv_log("Unsupported combination -- HAL format: %u, HAL usage: %u, "
+			"drv_format: %4.4s, use_flags: %llu\n",
+			format, usage, reinterpret_cast<char *>(&descriptor.drm_format),
+			static_cast<unsigned long long>(descriptor.use_flags));
 		return -EINVAL;
 	}
 
@@ -151,7 +151,7 @@ static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
 
 	mod->driver = std::make_unique<cros_gralloc_driver>();
 	if (mod->driver->init()) {
-		cros_gralloc_error("Failed to initialize driver.");
+		drv_log("Failed to initialize driver.\n");
 		return -ENODEV;
 	}
 
@@ -179,7 +179,7 @@ static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct
 	}
 
 	if (strcmp(name, GRALLOC_HARDWARE_GPU0)) {
-		cros_gralloc_error("Incorrect device name - %s.", name);
+		drv_log("Incorrect device name - %s.\n", name);
 		return -EINVAL;
 	}
 
@@ -253,7 +253,7 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	handle = va_arg(args, buffer_handle_t);
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
-		cros_gralloc_error("Invalid handle.");
+		drv_log("Invalid handle.\n");
 		return -EINVAL;
 	}
 
@@ -305,12 +305,12 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
-		cros_gralloc_error("Invalid handle.");
+		drv_log("Invalid handle.\n");
 		return -EINVAL;
 	}
 
 	if (hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
-		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.");
+		drv_log("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.\n");
 		return -EINVAL;
 	}
 
@@ -347,14 +347,14 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
-		cros_gralloc_error("Invalid handle.");
+		drv_log("Invalid handle.\n");
 		return -EINVAL;
 	}
 
 	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
 	    (hnd->droid_format != HAL_PIXEL_FORMAT_YV12) &&
 	    (hnd->droid_format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED)) {
-		cros_gralloc_error("Non-YUV format not compatible.");
+		drv_log("Non-YUV format not compatible.\n");
 		return -EINVAL;
 	}
 

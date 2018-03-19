@@ -48,8 +48,7 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VC4_CREATE_BO, &bo_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n",
-			bo->total_size);
+		drv_log("DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n", bo->total_size);
 		return ret;
 	}
 
@@ -69,7 +68,7 @@ static void *vc4_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t m
 
 	ret = drmCommandWriteRead(bo->drv->fd, DRM_VC4_MMAP_BO, &bo_map, sizeof(bo_map));
 	if (ret) {
-		fprintf(stderr, "drv: DRM_VC4_MMAP_BO failed\n");
+		drv_log("DRM_VC4_MMAP_BO failed\n");
 		return MAP_FAILED;
 	}
 

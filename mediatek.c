@@ -62,8 +62,7 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_MTK_GEM_CREATE failed (size=%llu)\n",
-			gem_create.size);
+		drv_log("DRM_IOCTL_MTK_GEM_CREATE failed (size=%llu)\n", gem_create.size);
 		return ret;
 	}
 
@@ -84,7 +83,7 @@ static void *mediatek_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_MAP_OFFSET, &gem_map);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_MTK_GEM_MAP_OFFSET failed\n");
+		drv_log("DRM_IOCTL_MTK_GEM_MAP_OFFSET failed\n");
 		return MAP_FAILED;
 	}
 

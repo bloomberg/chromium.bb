@@ -235,7 +235,7 @@ static void *amdgpu_addrlib_init(int fd)
 	ret = amdgpu_query_gpu(fd, &gpu_info);
 
 	if (ret) {
-		fprintf(stderr, "[%s]failed with error =%d\n", __func__, ret);
+		drv_log("failed with error =%d\n", ret);
 		return NULL;
 	}
 
@@ -264,7 +264,7 @@ static void *amdgpu_addrlib_init(int fd)
 	addr_ret = AddrCreate(&addr_create_input, &addr_create_output);
 
 	if (addr_ret != ADDR_OK) {
-		fprintf(stderr, "[%s]failed error =%d\n", __func__, addr_ret);
+		drv_log("failed error =%d\n", addr_ret);
 		return NULL;
 	}
 
@@ -419,7 +419,7 @@ static void *amdgpu_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_AMDGPU_GEM_MMAP, &gem_map);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_AMDGPU_GEM_MMAP failed\n");
+		drv_log("DRM_IOCTL_AMDGPU_GEM_MMAP failed\n");
 		return MAP_FAILED;
 	}
 

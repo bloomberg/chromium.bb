@@ -228,7 +228,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_TEGRA_GEM_CREATE failed (size=%zu)\n", size);
+		drv_log("DRM_IOCTL_TEGRA_GEM_CREATE failed (size=%zu)\n", size);
 		return ret;
 	}
 
@@ -286,7 +286,7 @@ static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	} else if (gem_get_tiling.mode == DRM_TEGRA_GEM_TILING_MODE_BLOCK) {
 		bo->tiling = NV_MEM_KIND_C32_2CRA;
 	} else {
-		fprintf(stderr, "tegra_bo_import: unknown tile format %d", gem_get_tiling.mode);
+		drv_log("%s: unknown tile format %d\n", __func__, gem_get_tiling.mode);
 		drv_gem_bo_destroy(bo);
 		assert(0);
 	}
@@ -306,7 +306,7 @@ static void *tegra_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t
 
 	ret = drmCommandWriteRead(bo->drv->fd, DRM_TEGRA_GEM_MMAP, &gem_map, sizeof(gem_map));
 	if (ret < 0) {
-		fprintf(stderr, "drv: DRM_TEGRA_GEM_MMAP failed\n");
+		drv_log("DRM_TEGRA_GEM_MMAP failed\n");
 		return MAP_FAILED;
 	}
 

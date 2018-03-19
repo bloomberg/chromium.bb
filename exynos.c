@@ -56,7 +56,7 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		bo->total_size = bo->sizes[0] = height * bo->strides[0];
 		bo->offsets[0] = 0;
 	} else {
-		fprintf(stderr, "drv: unsupported format %X\n", format);
+		drv_log("unsupported format %X\n", format);
 		assert(0);
 		return -EINVAL;
 	}
@@ -72,8 +72,7 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_EXYNOS_GEM_CREATE, &gem_create);
 		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_EXYNOS_GEM_CREATE failed (size=%zu)\n",
-				size);
+			drv_log("DRM_IOCTL_EXYNOS_GEM_CREATE failed (size=%zu)\n", size);
 			goto cleanup_planes;
 		}
 
@@ -89,7 +88,7 @@ cleanup_planes:
 		gem_close.handle = bo->handles[plane - 1].u32;
 		int gem_close_ret = drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		if (gem_close_ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed: %d\n", gem_close_ret);
+			drv_log("DRM_IOCTL_GEM_CLOSE failed: %d\n", gem_close_ret);
 		}
 	}
 

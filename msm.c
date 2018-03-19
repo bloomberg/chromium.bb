@@ -24,7 +24,7 @@ static int msm_init(struct driver *drv)
 }
 
 static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			  uint64_t flags)
+			 uint64_t flags)
 {
 	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
 	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);

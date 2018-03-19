@@ -24,12 +24,4 @@ cros_gralloc_handle_t cros_gralloc_convert_handle(buffer_handle_t handle);
 
 int32_t cros_gralloc_sync_wait(int32_t acquire_fence);
 
-__attribute__((format(printf, 4, 5))) void cros_gralloc_log(const char *prefix, const char *file,
-							    int line, const char *format, ...);
-
-#define cros_gralloc_error(...)                                                                    \
-	do {                                                                                       \
-		cros_gralloc_log("CROS_GRALLOC_ERROR", __FILE__, __LINE__, __VA_ARGS__);           \
-	} while (0)
-
 #endif

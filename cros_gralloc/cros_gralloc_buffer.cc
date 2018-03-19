@@ -56,7 +56,7 @@ int32_t cros_gralloc_buffer::lock(const struct rectangle *rect, uint32_t map_fla
 	 * just use the first kernel buffer.
 	 */
 	if (drv_num_buffers_per_bo(bo_) != 1) {
-		cros_gralloc_error("Can only support one buffer per bo.");
+		drv_log("Can only support one buffer per bo.\n");
 		return -EINVAL;
 	}
 
@@ -69,7 +69,7 @@ int32_t cros_gralloc_buffer::lock(const struct rectangle *rect, uint32_t map_fla
 		}
 
 		if (vaddr == MAP_FAILED) {
-			cros_gralloc_error("Mapping failed.");
+			drv_log("Mapping failed.\n");
 			return -EFAULT;
 		}
 	}
@@ -84,7 +84,7 @@ int32_t cros_gralloc_buffer::lock(const struct rectangle *rect, uint32_t map_fla
 int32_t cros_gralloc_buffer::unlock()
 {
 	if (lockcount_ <= 0) {
-		cros_gralloc_error("Buffer was not locked.");
+		drv_log("Buffer was not locked.\n");
 		return -EINVAL;
 	}
 

@@ -16,6 +16,11 @@
 #include <unistd.h>
 #include <xf86drm.h>
 
+#ifdef __ANDROID__
+#include <cutils/log.h>
+#include <libgen.h>
+#endif
+
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
@@ -362,7 +367,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 
 		seek_end = lseek(data->fds[plane], 0, SEEK_END);
 		if (seek_end == (off_t)(-1)) {
-			fprintf(stderr, "drv: lseek() failed with %s\n", strerror(errno));
+			drv_log("lseek() failed with %s\n", strerror(errno));
 			goto destroy_bo;
 		}
 
@@ -373,7 +378,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 			bo->sizes[plane] = data->offsets[plane + 1] - data->offsets[plane];
 
 		if ((int64_t)bo->offsets[plane] + bo->sizes[plane] > seek_end) {
-			fprintf(stderr, "drv: buffer size is too large.\n");
+			drv_log("buffer size is too large.\n");
 			goto destroy_bo;
 		}
 
@@ -658,7 +663,7 @@ size_t drv_num_planes_from_format(uint32_t format)
 		return 3;
 	}
 
-	fprintf(stderr, "drv: UNKNOWN FORMAT %d\n", format);
+	drv_log("UNKNOWN FORMAT %d\n", format);
 	return 0;
 }
 
@@ -676,4 +681,20 @@ uint32_t drv_num_buffers_per_bo(struct bo *bo)
 	}
 
 	return count;
+}
+
+void drv_log_prefix(const char *prefix, const char *file, int line, const char *format, ...)
+{
+	char buf[50];
+	snprintf(buf, sizeof(buf), "[%s:%s(%d)]", prefix, basename(file), line);
+
+	va_list args;
+	va_start(args, format);
+#ifdef __ANDROID__
+	__android_log_vprint(ANDROID_LOG_ERROR, buf, format, args);
+#else
+	fprintf(stderr, "%s ", buf);
+	vfprintf(stderr, format, args);
+#endif
+	va_end(args);
 }

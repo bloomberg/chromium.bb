@@ -6,8 +6,6 @@
 
 #include "cros_gralloc_helpers.h"
 
-#include <cstdlib>
-#include <cutils/log.h>
 #include <sync/sync.h>
 
 uint32_t cros_gralloc_convert_format(int format)
@@ -66,30 +64,19 @@ int32_t cros_gralloc_sync_wait(int32_t acquire_fence)
 	 */
 	int err = sync_wait(acquire_fence, 1000);
 	if (err < 0) {
-		cros_gralloc_error("Timed out on sync wait, err = %s", strerror(errno));
+		drv_log("Timed out on sync wait, err = %s\n", strerror(errno));
 		err = sync_wait(acquire_fence, -1);
 		if (err < 0) {
-			cros_gralloc_error("sync wait error = %s", strerror(errno));
+			drv_log("sync wait error = %s\n", strerror(errno));
 			return -errno;
 		}
 	}
 
 	err = close(acquire_fence);
 	if (err) {
-		cros_gralloc_error("Unable to close fence fd, err = %s", strerror(errno));
+		drv_log("Unable to close fence fd, err = %s\n", strerror(errno));
 		return -errno;
 	}
 
 	return 0;
-}
-
-void cros_gralloc_log(const char *prefix, const char *file, int line, const char *format, ...)
-{
-	char buf[50];
-	snprintf(buf, sizeof(buf), "[%s:%s(%d)]", prefix, basename(file), line);
-
-	va_list args;
-	va_start(args, format);
-	__android_log_vprint(ANDROID_LOG_ERROR, buf, format, args);
-	va_end(args);
 }

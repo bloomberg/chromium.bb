@@ -186,7 +186,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	} else {
 		if (!has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
 			errno = EINVAL;
-			fprintf(stderr, "no usable modifier found\n");
+			drv_log("no usable modifier found\n");
 			return -1;
 		}
 
@@ -212,8 +212,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE, &gem_create);
 
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n",
-			gem_create.size);
+		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n", gem_create.size);
 		return ret;
 	}
 
@@ -247,7 +246,7 @@ static void *rockchip_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint3
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET, &gem_map);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET failed\n");
+		drv_log("DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET failed\n");
 		return MAP_FAILED;
 	}
 

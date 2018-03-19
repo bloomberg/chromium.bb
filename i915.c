@@ -255,7 +255,7 @@ static int i915_init(struct driver *drv)
 	get_param.value = &device_id;
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
 	if (ret) {
-		fprintf(stderr, "drv: Failed to get I915_PARAM_CHIPSET_ID\n");
+		drv_log("Failed to get I915_PARAM_CHIPSET_ID\n");
 		free(i915);
 		return -EINVAL;
 	}
@@ -267,7 +267,7 @@ static int i915_init(struct driver *drv)
 	get_param.value = &i915->has_llc;
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
 	if (ret) {
-		fprintf(stderr, "drv: Failed to get I915_PARAM_HAS_LLC\n");
+		drv_log("Failed to get I915_PARAM_HAS_LLC\n");
 		free(i915);
 		return -EINVAL;
 	}
@@ -349,8 +349,7 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_CREATE failed (size=%llu)\n",
-			gem_create.size);
+		drv_log("DRM_IOCTL_I915_GEM_CREATE failed (size=%llu)\n", gem_create.size);
 		return ret;
 	}
 
@@ -369,7 +368,7 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		gem_close.handle = bo->handles[0].u32;
 		drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SET_TILING failed with %d", errno);
+		drv_log("DRM_IOCTL_I915_GEM_SET_TILING failed with %d\n", errno);
 		return -errno;
 	}
 
@@ -425,7 +424,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_GET_TILING, &gem_get_tiling);
 	if (ret) {
 		drv_gem_bo_destroy(bo);
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_GET_TILING failed.");
+		drv_log("DRM_IOCTL_I915_GEM_GET_TILING failed.\n");
 		return ret;
 	}
 
@@ -451,7 +450,7 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP, &gem_map);
 		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP failed\n");
+			drv_log("DRM_IOCTL_I915_GEM_MMAP failed\n");
 			return MAP_FAILED;
 		}
 
@@ -464,7 +463,7 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP_GTT, &gem_map);
 		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP_GTT failed\n");
+			drv_log("DRM_IOCTL_I915_GEM_MMAP_GTT failed\n");
 			return MAP_FAILED;
 		}
 
@@ -473,7 +472,7 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 	}
 
 	if (addr == MAP_FAILED) {
-		fprintf(stderr, "drv: i915 GEM mmap failed\n");
+		drv_log("i915 GEM mmap failed\n");
 		return addr;
 	}
 
@@ -500,7 +499,7 @@ static int i915_bo_invalidate(struct bo *bo, struct mapping *mapping)
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SET_DOMAIN with %d\n", ret);
+		drv_log("DRM_IOCTL_I915_GEM_SET_DOMAIN with %d\n", ret);
 		return ret;
 	}
 
