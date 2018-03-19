@@ -161,7 +161,7 @@ void RealtimeAnalyser::DoFFTAnalysis() {
   // Do the analysis.
   analysis_frame_->DoFFT(temp_p);
 
-  float* real_p = analysis_frame_->RealData();
+  const float* real_p = analysis_frame_->RealData();
   float* imag_p = analysis_frame_->ImagData();
 
   // Blow away the packed nyquist component.

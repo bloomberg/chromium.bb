@@ -40,7 +40,7 @@ FFTConvolver::FFTConvolver(size_t fft_size)
       output_buffer_(fft_size),
       last_overlap_buffer_(fft_size / 2) {}
 
-void FFTConvolver::Process(FFTFrame* fft_kernel,
+void FFTConvolver::Process(const FFTFrame* fft_kernel,
                            const float* source_p,
                            float* dest_p,
                            size_t frames_to_process) {

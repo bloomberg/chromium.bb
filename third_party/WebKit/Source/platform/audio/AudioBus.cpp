@@ -500,12 +500,11 @@ void AudioBus::CopyWithGainFrom(const AudioBus& source_bus, float gain) {
   if (this == &source_bus && gain == 1)
     return;
 
-  AudioBus& source_bus_safe = const_cast<AudioBus&>(source_bus);
   const float* sources[kMaxBusChannels];
   float* destinations[kMaxBusChannels];
 
   for (unsigned i = 0; i < number_of_channels; ++i) {
-    sources[i] = source_bus_safe.Channel(i)->Data();
+    sources[i] = source_bus.Channel(i)->Data();
     destinations[i] = Channel(i)->MutableData();
   }
 

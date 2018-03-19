@@ -143,7 +143,7 @@ float* FFTFrame::GetUpToDateComplexData() {
     c[base_complex_index] = real[i];
     c[base_complex_index + 1] = imag[i];
   }
-  return const_cast<float*>(complex_data_.Data());
+  return c;
 }
 
 RDFTContext* FFTFrame::ContextForSize(unsigned fft_size, int trans) {
