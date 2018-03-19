@@ -1525,7 +1525,10 @@ public class PaymentRequestImpl
         mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillPaymentInstruments);
 
         updateInstrumentModifiedTotals();
-        mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
+
+        if (mUI != null) {
+            mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
+        }
     }
 
     @Override
@@ -1536,7 +1539,10 @@ public class PaymentRequestImpl
         mPaymentMethodsSection.removeAndUnselectItem(guid);
 
         updateInstrumentModifiedTotals();
-        mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
+
+        if (mUI != null) {
+            mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
+        }
     }
 
     /**
