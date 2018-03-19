@@ -5,7 +5,6 @@
 #ifndef CC_TEST_MOCK_LAYER_TREE_MUTATOR_H_
 #define CC_TEST_MOCK_LAYER_TREE_MUTATOR_H_
 
-#include "base/callback.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,11 +16,10 @@ class MockLayerTreeMutator : public LayerTreeMutator {
   ~MockLayerTreeMutator();
   // gmock cannot mock methods with move-only args so we forward it ourself.
   void Mutate(std::unique_ptr<MutatorInputState> input_state) override {
-    MutateRef(input_state);
+    MutateRef(input_state.get());
   }
 
-  MOCK_METHOD1(MutateRef,
-               void(std::unique_ptr<MutatorInputState>& input_state));
+  MOCK_METHOD1(MutateRef, void(MutatorInputState* input_state));
   MOCK_METHOD1(SetClient, void(LayerTreeMutatorClient* client));
   MOCK_METHOD0(HasAnimators, bool());
 };

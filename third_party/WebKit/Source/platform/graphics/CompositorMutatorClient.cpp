@@ -5,18 +5,17 @@
 #include "platform/graphics/CompositorMutatorClient.h"
 
 #include <memory>
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/trees/layer_tree_impl.h"
-#include "platform/graphics/CompositorMutator.h"
+#include "platform/graphics/CompositorMutatorImpl.h"
 
 namespace blink {
 
-CompositorMutatorClient::CompositorMutatorClient(CompositorMutator* mutator)
-    : mutator_(mutator) {
+CompositorMutatorClient::CompositorMutatorClient(
+    std::unique_ptr<CompositorMutatorImpl> mutator)
+    : mutator_(std::move(mutator)) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc"),
                "CompositorMutatorClient::CompositorMutatorClient");
+  mutator_->SetClient(this);
 }
 
 CompositorMutatorClient::~CompositorMutatorClient() {
@@ -25,9 +24,9 @@ CompositorMutatorClient::~CompositorMutatorClient() {
 }
 
 void CompositorMutatorClient::Mutate(
-    std::unique_ptr<cc::MutatorInputState> state) {
+    std::unique_ptr<cc::MutatorInputState> input_state) {
   TRACE_EVENT0("cc", "CompositorMutatorClient::Mutate");
-  mutator_->Mutate(std::move(state));
+  mutator_->Mutate(std::move(input_state));
 }
 
 void CompositorMutatorClient::SetMutationUpdate(

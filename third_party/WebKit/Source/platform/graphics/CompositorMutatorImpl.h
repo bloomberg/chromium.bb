@@ -8,14 +8,19 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "platform/graphics/CompositorAnimator.h"
 #include "platform/graphics/CompositorMutator.h"
 #include "platform/heap/Handle.h"
-#include "platform/heap/HeapAllocator.h"
+#include "platform/heap/Persistent.h"
+#include "platform/heap/Visitor.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 
 class CompositorMutatorClient;
+class WaitableEvent;
 
 // Fans out requests from the compositor to all of the registered
 // CompositorAnimators which can then mutate layers through their respective
@@ -23,32 +28,71 @@ class CompositorMutatorClient;
 // CompositorAnimators and sent to the compositor to generate a new compositor
 // frame.
 //
-// Owned by the control thread (unless threaded compositing is disabled).
-// Should be accessed only on the compositor thread.
+// Unless otherwise noted, this should be accessed only on the compositor
+// thread.
 class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
  public:
-  static std::unique_ptr<CompositorMutatorClient> CreateClient();
-  static CompositorMutatorImpl* Create();
+  // There are three outputs for the two interface surfaces of the created
+  // class blob. The returned owning pointer to the Client, which
+  // also owns the rest of the structure. |mutatee| and |mutatee_runner| form a
+  // pair for referencing the CompositorMutatorImpl. i.e. Put tasks on the
+  // TaskRunner using the WeakPtr to get to the methods.
+  static std::unique_ptr<CompositorMutatorClient> CreateClient(
+      base::WeakPtr<CompositorMutatorImpl>* mutatee,
+      scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
+
+  CompositorMutatorImpl();
+  ~CompositorMutatorImpl();
 
   // CompositorMutator implementation.
   void Mutate(std::unique_ptr<CompositorMutatorInputState>) override;
   // TODO(majidvp): Remove when timeline inputs are known.
   bool HasAnimators() override;
 
-  void RegisterCompositorAnimator(CompositorAnimator*);
-  void UnregisterCompositorAnimator(CompositorAnimator*);
+  // Interface for use by the AnimationWorklet Thread(s) to request calls.
+  // (To the given Animator on the given TaskRunner.)
+  void RegisterCompositorAnimator(
+      CrossThreadPersistent<CompositorAnimator>,
+      scoped_refptr<base::SingleThreadTaskRunner> animator_runner);
 
-  void SetMutationUpdate(std::unique_ptr<CompositorMutatorOutputState>);
+  void UnregisterCompositorAnimator(CrossThreadPersistent<CompositorAnimator>);
+
   void SetClient(CompositorMutatorClient* client) { client_ = client; }
 
  private:
-  CompositorMutatorImpl();
-
   using CompositorAnimators =
       HashSet<CrossThreadPersistent<CompositorAnimator>>;
+
+  class AutoSignal {
+    WTF_MAKE_NONCOPYABLE(AutoSignal);
+
+   public:
+    explicit AutoSignal(WaitableEvent*);
+    ~AutoSignal();
+
+   private:
+    WaitableEvent* event_;
+  };
+
+  // The AnimationWorkletProxyClientImpls are also owned by the WorkerClients
+  // dictionary.
   CompositorAnimators animators_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+    return mutator_queue_;
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_queue_;
+
+  // Currently we only support a single queue for animators.
+  scoped_refptr<base::SingleThreadTaskRunner> animator_queue_;
+
+  // The CompositorMutatorClient owns (std::unique_ptr) us, so this pointer is
+  // valid as long as this class exists.
   CompositorMutatorClient* client_;
+
+  base::WeakPtrFactory<CompositorMutatorImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(CompositorMutatorImpl);
 };
 
