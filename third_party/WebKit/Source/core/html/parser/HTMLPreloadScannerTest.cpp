@@ -830,7 +830,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "referrerpolicy='strict-origin-when-cross-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::kImage, 0,
-       kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, nullptr},
+       kReferrerPolicyStrictOriginWhenCrossOrigin, nullptr},
       {"http://example.test",
        "<link rel='stylesheet' href='sheet.css' type='text/css'>", "sheet.css",
        "http://example.test/", Resource::kCSSStyleSheet, 0,
