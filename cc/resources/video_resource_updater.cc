@@ -140,9 +140,9 @@ void GenerateCompositorSyncToken(gpu::gles2::GLES2Interface* gl,
 
 // For frames that we receive in software format, determine the dimensions of
 // each plane in the frame.
-static gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
-                                        bool software_compositor,
-                                        size_t plane_index) {
+gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
+                                 bool software_compositor,
+                                 size_t plane_index) {
   gfx::Size coded_size = input_frame->coded_size();
   if (software_compositor)
     return coded_size;
@@ -156,8 +156,16 @@ static gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
 
 }  // namespace
 
+VideoFrameExternalResources::VideoFrameExternalResources() = default;
+VideoFrameExternalResources::~VideoFrameExternalResources() = default;
+
+VideoFrameExternalResources::VideoFrameExternalResources(
+    VideoFrameExternalResources&& other) = default;
+VideoFrameExternalResources& VideoFrameExternalResources::operator=(
+    VideoFrameExternalResources&& other) = default;
+
 VideoResourceUpdater::PlaneResource::PlaneResource(
-    unsigned int resource_id,
+    viz::ResourceId resource_id,
     const gfx::Size& resource_size,
     viz::ResourceFormat resource_format,
     gpu::Mailbox mailbox)
@@ -165,9 +173,6 @@ VideoResourceUpdater::PlaneResource::PlaneResource(
       resource_size_(resource_size),
       resource_format_(resource_format),
       mailbox_(mailbox) {}
-
-VideoResourceUpdater::PlaneResource::PlaneResource(const PlaneResource& other) =
-    default;
 
 bool VideoResourceUpdater::PlaneResource::Matches(int unique_frame_id,
                                                   size_t plane_index) {
@@ -182,14 +187,6 @@ void VideoResourceUpdater::PlaneResource::SetUniqueId(int unique_frame_id,
   unique_frame_id_ = unique_frame_id;
   has_unique_frame_id_and_plane_index_ = true;
 }
-
-VideoFrameExternalResources::VideoFrameExternalResources() = default;
-VideoFrameExternalResources::~VideoFrameExternalResources() = default;
-
-VideoFrameExternalResources::VideoFrameExternalResources(
-    VideoFrameExternalResources&& other) = default;
-VideoFrameExternalResources& VideoFrameExternalResources::operator=(
-    VideoFrameExternalResources&& other) = default;
 
 VideoResourceUpdater::VideoResourceUpdater(
     viz::ContextProvider* context_provider,
@@ -224,16 +221,13 @@ void VideoResourceUpdater::ObtainFrameResources(
 
     DCHECK_EQ(external_resources.resources.size(),
               external_resources.release_callbacks.size());
-    ResourceProvider::ResourceIdArray resource_ids;
-    resource_ids.reserve(external_resources.resources.size());
     for (size_t i = 0; i < external_resources.resources.size(); ++i) {
-      unsigned resource_id = resource_provider_->ImportResource(
+      viz::ResourceId resource_id = resource_provider_->ImportResource(
           external_resources.resources[i],
           viz::SingleReleaseCallback::Create(
               std::move(external_resources.release_callbacks[i])));
       frame_resources_.push_back(
-          FrameResource(resource_id, external_resources.resources[i].size));
-      resource_ids.push_back(resource_id);
+          {resource_id, external_resources.resources[i].size});
     }
   }
   TRACE_EVENT_INSTANT1("media", "VideoResourceUpdater::ObtainFrameResources",
@@ -247,8 +241,8 @@ void VideoResourceUpdater::ReleaseFrameResources() {
     std::move(software_release_callback_).Run(gpu::SyncToken(), false);
     software_resource_ = viz::kInvalidResourceId;
   } else {
-    for (size_t i = 0; i < frame_resources_.size(); ++i)
-      resource_provider_->RemoveImportedResource(frame_resources_[i].id);
+    for (auto& frame_resource : frame_resources_)
+      resource_provider_->RemoveImportedResource(frame_resource.id);
     frame_resources_.clear();
   }
 }
@@ -500,8 +494,7 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
         lock.GetTexture(),
         mailbox.name);
   }
-  all_resources_.push_front(
-      PlaneResource(resource_id, plane_size, format, mailbox));
+  all_resources_.emplace_front(resource_id, plane_size, format, mailbox);
   return all_resources_.begin();
 }
 
@@ -511,8 +504,6 @@ void VideoResourceUpdater::DeleteResource(ResourceList::iterator resource_it) {
   all_resources_.erase(resource_it);
 }
 
-// Create a copy of a texture-backed source video frame in a new GL_TEXTURE_2D
-// texture.
 void VideoResourceUpdater::CopyHardwarePlane(
     media::VideoFrame* video_frame,
     const gfx::ColorSpace& resource_color_space,
@@ -558,8 +549,8 @@ void VideoResourceUpdater::CopyHardwarePlane(
   external_resources->resources.push_back(std::move(transfer_resource));
 
   external_resources->release_callbacks.push_back(
-      base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
-                 resource->resource_id()));
+      base::BindOnce(&VideoResourceUpdater::RecycleResource,
+                     weak_ptr_factory_.GetWeakPtr(), resource->resource_id()));
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -624,8 +615,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           media::VideoFrameMetadata::WANTS_PROMOTION_HINT);
 #endif
       external_resources.resources.push_back(std::move(transfer_resource));
-      external_resources.release_callbacks.push_back(base::Bind(
-          &ReturnTexture, weak_ptr_factory_.GetWeakPtr(), video_frame));
+      external_resources.release_callbacks.push_back(
+          base::BindOnce(&VideoResourceUpdater::ReturnTexture,
+                         weak_ptr_factory_.GetWeakPtr(), video_frame));
     }
   }
   return external_resources;
@@ -729,7 +721,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // We need to transfer data from |video_frame| to the plane resource.
       if (software_compositor) {
         if (!video_renderer_)
-          video_renderer_.reset(new media::PaintCanvasVideoRenderer);
+          video_renderer_ = std::make_unique<media::PaintCanvasVideoRenderer>();
 
         LayerTreeResourceProvider::ScopedWriteLockSoftware lock(
             resource_provider_, plane_resource.resource_id());
@@ -741,8 +733,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         size_t bytes_per_row = viz::ResourceSizes::CheckedWidthInBytes<size_t>(
             video_frame->coded_size().width(), viz::ResourceFormat::RGBA_8888);
         size_t needed_size = bytes_per_row * video_frame->coded_size().height();
-        if (upload_pixels_.size() < needed_size)
+        if (upload_pixels_.size() < needed_size) {
+          // Clear before resizing to avoid memcpy.
+          upload_pixels_.clear();
           upload_pixels_.resize(needed_size);
+        }
 
         media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
             video_frame.get(), &upload_pixels_[0], bytes_per_row);
@@ -756,9 +751,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     if (software_compositor) {
       external_resources.software_resource = plane_resource.resource_id();
-      external_resources.software_release_callback =
-          base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
-                     plane_resource.resource_id());
+      external_resources.software_release_callback = base::BindOnce(
+          &VideoResourceUpdater::RecycleResource,
+          weak_ptr_factory_.GetWeakPtr(), plane_resource.resource_id());
       external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
     } else {
       gpu::SyncToken sync_token;
@@ -771,9 +766,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       transfer_resource.color_space = output_color_space;
 
       external_resources.resources.push_back(std::move(transfer_resource));
-      external_resources.release_callbacks.push_back(
-          base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
-                     plane_resource.resource_id()));
+      external_resources.release_callbacks.push_back(base::BindOnce(
+          &VideoResourceUpdater::RecycleResource,
+          weak_ptr_factory_.GetWeakPtr(), plane_resource.resource_id()));
       external_resources.type = VideoFrameExternalResources::RGBA_RESOURCE;
     }
     return external_resources;
@@ -852,8 +847,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // Avoid malloc for each frame/plane if possible.
       const size_t needed_size =
           upload_image_stride * resource_size_pixels.height();
-      if (upload_pixels_.size() < needed_size)
+      if (upload_pixels_.size() < needed_size) {
+        // Clear before resizing to avoid memcpy.
+        upload_pixels_.clear();
         upload_pixels_.resize(needed_size);
+      }
 
       if (plane_resource_format == viz::LUMINANCE_F16) {
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
@@ -902,62 +900,50 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         plane_resource.mailbox(), GL_LINEAR, target, sync_token);
     transfer_resource.color_space = output_color_space;
     external_resources.resources.push_back(std::move(transfer_resource));
-    external_resources.release_callbacks.push_back(
-        base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
-                   plane_resource.resource_id()));
+    external_resources.release_callbacks.push_back(base::BindOnce(
+        &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),
+        plane_resource.resource_id()));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
   return external_resources;
 }
 
-// static
 void VideoResourceUpdater::ReturnTexture(
-    base::WeakPtr<VideoResourceUpdater> updater,
     const scoped_refptr<media::VideoFrame>& video_frame,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
-  // TODO(dshwang) this case should be forwarded to the decoder as lost
-  // resource.
-  if (lost_resource || !updater.get())
+  // TODO(dshwang): Forward to the decoder as a lost resource.
+  if (lost_resource)
     return;
+
   // The video frame will insert a wait on the previous release sync token.
-  SyncTokenClientImpl client(updater->context_provider_->ContextGL(),
-                             sync_token);
+  SyncTokenClientImpl client(context_provider_->ContextGL(), sync_token);
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
-// static
-void VideoResourceUpdater::RecycleResource(
-    base::WeakPtr<VideoResourceUpdater> updater,
-    viz::ResourceId resource_id,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
-  if (!updater.get()) {
-    // Resource was already deleted.
-    return;
-  }
-  const ResourceList::iterator resource_it = std::find_if(
-      updater->all_resources_.begin(), updater->all_resources_.end(),
-      [resource_id](const PlaneResource& plane_resource) {
-        return plane_resource.resource_id() == resource_id;
-      });
-  if (resource_it == updater->all_resources_.end())
+void VideoResourceUpdater::RecycleResource(viz::ResourceId resource_id,
+                                           const gpu::SyncToken& sync_token,
+                                           bool lost_resource) {
+  auto resource_it =
+      std::find_if(all_resources_.begin(), all_resources_.end(),
+                   [resource_id](const PlaneResource& plane_resource) {
+                     return plane_resource.resource_id() == resource_id;
+                   });
+  if (resource_it == all_resources_.end())
     return;
 
-  viz::ContextProvider* context_provider = updater->context_provider_;
-  if (context_provider && sync_token.HasData()) {
-    context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
+  if (context_provider_ && sync_token.HasData()) {
+    context_provider_->ContextGL()->WaitSyncTokenCHROMIUM(
         sync_token.GetConstData());
   }
 
   if (lost_resource) {
     resource_it->clear_refs();
-    updater->DeleteResource(resource_it);
-    return;
+    DeleteResource(resource_it);
+  } else {
+    resource_it->remove_ref();
   }
-
-  resource_it->remove_ref();
 }
 
 }  // namespace cc
