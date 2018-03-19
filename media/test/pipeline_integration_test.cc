@@ -2654,6 +2654,12 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 }
 
+TEST_F(PipelineIntegrationTest, TrailingGarbage) {
+  ASSERT_EQ(PIPELINE_OK, Start("trailing-garbage.mp3"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 // Ensures audio-video playback with missing or negative timestamps fails
 // instead of crashing.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {

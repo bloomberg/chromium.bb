@@ -41,6 +41,7 @@
 #include "media/filters/ffmpeg_bitstream_converter.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/ffmpeg_h264_to_annex_b_bitstream_converter.h"
+#include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 #include "media/formats/webm/webm_crypto_helpers.h"
 #include "media/media_features.h"
 #include "third_party/ffmpeg/ffmpeg_features.h"
@@ -306,7 +307,8 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       waiting_for_keyframe_(false),
       aborted_(false),
       fixup_negative_timestamps_(false),
-      fixup_chained_ogg_(false) {
+      fixup_chained_ogg_(false),
+      num_discarded_packet_warnings_(0) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
@@ -387,10 +389,9 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   }
 #endif
 
-  const bool is_audio = type() == AUDIO;
-
   scoped_refptr<DecoderBuffer> buffer;
 
+  const bool is_audio = type() == AUDIO;
   if (type() == DemuxerStream::TEXT) {
     int id_size = 0;
     uint8_t* id_data = av_packet_get_side_data(
@@ -421,6 +422,39 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
               reinterpret_cast<const uint8_t*>(encryption_key_id_.data()),
               encryption_key_id_.size(), &decrypt_config, &data_offset)) {
         MEDIA_LOG(ERROR, media_log_) << "Creation of DecryptConfig failed.";
+      }
+    }
+
+    // FFmpeg may return garbage packets for MP3 stream containers, so we need
+    // to drop these to avoid decoder errors. The ffmpeg team maintains that
+    // this behavior isn't ideal, but have asked for a significant refactoring
+    // of the AVParser infrastructure to fix this, which is overkill for now.
+    // See http://crbug.com/794782.
+    //
+    // This behavior may also occur with ADTS streams, but is rarer in practice
+    // because ffmpeg's ADTS demuxer does more validation on the packets, so
+    // when invalid data is received, av_read_frame() fails and playback ends.
+    if (is_audio && demuxer_->container() == container_names::CONTAINER_MP3) {
+      DCHECK(!data_offset);  // Only set for containers supporting encryption...
+
+      // MP3 packets may be zero-padded according to ffmpeg, so trim until we
+      // have the packet; adjust |data_offset| too so this work isn't repeated.
+      uint8_t* packet_end = packet->data + packet->size;
+      uint8_t* header_start = packet->data;
+      while (header_start < packet_end && !*header_start) {
+        ++header_start;
+        ++data_offset;
+      }
+
+      if (packet_end - header_start < MPEG1AudioStreamParser::kHeaderSize ||
+          !MPEG1AudioStreamParser::ParseHeader(nullptr, header_start,
+                                               nullptr)) {
+        LIMITED_MEDIA_LOG(INFO, nullptr, num_discarded_packet_warnings_, 5)
+            << "Discarding invalid MP3 packet, ts: "
+            << ConvertStreamTimestamp(stream_->time_base, packet->pts)
+            << ", duration: "
+            << ConvertStreamTimestamp(stream_->time_base, packet->duration);
+        return;
       }
     }
 
