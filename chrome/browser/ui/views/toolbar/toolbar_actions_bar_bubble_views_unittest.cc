@@ -16,7 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -86,12 +85,14 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
     bubble_widget_ = nullptr;
   }
 
-  void ClickView(const views::View* view) {
-    ASSERT_TRUE(view);
-    ui::test::EventGenerator generator(GetContext(),
-                                       anchor_widget_->GetNativeWindow());
-    generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
-    generator.ClickLeftButton();
+  void ClickButton(views::Button* button) {
+    ASSERT_TRUE(button);
+    const gfx::Point point(10, 10);
+    const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+                               ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+    button->OnMousePressed(event);
+    button->OnMouseReleased(event);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -250,7 +251,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickActionButton) {
   views::test::TestWidgetObserver bubble_observer(bubble_widget());
 
   EXPECT_FALSE(delegate.close_action());
-  ClickView(bubble()->GetDialogClientView()->ok_button());
+
+  ClickButton(bubble()->GetDialogClientView()->ok_button());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE,
             *delegate.close_action());
@@ -266,7 +268,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickDismissButton) {
   views::test::TestWidgetObserver bubble_observer(bubble_widget());
 
   EXPECT_FALSE(delegate.close_action());
-  ClickView(bubble()->GetDialogClientView()->cancel_button());
+
+  ClickButton(bubble()->GetDialogClientView()->cancel_button());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION,
             *delegate.close_action());
@@ -281,7 +284,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickLearnMoreLink) {
   views::test::TestWidgetObserver bubble_observer(bubble_widget());
 
   EXPECT_FALSE(delegate.close_action());
-  ClickView(bubble()->learn_more_button());
+
+  ClickButton(bubble()->learn_more_button());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE,
             *delegate.close_action());

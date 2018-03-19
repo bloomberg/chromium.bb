@@ -1,12 +1,12 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/chooser_controller/fake_bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -14,6 +14,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/table/table_view.h"
+#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -27,8 +28,28 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
     controller_ = controller.get();
     dialog_ = new ChooserDialogView(std::move(controller));
 
+#if defined(OS_MACOSX)
+    // We need a native view parent for the dialog to avoid a DCHECK
+    // on Mac.
+    views::Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+    params.bounds = gfx::Rect(10, 11, 200, 200);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
+        params, &parent_widget_, nullptr);
+    parent_widget_.Init(params);
+
+    widget_ = views::DialogDelegate::CreateDialogWidget(
+        dialog_, GetContext(), parent_widget_.GetNativeView());
+    widget_->SetVisibilityChangedAnimationsEnabled(false);
+    // Necessary for Mac. On other platforms this happens in the focus
+    // manager, but it's disabled for Mac due to crbug.com/650859.
+    parent_widget_.Activate();
+    widget_->Activate();
+#else
     widget_ = views::DialogDelegate::CreateDialogWidget(dialog_, GetContext(),
                                                         nullptr);
+#endif
     controller_->SetBluetoothStatus(
         FakeBluetoothChooserController::BluetoothStatus::IDLE);
 
@@ -38,6 +59,9 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
 
   void TearDown() override {
     widget_->Close();
+#if defined(OS_MACOSX)
+    parent_widget_.Close();
+#endif
     ChromeViewsTestBase::TearDown();
   }
 
@@ -62,6 +86,9 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
   FakeBluetoothChooserController* controller_ = nullptr;
 
  private:
+#if defined(OS_MACOSX)
+  views::Widget parent_widget_;
+#endif
   views::Widget* widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogViewTest);

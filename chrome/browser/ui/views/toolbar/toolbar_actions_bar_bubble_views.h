@@ -34,7 +34,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   void Show();
 
   const views::Label* item_list() const { return item_list_; }
-  const views::ImageButton* learn_more_button() const { return image_button_; }
+  views::ImageButton* learn_more_button() const { return image_button_; }
 
  private:
   friend class ToolbarActionsBarBubbleViewsTest;
