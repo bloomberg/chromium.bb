@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 
@@ -28,21 +27,6 @@ void TranslateDownloadManager::Shutdown() {
   language_list_.reset();
   script_.reset();
   request_context_ = nullptr;
-}
-
-// static
-void TranslateDownloadManager::RequestLanguageList(PrefService* prefs) {
-  // We don't want to do this when translate is disabled.
-  DCHECK(prefs != nullptr);
-  if (!prefs->GetBoolean(prefs::kOfferTranslateEnabled))
-    return;
-
-  TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return;
-  }
-  language_list->RequestLanguageList();
 }
 
 // static
