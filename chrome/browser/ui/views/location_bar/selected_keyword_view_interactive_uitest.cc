@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 
 namespace {
 
@@ -21,7 +22,16 @@ void InputKeys(Browser* browser, const std::vector<ui::KeyboardCode>& keys) {
   }
 }
 
-using SelectedKeywordViewTest = ExtensionBrowserTest;
+class SelectedKeywordViewTest : public ExtensionBrowserTest {
+ public:
+  SelectedKeywordViewTest() = default;
+  ~SelectedKeywordViewTest() override = default;
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(SelectedKeywordViewTest);
+};
 
 // Tests that an extension's short name is registered as the value of the
 // extension's omnibox keyword. When the extension's omnibox keyword is

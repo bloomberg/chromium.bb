@@ -7,11 +7,25 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/test/ui_controls.h"
 
-using ExtensionDialogUiTest = ExtensionBrowserTest;
+namespace {
+
+class ExtensionDialogUiTest : public ExtensionBrowserTest {
+ public:
+  ExtensionDialogUiTest() = default;
+  ~ExtensionDialogUiTest() override = default;
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDialogUiTest);
+};
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, TabFocusLoop) {
   ExtensionTestMessageListener init_listener("ready", false /* will_reply */);

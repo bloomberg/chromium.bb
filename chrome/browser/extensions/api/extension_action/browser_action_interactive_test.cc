@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_registry.h"
@@ -423,6 +424,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   EXPECT_FALSE(browser_action_test_util->HasPopup());
 }
 
+class BrowserActionInteractiveViewsTest : public BrowserActionInteractiveTest {
+ public:
+  BrowserActionInteractiveViewsTest() = default;
+  ~BrowserActionInteractiveViewsTest() override = default;
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionInteractiveViewsTest);
+};
+
 // BrowserActionTestUtil::InspectPopup() is not implemented for a Cocoa browser.
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 #define MAYBE_CloseBrowserWithDevTools CloseBrowserWithDevTools
@@ -430,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
 #define MAYBE_CloseBrowserWithDevTools DISABLED_CloseBrowserWithDevTools
 #endif
 // Test closing the browser while inspecting an extension popup with dev tools.
-IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveViewsTest,
                        MAYBE_CloseBrowserWithDevTools) {
   if (!ShouldRunPopupTest())
     return;

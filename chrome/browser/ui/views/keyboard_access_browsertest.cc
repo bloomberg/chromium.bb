@@ -25,6 +25,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -179,6 +180,9 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   // It verifies that the menu when dismissed by sending the ESC key it does
   // not display twice.
   void TestMenuKeyboardAccessAndDismiss();
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
