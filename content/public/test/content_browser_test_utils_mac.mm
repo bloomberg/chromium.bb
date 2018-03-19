@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/stringprintf.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"

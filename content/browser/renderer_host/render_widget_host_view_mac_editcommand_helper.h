@@ -10,6 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace content {

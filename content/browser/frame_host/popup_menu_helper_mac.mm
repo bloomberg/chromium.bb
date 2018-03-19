@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/webmenurunner_mac.h"
 #include "content/public/browser/notification_details.h"

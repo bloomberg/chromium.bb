@@ -32,6 +32,10 @@ specific_include_rules = {
     # embedded in mus won't be able to talk to the native ozone.
     "+ui/ozone/public/ozone_switches.h",
   ],
+  "render_widget_host_view_cocoa\.mm": [
+    "+content/browser/frame_host",
+    "+content/public/browser/web_contents.h",
+  ],
   "render_widget_host_view_mac\.mm": [
     "+content/browser/frame_host",
     "+content/public/browser/web_contents.h",
