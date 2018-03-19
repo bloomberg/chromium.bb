@@ -40,7 +40,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
     return WebView().CoreHitTestResultAt(WebPoint(x, y));
   }
 
-  EventHandler& EventHandler() {
+  EventHandler& GetEventHandler() {
     return GetDocument().GetFrame()->GetEventHandler();
   }
 
@@ -50,7 +50,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
         WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
         CurrentTimeTicksInSeconds());
     event.SetFrameScale(1);
-    EventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>());
+    GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>());
   }
 
   void HandleMousePressEvent(int x, int y) {
@@ -59,7 +59,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicksInSeconds());
     event.SetFrameScale(1);
-    EventHandler().HandleMousePressEvent(event);
+    GetEventHandler().HandleMousePressEvent(event);
   }
 
   void HandleMouseReleaseEvent(int x, int y) {
@@ -68,7 +68,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicksInSeconds());
     event.SetFrameScale(1);
-    EventHandler().HandleMouseReleaseEvent(event);
+    GetEventHandler().HandleMouseReleaseEvent(event);
   }
 
   void HandleMouseLeaveEvent() {
@@ -77,7 +77,7 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicksInSeconds());
     event.SetFrameScale(1);
-    EventHandler().HandleMouseLeaveEvent(event);
+    GetEventHandler().HandleMouseLeaveEvent(event);
   }
 
   Cursor::Type CursorType() {
@@ -450,8 +450,8 @@ TEST_P(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
   scroll_begin.data.scroll_begin.delta_y_hint = 10;
   scroll_begin.SetFrameScale(1);
-  EventHandler().HandleGestureScrollEvent(scroll_begin);
-  DCHECK(!EventHandler().IsScrollbarHandlingGestures());
+  GetEventHandler().HandleGestureScrollEvent(scroll_begin);
+  DCHECK(!GetEventHandler().IsScrollbarHandlingGestures());
   bool should_update_capture = false;
   DCHECK(!scrollable_area->VerticalScrollbar()->GestureEvent(
       scroll_begin, &should_update_capture));
