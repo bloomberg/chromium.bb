@@ -66,7 +66,10 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       controller_(controller) {
   DCHECK(controller);
-  mouse_handler_ = std::make_unique<WebContentMouseHandler>(this, web_contents);
+  if (IsAutofillAutoDismissableUpstreamBubbleExperimentEnabled()) {
+    mouse_handler_ =
+        std::make_unique<WebContentMouseHandler>(this, web_contents);
+  }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
 
