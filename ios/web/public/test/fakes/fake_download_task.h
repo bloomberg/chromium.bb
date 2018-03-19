@@ -37,6 +37,7 @@ class FakeDownloadTask : public DownloadTask {
   std::string GetMimeType() const override;
   ui::PageTransition GetTransitionType() const override;
   base::string16 GetSuggestedFilename() const override;
+  bool HasPerformedBackgroundDownload() const override;
   void AddObserver(DownloadTaskObserver* observer) override;
   void RemoveObserver(DownloadTaskObserver* observer) override;
 
@@ -51,6 +52,7 @@ class FakeDownloadTask : public DownloadTask {
   void SetMimeType(const std::string& mime_type);
   void SetTransitionType(ui::PageTransition page_transition);
   void SetSuggestedFilename(const base::string16& suggested_file_name);
+  void SetPerformedBackgroundDownload(bool flag);
 
  private:
   // Called when download task was updated.
@@ -70,6 +72,7 @@ class FakeDownloadTask : public DownloadTask {
   std::string mime_type_;
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   base::string16 suggested_file_name_;
+  bool has_performed_background_download_ = false;
   __strong NSString* identifier_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDownloadTask);
