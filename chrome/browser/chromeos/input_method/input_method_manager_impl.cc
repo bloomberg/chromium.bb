@@ -12,6 +12,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -314,8 +315,10 @@ void InputMethodManagerImpl::StateImpl::EnableLockScreenLayouts() {
   for (size_t i = 0; i < active_input_method_ids.size(); ++i) {
     const std::string& input_method_id = active_input_method_ids[i];
     // Skip if it's not a keyboard layout. Drop input methods including
-    // extension ones.
-    if (!manager_->IsLoginKeyboard(input_method_id) ||
+    // extension ones. We need to keep all IMEs to support inputting on inline
+    // reply on a notification if notifications on lock screen is enabled.
+    if ((!ash::features::IsLockScreenNotificationsEnabled() &&
+         !manager_->IsLoginKeyboard(input_method_id)) ||
         added_ids.count(input_method_id)) {
       continue;
     }
