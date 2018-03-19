@@ -32,6 +32,7 @@
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
+using std::string;
 
 namespace net {
 
@@ -184,7 +185,7 @@ QuicCryptoClientConfig::CachedState::SetServerConfig(
   }
 
   if (!matches_existing) {
-    server_config_ = server_config.as_string();
+    server_config_ = string(server_config);
     SetProofInvalid();
     scfg_ = std::move(new_scfg_storage);
   }
@@ -224,9 +225,9 @@ void QuicCryptoClientConfig::CachedState::SetProof(
   // If the proof has changed then it needs to be revalidated.
   SetProofInvalid();
   certs_ = certs;
-  cert_sct_ = cert_sct.as_string();
-  chlo_hash_ = chlo_hash.as_string();
-  server_config_sig_ = signature.as_string();
+  cert_sct_ = string(cert_sct);
+  chlo_hash_ = string(chlo_hash);
+  server_config_sig_ = string(signature);
 }
 
 void QuicCryptoClientConfig::CachedState::Clear() {
@@ -337,12 +338,12 @@ QuicCryptoClientConfig::CachedState::proof_verify_details() const {
 
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
     QuicStringPiece token) {
-  source_address_token_ = token.as_string();
+  source_address_token_ = string(token);
 }
 
 void QuicCryptoClientConfig::CachedState::set_cert_sct(
     QuicStringPiece cert_sct) {
-  cert_sct_ = cert_sct.as_string();
+  cert_sct_ = string(cert_sct);
 }
 
 void QuicCryptoClientConfig::CachedState::SetProofVerifyDetails(
@@ -818,7 +819,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 
   QuicStringPiece nonce;
   if (rej.GetStringPiece(kServerNonceTag, &nonce)) {
-    out_params->server_nonce = nonce.as_string();
+    out_params->server_nonce = string(nonce);
   }
 
   if (rej.tag() == kSREJ) {
@@ -830,7 +831,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     connection_id = QuicEndian::NetToHost64(connection_id);
     cached->add_server_designated_connection_id(connection_id);
     if (!nonce.empty()) {
-      cached->add_server_nonce(nonce.as_string());
+      cached->add_server_nonce(string(nonce));
     }
     return QUIC_NO_ERROR;
   }

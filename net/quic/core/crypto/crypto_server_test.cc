@@ -35,6 +35,8 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
+using std::string;
+
 namespace net {
 namespace test {
 
@@ -848,8 +850,8 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   CryptoUtils::HashHandshakeMessage(msg, &chlo_hash, Perspective::IS_SERVER);
   EXPECT_EQ(QUIC_SUCCESS,
             proof_verifier->VerifyProof(
-                "test.example.com", 443, scfg_str.as_string(), client_version_,
-                chlo_hash, certs, "", proof.as_string(), verify_context.get(),
+                "test.example.com", 443, (string(scfg_str)), client_version_,
+                chlo_hash, certs, "", (string(proof)), verify_context.get(),
                 &error_details, &details, std::move(callback)));
 }
 
@@ -1061,7 +1063,7 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   QuicStringPiece scid;
   EXPECT_TRUE(scfg->GetStringPiece(kSCID, &scid));
   // Need to take a copy of |scid| has we're about to call |Erase|.
-  const QuicString scid_str(scid.as_string());
+  const QuicString scid_str(scid);
 
   scfg->Erase(kSCID);
   scfg->MarkDirty();

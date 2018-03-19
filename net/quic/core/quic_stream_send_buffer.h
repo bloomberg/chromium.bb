@@ -123,15 +123,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   friend class test::QuicStreamSendBufferPeer;
   friend class test::QuicStreamPeer;
 
-  // Another version of WriteStreamData() to be able to start writing from
-  // write_index_ points to instead of searching through the slices to find the
-  // place to write.
-  // TODO(danzh): inline this method into WriteStreamData() after
-  // quic_reloadable_flag_quic_use_write_index is deprecated.
-  bool WriteStreamDataWithIndex(QuicStreamOffset offset,
-                                QuicByteCount data_length,
-                                QuicDataWriter* writer);
-
   // Called when data within offset [start, end) gets acked. Frees fully
   // acked buffered slices if any. Returns false if the corresponding data does
   // not exist or has been acked.
@@ -162,9 +153,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // Index of slice which contains data waiting to be written for the first
   // time. -1 if send buffer is empty or all data has been written.
   int32_t write_index_;
-
-  // Latched value of quic_reloadable_flag_quic_stream_send_buffer_write_index.
-  const bool use_write_index_;
 
   // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order.
   const bool free_mem_slice_out_of_order_;

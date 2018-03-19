@@ -215,7 +215,7 @@ const QuicByteCount kMaxStreamLength = (UINT64_C(1) << 62) - 1;
 const uint64_t kMaxIetfVarInt = UINT64_C(0x3fffffffffffffff);
 
 // The maximum stream id value that is supported - (2^32)-1
-const QuicStreamId kQuicMaxStreamId = 0xffffffff;
+const QuicStreamId kMaxQuicStreamId = 0xffffffff;
 
 }  // namespace net
 

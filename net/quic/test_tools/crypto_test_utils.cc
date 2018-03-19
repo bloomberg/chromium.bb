@@ -623,7 +623,7 @@ uint64_t LeafCertHashForTesting() {
 class MockCommonCertSets : public CommonCertSets {
  public:
   MockCommonCertSets(QuicStringPiece cert, uint64_t hash, uint32_t index)
-      : cert_(cert.as_string()), hash_(hash), index_(index) {}
+      : cert_(cert), hash_(hash), index_(index) {}
 
   QuicStringPiece GetCommonHashes() const override {
     QUIC_BUG << "not implemented";

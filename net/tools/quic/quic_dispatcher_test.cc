@@ -43,6 +43,7 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
 using testing::_;
 using testing::InSequence;
 using testing::Invoke;
@@ -323,9 +324,8 @@ class QuicDispatcherTest : public QuicTest {
     CryptoHandshakeMessage client_hello;
     client_hello.set_tag(kCHLO);
     client_hello.SetStringPiece(kALPN, "hq");
-    return client_hello.GetSerialized(Perspective::IS_CLIENT)
-        .AsStringPiece()
-        .as_string();
+    return string(
+        client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
   QuicString SerializeTlsClientHello() { return ""; }
@@ -1042,10 +1042,10 @@ TEST_P(QuicDispatcherStatelessRejectTest, CheapRejects) {
                 ShouldCreateOrBufferPacketForConnection(connection_id))
         .Times(1);
   }
-  ProcessPacket(client_address, connection_id, true,
-                client_hello.GetSerialized(Perspective::IS_CLIENT)
-                    .AsStringPiece()
-                    .as_string());
+  ProcessPacket(
+      client_address, connection_id, true,
+      string(
+          client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()));
 
   if (GetParam().enable_stateless_rejects_via_flag) {
     EXPECT_EQ(true,
@@ -1095,10 +1095,10 @@ TEST_P(QuicDispatcherStatelessRejectTest, BufferNonChlo) {
             ValidatePacket(connection_id, packet);
           })))
       .RetiresOnSaturation();
-  ProcessPacket(client_address, connection_id, true,
-                client_hello.GetSerialized(Perspective::IS_CLIENT)
-                    .AsStringPiece()
-                    .as_string());
+  ProcessPacket(
+      client_address, connection_id, true,
+      string(
+          client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()));
   EXPECT_FALSE(
       time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
 }
@@ -1405,9 +1405,8 @@ class BufferedPacketStoreTest
   }
 
   QuicString SerializeFullCHLO() {
-    return full_chlo_.GetSerialized(Perspective::IS_CLIENT)
-        .AsStringPiece()
-        .as_string();
+    return string(
+        full_chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
  protected:
@@ -1847,9 +1846,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
   }
 
   QuicString SerializeCHLO() {
-    return chlo_.GetSerialized(Perspective::IS_CLIENT)
-        .AsStringPiece()
-        .as_string();
+    return string(chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
   // Sets up a session, and crypto stream based on the test parameters.

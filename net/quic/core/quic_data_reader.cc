@@ -274,7 +274,7 @@ bool QuicDataReader::ReadVarIntStreamId(QuicStreamId* result) {
   if (!this->ReadVarInt62(&temp_uint64)) {
     return false;
   }
-  if (temp_uint64 > kQuicMaxStreamId) {
+  if (temp_uint64 > kMaxQuicStreamId) {
     return false;
   }
   *result = static_cast<QuicStreamId>(temp_uint64);

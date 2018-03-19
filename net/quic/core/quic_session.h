@@ -306,9 +306,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns true if this stream should yield writes to another blocked stream.
   bool ShouldYield(QuicStreamId stream_id);
 
-  // Called to cancel retransmission of unencrypted stream data.
-  void NeuterUnencryptedStreamData();
-
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
 

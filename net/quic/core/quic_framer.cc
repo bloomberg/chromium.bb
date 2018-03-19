@@ -32,6 +32,7 @@
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
+using std::string;
 
 namespace net {
 
@@ -1771,7 +1772,7 @@ bool QuicFramer::ProcessConnectionCloseFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read connection close error details.");
     return false;
   }
-  frame->error_details = error_details.as_string();
+  frame->error_details = string(error_details);
 
   return true;
 }
@@ -1802,7 +1803,7 @@ bool QuicFramer::ProcessGoAwayFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read goaway reason.");
     return false;
   }
-  frame->reason_phrase = reason_phrase.as_string();
+  frame->reason_phrase = string(reason_phrase);
 
   return true;
 }
@@ -2971,7 +2972,7 @@ bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
     set_detailed_error("Can not read extended close information phrase");
     return false;
   }
-  frame->error_details = phrase.as_string();
+  frame->error_details = string(phrase);
 
   return true;
 }
