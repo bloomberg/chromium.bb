@@ -250,7 +250,8 @@ def _DuHelper(device, path_spec, run_as=None):
   # du: .*: No such file or directory
 
   # The -d flag works differently across android version, so use -s instead.
-  cmd_str = 'du -s -k ' + path_spec
+  # Without the explicit 2>&1, stderr and stdout get combined at random :(.
+  cmd_str = 'du -s -k ' + path_spec + ' 2>&1'
   lines = device.RunShellCommand(cmd_str, run_as=run_as, shell=True,
                                  check_return=False)
   output = '\n'.join(lines)
@@ -269,7 +270,9 @@ def _DuHelper(device, path_spec, run_as=None):
       ret[subpath] = int(size)
     return ret
   except ValueError:
+    logging.error('du command was: %s', cmd_str)
     logging.error('Failed to parse du output:\n%s', output)
+    raise
 
 
 def _RunDiskUsage(devices, package_name, verbose):
