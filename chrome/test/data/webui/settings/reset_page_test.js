@@ -75,10 +75,15 @@ cr.define('settings_reset_page', function() {
         return testOpenCloseResetProfileDialog(function(dialog) {
           // Test case where the 'cancel' button is clicked.
           MockInteractions.tap(dialog.$.cancel);
-        }).then(PolymerTest.flushTasks).then(function() {
+        }).then(function() {
           return testOpenCloseResetProfileDialog(function(dialog) {
             // Test case where the 'close' button is clicked.
             MockInteractions.tap(dialog.$.dialog.getCloseButton());
+          });
+        }).then(function() {
+          return testOpenCloseResetProfileDialog(function(dialog) {
+            // Test case where the browser's 'back' button is clicked.
+            resetPage.currentRouteChanged(settings.routes.BASIC);
           });
         });
       });
