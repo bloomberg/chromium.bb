@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CHROME_CLEANER_PUBLIC_CONSTANTS_CONSTANTS_H_
 #define COMPONENTS_CHROME_CLEANER_PUBLIC_CONSTANTS_CONSTANTS_H_
 
+#include "components/chrome_cleaner/public/constants/result_codes.h"
+
 // Constants shared by the Chromium and the Chrome Cleanaup tool repos.
 
 namespace chrome_cleaner {
@@ -93,14 +95,19 @@ extern const wchar_t kUploadResultsValueName[];
 extern const wchar_t kVersionValueName[];
 
 // Exit codes from the Software Reporter process identified by Chrome.
-constexpr int kSwReporterCleanupNeeded = 0;
-constexpr int kSwReporterNothingFound = 2;
-constexpr int kSwReporterPostRebootCleanupNeeded = 4;
-constexpr int kSwReporterNonRemovableOnly = 10;
-constexpr int kSwReporterDelayedPostRebootCleanupNeeded = 15;
-constexpr int kSwReporterSuspiciousOnly = 32;
-constexpr int kSwReporterTimeoutWithoutUwS = 34;
-constexpr int kSwReporterTimeoutWithUwS = 35;
+constexpr int kSwReporterCleanupNeeded = RESULT_CODE_SUCCESS;
+constexpr int kSwReporterNothingFound = RESULT_CODE_NO_PUPS_FOUND;
+constexpr int kSwReporterPostRebootCleanupNeeded =
+    DEPRECATED_RESULT_CODE_ABOUT_TO_REBOOT;
+constexpr int kSwReporterNonRemovableOnly =
+    RESULT_CODE_EXAMINED_FOR_REMOVAL_ONLY;
+constexpr int kSwReporterDelayedPostRebootCleanupNeeded =
+    RESULT_CODE_PENDING_REBOOT;
+constexpr int kSwReporterSuspiciousOnly = RESULT_CODE_REPORT_ONLY_PUPS_FOUND;
+constexpr int kSwReporterTimeoutWithoutUwS =
+    RESULT_CODE_WATCHDOG_TIMEOUT_WITHOUT_REMOVABLE_UWS;
+constexpr int kSwReporterTimeoutWithUwS =
+    RESULT_CODE_WATCHDOG_TIMEOUT_WITH_REMOVABLE_UWS;
 
 // Values to be passed to the kChromePromptSwitch of the Chrome Cleanup Tool to
 // indicate how the user interacted with the accept button.
