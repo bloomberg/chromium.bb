@@ -12,6 +12,7 @@ enum SoundId {
   kSoundButtonHover,
   kSoundButtonClick,
   kSoundBackButtonClick,
+  kSoundInactiveButtonClick,
 };
 
 }  // namespace vr
