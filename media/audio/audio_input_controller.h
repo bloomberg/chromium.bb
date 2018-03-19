@@ -23,7 +23,8 @@
 // they are both executed on the audio thread which is injected by the two
 // alternative factory methods, Create() or CreateForStream().
 //
-// All public methods of AudioInputController are non-blocking.
+// All public methods of AudioInputController are synchronous if called from
+// audio thread, or non-blocking if called from a different thread.
 //
 // Here is a state diagram for the AudioInputController:
 //
@@ -320,8 +321,7 @@ class MEDIA_EXPORT AudioInputController
 
   static StreamType ParamsToStreamType(const AudioParameters& params);
 
-  // Gives access to the task runner of the creating thread.
-  scoped_refptr<base::SingleThreadTaskRunner> const creator_task_runner_;
+  SEQUENCE_CHECKER(owning_sequence_);
 
   // The task runner of audio-manager thread that this object runs on.
   scoped_refptr<base::SingleThreadTaskRunner> const task_runner_;
