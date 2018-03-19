@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_device_win.h"
 
 #include <string>
+#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -29,15 +30,11 @@ namespace device {
 BluetoothDeviceWin::BluetoothDeviceWin(
     BluetoothAdapterWin* adapter,
     const BluetoothTaskManagerWin::DeviceState& device_state,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-    const scoped_refptr<BluetoothSocketThread>& socket_thread,
-    net::NetLog* net_log,
-    const net::NetLogSource& net_log_source)
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<BluetoothSocketThread> socket_thread)
     : BluetoothDevice(adapter),
-      ui_task_runner_(ui_task_runner),
-      socket_thread_(socket_thread),
-      net_log_(net_log),
-      net_log_source_(net_log_source) {
+      ui_task_runner_(std::move(ui_task_runner)),
+      socket_thread_(std::move(socket_thread)) {
   Update(device_state);
 }
 

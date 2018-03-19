@@ -66,17 +66,15 @@ class BluetoothDeviceWinTest : public testing::Test {
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
     device_state_->service_record_states.push_back(std::move(video_state));
 
-    device_.reset(new BluetoothDeviceWin(NULL, *device_state_, ui_task_runner,
-                                         socket_thread, NULL,
-                                         net::NetLogSource()));
+    device_.reset(new BluetoothDeviceWin(nullptr, *device_state_,
+                                         ui_task_runner, socket_thread));
 
     // Add empty device.
     empty_device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
     empty_device_state_->name = std::string(kDeviceName);
     empty_device_state_->address = kDeviceAddress;
-    empty_device_.reset(new BluetoothDeviceWin(NULL, *empty_device_state_,
-                                               ui_task_runner, socket_thread,
-                                               NULL, net::NetLogSource()));
+    empty_device_.reset(new BluetoothDeviceWin(nullptr, *empty_device_state_,
+                                               ui_task_runner, socket_thread));
   }
 
  protected:
