@@ -492,10 +492,10 @@ public class BookmarksTest {
                 mSyncTestRule.getFakeServerHelper().getSyncEntitiesByModelType(ModelType.BOOKMARKS);
         List<Bookmark> bookmarks = new ArrayList<Bookmark>(entities.size());
         for (SyncEntity entity : entities) {
-            String id = entity.idString;
-            String parentId = entity.parentIdString;
-            BookmarkSpecifics specifics = entity.specifics.bookmark;
-            bookmarks.add(new Bookmark(id, specifics.title, specifics.url, parentId));
+            String id = entity.getIdString();
+            String parentId = entity.getParentIdString();
+            BookmarkSpecifics specifics = entity.getSpecifics().getBookmark();
+            bookmarks.add(new Bookmark(id, specifics.getTitle(), specifics.getUrl(), parentId));
         }
         return bookmarks;
     }

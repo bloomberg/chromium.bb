@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.content.Context;
 
-import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
-import com.google.protobuf.nano.MessageNano;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.sync.protocol.EntitySpecifics;
@@ -190,14 +189,12 @@ public class FakeServerHelper {
         checkFakeServerInitialized("useFakeServer must be called before getting sync entities.");
         return ThreadUtils.runOnUiThreadBlocking(new Callable<List<SyncEntity>>() {
             @Override
-            public List<SyncEntity> call() throws InvalidProtocolBufferNanoException {
+            public List<SyncEntity> call() throws InvalidProtocolBufferException {
                 byte[][] serializedEntities = nativeGetSyncEntitiesByModelType(
                         mNativeFakeServerHelperAndroid, sNativeFakeServer, modelType);
                 List<SyncEntity> entities = new ArrayList<SyncEntity>(serializedEntities.length);
                 for (int i = 0; i < serializedEntities.length; i++) {
-                    SyncEntity entity = new SyncEntity();
-                    MessageNano.mergeFrom(entity, serializedEntities[i]);
-                    entities.add(entity);
+                    entities.add(SyncEntity.parseFrom(serializedEntities[i]));
                 }
                 return entities;
             }
@@ -220,7 +217,7 @@ public class FakeServerHelper {
                 // The protocol buffer is serialized as a byte array because it can be easily
                 // deserialized from this format in native code.
                 nativeInjectUniqueClientEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
-                        name, MessageNano.toByteArray(entitySpecifics));
+                        name, entitySpecifics.toByteArray());
                 return null;
             }
         });
@@ -240,7 +237,7 @@ public class FakeServerHelper {
                 // The protocol buffer is serialized as a byte array because it can be easily
                 // deserialized from this format in native code.
                 nativeModifyEntitySpecifics(mNativeFakeServerHelperAndroid, sNativeFakeServer, id,
-                        MessageNano.toByteArray(entitySpecifics));
+                        entitySpecifics.toByteArray());
                 return null;
             }
         });

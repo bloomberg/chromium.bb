@@ -132,12 +132,16 @@ public class TypedUrlsTest {
     }
 
     private void addServerTypedUrl(String url) throws InterruptedException {
-        EntitySpecifics specifics = new EntitySpecifics();
-        specifics.typedUrl = new TypedUrlSpecifics();
-        specifics.typedUrl.url = url;
-        specifics.typedUrl.title = url;
-        specifics.typedUrl.visits = new long[] {getCurrentTimeInMicroseconds()};
-        specifics.typedUrl.visitTransitions = new int[]{SyncEnums.TYPED};
+        EntitySpecifics specifics =
+                EntitySpecifics.newBuilder()
+                        .setTypedUrl(TypedUrlSpecifics.newBuilder()
+                                             .setUrl(url)
+                                             .setTitle(url)
+                                             .addVisits(getCurrentTimeInMicroseconds())
+                                             .addVisitTransitions(
+                                                     SyncEnums.PageTransition.TYPED.getNumber())
+                                             .build())
+                        .build();
         mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(url /* name */, specifics);
     }
 
