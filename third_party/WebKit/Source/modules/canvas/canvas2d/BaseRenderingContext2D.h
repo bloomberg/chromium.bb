@@ -228,11 +228,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     NOTREACHED();
     return false;
   }
-  virtual bool HasCanvas2DBuffer() const { return false; }
-  virtual bool CanCreateCanvas2DBuffer() const {
-    NOTREACHED();
-    return false;
-  };
+  virtual bool CanCreateCanvas2dResourceProvider() const = 0;
 
   virtual bool ParseColorOrCurrentColor(Color&,
                                         const String& color_string) const = 0;

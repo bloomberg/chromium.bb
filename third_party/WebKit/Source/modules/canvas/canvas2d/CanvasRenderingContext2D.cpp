@@ -146,7 +146,7 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
 void CanvasRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()
-  if (PaintCanvas* sk_canvas = canvas()->ExistingDrawingCanvas()) {
+  if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
     // The canvas should always have an initial save frame, to support
     // resetting the top level matrix and clip.
     DCHECK_GT(sk_canvas->getSaveCount(), 1);
@@ -162,10 +162,10 @@ void CanvasRenderingContext2D::ValidateStateStack() const {
 }
 
 bool CanvasRenderingContext2D::IsAccelerated() const {
-  Canvas2DLayerBridge* buffer2d = canvas()->Canvas2DBuffer();
-  if (!buffer2d)
+  Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge();
+  if (!layer_bridge)
     return false;
-  return buffer2d->IsAccelerated();
+  return layer_bridge->IsAccelerated();
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {
@@ -188,7 +188,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
     return;
   context_lost_mode_ = lost_mode;
   if (context_lost_mode_ == kSyntheticLostContext && canvas()) {
-    Host()->DiscardImageBuffer();
+    Host()->DiscardResourceProvider();
   }
   dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
@@ -198,9 +198,9 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
     return;
   // This code path is for restoring from an eviction
   // Restoring from surface failure is handled internally
-  DCHECK(context_lost_mode_ != kNotLostContext && !HasCanvas2DBuffer());
+  DCHECK(context_lost_mode_ != kNotLostContext && !IsPaintable());
 
-  if (CanCreateCanvas2DBuffer()) {
+  if (CanCreateCanvas2dResourceProvider()) {
     if (ContextLostRestoredEventsEnabled()) {
       dispatch_context_restored_event_timer_.StartOneShot(TimeDelta(),
                                                           FROM_HERE);
@@ -247,16 +247,16 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
   }
 
   DCHECK(context_lost_mode_ == kRealLostContext);
-  if (HasCanvas2DBuffer() && canvas()->Canvas2DBuffer()->Restore()) {
+  if (IsPaintable() && canvas()->GetCanvas2DLayerBridge()->Restore()) {
     try_restore_context_event_timer_.Stop();
     DispatchContextRestoredEvent(nullptr);
   }
 
   if (++try_restore_context_attempt_count_ > kMaxTryRestoreContextAttempts) {
     // final attempt: allocate a brand new image buffer instead of restoring
-    Host()->DiscardImageBuffer();
+    Host()->DiscardResourceProvider();
     try_restore_context_event_timer_.Stop();
-    if (CanCreateCanvas2DBuffer())
+    if (CanCreateCanvas2dResourceProvider())
       DispatchContextRestoredEvent(nullptr);
   }
 }
@@ -289,14 +289,14 @@ bool CanvasRenderingContext2D::WritePixels(const SkImageInfo& orig_info,
                                            size_t row_bytes,
                                            int x,
                                            int y) {
-  DCHECK(HasCanvas2DBuffer());
-  return canvas()->Canvas2DBuffer()->WritePixels(orig_info, pixels, row_bytes,
-                                                 x, y);
+  DCHECK(IsPaintable());
+  return canvas()->GetCanvas2DLayerBridge()->WritePixels(orig_info, pixels,
+                                                         row_bytes, x, y);
 }
 
 void CanvasRenderingContext2D::WillOverwriteCanvas() {
-  if (HasCanvas2DBuffer())
-    canvas()->Canvas2DBuffer()->WillOverwriteCanvas();
+  if (IsPaintable())
+    canvas()->GetCanvas2DLayerBridge()->WillOverwriteCanvas();
 }
 
 CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
@@ -413,11 +413,15 @@ void CanvasRenderingContext2D::SnapshotStateForFilter() {
 PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
   if (isContextLost())
     return nullptr;
-  return canvas()->DrawingCanvas();
+  if (canvas()->GetOrCreateCanvas2DLayerBridge())
+    return canvas()->GetCanvas2DLayerBridge()->Canvas();
+  return nullptr;
 }
 
 PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
-  return canvas()->ExistingDrawingCanvas();
+  if (IsPaintable())
+    return canvas()->GetCanvas2DLayerBridge()->Canvas();
+  return nullptr;
 }
 
 void CanvasRenderingContext2D::DisableDeferral(DisableDeferralReason reason) {
@@ -617,19 +621,15 @@ int CanvasRenderingContext2D::Height() const {
   return Host()->Size().Height();
 }
 
-bool CanvasRenderingContext2D::HasCanvas2DBuffer() const {
-  return !!canvas()->Canvas2DBuffer();
-}
-
-bool CanvasRenderingContext2D::CanCreateCanvas2DBuffer() const {
-  return canvas()->TryCreateImageBuffer();
+bool CanvasRenderingContext2D::CanCreateCanvas2dResourceProvider() const {
+  return canvas()->GetOrCreateCanvas2DLayerBridge();
 }
 
 scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
     AccelerationHint hint) const {
-  if (!HasCanvas2DBuffer())
+  if (!IsPaintable())
     return nullptr;
-  return canvas()->Canvas2DBuffer()->NewImageSnapshot(hint);
+  return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot(hint);
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
@@ -896,8 +896,8 @@ const Font& CanvasRenderingContext2D::AccessFont() {
 }
 
 void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
-  if (HasCanvas2DBuffer())
-    canvas()->Canvas2DBuffer()->SetIsHidden(hidden);
+  if (IsPaintable())
+    canvas()->GetCanvas2DLayerBridge()->SetIsHidden(hidden);
   if (hidden) {
     PruneLocalFontCache(0);
   }
@@ -908,7 +908,7 @@ bool CanvasRenderingContext2D::IsTransformInvertible() const {
 }
 
 WebLayer* CanvasRenderingContext2D::PlatformLayer() const {
-  return HasCanvas2DBuffer() ? canvas()->Canvas2DBuffer()->Layer() : nullptr;
+  return IsPaintable() ? canvas()->GetCanvas2DLayerBridge()->Layer() : nullptr;
 }
 
 void CanvasRenderingContext2D::getContextAttributes(
@@ -1088,8 +1088,8 @@ void CanvasRenderingContext2D::DidInvokeGPUReadbackInCurrentFrame() {
 }
 
 bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
-  if (canvas()->Canvas2DBuffer()) {
-    return canvas()->Canvas2DBuffer()->IsValid();
+  if (IsPaintable()) {
+    return canvas()->GetCanvas2DLayerBridge()->IsValid();
   }
   return false;
 }

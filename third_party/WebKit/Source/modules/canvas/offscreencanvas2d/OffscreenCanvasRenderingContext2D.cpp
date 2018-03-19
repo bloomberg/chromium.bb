@@ -92,11 +92,8 @@ int OffscreenCanvasRenderingContext2D::Height() const {
   return Host()->Size().Height();
 }
 
-bool OffscreenCanvasRenderingContext2D::HasCanvas2DBuffer() const {
-  return !!offscreenCanvasForBinding()->GetResourceProvider();
-}
-
-bool OffscreenCanvasRenderingContext2D::CanCreateCanvas2DBuffer() const {
+bool OffscreenCanvasRenderingContext2D::CanCreateCanvas2dResourceProvider()
+    const {
   return !!offscreenCanvasForBinding()->GetOrCreateResourceProvider();
 }
 
@@ -105,13 +102,13 @@ OffscreenCanvasRenderingContext2D::GetCanvasResourceProvider() const {
   return offscreenCanvasForBinding()->GetResourceProvider();
 }
 void OffscreenCanvasRenderingContext2D::Reset() {
-  Host()->DiscardImageBuffer();
+  Host()->DiscardResourceProvider();
   BaseRenderingContext2D::Reset();
 }
 
 scoped_refptr<StaticBitmapImage>
 OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
-  if (!CanCreateCanvas2DBuffer())
+  if (!CanCreateCanvas2dResourceProvider())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =
       GetCanvasResourceProvider()->Snapshot();
@@ -130,18 +127,18 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   if (!image)
     return nullptr;
   if (image->IsTextureBacked()) {
-    // Before discarding the ImageBuffer, we need to flush pending render ops
+    // Before discarding the image resource, we need to flush pending render ops
     // to fully resolve the snapshot.
     image->PaintImageForCurrentFrame().GetSkImage()->getTextureHandle(
         true);  // Flush pending ops.
   }
-  Host()->DiscardImageBuffer();  // "Transfer" means no retained buffer.
+  Host()->DiscardResourceProvider();  // "Transfer" means no retained buffer.
   return ImageBitmap::Create(std::move(image));
 }
 
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
     AccelerationHint hint) const {
-  if (!HasCanvas2DBuffer())
+  if (!IsPaintable())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =
       GetCanvasResourceProvider()->Snapshot();
@@ -161,13 +158,13 @@ bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(
 }
 
 PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
-  if (!CanCreateCanvas2DBuffer())
+  if (!CanCreateCanvas2dResourceProvider())
     return nullptr;
   return GetCanvasResourceProvider()->Canvas();
 }
 
 PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
-  if (!HasCanvas2DBuffer())
+  if (!IsPaintable())
     return nullptr;
   return GetCanvasResourceProvider()->Canvas();
 }
@@ -201,7 +198,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return HasCanvas2DBuffer();
+  return offscreenCanvasForBinding()->GetResourceProvider();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
@@ -222,13 +219,13 @@ bool OffscreenCanvasRenderingContext2D::WritePixels(
     size_t row_bytes,
     int x,
     int y) {
-  DCHECK(HasCanvas2DBuffer());
+  DCHECK(IsPaintable());
   return offscreenCanvasForBinding()->GetResourceProvider()->WritePixels(
       orig_info, pixels, row_bytes, x, y);
 }
 
 bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
-  return HasCanvas2DBuffer() && GetCanvasResourceProvider()->IsAccelerated();
+  return IsPaintable() && GetCanvasResourceProvider()->IsAccelerated();
 }
 
 String OffscreenCanvasRenderingContext2D::font() const {
@@ -479,7 +476,7 @@ const Font& OffscreenCanvasRenderingContext2D::AccessFont() {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsCanvas2DBufferValid() const {
-  if (HasCanvas2DBuffer())
+  if (IsPaintable())
     return GetCanvasResourceProvider()->IsValid();
   return false;
 }

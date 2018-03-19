@@ -47,7 +47,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
                                ScriptState*,
                                ExceptionState&);
 
-  virtual void DiscardImageBuffer() = 0;
+  virtual void DiscardResourceProvider() = 0;
 
   // If WebGL1 is disabled by enterprise policy or command line switch.
   virtual bool IsWebGL1Enabled() const = 0;

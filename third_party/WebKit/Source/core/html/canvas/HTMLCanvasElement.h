@@ -139,9 +139,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Paint(GraphicsContext&, const LayoutRect&);
 
-  PaintCanvas* DrawingCanvas();
   void DisableDeferral(DisableDeferralReason);
-  PaintCanvas* ExistingDrawingCanvas() const;
 
   CanvasRenderingContext* RenderingContext() const override {
     return context_.Get();
@@ -157,12 +155,15 @@ class CORE_EXPORT HTMLCanvasElement final
   bool Is2d() const;
   bool IsAnimated2d() const;
 
-  Canvas2DLayerBridge* Canvas2DBuffer() { return canvas2d_bridge_.get(); }
-  CanvasResourceProvider* ResourceProvider() const;
-
-  bool HasImageBuffer() { return canvas2d_bridge_ || webgl_resource_provider_; }
-  void DiscardImageBuffer() override;
-  bool TryCreateImageBuffer();
+  Canvas2DLayerBridge* GetCanvas2DLayerBridge() {
+    return canvas2d_bridge_.get();
+  }
+  Canvas2DLayerBridge* GetOrCreateCanvas2DLayerBridge();
+  CanvasResourceProvider* GetOrCreateCanvasResourceProviderForWebGL();
+  CanvasResourceProvider* ResourceProviderForWebGL() const {
+    return webgl_resource_provider_.get();
+  }
+  void DiscardResourceProvider() override;
 
   FontSelector* GetFontSelector() override;
 
@@ -224,9 +225,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
-  void CreateImageBufferUsingSurfaceForTesting(
-      std::unique_ptr<Canvas2DLayerBridge>,
-      const IntSize&);
+  void CreateCanvas2DLayerBridgeForTesting(std::unique_ptr<Canvas2DLayerBridge>,
+                                           const IntSize&);
 
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);
@@ -312,7 +312,7 @@ class CORE_EXPORT HTMLCanvasElement final
   std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer(
       int* msaa_sample_count);
   std::unique_ptr<Canvas2DLayerBridge> CreateUnaccelerated2dBuffer();
-  void CreateImageBufferInternal(std::unique_ptr<Canvas2DLayerBridge>);
+  void CreateCanvas2DLayerBridgeInternal(std::unique_ptr<Canvas2DLayerBridge>);
 
   void SetSurfaceSize(const IntSize&);
 
@@ -342,19 +342,22 @@ class CORE_EXPORT HTMLCanvasElement final
   bool origin_clean_;
   bool needs_unbuffered_input_ = false;
 
-  // It prevents HTMLCanvasElement::TryCreateImageBuffer() from continuously
-  // re-attempting to allocate a CanvasResourceProvider after the first attempt
-  // failed.
+  // It prevents repeated attempts in allocating resources after the first
+  // attempt failed.
   mutable bool did_fail_to_create_resource_provider_;
+
+  bool HasResourceProvider() {
+    return canvas2d_bridge_ || webgl_resource_provider_;
+  }
+
   bool resource_provider_is_clear_;
+
   // This is only used by canvas with webgl rendering context.
   std::unique_ptr<CanvasResourceProvider> webgl_resource_provider_;
 
   // Canvas2DLayerBridge is used when canvas has 2d rendering context
   std::unique_ptr<Canvas2DLayerBridge> canvas2d_bridge_;
-  void ReplaceExistingCanvas2DBuffer(std::unique_ptr<Canvas2DLayerBridge>);
-
-  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint);
+  void ReplaceExisting2dLayerBridge(std::unique_ptr<Canvas2DLayerBridge>);
 
   // FIXME: This is temporary for platforms that have to copy the image buffer
   // to render (and for CSSCanvasValue).

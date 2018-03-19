@@ -231,7 +231,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
   return frame_dispatcher_.get();
 }
 
-void OffscreenCanvas::DiscardImageBuffer() {
+void OffscreenCanvas::DiscardResourceProvider() {
   resource_provider_.reset();
   needs_matrix_clip_restore_ = true;
 }

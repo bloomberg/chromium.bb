@@ -170,8 +170,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   int Width() const final;
   int Height() const final;
 
-  bool HasCanvas2DBuffer() const final;
-  bool CanCreateCanvas2DBuffer() const final;
+  bool CanCreateCanvas2dResourceProvider() const final;
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
@@ -190,7 +189,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void FinalizeFrame() override { usage_counters_.num_frames_since_reset++; }
 
-  bool IsPaintable() const final { return HasCanvas2DBuffer(); }
+  bool IsPaintable() const final { return canvas()->GetCanvas2DLayerBridge(); }
 
   void WillDrawImage(CanvasImageSource*) const final;
 

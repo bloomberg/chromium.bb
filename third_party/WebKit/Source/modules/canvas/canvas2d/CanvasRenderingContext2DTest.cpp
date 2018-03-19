@@ -299,8 +299,8 @@ class MockImageBufferSurfaceForOverwriteTesting : public Canvas2DLayerBridge {
       std::make_unique<MockImageBufferSurfaceForOverwriteTesting>(             \
           size, CanvasColorParams());                                          \
   MockImageBufferSurfaceForOverwriteTesting* surface_ptr = mock_surface.get(); \
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(                     \
-      std::move(mock_surface), size);                                          \
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(mock_surface), \
+                                                      size);                   \
   EXPECT_CALL(*surface_ptr, WillOverwriteCanvas()).Times(EXPECTED_OVERDRAWS);  \
   Context2d()->save();
 
@@ -553,7 +553,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
                                                 kPreferAcceleration);
   FakeCanvas2DLayerBridge* fake_accelerate_surface_ptr =
       fake_accelerate_surface.get();
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
   // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
   // pixel per buffer, and 2 is an estimate of num of gpu buffers required
@@ -583,7 +583,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   IntSize size2(10, 5);
   auto fake_accelerate_surface2 = std::make_unique<FakeCanvas2DLayerBridge>(
       size2, CanvasColorParams(), kPreferAcceleration);
-  anotherCanvas->CreateImageBufferUsingSurfaceForTesting(
+  anotherCanvas->CreateCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface2), size2);
   EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
   EXPECT_EQ(1200, GetGlobalGPUMemoryUsage());
@@ -635,10 +635,9 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(size, Canvas2DLayerBridge::kForceAccelerationForTesting);
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge),
-                                                          size);
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
   EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
 
@@ -650,7 +649,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
     CanvasElement().FinalizeFrame();
 
     EXPECT_FALSE(exception_state.HadException());
-    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -660,11 +659,11 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
 
   EXPECT_FALSE(exception_state.HadException());
   if (CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
-    EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+    EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
   } else {
-    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -697,10 +696,10 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     IntSize size(dst_size, dst_size);
     std::unique_ptr<Canvas2DLayerBridge> bridge =
         MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
-    CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge),
-                                                            size);
+    CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge),
+                                                        size);
 
-    EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
     // 4 bytes per pixel * 2 buffers = 8
     EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
@@ -717,11 +716,11 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     EXPECT_FALSE(exception_state.HadException());
 
     if (test_variant == kLargeTextureDisablesAcceleration) {
-      EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+      EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
       EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
       EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
     } else {
-      EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+      EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
       EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
       EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
     }
@@ -740,11 +739,11 @@ TEST_F(CanvasRenderingContext2DTest,
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
 
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer());
-  EXPECT_FALSE(CanvasElement().ResourceProvider());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge());
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->GetResourceProvider());
 }
 
 TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
@@ -753,7 +752,7 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
   CanvasRenderingContext2D* context = Context2d();
 
@@ -764,10 +763,10 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   context->fillRect(10, 10, 100, 100);
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 
   CanvasElement().DisableAcceleration();
-  EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 
   context->fillRect(10, 10, 100, 100);
 
@@ -786,7 +785,7 @@ TEST_F(CanvasRenderingContext2DTest,
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
 
   auto fake_deaccelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
@@ -799,12 +798,14 @@ TEST_F(CanvasRenderingContext2DTest,
               DidRestoreCanvasMatrixClipStack(paint_canvas_ptr))
       .Times(1);
 
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
-  EXPECT_TRUE(IsCanvasResourceHostSet(CanvasElement().Canvas2DBuffer()));
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+  EXPECT_TRUE(
+      IsCanvasResourceHostSet(CanvasElement().GetCanvas2DLayerBridge()));
 
   CanvasElement().DisableAcceleration(std::move(fake_deaccelerate_surface));
-  EXPECT_FALSE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
-  EXPECT_TRUE(IsCanvasResourceHostSet(CanvasElement().Canvas2DBuffer()));
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+  EXPECT_TRUE(
+      IsCanvasResourceHostSet(CanvasElement().GetCanvas2DLayerBridge()));
 
   Mock::VerifyAndClearExpectations(surface_ptr);
 }
@@ -1144,12 +1145,12 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge),
-                                                          size);
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
-  CanvasElement().Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration);
+  CanvasElement().GetCanvas2DLayerBridge()->NewImageSnapshot(
+      kPreferAcceleration);
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
@@ -1182,10 +1183,9 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge),
-                                                          size);
+  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
-  EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
