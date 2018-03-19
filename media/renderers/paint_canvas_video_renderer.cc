@@ -104,6 +104,10 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
 
   GrGLTextureInfo source_textures[] = {{0, 0}, {0, 0}, {0, 0}};
   GLint min_mag_filter[][2] = {{0, 0}, {0, 0}, {0, 0}};
+  // TODO(bsalomon): Use GL_RGB8 once Skia supports it.
+  // skbug.com/7533
+  GrGLenum skia_texture_format =
+      video_frame->format() == PIXEL_FORMAT_NV12 ? GL_RGBA8 : GL_R8_EXT;
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     // Get the texture from the mailbox and wrap it in a GrTexture.
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
@@ -116,6 +120,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     source_textures[i].fID =
         gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
     source_textures[i].fTarget = mailbox_holder.texture_target;
+    source_textures[i].fFormat = skia_texture_format;
 
     gl->BindTexture(mailbox_holder.texture_target, source_textures[i].fID);
     gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MIN_FILTER,
@@ -139,22 +144,13 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
       source_textures[i].fTarget = GL_TEXTURE_2D;
     }
   }
-  GrPixelConfig config = video_frame->format() == PIXEL_FORMAT_NV12
-                             ? kRGBA_8888_GrPixelConfig
-                             : kAlpha_8_GrPixelConfig;
   GrBackendTexture textures[3] = {
-      GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(), config,
-                       source_textures[0]),
-      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(), config,
-                       source_textures[1]),
-      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(), config,
-                       source_textures[2]),
-  };
-
-  SkISize yuvSizes[] = {
-      {ya_tex_size.width(), ya_tex_size.height()},
-      {uv_tex_size.width(), uv_tex_size.height()},
-      {uv_tex_size.width(), uv_tex_size.height()},
+      GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
+                       GrMipMapped::kNo, source_textures[0]),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
+                       GrMipMapped::kNo, source_textures[1]),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
+                       GrMipMapped::kNo, source_textures[2]),
   };
 
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
@@ -166,12 +162,10 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
   sk_sp<SkImage> img;
   if (video_frame->format() == PIXEL_FORMAT_NV12) {
     img = SkImage::MakeFromNV12TexturesCopy(context_3d.gr_context, color_space,
-                                            textures, yuvSizes,
-                                            kTopLeft_GrSurfaceOrigin);
+                                            textures, kTopLeft_GrSurfaceOrigin);
   } else {
     img = SkImage::MakeFromYUVTexturesCopy(context_3d.gr_context, color_space,
-                                           textures, yuvSizes,
-                                           kTopLeft_GrSurfaceOrigin);
+                                           textures, kTopLeft_GrSurfaceOrigin);
   }
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     gl->BindTexture(source_textures[i].fTarget, source_textures[i].fID);
