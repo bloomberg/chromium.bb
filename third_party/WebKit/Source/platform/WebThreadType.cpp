@@ -15,7 +15,8 @@ const char* GetNameForThreadType(WebThreadType thread_type) {
     case WebThreadType::kUnspecifiedWorkerThread:
       return "unspecified worker thread";
     case WebThreadType::kCompositorThread:
-      return "Compositor thread";
+      // Some benchmarks depend on this value.
+      return "Compositor";
     case WebThreadType::kDedicatedWorkerThread:
       return "DedicatedWorker thread";
     case WebThreadType::kSharedWorkerThread:
