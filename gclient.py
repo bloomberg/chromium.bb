@@ -804,7 +804,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._gn_args_file = local_scope.get('gclient_gn_args_file')
     self._gn_args = local_scope.get('gclient_gn_args', [])
 
-    self._vars = dict(local_scope.get('vars', {}))
+    self._vars = local_scope.get('vars', {})
     if self.parent:
       for key, value in self.parent.get_vars().iteritems():
         if key in self._vars:
@@ -2820,62 +2820,6 @@ def CMDrevinfo(parser, args):
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   client.PrintRevInfo()
   return 0
-
-
-def CMDsetdep(parser, args):
-  parser.add_option('--var', action='append',
-                    dest='vars', metavar='VAR=VAL', default=[],
-                    help='Sets a variable to the given value with the format '
-                         'name=value.')
-  parser.add_option('-r', '--revision', action='append',
-                    dest='revisions', metavar='DEP@REV', default=[],
-                    help='Sets the revision/version for the dependency with '
-                         'the format dep@rev. If it is a git dependency, dep '
-                         'must be a path and rev must be a git hash or '
-                         'reference (e.g. src/dep@deadbeef). If it is a CIPD '
-                         'dependency, dep must be of the form path:package and '
-                         'rev must be the package version '
-                         '(e.g. src/pkg:chromium/pkg@2.1-cr0).')
-  parser.add_option('--deps-file', default='DEPS',
-                    # TODO(ehmaldonado): Try to find the DEPS file pointed by
-                    # .gclient first.
-                    help='The DEPS file to be edited. Defaults to the DEPS '
-                         'file in the current directory.')
-  (options, args) = parser.parse_args(args)
-
-  global_scope = {'Var': lambda var: '{%s}' % var}
-
-  if not os.path.isfile(options.deps_file):
-    raise gclient_utils.Error(
-        'DEPS file %s does not exist.' % options.deps_file)
-  with open(options.deps_file) as f:
-    contents = f.read()
-  local_scope = gclient_eval.Exec(contents, global_scope, {})
-
-  for var in options.vars:
-    name, _, value = var.partition('=')
-    if not name or not value:
-      raise gclient_utils.Error(
-          'Wrong var format: %s should be of the form name=value.' % var)
-    gclient_eval.SetVar(local_scope, name, value)
-
-  for revision in options.revisions:
-    name, _, value = revision.partition('@')
-    if not name or not value:
-      raise gclient_utils.Error(
-          'Wrong dep format: %s should be of the form dep@rev.' % revision)
-    if ':' in name:
-      name, _, package = name.partition(':')
-      if not name or not package:
-        raise gclient_utils.Error(
-            'Wrong CIPD format: %s:%s should be of the form path:pkg@version.'
-            % (name, package))
-      gclient_eval.SetCIPD(local_scope, name, package, value)
-    else:
-      gclient_eval.SetRevision(local_scope, global_scope, name, value)
-
-  with open(options.deps_file) as f:
-    f.write(gclient_eval.RenderDEPSFile(local_scope))
 
 
 def CMDverify(parser, args):
