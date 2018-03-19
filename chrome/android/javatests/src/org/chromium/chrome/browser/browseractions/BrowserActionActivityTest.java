@@ -220,7 +220,7 @@ public class BrowserActionActivityTest {
         Assert.assertEquals(1, mOnFinishNativeInitializationCallback.getCallCount());
 
         Context context = InstrumentationRegistry.getTargetContext();
-        Assert.assertEquals(context.getPackageName(), activity.mCreatorPackageName);
+        Assert.assertEquals(context.getPackageName(), activity.mUntrustedCreatorPackageName);
 
         // Check menu populated correctly.
         List<Pair<Integer, List<ContextMenuItem>>> menus = mItems;
@@ -268,7 +268,7 @@ public class BrowserActionActivityTest {
         Assert.assertEquals(0, mOnFinishNativeInitializationCallback.getCallCount());
 
         Context context = InstrumentationRegistry.getTargetContext();
-        Assert.assertEquals(context.getPackageName(), activity.mCreatorPackageName);
+        Assert.assertEquals(context.getPackageName(), activity.mUntrustedCreatorPackageName);
 
         // Check menu populated correctly that only copy, share and custom items are shown.
         List<Pair<Integer, List<ContextMenuItem>>> menus = mItems;
