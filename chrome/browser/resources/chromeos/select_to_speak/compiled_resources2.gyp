@@ -29,7 +29,6 @@
         '<(EXTERNS_GYP):accessibility_private',
         '<(EXTERNS_GYP):automation',
         '<(EXTERNS_GYP):chrome_extensions',
-        '<(EXTERNS_GYP):command_line_private',
         '<(EXTERNS_GYP):metrics_private',
        ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

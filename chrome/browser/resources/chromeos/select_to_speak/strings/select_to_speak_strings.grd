@@ -192,12 +192,6 @@
       <message desc="Label for highest synthesized speech pitch in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_PITCH_HIGHEST">
         Highest
       </message>
-      <message desc="Group of options for controlling behavior" name="IDS_SELECT_TO_SPEAK_OPTIONS_BEHAVIOR">
-        Behavior
-      </message>
-      <message desc="Label for option to continue reading after text goes away, or stop when text goes away" name="IDS_SELECT_TO_SPEAK_OPTIONS_READ_AFTER_CLOSE">
-        Continue reading if text being spoken goes away
-      </message>
     </messages>
   </release>
 </grit>

@@ -116,7 +116,7 @@ var SelectToSpeak = function() {
   this.highlightColor_ = '#5e9bff';
 
   /** @private {boolean} */
-  this.readAfterClose_ = false;
+  this.readAfterClose_ = true;
 
   /** @private {?NodeGroupItem} */
   this.currentNode_ = null;
@@ -882,10 +882,7 @@ SelectToSpeak.prototype = {
     var updatePrefs =
         (function() {
           chrome.storage.sync.get(
-              [
-                'voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor',
-                'readAfterClose'
-              ],
+              ['voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor'],
               (function(prefs) {
                 if (prefs['voice']) {
                   this.voiceNameFromPrefs_ = prefs['voice'];
@@ -911,12 +908,6 @@ SelectToSpeak.prototype = {
                 } else {
                   chrome.storage.sync.set(
                       {'highlightColor': this.highlightColor_});
-                }
-                if (prefs['readAfterClose'] !== undefined) {
-                  this.readAfterClose_ = prefs['readAfterClose'];
-                } else {
-                  chrome.storage.sync.set(
-                      {'readAfterClose': this.readAfterClose_});
                 }
               }).bind(this));
         }).bind(this);
@@ -989,8 +980,8 @@ SelectToSpeak.prototype = {
   updateFromNodeState_: function(nodeGroupItem, inForeground) {
     switch (getNodeState(nodeGroupItem.node)) {
       case NodeState.NODE_STATE_INVALID:
-        // If the node is invalid, stop speaking entirely if the user setting
-        // is not to continue reading.
+        // If the node is invalid, continue speech unless readAfterClose_
+        // is set to true. See https://crbug.com/818835 for more.
         if (this.readAfterClose_) {
           this.clearFocusRing_();
           this.visible_ = false;

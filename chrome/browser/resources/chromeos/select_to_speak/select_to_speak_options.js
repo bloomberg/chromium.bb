@@ -37,13 +37,6 @@ SelectToSpeakOptionsPage.prototype = {
             select.disabled = true;
           }
         });
-    this.syncCheckboxControlToPref_('readAfterClose', 'readAfterClose');
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-features',
-        (experimentalFeaturesEnabled) => {
-          let behaviorSection = document.getElementById('behavior');
-          behaviorSection.hidden = !experimentalFeaturesEnabled;
-        });
     this.setUpHighlightListener_();
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.LoadSettings');
