@@ -109,9 +109,9 @@ class CredentialManagerTestingContext {
             WTF::Unretained(mock_credential_manager)));
   }
 
-  Document* Document() { return &dummy_context_.GetDocument(); }
+  Document* GetDocument() { return &dummy_context_.GetDocument(); }
   LocalFrame* Frame() { return &dummy_context_.GetFrame(); }
-  ScriptState* ScriptState() { return dummy_context_.GetScriptState(); }
+  ScriptState* GetScriptState() { return dummy_context_.GetScriptState(); }
 
  private:
   V8TestingScope dummy_context_;
@@ -128,8 +128,8 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
 
   {
     CredentialManagerTestingContext context(&mock_credential_manager);
-    weak_document = context.Document();
-    CredentialsContainer::Create()->get(context.ScriptState(),
+    weak_document = context.GetDocument();
+    CredentialsContainer::Create()->get(context.GetScriptState(),
                                         CredentialRequestOptions());
     mock_credential_manager.WaitForCallToGet();
   }
@@ -150,12 +150,12 @@ TEST(CredentialsContainerTest,
   MockCredentialManager mock_credential_manager;
   CredentialManagerTestingContext context(&mock_credential_manager);
 
-  auto* proxy = CredentialManagerProxy::From(context.Document());
+  auto* proxy = CredentialManagerProxy::From(context.GetDocument());
   auto promise = CredentialsContainer::Create()->get(
-      context.ScriptState(), CredentialRequestOptions());
+      context.GetScriptState(), CredentialRequestOptions());
   mock_credential_manager.WaitForCallToGet();
 
-  context.Document()->Shutdown();
+  context.GetDocument()->Shutdown();
 
   mock_credential_manager.InvokeGetCallback();
   proxy->FlushCredentialManagerConnectionForTesting();
