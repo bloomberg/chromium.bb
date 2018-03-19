@@ -27,7 +27,7 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_sample_apk"
+  target = ":cronet_jni_apk"
   output = "$root_gen_dir/components/cronet/android/${target_name}.h"
   exception_files = jni_exception_files
 
@@ -242,7 +242,6 @@ cronet_api_srcjar_deps = [ ":cronet_api_version_srcjar" ]
 
 # cronet_api_java.jar defines Cronet API.
 android_library("cronet_api_java") {
-  output_name = "cronet_api"
   java_files = [
     "api/src/org/chromium/net/BidirectionalStream.java",
     "api/src/org/chromium/net/CronetEngine.java",
@@ -387,6 +386,16 @@ java_group("cronet_impl_all_java") {
   ]
 }
 
+# This target exists only to provide input to the generate_jni_registration
+# target previously declared.  It contains all Java with JNI declarations.
+android_apk("cronet_jni_apk") {
+  apk_name = "CronetJni"
+  android_manifest = "sample/AndroidManifest.xml"
+  deps = [
+    ":cronet_impl_all_java",
+  ]
+}
+
 android_resources("cronet_sample_apk_resources") {
   resource_dirs = [ "sample/res" ]
   android_manifest = "sample/AndroidManifest.xml"
@@ -402,10 +411,9 @@ android_library("cronet_sample_apk_java") {
   ]
 
   deps = [
-    ":cronet_api_java",
-    ":cronet_impl_all_java",
     ":cronet_sample_apk_resources",
-    "//base:base_java",
+    ":package_api_java",
+    ":package_impl_native_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
 }
@@ -419,15 +427,15 @@ android_apk("cronet_sample_apk") {
     ":cronet_combine_proguard_flags",
     ":cronet_sample_apk_java",
     ":cronet_sample_apk_resources",
-    "//base:base_java",
-    "//third_party/jsr-305:jsr_305_javalib",
   ]
+
+  # Cronet jars will include this, so don't duplicate.
+  generate_buildconfig_java = false
 
   proguard_enabled = true
   proguard_configs = [
     "$target_gen_dir/cronet_impl_native_proguard.cfg",
     "cronet_impl_common_proguard.cfg",
-    "sample/javatests/proguard.cfg",
     "//base/android/proguard/chromium_apk.flags",
   ]
 }
@@ -446,25 +454,16 @@ instrumentation_test_apk("cronet_sample_test_apk") {
   apk_under_test = ":cronet_sample_apk"
   android_manifest = "sample/javatests/AndroidManifest.xml"
   java_files = [
-    "sample/javatests/src/org/chromium/cronet_sample_apk/Criteria.java",
     "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java",
   ]
-
   deps = [
-    ":cronet_api_java",
-    ":cronet_impl_all_java",
-    ":cronet_sample_apk_java",
-    ":cronet_sample_test_apk_resources",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
-  additional_apks = [ "//net/android:net_test_support_apk" ]
 
   proguard_enabled = true
+  proguard_configs = [ "sample/javatests/proguard.cfg" ]
 }
 
 generate_jni("cronet_tests_jni_headers") {
@@ -1166,7 +1165,6 @@ zip("jar_cronet_sample_source") {
     "sample/AndroidManifest.xml",
     "sample/javatests/AndroidManifest.xml",
     "sample/javatests/proguard.cfg",
-    "sample/javatests/src/org/chromium/cronet_sample_apk/Criteria.java",
     "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java",
     "sample/README",
     "sample/res/layout/activity_main.xml",
@@ -1298,6 +1296,16 @@ template("copy_java8_jars") {
         ":$_dep_name",
       ]
     }
+
+    # _copy_target_name includes ${dep} which includes "_java", so in turn
+    # _copy_target_name contains "_java" which triggers
+    # build/config/android/internal_rules.gni whitelist of target names that
+    # must have build_configs, so emit one here.
+    write_build_config("${_copy_target_name}__build_config") {
+      build_config = "$target_gen_dir/$_copy_target_name.build_config"
+      type = "group"
+    }
+
     _deps += [ ":" + _copy_target_name ]
   }
 
@@ -1306,7 +1314,7 @@ template("copy_java8_jars") {
   }
 }
 
-copy_java8_jars("copy_cronet_java8_jars") {
+copy_java8_jars("copy_cronet_java8_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_platform_java",
@@ -1430,6 +1438,35 @@ copy("cronet_package_copy_resources") {
   ]
 }
 
+# These package_* targets represent how Cronet is used in production code.
+# Using these targets is preferred to using the underlying targets like
+# :cronet_api_java or :cronet_impl_all_java, as it better tests production
+# usage.
+android_java_prebuilt("package_api_java") {
+  jar_path = "$_package_dir/cronet_api.jar"
+  deps = [
+    ":copy_cronet_java8_java_:cronet_api_java",
+  ]
+}
+
+android_java_prebuilt("package_impl_common_java") {
+  jar_path = "$_package_dir/cronet_impl_common_java.jar"
+  deps = [
+    ":package_api_java",
+    ":repackage_extracted_common_jars",
+  ]
+}
+
+android_java_prebuilt("package_impl_native_java") {
+  jar_path = "$_package_dir/cronet_impl_native_java.jar"
+  deps = [
+    ":package_api_java",
+    ":package_impl_common_java",
+    ":repackage_extracted_native_jars",
+    "//third_party/jsr-305:jsr_305_javalib",
+  ]
+}
+
 # Enforce that ARM Neon is not used when building for ARMv7
 if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
   action("enforce_no_neon") {
@@ -1463,7 +1500,7 @@ action("api_static_checks") {
   args = [
     "--api_jar",
     rebase_path(
-        "$root_out_dir/lib.java/components/cronet/android/cronet_api.jar",
+        "$root_out_dir/lib.java/components/cronet/android/cronet_api_java.jar",
         root_build_dir),
     "--impl_jar",
     rebase_path(
@@ -1506,7 +1543,7 @@ group("cronet_package") {
       (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
     deps = [
       ":api_static_checks",
-      ":copy_cronet_java8_jars",
+      ":copy_cronet_java8_java",
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
