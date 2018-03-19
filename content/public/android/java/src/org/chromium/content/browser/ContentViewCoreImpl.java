@@ -203,7 +203,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mWebContents = (WebContentsImpl) webContents;
     }
 
-    @Override
     public Context getContext() {
         return mContext;
     }
