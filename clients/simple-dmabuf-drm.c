@@ -221,14 +221,16 @@ static int
 fd_alloc_bo(struct buffer *buf)
 {
 	int flags = DRM_FREEDRENO_GEM_CACHE_WCOMBINE;
-	int size = buf->width * buf->height * buf->bpp / 8;
-	buf->fd_dev = fd_device_new(buf->drm_fd);
+	int size;
 
+	buf->fd_dev = fd_device_new(buf->drm_fd);
+	buf->stride = ALIGN(buf->width, 32) * buf->bpp / 8;
+	size = buf->stride * buf->height;
+	buf->fd_dev = fd_device_new(buf->drm_fd);
 	buf->fd_bo = fd_bo_new(buf->fd_dev, size, flags);
 
 	if (!buf->fd_bo)
 		return 0;
-	buf->stride = ALIGN(buf->width, 32) * buf->bpp / 8;
 	return 1;
 }
 
