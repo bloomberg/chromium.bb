@@ -201,6 +201,10 @@ jumbo_component("aura") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+    sources += [
+      "mus/platform_event_source_mus_ozone.cc",
+      "mus/platform_event_source_mus_ozone.h",
+    ]
   }
 
   if (is_android) {
@@ -365,6 +369,7 @@ test("aura_unittests") {
     "mus/window_port_mus_unittest.cc",
     "mus/window_tree_client_unittest.cc",
     "mus/window_tree_host_mus_unittest.cc",
+    "test/aura_test_suite.h",
     "test/run_all_unittests.cc",
     "window_event_dispatcher_unittest.cc",
     "window_occlusion_tracker_unittest.cc",

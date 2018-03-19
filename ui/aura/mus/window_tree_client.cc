@@ -70,6 +70,10 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(USE_OZONE)
+#include "ui/aura/mus/platform_event_source_mus_ozone.h"
+#endif
+
 namespace aura {
 namespace {
 
@@ -91,10 +95,20 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
   ~EventAckHandler() override {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
     if (ack_callback_) {
+      NotifyPlatformEventSource();
       ack_callback_->Run(handled_ ? ui::mojom::EventResult::HANDLED
                                   : ui::mojom::EventResult::UNHANDLED);
     }
   }
+
+#if defined(USE_OZONE)
+  void SetPlatformEventSourceAndEvent(
+      PlatformEventSourceMus* platform_event_source,
+      ui::Event* event) {
+    event_ = event;
+    platform_event_source_ = platform_event_source;
+  }
+#endif
 
   void set_handled(bool handled) { handled_ = handled; }
 
@@ -103,14 +117,26 @@ class EventAckHandler : public base::RunLoop::NestingObserver {
     // Acknowledge the event immediately if a nested run loop starts.
     // Otherwise we appear unresponsive for the life of the nested run loop.
     if (ack_callback_) {
+      NotifyPlatformEventSource();
       ack_callback_->Run(ui::mojom::EventResult::HANDLED);
       ack_callback_.reset();
     }
   }
 
  private:
+  void NotifyPlatformEventSource() {
+#if defined(USE_OZONE)
+    if (platform_event_source_)
+      platform_event_source_->OnDidProcessEvent(event_);
+#endif
+  }
+
   std::unique_ptr<EventResultCallback> ack_callback_;
   bool handled_ = false;
+#if defined(USE_OZONE)
+  ui::Event* event_ = nullptr;
+  PlatformEventSourceMus* platform_event_source_ = nullptr;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(EventAckHandler);
 };
@@ -197,6 +223,7 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowManager(
   factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client),
                             automatically_create_display_roots);
   wtc->SetWindowTree(std::move(window_tree));
+  wtc->CreatePlatformEventSourceIfNecessary();
   return wtc;
 }
 
@@ -465,6 +492,13 @@ WindowTreeClient::WindowTreeClient(
           discardable_shared_memory_manager_.get());
     }
   }
+}
+
+void WindowTreeClient::CreatePlatformEventSourceIfNecessary() {
+#if defined(USE_OZONE)
+  if (!ui::PlatformEventSource::GetInstance())
+    platform_event_source_ = std::make_unique<PlatformEventSourceMus>();
+#endif
 }
 
 void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
@@ -1623,7 +1657,6 @@ void WindowTreeClient::OnWindowInputEvent(
     }
   }
 
-  EventAckHandler ack_handler(CreateEventResultCallback(event_id));
   // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
   // ui::TouchEvent once we have proper support for pointer events.
   std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
@@ -1650,6 +1683,13 @@ void WindowTreeClient::OnWindowInputEvent(
     event_to_dispatch = mapped_event_with_native.get();
   }
 #endif
+  // |ack_handler| may use |event_to_dispatch| from its destructor, so it needs
+  // to be destroyed after |event_to_dispatch| is destroyed.
+  EventAckHandler ack_handler(CreateEventResultCallback(event_id));
+#if defined(USE_OZONE)
+  ack_handler.SetPlatformEventSourceAndEvent(platform_event_source_.get(),
+                                             event_to_dispatch);
+#endif
 
   WindowMus* display_root_window = GetWindowByServerId(display_root_window_id);
   if (display_root_window && event->IsLocatedEvent() &&
@@ -1669,6 +1709,11 @@ void WindowTreeClient::OnWindowInputEvent(
     // focused window, which may have changed by the time we process the event.
     ui::Event::DispatcherApi(event_to_dispatch).set_target(window->GetWindow());
   }
+#if defined(USE_OZONE)
+  if (platform_event_source_)
+    platform_event_source_->OnWillProcessEvent(event_to_dispatch);
+#endif
+
   GetWindowTreeHostMus(window)->SendEventToSink(event_to_dispatch);
 
   ack_handler.set_handled(event_to_dispatch->handled());
