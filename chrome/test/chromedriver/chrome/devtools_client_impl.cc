@@ -530,8 +530,10 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
     unnotified_event_listeners_.pop_front();
     Status status = listener->OnEvent(
         this, unnotified_event_->method, *unnotified_event_->params);
-    if (status.IsError())
+    if (status.IsError()) {
+      unnotified_event_listeners_.clear();
       return status;
+    }
   }
   return Status(kOk);
 }
