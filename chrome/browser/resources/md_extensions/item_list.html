@@ -10,6 +10,12 @@
 <dom-module id="extensions-item-list">
   <template>
     <style include="cr-shared-style">
+      :host {
+        /* Address corner-case where #container's padding is larger than max
+           available width. */
+        overflow: auto;
+      }
+
       .items-container,
       extensions-item {
         --extensions-card-width: 400px;
