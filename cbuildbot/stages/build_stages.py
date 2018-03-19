@@ -525,11 +525,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             main_ro = fw_versions.main
             main_rw = fw_versions.main_rw
 
-            # Get the firmware key-id for the current board.
+            # Get the firmware key-id for the current board and model.
+            model_arg = '--model=' + model
             key_id_list = commands.RunCrosConfigHost(
                 self._build_root,
                 self._current_board,
-                ['get', '/firmware', 'key-id'])
+                [model_arg, 'get', '/firmware', 'key-id'])
             key_id = None
             if len(key_id_list) == 1:
               key_id = key_id_list[0]
