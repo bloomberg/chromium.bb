@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,7 +21,7 @@
 // TODO(crbug.com/805135): Remove RecentTabsHandsetViewControllerCommand and
 // recent_tabs_handset_view_controller.h import. We need this to dismiss for
 // now, but it can be improved.
-@interface RecentTabsTableCoordinator ()<RecentTabsHandsetViewControllerCommand>
+@interface RecentTabsCoordinator ()<RecentTabsHandsetViewControllerCommand>
 // Completion block called once the recentTabsViewController is dismissed.
 @property(nonatomic, copy) ProceduralBlock completion;
 // Mediator being managed by this Coordinator.
@@ -31,7 +31,7 @@
     TableContainerViewController* recentTabsContainerViewController;
 @end
 
-@implementation RecentTabsTableCoordinator
+@implementation RecentTabsCoordinator
 @synthesize completion = _completion;
 @synthesize dispatcher = _dispatcher;
 @synthesize loader = _loader;

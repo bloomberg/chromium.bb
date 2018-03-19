@@ -169,7 +169,6 @@
 #import "ios/chrome/browser/ui/new_foreground_tab_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
@@ -182,6 +181,7 @@
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -3145,10 +3145,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)createRecentTabsCoordinator {
   if (experimental_flags::IsRecentTabsUIRebootEnabled()) {
     // New RecentTabs UIReboot coordinator.
-    RecentTabsTableCoordinator* recentTabsCoordinator =
-        [[RecentTabsTableCoordinator alloc]
-            initWithBaseViewController:self
-                          browserState:_browserState];
+    RecentTabsCoordinator* recentTabsCoordinator = [
+        [RecentTabsCoordinator alloc] initWithBaseViewController:self
+                                                    browserState:_browserState];
     recentTabsCoordinator.loader = self;
     recentTabsCoordinator.dispatcher = self.dispatcher;
     self.recentTabsCoordinator = recentTabsCoordinator;

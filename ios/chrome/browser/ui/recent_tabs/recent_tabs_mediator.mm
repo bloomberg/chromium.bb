@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sessions/core/tab_restore_service.h"
