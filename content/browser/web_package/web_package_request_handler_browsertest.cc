@@ -27,11 +27,13 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 
 namespace content {
 
@@ -193,6 +195,14 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
                                                dummy_result, net::OK);
 
+  embedded_test_server()->RegisterRequestMonitor(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        if (request.relative_url == "/htxg/test.example.org_test.htxg") {
+          const auto& accept_value = request.headers.find("accept")->second;
+          EXPECT_THAT(accept_value,
+                      ::testing::HasSubstr("application/signed-exchange;v=b0"));
+        }
+      }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
