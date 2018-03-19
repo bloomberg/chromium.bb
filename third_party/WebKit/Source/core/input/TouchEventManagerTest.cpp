@@ -16,7 +16,7 @@ namespace blink {
 
 class TouchEventManagerTest : public SimTest {
  protected:
-  EventHandler& EventHandler() {
+  EventHandler& GetEventHandler() {
     return GetDocument().GetFrame()->GetEventHandler();
   }
 
@@ -67,22 +67,22 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
   CheckEventListenerCallback* callback = CheckEventListenerCallback::Create();
   GetDocument().body()->addEventListener(EventTypeNames::touchstart, callback);
 
-  EventHandler().HandlePointerEvent(
+  GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerDown),
       Vector<WebPointerEvent>());
-  EventHandler().DispatchBufferedTouchEvents();
+  GetEventHandler().DispatchBufferedTouchEvents();
 
   GetDocument().getElementById("target")->remove();
 
-  EventHandler().HandlePointerEvent(
+  GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerUp),
       Vector<WebPointerEvent>());
-  EventHandler().DispatchBufferedTouchEvents();
+  GetEventHandler().DispatchBufferedTouchEvents();
 
-  EventHandler().HandlePointerEvent(
+  GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerDown),
       Vector<WebPointerEvent>());
-  EventHandler().DispatchBufferedTouchEvents();
+  GetEventHandler().DispatchBufferedTouchEvents();
 
   ASSERT_TRUE(callback->HasReceivedEvent());
 }

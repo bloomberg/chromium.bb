@@ -85,7 +85,7 @@ class PointerEventCoordinateListenerCallback final : public EventListener {
 
 class PointerEventManagerTest : public SimTest {
  protected:
-  EventHandler& EventHandler() {
+  EventHandler& GetEventHandler() {
     return GetDocument().GetFrame()->GetEventHandler();
   }
   WebPointerEvent CreateTestPointerEvent(
@@ -137,7 +137,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
                              WebPointerProperties::PointerType::kPen),
       std::vector<WebPointerEvent>()));
 
-  EventHandler().HandleMousePressEvent(
+  GetEventHandler().HandleMousePressEvent(
       CreateTestMouseEvent(WebInputEvent::kMouseDown, WebFloatPoint(100, 100)));
 
   ASSERT_EQ(callback->mouseEventCount(), 0);
@@ -160,7 +160,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
 
-  EventHandler().HandleMouseMoveEvent(
+  GetEventHandler().HandleMouseMoveEvent(
       CreateTestMouseEvent(WebInputEvent::kMouseMove, WebFloatPoint(200, 200)),
       Vector<WebMouseEvent>());
 
