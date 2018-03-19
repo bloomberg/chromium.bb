@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
@@ -28,121 +29,183 @@
 #include "extensions/common/extension.h"
 #endif
 
+using base::trace_event::MemoryAllocatorDump;
 using memory_instrumentation::GlobalMemoryDump;
 using ukm::builders::Memory_Experimental;
 
 namespace {
 
 const char kEffectiveSize[] = "effective_size";
+const bool kLargeMetric = true;
 
 struct Metric {
+  // The root dump name that represents the required metric.
   const char* const dump_name;
-  const char* const ukm_name;
+  // The name of the metric to be recorded in UMA.
+  const char* const uma_name;
+  // Should the UMA use large memory range (1MB - 64GB) or small memory range
+  // (10KB - 500MB). Only relevant if the |metric| is a size metric.
+  const bool is_large_metric;
+  // The type of metric that is measured, usually size in bytes or object count.
   const char* const metric;
+  // The setter method for the metric in UKM recorder.
   Memory_Experimental& (Memory_Experimental::*setter)(int64_t);
 };
 const Metric kAllocatorDumpNamesForMetrics[] = {
-    {"blink_gc", "BlinkGC", kEffectiveSize, &Memory_Experimental::SetBlinkGC},
-    {"blink_gc/allocated_objects", "BlinkGC.AllocatedObjects", kEffectiveSize,
-     &Memory_Experimental::SetBlinkGC_AllocatedObjects},
-    {"blink_objects/Document", "NumberOfDocuments",
-     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+    {"blink_gc", "BlinkGC", kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetBlinkGC},
+    {"blink_gc/allocated_objects", "BlinkGC.AllocatedObjects", kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetBlinkGC_AllocatedObjects},
+    {"blink_objects/Document", "NumberOfDocuments", !kLargeMetric,
+     MemoryAllocatorDump::kNameObjectCount,
      &Memory_Experimental::SetNumberOfDocuments},
-    {"blink_objects/Frame", "NumberOfFrames",
-     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+    {"blink_objects/Frame", "NumberOfFrames", !kLargeMetric,
+     MemoryAllocatorDump::kNameObjectCount,
      &Memory_Experimental::SetNumberOfFrames},
-    {"blink_objects/LayoutObject", "NumberOfLayoutObjects",
-     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+    {"blink_objects/LayoutObject", "NumberOfLayoutObjects", !kLargeMetric,
+     MemoryAllocatorDump::kNameObjectCount,
      &Memory_Experimental::SetNumberOfLayoutObjects},
-    {"blink_objects/Node", "NumberOfNodes",
-     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+    {"blink_objects/Node", "NumberOfNodes", !kLargeMetric,
+     MemoryAllocatorDump::kNameObjectCount,
      &Memory_Experimental::SetNumberOfNodes},
-    {"components/download", "DownloadService", kEffectiveSize,
+    {"components/download", "DownloadService", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetDownloadService},
-    {"discardable", "Discardable", kEffectiveSize,
+    {"discardable", "Discardable", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetDiscardable},
-    {"extensions/value_store", "Extensions.ValueStore", kEffectiveSize,
-     &Memory_Experimental::SetExtensions_ValueStore},
-    {"font_caches", "FontCaches", kEffectiveSize,
+    {"extensions/value_store", "Extensions.ValueStore", kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetExtensions_ValueStore},
+    {"font_caches", "FontCaches", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetFontCaches},
-    {"gpu/gl", "CommandBuffer", kEffectiveSize,
+    {"gpu/gl", "CommandBuffer", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetCommandBuffer},
-    {"history", "History", kEffectiveSize, &Memory_Experimental::SetHistory},
-    {"java_heap", "JavaHeap", kEffectiveSize,
+    {"history", "History", !kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetHistory},
+    {"java_heap", "JavaHeap", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetJavaHeap},
-    {"leveldatabase", "LevelDatabase", kEffectiveSize,
+    {"leveldatabase", "LevelDatabase", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetLevelDatabase},
-    {"malloc", "Malloc", kEffectiveSize, &Memory_Experimental::SetMalloc},
-    {"mojo", "NumberOfMojoHandles",
-     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+    {"malloc", "Malloc", kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetMalloc},
+    {"mojo", "NumberOfMojoHandles", !kLargeMetric,
+     MemoryAllocatorDump::kNameObjectCount,
      &Memory_Experimental::SetNumberOfMojoHandles},
-    {"net", "Net", kEffectiveSize, &Memory_Experimental::SetNet},
-    {"net/url_request_context", "Net.UrlRequestContext", kEffectiveSize,
-     &Memory_Experimental::SetNet_UrlRequestContext},
-    {"omnibox", "OmniboxSuggestions", kEffectiveSize,
+    {"net", "Net", !kLargeMetric, kEffectiveSize, &Memory_Experimental::SetNet},
+    {"net/url_request_context", "Net.UrlRequestContext", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetNet_UrlRequestContext},
+    {"omnibox", "OmniboxSuggestions", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetOmniboxSuggestions},
-    {"partition_alloc", "PartitionAlloc", kEffectiveSize,
+    {"partition_alloc", "PartitionAlloc", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetPartitionAlloc},
     {"partition_alloc/allocated_objects", "PartitionAlloc.AllocatedObjects",
-     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_AllocatedObjects},
+     kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc_AllocatedObjects},
     {"partition_alloc/partitions/array_buffer",
-     "PartitionAlloc.Partitions.ArrayBuffer", kEffectiveSize,
+     "PartitionAlloc.Partitions.ArrayBuffer", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_ArrayBuffer},
     {"partition_alloc/partitions/buffer", "PartitionAlloc.Partitions.Buffer",
-     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_Partitions_Buffer},
+     kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc_Partitions_Buffer},
     {"partition_alloc/partitions/fast_malloc",
-     "PartitionAlloc.Partitions.FastMalloc", kEffectiveSize,
+     "PartitionAlloc.Partitions.FastMalloc", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetPartitionAlloc_Partitions_FastMalloc},
     {"partition_alloc/partitions/layout", "PartitionAlloc.Partitions.Layout",
-     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_Partitions_Layout},
-    {"site_storage", "SiteStorage", kEffectiveSize,
+     kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc_Partitions_Layout},
+    {"site_storage", "SiteStorage", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetSiteStorage},
-    {"site_storage/blob_storage", "SiteStorage.BlobStorage", kEffectiveSize,
-     &Memory_Experimental::SetSiteStorage_BlobStorage},
-    {"site_storage/index_db", "SiteStorage.IndexDB", kEffectiveSize,
-     &Memory_Experimental::SetSiteStorage_IndexDB},
-    {"site_storage/localstorage", "SiteStorage.LocalStorage", kEffectiveSize,
-     &Memory_Experimental::SetSiteStorage_LocalStorage},
+    {"site_storage/blob_storage", "SiteStorage.BlobStorage", kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetSiteStorage_BlobStorage},
+    {"site_storage/index_db", "SiteStorage.IndexDB", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetSiteStorage_IndexDB},
+    {"site_storage/localstorage", "SiteStorage.LocalStorage", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetSiteStorage_LocalStorage},
     {"site_storage/session_storage", "SiteStorage.SessionStorage",
-     kEffectiveSize, &Memory_Experimental::SetSiteStorage_SessionStorage},
-    {"skia", "Skia", kEffectiveSize, &Memory_Experimental::SetSkia},
-    {"skia/sk_glyph_cache", "Skia.SkGlyphCache", kEffectiveSize,
+     !kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetSiteStorage_SessionStorage},
+    {"skia", "Skia", kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetSkia},
+    {"skia/sk_glyph_cache", "Skia.SkGlyphCache", kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetSkia_SkGlyphCache},
-    {"skia/sk_resource_cache", "Skia.SkResourceCache", kEffectiveSize,
-     &Memory_Experimental::SetSkia_SkResourceCache},
-    {"sqlite", "Sqlite", kEffectiveSize, &Memory_Experimental::SetSqlite},
-    {"sync", "Sync", kEffectiveSize, &Memory_Experimental::SetSync},
-    {"tab_restore", "TabRestore", kEffectiveSize,
+    {"skia/sk_resource_cache", "Skia.SkResourceCache", kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetSkia_SkResourceCache},
+    {"sqlite", "Sqlite", !kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetSqlite},
+    {"sync", "Sync", kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetSync},
+    {"tab_restore", "TabRestore", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetTabRestore},
-    {"ui", "UI", kEffectiveSize, &Memory_Experimental::SetUI},
-    {"v8", "V8", kEffectiveSize, &Memory_Experimental::SetV8},
-    {"web_cache", "WebCache", kEffectiveSize,
+    {"ui", "UI", !kLargeMetric, kEffectiveSize, &Memory_Experimental::SetUI},
+    {"v8", "V8", kLargeMetric, kEffectiveSize, &Memory_Experimental::SetV8},
+    {"web_cache", "WebCache", !kLargeMetric, kEffectiveSize,
      &Memory_Experimental::SetWebCache},
-    {"web_cache/Image_resources", "WebCache.ImageResources", kEffectiveSize,
-     &Memory_Experimental::SetWebCache_ImageResources},
+    {"web_cache/Image_resources", "WebCache.ImageResources", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetWebCache_ImageResources},
     {"web_cache/CSS stylesheet_resources", "WebCache.CSSStylesheetResources",
-     kEffectiveSize, &Memory_Experimental::SetWebCache_CSSStylesheetResources},
-    {"web_cache/Script_resources", "WebCache.ScriptResources", kEffectiveSize,
-     &Memory_Experimental::SetWebCache_ScriptResources},
+     !kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetWebCache_CSSStylesheetResources},
+    {"web_cache/Script_resources", "WebCache.ScriptResources", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetWebCache_ScriptResources},
     {"web_cache/XSL stylesheet_resources", "WebCache.XSLStylesheetResources",
-     kEffectiveSize, &Memory_Experimental::SetWebCache_XSLStylesheetResources},
-    {"web_cache/Font_resources", "WebCache.FontResources", kEffectiveSize,
-     &Memory_Experimental::SetWebCache_FontResources},
-    {"web_cache/Other_resources", "WebCache.OtherResources", kEffectiveSize,
-     &Memory_Experimental::SetWebCache_OtherResources},
+     !kLargeMetric, kEffectiveSize,
+     &Memory_Experimental::SetWebCache_XSLStylesheetResources},
+    {"web_cache/Font_resources", "WebCache.FontResources", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetWebCache_FontResources},
+    {"web_cache/Other_resources", "WebCache.OtherResources", !kLargeMetric,
+     kEffectiveSize, &Memory_Experimental::SetWebCache_OtherResources},
 };
 
+#define UMA_PREFIX "Memory."
+#define EXPERIMENTAL_UMA_PREFIX "Memory.Experimental."
+#define VERSION_SUFFIX_NORMAL "2."
+#define VERSION_SUFFIX_SMALL "2.Small."
+
+// Use the values from UMA_HISTOGRAM_MEMORY_LARGE_MB.
+#define MEMORY_METRICS_HISTOGRAM_MB(name, value) \
+  base::UmaHistogramCustomCounts(name, value, 1, 64000, 100)
+
+// Used to measure KB-granularity memory stats. Range is from 1KB to 500,000KB
+// (500MB).
+#define MEMORY_METRICS_HISTOGRAM_KB(name, value) \
+  base::UmaHistogramCustomCounts(name, value, 10, 500000, 100)
+
 void EmitProcessUkm(const GlobalMemoryDump::ProcessDump& pmd,
+                    const char* process_name,
                     const base::Optional<base::TimeDelta>& uptime,
                     Memory_Experimental* builder) {
   for (const auto& item : kAllocatorDumpNamesForMetrics) {
     base::Optional<uint64_t> value = pmd.GetMetric(item.dump_name, item.metric);
     if (value) {
-      if (base::StringPiece(item.metric) ==
-          base::trace_event::MemoryAllocatorDump::kNameObjectCount) {
-        ((*builder).*(item.setter))(value.value());
-      } else {
+      // Effective size is the size of the memory dump after discounting all
+      // suballocations from the dump.
+      if (base::StringPiece(item.metric) == kEffectiveSize) {
+        // For each effective size metric, emit both an UMA in MB or KB, and an
+        // UKM in MB.
         ((*builder).*(item.setter))(value.value() / 1024 / 1024);
+        std::string uma_name;
+
+        // Always use "Gpu" in process name for command buffers to be
+        // consistent even in single process mode.
+        if (base::StringPiece(item.uma_name) == "CommandBuffer") {
+          uma_name = EXPERIMENTAL_UMA_PREFIX "Gpu" VERSION_SUFFIX_NORMAL
+                                             "CommandBuffer";
+          DCHECK(item.is_large_metric);
+        } else {
+          const char* version_suffix = item.is_large_metric
+                                           ? VERSION_SUFFIX_NORMAL
+                                           : VERSION_SUFFIX_SMALL;
+          uma_name = std::string(EXPERIMENTAL_UMA_PREFIX) + process_name +
+                     version_suffix + item.uma_name;
+        }
+
+        if (item.is_large_metric) {
+          MEMORY_METRICS_HISTOGRAM_MB(uma_name, value.value() / 1024 / 1024);
+        } else {
+          MEMORY_METRICS_HISTOGRAM_KB(uma_name, value.value() / 1024);
+        }
+      } else {
+        // For all non-size metrics emit only an UKM, with the metric value as
+        // is.
+        ((*builder).*(item.setter))(value.value());
       }
     }
   }
@@ -155,6 +218,18 @@ void EmitProcessUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #endif
   if (uptime)
     builder->SetUptime(uptime.value().InSeconds());
+
+  MEMORY_METRICS_HISTOGRAM_MB(
+      std::string(UMA_PREFIX) + process_name + ".PrivateMemoryFootprint",
+      pmd.os_dump().private_footprint_kb / 1024);
+  MEMORY_METRICS_HISTOGRAM_MB(
+      std::string(UMA_PREFIX) + process_name + ".SharedMemoryFootprint",
+      pmd.os_dump().shared_footprint_kb / 1024);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  MEMORY_METRICS_HISTOGRAM_MB(
+      std::string(UMA_PREFIX) + process_name + ".PrivateSwapFootprint",
+      pmd.os_dump().private_footprint_swap_kb / 1024);
+#endif
 }
 
 void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
@@ -164,57 +239,10 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::BROWSER));
-  EmitProcessUkm(pmd, uptime, &builder);
-
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Resident",
-                                pmd.os_dump().resident_set_kb / 1024);
-
-#if !defined(OS_WIN)
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Malloc",
-                                pmd.chrome_dump().malloc_total_kb / 1024);
-#endif
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.Browser2.PrivateMemoryFootprint",
-      pmd.os_dump().private_footprint_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateMemoryFootprint",
-                                pmd.os_dump().private_footprint_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.SharedMemoryFootprint",
-                                pmd.os_dump().shared_footprint_kb / 1024);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateSwapFootprint",
-                                pmd.os_dump().private_footprint_swap_kb / 1024);
-#endif
-  // It is possible to run without a separate GPU process.
-  // When that happens, we should log common GPU metrics from the browser proc.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInProcessGPU)) {
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(
-        "Memory.Experimental.Gpu2.CommandBuffer",
-        pmd.chrome_dump().command_buffer_total_kb / 1024);
-  }
+  EmitProcessUkm(pmd, "Browser", uptime, &builder);
 
   builder.Record(ukm_recorder);
 }
-
-#define RENDERER_MEMORY_UMA_HISTOGRAMS(type)                                   \
-  do {                                                                         \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental." type "2.Resident",    \
-                                  pmd.os_dump().resident_set_kb / 1024);       \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental." type                  \
-                                  "2.PrivateMemoryFootprint",                  \
-                                  pmd.os_dump().private_footprint_kb / 1024);  \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory." type ".PrivateMemoryFootprint",    \
-                                  pmd.os_dump().private_footprint_kb / 1024);  \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory." type ".SharedMemoryFootprint",     \
-                                  pmd.os_dump().shared_footprint_kb / 1024);   \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(                                             \
-        "Memory.Experimental." type "2.PartitionAlloc",                        \
-        pmd.chrome_dump().partition_alloc_total_kb / 1024);                    \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental." type "2.BlinkGC",     \
-                                  pmd.chrome_dump().blink_gc_total_kb / 1024); \
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental." type "2.V8",          \
-                                  pmd.chrome_dump().v8_total_kb / 1024);       \
-  } while (false)
 
 void EmitRendererMemoryMetrics(
     const GlobalMemoryDump::ProcessDump& pmd,
@@ -222,31 +250,6 @@ void EmitRendererMemoryMetrics(
     ukm::UkmRecorder* ukm_recorder,
     int number_of_extensions,
     const base::Optional<base::TimeDelta>& uptime) {
-  // UMA
-  if (number_of_extensions == 0) {
-    RENDERER_MEMORY_UMA_HISTOGRAMS("Renderer");
-#if !defined(OS_WIN)
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Malloc",
-                                  pmd.chrome_dump().malloc_total_kb / 1024);
-#endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(
-        "Memory.Experimental.Renderer2.PrivateSwapFootprint",
-        pmd.os_dump().private_footprint_swap_kb / 1024);
-#endif
-  } else {
-    RENDERER_MEMORY_UMA_HISTOGRAMS("Extension");
-#if !defined(OS_WIN)
-    UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Extension2.Malloc",
-                                  pmd.chrome_dump().malloc_total_kb / 1024);
-#endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-    UMA_HISTOGRAM_MEMORY_LARGE_MB(
-        "Memory.Experimental.Extension2.PrivateSwapFootprint",
-        pmd.os_dump().private_footprint_swap_kb / 1024);
-#endif
-  }
-  // UKM
   ukm::SourceId ukm_source_id = page_info.is_null()
                                     ? ukm::UkmRecorder::GetNewSourceID()
                                     : page_info->ukm_source_id;
@@ -254,7 +257,9 @@ void EmitRendererMemoryMetrics(
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::RENDERER));
   builder.SetNumberOfExtensions(number_of_extensions);
-  EmitProcessUkm(pmd, uptime, &builder);
+
+  const char* process = number_of_extensions == 0 ? "Renderer" : "Extension";
+  EmitProcessUkm(pmd, process, uptime, &builder);
 
   if (!page_info.is_null()) {
     builder.SetIsVisible(page_info->is_visible);
@@ -274,30 +279,7 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
-  EmitProcessUkm(pmd, uptime, &builder);
-
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Resident",
-                                pmd.os_dump().resident_set_kb / 1024);
-
-#if !defined(OS_WIN)
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
-                                pmd.chrome_dump().malloc_total_kb / 1024);
-#endif
-
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
-      pmd.os_dump().private_footprint_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateMemoryFootprint",
-                                pmd.os_dump().private_footprint_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.SharedMemoryFootprint",
-                                pmd.os_dump().shared_footprint_kb / 1024);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateSwapFootprint",
-                                pmd.os_dump().private_footprint_swap_kb / 1024);
-#endif
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.Gpu2.CommandBuffer",
-      pmd.chrome_dump().command_buffer_total_kb / 1024);
+  EmitProcessUkm(pmd, "Gpu", uptime, &builder);
 
   builder.Record(ukm_recorder);
 }
