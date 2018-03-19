@@ -264,6 +264,7 @@ URLLoader::URLLoader(
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     uint32_t process_id,
+    uint32_t request_id,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder)
     : url_request_context_getter_(url_request_context_getter),
@@ -273,6 +274,7 @@ URLLoader::URLLoader(
       is_load_timing_enabled_(request.enable_load_timing),
       process_id_(process_id),
       render_frame_id_(request.render_frame_id),
+      request_id_(request_id),
       connected_(true),
       keepalive_(request.keepalive),
       binding_(this, std::move(url_loader_request)),
@@ -461,8 +463,8 @@ void URLLoader::OnAuthRequired(net::URLRequest* unused,
   }
 
   network_service_client_->OnAuthRequired(
-      process_id_, render_frame_id_, url_request_->url(), first_auth_attempt_,
-      auth_info,
+      process_id_, render_frame_id_, request_id_, url_request_->url(),
+      first_auth_attempt_, auth_info,
       base::BindOnce(&URLLoader::OnAuthRequiredResponse,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -478,7 +480,7 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
   }
 
   network_service_client_->OnCertificateRequested(
-      process_id_, render_frame_id_, cert_info,
+      process_id_, render_frame_id_, request_id_, cert_info,
       base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -491,8 +493,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
     return;
   }
   network_service_client_->OnSSLCertificateError(
-      process_id_, render_frame_id_, resource_type_, url_request_->url(),
-      ssl_info, fatal,
+      process_id_, render_frame_id_, request_id_, resource_type_,
+      url_request_->url(), ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }

@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "base/base64.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -30,6 +31,8 @@ using GetResponseBodyForInterceptionCallback =
 using Modifications = DevToolsNetworkInterceptor::Modifications;
 using InterceptionStage = DevToolsNetworkInterceptor::InterceptionStage;
 using protocol::Response;
+using protocol::Network::AuthChallengeResponse;
+using GlobalRequestId = std::tuple<int32_t, int32_t, int32_t>;
 
 struct CreateLoaderParameters {
   CreateLoaderParameters(
@@ -156,9 +159,17 @@ struct ResponseMetadata {
 class InterceptionJob : public network::mojom::URLLoaderClient,
                         public network::mojom::URLLoader {
  public:
+  static InterceptionJob* FindByRequestId(
+      const GlobalRequestId& global_req_id) {
+    const auto& map = GetInterceptionJobMap();
+    auto it = map.find(global_req_id);
+    return it == map.end() ? nullptr : it->second;
+  }
+
   InterceptionJob(DevToolsURLLoaderInterceptor::Impl* interceptor,
                   const std::string& id,
                   const base::UnguessableToken& frame_token,
+                  int32_t process_id,
                   std::unique_ptr<CreateLoaderParameters> create_loader_params,
                   network::mojom::URLLoaderRequest loader_request,
                   network::mojom::URLLoaderClientPtr client,
@@ -171,10 +182,24 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
   void Detach();
 
+  void OnAuthRequest(
+      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      DevToolsURLLoaderInterceptor::HandleAuthRequestCallback callback);
+
  private:
-  ~InterceptionJob() override {}
+  static std::map<GlobalRequestId, InterceptionJob*>& GetInterceptionJobMap() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    static base::NoDestructor<std::map<GlobalRequestId, InterceptionJob*>> inst;
+    return *inst;
+  }
+
+  ~InterceptionJob() override {
+    size_t erased = GetInterceptionJobMap().erase(global_req_id_);
+    DCHECK_EQ(1lu, erased);
+  }
 
   Response InnerContinueRequest(std::unique_ptr<Modifications> modifications);
+  Response ProcessAuthResponse(AuthChallengeResponse* auth_challenge_response);
   Response ProcessResponseOverride(const std::string& response);
   Response ProcessRedirectByClient(const std::string& location);
   void SendResponse(const base::StringPiece& body);
@@ -223,6 +248,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   const std::string id_;
+  const GlobalRequestId global_req_id_;
   const base::UnguessableToken frame_token_;
   const base::TimeTicks start_ticks_;
   const base::Time start_time_;
@@ -244,6 +270,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
     kNotStarted,
     kRequestSent,
     kRedirectReceived,
+    kAuthRequired,
     kResponseReceived,
   };
 
@@ -254,6 +281,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   std::unique_ptr<ResponseMetadata> response_metadata_;
 
   base::Optional<std::pair<net::RequestPriority, int32_t>> priority_;
+  DevToolsURLLoaderInterceptor::HandleAuthRequestCallback
+      pending_auth_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
@@ -271,6 +300,7 @@ class DevToolsURLLoaderInterceptor::Impl
   }
 
   void CreateJob(const base::UnguessableToken& frame_token,
+                 int32_t process_id,
                  std::unique_ptr<CreateLoaderParameters> create_params,
                  network::mojom::URLLoaderRequest loader_request,
                  network::mojom::URLLoaderClientPtr client,
@@ -281,9 +311,9 @@ class DevToolsURLLoaderInterceptor::Impl
 
     std::string id = base::StringPrintf("interception-job-%d", ++last_id);
     InterceptionJob* job =
-        new InterceptionJob(this, id, frame_token, std::move(create_params),
-                            std::move(loader_request), std::move(client),
-                            std::move(target_factory));
+        new InterceptionJob(this, id, frame_token, process_id,
+                            std::move(create_params), std::move(loader_request),
+                            std::move(client), std::move(target_factory));
     jobs_.emplace(std::move(id), job);
   }
 
@@ -349,6 +379,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
  public:
   DevToolsURLLoaderFactoryProxy(
       const base::UnguessableToken& frame_token,
+      int32_t process_id,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor);
@@ -372,6 +403,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   void OnTargetFactoryError();
 
   const base::UnguessableToken frame_token_;
+  const int32_t process_id_;
 
   network::mojom::URLLoaderFactoryPtr target_factory_;
   base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor_;
@@ -382,10 +414,13 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 
 DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     const base::UnguessableToken& frame_token,
+    int32_t process_id,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor)
-    : frame_token_(frame_token), interceptor_(std::move(interceptor)) {
+    : frame_token_(frame_token),
+      process_id_(process_id),
+      interceptor_(std::move(interceptor)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -417,7 +452,7 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
       routing_id, request_id, options, request, traffic_annotation);
   network::mojom::URLLoaderFactoryPtr factory_clone;
   target_factory_->Clone(MakeRequest(&factory_clone));
-  interceptor->CreateJob(frame_token_, std::move(creation_params),
+  interceptor->CreateJob(frame_token_, process_id_, std::move(creation_params),
                          std::move(loader), std::move(client),
                          std::move(factory_clone));
 }
@@ -450,6 +485,20 @@ void DevToolsURLLoaderFactoryProxy::OnTargetFactoryError() {
 void DevToolsURLLoaderFactoryProxy::OnProxyBindingError() {
   if (bindings_.empty())
     delete this;
+}
+
+// static
+void DevToolsURLLoaderInterceptor::HandleAuthRequest(
+    int32_t process_id,
+    int32_t routing_id,
+    int32_t request_id,
+    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    HandleAuthRequestCallback callback) {
+  GlobalRequestId req_id = std::make_tuple(process_id, routing_id, request_id);
+  if (auto* job = InterceptionJob::FindByRequestId(req_id))
+    job->OnAuthRequest(auth_info, std::move(callback));
+  else
+    std::move(callback).Run(true, base::nullopt);
 }
 
 DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
@@ -515,6 +564,7 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
     const base::UnguessableToken frame_token,
+    int process_id,
     network::mojom::URLLoaderFactoryRequest* request) const {
   if (!enabled_)
     return false;
@@ -523,7 +573,8 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *request = MakeRequest(&target_ptr_info);
 
-  new DevToolsURLLoaderFactoryProxy(frame_token, std::move(original_request),
+  new DevToolsURLLoaderFactoryProxy(frame_token, process_id,
+                                    std::move(original_request),
                                     std::move(target_ptr_info), weak_impl_);
   return true;
 }
@@ -532,11 +583,16 @@ InterceptionJob::InterceptionJob(
     DevToolsURLLoaderInterceptor::Impl* interceptor,
     const std::string& id,
     const base::UnguessableToken& frame_token,
+    int process_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
     network::mojom::URLLoaderFactoryPtr target_factory)
     : id_(std::move(id)),
+      global_req_id_(
+          std::make_tuple(process_id,
+                          create_loader_params->request.render_frame_id,
+                          create_loader_params->request_id)),
       frame_token_(frame_token),
       start_ticks_(base::TimeTicks::Now()),
       start_time_(base::Time::Now()),
@@ -556,6 +612,10 @@ InterceptionJob::InterceptionJob(
   loader_binding_.Bind(std::move(loader_request));
   loader_binding_.set_connection_error_handler(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
+
+  auto& job_map = GetInterceptionJobMap();
+  bool inserted = job_map.emplace(global_req_id_, this).second;
+  DCHECK(inserted);
 
   if (stage_ & InterceptionStage::REQUEST) {
     NotifyClient(BuildRequestInfo(nullptr));
@@ -614,8 +674,15 @@ void InterceptionJob::ContinueInterceptedRequest(
 void InterceptionJob::Detach() {
   stage_ = InterceptionStage::DONT_INTERCEPT;
   interceptor_ = nullptr;
-  if (waiting_for_resolution_)
-    InnerContinueRequest(std::make_unique<Modifications>());
+  if (!waiting_for_resolution_)
+    return;
+  if (state_ == State::kAuthRequired) {
+    state_ = State::kRequestSent;
+    waiting_for_resolution_ = false;
+    std::move(pending_auth_callback_).Run(true, base::nullopt);
+    return;
+  }
+  InnerContinueRequest(std::make_unique<Modifications>());
 }
 
 Response InterceptionJob::InnerContinueRequest(
@@ -623,6 +690,15 @@ Response InterceptionJob::InnerContinueRequest(
   if (!waiting_for_resolution_)
     return Response::Error("Invalid state for continueInterceptedRequest");
   waiting_for_resolution_ = false;
+
+  if (state_ == State::kAuthRequired) {
+    if (!modifications->auth_challenge_response.isJust())
+      return Response::InvalidParams("authChallengeResponse required.");
+    return ProcessAuthResponse(
+        modifications->auth_challenge_response.fromJust());
+  } else if (modifications->auth_challenge_response.isJust()) {
+    return Response::InvalidParams("authChallengeResponse not expected.");
+  }
 
   if (modifications->mark_as_canceled || modifications->error_reason) {
     int error = modifications->error_reason
@@ -718,6 +794,27 @@ void InterceptionJob::ApplyModificationsToRequest(
       }
     }
   }
+}
+
+Response InterceptionJob::ProcessAuthResponse(
+    AuthChallengeResponse* auth_challenge_response) {
+  std::string response = auth_challenge_response->GetResponse();
+  state_ = State::kRequestSent;
+  if (response == AuthChallengeResponse::ResponseEnum::Default) {
+    std::move(pending_auth_callback_).Run(true, base::nullopt);
+  } else if (response == AuthChallengeResponse::ResponseEnum::CancelAuth) {
+    std::move(pending_auth_callback_).Run(false, base::nullopt);
+  } else if (response ==
+             AuthChallengeResponse::ResponseEnum::ProvideCredentials) {
+    net::AuthCredentials credentials(
+        base::UTF8ToUTF16(auth_challenge_response->GetUsername("")),
+        base::UTF8ToUTF16(auth_challenge_response->GetPassword("")));
+    std::move(pending_auth_callback_).Run(false, std::move(credentials));
+  } else {
+    return Response::InvalidParams("Unrecognized authChallengeResponse.");
+  }
+
+  return Response::OK();
 }
 
 Response InterceptionJob::ProcessResponseOverride(const std::string& response) {
@@ -1049,6 +1146,32 @@ void InterceptionJob::OnComplete(
     return;
   }
   response_metadata_->status = status;
+}
+
+void InterceptionJob::OnAuthRequest(
+    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    DevToolsURLLoaderInterceptor::HandleAuthRequestCallback callback) {
+  DCHECK_EQ(kRequestSent, state_);
+  DCHECK(pending_auth_callback_.is_null());
+  DCHECK(!waiting_for_resolution_);
+
+  if (!(stage_ & InterceptionStage::REQUEST)) {
+    std::move(callback).Run(true, base::nullopt);
+    return;
+  }
+  state_ = State::kAuthRequired;
+  auto request_info = BuildRequestInfo(nullptr);
+  request_info->auth_challenge =
+      protocol::Network::AuthChallenge::Create()
+          .SetSource(auth_info->is_proxy
+                         ? protocol::Network::AuthChallenge::SourceEnum::Proxy
+                         : protocol::Network::AuthChallenge::SourceEnum::Server)
+          .SetOrigin(auth_info->challenger.Serialize())
+          .SetScheme(auth_info->scheme)
+          .SetRealm(auth_info->realm)
+          .Build();
+  pending_auth_callback_ = std::move(callback);
+  NotifyClient(std::move(request_info));
 }
 
 }  // namespace content

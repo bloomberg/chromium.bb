@@ -1162,8 +1162,8 @@ bool DevToolsURLInterceptorRequestJob::ProcessAuthResponse(
       protocol::Network::AuthChallengeResponse::ResponseEnum::
           ProvideCredentials) {
     SetAuth(net::AuthCredentials(
-        base::UTF8ToUTF16(auth_challenge_response->GetUsername("").c_str()),
-        base::UTF8ToUTF16(auth_challenge_response->GetPassword("").c_str())));
+        base::UTF8ToUTF16(auth_challenge_response->GetUsername("")),
+        base::UTF8ToUTF16(auth_challenge_response->GetPassword(""))));
     return true;
   }
 

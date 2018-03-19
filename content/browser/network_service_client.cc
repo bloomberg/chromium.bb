@@ -5,6 +5,7 @@
 #include "content/browser/network_service_client.h"
 
 #include "base/optional.h"
+#include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -160,6 +161,9 @@ class LoginHandlerDelegate {
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
       scoped_refptr<net::AuthChallengeInfo> auth_info,
       bool is_main_frame,
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
       const GURL& url,
       bool first_auth_attempt)
       : callback_(std::move(callback)),
@@ -170,11 +174,31 @@ class LoginHandlerDelegate {
         web_contents_getter_(web_contents_getter) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&LoginHandlerDelegate::CreateLoginDelegate,
-                   base::Unretained(this)));
+        base::BindOnce(&LoginHandlerDelegate::DispatchInterceptorHookAndStart,
+                       base::Unretained(this), process_id, routing_id,
+                       request_id));
   }
 
  private:
+  void DispatchInterceptorHookAndStart(uint32_t process_id,
+                                       uint32_t routing_id,
+                                       uint32_t request_id) {
+    DevToolsURLLoaderInterceptor::HandleAuthRequest(
+        process_id, routing_id, request_id, auth_info_,
+        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptor,
+                       base::Unretained(this)));
+  }
+
+  void ContinueAfterInterceptor(
+      bool use_fallback,
+      const base::Optional<net::AuthCredentials>& auth_credentials) {
+    DCHECK(!(use_fallback && auth_credentials.has_value()));
+    if (use_fallback)
+      CreateLoginDelegate();
+    else
+      RunAuthRequiredCallback(auth_credentials);
+  }
+
   void CreateLoginDelegate() {
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
         auth_info_.get(), web_contents_getter_, is_main_frame_, url_,
@@ -192,14 +216,8 @@ class LoginHandlerDelegate {
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoginHandlerDelegate::RunCallbackOnUI,
-                   base::Unretained(this), auth_credentials));
-  }
-
-  void RunCallbackOnUI(
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    std::move(callback_).Run(auth_credentials);
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+        base::BindOnce(std::move(callback_), auth_credentials));
+    delete this;
   }
 
   network::mojom::NetworkServiceClient::OnAuthRequiredCallback callback_;
@@ -222,6 +240,7 @@ NetworkServiceClient::~NetworkServiceClient() = default;
 void NetworkServiceClient::OnAuthRequired(
     uint32_t process_id,
     uint32_t routing_id,
+    uint32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
     const scoped_refptr<net::AuthChallengeInfo>& auth_info,
@@ -242,13 +261,15 @@ void NetworkServiceClient::OnAuthRequired(
           : FrameTreeNode::GloballyFindByID(routing_id)->current_frame_host();
   bool is_main_frame = !rfh->GetParent();
   new LoginHandlerDelegate(std::move(callback), web_contents_getter, auth_info,
-                           is_main_frame, url,
+                           is_main_frame, process_id, routing_id, request_id,
+                           url,
                            first_auth_attempt);  // deletes self
 }
 
 void NetworkServiceClient::OnCertificateRequested(
     uint32_t process_id,
     uint32_t routing_id,
+    uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
         callback) {
@@ -271,6 +292,7 @@ void NetworkServiceClient::OnCertificateRequested(
 void NetworkServiceClient::OnSSLCertificateError(
     uint32_t process_id,
     uint32_t routing_id,
+    uint32_t request_id,
     int32_t resource_type,
     const GURL& url,
     const net::SSLInfo& ssl_info,

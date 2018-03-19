@@ -17,6 +17,17 @@ class DevToolsURLLoaderInterceptor {
  public:
   class Impl;
 
+  using HandleAuthRequestCallback =
+      base::OnceCallback<void(bool use_fallback,
+                              const base::Optional<net::AuthCredentials>&)>;
+  // Can only be called on the IO thread.
+  static void HandleAuthRequest(
+      int32_t process_id,
+      int32_t routing_id,
+      int32_t request_id,
+      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      HandleAuthRequestCallback callback);
+
   DevToolsURLLoaderInterceptor(
       FrameTreeNode* local_root,
       DevToolsNetworkInterceptor::RequestInterceptedCallback callback);
@@ -38,6 +49,7 @@ class DevToolsURLLoaderInterceptor {
 
   bool CreateProxyForInterception(
       const base::UnguessableToken frame_token,
+      int process_id,  // 0 for navigation
       network::mojom::URLLoaderFactoryRequest* request) const;
 
  private:
