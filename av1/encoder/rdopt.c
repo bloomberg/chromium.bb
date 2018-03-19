@@ -2307,7 +2307,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
     const int ext_tx_set =
-        get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+        get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
     if (is_inter) {
       if (ext_tx_set > 0)
         return x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];

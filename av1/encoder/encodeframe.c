@@ -4662,8 +4662,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-    const int eset =
-        get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+    const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
     if (eset > 0) {
       const TxSetType tx_set_type =
           get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);

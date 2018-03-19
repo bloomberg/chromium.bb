@@ -712,9 +712,8 @@ static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
     0, 3, -1, -1, -1, -1, 2, -1, 1 },
 };
 
-static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
+static INLINE int get_ext_tx_set(TX_SIZE tx_size, int is_inter,
                                  int use_reduced_set) {
-  (void)bs;
   const TxSetType set_type =
       get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
   return ext_tx_set_index[is_inter][set_type];
