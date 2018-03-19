@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
@@ -233,6 +234,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -351,6 +354,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::LabelButton* settings_done_button_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> click_activator_;
+
+  base::TimeTicks last_mouse_pressed_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };

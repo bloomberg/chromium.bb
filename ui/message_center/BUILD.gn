@@ -49,6 +49,7 @@ jumbo_component("message_center") {
       "//ui/accessibility",
       "//ui/display",
       "//ui/events",
+      "//ui/events:gesture_detection",
       "//ui/gfx",
       "//ui/gfx/geometry",
       "//ui/native_theme",
