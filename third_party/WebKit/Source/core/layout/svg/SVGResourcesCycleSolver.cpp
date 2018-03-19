@@ -25,11 +25,10 @@
 
 namespace blink {
 
-SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layout_object,
-                                                 SVGResources* resources)
-    : layout_object_(layout_object), resources_(resources) {
-  DCHECK(layout_object_);
-  DCHECK(resources_);
+SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject& layout_object)
+    : layout_object_(layout_object) {
+  if (layout_object.IsSVGResourceContainer())
+    active_resources_.insert(ToLayoutSVGResourceContainer(&layout_object));
 }
 
 SVGResourcesCycleSolver::~SVGResourcesCycleSolver() = default;
@@ -47,12 +46,15 @@ struct ActiveFrame {
   LayoutSVGResourceContainer* resource_;
 };
 
-bool SVGResourcesCycleSolver::ResourceContainsCycles(
+bool SVGResourcesCycleSolver::TraverseResourceContainer(
     LayoutSVGResourceContainer* resource) {
   // If we've traversed this sub-graph before and no cycles were observed, then
   // reuse that result.
   if (dag_cache_.Contains(resource))
     return false;
+
+  if (active_resources_.Contains(resource))
+    return true;
 
   ActiveFrame frame(active_resources_, resource);
 
@@ -64,18 +66,8 @@ bool SVGResourcesCycleSolver::ResourceContainsCycles(
       node = node->NextInPreOrderAfterChildren(resource);
       continue;
     }
-    if (SVGResources* node_resources =
-            SVGResourcesCache::CachedResourcesForLayoutObject(*node)) {
-      // Fetch all the resources referenced by |node|.
-      ResourceSet node_set;
-      node_resources->BuildSetOfResources(node_set);
-
-      // Iterate resources referenced by |node|.
-      for (auto* node : node_set) {
-        if (active_resources_.Contains(node) || ResourceContainsCycles(node))
-          return true;
-      }
-    }
+    if (TraverseResources(*node))
+      return true;
     node = node->NextInPreOrder(resource);
   }
 
@@ -84,27 +76,33 @@ bool SVGResourcesCycleSolver::ResourceContainsCycles(
   return false;
 }
 
-void SVGResourcesCycleSolver::ResolveCycles() {
-  DCHECK(active_resources_.IsEmpty());
+bool SVGResourcesCycleSolver::TraverseResources(LayoutObject& layout_object) {
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
+  return resources && TraverseResources(resources);
+}
 
-  // If the starting LayoutObject is a resource container itself, then add it
-  // to the active set (to break direct self-references.)
-  if (layout_object_->IsSVGResourceContainer())
-    active_resources_.insert(ToLayoutSVGResourceContainer(layout_object_));
-
+bool SVGResourcesCycleSolver::TraverseResources(SVGResources* resources) {
+  // Fetch all the referenced resources.
   ResourceSet local_resources;
-  resources_->BuildSetOfResources(local_resources);
+  resources->BuildSetOfResources(local_resources);
 
   // This performs a depth-first search for a back-edge in all the
-  // (potentially disjoint) graphs formed by the resources referenced by
-  // |m_layoutObject|.
+  // (potentially disjoint) graphs formed by the referenced resources.
   for (auto* local_resource : local_resources) {
-    if (active_resources_.Contains(local_resource) ||
-        ResourceContainsCycles(local_resource))
-      resources_->ClearReferencesTo(local_resource);
+    if (TraverseResourceContainer(local_resource))
+      return true;
   }
+  return false;
+}
 
-  active_resources_.clear();
+bool SVGResourcesCycleSolver::FindCycle(
+    LayoutSVGResourceContainer* start_node) {
+  DCHECK(active_resources_.IsEmpty() ||
+         (active_resources_.size() == 1 &&
+          active_resources_.Contains(
+              ToLayoutSVGResourceContainer(&layout_object_))));
+  return TraverseResourceContainer(start_node);
 }
 
 }  // namespace blink

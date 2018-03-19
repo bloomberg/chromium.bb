@@ -50,12 +50,20 @@ void SVGResourcesCache::AddResourcesFromLayoutObject(
   SVGResources* resources =
       cache_.Set(&object, std::move(new_resources)).stored_value->value.get();
 
+  HashSet<LayoutSVGResourceContainer*> resource_set;
+  resources->BuildSetOfResources(resource_set);
+
   // Run cycle-detection _afterwards_, so self-references can be caught as well.
-  SVGResourcesCycleSolver solver(&object, resources);
-  solver.ResolveCycles();
+  {
+    SVGResourcesCycleSolver solver(object);
+    for (auto* resource_container : resource_set) {
+      if (solver.FindCycle(resource_container))
+        resources->ClearReferencesTo(resource_container);
+    }
+    resource_set.clear();
+  }
 
   // Walk resources and register the layout object as a client of each resource.
-  HashSet<LayoutSVGResourceContainer*> resource_set;
   resources->BuildSetOfResources(resource_set);
 
   for (auto* resource_container : resource_set)
