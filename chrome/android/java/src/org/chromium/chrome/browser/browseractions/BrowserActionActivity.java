@@ -41,7 +41,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     private int mType;
     private Uri mUri;
     @VisibleForTesting
-    String mCreatorPackageName;
+    String mUntrustedCreatorPackageName;
     @VisibleForTesting
     List<BrowserActionItem> mActions = new ArrayList<>();
     private PendingIntent mOnBrowserActionSelectedCallback;
@@ -63,7 +63,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
         mUri = Uri.parse(IntentHandler.getUrlFromIntent(intent));
         mType = IntentUtils.safeGetIntExtra(
                 intent, BrowserActionsIntent.EXTRA_TYPE, BrowserActionsIntent.URL_TYPE_NONE);
-        mCreatorPackageName = BrowserActionsIntent.getCreatorPackageName(intent);
+        mUntrustedCreatorPackageName = BrowserActionsIntent.getUntrustedCreatorPackageName(intent);
         mOnBrowserActionSelectedCallback = IntentUtils.safeGetParcelableExtra(
                 intent, BrowserActionsIntent.EXTRA_SELECTED_ACTION_PENDING_INTENT);
         ArrayList<Bundle> bundles = IntentUtils.getParcelableArrayListExtra(
@@ -78,10 +78,10 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
                 && !UrlConstants.HTTPS_SCHEME.equals(mUri.getScheme())) {
             Log.e(TAG, "Url should only be HTTP or HTTPS scheme");
             return false;
-        } else if (mCreatorPackageName == null) {
+        } else if (mUntrustedCreatorPackageName == null) {
             Log.e(TAG, "Missing creator's pacakge name");
             return false;
-        } else if (!TextUtils.equals(mCreatorPackageName, getPackageName())
+        } else if (!TextUtils.equals(mUntrustedCreatorPackageName, getPackageName())
                 && (intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
             Log.e(TAG, "Intent should not be started with FLAG_ACTIVITY_NEW_TASK");
             return false;
@@ -107,8 +107,8 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
                 }
             }
         };
-        mHelper = new BrowserActionsContextMenuHelper(this, params, mActions, mCreatorPackageName,
-                mOnBrowserActionSelectedCallback, listener);
+        mHelper = new BrowserActionsContextMenuHelper(this, params, mActions,
+                mUntrustedCreatorPackageName, mOnBrowserActionSelectedCallback, listener);
         mHelper.displayBrowserActionsMenu(view);
         return;
     }
@@ -132,7 +132,8 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
      * @return The ContextMenuParams used to construct context menu.
      */
     private ContextMenuParams createContextMenuParams() {
-        Referrer referrer = IntentHandler.constructValidReferrerForAuthority(mCreatorPackageName);
+        Referrer referrer =
+                IntentHandler.constructValidReferrerForAuthority(mUntrustedCreatorPackageName);
 
         Point displaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(displaySize);
@@ -172,15 +173,16 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     }
 
     private void recordClientPackageName() {
-        if (TextUtils.isEmpty(mCreatorPackageName)) return;
+        if (TextUtils.isEmpty(mUntrustedCreatorPackageName)) return;
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 RapporServiceBridge.sampleString(
-                        "BrowserActions.ServiceClient.PackageName", mCreatorPackageName);
-                if (GSAState.isGsaPackageName(mCreatorPackageName)) return;
+                        "BrowserActions.ServiceClient.PackageName", mUntrustedCreatorPackageName);
+                if (GSAState.isGsaPackageName(mUntrustedCreatorPackageName)) return;
                 RapporServiceBridge.sampleString(
-                        "BrowserActions.ServiceClient.PackageNameThirdParty", mCreatorPackageName);
+                        "BrowserActions.ServiceClient.PackageNameThirdParty",
+                        mUntrustedCreatorPackageName);
             }
         });
     }
