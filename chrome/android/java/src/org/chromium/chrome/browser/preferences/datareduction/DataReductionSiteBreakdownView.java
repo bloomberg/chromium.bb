@@ -232,10 +232,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                 mTableLayout.addView(row, i + 1);
             } else {
                 numRemainingSites++;
-                everythingElseDataUsage =
-                        (int) (everythingElseDataUsage + mDataUseItems.get(i).getDataUsed());
-                everythingElseDataSavings =
-                        (int) (everythingElseDataSavings + mDataUseItems.get(i).getDataSaved());
+                everythingElseDataUsage += mDataUseItems.get(i).getDataUsed();
+                everythingElseDataSavings += mDataUseItems.get(i).getDataSaved();
             }
         }
 
