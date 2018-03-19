@@ -6,7 +6,6 @@
 -AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
--BrowsingDataRemoverBrowserTest.CookieDeletion
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
@@ -56,10 +55,6 @@
 -WebViewTests/WebViewTest.ClearData/1
 -WebViewTests/WebViewTest.ClearDataCache/0
 -WebViewTests/WebViewTest.ClearDataCache/1
--WebViewTests/WebViewTest.ClearPersistentCookies/0
--WebViewTests/WebViewTest.ClearPersistentCookies/1
--WebViewTests/WebViewTest.ClearSessionCookies/0
--WebViewTests/WebViewTest.ClearSessionCookies/1
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/0
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
 -WebViewTests/WebViewTest.StoragePersistence/0
@@ -73,6 +68,14 @@
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
+
+# http://crbug.com/823297 StoragePartition::ClearData needs to use
+# CookieManager.
+-BrowsingDataRemoverBrowserTest.CookieDeletion
+-WebViewTests/WebViewTest.ClearPersistentCookies/0
+-WebViewTests/WebViewTest.ClearPersistentCookies/1
+-WebViewTests/WebViewTest.ClearSessionCookies/0
+-WebViewTests/WebViewTest.ClearSessionCookies/1
 
 # Accessing cookies after they were set in onload handler is flaky:
 # https://crbug.com/820969.
