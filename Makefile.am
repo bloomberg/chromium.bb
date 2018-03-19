@@ -198,6 +198,7 @@ AM_TESTS_ENVIRONMENT =							\
 	TEST_OUTPUT_DIR='$(top_builddir)/tests/output'			\
 	WAYLAND_EGL_LIB='$(top_builddir)/.libs/libwayland-egl.so'	\
 	SED=$(SED)							\
+	NM='$(NM)'							\
 	;
 
 TESTS = $(built_test_programs)			\
