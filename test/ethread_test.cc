@@ -208,7 +208,7 @@ class AVxEncoderThreadLSTest : public AVxEncoderThreadTest {
   }
 };
 
-TEST_P(AVxEncoderThreadLSTest, DISABLED_EncoderResultTest) {
+TEST_P(AVxEncoderThreadLSTest, EncoderResultTest) {
   cfg_.large_scale_tile = 1;
   decoder_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
@@ -216,7 +216,7 @@ TEST_P(AVxEncoderThreadLSTest, DISABLED_EncoderResultTest) {
 
 class AVxEncoderThreadLSTestLarge : public AVxEncoderThreadLSTest {};
 
-TEST_P(AVxEncoderThreadLSTestLarge, DISABLED_EncoderResultTest) {
+TEST_P(AVxEncoderThreadLSTestLarge, EncoderResultTest) {
   cfg_.large_scale_tile = 1;
   decoder_->Control(AV1_SET_TILE_MODE, 1);
   DoTest();
