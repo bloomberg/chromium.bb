@@ -129,14 +129,6 @@ static Position FocusPosition(const VisibleSelection& selection) {
   return focus.ParentAnchoredEquivalent();
 }
 
-static Position BasePosition(const VisibleSelection& selection) {
-  return selection.Base().ParentAnchoredEquivalent();
-}
-
-static Position ExtentPosition(const VisibleSelection& selection) {
-  return selection.Extent().ParentAnchoredEquivalent();
-}
-
 Node* DOMSelection::anchorNode() const {
   if (Range* range = PrimaryRangeOrNull()) {
     if (!GetFrame() || IsBaseFirstInSelection())
@@ -174,31 +166,19 @@ unsigned DOMSelection::focusOffset() const {
 }
 
 Node* DOMSelection::baseNode() const {
-  if (!IsAvailable())
-    return nullptr;
-
-  return ShadowAdjustedNode(BasePosition(GetVisibleSelection()));
+  return anchorNode();
 }
 
 unsigned DOMSelection::baseOffset() const {
-  if (!IsAvailable())
-    return 0;
-
-  return ShadowAdjustedOffset(BasePosition(GetVisibleSelection()));
+  return anchorOffset();
 }
 
 Node* DOMSelection::extentNode() const {
-  if (!IsAvailable())
-    return nullptr;
-
-  return ShadowAdjustedNode(ExtentPosition(GetVisibleSelection()));
+  return focusNode();
 }
 
 unsigned DOMSelection::extentOffset() const {
-  if (!IsAvailable())
-    return 0;
-
-  return ShadowAdjustedOffset(ExtentPosition(GetVisibleSelection()));
+  return focusOffset();
 }
 
 bool DOMSelection::isCollapsed() const {
