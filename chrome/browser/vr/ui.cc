@@ -416,6 +416,7 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
         {kSoundButtonHover, assets->button_hover_sound},
         {kSoundButtonClick, assets->button_click_sound},
         {kSoundBackButtonClick, assets->back_button_click_sound},
+        {kSoundInactiveButtonClick, assets->inactive_button_click_sound},
     };
     audio_delegate_->ResetSounds();
     for (auto& sound : sounds) {

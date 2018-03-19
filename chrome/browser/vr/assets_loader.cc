@@ -25,6 +25,7 @@ namespace {
 
 constexpr char kMinVersionWithGradients[] = "1.1";
 constexpr char kMinVersionWithSounds[] = "2.0";
+constexpr char kMinVersionWithInactiveButtonClickSound[] = "2.2";
 
 static const base::FilePath::CharType kBackgroundBaseFilename[] =
     FILE_PATH_LITERAL("background");
@@ -45,6 +46,8 @@ static const base::FilePath::CharType kButtonClickSoundFilename[] =
     FILE_PATH_LITERAL("button_click.wav");
 static const base::FilePath::CharType kBackButtonClickSoundFilename[] =
     FILE_PATH_LITERAL("back_button_click.wav");
+static const base::FilePath::CharType kInactiveButtonClickSoundFilename[] =
+    FILE_PATH_LITERAL("inactive_button_click.wav");
 
 }  // namespace
 
@@ -204,20 +207,28 @@ void AssetsLoader::LoadAssetsTask(
     }
   }
 
-  if (status == AssetsLoadStatus::kSuccess &&
-      component_version >= base::Version(kMinVersionWithSounds)) {
-    std::vector<std::pair<const base::FilePath::CharType*,
-                          std::unique_ptr<std::string>*>>
-        sounds = {
-            {kButtonHoverSoundFilename, &assets->button_hover_sound},
-            {kButtonClickSoundFilename, &assets->button_click_sound},
-            {kBackButtonClickSoundFilename, &assets->back_button_click_sound},
-        };
-    for (auto& sound : sounds) {
-      status = LoadSound(component_install_dir, sound.first, sound.second);
-      if (status != AssetsLoadStatus::kSuccess)
-        break;
+  std::vector<std::tuple<const char*, const base::FilePath::CharType*,
+                         std::unique_ptr<std::string>*>>
+      sounds = {{kMinVersionWithSounds, kButtonHoverSoundFilename,
+                 &assets->button_hover_sound},
+                {kMinVersionWithSounds, kButtonClickSoundFilename,
+                 &assets->button_click_sound},
+                {kMinVersionWithSounds, kBackButtonClickSoundFilename,
+                 &assets->back_button_click_sound},
+                {kMinVersionWithInactiveButtonClickSound,
+                 kInactiveButtonClickSoundFilename,
+                 &assets->inactive_button_click_sound}};
+
+  auto sounds_iter = sounds.begin();
+  while (status == AssetsLoadStatus::kSuccess && sounds_iter != sounds.end()) {
+    const char* min_version;
+    const base::FilePath::CharType* file_name;
+    std::unique_ptr<std::string>* data;
+    std::tie(min_version, file_name, data) = *sounds_iter;
+    if (component_version >= base::Version(min_version)) {
+      status = LoadSound(component_install_dir, file_name, data);
     }
+    sounds_iter++;
   }
 
   if (status != AssetsLoadStatus::kSuccess) {
