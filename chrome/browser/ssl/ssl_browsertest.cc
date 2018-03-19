@@ -53,6 +53,7 @@
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
@@ -158,6 +159,8 @@
 #include "net/cert/nss_cert_database.h"
 #endif  // defined(USE_NSS_CERTS)
 
+using namespace ssl_test_util;
+
 using base::ASCIIToUTF16;
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::InterstitialPage;
@@ -182,101 +185,9 @@ enum ProceedDecision {
   SSL_INTERSTITIAL_DO_NOT_PROCEED
 };
 
-namespace AuthState {
-
-enum AuthStateFlags {
-  NONE = 0,
-  DISPLAYED_INSECURE_CONTENT = 1 << 0,
-  RAN_INSECURE_CONTENT = 1 << 1,
-  // TODO(crbug.com/752372): Collapse SHOWING_INTERSTITIAL into SHOWING_ERROR
-  // once committed SSL interstitials are launched. For now, we automatically
-  // map SHOWING_INTERSTITIAL onto SHOWING_ERROR when committed interstitials
-  // are enabled.
-  SHOWING_INTERSTITIAL = 1 << 2,
-  SHOWING_ERROR = 1 << 3,
-  DISPLAYED_FORM_WITH_INSECURE_ACTION = 1 << 4
-};
-
-void Check(const NavigationEntry& entry, int expected_authentication_state) {
-  if (expected_authentication_state == AuthState::SHOWING_ERROR ||
-      (base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kCommittedInterstitials) &&
-       expected_authentication_state == AuthState::SHOWING_INTERSTITIAL)) {
-    EXPECT_EQ(content::PAGE_TYPE_ERROR, entry.GetPageType());
-  } else {
-    EXPECT_EQ(
-        !!(expected_authentication_state & AuthState::SHOWING_INTERSTITIAL)
-            ? content::PAGE_TYPE_INTERSTITIAL
-            : content::PAGE_TYPE_NORMAL,
-        entry.GetPageType());
-  }
-
-  bool displayed_insecure_content =
-      !!(entry.GetSSL().content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT);
-  EXPECT_EQ(
-      !!(expected_authentication_state & AuthState::DISPLAYED_INSECURE_CONTENT),
-      displayed_insecure_content);
-
-  bool ran_insecure_content =
-      !!(entry.GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT);
-  EXPECT_EQ(!!(expected_authentication_state & AuthState::RAN_INSECURE_CONTENT),
-            ran_insecure_content);
-
-  bool displayed_form_with_insecure_action =
-      !!(entry.GetSSL().content_status &
-         SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
-  EXPECT_EQ(!!(expected_authentication_state &
-               AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION),
-            displayed_form_with_insecure_action);
-}
-
-}  // namespace AuthState
-
-namespace SecurityStyle {
-
-void Check(WebContents* tab,
-           security_state::SecurityLevel expected_security_level) {
-  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(expected_security_level, security_info.security_level);
-}
-
-}  // namespace SecurityStyle
-
-namespace CertError {
-
-enum CertErrorFlags { NONE = 0 };
-
-void Check(const NavigationEntry& entry, net::CertStatus error) {
-  if (error) {
-    EXPECT_EQ(error, entry.GetSSL().cert_status & error);
-    net::CertStatus extra_cert_errors =
-        error ^ (entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(extra_cert_errors)
-        << "Got unexpected cert error: " << extra_cert_errors;
-  } else {
-    EXPECT_EQ(0U, entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-  }
-}
-
-}  // namespace CertError
-
 bool AreCommittedInterstitialsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kCommittedInterstitials);
-}
-
-void CheckSecurityState(WebContents* tab,
-                        net::CertStatus expected_error,
-                        security_state::SecurityLevel expected_security_level,
-                        int expected_authentication_state) {
-  ASSERT_FALSE(tab->IsCrashed());
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
-  ASSERT_TRUE(entry);
-  CertError::Check(*entry, expected_error);
-  SecurityStyle::Check(tab, expected_security_level);
-  AuthState::Check(*entry, expected_authentication_state);
 }
 
 void CheckProceedLinkExists(WebContents* tab) {

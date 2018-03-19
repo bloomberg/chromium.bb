@@ -714,6 +714,8 @@ test("browser_tests") {
       "../browser/ssl/connection_help_tab_helper_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
+      "../browser/ssl/ssl_browsertest_util.cc",
+      "../browser/ssl/ssl_browsertest_util.h",
       "../browser/ssl/ssl_client_certificate_selector_test.cc",
       "../browser/ssl/ssl_client_certificate_selector_test.h",
       "../browser/ssl/typed_navigation_timing_throttle_browsertest.cc",
