@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_FRAME_METADATA_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
+class FrameTokenMessageQueue;
 
 // Observes RenderFrameMetadata associated with the submission of a frame for a
 // given RenderWidgetHost. The renderer will notify this when sumitting a
@@ -25,7 +27,8 @@ class RenderFrameMetadataProviderImpl
     : public RenderFrameMetadataProvider,
       public mojom::RenderFrameMetadataObserverClient {
  public:
-  RenderFrameMetadataProviderImpl();
+  explicit RenderFrameMetadataProviderImpl(
+      FrameTokenMessageQueue* frame_token_message_queue);
   ~RenderFrameMetadataProviderImpl() override;
 
   void AddObserver(Observer* observer) override;
@@ -41,18 +44,31 @@ class RenderFrameMetadataProviderImpl
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() const override;
 
  private:
+  // Paired with the mojom::RenderFrameMetadataObserverClient overrides, these
+  // methods are enqueued in |frame_token_message_queue_|. They are invoked when
+  // the browser process receives their associated frame tokens. These then
+  // notify any |observers_|.
+  void OnFrameTokenRenderFrameMetadataChanged(cc::RenderFrameMetadata metadata);
+  void OnFrameTokenFrameSubmissionForTesting();
+
   // mojom::RenderFrameMetadataObserverClient:
   void OnRenderFrameMetadataChanged(
+      uint32_t frame_token,
       const cc::RenderFrameMetadata& metadata) override;
-  void OnFrameSubmissionForTesting() override;
+  void OnFrameSubmissionForTesting(uint32_t frame_token) override;
 
   base::ObserverList<Observer> observers_;
 
   cc::RenderFrameMetadata last_render_frame_metadata_;
 
+  // Not owned.
+  FrameTokenMessageQueue* const frame_token_message_queue_;
+
   mojo::Binding<mojom::RenderFrameMetadataObserverClient>
       render_frame_metadata_observer_client_binding_;
   mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr_;
+
+  base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataProviderImpl);
 };

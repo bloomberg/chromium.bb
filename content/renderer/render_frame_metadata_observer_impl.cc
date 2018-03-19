@@ -35,7 +35,8 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   // these can be reported while testing is enabled.
   bool send_metadata = false;
   if (report_all_frame_submissions_for_testing_enabled_) {
-    render_frame_metadata_observer_client_->OnFrameSubmissionForTesting();
+    render_frame_metadata_observer_client_->OnFrameSubmissionForTesting(
+        frame_token_allocator_->GetOrAllocateFrameToken());
     send_metadata = last_render_frame_metadata_ != metadata;
   } else {
     // Sending |root_scroll_offset| outside of tests would leave the browser
@@ -48,7 +49,7 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
 
   if (send_metadata) {
     render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
-        metadata);
+        frame_token_allocator_->GetOrAllocateFrameToken(), metadata);
   }
 
   last_render_frame_metadata_ = metadata;

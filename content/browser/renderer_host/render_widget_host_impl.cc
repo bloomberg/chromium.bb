@@ -371,6 +371,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       compositor_frame_sink_binding_(this),
       frame_token_message_queue_(
           std::make_unique<FrameTokenMessageQueue>(this)),
+      render_frame_metadata_provider_(frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)),
       weak_factory_(this) {

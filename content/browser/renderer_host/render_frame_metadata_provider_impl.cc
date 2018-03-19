@@ -4,10 +4,16 @@
 
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 
+#include "base/bind.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
+
 namespace content {
 
-RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl()
-    : render_frame_metadata_observer_client_binding_(this) {}
+RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl(
+    FrameTokenMessageQueue* frame_token_message_queue)
+    : frame_token_message_queue_(frame_token_message_queue),
+      render_frame_metadata_observer_client_binding_(this),
+      weak_factory_(this) {}
 
 RenderFrameMetadataProviderImpl::~RenderFrameMetadataProviderImpl() = default;
 
@@ -40,16 +46,37 @@ RenderFrameMetadataProviderImpl::LastRenderFrameMetadata() const {
   return last_render_frame_metadata_;
 }
 
-void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
-    const cc::RenderFrameMetadata& metadata) {
-  last_render_frame_metadata_ = metadata;
+void RenderFrameMetadataProviderImpl::OnFrameTokenRenderFrameMetadataChanged(
+    cc::RenderFrameMetadata metadata) {
+  last_render_frame_metadata_ = std::move(metadata);
   for (Observer& observer : observers_)
     observer.OnRenderFrameMetadataChanged();
 }
 
-void RenderFrameMetadataProviderImpl::OnFrameSubmissionForTesting() {
+void RenderFrameMetadataProviderImpl::OnFrameTokenFrameSubmissionForTesting() {
   for (Observer& observer : observers_)
     observer.OnRenderFrameSubmission();
+}
+
+void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
+    uint32_t frame_token,
+    const cc::RenderFrameMetadata& metadata) {
+  // Both RenderFrameMetadataProviderImpl and FrameTokenMessageQueue are owned
+  // by the same RenderWidgetHostImpl. During shutdown the queue is cleared
+  // without running the callbacks.
+  frame_token_message_queue_->EnqueueOrRunFrameTokenCallback(
+      frame_token,
+      base::BindOnce(&RenderFrameMetadataProviderImpl::
+                         OnFrameTokenRenderFrameMetadataChanged,
+                     weak_factory_.GetWeakPtr(), std::move(metadata)));
+}
+
+void RenderFrameMetadataProviderImpl::OnFrameSubmissionForTesting(
+    uint32_t frame_token) {
+  frame_token_message_queue_->EnqueueOrRunFrameTokenCallback(
+      frame_token, base::BindOnce(&RenderFrameMetadataProviderImpl::
+                                      OnFrameTokenFrameSubmissionForTesting,
+                                  base::Unretained(this)));
 }
 
 }  // namespace content

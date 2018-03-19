@@ -26,8 +26,8 @@ interface RenderFrameMetadataObserver {
 // RenderFrameMetadataObserver::ReportAllFrameSubmissionsForTesting.
 interface RenderFrameMetadataObserverClient {
   // Notified when RenderFrameMetadata has changed.
-  OnRenderFrameMetadataChanged(RenderFrameMetadata metadata);
+  OnRenderFrameMetadataChanged(uint32 frame_token, RenderFrameMetadata metadata);
 
   // Notified on all frame submissions.
-  OnFrameSubmissionForTesting();
+  OnFrameSubmissionForTesting(uint32 frame_token);
 };
