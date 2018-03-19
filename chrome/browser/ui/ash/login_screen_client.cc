@@ -11,9 +11,7 @@
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "components/user_manager/remove_user_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -115,18 +113,6 @@ void LoginScreenClient::ShowGaiaSignin() {
     chromeos::LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
         true /*visible*/);
   }
-}
-
-void LoginScreenClient::OnRemoveUserWarningShown() {
-  ProfileMetrics::LogProfileDeleteUser(
-      ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
-}
-
-void LoginScreenClient::RemoveUser(const AccountId& account_id) {
-  ProfileMetrics::LogProfileDeleteUser(
-      ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
-  user_manager::UserManager::Get()->RemoveUser(account_id,
-                                               nullptr /*delegate*/);
 }
 
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {

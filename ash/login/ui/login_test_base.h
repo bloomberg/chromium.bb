@@ -40,7 +40,6 @@ class LoginTestBase : public AshTestBase {
   // Changes the active number of users. Fires an event on |data_dispatcher()|.
   void SetUserCount(size_t count);
 
-  std::vector<mojom::LoginUserInfoPtr>& users() { return users_; }
   const std::vector<mojom::LoginUserInfoPtr>& users() const { return users_; }
 
   LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }

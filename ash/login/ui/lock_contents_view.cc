@@ -814,7 +814,7 @@ void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
 
 void LockContentsView::SwapToAuthUser(int user_index) {
   DCHECK(users_list_);
-  LoginUserView* view = users_list_->user_view_at(user_index);
+  auto* view = users_list_->GetUserViewAtIndex(user_index);
   DCHECK(view);
   mojom::LoginUserInfoPtr previous_auth_user =
       primary_auth_->current_user()->Clone();
@@ -824,34 +824,6 @@ void LockContentsView::SwapToAuthUser(int user_index) {
   primary_auth_->UpdateForUser(new_auth_user);
   LayoutAuth(primary_auth_, nullptr, true /*animate*/);
   OnAuthUserChanged();
-}
-
-void LockContentsView::OnRemoveUserWarningShown(bool is_primary) {
-  Shell::Get()->login_screen_controller()->OnRemoveUserWarningShown();
-}
-
-void LockContentsView::RemoveUser(bool is_primary) {
-  LoginAuthUserView* to_remove =
-      is_primary ? primary_auth_ : opt_secondary_auth_;
-  DCHECK(to_remove->current_user()->can_remove);
-  AccountId user = to_remove->current_user()->basic_user_info->account_id;
-
-  // Ask chrome to remove the user.
-  Shell::Get()->login_screen_controller()->RemoveUser(user);
-
-  // Display the new user list less |user|.
-  std::vector<mojom::LoginUserInfoPtr> new_users;
-  if (!is_primary)
-    new_users.push_back(primary_auth_->current_user()->Clone());
-  if (is_primary && opt_secondary_auth_)
-    new_users.push_back(opt_secondary_auth_->current_user()->Clone());
-  if (users_list_) {
-    for (int i = 0; i < users_list_->user_count(); ++i) {
-      new_users.push_back(
-          users_list_->user_view_at(i)->current_user()->Clone());
-    }
-  }
-  data_dispatcher_->NotifyUsers(new_users);
 }
 
 void LockContentsView::OnAuthUserChanged() {
@@ -989,22 +961,15 @@ keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
 LoginAuthUserView* LockContentsView::AllocateLoginAuthUserView(
     const mojom::LoginUserInfoPtr& user,
     bool is_primary) {
-  LoginAuthUserView::Callbacks callbacks;
-  callbacks.on_auth = base::BindRepeating(&LockContentsView::OnAuthenticate,
-                                          base::Unretained(this)),
-  callbacks.on_tap = base::BindRepeating(
-      &LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary,
-      base::Unretained(this), is_primary),
-  callbacks.on_remove_warning_shown =
-      base::BindRepeating(&LockContentsView::OnRemoveUserWarningShown,
-                          base::Unretained(this), is_primary);
-  callbacks.on_remove = base::BindRepeating(&LockContentsView::RemoveUser,
-                                            base::Unretained(this), is_primary);
-  callbacks.on_easy_unlock_icon_hovered = base::BindRepeating(
-      &LockContentsView::OnEasyUnlockIconHovered, base::Unretained(this));
-  callbacks.on_easy_unlock_icon_tapped = base::BindRepeating(
-      &LockContentsView::OnEasyUnlockIconTapped, base::Unretained(this));
-  return new LoginAuthUserView(user, callbacks);
+  return new LoginAuthUserView(
+      user,
+      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
+      base::Bind(&LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary,
+                 base::Unretained(this), is_primary),
+      base::Bind(&LockContentsView::OnEasyUnlockIconHovered,
+                 base::Unretained(this)),
+      base::Bind(&LockContentsView::OnEasyUnlockIconTapped,
+                 base::Unretained(this)));
 }
 
 LoginAuthUserView* LockContentsView::TryToFindAuthUser(

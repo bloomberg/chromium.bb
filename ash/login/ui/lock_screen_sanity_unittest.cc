@@ -8,8 +8,6 @@
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/fake_login_detachable_base_model.h"
 #include "ash/login/ui/lock_contents_view.h"
-#include "ash/login/ui/login_auth_user_view.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/public/cpp/config.h"
@@ -115,9 +113,8 @@ TEST_F(LockScreenSanityTest, PasswordIsInitiallyFocused) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Textfield should have focus.
-  EXPECT_EQ(
-      MakeLoginPasswordTestApi(contents, AuthTarget::kPrimary).textfield(),
-      contents->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(MakeLoginPasswordTestApi(contents).textfield(),
+            contents->GetFocusManager()->GetFocusedView());
 }
 
 // Verifies submitting the password invokes mojo lock screen client.
@@ -156,7 +153,7 @@ TEST_F(LockScreenSanityTest,
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LoginPasswordView::TestApi password_test_api =
-      MakeLoginPasswordTestApi(contents, AuthTarget::kPrimary);
+      MakeLoginPasswordTestApi(contents);
 
   MockLoginScreenClient::AuthenticateUserCallback callback;
   auto submit_password = [&]() {
@@ -371,75 +368,6 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
   // Tab through the lock screen - the focus should eventually get to the shelf.
   ASSERT_TRUE(TabThroughView(&GetEventGenerator(), lock, false /*reverse*/));
   EXPECT_TRUE(VerifyFocused(shelf));
-}
-
-TEST_F(LockScreenSanityTest, RemoveUser) {
-  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
-  LoginScreenController* controller =
-      ash::Shell::Get()->login_screen_controller();
-
-  auto* contents = new LockContentsView(
-      mojom::TrayActionState::kAvailable, data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
-
-  // Add two users, the first of which can be removed.
-  users().push_back(CreateUser("test1@test"));
-  users()[0]->can_remove = true;
-  users().push_back(CreateUser("test2@test"));
-  data_dispatcher()->NotifyUsers(users());
-
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
-
-  auto primary = [&]() {
-    return LoginUserView::TestApi(
-        MakeLoginAuthTestApi(contents, AuthTarget::kPrimary).user_view());
-  };
-  auto secondary = [&]() {
-    return LoginUserView::TestApi(
-        MakeLoginAuthTestApi(contents, AuthTarget::kSecondary).user_view());
-  };
-
-  // Fires a return and validates that mock expectations have been satisfied.
-  auto submit = [&]() {
-    GetEventGenerator().PressKey(ui::VKEY_RETURN, 0);
-    controller->FlushForTesting();
-    testing::Mock::VerifyAndClearExpectations(client.get());
-  };
-  auto focus_and_submit = [&](views::View* view) {
-    view->RequestFocus();
-    DCHECK(view->HasFocus());
-    submit();
-  };
-
-  // The secondary user is not removable (as configured above) so showing the
-  // dropdown does not result in an interactive/focusable view.
-  focus_and_submit(secondary().dropdown());
-  EXPECT_TRUE(secondary().menu());
-  EXPECT_FALSE(
-      HasFocusInAnyChildView(secondary().menu()->bubble_view_for_test()));
-  // TODO(jdufault): Run submit() and then EXPECT_FALSE(secondary().menu()); to
-  // verify that double-enter closes the bubble.
-
-  // The primary user is removable, so the menu is interactive. Submitting the
-  // first time shows the remove user warning, submitting the second time
-  // actually removes the user. Removing the user triggers a mojo API call as
-  // well as removes the user from the UI.
-  focus_and_submit(primary().dropdown());
-  EXPECT_TRUE(primary().menu());
-  EXPECT_TRUE(HasFocusInAnyChildView(primary().menu()->bubble_view_for_test()));
-  EXPECT_CALL(*client, OnRemoveUserWarningShown()).Times(1);
-  submit();
-  EXPECT_CALL(*client, RemoveUser(users()[0]->basic_user_info->account_id))
-      .Times(1);
-  submit();
-
-  // Secondary auth should be gone because it is now the primary auth.
-  EXPECT_FALSE(MakeLockContentsViewTestApi(contents).opt_secondary_auth());
-  EXPECT_TRUE(MakeLockContentsViewTestApi(contents)
-                  .primary_auth()
-                  ->current_user()
-                  ->basic_user_info->account_id ==
-              users()[1]->basic_user_info->account_id);
 }
 
 }  // namespace ash
