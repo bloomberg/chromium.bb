@@ -18,6 +18,7 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
@@ -264,9 +265,9 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
                                                 body_stream_handle.get(),
                                                 event_dispatch_time_);
 
-    buffer->StartLoading(
-        FetchDataLoader::CreateLoaderAsDataPipe(std::move(producer)),
-        new FetchLoaderClient(std::move(body_stream_handle)));
+    buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
+                             std::move(producer), task_runner_),
+                         new FetchLoaderClient(std::move(body_stream_handle)));
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
@@ -292,7 +293,8 @@ FetchRespondWithObserver::FetchRespondWithObserver(
       request_mode_(request_mode),
       redirect_mode_(redirect_mode),
       frame_type_(frame_type),
-      request_context_(request_context) {}
+      request_context_(request_context),
+      task_runner_(context->GetTaskRunner(TaskType::kNetworking)) {}
 
 void FetchRespondWithObserver::Trace(blink::Visitor* visitor) {
   RespondWithObserver::Trace(visitor);

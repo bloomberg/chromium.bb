@@ -63,7 +63,8 @@ class CORE_EXPORT FetchDataLoader
       const String& multipart_boundary);
   static FetchDataLoader* CreateLoaderAsString();
   static FetchDataLoader* CreateLoaderAsDataPipe(
-      mojo::ScopedDataPipeProducerHandle out_data_pipe);
+      mojo::ScopedDataPipeProducerHandle out_data_pipe,
+      scoped_refptr<base::SingleThreadTaskRunner>);
 
   virtual ~FetchDataLoader() {}
 

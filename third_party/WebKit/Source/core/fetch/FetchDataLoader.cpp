@@ -485,13 +485,13 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsDataPipe);
 
  public:
-  explicit FetchDataLoaderAsDataPipe(
-      mojo::ScopedDataPipeProducerHandle out_data_pipe)
+  FetchDataLoaderAsDataPipe(
+      mojo::ScopedDataPipeProducerHandle out_data_pipe,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : out_data_pipe_(std::move(out_data_pipe)),
-        // TODO(hajimehoshi): Pass a per-frame task runner to SimpleWatcher
-        // constructor.
         data_pipe_watcher_(FROM_HERE,
-                           mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
+                           mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                           std::move(task_runner)) {}
   ~FetchDataLoaderAsDataPipe() override {}
 
   void Start(BytesConsumer* consumer,
@@ -605,8 +605,10 @@ FetchDataLoader* FetchDataLoader::CreateLoaderAsString() {
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsDataPipe(
-    mojo::ScopedDataPipeProducerHandle out_data_pipe) {
-  return new FetchDataLoaderAsDataPipe(std::move(out_data_pipe));
+    mojo::ScopedDataPipeProducerHandle out_data_pipe,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return new FetchDataLoaderAsDataPipe(std::move(out_data_pipe),
+                                       std::move(task_runner));
 }
 
 }  // namespace blink
