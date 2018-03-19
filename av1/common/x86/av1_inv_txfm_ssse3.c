@@ -15,6 +15,8 @@
 #include "av1/common/x86/av1_inv_txfm_ssse3.h"
 #include "av1/common/x86/av1_txfm_sse2.h"
 
+// TODO(binpengsmail@gmail.com): replace some for loop with do {} while
+
 DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_8x8_default[8]) = {
   0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707,
 };
@@ -2429,7 +2431,7 @@ static INLINE void iidentity_row_8xn_ssse3(__m128i *out, const int32_t *input,
   const __m128i scale_rounding = _mm_unpacklo_epi16(scale, rounding);
   if (rect_type != 1 && rect_type != -1) {
     for (int i = 0; i < height; ++i) {
-      __m128i src = load_32bit_to_16bit(input_row);
+      const __m128i src = load_32bit_to_16bit(input_row);
       input_row += stride;
       __m128i lo = _mm_unpacklo_epi16(src, one);
       __m128i hi = _mm_unpackhi_epi16(src, one);
@@ -2481,7 +2483,7 @@ static INLINE void iidentity_col_8xn_ssse3(uint8_t *output, int stride,
 
     const __m128i pred = _mm_loadl_epi64((__m128i const *)(output));
     x = _mm_adds_epi16(x, _mm_unpacklo_epi8(pred, zero));
-    __m128i u = _mm_packus_epi16(x, x);
+    const __m128i u = _mm_packus_epi16(x, x);
     _mm_storel_epi64((__m128i *)(output), u);
     output += stride;
   }
@@ -2500,7 +2502,7 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_ssse3(const int32_t *input,
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   __m128i buf[32];
 
-  for (int i = 0; i<input_stride>> 3; ++i) {
+  for (int i = 0; i < (input_stride >> 3); ++i) {
     iidentity_row_8xn_ssse3(buf, input + 8 * i, input_stride, shift[0], row_max,
                             txw_idx, rect_type);
     iidentity_col_8xn_ssse3(output + 8 * i, stride, buf, shift[1], row_max,
@@ -2678,7 +2680,7 @@ static INLINE void get_eobx_eoby_scan_h_identity(int *eobx, int *eoby,
   eob -= 1;
   const int txfm_size_col = tx_size_wide[tx_size];
   const int eobx_max = AOMMIN(32, txfm_size_col) - 1;
-  *eobx = eob >= eobx_max ? eobx_max : eob_fill[eob];
+  *eobx = (eob >= eobx_max) ? eobx_max : eob_fill[eob];
   const int temp_eoby = eob / (eobx_max + 1);
   assert(temp_eoby < 32);
   *eoby = eob_fill[temp_eoby];
@@ -2732,8 +2734,8 @@ static INLINE void get_eobx_eoby_scan_v_identity(int *eobx, int *eoby,
   eob -= 1;
   const int txfm_size_row = tx_size_high[tx_size];
   const int eoby_max = AOMMIN(32, txfm_size_row) - 1;
-  *eobx = (eob) / (eoby_max + 1);
-  *eoby = eob >= eoby_max ? eoby_max : eob_fill[eob];
+  *eobx = eob / (eoby_max + 1);
+  *eoby = (eob >= eoby_max) ? eoby_max : eob_fill[eob];
 }
 
 static INLINE void lowbd_inv_txfm2d_add_v_identity_ssse3(

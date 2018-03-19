@@ -874,7 +874,7 @@ static INLINE void iidentity_row_16xn_avx2(__m256i *out, const int32_t *input,
   const __m256i scale_rounding = _mm256_unpacklo_epi16(scale, rounding);
   if (rect_type != 1 && rect_type != -1) {
     for (int i = 0; i < height; ++i) {
-      __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
+      const __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
       input_row += stride;
       __m256i lo = _mm256_unpacklo_epi16(src, one);
       __m256i hi = _mm256_unpackhi_epi16(src, one);
@@ -921,7 +921,7 @@ static INLINE void iidentity_col_16xn_avx2(uint8_t *output, int stride,
     hi = _mm256_add_epi32(hi, shift_rounding);
     lo = _mm256_srai_epi32(lo, -shift);
     hi = _mm256_srai_epi32(hi, -shift);
-    __m256i x = _mm256_packs_epi32(lo, hi);
+    const __m256i x = _mm256_packs_epi32(lo, hi);
     write_recon_w16_avx2(x, output);
     output += stride;
   }

@@ -20,6 +20,10 @@
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define btf_16_ssse3(w0, w1, in, out0, out1)    \
   do {                                          \
     const __m128i _w0 = _mm_set1_epi16(w0 * 8); \
@@ -52,10 +56,6 @@
     out0 = _mm_adds_epi16(_in0, _in1);                  \
     out1 = _mm_subs_epi16(_in0, _in1);                  \
   } while (0)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static INLINE void round_shift_16bit_ssse3(__m128i *in, int size, int bit) {
   if (bit < 0) {
@@ -104,7 +104,7 @@ void av1_lowbd_inv_txfm2d_add_ssse3(const int32_t *input, uint8_t *output,
                                     int stride, TX_TYPE tx_type,
                                     TX_SIZE tx_size, int eob);
 #ifdef __cplusplus
-}
+}  // extern "C"
 #endif
 
 #endif  // AV1_COMMON_X86_AV1_INV_TXFM_SSSE3_H_
