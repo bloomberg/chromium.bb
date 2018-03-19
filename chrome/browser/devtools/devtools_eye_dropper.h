@@ -63,7 +63,7 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
   content::RenderWidgetHost* host_;
   viz::mojom::FrameSinkVideoCapturerPtr video_capturer_;
   mojo::Binding<viz::mojom::FrameSinkVideoConsumer> video_consumer_binding_;
-  const bool enable_viz_;
+  const bool use_video_capture_api_;
   media::PaintCanvasVideoRenderer video_renderer_;
   base::WeakPtrFactory<DevToolsEyeDropper> weak_factory_;
 

@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 
@@ -156,7 +157,9 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
       return_as_stream_(false),
       gzip_compression_(false),
       weak_factory_(this) {
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(
+          features::kUseVideoCaptureApiForDevToolsSnapshots)) {
     frame_trace_recorder_ =
         std::make_unique<DevToolsFrameTraceRecorderForViz>();
   }

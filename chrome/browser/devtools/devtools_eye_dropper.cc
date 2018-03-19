@@ -12,6 +12,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/cursor_info.h"
 #include "content/public/common/screen_info.h"
 #include "media/base/limits.h"
@@ -31,8 +32,10 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       last_cursor_y_(-1),
       host_(nullptr),
       video_consumer_binding_(this),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      use_video_capture_api_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+          base::FeatureList::IsEnabled(
+              features::kUseVideoCaptureApiForDevToolsSnapshots)),
       weak_factory_(this) {
   mouse_event_callback_ =
       base::Bind(&DevToolsEyeDropper::HandleMouseEvent, base::Unretained(this));
@@ -51,8 +54,7 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
   host_ = host;
   host_->AddMouseEventCallback(mouse_event_callback_);
 
-  // TODO(crbug.com/813929): Use video capturer even if viz is not enabled.
-  if (!enable_viz_)
+  if (!use_video_capture_api_)
     return;
 
   // Capturing a full-page screenshot can be costly so we shouldn't do it too
@@ -118,7 +120,7 @@ void DevToolsEyeDropper::DidReceiveCompositorFrame() {
 }
 
 void DevToolsEyeDropper::UpdateFrame() {
-  if (enable_viz_ || !host_ || !host_->GetView())
+  if (use_video_capture_api_ || !host_ || !host_->GetView())
     return;
 
   // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
@@ -139,7 +141,7 @@ void DevToolsEyeDropper::ResetFrame() {
 }
 
 void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap) {
-  DCHECK(!enable_viz_);
+  DCHECK(!use_video_capture_api_);
   if (bitmap.drawsNothing())
     return;
   frame_ = bitmap;
