@@ -7,6 +7,8 @@ package org.chromium.components.invalidation;
 import android.os.Bundle;
 import android.util.Base64;
 
+import com.google.protobuf.nano.MessageNano;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.invalidation.SerializedInvalidation.Invalidation;
@@ -77,13 +79,12 @@ public class PendingInvalidation {
      */
     public String encodeToString() {
         assert mObjectSource != 0;
-        Invalidation invalidation = Invalidation.newBuilder()
-                                            .setObjectSource(mObjectSource)
-                                            .setObjectId(mObjectId)
-                                            .setVersion(mVersion)
-                                            .setPayload(mPayload)
-                                            .build();
-        return Base64.encodeToString(invalidation.toByteArray(), Base64.DEFAULT);
+        Invalidation invalidation = new Invalidation();
+        invalidation.objectSource = mObjectSource;
+        invalidation.objectId = mObjectId;
+        invalidation.version = mVersion;
+        invalidation.payload = mPayload;
+        return Base64.encodeToString(MessageNano.toByteArray(invalidation), Base64.DEFAULT);
     }
 
     /**
@@ -94,10 +95,8 @@ public class PendingInvalidation {
     public static Bundle decodeToBundle(String encoded) {
         Invalidation invalidation = decodeToInvalidation(encoded);
         if (invalidation == null) return null;
-        return createBundle(invalidation.hasObjectId() ? invalidation.getObjectId() : null,
-                invalidation.getObjectSource(),
-                invalidation.hasVersion() ? invalidation.getVersion() : 0L,
-                invalidation.hasPayload() ? invalidation.getPayload() : null);
+        return createBundle(invalidation.objectId, invalidation.objectSource,
+                invalidation.version != null ? invalidation.version : 0L, invalidation.payload);
     }
 
     /**
@@ -108,10 +107,8 @@ public class PendingInvalidation {
     public static PendingInvalidation decodeToPendingInvalidation(String encoded) {
         Invalidation invalidation = decodeToInvalidation(encoded);
         if (invalidation == null) return null;
-        return new PendingInvalidation(
-                invalidation.hasObjectId() ? invalidation.getObjectId() : null,
-                invalidation.getObjectSource(), invalidation.getVersion(),
-                invalidation.hasPayload() ? invalidation.getPayload() : null);
+        return new PendingInvalidation(invalidation.objectId, invalidation.objectSource,
+                invalidation.version, invalidation.payload);
     }
 
     @Nullable
@@ -120,13 +117,13 @@ public class PendingInvalidation {
         byte[] decoded = Base64.decode(encoded, Base64.DEFAULT);
         Invalidation invalidation;
         try {
-            invalidation = Invalidation.parseFrom(decoded);
+            invalidation = MessageNano.mergeFrom(new Invalidation(), decoded);
         } catch (IOException e) {
             Log.e(TAG, "Could not parse the serialized invalidations.", e);
             return null;
         }
         assert invalidation != null;
-        if (!invalidation.hasObjectSource() || invalidation.getObjectSource() == 0) return null;
+        if (invalidation.objectSource == null || invalidation.objectSource == 0) return null;
         return invalidation;
     }
 
