@@ -59,11 +59,7 @@ extern "C" {
 // Minimum number of colors in a palette.
 #define PALETTE_MIN_SIZE 2
 
-#if CONFIG_EXPLICIT_ORDER_HINT
-#define FRAME_OFFSET_BITS 7
-#else
 #define FRAME_OFFSET_BITS 5
-#endif
 #define MAX_FRAME_DISTANCE ((1 << FRAME_OFFSET_BITS) - 1)
 
 // 4 frame filter levels: y plane vertical, y plane horizontal,
