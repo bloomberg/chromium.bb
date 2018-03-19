@@ -583,7 +583,7 @@ class NotificationPlatformBridgeLinuxImpl
             ResizeImageToFdoMaxSize(notification->image()).As1xPNGBytes());
         if (image_file) {
           body << "<img src=\""
-               << net::EscapePath(image_file->file_path().value())
+               << "file://" + net::EscapePath(image_file->file_path().value())
                << "\" alt=\"\"/>\n";
           data->resource_files.push_back(std::move(image_file));
         }
