@@ -150,13 +150,13 @@ class Smoke(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-  # Ensure image, css, and javascript resources are compressed.
-  def testCheckImageCssJavascriptIsCompressed(self):
+  # Ensure image resources are compressed.
+  def testCheckImageIsCompressed(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
       t.LoadURL('http://check.googlezip.net/static')
       # http://check.googlezip.net/static is a test page that has
-      # image/css/javascript resources.
+      # image resources.
       responses = t.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
