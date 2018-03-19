@@ -121,6 +121,18 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
       TaskDurationMetricReporter<TaskType>;
 
   TaskDurationPerTaskTypeMetricReporter per_task_type_duration_reporter_;
+
+  // The next three reporters are used to report the duration per task type
+  // split by renderer scheduler use case (check use_case.h for reference):
+  // None, Loading, and User Input (aggregation of multiple input-handling
+  // related use cases).
+  TaskDurationPerTaskTypeMetricReporter
+      no_use_case_per_task_type_duration_reporter_;
+  TaskDurationPerTaskTypeMetricReporter
+      loading_per_task_type_duration_reporter_;
+  TaskDurationPerTaskTypeMetricReporter
+      input_handling_per_task_type_duration_reporter_;
+
   TaskDurationPerTaskTypeMetricReporter
       foreground_per_task_type_duration_reporter_;
   TaskDurationPerTaskTypeMetricReporter
