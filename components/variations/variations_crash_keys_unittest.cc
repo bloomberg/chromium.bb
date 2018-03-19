@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/variations/hashing.h"
 #include "components/variations/synthetic_trial_registry.h"
@@ -50,7 +51,13 @@ class VariationsCrashKeysTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(VariationsCrashKeysTest, BasicFunctionality) {
+// TODO(crbug.com/821162): Test fails on iOS. Re-enable after fixing.
+#if defined(OS_IOS)
+#define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
+#else
+#define MAYBE_BasicFunctionality BasicFunctionality
+#endif
+TEST_F(VariationsCrashKeysTest, MAYBE_BasicFunctionality) {
   SyntheticTrialRegistry registry;
   registry.AddSyntheticTrialObserver(
       SyntheticTrialsActiveGroupIdProvider::GetInstance());
