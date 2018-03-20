@@ -24,6 +24,18 @@ QuickUnlockPrivate.prototype = {
   getAuthToken: assertNotReached,
 
   /**
+   * Sets the lock screen enabled state. NOTE: The lock enabled state is
+   * reflected in the settings.enable_screen_lock pref, which can be read but
+   * not written using the settings_private API (which also provides policy
+   * information). This API must be used to change the pref.
+   * @param {string} token The token returned by $(ref:getAuthToken).
+   * @param {boolean} enabled
+   * @param {function():void=} onComplete
+   * @see https://developer.chrome.com/extensions/quickUnlockPrivate#method-setLockScreenEnabled
+   */
+  setLockScreenEnabled: assertNotReached,
+
+  /**
    * Returns the set of quick unlock modes that are available for the user to
    * use. Some quick unlock modes may be disabled by policy.
    * @param {function(!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>):void}
@@ -71,11 +83,11 @@ QuickUnlockPrivate.prototype = {
    * @param {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} modes The quick
    *     unlock modes that should be active.
    * @param {!Array<string>} credentials The associated credential for each
-   *     mode. To keep the credential the same for the associated mode, pass an
-   *     empty string.
+   *     mode. To keep the     credential the same for the associated mode, pass
+   *     an empty string.
    * @param {function():void} onComplete Called with true if the quick unlock
-   *     state was updated, false otherwise. The update is treated as a single
-   *     atomic operation.
+   *     state was updated,     false otherwise. The update is treated as a
+   *     single atomic operation.
    * @see https://developer.chrome.com/extensions/quickUnlockPrivate#method-setModes
    */
   setModes: assertNotReached,

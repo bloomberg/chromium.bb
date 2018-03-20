@@ -22,13 +22,14 @@ cr.define('settings', function() {
    */
   function FakeQuickUnlockPrivate() {
     /** @type {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} */
-        this.availableModes = [chrome.quickUnlockPrivate.QuickUnlockMode.PIN];
+    this.availableModes = [chrome.quickUnlockPrivate.QuickUnlockMode.PIN];
     /** @type {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} */
-        this.activeModes = [];
+    this.activeModes = [];
     /** @type {!Array<string>} */ this.credentials = [];
     /** @type {string} */ this.accountPassword = '';
     /** @type {!chrome.quickUnlockPrivate.CredentialRequirements} */
-        this.credentialRequirements = {minLength: 4, maxLength: 0};
+    this.credentialRequirements = {minLength: 4, maxLength: 0};
+    /** @type {boolean} */ this.lockScreenEnabled = false;
   }
 
   function clearError_() {
@@ -55,6 +56,24 @@ cr.define('settings', function() {
       }
       clearError_();
       onComplete({token: FAKE_TOKEN, lifetime: 0});
+    },
+
+    /**
+     * @override
+     * @param {string} token
+     * @param {boolean} enabled
+     * @param {function(boolean):void}= onComplete
+     */
+    setLockScreenEnabled: function(token, enabled, onComplete) {
+      if (token != FAKE_TOKEN) {
+        chrome.runtime.lastError = 'Authentication token invalid';
+      } else {
+        // Note: Fake does not set pref value.
+        this.lockScreenEnabled = enabled;
+        clearError_();
+      }
+      if (onComplete)
+        onComplete();
     },
 
     /**

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -258,6 +259,34 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
   Respond(ArgumentList(
       quick_unlock_private::GetAuthToken::Results::Create(*result)));
   Release();  // Balanced in Run().
+}
+
+// quickUnlockPrivate.setLockScreenEnabled
+
+QuickUnlockPrivateSetLockScreenEnabledFunction::
+    QuickUnlockPrivateSetLockScreenEnabledFunction()
+    : chrome_details_(this) {}
+
+QuickUnlockPrivateSetLockScreenEnabledFunction::
+    ~QuickUnlockPrivateSetLockScreenEnabledFunction() {}
+
+ExtensionFunction::ResponseAction
+QuickUnlockPrivateSetLockScreenEnabledFunction::Run() {
+  auto params =
+      quick_unlock_private::SetLockScreenEnabled::Params::Create(*args_);
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
+  if (quick_unlock_storage->GetAuthTokenExpired())
+    return RespondNow(Error(kAuthTokenExpired));
+  if (params->token != quick_unlock_storage->GetAuthToken())
+    return RespondNow(Error(kAuthTokenInvalid));
+
+  profile->GetPrefs()->SetBoolean(prefs::kEnableAutoScreenLock,
+                                  params->enabled);
+
+  return RespondNow(ArgumentList(
+      quick_unlock_private::SetLockScreenEnabled::Results::Create()));
 }
 
 // quickUnlockPrivate.getAvailableModes

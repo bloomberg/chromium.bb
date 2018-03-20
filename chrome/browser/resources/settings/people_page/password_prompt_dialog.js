@@ -45,10 +45,13 @@ Polymer({
 
     /**
      * Authhentication token used when calling setModes, returned by
-     * quickUnlockPrivate.getAuthToken.
+     * quickUnlockPrivate.getAuthToken. Reflected to lock-screen.
      * @private
      */
-    token_: String,
+    authToken: {
+      type: String,
+      notify: true,
+    },
 
     /**
      * Helper property which marks password as valid/invalid.
@@ -93,14 +96,6 @@ Polymer({
   },
 
   /**
-   * Called whenever the dialog is closed.
-   * @private
-   */
-  onClose_: function() {
-    this.token_ = '';
-  },
-
-  /**
    * Run the account password check.
    * @private
    */
@@ -127,6 +122,7 @@ Polymer({
         return;
       }
 
+      this.authToken = tokenInfo.token;
       this.passwordInvalid_ = false;
 
       // Create the |this.setModes| closure and automatically clear it after

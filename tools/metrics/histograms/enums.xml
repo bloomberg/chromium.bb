@@ -14815,6 +14815,7 @@ Called by update_net_error_codes.py.-->
   <int value="1226" label="WEBRTCLOGGINGPRIVATE_STARTEVENTLOGGING"/>
   <int value="1227" label="VIRTUALKEYBOARDPRIVATE_SETCONTAINERBEHAVIOR"/>
   <int value="1228" label="QUICKUNLOCKPRIVATE_GETAUTHTOKEN"/>
+  <int value="1229" label="QUICKUNLOCKPRIVATE_SETLOCKSCREENENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">

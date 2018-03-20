@@ -41,10 +41,8 @@ Polymer({
     prefs: {type: Object},
 
     /**
-     * setModes_ is a partially applied function that stores the previously
-     * entered password. It's defined only when the user has already entered a
-     * valid password.
-     *
+     * setModes_ is a partially applied function that stores the current auth
+     * token. It's defined only when the user has entered a valid password.
      * @type {Object|undefined}
      * @private
      */
@@ -52,6 +50,12 @@ Polymer({
       type: Object,
       observer: 'onSetModesChanged_',
     },
+
+    /**
+     * Authentication token provided by password-prompt-dialog.
+     * @private
+     */
+    authToken_: String,
 
     /**
      * writeUma_ is a function that handles writing uma stats. It may be
@@ -231,6 +235,20 @@ Polymer({
   },
 
   /**
+   * @param {!Event} event
+   * @private
+   */
+  onScreenLockChange_: function(event) {
+    const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
+    if (!this.authToken_) {
+      console.error('Screen lock changed with expired token.');
+      target.checked = !target.checked;
+      return;
+    }
+    this.setLockScreenEnabled(this.authToken_, target.checked);
+  },
+
+  /**
    * Called when the unlock type has changed.
    * @param {!string} selected The current unlock type.
    * @private
@@ -269,7 +287,7 @@ Polymer({
     else if (!this.$$('#unlockType').disabled)
       cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
     else
-      cr.ui.focusWithoutInk(assert(this.$$('#screenLockDiv')));
+      cr.ui.focusWithoutInk(assert(this.$$('#enableLockScreen')));
   },
 
   /**

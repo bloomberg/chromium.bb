@@ -57,6 +57,25 @@ class QuickUnlockPrivateGetAuthTokenFunction
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetAuthTokenFunction);
 };
 
+class QuickUnlockPrivateSetLockScreenEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  QuickUnlockPrivateSetLockScreenEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.setLockScreenEnabled",
+                             QUICKUNLOCKPRIVATE_SETLOCKSCREENENABLED);
+
+ protected:
+  ~QuickUnlockPrivateSetLockScreenEnabledFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateSetLockScreenEnabledFunction);
+};
+
 class QuickUnlockPrivateGetAvailableModesFunction
     : public UIThreadExtensionFunction {
  public:
