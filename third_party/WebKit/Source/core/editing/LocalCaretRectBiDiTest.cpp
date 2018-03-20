@@ -1225,4 +1225,420 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
+  // Sample:|A B C d e f
+  // BiDi:   1 1 1 0 0 0
+  // Visual:|C B A d e f
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr><bdo dir=rtl>|ABC</bdo>def</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InLtrBlockLineBeginLtrBaseRunWithThreeNestedRuns) {
+  // Sample:|a b c D E F g h i
+  // BiDi:   2 2 2 1 1 1 0 0 0
+  // Visual:|F E D a b c g h i
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr><bdo dir=rtl><bdo "
+      "dir=ltr>|abc</bdo>DEF</bdo>ghi</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InLtrBlockLineBeginLtrBaseRunWithFourNestedRuns) {
+  // Sample:|A B C d e f G H I j k l
+  // BiDi:   3 3 3 2 2 2 1 1 1 0 0 0
+  // Visual: I H G|C B A d e f j k l
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr><bdo dir=rtl><bdo dir=ltr><bdo "
+      "dir=rtl>|ABC</bdo>def</bdo>GHI</bdo>jkl</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithTwoNestedRuns) {
+  // Sample: d e f A B C|
+  // BiDi:   0 0 0 1 1 1
+  // Visual: d e f C B A|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr>def<bdo dir=rtl>ABC|</bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(60, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithThreeNestedRuns) {
+  // Sample: g h i D E F a b c|
+  // BiDi:   0 0 0 1 1 1 2 2 2
+  // Visual: g h i a b c F E D|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr>ghi<bdo dir=rtl>DEF<bdo "
+      "dir=ltr>abc|</bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(90, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithFourNestedRuns) {
+  // Sample: j k l G H I d e f A B C|
+  // BiDi:   0 0 0 1 1 1 2 2 2 3 3 3
+  // Visual: j k l d e f C B A|I H G
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=ltr>jkl<bdo dir=rtl>GHI<bdo dir=ltr>def<bdo "
+      "dir=rtl>ABC|</bdo></bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(90, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginWithRtlRunOnly) {
+  // Sample:|A B C
+  // BiDi:   1 1 1
+  // Visual:|C B A
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position =
+      SetCaretTextToBody("<div dir=ltr><bdo dir=rtl>|ABC</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
+  // Sample:|a b c D E F
+  // BiDi:   2 2 2 1 1 1
+  // Visual:|F E D a b c
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl><bdo dir=ltr>|abc</bdo>DEF</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InLtrBlockLineBeginRtlBaseRunWithThreeNestedRuns) {
+  // Sample:|A B C d e f G H I
+  // BiDi:   3 3 3 2 2 2 1 1 1
+  // Visual: I H G|C B A d e f
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl><bdo dir=ltr><bdo "
+      "dir=rtl>|ABC</bdo>def</bdo>GHI</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InLtrBlockLineBeginRtlBaseRunWithFourNestedRuns) {
+  // Sample:|a b c D E F g h i J K L
+  // BiDi:   4 4 4 3 3 3 2 2 2 1 1 1
+  // Visual: L K J|F E D a b c g h i
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl><bdo dir=ltr><bdo dir=rtl><bdo "
+      "dir=ltr>|abc</bdo>DEF</bdo>ghi</bdo>JKL</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndWithRtlRunOnly) {
+  // Sample: A B C|
+  // BiDi:   1 1 1
+  // Visual: C B A|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position =
+      SetCaretTextToBody("<div dir=ltr><bdo dir=rtl>ABC|</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithTwoNestedRuns) {
+  // Sample: D E F a b c|
+  // BiDi:   1 1 1 2 2 2
+  // Visual: a b c F E D|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl>DEF<bdo dir=ltr>abc|</bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(60, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithThreeNestedRuns) {
+  // Sample: G H I d e f A B C|
+  // BiDi:   1 1 1 2 2 2 3 3 3
+  // Visual: d e f C B A|I H G
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl>GHI<bdo dir=ltr>def<bdo "
+      "dir=rtl>ABC|</bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(60, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithFourNestedRuns) {
+  // Sample: J K L g h i D E F a b c|
+  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4
+  // Visual: g h i a b c F E D|L K J
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=ltr><bdo dir=rtl>JKL<bdo dir=ltr>ghi<bdo dir=rtl>DEF<bdo "
+      "dir=ltr>abc|</bdo></bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(90, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginWithLtrRunOnly) {
+  // Sample:|a b c
+  // BiDi:   2 2 2
+  // Visual: a b c|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position =
+      SetCaretTextToBody("<div dir=rtl><bdo dir=ltr>|abc</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(299, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
+  // Sample:|A B C d e f
+  // BiDi:   3 3 3 2 2 2
+  // Visual: C B A d e f|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr><bdo dir=rtl>|ABC</bdo>def</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(299, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InRtlBlockLineBeginLtrBaseRunWithThreeNestedRuns) {
+  // Sample:|a b c D E F g h i
+  // BiDi:   4 4 4 3 3 3 2 2 2
+  // Visual: F E D a b c|g h i
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr><bdo dir=rtl><bdo "
+      "dir=ltr>|abc</bdo>DEF</bdo>ghi</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(270, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InRtlBlockLineBeginLtrBaseRunWithFourNestedRuns) {
+  // Sample:|A B C d e f G H I j k l
+  // BiDi:   5 5 5 4 4 4 3 3 3 2 2 2
+  // Visual: I H G C B A d e f|j k l
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr><bdo dir=rtl><bdo dir=ltr><bdo "
+      "dir=rtl>|ABC</bdo>def</bdo>GHI</bdo>jkl</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(270, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndWithLtrRunOnly) {
+  // Sample: a b c|
+  // BiDi:   2 2 2
+  // Visual:|a b c
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position =
+      SetCaretTextToBody("<div dir=rtl><bdo dir=ltr>abc|</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(270, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithTwoNestedRuns) {
+  // Sample: d e f A B C|
+  // BiDi:   2 2 2 3 3 3
+  // Visual:|d e f C B A
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr>def<bdo dir=rtl>ABC|</bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(240, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithThreeNestedRuns) {
+  // Sample: g h i D E F a b c|
+  // BiDi:   2 2 2 3 3 3 4 4 4
+  // Visual: g h i|a b c F E D
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr>ghi<bdo dir=rtl>DEF<bdo "
+      "dir=ltr>abc|</bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(240, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithFourNestedRuns) {
+  // Sample: j k l G H I d e f A B C|
+  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5
+  // Visual: j k l|d e f C B A I H G
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=ltr>jkl<bdo dir=rtl>GHI<bdo dir=ltr>def<bdo "
+      "dir=rtl>ABC|</bdo></bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(210, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
+  // Sample:|a b c D E F
+  // BiDi:   2 2 2 1 1 1
+  // Visual: F E D a b c|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl><bdo dir=ltr>|abc</bdo>DEF</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(299, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InRtlBlockLineBeginRtlBaseRunWithThreeNestedRuns) {
+  // Sample:|A B C d e f G H I
+  // BiDi:   3 3 3 2 2 2 1 1 1
+  // Visual: I H G C B A d e f|
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl><bdo dir=ltr><bdo "
+      "dir=rtl>|ABC</bdo>def</bdo>GHI</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(299, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest,
+       InRtlBlockLineBeginRtlBaseRunWithFourNestedRuns) {
+  // Sample:|a b c D E F g h i J K L
+  // BiDi:   4 4 4 3 3 3 2 2 2 1 1 1
+  // Visual: L K J F E D a b c|g h i
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl><bdo dir=ltr><bdo dir=rtl><bdo "
+      "dir=ltr>|abc</bdo>DEF</bdo>ghi</bdo>JKL</bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(270, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithTwoNestedRuns) {
+  // Sample: D E F a b c|
+  // BiDi:   1 1 1 2 2 2
+  // Visual:|a b c F E D
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl>DEF<bdo dir=ltr>abc|</bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(240, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithThreeNestedRuns) {
+  // Sample: G H I d e f A B C|
+  // BiDi:   1 1 1 2 2 2 3 3 3
+  // Visual:|d e f C B A I H G
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl>GHI<bdo dir=ltr>def<bdo "
+      "dir=rtl>ABC|</bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(210, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
+TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithFourNestedRuns) {
+  // Sample: J K L g h i D E F a b c|
+  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4
+  // Visual: g h i|a b c F E D L K J
+  LoadAhem();
+  InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
+  const Position position = SetCaretTextToBody(
+      "<div dir=rtl><bdo dir=rtl>JKL<bdo dir=ltr>ghi<bdo dir=rtl>DEF<bdo "
+      "dir=ltr>abc|</bdo></bdo></bdo></bdo></div>");
+  const PositionWithAffinity position_with_affinity(position,
+                                                    TextAffinity::kDownstream);
+  EXPECT_EQ(LayoutRect(210, 0, 1, 10),
+            LocalCaretRectOfPosition(position_with_affinity).rect);
+}
+
 }  // namespace blink
