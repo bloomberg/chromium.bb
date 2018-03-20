@@ -76,7 +76,7 @@ void RenderFrameMetadataProviderImpl::OnFrameSubmissionForTesting(
   frame_token_message_queue_->EnqueueOrRunFrameTokenCallback(
       frame_token, base::BindOnce(&RenderFrameMetadataProviderImpl::
                                       OnFrameTokenFrameSubmissionForTesting,
-                                  base::Unretained(this)));
+                                  weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace content
