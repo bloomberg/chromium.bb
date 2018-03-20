@@ -12,6 +12,7 @@
 #include "core/html/media/AutoplayUmaHelper.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/page/Page.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
@@ -98,12 +99,10 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
       return true;
     }
 
-    // TODO(mlamouri): checking HasHighMediaEngagement from the document as all
-    // documents are in this state if the main frame has a high media
-    // engagement. This allows OOPIF to work but a follow-up fix is in progress.
     if (RuntimeEnabledFeatures::
             MediaEngagementBypassAutoplayPoliciesEnabled() &&
-        frame->IsMainFrame() && document.HasHighMediaEngagement()) {
+        frame->IsMainFrame() && frame->GetPage() &&
+        frame->GetPage()->HasHighMediaEngagement()) {
       return true;
     }
 

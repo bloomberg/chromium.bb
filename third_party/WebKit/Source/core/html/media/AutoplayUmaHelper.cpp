@@ -10,6 +10,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElement.h"
+#include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/wtf/Time.h"
@@ -207,6 +208,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   if (element_->GetDocument().IsInMainFrame()) {
     LocalFrame* frame = element_->GetDocument().GetFrame();
     DCHECK(frame);
+    DCHECK(element_->GetDocument().GetPage());
 
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         CreateUkmBuilder(kAutoplayAttemptUkmEvent);
@@ -220,8 +222,9 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
         kAutoplayAttemptUkmUserGestureRequiredMetric,
         element_->GetAutoplayPolicy().IsGestureNeededForPlayback());
     builder->AddMetric(kAutoplayAttemptUkmMutedMetric, element_->muted());
-    builder->AddMetric(kAutoplayAttemptUkmHighMediaEngagementMetric,
-                       element_->GetDocument().HasHighMediaEngagement());
+    builder->AddMetric(
+        kAutoplayAttemptUkmHighMediaEngagementMetric,
+        element_->GetDocument().GetPage()->HasHighMediaEngagement());
     builder->AddMetric(kAutoplayAttemptUkmUserGestureStatusMetric,
                        GetUserGestureStatusForUkmMetric(frame));
   }

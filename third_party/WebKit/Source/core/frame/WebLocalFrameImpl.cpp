@@ -2373,12 +2373,6 @@ void WebLocalFrameImpl::SetEngagementLevel(mojom::EngagementLevel level) {
   GetFrame()->GetDocument()->SetEngagementLevel(level);
 }
 
-void WebLocalFrameImpl::SetHasHighMediaEngagement(
-    bool has_high_media_engagement) {
-  GetFrame()->GetDocument()->SetHasHighMediaEngagement(
-      has_high_media_engagement);
-}
-
 WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlags() const {
   if (!GetFrame())
     return WebSandboxFlags::kNone;

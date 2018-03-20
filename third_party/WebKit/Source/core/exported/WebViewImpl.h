@@ -440,6 +440,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ForceNextWebGLContextCreationToFail() override;
   void ForceNextDrawingBufferCreationToFail() override;
 
+  void SetHasHighMediaEngagement(bool) override;
+
   IntSize MainFrameSize();
   WebDisplayMode DisplayMode() const { return display_mode_; }
 
