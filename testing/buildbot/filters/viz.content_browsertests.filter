@@ -61,6 +61,7 @@
 -SitePerProcessBrowserTest.CompositorFrameSwapped
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFrames
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
+-SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
 
 # Touch selection information is not provided to the browser
 # http://crbug.com/777882

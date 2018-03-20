@@ -39,6 +39,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/page_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
@@ -2203,6 +2204,27 @@ void RenderFrameHostManager::CommitPending() {
   // Show the new view (or a sad tab) if necessary.
   bool new_rfh_has_view = !!render_frame_host_->GetView();
   if (!delegate_->IsHidden() && new_rfh_has_view) {
+    if (!is_main_frame &&
+        !render_frame_host_->render_view_host()->is_active()) {
+      // Ensure that page visibility in the subframe's process is set to shown.
+      // This is important if the subframe is using a RenderView which
+      // started out as active and later became swapped-out, which also updates
+      // page visibility to hidden.  Without updating page visibility the
+      // subframe would not be able to generate compositor frames.  See
+      // https://crbug.com/638375.
+      //
+      // TODO(alexmos,dcheng,lfg): This workaround should be cleaned up as part
+      // of the view/widget split.  We should decouple page visibility from
+      // widget visibility.
+      RenderFrameProxyHost* proxy =
+          frame_tree_node_->frame_tree()
+              ->root()
+              ->render_manager()
+              ->GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance());
+      // The proxy should always exist since the RenderViewHost is not active.
+      proxy->Send(new PageMsg_WasShown(proxy->GetRoutingID()));
+    }
+
     // In most cases, we need to show the new view.
     render_frame_host_->GetView()->Show();
   }
