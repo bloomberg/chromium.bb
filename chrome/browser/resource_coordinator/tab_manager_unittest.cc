@@ -1294,10 +1294,10 @@ TEST_F(TabManagerTest, EnablePageAlmostIdleSignal) {
 
   // |ignored_web_contents| is not managed by TabManager, thus will be ignored
   // and shouldn't cause any crash or side effect.
-  WebContents* ignored_web_contents =
-      WebContentsTester::CreateTestWebContents(browser_context(), nullptr);
+  std::unique_ptr<WebContents> ignored_web_contents(
+      WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
   tab_manager_->resource_coordinator_signal_observer_->OnPageAlmostIdle(
-      ignored_web_contents);
+      ignored_web_contents.get());
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
   EXPECT_FALSE(tab_manager_->IsNavigationDelayedForTest(nav_handle3_.get()));
 }
