@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 76 tests; 2 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 77 tests; 2 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS getReader({mode: "byob"}) throws on non-bytes streams
 FAIL ReadableStream with byte source can be constructed with no errors bytes type is not yet implemented
 FAIL getReader({mode}) must perform ToString() bytes type is not yet implemented
@@ -32,6 +32,7 @@ FAIL ReadableStream with byte source: getReader(), enqueue(), close(), then read
 FAIL ReadableStream with byte source: enqueue(), close(), getReader(), then read() bytes type is not yet implemented
 FAIL ReadableStream with byte source: Respond to pull() by enqueue() bytes type is not yet implemented
 FAIL ReadableStream with byte source: Respond to pull() by enqueue() asynchronously bytes type is not yet implemented
+FAIL ReadableStream with byte source: Respond to multiple pull() by separate enqueue() bytes type is not yet implemented
 FAIL ReadableStream with byte source: read(view), then respond() bytes type is not yet implemented
 FAIL ReadableStream with byte source: read(view), then respond() with a transferred ArrayBuffer bytes type is not yet implemented
 FAIL ReadableStream with byte source: read(view), then respond() with too big value bytes type is not yet implemented
