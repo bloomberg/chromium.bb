@@ -532,8 +532,9 @@ AutomationPredicate.supportsImageData =
  * @return {boolean}
  */
 AutomationPredicate.contextualBraille = function(node) {
-  return node.parent != null && node.parent.role == Role.ROW &&
-      AutomationPredicate.cellLike(node);
+  return node.parent != null &&
+      ((node.parent.role == Role.ROW && AutomationPredicate.cellLike(node)) ||
+       (node.parent.role == Role.TREE && node.parent.state[State.HORIZONTAL]));
 };
 
 /**
