@@ -304,8 +304,6 @@ public class DownloadNotificationService2 {
             notifyDownloadFailed(id, fileName, icon);
             return;
         }
-        // If download is already paused, do nothing.
-        if (entry != null && !entry.isAutoResumable && !forceRebuild) return;
         boolean canDownloadWhileMetered = entry == null ? false : entry.canDownloadWhileMetered;
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
@@ -314,6 +312,8 @@ public class DownloadNotificationService2 {
             stopTrackingInProgressDownload(id);
             return;
         }
+        // If download is already paused, do nothing.
+        if (entry != null && !entry.isAutoResumable && !forceRebuild) return;
         int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
         Context context = ContextUtils.getApplicationContext();
 

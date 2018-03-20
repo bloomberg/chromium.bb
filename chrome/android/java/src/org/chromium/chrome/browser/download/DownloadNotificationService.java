@@ -885,17 +885,17 @@ public class DownloadNotificationService extends Service {
             notifyDownloadFailed(id, fileName, icon);
             return;
         }
-        // Download is already paused.
-        if (entry != null && !entry.isAutoResumable) {
-            // Shutdown the service in case it was restarted unnecessarily.
-            stopTrackingInProgressDownload(id, true);
-            return;
-        }
         boolean canDownloadWhileMetered = entry == null ? false : entry.canDownloadWhileMetered;
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
             notifyDownloadPending(
                     id, fileName, isOffTheRecord, canDownloadWhileMetered, isTransient, icon);
+            stopTrackingInProgressDownload(id, true);
+            return;
+        }
+        // Download is already paused.
+        if (entry != null && !entry.isAutoResumable) {
+            // Shutdown the service in case it was restarted unnecessarily.
             stopTrackingInProgressDownload(id, true);
             return;
         }
