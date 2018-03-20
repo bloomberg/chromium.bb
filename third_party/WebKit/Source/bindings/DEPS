@@ -4,8 +4,6 @@ include_rules = [
     "+core",
     "+gin/public",
     "+modules",
-    "+platform",
-    "+public/platform",
     "+services/network/public/mojom/fetch_api.mojom-blink.h",
     "+web/api",
 ]
