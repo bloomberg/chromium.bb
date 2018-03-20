@@ -29,9 +29,8 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
   bool IsUIResourceOpaque(UIResourceId uid) const override;
 
  private:
-  using UIResourceMap =
-      std::unordered_map<UIResourceId, LayerTreeHostImpl::UIResourceData>;
-  UIResourceMap fake_ui_resource_map_;
+  std::unordered_map<UIResourceId, LayerTreeHostImpl::UIResourceData>
+      fake_ui_resource_map_;
 };
 
 }  // namespace cc

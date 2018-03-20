@@ -80,6 +80,7 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/frame_deadline.h"
@@ -87,6 +88,7 @@
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/traced_value.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -99,6 +101,7 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
@@ -175,12 +178,14 @@ DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(
     ImageInvalidationUpdateDurationHistogramTimer,
     "Scheduling.%s.ImageInvalidationUpdateDuration");
 
-LayerTreeHostImpl::FrameData::FrameData()
-    : render_surface_list(nullptr),
-      has_no_damage(false),
-      may_contain_video(false) {}
-
+LayerTreeHostImpl::FrameData::FrameData() = default;
 LayerTreeHostImpl::FrameData::~FrameData() = default;
+LayerTreeHostImpl::UIResourceData::UIResourceData() = default;
+LayerTreeHostImpl::UIResourceData::~UIResourceData() = default;
+LayerTreeHostImpl::UIResourceData::UIResourceData(UIResourceData&&) noexcept =
+    default;
+LayerTreeHostImpl::UIResourceData& LayerTreeHostImpl::UIResourceData::operator=(
+    UIResourceData&&) = default;
 
 std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,
@@ -4472,6 +4477,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   const gfx::Size source_size = bitmap.GetSize();
   gfx::Size upload_size = bitmap.GetSize();
   bool scaled = false;
+  // UIResources are assumed to be rastered in SRGB.
+  const gfx::ColorSpace& color_space = gfx::ColorSpace::CreateSRGB();
 
   int max_texture_size = resource_provider_->max_texture_size();
   if (source_size.width() > max_texture_size ||
@@ -4484,18 +4491,48 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     upload_size = gfx::ScaleToCeiledSize(source_size, scale, scale);
   }
 
+  // For gpu compositing, a texture will be allocated and the UIResource
+  // will be uploaded into it.
+  viz::TextureAllocation texture_alloc;
+  // For software compositing, shared memory will be allocated and the
+  // UIResource will be copied into it.
+  std::unique_ptr<base::SharedMemory> shared_memory;
+  viz::SharedBitmapId shared_bitmap_id;
+
   if (layer_tree_frame_sink_->context_provider()) {
-    id = resource_provider_->CreateGpuTextureResource(
-        upload_size, viz::ResourceTextureHint::kDefault, format,
-        gfx::ColorSpace::CreateSRGB());
+    viz::ContextProvider* context_provider =
+        layer_tree_frame_sink_->context_provider();
+    texture_alloc = viz::TextureAllocation::MakeTextureId(
+        context_provider->ContextGL(), context_provider->ContextCapabilities(),
+        format, settings_.resource_settings.use_gpu_memory_buffer_resources,
+        /*for_framebuffer_attachment=*/false);
   } else {
-    DCHECK_EQ(format, viz::RGBA_8888);
-    id = resource_provider_->CreateBitmapResource(
-        upload_size, gfx::ColorSpace::CreateSRGB(), viz::RGBA_8888);
+    shared_memory =
+        viz::bitmap_allocation::AllocateMappedBitmap(upload_size, format);
+    shared_bitmap_id = viz::SharedBitmap::GenerateId();
   }
 
   if (!scaled) {
-    resource_provider_->CopyToResource(id, bitmap.GetPixels(), source_size);
+    // If not scaled, we can copy the pixels 1:1 from the source bitmap to our
+    // destination backing of a texture or shared bitmap.
+    if (layer_tree_frame_sink_->context_provider()) {
+      viz::TextureAllocation::UploadStorage(
+          layer_tree_frame_sink_->context_provider()->ContextGL(),
+          layer_tree_frame_sink_->context_provider()->ContextCapabilities(),
+          format, upload_size, texture_alloc, color_space, bitmap.GetPixels());
+    } else {
+      DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
+      SkImageInfo src_info =
+          SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(source_size));
+      SkImageInfo dst_info =
+          SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
+
+      sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
+          dst_info, shared_memory->memory(), dst_info.minRowBytes());
+      surface->getCanvas()->writePixels(
+          src_info, const_cast<uint8_t*>(bitmap.GetPixels()),
+          src_info.minRowBytes(), 0, 0);
+    }
   } else {
     // Only support auto-resizing for N32 textures (since this is primarily for
     // scrollbars). Users of other types need to ensure they are not too big.
@@ -4506,57 +4543,170 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     float canvas_scale_y =
         upload_size.height() / static_cast<float>(source_size.height());
 
-    // Uses kPremul_SkAlphaType since that is what SkBitmap's allocN32Pixels
-    // makes, and we only support the RGBA8 format here.
-    SkImageInfo info = SkImageInfo::MakeN32(
-        source_size.width(), source_size.height(), kPremul_SkAlphaType);
-    int row_bytes = source_size.width() * 4;
+    // Uses N32Premul since that is what SkBitmap's allocN32Pixels makes, and we
+    // only support the RGBA8 format here.
+    SkImageInfo info =
+        SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(source_size));
 
     SkBitmap source_bitmap;
-    source_bitmap.setInfo(info, row_bytes);
+    source_bitmap.setInfo(info);
     source_bitmap.setPixels(const_cast<uint8_t*>(bitmap.GetPixels()));
 
-    // This applies the scale to draw the |bitmap| into |scaled_bitmap|.
-    SkBitmap scaled_bitmap;
-    scaled_bitmap.allocN32Pixels(upload_size.width(), upload_size.height());
-    SkCanvas scaled_canvas(scaled_bitmap);
-    scaled_canvas.scale(canvas_scale_x, canvas_scale_y);
+    // This applies the scale to draw the |bitmap| into |scaled_surface|. For
+    // gpu compositing, we scale into a software bitmap-backed SkSurface here,
+    // then upload from there into a texture. For software compositing, we scale
+    // directly into the shared memory backing.
+    sk_sp<SkSurface> scaled_surface;
+    if (layer_tree_frame_sink_->context_provider()) {
+      scaled_surface = SkSurface::MakeRasterN32Premul(upload_size.width(),
+                                                      upload_size.height());
+    } else {
+      SkImageInfo dst_info =
+          SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
+      scaled_surface = SkSurface::MakeRasterDirect(
+          dst_info, shared_memory->memory(), dst_info.minRowBytes());
+    }
+    SkCanvas* scaled_canvas = scaled_surface->getCanvas();
+    scaled_canvas->scale(canvas_scale_x, canvas_scale_y);
     // The |canvas_scale_x| and |canvas_scale_y| may have some floating point
     // error for large enough values, causing pixels on the edge to be not
     // fully filled by drawBitmap(), so we ensure they start empty. (See
     // crbug.com/642011 for an example.)
-    scaled_canvas.clear(SK_ColorTRANSPARENT);
-    scaled_canvas.drawBitmap(source_bitmap, 0, 0);
+    scaled_canvas->clear(SK_ColorTRANSPARENT);
+    scaled_canvas->drawBitmap(source_bitmap, 0, 0);
 
-    auto* pixels = static_cast<uint8_t*>(scaled_bitmap.getPixels());
-    resource_provider_->CopyToResource(id, pixels, upload_size);
+    if (layer_tree_frame_sink_->context_provider()) {
+      SkPixmap pixmap;
+      scaled_surface->peekPixels(&pixmap);
+      viz::TextureAllocation::UploadStorage(
+          layer_tree_frame_sink_->context_provider()->ContextGL(),
+          layer_tree_frame_sink_->context_provider()->ContextCapabilities(),
+          format, upload_size, texture_alloc, color_space, pixmap.addr());
+    }
   }
 
+  // Once the backing has the UIResource inside it, we have to prepare it for
+  // export to the display compositor via ImportResource(). For gpu compositing,
+  // this requires a Mailbox+SyncToken as well. For software compositing, the
+  // SharedBitmapId must be notified to the LayerTreeFrameSink. The
+  // OnUIResourceReleased() method will be called once the resource is deleted
+  // and the display compositor is no longer using it, to free the memory
+  // allocated in this method above.
+  viz::TransferableResource transferable;
+  if (layer_tree_frame_sink_->context_provider()) {
+    gpu::gles2::GLES2Interface* gl =
+        layer_tree_frame_sink_->context_provider()->ContextGL();
+    gpu::Mailbox mailbox = gpu::Mailbox::Generate();
+    gl->ProduceTextureDirectCHROMIUM(texture_alloc.texture_id, mailbox.name);
+    gpu::SyncToken sync_token =
+        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+
+    transferable = viz::TransferableResource::MakeGLOverlay(
+        mailbox, GL_LINEAR, texture_alloc.texture_target, sync_token,
+        upload_size, texture_alloc.overlay_candidate);
+    transferable.format = format;
+    transferable.buffer_format = viz::BufferFormat(format);
+  } else {
+    mojo::ScopedSharedBufferHandle memory_handle =
+        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
+            shared_memory.get(), upload_size, format);
+    layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(memory_handle),
+                                                    shared_bitmap_id);
+    transferable = viz::TransferableResource::MakeSoftware(shared_bitmap_id, 0,
+                                                           upload_size, format);
+  }
+  transferable.color_space = color_space;
+  id = resource_provider_->ImportResource(
+      transferable,
+      // The OnUIResourceReleased method is bound with a WeakPtr, but the
+      // resource backing will be deleted when the LayerTreeFrameSink is
+      // removed before shutdown, so nothing leaks if the WeakPtr is
+      // invalidated.
+      viz::SingleReleaseCallback::Create(base::BindOnce(
+          &LayerTreeHostImpl::OnUIResourceReleased, AsWeakPtr(), uid)));
+
   UIResourceData data;
-  data.resource_id = id;
   data.opaque = bitmap.GetOpaque();
-  ui_resource_map_[uid] = data;
+  data.format = format;
+  data.shared_bitmap_id = shared_bitmap_id;
+  data.shared_memory = std::move(shared_memory);
+  data.texture_id = texture_alloc.texture_id;
+  data.resource_id_for_export = id;
+  ui_resource_map_[uid] = std::move(data);
 
   MarkUIResourceNotEvicted(uid);
 }
 
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
-  viz::ResourceId id = ResourceIdForUIResource(uid);
-  if (id) {
-    if (has_valid_layer_tree_frame_sink_)
-      resource_provider_->DeleteResource(id);
-    ui_resource_map_.erase(uid);
+  auto it = ui_resource_map_.find(uid);
+  if (it != ui_resource_map_.end()) {
+    UIResourceData& data = it->second;
+    viz::ResourceId id = data.resource_id_for_export;
+    // Move the |data| to |deleted_ui_resources_| before removing it from the
+    // LayerTreeResourceProvider, so that the ReleaseCallback can see it there.
+    deleted_ui_resources_[uid] = std::move(data);
+    ui_resource_map_.erase(it);
+
+    resource_provider_->RemoveImportedResource(id);
   }
   MarkUIResourceNotEvicted(uid);
 }
 
+void LayerTreeHostImpl::DeleteUIResourceBacking(
+    UIResourceData data,
+    const gpu::SyncToken& sync_token) {
+  // Resources are either software or gpu backed, not both.
+  DCHECK(!(data.shared_memory && data.texture_id));
+  if (data.shared_memory)
+    layer_tree_frame_sink_->DidDeleteSharedBitmap(data.shared_bitmap_id);
+  if (data.texture_id) {
+    gpu::gles2::GLES2Interface* gl =
+        layer_tree_frame_sink_->context_provider()->ContextGL();
+    if (sync_token.HasData())
+      gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+    gl->DeleteTextures(1, &data.texture_id);
+  }
+  // |data| goes out of scope and deletes anything it owned.
+}
+
+void LayerTreeHostImpl::OnUIResourceReleased(UIResourceId uid,
+                                             const gpu::SyncToken& sync_token,
+                                             bool lost) {
+  auto it = deleted_ui_resources_.find(uid);
+  if (it == deleted_ui_resources_.end()) {
+    // Backing was already deleted, eg if the context was lost.
+    return;
+  }
+  UIResourceData& data = it->second;
+  // We don't recycle backings here, so |lost| is not relevant, we always delete
+  // them.
+  DeleteUIResourceBacking(std::move(data), sync_token);
+  deleted_ui_resources_.erase(it);
+}
+
 void LayerTreeHostImpl::ClearUIResources() {
-  for (UIResourceMap::const_iterator iter = ui_resource_map_.begin();
-       iter != ui_resource_map_.end(); ++iter) {
-    evicted_ui_resources_.insert(iter->first);
-    resource_provider_->DeleteResource(iter->second.resource_id);
+  for (auto& pair : ui_resource_map_) {
+    UIResourceId uid = pair.first;
+    UIResourceData& data = pair.second;
+    resource_provider_->RemoveImportedResource(data.resource_id_for_export);
+    // Immediately drop the backing instead of waiting for the resource to be
+    // returned from the ResourceProvider, as this is called in cases where the
+    // ability to clean up the backings will go away (context loss, shutdown).
+    DeleteUIResourceBacking(std::move(data), gpu::SyncToken());
+    // This resource is not deleted, and its |uid| is still valid, so it moves
+    // to the evicted list, not the |deleted_ui_resources_| set. Also, its
+    // backing is gone, so it would not belong in |deleted_ui_resources_|.
+    evicted_ui_resources_.insert(uid);
   }
   ui_resource_map_.clear();
+  for (auto& pair : deleted_ui_resources_) {
+    UIResourceData& data = pair.second;
+    // Immediately drop the backing instead of waiting for the resource to be
+    // returned from the ResourceProvider, as this is called in cases where the
+    // ability to clean up the backings will go away (context loss, shutdown).
+    DeleteUIResourceBacking(std::move(data), gpu::SyncToken());
+  }
+  deleted_ui_resources_.clear();
 }
 
 void LayerTreeHostImpl::EvictAllUIResources() {
@@ -4571,14 +4721,14 @@ void LayerTreeHostImpl::EvictAllUIResources() {
 
 viz::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
     UIResourceId uid) const {
-  UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
+  auto iter = ui_resource_map_.find(uid);
   if (iter != ui_resource_map_.end())
-    return iter->second.resource_id;
-  return 0;
+    return iter->second.resource_id_for_export;
+  return viz::kInvalidResourceId;
 }
 
 bool LayerTreeHostImpl::IsUIResourceOpaque(UIResourceId uid) const {
-  UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
+  auto iter = ui_resource_map_.find(uid);
   DCHECK(iter != ui_resource_map_.end());
   return iter->second.opaque;
 }

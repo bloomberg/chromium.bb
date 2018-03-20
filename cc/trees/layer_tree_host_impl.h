@@ -166,6 +166,56 @@ class CC_EXPORT LayerTreeHostImpl
       public MutatorHostClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
+  // This structure is used to build all the state required for producing a
+  // single CompositorFrame. The |render_passes| list becomes the set of
+  // RenderPasses in the quad, and the other fields are used for computation
+  // or become part of the CompositorFrameMetadata.
+  struct CC_EXPORT FrameData {
+    FrameData();
+    ~FrameData();
+    void AsValueInto(base::trace_event::TracedValue* value) const;
+
+    std::vector<viz::SurfaceId> activation_dependencies;
+    base::Optional<uint32_t> deadline_in_frames;
+    bool use_default_lower_bound_deadline = false;
+    std::vector<gfx::Rect> occluding_screen_space_rects;
+    std::vector<gfx::Rect> non_occluding_screen_space_rects;
+    viz::RenderPassList render_passes;
+    const RenderSurfaceList* render_surface_list = nullptr;
+    LayerImplList will_draw_layers;
+    bool has_no_damage = false;
+    bool may_contain_video = false;
+    viz::BeginFrameAck begin_frame_ack;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FrameData);
+  };
+
+  // A struct of data for a single UIResource, including the backing
+  // pixels, and metadata about it.
+  struct CC_EXPORT UIResourceData {
+    UIResourceData();
+    ~UIResourceData();
+    UIResourceData(UIResourceData&&) noexcept;
+    UIResourceData& operator=(UIResourceData&&);
+
+    bool opaque;
+    viz::ResourceFormat format;
+
+    // Backing for software compositing.
+    viz::SharedBitmapId shared_bitmap_id;
+    std::unique_ptr<base::SharedMemory> shared_memory;
+    // Backing for gpu compositing.
+    uint32_t texture_id;
+
+    // The name with which to refer to the resource in frames submitted to the
+    // display compositor.
+    viz::ResourceId resource_id_for_export;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UIResourceData);
+  };
+
   static std::unique_ptr<LayerTreeHostImpl> Create(
       const LayerTreeSettings& settings,
       LayerTreeHostImplClient* client,
@@ -244,27 +294,6 @@ class CC_EXPORT LayerTreeHostImpl
   void set_resourceless_software_draw_for_testing() {
     resourceless_software_draw_ = true;
   }
-
-  struct CC_EXPORT FrameData {
-    FrameData();
-    ~FrameData();
-    void AsValueInto(base::trace_event::TracedValue* value) const;
-
-    std::vector<viz::SurfaceId> activation_dependencies;
-    base::Optional<uint32_t> deadline_in_frames;
-    bool use_default_lower_bound_deadline = false;
-    std::vector<gfx::Rect> occluding_screen_space_rects;
-    std::vector<gfx::Rect> non_occluding_screen_space_rects;
-    viz::RenderPassList render_passes;
-    const RenderSurfaceList* render_surface_list;
-    LayerImplList will_draw_layers;
-    bool has_no_damage;
-    bool may_contain_video;
-    viz::BeginFrameAck begin_frame_ack;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FrameData);
-  };
 
   virtual void DidSendBeginMainFrame() {}
   virtual void BeginMainFrameAborted(
@@ -567,11 +596,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
-  struct UIResourceData {
-    viz::ResourceId resource_id;
-    bool opaque;
-  };
-
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
   gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
@@ -758,8 +782,22 @@ class CC_EXPORT LayerTreeHostImpl
   void StartScrollbarFadeRecursive(LayerImpl* layer);
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
+  // Once a resource is uploaded or deleted, it is no longer an evicted id, this
+  // removes it from the evicted set, and updates if we're able to draw now that
+  // all UIResources are valid.
   void MarkUIResourceNotEvicted(UIResourceId uid);
+  // Deletes all UIResource backings, and marks all the ids as evicted.
   void ClearUIResources();
+  // Frees the textures/bitmaps backing the UIResource, held in the
+  // UIResourceData.
+  void DeleteUIResourceBacking(UIResourceData data,
+                               const gpu::SyncToken& sync_token);
+  // Callback for when a UIResource is deleted *and* no longer in use by the
+  // display compositor. It will DeleteUIResourceBacking() if the backing was
+  // not already deleted preemptively.
+  void OnUIResourceReleased(UIResourceId uid,
+                            const gpu::SyncToken& sync_token,
+                            bool lost);
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   void NotifySwapPromiseMonitorsOfForwardingToMainThread();
@@ -803,12 +841,14 @@ class CC_EXPORT LayerTreeHostImpl
   // active tree.
   void ActivateStateForImages();
 
-  using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
-  UIResourceMap ui_resource_map_;
-
+  std::unordered_map<UIResourceId, UIResourceData> ui_resource_map_;
+  // UIResources are held here once requested to be deleted until they are
+  // released from the display compositor, then the backing can be deleted.
+  std::unordered_map<UIResourceId, UIResourceData> deleted_ui_resources_;
   // Resources that were evicted by EvictAllUIResources. Resources are removed
   // from this when they are touched by a create or destroy from the UI resource
-  // request queue.
+  // request queue. The resource IDs held in here do not have any backing
+  // associated with them anymore, as that is freed at the time of eviction.
   std::set<UIResourceId> evicted_ui_resources_;
 
   LayerTreeFrameSink* layer_tree_frame_sink_;
