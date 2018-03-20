@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
 
 #import "base/logging.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/top_aligned_image_view.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/top_aligned_image_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

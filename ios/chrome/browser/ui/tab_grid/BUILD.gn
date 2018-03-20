@@ -18,6 +18,7 @@ source_set("tab_grid") {
 
   deps = [
     ":tab_grid_ui",
+    "grid:grid_ui",
     "//base",
     "//components/favicon/ios",
     "//ios/chrome/browser",
@@ -37,20 +38,6 @@ source_set("tab_grid") {
 
 source_set("tab_grid_ui") {
   sources = [
-    "grid_cell.h",
-    "grid_cell.mm",
-    "grid_commands.h",
-    "grid_constants.h",
-    "grid_constants.mm",
-    "grid_consumer.h",
-    "grid_image_data_source.h",
-    "grid_item.h",
-    "grid_item.mm",
-    "grid_layout.h",
-    "grid_layout.mm",
-    "grid_theme.h",
-    "grid_view_controller.h",
-    "grid_view_controller.mm",
     "tab_grid_bottom_toolbar.h",
     "tab_grid_bottom_toolbar.mm",
     "tab_grid_constants.h",
@@ -68,14 +55,12 @@ source_set("tab_grid_ui") {
     "tab_grid_transition_handler.mm",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
-    "top_aligned_image_view.h",
-    "top_aligned_image_view.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    "resources:grid_cell_close_button",
+    "grid:grid_ui",
     "resources:new_tab_floating_button",
     "resources:new_tab_floating_button_incognito",
     "resources:new_tab_toolbar_button",
@@ -100,6 +85,7 @@ source_set("unit_tests") {
   deps = [
     ":tab_grid",
     ":tab_grid_ui",
+    "grid:grid_ui",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser",
@@ -127,6 +113,7 @@ source_set("eg_tests") {
 
   deps = [
     ":tab_grid_ui",
+    "grid:grid_ui",
     "//base",
     "//components/strings",
     "//ios/chrome/app:app_internal",
