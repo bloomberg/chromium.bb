@@ -353,7 +353,9 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       // contexts created and destroyed for this dummy frame.
       std::string name;
       if (!params.GetString("frame.name", &name))
-        return Status(kUnknownError, "missing or invalid 'frame.name'");
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=823579
+        // OOPIF frames might not have names. Ignore them.
+        return Status(kOk);
       std::string url;
       if (!params.GetString("frame.url", &url))
         return Status(kUnknownError, "missing or invalid 'frame.url'");
