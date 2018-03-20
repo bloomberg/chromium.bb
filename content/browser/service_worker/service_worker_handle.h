@@ -20,7 +20,6 @@
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerProviderHost;
 
 namespace service_worker_handle_unittest {
@@ -39,22 +38,9 @@ class CONTENT_EXPORT ServiceWorkerHandle
     : public blink::mojom::ServiceWorkerObjectHost,
       public ServiceWorkerVersion::Listener {
  public:
-  // Creates a newly created instance for a live version. |out_info| holds the
-  // first ServiceWorkerObjectHost Mojo connection to this instance, which will
-  // delete itself once it detects that all the Mojo connections have gone
-  // away.
-  //
-  // This instance registers itself into |dispatcher_host| to be owned by the
-  // dispatcher host. S13nServiceWorker: |dispatcher_host| may be null.
-  // RegisterIntoDispatcherHost() should be called later to register the handle
-  // once the host is known.
-  static base::WeakPtr<ServiceWorkerHandle> Create(
-      ServiceWorkerDispatcherHost* dispatcher_host,
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerVersion* version,
-      blink::mojom::ServiceWorkerObjectInfoPtr* out_info);
-
+  ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
+                      ServiceWorkerProviderHost* provider_host,
+                      scoped_refptr<ServiceWorkerVersion> version);
   ~ServiceWorkerHandle() override;
 
   // ServiceWorkerVersion::Listener overrides.
@@ -63,21 +49,12 @@ class CONTENT_EXPORT ServiceWorkerHandle
   // Establishes a new mojo connection into |bindings_|.
   blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo();
 
-  // Should only be called on a ServiceWorkerHandle instance constructed with
-  // null |dispatcher_host| before.
-  void RegisterIntoDispatcherHost(ServiceWorkerDispatcherHost* dispatcher_host);
-
   int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
  private:
   friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
-
-  ServiceWorkerHandle(ServiceWorkerDispatcherHost* dispatcher_host,
-                      base::WeakPtr<ServiceWorkerContextCore> context,
-                      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-                      ServiceWorkerVersion* version);
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
   void PostMessageToServiceWorker(
@@ -95,13 +72,10 @@ class CONTENT_EXPORT ServiceWorkerHandle
 
   void OnConnectionError();
 
-  // |dispatcher_host_| may get a valid value via ctor or
-  // RegisterIntoDispatcherHost() function, after that |dispatcher_host_| starts
-  // to own |this|, then, |dispatcher_host_| is valid throughout the lifetime of
-  // |this|.
-  ServiceWorkerDispatcherHost* dispatcher_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  // |provider_host_| is valid throughout lifetime of |this| because it owns
+  // |this|.
+  ServiceWorkerProviderHost* provider_host_;
   // The origin of the |provider_host_|. Note that this is const because once a
   // JavaScript ServiceWorker object is created for an execution context, we
   // don't expect that context to change origins and still hold on to the

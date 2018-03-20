@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -29,7 +28,6 @@ namespace content {
 class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerHandle;
 
 namespace service_worker_dispatcher_host_unittest {
 class ServiceWorkerDispatcherHostTest;
@@ -85,14 +83,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  // These methods are virtual only for testing.
-  virtual void RegisterServiceWorkerHandle(
-      std::unique_ptr<ServiceWorkerHandle> handle);
-  virtual void UnregisterServiceWorkerHandle(int handle_id);
-
-  ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
-                                               int64_t version_id);
-
   ResourceContext* resource_context() { return resource_context_; }
 
   base::WeakPtr<ServiceWorkerDispatcherHost> AsWeakPtr();
@@ -132,8 +122,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   Phase phase_ = Phase::kInitial;
   // Only accessed on the IO thread.
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
-
-  base::IDMap<std::unique_ptr<ServiceWorkerHandle>> handles_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;

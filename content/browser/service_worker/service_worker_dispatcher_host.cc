@@ -137,33 +137,6 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
   return true;
 }
 
-void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
-    std::unique_ptr<ServiceWorkerHandle> handle) {
-  int handle_id = handle->handle_id();
-  handles_.AddWithID(std::move(handle), handle_id);
-}
-
-ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
-    int provider_id,
-    int64_t version_id) {
-  for (base::IDMap<std::unique_ptr<ServiceWorkerHandle>>::iterator iter(
-           &handles_);
-       !iter.IsAtEnd(); iter.Advance()) {
-    ServiceWorkerHandle* handle = iter.GetCurrentValue();
-    DCHECK(handle);
-    DCHECK(handle->version());
-    if (handle->provider_id() == provider_id &&
-        handle->version()->version_id() == version_id) {
-      return handle;
-    }
-  }
-  return nullptr;
-}
-
-void ServiceWorkerDispatcherHost::UnregisterServiceWorkerHandle(int handle_id) {
-  handles_.Remove(handle_id);
-}
-
 base::WeakPtr<ServiceWorkerDispatcherHost>
 ServiceWorkerDispatcherHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
