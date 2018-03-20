@@ -447,8 +447,7 @@ class _LogcatProcessor(object):
       # possibly forked() processes.
       if ':' not in process.name and self._primary_pid is None:
         self._primary_pid = process.pid
-      else:
-        self._my_pids.add(process.pid)
+      self._my_pids.add(process.pid)
 
   def _GetPidStyle(self, pid, dim=False):
     if pid == self._primary_pid:
