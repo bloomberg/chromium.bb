@@ -189,7 +189,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   Document* doc = ToDocumentOrNull(context);
-  Frame* frame = doc ? doc->GetFrame() : nullptr;
+  LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       .RequestPermission(
           std::move(descriptor),
@@ -267,7 +267,7 @@ ScriptPromise Permissions::requestAll(
     internal_permissions_copy.push_back(descriptor->Clone());
 
   Document* doc = ToDocumentOrNull(context);
-  Frame* frame = doc ? doc->GetFrame() : nullptr;
+  LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       .RequestPermissions(
           std::move(internal_permissions),

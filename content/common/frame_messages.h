@@ -1117,8 +1117,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 
+// Notifies the RenderFrame about a user activation from the browser side.
+IPC_MESSAGE_ROUTED0(FrameMsg_NotifyUserActivation)
+
 // Tells the frame to consider itself to have received a user gesture (based
-// on a user gesture processed in a different process).
+// on a user gesture processed in a different renderer process).
 IPC_MESSAGE_ROUTED0(FrameMsg_SetHasReceivedUserGesture)
 
 // Tells the frame to mark that the previous document on that frame had received

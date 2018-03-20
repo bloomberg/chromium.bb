@@ -1078,7 +1078,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnFindMatchRects(int current_version);
 #endif
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
-  void OnSetHasReceivedUserGesture();
+  void OnNotifyUserActivation();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)

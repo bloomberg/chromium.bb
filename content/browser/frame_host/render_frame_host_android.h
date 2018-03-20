@@ -49,8 +49,8 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
-  void SetHasReceivedUserGesture(JNIEnv* env,
-                                 const base::android::JavaParamRef<jobject>&);
+  void NotifyUserActivation(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>&);
 
  private:
   RenderFrameHostImpl* const render_frame_host_;

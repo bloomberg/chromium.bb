@@ -172,21 +172,21 @@ void Frame::DidChangeVisibilityState() {
     child_frames[i]->DidChangeVisibilityState();
 }
 
-// TODO(mustaq): Should be merged with NotifyUserActivation() below but
-// not sure why this one doesn't update frame clients.  Could be related to
-// crbug.com/775930 .
-void Frame::UpdateUserActivationInFrameTree() {
+void Frame::NotifyUserActivationInLocalTree() {
   user_activation_state_.Activate();
-  if (Frame* parent = Tree().Parent())
-    parent->UpdateUserActivationInFrameTree();
+  for (Frame* parent = Tree().Parent(); parent;
+       parent = parent->Tree().Parent()) {
+    parent->user_activation_state_.Activate();
+  }
 }
 
 void Frame::NotifyUserActivation() {
   bool had_gesture = HasBeenActivated();
   if (RuntimeEnabledFeatures::UserActivationV2Enabled() || !had_gesture)
-    UpdateUserActivationInFrameTree();
-  if (IsLocalFrame())
-    ToLocalFrame(this)->Client()->SetHasReceivedUserGesture(had_gesture);
+    NotifyUserActivationInLocalTree();
+
+  DCHECK(IsLocalFrame());
+  ToLocalFrame(this)->Client()->SetHasReceivedUserGesture(had_gesture);
 }
 
 bool Frame::ConsumeTransientUserActivation() {
@@ -203,7 +203,7 @@ bool Frame::ConsumeTransientUserActivation() {
 
 // static
 std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
-    Frame* frame,
+    LocalFrame* frame,
     UserGestureToken::Status status) {
   if (frame)
     frame->NotifyUserActivation();
@@ -211,7 +211,8 @@ std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
 }
 
 // static
-bool Frame::HasTransientUserActivation(Frame* frame, bool checkIfMainThread) {
+bool Frame::HasTransientUserActivation(LocalFrame* frame,
+                                       bool checkIfMainThread) {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
     return frame ? frame->HasTransientUserActivation() : false;
   }
@@ -222,7 +223,7 @@ bool Frame::HasTransientUserActivation(Frame* frame, bool checkIfMainThread) {
 }
 
 // static
-bool Frame::ConsumeTransientUserActivation(Frame* frame,
+bool Frame::ConsumeTransientUserActivation(LocalFrame* frame,
                                            bool checkIfMainThread) {
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
     return frame ? frame->ConsumeTransientUserActivation() : false;

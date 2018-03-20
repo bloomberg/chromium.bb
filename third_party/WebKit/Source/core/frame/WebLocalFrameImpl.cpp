@@ -2222,7 +2222,7 @@ void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
   GetFrame()->DidSendResourceTimingInfoToParent();
 }
 
-void WebLocalFrameImpl::SetHasReceivedUserGesture() {
+void WebLocalFrameImpl::NotifyUserActivation() {
   Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }
 

@@ -126,7 +126,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   Frame* new_frame = ToCoreFrame(*frame);
 
   if (parent_ && old_frame->HasBeenActivated())
-    new_frame->UpdateUserActivationInFrameTree();
+    new_frame->NotifyUserActivationInLocalTree();
 
   new_frame->GetWindowProxyManager()->SetGlobalProxies(global_proxies);
 
