@@ -278,13 +278,6 @@ const IntToIntTable kFrameTintMap[] = {
     ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE },
 };
 
-// Mapping used in GenerateTabBackgroundImages() to associate what frame image
-// goes with which tab background.
-const IntToIntTable kTabBackgroundMap[] = {
-  { PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME },
-  { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO },
-};
-
 struct CropEntry {
   int prs_id;
 
@@ -496,26 +489,32 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
 
 class TabBackgroundImageSource: public gfx::CanvasImageSource {
  public:
-  TabBackgroundImageSource(const gfx::ImageSkia& image_to_tint,
+  TabBackgroundImageSource(SkColor background_color,
+                           const gfx::ImageSkia& image_to_tint,
                            const gfx::ImageSkia& overlay,
                            const color_utils::HSL& hsl_shift,
                            int vertical_offset)
-      : gfx::CanvasImageSource(image_to_tint.size(), false),
+      : gfx::CanvasImageSource(
+            image_to_tint.isNull() ? overlay.size() : image_to_tint.size(),
+            false),
+        background_color_(background_color),
         image_to_tint_(image_to_tint),
         overlay_(overlay),
         hsl_shift_(hsl_shift),
-        vertical_offset_(vertical_offset) {
-  }
+        vertical_offset_(vertical_offset) {}
 
   ~TabBackgroundImageSource() override {}
 
   // Overridden from CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {
-    gfx::ImageSkia bg_tint =
-        gfx::ImageSkiaOperations::CreateHSLShiftedImage(image_to_tint_,
-            hsl_shift_);
-    canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0,
-        size().width(), size().height());
+    canvas->DrawColor(background_color_);
+
+    if (!image_to_tint_.isNull()) {
+      gfx::ImageSkia bg_tint = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+          image_to_tint_, hsl_shift_);
+      canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0, size().width(),
+                           size().height());
+    }
 
     // If they've provided a custom image, overlay it.
     if (!overlay_.isNull()) {
@@ -525,6 +524,7 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
   }
 
  private:
+  const SkColor background_color_;
   const gfx::ImageSkia image_to_tint_;
   const gfx::ImageSkia overlay_;
   const color_utils::HSL hsl_shift_;
@@ -1241,28 +1241,42 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
 }
 
 void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
+  static constexpr int kTabBackgroundMap[][3] = {
+      {PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME, ThemeProperties::COLOR_FRAME},
+      {PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO,
+       ThemeProperties::COLOR_FRAME_INCOGNITO},
+  };
+
   ImageCache temp_output;
   for (size_t i = 0; i < arraysize(kTabBackgroundMap); ++i) {
-    int prs_id = kTabBackgroundMap[i].key;
-    int prs_base_id = kTabBackgroundMap[i].value;
+    int prs_id = kTabBackgroundMap[i][0];
 
-    // We only need to generate the background tab images if we were provided
-    // with a PRS_THEME_FRAME.
-    ImageCache::const_iterator it = images->find(prs_base_id);
-    if (it != images->end()) {
-      gfx::ImageSkia image_to_tint = (it->second).AsImageSkia();
-      color_utils::HSL hsl_shift = GetTintInternal(
-          ThemeProperties::TINT_BACKGROUND_TAB);
-      int vertical_offset = images->count(prs_id)
-                            ? kRestoredTabVerticalOffset : 0;
+    // We need to generate the background tab images if we were provided with
+    // custom frame or background tab images; in the former case the theme
+    // author may want the background tabs to appear to tint the frame, and in
+    // the latter case the provided background tab image may have transparent
+    // regions, which must be made opaque by overlaying atop the original frame.
+    ImageCache::const_iterator frame_it = images->find(kTabBackgroundMap[i][1]);
+    ImageCache::const_iterator tab_it = images->find(prs_id);
+    if (frame_it != images->end() || tab_it != images->end()) {
+      SkColor background_color;
+      GetColor(kTabBackgroundMap[i][2], &background_color);
+
+      gfx::ImageSkia image_to_tint;
+      if (frame_it != images->end())
+        image_to_tint = (frame_it->second).AsImageSkia();
 
       gfx::ImageSkia overlay;
-      ImageCache::const_iterator overlay_it = images->find(prs_id);
-      if (overlay_it != images->end())
-        overlay = overlay_it->second.AsImageSkia();
+      int vertical_offset = 0;
+      if (tab_it != images->end()) {
+        overlay = tab_it->second.AsImageSkia();
+        vertical_offset = kRestoredTabVerticalOffset;
+      }
 
       auto source = std::make_unique<TabBackgroundImageSource>(
-          image_to_tint, overlay, hsl_shift, vertical_offset);
+          background_color, image_to_tint, overlay,
+          GetTintInternal(ThemeProperties::TINT_BACKGROUND_TAB),
+          vertical_offset);
       temp_output[prs_id] =
           gfx::Image(gfx::ImageSkia(std::move(source), image_to_tint.size()));
     }
