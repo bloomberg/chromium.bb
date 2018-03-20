@@ -94,3 +94,6 @@
 #### Hit Testing
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
+
+# Uses LatencyInfo for input info https://crbug.com/791557
+-MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
