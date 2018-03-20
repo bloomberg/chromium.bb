@@ -155,10 +155,12 @@ class LoginUserMenuView : public LoginBaseBubbleView,
                     bool is_owner,
                     views::View* anchor_view,
                     bool show_remove_user,
-                    base::OnceClosure do_remove_user)
+                    base::OnceClosure on_remove_user_warning_shown,
+                    base::OnceClosure on_remove_user_requested)
       : LoginBaseBubbleView(anchor_view),
         bubble_(bubble),
-        do_remove_user_(std::move(do_remove_user)) {
+        on_remove_user_warning_shown_(std::move(on_remove_user_warning_shown)),
+        on_remove_user_requested_(std::move(on_remove_user_requested)) {
     // This view has content the user can interact with if the remove user
     // button is displayed.
     set_can_activate(show_remove_user);
@@ -308,17 +310,23 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       SizeToContents();
       GetWidget()->SetSize(size());
       Layout();
+      if (on_remove_user_warning_shown_)
+        std::move(on_remove_user_warning_shown_).Run();
       return;
     }
 
-    if (do_remove_user_)
-      std::move(do_remove_user_).Run();
+    // Close the bubble before calling |on_remove_user_requested_|. |bubble_| is
+    // an unowned reference; |on_remove_user_requested_| may delete it.
     bubble_->Close();
+
+    if (on_remove_user_requested_)
+      std::move(on_remove_user_requested_).Run();
   }
 
  private:
   LoginBubble* bubble_ = nullptr;
-  base::OnceClosure do_remove_user_;
+  base::OnceClosure on_remove_user_warning_shown_;
+  base::OnceClosure on_remove_user_requested_;
   views::View* remove_user_confirm_data_ = nullptr;
   views::Label* remove_user_label_ = nullptr;
   ButtonWithContent* remove_user_button_ = nullptr;
@@ -382,19 +390,19 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
                                views::View* anchor_view,
                                LoginButton* bubble_opener,
                                bool show_remove_user,
-                               base::OnceClosure do_remove_user) {
+                               base::OnceClosure on_remove_user_warning_shown,
+                               base::OnceClosure on_remove_user_requested) {
   if (bubble_view_)
     CloseImmediately();
 
   flags_ = kFlagsNone;
   bubble_opener_ = bubble_opener;
-  bubble_view_ =
-      new LoginUserMenuView(this, username, email, type, is_owner, anchor_view,
-                            show_remove_user, std::move(do_remove_user));
+  bubble_view_ = new LoginUserMenuView(this, username, email, type, is_owner,
+                                       anchor_view, show_remove_user,
+                                       std::move(on_remove_user_warning_shown),
+                                       std::move(on_remove_user_requested));
   bool had_focus = bubble_opener_->HasFocus();
-
   Show();
-
   if (had_focus) {
     // Try to focus the bubble view only if the tooltip was focused.
     bubble_view_->RequestFocus();

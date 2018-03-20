@@ -312,6 +312,18 @@ void LoginScreenController::ShowGaiaSignin() {
   login_screen_client_->ShowGaiaSignin();
 }
 
+void LoginScreenController::OnRemoveUserWarningShown() {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->OnRemoveUserWarningShown();
+}
+
+void LoginScreenController::RemoveUser(const AccountId& account_id) {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->RemoveUser(account_id);
+}
+
 void LoginScreenController::AddLockScreenAppsFocusObserver(
     LockScreenAppsFocusObserver* observer) {
   lock_screen_apps_focus_observers_.AddObserver(observer);
