@@ -43986,6 +43986,26 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Not matched"/>
 </enum>
 
+<enum name="UkmSyncDisableInfo">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Disabled by history"/>
+  <int value="2" label="Disabled by initialized"/>
+  <int value="3" label="Disabled by history, initialized"/>
+  <int value="4" label="Disabled by connected"/>
+  <int value="5" label="Disabled by history, connected"/>
+  <int value="6" label="Disabled by initialized, connected"/>
+  <int value="7" label="Disabled by history, initialized, connected"/>
+  <int value="8" label="Disabled by passphrase"/>
+  <int value="9" label="Disabled by history, passphrase"/>
+  <int value="10" label="Disabled by initialized, passphrase"/>
+  <int value="11" label="Disabled by history, initialized, passphrase"/>
+  <int value="12" label="Disabled by connected, passphrase"/>
+  <int value="13" label="Disabled by history, connected, passphrase"/>
+  <int value="14" label="Disabled by initialized, connected, passphrase"/>
+  <int value="15"
+      label="Disabled by history, initialized, connected, passphrase"/>
+</enum>
+
 <enum name="UmaCleanExitConsistency">
   <int value="0" label="Dirty/Dirty (Registry/Local State)"/>
   <int value="1" label="Dirty/Clean (Registry/Local State)"/>

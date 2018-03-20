@@ -23,14 +23,23 @@ class MockSyncService : public syncer::FakeSyncService {
     preferred_data_types_ =
         enabled ? syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)
                 : syncer::ModelTypeSet();
-    for (auto& observer : observers_) {
-      observer.OnStateChanged(this);
-    }
+    NotifyObserversOfStateChanged();
+  }
+
+  void SetConnectionStatus(syncer::ConnectionStatus status) {
+    connection_status_ = status;
+    NotifyObserversOfStateChanged();
   }
 
   void Shutdown() override {
     for (auto& observer : observers_) {
       observer.OnSyncShutdown(this);
+    }
+  }
+
+  void NotifyObserversOfStateChanged() {
+    for (auto& observer : observers_) {
+      observer.OnStateChanged(this);
     }
   }
 
@@ -47,9 +56,15 @@ class MockSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return preferred_data_types_;
   }
+  SyncTokenStatus GetSyncTokenStatus() const override {
+    SyncTokenStatus status;
+    status.connection_status = connection_status_;
+    return status;
+  }
 
   bool initialized_ = false;
   bool has_passphrase_ = false;
+  syncer::ConnectionStatus connection_status_ = syncer::CONNECTION_OK;
   syncer::ModelTypeSet preferred_data_types_;
 
   // The list of observers of the SyncService state.
@@ -131,6 +146,18 @@ TEST_F(SyncDisableObserverTest, HistoryDisabled) {
   EXPECT_FALSE(observer.IsHistorySyncEnabledOnAllProfiles());
   EXPECT_FALSE(observer.ResetNotified());
   EXPECT_FALSE(observer.ResetPurged());
+}
+
+TEST_F(SyncDisableObserverTest, AuthError) {
+  TestSyncDisableObserver observer;
+  MockSyncService sync;
+  sync.SetStatus(false, true);
+  observer.ObserveServiceForSyncDisables(&sync);
+  EXPECT_TRUE(observer.IsHistorySyncEnabledOnAllProfiles());
+  sync.SetConnectionStatus(syncer::CONNECTION_AUTH_ERROR);
+  EXPECT_FALSE(observer.IsHistorySyncEnabledOnAllProfiles());
+  sync.SetConnectionStatus(syncer::CONNECTION_OK);
+  EXPECT_TRUE(observer.IsHistorySyncEnabledOnAllProfiles());
 }
 
 TEST_F(SyncDisableObserverTest, MixedProfiles1) {

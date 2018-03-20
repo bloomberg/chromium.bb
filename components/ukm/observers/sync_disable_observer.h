@@ -65,6 +65,8 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
     bool extensions_enabled = false;
     // Whether the sync service has been initialized.
     bool initialized = false;
+    // Whether the sync service is active and operational.
+    bool connected = false;
     // Whether user data is hidden by a secondary passphrase.
     // This is not valid if the state is not initialized.
     bool passphrase_protected = false;
