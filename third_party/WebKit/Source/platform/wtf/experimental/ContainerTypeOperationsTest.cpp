@@ -4,6 +4,8 @@
 
 #include "platform/wtf/experimental/ContainerTypeOperations.h"
 
+#include <cstring>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
