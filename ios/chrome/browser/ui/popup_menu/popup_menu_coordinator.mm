@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_presenter.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -59,12 +61,16 @@
 }
 
 - (void)showToolsMenuPopup {
-  UIViewController* viewController = [[UIViewController alloc] init];
-  UILabel* label = [[UILabel alloc] init];
-  label.text = @"Tools menu";
-  viewController.view = label;
-  // TODO(crbug.com/804773): Use the tools menu instead of a label.
-  [self presentPopupForContent:viewController fromNamedGuide:kToolsMenuGuide];
+  PopupMenuTableViewController* tableViewController =
+      [[PopupMenuTableViewController alloc] init];
+
+  PopupMenuMediator* mediator =
+      [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];
+  [mediator setUp];
+  [mediator configurePopupMenu:tableViewController];
+
+  [self presentPopupForContent:tableViewController
+                fromNamedGuide:kToolsMenuGuide];
 }
 
 - (void)showTabGridButtonPopup {

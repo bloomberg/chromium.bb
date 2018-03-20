@@ -7,12 +7,15 @@ source_set("popup_menu") {
   sources = [
     "popup_menu_coordinator.h",
     "popup_menu_coordinator.mm",
+    "popup_menu_mediator.h",
+    "popup_menu_mediator.mm",
   ]
   deps = [
     ":popup_menu_ui",
     "//base",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/util",
   ]
   libs = [ "UIKit.framework" ]
@@ -25,6 +28,8 @@ source_set("popup_menu_ui") {
     "popup_menu_controller.mm",
     "popup_menu_presenter.h",
     "popup_menu_presenter.mm",
+    "popup_menu_table_view_controller.h",
+    "popup_menu_table_view_controller.mm",
     "popup_menu_view.h",
     "popup_menu_view.mm",
     "popup_menu_view_controller.h",
@@ -37,7 +42,9 @@ source_set("popup_menu_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/presenters",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ui/base",
