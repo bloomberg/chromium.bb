@@ -5,6 +5,7 @@
 #include "components/viz/common/gpu/texture_allocation.h"
 
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -22,16 +23,14 @@ TextureAllocation TextureAllocation::MakeTextureId(
     ResourceFormat format,
     bool use_gpu_memory_buffer_resources,
     bool for_framebuffer_attachment) {
-  bool overlay_textures = use_gpu_memory_buffer_resources &&
-                          caps.texture_storage_image &&
-                          IsGpuMemoryBufferFormatSupported(format);
-
   uint32_t texture_target = GL_TEXTURE_2D;
-  bool overlay_candidate = false;
-  if (overlay_textures) {
+
+  bool overlay_candidate = use_gpu_memory_buffer_resources &&
+                           caps.texture_storage_image &&
+                           IsGpuMemoryBufferFormatSupported(format);
+  if (overlay_candidate) {
     texture_target = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
                                                  BufferFormat(format), caps);
-    overlay_candidate = true;
   }
 
   uint32_t texture_id;
@@ -103,6 +102,29 @@ void TextureAllocation::AllocateStorage(gpu::raster::RasterInterface* ri,
     ri->SetColorSpaceMetadata(alloc.texture_id,
                               reinterpret_cast<GLColorSpace>(
                                   const_cast<gfx::ColorSpace*>(&color_space)));
+  }
+}
+
+void TextureAllocation::UploadStorage(gpu::gles2::GLES2Interface* gl,
+                                      const gpu::Capabilities& caps,
+                                      ResourceFormat format,
+                                      const gfx::Size& size,
+                                      const TextureAllocation& alloc,
+                                      const gfx::ColorSpace& color_space,
+                                      const void* pixels) {
+  if (format == ETC1) {
+    DCHECK_EQ(alloc.texture_target, static_cast<GLenum>(GL_TEXTURE_2D));
+    int num_bytes = ResourceSizes::CheckedSizeInBytes<int>(size, ETC1);
+
+    gl->BindTexture(alloc.texture_target, alloc.texture_id);
+    gl->CompressedTexImage2D(alloc.texture_target, 0, GLInternalFormat(ETC1),
+                             size.width(), size.height(), 0, num_bytes,
+                             const_cast<void*>(pixels));
+  } else {
+    AllocateStorage(gl, caps, format, size, alloc, color_space);
+    gl->TexSubImage2D(alloc.texture_target, 0, 0, 0, size.width(),
+                      size.height(), GLDataFormat(format), GLDataType(format),
+                      const_cast<void*>(pixels));
   }
 }
 

@@ -27,6 +27,10 @@ VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLInternalFormat(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLCopyTextureInternalFormat(
     ResourceFormat format);
 
+// Returns the pixel format of the resource when mapped into client-side memory.
+// Returns a default value when IsGpuMemoryBufferFormatSupported() returns false
+// for a given format, as in this case the resource will not be mapped into
+// client-side memory, and the returned value is not used.
 VIZ_RESOURCE_FORMAT_EXPORT gfx::BufferFormat BufferFormat(
     ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT bool IsResourceFormatCompressed(

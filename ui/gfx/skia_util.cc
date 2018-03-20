@@ -68,6 +68,10 @@ SkSize SizeFToSkSize(const SizeF& size) {
                       SkFloatToScalar(size.height()));
 }
 
+SkISize SizeToSkISize(const Size& size) {
+  return SkISize::Make(size.width(), size.height());
+}
+
 SizeF SkSizeToSizeF(const SkSize& size) {
   return SizeF(SkScalarToFloat(size.width()), SkScalarToFloat(size.height()));
 }

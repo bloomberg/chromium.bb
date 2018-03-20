@@ -160,9 +160,10 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case LUMINANCE_F16:
+      // These types not allowed by IsGpuMemoryBufferFormatSupported(), so
+      // give a default value that will not be used.
       break;
   }
-  NOTREACHED();
   return gfx::BufferFormat::RGBA_8888;
 }
 

@@ -20,6 +20,9 @@ per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=danakj@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
 
+# Skia geometry helpers.
+per-file skia_util*=danakj@chromium.org
+
 # GPU memory buffer and GpuFence interfaces.
 per-file gpu_fence*=reveman@chromium.org
 per-file gpu_memory_buffer*=reveman@chromium.org
