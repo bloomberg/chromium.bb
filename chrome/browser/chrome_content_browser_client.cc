@@ -927,11 +927,6 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
   registry->RegisterBooleanPref(prefs::kWebDriverOverridesIncompatiblePolicies,
                                 false);
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(chrisha): Move this to chrome/browser/conflicts as we build the
-  // logic that responds to this pref.
-  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
-#endif
 }
 
 // static
