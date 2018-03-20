@@ -1821,6 +1821,10 @@ void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
   PostMessage(message);
 }
 
+float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {
+  return top_toolbar_height_in_viewport_coords_ * device_scale_;
+}
+
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
                                                   int dest_page_index) {
   DCHECK(IsPrintPreview());

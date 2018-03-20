@@ -270,6 +270,10 @@ class PDFEngine {
 
     // Sets edit mode state.
     virtual void IsEditModeChanged(bool is_edit_mode) {}
+
+    // Gets the height of the top toolbar in screen coordinates. This is
+    // independent of whether it is hidden or not at the moment.
+    virtual float GetToolbarHeightInScreenCoords() = 0;
   };
 
   // Factory method to create an instance of the PDF Engine.
