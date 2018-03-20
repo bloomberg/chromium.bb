@@ -29,27 +29,29 @@
  */
 
 #include "platform/audio/UpSampler.h"
+
+#include <memory>
+
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
 
-UpSampler::UpSampler(size_t input_block_size)
-    : input_block_size_(input_block_size),
-      kernel_(kDefaultKernelSize),
-      convolver_(input_block_size),
-      temp_buffer_(input_block_size),
-      input_buffer_(input_block_size * 2) {
-  InitializeKernel();
-}
+namespace {
 
-void UpSampler::InitializeKernel() {
+// Computes ideal band-limited filter coefficients to sample in between each
+// source sample-frame.  This filter will be used to compute the odd
+// sample-frames of the output.
+std::unique_ptr<AudioFloatArray> MakeKernel(size_t size) {
+  std::unique_ptr<AudioFloatArray> kernel =
+      std::make_unique<AudioFloatArray>(size);
+
   // Blackman window parameters.
   double alpha = 0.16;
   double a0 = 0.5 * (1.0 - alpha);
   double a1 = 0.5;
   double a2 = 0.5 * alpha;
 
-  int n = kernel_.size();
+  int n = kernel->size();
   int half_size = n / 2;
   double subsample_offset = -0.5;
 
@@ -64,9 +66,19 @@ void UpSampler::InitializeKernel() {
         a0 - a1 * cos(twoPiDouble * x) + a2 * cos(twoPiDouble * 2.0 * x);
 
     // Window the sinc() function.
-    kernel_[i] = sinc * window;
+    (*kernel)[i] = sinc * window;
   }
+
+  return kernel;
 }
+
+}  // namespace
+
+UpSampler::UpSampler(size_t input_block_size)
+    : input_block_size_(input_block_size),
+      convolver_(input_block_size, MakeKernel(kDefaultKernelSize)),
+      temp_buffer_(input_block_size),
+      input_buffer_(input_block_size * 2) {}
 
 void UpSampler::Process(const float* source_p,
                         float* dest_p,
@@ -81,12 +93,13 @@ void UpSampler::Process(const float* source_p,
   if (!is_temp_buffer_good)
     return;
 
-  bool is_kernel_good = kernel_.size() == kDefaultKernelSize;
+  bool is_kernel_good =
+      convolver_.ConvolutionKernelSize() == kDefaultKernelSize;
   DCHECK(is_kernel_good);
   if (!is_kernel_good)
     return;
 
-  size_t half_size = kernel_.size() / 2;
+  size_t half_size = convolver_.ConvolutionKernelSize() / 2;
 
   // Copy source samples to 2nd half of input buffer.
   bool is_input_buffer_good =
@@ -106,8 +119,7 @@ void UpSampler::Process(const float* source_p,
 
   // Compute odd sample-frames 1,3,5,7...
   float* odd_samples_p = temp_buffer_.Data();
-  convolver_.Process(&kernel_, source_p, odd_samples_p,
-                     source_frames_to_process);
+  convolver_.Process(source_p, odd_samples_p, source_frames_to_process);
 
   for (unsigned i = 0; i < source_frames_to_process; ++i)
     dest_p[i * 2 + 1] = odd_samples_p[i];
@@ -125,7 +137,7 @@ void UpSampler::Reset() {
 size_t UpSampler::LatencyFrames() const {
   // Divide by two since this is a linear phase kernel and the delay is at the
   // center of the kernel.
-  return kernel_.size() / 2;
+  return convolver_.ConvolutionKernelSize() / 2;
 }
 
 }  // namespace blink

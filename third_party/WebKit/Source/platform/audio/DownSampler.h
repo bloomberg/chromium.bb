@@ -45,7 +45,7 @@ class PLATFORM_EXPORT DownSampler {
   WTF_MAKE_NONCOPYABLE(DownSampler);
 
  public:
-  DownSampler(size_t input_block_size);
+  explicit DownSampler(size_t input_block_size);
 
   // The destination buffer |destP| is of size sourceFramesToProcess / 2.
   void Process(const float* source_p,
@@ -61,11 +61,6 @@ class PLATFORM_EXPORT DownSampler {
   enum { kDefaultKernelSize = 256 };
 
   size_t input_block_size_;
-
-  // Computes ideal band-limited half-band filter coefficients.
-  // In other words, filter out all frequencies higher than 0.25 * Nyquist.
-  void InitializeKernel();
-  AudioFloatArray reduced_kernel_;
 
   // Half-band filter.
   DirectConvolver convolver_;

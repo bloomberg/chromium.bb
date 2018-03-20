@@ -7,6 +7,8 @@
 
 #include <cstddef>
 
+#include "platform/audio/AudioArray.h"
+
 namespace blink {
 namespace VectorMath {
 namespace SSE {
@@ -16,6 +18,21 @@ constexpr size_t kPackedFloatsPerRegister = kBitsPerRegister / 32u;
 constexpr size_t kFramesToProcessMask = ~(kPackedFloatsPerRegister - 1u);
 
 bool IsAligned(const float*);
+
+// Direct vector convolution:
+// dest[k] = sum(source[k+m]*filter[m*filter_stride]) for all m
+// provided that |prepared_filter_p| is |prepared_filter->Data()| and that
+// |prepared_filter| is prepared with |PrepareFilterForConv|.
+void Conv(const float* source_p,
+          const float* prepared_filter_p,
+          float* dest_p,
+          size_t frames_to_process,
+          size_t filter_size);
+
+void PrepareFilterForConv(const float* filter_p,
+                          int filter_stride,
+                          size_t filter_size,
+                          AudioFloatArray* prepared_filter);
 
 // dest[k] = source1[k] + source2[k]
 void Vadd(const float* source1p,

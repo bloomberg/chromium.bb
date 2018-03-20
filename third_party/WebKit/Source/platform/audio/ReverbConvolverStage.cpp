@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolver.h"
@@ -37,8 +38,6 @@
 #include "platform/audio/VectorMath.h"
 
 namespace blink {
-
-using namespace VectorMath;
 
 ReverbConvolverStage::ReverbConvolverStage(
     const float* impulse_response,
@@ -66,9 +65,10 @@ ReverbConvolverStage::ReverbConvolverStage(
     DCHECK(!stage_offset);
     DCHECK_LE(stage_length, fft_size / 2);
 
-    direct_kernel_ = std::make_unique<AudioFloatArray>(fft_size / 2);
-    direct_kernel_->CopyToRange(impulse_response, 0, stage_length);
-    direct_convolver_ = std::make_unique<DirectConvolver>(render_slice_size);
+    auto direct_kernel = std::make_unique<AudioFloatArray>(fft_size / 2);
+    direct_kernel->CopyToRange(impulse_response, 0, stage_length);
+    direct_convolver_ = std::make_unique<DirectConvolver>(
+        render_slice_size, std::move(direct_kernel));
   }
   temporary_buffer_.Allocate(render_slice_size);
 
@@ -166,8 +166,8 @@ void ReverbConvolverStage::Process(const float* source,
       fft_convolver_->Process(fft_kernel_.get(), pre_delayed_source,
                               temporary_buffer, frames_to_process);
     else
-      direct_convolver_->Process(direct_kernel_.get(), pre_delayed_source,
-                                 temporary_buffer, frames_to_process);
+      direct_convolver_->Process(pre_delayed_source, temporary_buffer,
+                                 frames_to_process);
 
     // Now accumulate into reverb's accumulation buffer.
     accumulation_buffer_->Accumulate(temporary_buffer, frames_to_process,

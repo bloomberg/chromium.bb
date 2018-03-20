@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "platform/audio/AudioArray.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/MathExtras.h"
 
@@ -22,7 +23,8 @@ static ALWAYS_INLINE void Conv(const float* source_p,
                                float* dest_p,
                                int dest_stride,
                                size_t frames_to_process,
-                               size_t filter_size) {
+                               size_t filter_size,
+                               const AudioFloatArray* /*prepared_filter*/) {
   // Only contiguous convolution is implemented. Correlation (positive
   // |filter_stride|) and support for non-contiguous vectors are not
   // implemented.
@@ -30,26 +32,22 @@ static ALWAYS_INLINE void Conv(const float* source_p,
   DCHECK_EQ(-1, filter_stride);
   DCHECK_EQ(1, dest_stride);
 
-  size_t kernel_size = filter_size;
-  const float* input_p = source_p + kernel_size - 1;
-  const float* kernel_p = filter_p + 1 - kernel_size;
-
   size_t i = 0;
 
 // FIXME: The macro can be further optimized to avoid pipeline stalls. One
 // possibility is to maintain 4 separate sums and change the macro to
 // CONVOLVE_FOUR_SAMPLES.
-#define CONVOLVE_ONE_SAMPLE              \
-  do {                                   \
-    sum += input_p[i - j] * kernel_p[j]; \
-    j++;                                 \
+#define CONVOLVE_ONE_SAMPLE                   \
+  do {                                        \
+    sum += source_p[i + j] * *(filter_p - j); \
+    j++;                                      \
   } while (0)
 
   while (i < frames_to_process) {
     size_t j = 0;
     float sum = 0;
 
-    if (kernel_size == 32) {
+    if (filter_size == 32) {
       CONVOLVE_ONE_SAMPLE;  // 1
       CONVOLVE_ONE_SAMPLE;  // 2
       CONVOLVE_ONE_SAMPLE;  // 3
@@ -86,7 +84,7 @@ static ALWAYS_INLINE void Conv(const float* source_p,
       CONVOLVE_ONE_SAMPLE;  // 31
       CONVOLVE_ONE_SAMPLE;  // 32
 
-    } else if (kernel_size == 64) {
+    } else if (filter_size == 64) {
       CONVOLVE_ONE_SAMPLE;  // 1
       CONVOLVE_ONE_SAMPLE;  // 2
       CONVOLVE_ONE_SAMPLE;  // 3
@@ -158,7 +156,7 @@ static ALWAYS_INLINE void Conv(const float* source_p,
       CONVOLVE_ONE_SAMPLE;  // 63
       CONVOLVE_ONE_SAMPLE;  // 64
 
-    } else if (kernel_size == 128) {
+    } else if (filter_size == 128) {
       CONVOLVE_ONE_SAMPLE;  // 1
       CONVOLVE_ONE_SAMPLE;  // 2
       CONVOLVE_ONE_SAMPLE;  // 3
@@ -300,7 +298,7 @@ static ALWAYS_INLINE void Conv(const float* source_p,
       CONVOLVE_ONE_SAMPLE;  // 127
       CONVOLVE_ONE_SAMPLE;  // 128
     } else {
-      while (j < kernel_size) {
+      while (j < filter_size) {
         // Non-optimized using actual while loop.
         CONVOLVE_ONE_SAMPLE;
       }

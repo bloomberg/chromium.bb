@@ -264,7 +264,7 @@ TEST_F(VectorMathTest, Conv) {
   for (const auto& source : GetPrimaryVectors(GetSource(kFullyFiniteSource))) {
     if (source.stride() != 1)
       continue;
-    for (size_t filter_size : {3u, 20u, 32u, 64u, 128u}) {
+    for (size_t filter_size : {3u, 32u, 64u, 128u}) {
       // The maximum number of frames which could be processed here is
       // |source.size() - filter_size + 1|. However, in order to test
       // optimization paths, |frames_to_process| should be optimal (divisible
@@ -289,8 +289,10 @@ TEST_F(VectorMathTest, Conv) {
       }
       for (auto& dest : GetSecondaryVectors(
                GetDestination(1u), source.memory_layout(), frames_to_process)) {
+        AudioFloatArray prepared_filter;
+        PrepareFilterForConv(filter_p, -1, filter_size, &prepared_filter);
         Conv(source.p(), 1, filter_p, -1, dest.p(), 1, frames_to_process,
-             filter_size);
+             filter_size, &prepared_filter);
         for (size_t i = 0u; i < frames_to_process; ++i) {
           EXPECT_NEAR(expected_dest[i], dest[i],
                       1e-3 * std::abs(expected_dest[i]));

@@ -29,6 +29,8 @@
 #ifndef DirectConvolver_h
 #define DirectConvolver_h
 
+#include <memory>
+
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Allocator.h"
@@ -41,19 +43,21 @@ class PLATFORM_EXPORT DirectConvolver {
   WTF_MAKE_NONCOPYABLE(DirectConvolver);
 
  public:
-  DirectConvolver(size_t input_block_size);
+  DirectConvolver(size_t input_block_size,
+                  std::unique_ptr<AudioFloatArray> convolution_kernel);
 
-  void Process(AudioFloatArray* convolution_kernel,
-               const float* source_p,
-               float* dest_p,
-               size_t frames_to_process);
+  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
 
   void Reset();
+
+  size_t ConvolutionKernelSize() const { return convolution_kernel_->size(); }
 
  private:
   size_t input_block_size_;
 
   AudioFloatArray buffer_;
+  std::unique_ptr<AudioFloatArray> convolution_kernel_;
+  AudioFloatArray prepared_convolution_kernel_;
 };
 
 }  // namespace blink

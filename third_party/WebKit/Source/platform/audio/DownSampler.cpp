@@ -29,27 +29,27 @@
  */
 
 #include "platform/audio/DownSampler.h"
+
+#include <memory>
+
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
 
-DownSampler::DownSampler(size_t input_block_size)
-    : input_block_size_(input_block_size),
-      reduced_kernel_(kDefaultKernelSize / 2),
-      convolver_(input_block_size / 2),  // runs at 1/2 source sample-rate
-      temp_buffer_(input_block_size / 2),
-      input_buffer_(input_block_size * 2) {
-  InitializeKernel();
-}
+namespace {
 
-void DownSampler::InitializeKernel() {
+// Computes ideal band-limited half-band filter coefficients.
+// In other words, filter out all frequencies higher than 0.25 * Nyquist.
+std::unique_ptr<AudioFloatArray> MakeReducedKernel(size_t size) {
+  auto reduced_kernel = std::make_unique<AudioFloatArray>(size / 2);
+
   // Blackman window parameters.
   double alpha = 0.16;
   double a0 = 0.5 * (1.0 - alpha);
   double a1 = 0.5;
   double a2 = 0.5 * alpha;
 
-  int n = kDefaultKernelSize;
+  int n = size;
   int half_size = n / 2;
 
   // Half-band filter.
@@ -73,9 +73,20 @@ void DownSampler::InitializeKernel() {
     // Then store only the odd terms in the kernel.
     // In a sense, this is shifting forward in time by one sample-frame at the
     // destination sample-rate.
-    reduced_kernel_[(i - 1) / 2] = sinc * window;
+    (*reduced_kernel)[(i - 1) / 2] = sinc * window;
   }
+
+  return reduced_kernel;
 }
+
+}  // namespace
+
+DownSampler::DownSampler(size_t input_block_size)
+    : input_block_size_(input_block_size),
+      convolver_(input_block_size / 2,  // runs at 1/2 source sample-rate
+                 MakeReducedKernel(kDefaultKernelSize)),
+      temp_buffer_(input_block_size / 2),
+      input_buffer_(input_block_size * 2) {}
 
 void DownSampler::Process(const float* source_p,
                           float* dest_p,
@@ -93,7 +104,7 @@ void DownSampler::Process(const float* source_p,
     return;
 
   bool is_reduced_kernel_good =
-      reduced_kernel_.size() == kDefaultKernelSize / 2;
+      convolver_.ConvolutionKernelSize() == kDefaultKernelSize / 2;
   DCHECK(is_reduced_kernel_good);
   if (!is_reduced_kernel_good)
     return;
@@ -121,8 +132,7 @@ void DownSampler::Process(const float* source_p,
   // Actually process oddSamplesP with m_reducedKernel for efficiency.
   // The theoretical kernel is double this size with 0 values for even terms
   // (except center).
-  convolver_.Process(&reduced_kernel_, odd_samples_p, dest_p,
-                     dest_frames_to_process);
+  convolver_.Process(odd_samples_p, dest_p, dest_frames_to_process);
 
   // Now, account for the 0.5 term right in the middle of the kernel.
   // This amounts to a delay-line of length halfSize (at the source
@@ -145,7 +155,7 @@ void DownSampler::Reset() {
 size_t DownSampler::LatencyFrames() const {
   // Divide by two since this is a linear phase kernel and the delay is at the
   // center of the kernel.
-  return reduced_kernel_.size() / 2;
+  return convolver_.ConvolutionKernelSize() / 2;
 }
 
 }  // namespace blink
