@@ -34,6 +34,9 @@
             publisherName:(NSString*)publisherName
           publicationDate:(NSString*)publicationDate;
 
+// Returns the spacing between cells.
++ (CGFloat)standardSpacing;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_CELL_H_
