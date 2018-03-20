@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/computed_hashes.h"
@@ -27,9 +27,9 @@ namespace {
 
 // Specifies the content verification mode.
 enum ContentVerificationMode {
-  // Uses --extension-content-verification=enforce flag.
+  // Uses ContentVerifierDelegate::ENFORCE mode.
   kEnforce,
-  // Uses --extension-content-verification=enforce_strict flag.
+  // Uses ContentVerifierDelegate::ENFORCE_STRICT mode.
   kEnforceStrict
 };
 
@@ -55,13 +55,19 @@ class ContentVerifierHashTest
   // ExtensionBrowserTest:
   bool ShouldEnableContentVerification() override { return true; }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kExtensionContentVerification,
-        uses_enforce_strict_mode()
-            ? switches::kExtensionContentVerificationEnforceStrict
-            : switches::kExtensionContentVerificationEnforce);
+  void SetUp() override {
+    // Override content verification mode before ExtensionSystemImpl initializes
+    // ChromeContentVerifierDelegate.
+    ChromeContentVerifierDelegate::SetDefaultModeForTesting(
+        uses_enforce_strict_mode() ? ContentVerifierDelegate::ENFORCE_STRICT
+                                   : ContentVerifierDelegate::ENFORCE);
+
+    ExtensionBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    ExtensionBrowserTest::TearDown();
+    ChromeContentVerifierDelegate::SetDefaultModeForTesting(base::nullopt);
   }
 
   bool uses_enforce_strict_mode() {
