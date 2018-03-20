@@ -694,11 +694,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 
   // If we navigated in background, clear the displayed graphics of the
   // previous page before going visible.
-  if (new_content_rendering_timeout_ &&
-      new_content_rendering_timeout_->IsRunning()) {
-    new_content_rendering_timeout_->Stop();
-    ClearDisplayedGraphics();
-  }
+  ForceFirstFrameAfterNavigationTimeout();
 
   SendScreenRects();
   RestartHangMonitorTimeoutIfNecessary();
@@ -3010,6 +3006,14 @@ void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
     return;
   }
   new_content_rendering_timeout_->Stop();
+}
+
+void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
+  if (new_content_rendering_timeout_ &&
+      new_content_rendering_timeout_->IsRunning()) {
+    new_content_rendering_timeout_->Stop();
+    ClearDisplayedGraphics();
+  }
 }
 
 void RenderWidgetHostImpl::StopFling() {
