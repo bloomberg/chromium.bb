@@ -202,6 +202,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
       safe_browsing_url_checker_delegate_;
 
+  bool sniff_file_urls_;
+
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };
 

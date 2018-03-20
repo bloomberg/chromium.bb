@@ -112,6 +112,11 @@ AwSettings* AwSettings::FromWebContents(content::WebContents* web_contents) {
   return AwSettingsUserData::GetSettings(web_contents);
 }
 
+bool AwSettings::GetAllowSniffingFileUrls() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AwSettings_getAllowSniffingFileUrls(env);
+}
+
 AwRenderViewHostExt* AwSettings::GetAwRenderViewHostExt() {
   if (!web_contents())
     return NULL;

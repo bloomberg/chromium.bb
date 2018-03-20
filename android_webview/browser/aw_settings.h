@@ -22,6 +22,7 @@ class AwRenderViewHostExt;
 class AwSettings : public content::WebContentsObserver {
  public:
   static AwSettings* FromWebContents(content::WebContents* web_contents);
+  static bool GetAllowSniffingFileUrls();
 
   AwSettings(JNIEnv* env, jobject obj, content::WebContents* web_contents);
   ~AwSettings() override;
