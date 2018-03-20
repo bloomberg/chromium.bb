@@ -10817,4 +10817,43 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
   EXPECT_GT(height, 0);
 }
 
+// Check that when A opens a new window with B which embeds an A subframe, the
+// subframe is visible and generates paint events.  See
+// https://crbug.com/638375.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeVisibleAfterRenderViewBecomesSwappedOut) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  GURL popup_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(b)"));
+  Shell* popup_shell = OpenPopup(shell()->web_contents(), popup_url, "popup");
+
+#if defined(OS_ANDROID)
+  // Workaround for https://crbug.com/823493 on Android content shell, where
+  // window.open() won't initially show the contents of the new window, and
+  // resizing it will force the contents to be shown.
+  popup_shell->SizeTo(gfx::Size(500, 500));
+#endif
+
+  FrameTreeNode* popup_child =
+      static_cast<WebContentsImpl*>(popup_shell->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->child_at(0);
+
+  // Navigate popup's subframe to a page on a.com, which will generate
+  // continuous compositor frames by incrementing a counter on the page.
+  NavigateFrameToURL(popup_child,
+                     embedded_test_server()->GetURL("a.com", "/counter.html"));
+
+  RenderWidgetHostViewChildFrame* child_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          popup_child->current_frame_host()->GetView());
+
+  // Make sure the child frame keeps generating compositor frames.
+  ChildFrameCompositorFrameSwapCounter counter(child_view);
+  counter.WaitForNewFrames(10u);
+}
+
 }  // namespace content
