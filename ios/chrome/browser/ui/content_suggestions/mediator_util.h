@@ -45,10 +45,11 @@ ContentSuggestionsItem* ConvertSuggestion(
     ntp_snippets::Category category);
 
 // Returns a SectionInformation for a |category|, filled with the
-// |categoryInfo|.
+// |categoryInfo| and |expanded|.
 ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
     const base::Optional<ntp_snippets::CategoryInfo>& categoryInfo,
-    const ntp_snippets::Category& category);
+    const ntp_snippets::Category& category,
+    const BOOL expanded);
 
 // Returns a ntp_snippets::ID based on a Objective-C Category and the ID in the
 // category.

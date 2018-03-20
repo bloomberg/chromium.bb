@@ -140,6 +140,9 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   return nil;
 }
 
+- (void)toggleArticlesVisibility {
+}
+
 #pragma mark - Property
 
 - (ContentSuggestionsSectionInformation*)logoHeaderSection {

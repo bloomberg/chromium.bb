@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 
 namespace favicon {
 class LargeIconService;
@@ -62,6 +63,13 @@ initWithContentService:
 @property(nonatomic, weak, nullable) id<ContentSuggestionsHeaderProvider>
     headerProvider;
 
+// Whether the contents section should be expanded or collapsed.  Collapsed
+// means to show the header, but not any content or footer.
+@property(nullable, nonatomic, strong)
+    PrefBackedBoolean* contentArticlesExpanded;
+// Whether the contents secction should be hidden completely.
+@property(nullable, nonatomic, strong)
+    PrefBackedBoolean* contentArticlesEnabled;
 // Whether to force the reload the Reading List section next time it is updated.
 // Reset to NO after actual reload.
 @property(nonatomic, assign) BOOL readingListNeedsReload;

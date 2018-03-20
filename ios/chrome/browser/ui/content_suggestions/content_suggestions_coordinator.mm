@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -32,6 +33,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
@@ -172,6 +174,14 @@
             readingListModel:readingListModel];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
+  self.contentSuggestionsMediator.contentArticlesExpanded =
+      [[PrefBackedBoolean alloc]
+          initWithPrefService:prefs
+                     prefName:ntp_snippets::prefs::kArticlesListVisible];
+  self.contentSuggestionsMediator.contentArticlesEnabled =
+      [[PrefBackedBoolean alloc]
+          initWithPrefService:prefs
+                     prefName:prefs::kArticlesForYouEnabled];
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();

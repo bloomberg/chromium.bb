@@ -51,6 +51,9 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
 // empty because the user dismissed suggestions, the |emptyText| must be shown
 // in both cases.
 @property(nonatomic, assign) BOOL showIfEmpty;
+// If the section should be expanded (fully visible) or collapsed (only show the
+// header).
+@property(nonatomic, assign) BOOL expanded;
 
 @end
 
