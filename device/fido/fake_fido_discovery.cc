@@ -6,7 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -15,33 +19,17 @@ namespace test {
 // FakeFidoDiscovery ----------------------------------------------------------
 
 FakeFidoDiscovery::FakeFidoDiscovery(U2fTransportProtocol transport,
-                                     StartStopMode mode)
-    : transport_(transport),
-      mode_(mode),
-      start_called_callback_(wait_for_start_loop_.QuitClosure()),
-      stop_called_callback_(wait_for_stop_loop_.QuitClosure()) {}
+                                     StartMode mode)
+    : FidoDiscovery(transport), mode_(mode) {}
 FakeFidoDiscovery::~FakeFidoDiscovery() = default;
 
 void FakeFidoDiscovery::WaitForCallToStart() {
   wait_for_start_loop_.Run();
-  ASSERT_FALSE(start_called_callback_);
-}
-
-void FakeFidoDiscovery::WaitForCallToStop() {
-  wait_for_stop_loop_.Run();
-  ASSERT_FALSE(stop_called_callback_);
 }
 
 void FakeFidoDiscovery::SimulateStarted(bool success) {
-  ASSERT_FALSE(is_running_);
-  is_running_ = success;
+  ASSERT_FALSE(is_running());
   NotifyDiscoveryStarted(success);
-}
-
-void FakeFidoDiscovery::SimulateStopped(bool success) {
-  ASSERT_TRUE(is_running_);
-  is_running_ = !success;
-  NotifyDiscoveryStopped(success);
 }
 
 void FakeFidoDiscovery::WaitForCallToStartAndSimulateSuccess() {
@@ -49,35 +37,14 @@ void FakeFidoDiscovery::WaitForCallToStartAndSimulateSuccess() {
   SimulateStarted(true /* success */);
 }
 
-void FakeFidoDiscovery::WaitForCallToStopAndSimulateSuccess() {
-  WaitForCallToStop();
-  SimulateStopped(true /* success */);
-}
+void FakeFidoDiscovery::StartInternal() {
+  wait_for_start_loop_.Quit();
 
-U2fTransportProtocol FakeFidoDiscovery::GetTransportProtocol() const {
-  return transport_;
-}
-
-void FakeFidoDiscovery::Start() {
-  if (is_running_)
-    return;
-
-  ASSERT_TRUE(start_called_callback_) << "Start called twice.";
-  std::move(start_called_callback_).Run();
-
-  if (mode_ == StartStopMode::kAutomatic)
-    SimulateStarted(true /* success */);
-}
-
-void FakeFidoDiscovery::Stop() {
-  if (!is_running_)
-    return;
-
-  ASSERT_TRUE(stop_called_callback_) << "Stop called twice.";
-  std::move(stop_called_callback_).Run();
-
-  if (mode_ == StartStopMode::kAutomatic)
-    SimulateStopped(true /* success */);
+  if (mode_ == StartMode::kAutomatic) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FakeFidoDiscovery::SimulateStarted,
+                                  base::Unretained(this), true /* success */));
+  }
 }
 
 // ScopedFakeFidoDiscoveryFactory ---------------------------------------------
@@ -86,14 +53,14 @@ ScopedFakeFidoDiscoveryFactory::ScopedFakeFidoDiscoveryFactory() = default;
 ScopedFakeFidoDiscoveryFactory::~ScopedFakeFidoDiscoveryFactory() = default;
 
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextHidDiscovery(
-    FakeFidoDiscovery::StartStopMode mode) {
+    FakeFidoDiscovery::StartMode mode) {
   next_hid_discovery_ = std::make_unique<FakeFidoDiscovery>(
       U2fTransportProtocol::kUsbHumanInterfaceDevice, mode);
   return next_hid_discovery_.get();
 }
 
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextBleDiscovery(
-    FakeFidoDiscovery::StartStopMode mode) {
+    FakeFidoDiscovery::StartMode mode) {
   next_ble_discovery_ = std::make_unique<FakeFidoDiscovery>(
       U2fTransportProtocol::kBluetoothLowEnergy, mode);
   return next_ble_discovery_.get();

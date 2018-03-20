@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "device/fido/u2f_transport_protocol.h"
 
@@ -32,11 +32,23 @@ class ScopedFidoDiscoveryFactory;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
  public:
+  enum class State {
+    kIdle,
+    kStarting,
+    kRunning,
+  };
+
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
    public:
     virtual ~Observer();
+
+    // It is guaranteed that this is never invoked synchronously from Start().
     virtual void DiscoveryStarted(FidoDiscovery* discovery, bool success) = 0;
-    virtual void DiscoveryStopped(FidoDiscovery* discovery, bool success) = 0;
+
+    // It is guaranteed that DeviceAdded/DeviceRemoved() will not be invoked
+    // before the client of FidoDiscovery calls FidoDiscovery::Start(). However,
+    // for devices already known to the system at that point, DeviceAdded()
+    // might already be called to reported already known devices.
     virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
     virtual void DeviceRemoved(FidoDiscovery* discovery,
                                FidoDevice* device) = 0;
@@ -53,17 +65,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
 
   virtual ~FidoDiscovery();
 
-  virtual U2fTransportProtocol GetTransportProtocol() const = 0;
-  virtual void Start() = 0;
-  virtual void Stop() = 0;
+  Observer* observer() const { return observer_; }
+  void set_observer(Observer* observer) {
+    DCHECK(!observer_ || !observer) << "Only one observer is supported.";
+    observer_ = observer;
+  }
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  U2fTransportProtocol transport() const { return transport_; }
+  bool is_start_requested() const { return state_ != State::kIdle; }
+  bool is_running() const { return state_ == State::kRunning; }
 
-  void NotifyDiscoveryStarted(bool success);
-  void NotifyDiscoveryStopped(bool success);
-  void NotifyDeviceAdded(FidoDevice* device);
-  void NotifyDeviceRemoved(FidoDevice* device);
+  void Start();
 
   std::vector<FidoDevice*> GetDevices();
   std::vector<const FidoDevice*> GetDevices() const;
@@ -72,13 +84,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   const FidoDevice* GetDevice(base::StringPiece device_id) const;
 
  protected:
-  FidoDiscovery();
+  FidoDiscovery(U2fTransportProtocol transport);
 
-  virtual bool AddDevice(std::unique_ptr<FidoDevice> device);
-  virtual bool RemoveDevice(base::StringPiece device_id);
+  void NotifyDiscoveryStarted(bool success);
+  void NotifyDeviceAdded(FidoDevice* device);
+  void NotifyDeviceRemoved(FidoDevice* device);
+
+  bool AddDevice(std::unique_ptr<FidoDevice> device);
+  bool RemoveDevice(base::StringPiece device_id);
+
+  // Subclasses should implement this to actually start the discovery when it is
+  // requested.
+  //
+  // The implementation should asynchronously invoke NotifyDiscoveryStarted when
+  // the discovery is s tarted.
+  virtual void StartInternal() = 0;
 
   std::map<std::string, std::unique_ptr<FidoDevice>, std::less<>> devices_;
-  base::ObserverList<Observer> observers_;
+  Observer* observer_ = nullptr;
 
  private:
   friend class internal::ScopedFidoDiscoveryFactory;
@@ -86,6 +109,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   // Factory function can be overridden by tests to construct fakes.
   using FactoryFuncPtr = decltype(&Create);
   static FactoryFuncPtr g_factory_func_;
+
+  const U2fTransportProtocol transport_;
+  State state_ = State::kIdle;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDiscovery);
 };

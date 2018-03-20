@@ -15,6 +15,7 @@
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
@@ -114,7 +115,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
 
   // FidoDiscovery::Observer
   void DiscoveryStarted(FidoDiscovery* discovery, bool success) override;
-  void DiscoveryStopped(FidoDiscovery* discovery, bool success) override;
   void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) override;
   void DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) override;
 

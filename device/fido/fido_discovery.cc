@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "device/fido/fido_ble_discovery.h"
 #include "device/fido/fido_device.h"
@@ -39,7 +38,7 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
   }
 
   DCHECK(discovery);
-  DCHECK_EQ(discovery->GetTransportProtocol(), transport);
+  DCHECK_EQ(discovery->transport(), transport);
   return discovery;
 }
 
@@ -58,36 +57,40 @@ std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
   return (*g_factory_func_)(transport, connector);
 }
 
-FidoDiscovery::FidoDiscovery() = default;
+FidoDiscovery::FidoDiscovery(U2fTransportProtocol transport)
+    : transport_(transport) {}
 
 FidoDiscovery::~FidoDiscovery() = default;
 
-void FidoDiscovery::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void FidoDiscovery::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+void FidoDiscovery::Start() {
+  DCHECK_EQ(state_, State::kIdle);
+  state_ = State::kStarting;
+  StartInternal();
+  // StartInternal should never synchronously call NotifyStarted().
+  DCHECK_EQ(state_, State::kStarting);
 }
 
 void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
-  for (auto& observer : observers_)
-    observer.DiscoveryStarted(this, success);
-}
-
-void FidoDiscovery::NotifyDiscoveryStopped(bool success) {
-  for (auto& observer : observers_)
-    observer.DiscoveryStopped(this, success);
+  DCHECK_EQ(state_, State::kStarting);
+  if (success)
+    state_ = State::kRunning;
+  if (!observer_)
+    return;
+  observer_->DiscoveryStarted(this, success);
 }
 
 void FidoDiscovery::NotifyDeviceAdded(FidoDevice* device) {
-  for (auto& observer : observers_)
-    observer.DeviceAdded(this, device);
+  DCHECK_NE(state_, State::kIdle);
+  if (!observer_)
+    return;
+  observer_->DeviceAdded(this, device);
 }
 
 void FidoDiscovery::NotifyDeviceRemoved(FidoDevice* device) {
-  for (auto& observer : observers_)
-    observer.DeviceRemoved(this, device);
+  DCHECK_NE(state_, State::kIdle);
+  if (!observer_)
+    return;
+  observer_->DeviceRemoved(this, device);
 }
 
 std::vector<FidoDevice*> FidoDiscovery::GetDevices() {

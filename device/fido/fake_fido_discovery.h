@@ -51,66 +51,44 @@ namespace test {
 //   // Add devices discovered after doing some heavy lifting.
 //   fake_hid_discovery->AddDevice(std::make_unique<MockFidoDevice>(...));
 //
-//   // Run the production code that will eventually stop the discovery.
-//   //// hid_instance->Stop();
-//
-//   // Wait for discovery to be stopped by the production code, and simulate
-//   // the discovery starting successfully.
-//   fake_hid_discovery->WaitForCallToStopAndSimulateSuccess();
+//   // Destroy the production instance to eventually stop the discovery.
+//   // hid_instance.reset();
 //
 class FakeFidoDiscovery : public FidoDiscovery,
                           public base::SupportsWeakPtr<FakeFidoDiscovery> {
  public:
-  enum class StartStopMode {
-    // SimulateStarted()/SimualteStopped() needs to be called manually after the
-    // production code calls Start()/Stop().
+  enum class StartMode {
+    // SimulateStarted() needs to be called manually to finish starting the
+    // discovery after the production code calls Start().
     kManual,
-    // The discovery is automatically and successfully started/stopped once
-    // Start()/Stop() is called.
+    // The discovery is automatically (successfully) started after Start().
     kAutomatic
   };
 
   explicit FakeFidoDiscovery(U2fTransportProtocol transport,
-                             StartStopMode mode = StartStopMode::kManual);
+                             StartMode mode = StartMode::kManual);
   ~FakeFidoDiscovery() override;
 
-  // Blocks until start/stop is requested.
+  // Blocks until start is requested.
   void WaitForCallToStart();
-  void WaitForCallToStop();
 
-  // Simulates the discovery actually starting/stopping.
+  // Simulates the discovery actually starting.
   void SimulateStarted(bool success);
-  void SimulateStopped(bool success);
 
-  // Combines WaitForCallToStart/Stop + SimulateStarted/Stopped(true).
+  // Combines WaitForCallToStart + SimulateStarted(true).
   void WaitForCallToStartAndSimulateSuccess();
-  void WaitForCallToStopAndSimulateSuccess();
-
-  bool is_start_requested() const { return !start_called_callback_; }
-  bool is_stop_requested() const { return !stop_called_callback_; }
-  bool is_running() const { return is_running_; }
 
   // Tests are to directly call Add/RemoveDevice to simulate adding/removing
   // devices. Observers are automatically notified.
   using FidoDiscovery::AddDevice;
   using FidoDiscovery::RemoveDevice;
 
-  // FidoDiscovery:
-  U2fTransportProtocol GetTransportProtocol() const override;
-  void Start() override;
-  void Stop() override;
-
  private:
-  const U2fTransportProtocol transport_;
+  // FidoDiscovery:
+  void StartInternal() override;
 
-  const StartStopMode mode_;
-  bool is_running_ = false;
-
+  const StartMode mode_;
   base::RunLoop wait_for_start_loop_;
-  base::RunLoop wait_for_stop_loop_;
-
-  base::OnceClosure start_called_callback_;
-  base::OnceClosure stop_called_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFidoDiscovery);
 };
@@ -120,7 +98,7 @@ class FakeFidoDiscovery : public FidoDiscovery,
 class ScopedFakeFidoDiscoveryFactory
     : public ::device::internal::ScopedFidoDiscoveryFactory {
  public:
-  using StartStopMode = FakeFidoDiscovery::StartStopMode;
+  using StartMode = FakeFidoDiscovery::StartMode;
 
   ScopedFakeFidoDiscoveryFactory();
   ~ScopedFakeFidoDiscoveryFactory() override;
@@ -131,10 +109,8 @@ class ScopedFakeFidoDiscoveryFactory
   //
   // It is an error not to call the relevant method prior to a call to
   // FidoDiscovery::Create with the respective transport.
-  FakeFidoDiscovery* ForgeNextHidDiscovery(
-      StartStopMode mode = StartStopMode::kManual);
-  FakeFidoDiscovery* ForgeNextBleDiscovery(
-      StartStopMode mode = StartStopMode::kManual);
+  FakeFidoDiscovery* ForgeNextHidDiscovery(StartMode mode = StartMode::kManual);
+  FakeFidoDiscovery* ForgeNextBleDiscovery(StartMode mode = StartMode::kManual);
 
  protected:
   std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
