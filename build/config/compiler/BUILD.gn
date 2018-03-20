@@ -1346,6 +1346,12 @@ config("default_warnings") {
         # TODO(hans): https://crbug.com/766891
         "-Wno-null-pointer-arithmetic",
       ]
+      if (llvm_force_head_revision) {
+        cflags += [
+          # TODO(crbug.com/823655): Enable by default in next clang roll.
+          "-Wno-ignored-pragma-optimize",
+        ]
+      }
     } else if (use_xcode_clang) {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
