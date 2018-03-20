@@ -30,20 +30,20 @@ uniform, predictable two day commitment for all triagers.
 
 ### Required:
 
-* Identify new network bugs on the bug tracker.  All Unconfirmed issues filed
-  during your triage rotation should be scanned, and, for suspected network
-  bugs, a network component assigned and an about:net-internals log requested.
-  A triager is responsible for looking at bugs reported from noon PST / 3:00 pm
-  EST of the last day of the previous triager's rotation until the same time on
-  the last day of their rotation.  Once you've assigned a bug to a component,
-  mark it Untriaged, so other triagers sorting through Unconfirmed bugs won't
-  see it. 
-  
-    * For desktop bugs, ask for a net-internals log and give the user a link to
-      https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details
-      (A link there appears on about:net-internals, for easy reference) for
-      instructions.  On mobile, point them to about:net-export.  In either case,
-      attach the Needs-Feedback label.
+* Identify new network bugs on the bug tracker, looking at [this issue tracker
+  query](https://bugs.chromium.org/p/chromium/issues/list?q=status%3Aunconfirmed&sort=-id&num=1000).
+
+  * All Unconfirmed issues filed during your triage rotation should be scanned,
+    and, for suspected network bugs, a network component assigned and a
+    chrome://net-export/ log requested.  Suggested text: "Please collect and
+    attach a chrome://net-export log. Instructions can be found here:
+    https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details".
+    A link to the instructions appears on net-export, for easy reference.
+    When asking for a log or more details, attach the Needs-Feedback label.
+
+  * A triager is responsible for looking at bugs reported from noon PST /
+    3:00 pm EST of the last day of the previous triager's rotation until the
+    same time on the last day of their rotation.
 
 * Investigate UMA notifications.
 
@@ -51,17 +51,17 @@ uniform, predictable two day commitment for all triagers.
       sent to   chrome-network-debugging@google.com.  Triagers should subscribe
       to this list.  When an alert fires, the triager should determine if the
       alert looks to be real and file a bug with the appropriate label if so.
-      Note that if no label more specific than Internals>Network is appropriate,
-      the responsibility remains with the triager to continue investigating the
-      bug, as above.
-      
+      Note that if no label more specific than Internals&gt;Network is
+      appropriate, the responsibility remains with the triager to continue
+      investigating the bug, as above.
+
     * The triager is responsible for looking at any notification previous
       triagers did not, so when an issue is investigated, the person who did
       so should respond to chrome-network-debugging@google.com with a short
       email, describing their conclusions.  Future triagers can then use the
       fact an alert was responded to as an indicator of which of them need
       to be followed up on.  Alerts fired before the beginning of the
-      previous triager's rotation may be ignored. 
+      previous triager's rotation may be ignored.
 
 * Investigate [Unconfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
   prioritizing the most recent issues, ones with the most responsive reporters,
@@ -82,8 +82,8 @@ uniform, predictable two day commitment for all triagers.
       due to the way the bug report wizard works, a lot of bugs incorrectly end
       up with the network component.
 
-    * The issue is assigned to an appropriate owner, and make sure to mark it
-      as "assigned" so the next triager doesn't run into it.
+    * The issue is assigned to an appropriate owner.  Make sure to mark it as
+      "assigned" so the next triager doesn't run into it.
 
     * If there is no more specific component for a bug, it should be
       investigated by the triager until we have a good understanding of the
@@ -118,6 +118,10 @@ uniform, predictable two day commitment for all triagers.
 
     * Make sure to check for new crashes on all platforms, not just Windows.
 
+    * [go/chromenetcrash](https://goto.google.com/chromenetcrash) has a list
+      of net crashes by version, though makes it more difficult to tell if a
+      crash makes up a significant portion of all Chrome crashes.
+
 ### Best Effort (As you have time):
 
 * Investigate old bugs, and bugs associated with Internals>Network
@@ -125,8 +129,8 @@ uniform, predictable two day commitment for all triagers.
 
 * Investigate unowned and owned but forgotten net/ crashers that are still
   occurring (As indicated by
-  [go/chromecrash](https://goto.google.com/chromecrash)), prioritizing frequent
-  and long standing crashers.
+  [go/chromenetcrash](https://goto.google.com/chromenetcrash)), prioritizing
+  frequent and long standing crashers.
 
 * Close obsolete bugs.
 
@@ -137,4 +141,4 @@ See [bug-triage-labels.md](bug-triage-labels.md) for labeling tips for network
 and non-network bugs.
 
 See [crash-course-in-net-internals.md](crash-course-in-net-internals.md) for
-some help on getting started with about:net-internals debugging.
+some help on getting started with chrome://net-internals debugging.
