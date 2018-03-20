@@ -29,13 +29,12 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -219,8 +218,8 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
   Navigate(&nav_params);
 
   WebContents* web_contents = nav_params.target_contents;
-  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
+  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
+      web_contents);
 
   browser->window()->Show();
 

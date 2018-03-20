@@ -36,6 +36,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -99,6 +100,16 @@ void NavigateAndCheckForLocationBar(Browser* browser,
       browser->hosted_app_controller()->ShouldShowLocationBar());
 }
 
+void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
+  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  EXPECT_FALSE(prefs->can_accept_load_drops);
+}
+
+void CheckWebContentsDoesNotHaveAppPrefs(content::WebContents* web_contents) {
+  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
+  EXPECT_TRUE(prefs->can_accept_load_drops);
+}
+
 }  // namespace
 
 // Parameters are {app_type, desktop_pwa_flag}. |app_type| controls whether it
@@ -108,7 +119,7 @@ class HostedAppTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<std::tuple<AppType, bool>> {
  public:
-  HostedAppTest() : app_browser_(nullptr) {}
+  HostedAppTest() : app_browser_(nullptr), app_(nullptr) {}
   ~HostedAppTest() override {}
 
   void SetUp() override {
@@ -131,15 +142,15 @@ class HostedAppTest
   }
 
   void SetupApp(const base::FilePath& app_folder) {
-    const Extension* app = InstallExtensionWithSourceAndFlags(
+    app_ = InstallExtensionWithSourceAndFlags(
         app_folder, 1, extensions::Manifest::INTERNAL,
         app_type_ == AppType::BOOKMARK_APP
             ? extensions::Extension::FROM_BOOKMARK
             : extensions::Extension::NO_FLAGS);
-    ASSERT_TRUE(app);
+    ASSERT_TRUE(app_);
 
     // Launch it in a window.
-    app_browser_ = LaunchAppBrowser(app);
+    app_browser_ = LaunchAppBrowser(app_);
     ASSERT_TRUE(app_browser_);
     ASSERT_TRUE(app_browser_ != browser());
   }
@@ -173,6 +184,7 @@ class HostedAppTest
   }
 
   Browser* app_browser_;
+  const extensions::Extension* app_;
 
   AppType app_type() const { return app_type_; }
 
@@ -244,6 +256,46 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CtrlClickLink) {
           },
           app_browser_->tab_strip_model()->GetActiveWebContents(), url),
       url);
+}
+
+// Tests that the WebContents of an app window launched using OpenApplication
+// has the correct prefs.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenApplication) {
+  SetupApp("https_app");
+  CheckWebContentsHasAppPrefs(
+      app_browser_->tab_strip_model()->GetActiveWebContents());
+}
+
+// Tests that the WebContents of an app window launched using
+// ReparentWebContentsIntoAppBrowser has the correct prefs.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsReparentWebContents) {
+  SetupApp("https_app");
+
+  content::WebContents* current_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  CheckWebContentsDoesNotHaveAppPrefs(current_tab);
+
+  ReparentWebContentsIntoAppBrowser(current_tab, app_);
+  ASSERT_NE(browser(), chrome::FindLastActive());
+
+  CheckWebContentsHasAppPrefs(
+      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents());
+}
+
+// Tests that the WebContents of a regular browser window launched using
+// OpenInChrome has the correct prefs.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenInChrome) {
+  SetupApp("https_app");
+
+  content::WebContents* app_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  CheckWebContentsHasAppPrefs(app_contents);
+
+  chrome::OpenInChrome(app_browser_);
+  ASSERT_EQ(browser(), chrome::FindLastActive());
+
+  CheckWebContentsDoesNotHaveAppPrefs(
+      browser()->tab_strip_model()->GetActiveWebContents());
 }
 
 // Check that the location bar is shown correctly.
