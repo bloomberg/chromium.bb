@@ -48,27 +48,6 @@ cr.define('extension_options_dialog_tests', function() {
             data.name,
             assert(optionsDialog.$$('#icon-and-name-wrapper span'))
                 .textContent.trim());
-
-        var optionEle = optionsDialog.$$('extensionoptions');
-
-        var mockOptions = optionsDialog.extensionOptions_;
-        assertEquals(data.id, mockOptions.extension);
-
-        // Setting the preferred width to something below the min width
-        // changes the width property. But visually, min-width still prevails.
-        mockOptions.onpreferredsizechanged({height: 100, width: 100});
-        assertEquals('100px', optionEle.style.width);
-        var computedStyle = window.getComputedStyle(optionEle);
-        assertEquals('300px', computedStyle.minWidth);
-
-        // Setting the preferred size to between the min and max dimensions
-        // should change the dimensions.
-        mockOptions.onpreferredsizechanged({height: 500, width: 400});
-        assertEquals('500px', optionEle.style.height);
-        assertEquals('400px', optionEle.style.width);
-
-        mockOptions.onclose();
-        assertFalse(isDialogVisible());
       });
     });
   });

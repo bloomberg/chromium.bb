@@ -37,8 +37,25 @@ cr.define('extensions', function() {
       data_: Object,
     },
 
+    /** @private {?Function} */
+    boundResizeListener_: null,
+
     get open() {
       return this.$$('dialog').open;
+    },
+
+    /**
+     * Resizes the dialog to the given width/height, taking into account the
+     * window width/height.
+     * @param {number} width
+     * @param {number} height
+     * @private
+     */
+    updateDialogSize_: function(width, height) {
+      const effectiveHeight = Math.min(window.innerHeight, height);
+      const effectiveWidth = Math.min(window.innerWidth, width);
+      this.$.dialog.style.height = effectiveHeight + 'px';
+      this.$.dialog.style.width = effectiveWidth + 'px';
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
@@ -50,15 +67,25 @@ cr.define('extensions', function() {
         this.extensionOptions_.extension = this.data_.id;
         this.extensionOptions_.onclose = this.close.bind(this);
 
+        let preferredSize = null;
         const onSizeChanged = e => {
-          this.extensionOptions_.style.height = e.height + 'px';
-          this.extensionOptions_.style.width = e.width + 'px';
-
-          if (!this.$$('dialog').open)
-            this.$$('dialog').showModal();
+          preferredSize = e;
+          this.updateDialogSize_(preferredSize.width, preferredSize.height);
+          this.$$('dialog').showModal();
+          this.extensionOptions_.onpreferredsizechanged = null;
         };
 
+        this.boundResizeListener_ = () => {
+          this.updateDialogSize_(preferredSize.width, preferredSize.height);
+        };
+
+        // Only handle the 1st instance of 'preferredsizechanged' event, to get
+        // the preferred size.
         this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
+
+        // Add a 'resize' such that the dialog is resized when window size
+        // changes.
+        window.addEventListener('resize', this.boundResizeListener_);
         this.$.body.appendChild(this.extensionOptions_);
       });
     },
@@ -70,6 +97,11 @@ cr.define('extensions', function() {
 
     /** @private */
     onClose_: function() {
+      if (this.boundResizeListener_) {
+        window.removeEventListener('resize', this.boundResizeListener_);
+        this.boundResizeListener_ = null;
+      }
+
       const currentPage = extensions.navigation.getCurrentPage();
       // We update the page when the options dialog closes, but only if we're
       // still on the details page. We could be on a different page if the
