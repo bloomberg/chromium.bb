@@ -1250,12 +1250,61 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
   EXPECT_CALL(*connection_, SendControlFrame(_));
   EXPECT_CALL(*connection_, OnStreamReset(2, _));
   session_.CloseStream(2);
-  EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), 2));
-  EXPECT_TRUE(session_.closed_streams()->empty());
+  if (GetQuicReloadableFlag(quic_reset_stream_is_not_zombie)) {
+    EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
+    ASSERT_EQ(1u, session_.closed_streams()->size());
+    EXPECT_EQ(2u, session_.closed_streams()->front()->id());
+  } else {
+    EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), 2));
+    EXPECT_TRUE(session_.closed_streams()->empty());
+  }
   session_.OnStreamDoneWaitingForAcks(2);
   EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
   EXPECT_EQ(1u, session_.closed_streams()->size());
   EXPECT_EQ(2u, session_.closed_streams()->front()->id());
+}
+
+// Regression test of b/71548958.
+TEST_P(QuicSessionTestServer, TestZombieStreams) {
+  session_.set_writev_consumes_all_data(true);
+
+  TestStream* stream2 = session_.CreateOutgoingDynamicStream();
+  QuicString body(100, '.');
+  stream2->WriteOrBufferData(body, false, nullptr);
+  EXPECT_TRUE(stream2->IsWaitingForAcks());
+  EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream2).size());
+
+  QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream2->id(),
+                               QUIC_STREAM_CANCELLED, 1234);
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream2->id(), QUIC_RST_ACKNOWLEDGEMENT));
+  stream2->OnStreamReset(rst_frame);
+  if (GetQuicReloadableFlag(quic_reset_stream_is_not_zombie)) {
+    EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+    ASSERT_EQ(1u, session_.closed_streams()->size());
+    EXPECT_EQ(stream2->id(), session_.closed_streams()->front()->id());
+  } else {
+    // Stream reset by peer, and it becomes zombie stream and the data will be
+    // NEVER be acked because the frames in unacked packet map are removed.
+    EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+    EXPECT_TRUE(session_.closed_streams()->empty());
+    EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream2).size());
+  }
+
+  TestStream* stream4 = session_.CreateOutgoingDynamicStream();
+  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream4->id(), QUIC_STREAM_CANCELLED));
+  stream4->WriteOrBufferData(body, false, nullptr);
+  stream4->Reset(QUIC_STREAM_CANCELLED);
+  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream4->id()));
+  if (GetQuicReloadableFlag(quic_reset_stream_is_not_zombie)) {
+    EXPECT_EQ(2u, session_.closed_streams()->size());
+  } else {
+    EXPECT_EQ(1u, session_.closed_streams()->size());
+  }
 }
 
 TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
