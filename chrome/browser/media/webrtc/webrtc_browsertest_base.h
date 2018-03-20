@@ -147,6 +147,13 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void SetupPeerconnectionWithCertificateWithoutLocalStream(
       content::WebContents* tab,
       const std::string& certificate) const;
+  // Same as |SetupPeerconnectionWithLocalStream| except RTCPeerConnection
+  // constraints are specified.
+  void SetupPeerconnectionWithConstraintsAndLocalStream(
+      content::WebContents* tab,
+      const std::string& constraints,
+      const std::string& certificate_keygen_algorithm =
+          kUseDefaultCertKeygen) const;
 
   void CreateDataChannel(content::WebContents* tab, const std::string& label);
 

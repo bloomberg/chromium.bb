@@ -388,6 +388,17 @@ void WebRtcTestBase::SetupPeerconnectionWithCertificateWithoutLocalStream(
   EXPECT_EQ("ok-peerconnection-created", ExecuteJavascript(javascript, tab));
 }
 
+void WebRtcTestBase::SetupPeerconnectionWithConstraintsAndLocalStream(
+    content::WebContents* tab,
+    const std::string& constraints,
+    const std::string& certificate_keygen_algorithm) const {
+  std::string javascript = base::StringPrintf(
+      "preparePeerConnection(%s, %s)", certificate_keygen_algorithm.c_str(),
+      constraints.c_str());
+  EXPECT_EQ("ok-peerconnection-created", ExecuteJavascript(javascript, tab));
+  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
+}
+
 std::string WebRtcTestBase::CreateLocalOffer(
     content::WebContents* from_tab) const {
   std::string response = ExecuteJavascript("createLocalOffer({})", from_tab);

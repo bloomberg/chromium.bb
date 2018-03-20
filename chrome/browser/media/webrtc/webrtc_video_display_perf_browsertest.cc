@@ -152,8 +152,12 @@ class WebRtcVideoDisplayPerfBrowserTest
     const int process_id = base::GetProcId(
         right_tab->GetRenderViewHost()->GetProcess()->GetHandle());
 
-    SetupPeerconnectionWithLocalStream(left_tab);
-    SetupPeerconnectionWithLocalStream(right_tab);
+    const std::string disable_cpu_adaptation_constraint(
+        "{'optional': [{'googCpuOveruseDetection': false}]}");
+    SetupPeerconnectionWithConstraintsAndLocalStream(
+        left_tab, disable_cpu_adaptation_constraint);
+    SetupPeerconnectionWithConstraintsAndLocalStream(
+        right_tab, disable_cpu_adaptation_constraint);
 
     if (!video_codec.empty()) {
       SetDefaultVideoCodec(left_tab, video_codec,
