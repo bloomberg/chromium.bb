@@ -7,13 +7,16 @@
 
 #include <windows.h>
 
+#include "media/base/video_facing.h"
+
 namespace media {
 
 // Returns the rotation of the camera. Returns 0 if it's not a built-in camera,
 // or auto-rotation is not enabled, or only displays on external monitors.
-int GetCameraRotation();
+int GetCameraRotation(VideoFacingMode facing);
 
 bool IsAutoRotationEnabled();
+bool IsInternalCamera(VideoFacingMode facing);
 
 // Returns true if target device has active internal display panel, e.g. the
 // screen attached to tablets or laptops, and stores its device info in

@@ -394,7 +394,7 @@ class MFVideoCallback final
     base::TimeDelta timestamp =
         base::TimeDelta::FromMicroseconds(raw_time_stamp / 10);
     if (!sample) {
-      observer_->OnIncomingCapturedData(NULL, 0, 0, reference_time, timestamp);
+      observer_->OnIncomingCapturedData(NULL, 0, reference_time, timestamp);
       return S_OK;
     }
 
@@ -408,8 +408,8 @@ class MFVideoCallback final
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
         buffer->Lock(&data, &max_length, &length);
-        observer_->OnIncomingCapturedData(data, length, GetCameraRotation(),
-                                          reference_time, timestamp);
+        observer_->OnIncomingCapturedData(data, length, reference_time,
+                                          timestamp);
         buffer->Unlock();
       }
     }
@@ -553,13 +553,17 @@ HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
   return hr;
 }
 
-VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(ComPtr<IMFMediaSource> source)
-    : VideoCaptureDeviceMFWin(source, nullptr) {}
+VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
+    const VideoCaptureDeviceDescriptor& device_descriptor,
+    ComPtr<IMFMediaSource> source)
+    : VideoCaptureDeviceMFWin(device_descriptor, source, nullptr) {}
 
 VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
+    const VideoCaptureDeviceDescriptor& device_descriptor,
     ComPtr<IMFMediaSource> source,
     ComPtr<IMFCaptureEngine> engine)
-    : create_mf_photo_callback_(base::BindRepeating(&CreateMFPhotoCallback)),
+    : facing_mode_(device_descriptor.facing),
+      create_mf_photo_callback_(base::BindRepeating(&CreateMFPhotoCallback)),
       is_initialized_(false),
       max_retry_count_(200),
       retry_delay_in_ms_(50),
@@ -945,7 +949,6 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
     const uint8_t* data,
     int length,
-    int rotation,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   base::AutoLock lock(lock_);
@@ -955,8 +958,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
 
   if (client_.get()) {
     client_->OnIncomingCapturedData(
-        data, length, selected_video_capability_->supported_format, rotation,
-        reference_time, timestamp);
+        data, length, selected_video_capability_->supported_format,
+        GetCameraRotation(facing_mode_), reference_time, timestamp);
   }
 
   while (!video_stream_take_photo_callbacks_.empty()) {

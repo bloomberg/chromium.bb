@@ -4,6 +4,9 @@
 
 #include "media/capture/video/video_capture_system_impl.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace {
@@ -68,27 +71,31 @@ VideoCaptureSystemImpl::~VideoCaptureSystemImpl() = default;
 void VideoCaptureSystemImpl::GetDeviceInfosAsync(
     DeviceInfoCallback result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VideoCaptureDeviceDescriptors descriptors;
-  factory_->GetDeviceDescriptors(&descriptors);
-  // For devices for which we already have an entry in |devices_info_cache_|,
-  // we do not want to query the |factory_| for supported formats again. We
-  // simply copy them from |devices_info_cache_|.
-  std::vector<VideoCaptureDeviceInfo> new_devices_info_cache;
-  new_devices_info_cache.reserve(descriptors.size());
-  for (const auto& descriptor : descriptors) {
-    if (auto* cached_info = LookupDeviceInfoFromId(descriptor.device_id)) {
-      new_devices_info_cache.push_back(*cached_info);
-    } else {
-      // Query for supported formats in order to create the entry.
-      VideoCaptureDeviceInfo device_info(descriptor);
-      factory_->GetSupportedFormats(descriptor, &device_info.supported_formats);
-      ConsolidateCaptureFormats(&device_info.supported_formats);
-      new_devices_info_cache.push_back(device_info);
-    }
+
+  device_enum_request_queue_.push_back(std::move(result_callback));
+  if (device_enum_request_queue_.size() == 1) {
+    ProcessDeviceInfoRequest();
+  }
+}
+
+void VideoCaptureSystemImpl::ProcessDeviceInfoRequest() {
+  DeviceEnumQueue::iterator request = device_enum_request_queue_.begin();
+  if (request == device_enum_request_queue_.end()) {
+    return;
   }
 
-  devices_info_cache_.swap(new_devices_info_cache);
-  base::ResetAndReturn(&result_callback).Run(devices_info_cache_);
+  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors =
+      std::make_unique<VideoCaptureDeviceDescriptors>();
+  factory_->GetDeviceDescriptors(descriptors.get());
+
+#if defined(OS_WIN)
+  factory_->GetCameraLocationsAsync(
+      std::move(descriptors),
+      base::BindOnce(&VideoCaptureSystemImpl::DeviceInfosReady,
+                     base::Unretained(this)));
+#else
+  DeviceInfosReady(std::move(descriptors));
+#endif
 }
 
 // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
@@ -114,4 +121,32 @@ const VideoCaptureDeviceInfo* VideoCaptureSystemImpl::LookupDeviceInfoFromId(
   return &(*iter);
 }
 
+void VideoCaptureSystemImpl::DeviceInfosReady(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!device_enum_request_queue_.empty());
+  // For devices for which we already have an entry in |devices_info_cache_|,
+  // we do not want to query the |factory_| for supported formats again. We
+  // simply copy them from |devices_info_cache_|.
+  std::vector<VideoCaptureDeviceInfo> new_devices_info_cache;
+  new_devices_info_cache.reserve(descriptors->size());
+  for (const auto& descriptor : *descriptors) {
+    if (auto* cached_info = LookupDeviceInfoFromId(descriptor.device_id)) {
+      new_devices_info_cache.push_back(*cached_info);
+    } else {
+      // Query for supported formats in order to create the entry.
+      VideoCaptureDeviceInfo device_info(descriptor);
+      factory_->GetSupportedFormats(descriptor, &device_info.supported_formats);
+      ConsolidateCaptureFormats(&device_info.supported_formats);
+      new_devices_info_cache.push_back(device_info);
+    }
+  }
+
+  devices_info_cache_.swap(new_devices_info_cache);
+  base::ResetAndReturn(&device_enum_request_queue_.front())
+      .Run(devices_info_cache_);
+
+  device_enum_request_queue_.pop_front();
+  ProcessDeviceInfoRequest();
+}
 }  // namespace media

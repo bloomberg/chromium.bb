@@ -79,4 +79,10 @@ void MockDeviceFactory::GetSupportedFormats(
   supported_formats->push_back(kSupportedFormat);
 }
 
+void MockDeviceFactory::GetCameraLocationsAsync(
+    std::unique_ptr<media::VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback) {
+  base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
+}
+
 }  // namespace video_capture

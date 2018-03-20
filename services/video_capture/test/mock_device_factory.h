@@ -31,6 +31,9 @@ class MockDeviceFactory : public media::VideoCaptureDeviceFactory {
   void GetSupportedFormats(
       const media::VideoCaptureDeviceDescriptor& device_descriptor,
       media::VideoCaptureFormats* supported_formats) override;
+  void GetCameraLocationsAsync(
+      std::unique_ptr<media::VideoCaptureDeviceDescriptors> device_descriptors,
+      DeviceDescriptorsCallback result_callback) override;
 
  private:
   std::map<media::VideoCaptureDeviceDescriptor, media::VideoCaptureDevice*>

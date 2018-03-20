@@ -858,7 +858,8 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   if (timestamp == kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
-  client_->OnIncomingCapturedData(buffer, length, format, GetCameraRotation(),
+  client_->OnIncomingCapturedData(buffer, length, format,
+                                  GetCameraRotation(device_descriptor_.facing),
                                   base::TimeTicks::Now(), timestamp);
 
   while (!take_photo_callbacks_.empty()) {
