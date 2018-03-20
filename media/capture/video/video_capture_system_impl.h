@@ -23,12 +23,19 @@ class CAPTURE_EXPORT VideoCaptureSystemImpl : public VideoCaptureSystem {
       const std::string& device_id) override;
 
  private:
+  using DeviceEnumQueue = std::list<DeviceInfoCallback>;
+
   // Returns nullptr if no descriptor found.
   const VideoCaptureDeviceInfo* LookupDeviceInfoFromId(
       const std::string& device_id);
 
+  void ProcessDeviceInfoRequest();
+  void DeviceInfosReady(
+      std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors);
+
   const std::unique_ptr<VideoCaptureDeviceFactory> factory_;
   std::vector<VideoCaptureDeviceInfo> devices_info_cache_;
+  DeviceEnumQueue device_enum_request_queue_;
 
   base::ThreadChecker thread_checker_;
 };

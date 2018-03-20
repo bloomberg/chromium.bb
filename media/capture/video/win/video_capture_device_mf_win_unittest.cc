@@ -809,11 +809,13 @@ const int kArbitraryValidPhotoHeight = 2448;
 class VideoCaptureDeviceMFWinTest : public ::testing::Test {
  protected:
   VideoCaptureDeviceMFWinTest()
-      : media_source_(new MockMFMediaSource()),
+      : descriptor_(VideoCaptureDeviceDescriptor()),
+        media_source_(new MockMFMediaSource()),
         engine_(new MockMFCaptureEngine()),
         client_(new MockClient()),
         image_capture_client_(new MockImageCaptureClient()),
-        device_(new VideoCaptureDeviceMFWin(media_source_, engine_)),
+        device_(
+            new VideoCaptureDeviceMFWin(descriptor_, media_source_, engine_)),
         capture_source_(new MockMFCaptureSource()),
         capture_preview_sink_(new MockCapturePreviewSink()),
         media_foundation_supported_(
@@ -1022,6 +1024,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
         .WillRepeatedly(Invoke(get_device_media_type));
   }
 
+  VideoCaptureDeviceDescriptor descriptor_;
   Microsoft::WRL::ComPtr<MockMFMediaSource> media_source_;
   Microsoft::WRL::ComPtr<MockMFCaptureEngine> engine_;
   std::unique_ptr<MockClient> client_;

@@ -74,6 +74,9 @@ class CAPTURE_EXPORT FakeVideoCaptureDeviceFactory
   void GetSupportedFormats(
       const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats) override;
+  void GetCameraLocationsAsync(
+      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+      DeviceDescriptorsCallback result_callback) override;
 
   int number_of_devices() {
     DCHECK(thread_checker_.CalledOnValidThread());

@@ -62,6 +62,16 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
   virtual void GetDeviceDescriptors(
       VideoCaptureDeviceDescriptors* device_descriptors) = 0;
 
+  // Gets the location of all cameras of a device asynchronously.
+  // Used for platforms where camera location enumeration is asynchronous
+  // operation, i.e. UWP API on Windows 10.
+  // This method should be called before allocating or starting a device.
+  using DeviceDescriptorsCallback = base::OnceCallback<void(
+      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors)>;
+  virtual void GetCameraLocationsAsync(
+      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+      DeviceDescriptorsCallback result_callback);
+
  protected:
   base::ThreadChecker thread_checker_;
 

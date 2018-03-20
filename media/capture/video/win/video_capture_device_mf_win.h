@@ -41,8 +41,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
                                                      VideoPixelFormat* format);
 
   explicit VideoCaptureDeviceMFWin(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
       Microsoft::WRL::ComPtr<IMFMediaSource> source);
   explicit VideoCaptureDeviceMFWin(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
       Microsoft::WRL::ComPtr<IMFMediaSource> source,
       Microsoft::WRL::ComPtr<IMFCaptureEngine> engine);
 
@@ -64,7 +66,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   // Captured new video data.
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
-                              int rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp);
   void OnEvent(IMFMediaEvent* media_event);
@@ -110,6 +111,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   void OnError(const base::Location& from_here, HRESULT hr);
   void OnError(const base::Location& from_here, const char* message);
 
+  VideoFacingMode facing_mode_;
   CreateMFPhotoCallbackCB create_mf_photo_callback_;
   scoped_refptr<MFVideoCallback> video_callback_;
   bool is_initialized_;

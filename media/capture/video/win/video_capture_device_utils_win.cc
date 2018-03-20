@@ -6,15 +6,24 @@
 
 #include <iostream>
 
+#include "base/win/windows_version.h"
+
 namespace media {
 
 // Note: Because we can't find a solid way to detect camera location (front/back
 // or external USB camera) with Win32 APIs, assume it's always front camera when
 // auto rotation is enabled for now.
-int GetCameraRotation() {
+int GetCameraRotation(VideoFacingMode facing) {
   int rotation = 0;
 
   if (!IsAutoRotationEnabled()) {
+    return rotation;
+  }
+
+  // Before Win10, we can't distinguish if the selected camera is an internal or
+  // external one. So we assume it's internal and do the frame rotation if the
+  // auto rotation is enabled to cover most user cases.
+  if (!IsInternalCamera(facing)) {
     return rotation;
   }
 
@@ -72,6 +81,19 @@ bool IsAutoRotationEnabled() {
         return true;
       }
     }
+  }
+
+  return false;
+}
+
+bool IsInternalCamera(VideoFacingMode facing) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    return true;
+  }
+
+  if (facing == MEDIA_VIDEO_FACING_USER ||
+      facing == MEDIA_VIDEO_FACING_ENVIRONMENT) {
+    return true;
   }
 
   return false;

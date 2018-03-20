@@ -8,6 +8,9 @@
 #include <mferror.h>
 #include <objbase.h>
 #include <stddef.h>
+#include <windows.devices.enumeration.h>
+#include <windows.foundation.collections.h>
+#include <wrl.h>
 #include <wrl/client.h>
 
 #include "base/command_line.h"
@@ -17,17 +20,26 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/win/core_winrt_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/capture/video/win/metrics.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
 #include "media/capture/video/win/video_capture_device_win.h"
 
+using namespace ABI::Windows::Devices::Enumeration;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Foundation::Collections;
+using namespace Microsoft::WRL;
+
 using Descriptor = media::VideoCaptureDeviceDescriptor;
 using Descriptors = media::VideoCaptureDeviceDescriptors;
+using base::win::GetActivationFactory;
 using base::win::ScopedCoMem;
+using base::win::ScopedHString;
 using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
@@ -52,6 +64,11 @@ enum BlacklistedCameraNames {
   // This one must be last, and equal to the previous enumerated value.
   BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_EPOCCAM,
 };
+
+#define UWP_ENUM_ERROR_HANDLER(hr, err_log)                         \
+  DLOG(WARNING) << err_log << logging::SystemErrorCodeToString(hr); \
+  origin_task_runner_->PostTask(FROM_HERE,                          \
+                                base::BindOnce(device_info_callback, nullptr))
 
 // Blacklisted devices are identified by a characteristic prefix of the name.
 // This prefix is used case-insensitively. This list must be kept in sync with
@@ -390,9 +407,25 @@ void GetDeviceSupportedFormatsMediaFoundation(const Descriptor& descriptor,
   }
 }
 
+bool IsEnclosureLocationSupported() {
+  // DeviceInformation class is only available in Win10 onwards (v10.0.10240.0).
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    DVLOG(1) << "DeviceInformation not supported before Windows 10";
+    return false;
+  }
+
+  if (!(base::win::ResolveCoreWinRTDelayload() &&
+        ScopedHString::ResolveCoreWinRTStringDelayload())) {
+    DLOG(ERROR) << "Failed loading functions from combase.dll";
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
-// Returns true iff the current platform supports the Media Foundation API
+// Returns true if the current platform supports the Media Foundation API
 // and that the DLLs are available.  On Vista this API is an optional download
 // but the API is advertised as a part of Windows 7 and onwards.  However,
 // we've seen that the required DLLs are not available in some Win7
@@ -405,7 +438,9 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
 
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
-          base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)) {
+          base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
+      com_thread_("Windows Video Capture COM Thread"),
+      weak_ptr_factory_(this) {
   mf_enum_device_sources_func_ =
       PlatformSupportsMediaFoundation() ? MFEnumDeviceSources : nullptr;
   if (!PlatformSupportsMediaFoundation()) {
@@ -421,6 +456,8 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
   }
 }
 
+VideoCaptureDeviceFactoryWin::~VideoCaptureDeviceFactoryWin() = default;
+
 std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
     const Descriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -435,7 +472,7 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
         break;
       }
       std::unique_ptr<VideoCaptureDevice> device(
-          new VideoCaptureDeviceMFWin(source));
+          new VideoCaptureDeviceMFWin(device_descriptor, source));
       DVLOG(1) << " MediaFoundation Device: "
                << device_descriptor.display_name();
       if (static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init())
@@ -460,12 +497,177 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
 void VideoCaptureDeviceFactoryWin::GetDeviceDescriptors(
     VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (use_media_foundation_) {
     GetDeviceDescriptorsMediaFoundation(mf_enum_device_sources_func_,
                                         device_descriptors);
   } else {
     GetDeviceDescriptorsDirectShow(device_descriptors);
   }
+}
+
+void VideoCaptureDeviceFactoryWin::GetCameraLocationsAsync(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsEnclosureLocationSupported()) {
+    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    com_thread_.init_com_with_mta(true);
+    com_thread_.Start();
+    com_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoCaptureDeviceFactoryWin::EnumerateDevicesUWP,
+                       base::Unretained(this), std::move(device_descriptors),
+                       std::move(result_callback)));
+  } else {
+    DeviceInfoReady(std::move(device_descriptors), std::move(result_callback));
+  }
+}
+
+void VideoCaptureDeviceFactoryWin::EnumerateDevicesUWP(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback) {
+  DCHECK_GE(base::win::OSInfo::GetInstance()->version_number().build, 10240);
+
+  VideoCaptureDeviceFactoryWin* factory = this;
+  scoped_refptr<base::SingleThreadTaskRunner> com_thread_runner =
+      com_thread_.task_runner();
+
+  // The |device_info_callback| created by base::BindRepeating() is copyable,
+  // which is necessary for the below lambda function of |callback| for the
+  // asynchronous operation. The reason is to permanently capture anything in a
+  // lambda, it must be copyable, merely movable is insufficient.
+  auto device_info_callback = base::BindRepeating(
+      &VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP,
+      base::Unretained(factory), base::Passed(&device_descriptors),
+      base::Passed(&result_callback));
+  auto callback =
+      Callback<IAsyncOperationCompletedHandler<DeviceInformationCollection*>>(
+          [factory, com_thread_runner, device_info_callback](
+              IAsyncOperation<DeviceInformationCollection*>* operation,
+              AsyncStatus status) -> HRESULT {
+            com_thread_runner->PostTask(
+                FROM_HERE, base::BindOnce(device_info_callback,
+                                          base::Unretained(operation)));
+            return S_OK;
+          });
+
+  ComPtr<IDeviceInformationStatics> dev_info_statics;
+  HRESULT hr = GetActivationFactory<
+      IDeviceInformationStatics,
+      RuntimeClass_Windows_Devices_Enumeration_DeviceInformation>(
+      &dev_info_statics);
+  if (FAILED(hr)) {
+    UWP_ENUM_ERROR_HANDLER(hr, "DeviceInformation factory failed: ");
+    return;
+  }
+
+  IAsyncOperation<DeviceInformationCollection*>* async_op;
+  hr = dev_info_statics->FindAllAsyncDeviceClass(DeviceClass_VideoCapture,
+                                                 &async_op);
+  if (FAILED(hr)) {
+    UWP_ENUM_ERROR_HANDLER(hr, "Find all devices asynchronously failed: ");
+    return;
+  }
+
+  hr = async_op->put_Completed(callback.Get());
+  if (FAILED(hr)) {
+    UWP_ENUM_ERROR_HANDLER(hr, "Register async operation callback failed: ");
+    return;
+  }
+
+  // Keep a reference to incomplete |asyn_op| for releasing later.
+  async_ops_.insert(async_op);
+}
+
+void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback,
+    IAsyncOperation<DeviceInformationCollection*>* operation) {
+  if (!operation) {
+    origin_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoCaptureDeviceFactoryWin::DeviceInfoReady,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(device_descriptors),
+                       std::move(result_callback)));
+    return;
+  }
+
+  ComPtr<IVectorView<DeviceInformation*>> devices;
+  operation->GetResults(devices.GetAddressOf());
+
+  unsigned int count = 0;
+  devices->get_Size(&count);
+
+  for (unsigned int j = 0; j < count; ++j) {
+    ComPtr<IDeviceInformation> device_info;
+    HRESULT hr = devices->GetAt(j, device_info.GetAddressOf());
+    if (SUCCEEDED(hr)) {
+      HSTRING id;
+      device_info->get_Id(&id);
+
+      std::string device_id = ScopedHString(id).GetAsUTF8();
+      transform(device_id.begin(), device_id.end(), device_id.begin(),
+                ::tolower);
+      const std::string model_id = GetDeviceModelId(device_id);
+
+      ComPtr<IEnclosureLocation> enclosure_location;
+      hr =
+          device_info->get_EnclosureLocation(enclosure_location.GetAddressOf());
+      if (FAILED(hr)) {
+        break;
+      }
+
+      VideoFacingMode facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+      if (enclosure_location) {
+        Panel panel;
+        enclosure_location->get_Panel(&panel);
+        switch (panel) {
+          case Panel_Unknown:
+            facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+            break;
+          case Panel_Front:
+            facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
+            break;
+          case Panel_Back:
+            facing = VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
+            break;
+          default:
+            facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+        }
+      }
+
+      for (Descriptor& descriptor : *device_descriptors) {
+        if (!descriptor.model_id.compare(model_id)) {
+          descriptor.facing = facing;
+          break;
+        }
+      }
+    }
+  }
+
+  origin_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureDeviceFactoryWin::DeviceInfoReady,
+                     base::Unretained(this), std::move(device_descriptors),
+                     std::move(result_callback)));
+
+  auto it = async_ops_.find(operation);
+  DCHECK(it != async_ops_.end());
+  (*it)->Release();
+  async_ops_.erase(it);
+}
+
+void VideoCaptureDeviceFactoryWin::DeviceInfoReady(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback) {
+  if (com_thread_.IsRunning()) {
+    com_thread_.Stop();
+  }
+
+  base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
 }
 
 void VideoCaptureDeviceFactoryWin::GetSupportedFormats(

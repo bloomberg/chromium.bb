@@ -69,4 +69,10 @@ VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
 }
 #endif
 
+void VideoCaptureDeviceFactory::GetCameraLocationsAsync(
+    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
+    DeviceDescriptorsCallback result_callback) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace media
