@@ -60,6 +60,32 @@ if (!use_system_libdrm) {
 
     public_configs = [ ":libdrm_config" ]
   }
+
+  executable("modetest") {
+    sources = [
+      "src/tests/modetest/buffers.c",
+      "src/tests/modetest/buffers.h",
+      "src/tests/modetest/cursor.c",
+      "src/tests/modetest/cursor.h",
+      "src/tests/modetest/modetest.c",
+      "src/tests/util/common.h",
+      "src/tests/util/format.c",
+      "src/tests/util/format.h",
+      "src/tests/util/kms.c",
+      "src/tests/util/kms.h",
+      "src/tests/util/pattern.c",
+      "src/tests/util/pattern.h",
+    ]
+
+    include_dirs = [
+      "src/tests",
+      "src/tests/modetest",
+    ]
+
+    deps = [
+      ":libdrm",
+    ]
+  }
 }
 
 if (use_system_libdrm) {
