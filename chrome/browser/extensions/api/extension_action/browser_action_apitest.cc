@@ -829,6 +829,33 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 
+// Test that a browser action popup can download data URLs. See
+// https://crbug.com/821219
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupDownload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browser_action/popup_download")));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  content::DownloadTestObserverTerminal downloads_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+
+  // Simulate a click on the browser action to open the popup.
+  content::WebContents* popup = OpenPopup(0);
+  ASSERT_TRUE(popup);
+  content::ExecuteScriptAsync(popup, "run_tests()");
+
+  // Wait for the download that this should have triggered to finish.
+  downloads_observer.WaitForFinished();
+
+  EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
+                    download::DownloadItem::COMPLETE));
+  EXPECT_TRUE(GetBrowserActionsBar()->HidePopup());
+}
+
 class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
  public:
   const Extension& popup_extension() { return *popup_extension_; }

@@ -159,10 +159,25 @@ WebContents* ExtensionViewHost::OpenURLFromTab(
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
       Browser* browser = view_->GetBrowser();
-      return browser ? browser->OpenURL(params) : NULL;
+      return browser ? browser->OpenURL(params) : nullptr;
+    }
+    case WindowOpenDisposition::CURRENT_TAB: {
+      // Only allow these from hosts that are bound to a browser (e.g. popups).
+      // Otherwise they are not driven by a user gesture.
+      Browser* browser = view_->GetBrowser();
+      if (!browser)
+        return nullptr;
+
+      // Only allow navigations that will surely result in a download.
+      if (!params.suggested_filename.has_value() ||
+          !(params.url.SchemeIsBlob() || params.url.SchemeIsFileSystem() ||
+            params.url.SchemeIs(url::kDataScheme))) {
+        return nullptr;
+      }
+      return browser->OpenURL(params);
     }
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
