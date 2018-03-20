@@ -108,9 +108,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     ContentSuggestionsMostVisitedActionItem* readingListItem;
 // Number of unread items in reading list model.
 @property(nonatomic, assign) NSInteger readingListUnreadCount;
-// Whether to force the reload the Articles List section next time it is
-// updated. Reset to NO after actual reload.
-@property(nonatomic, assign) BOOL articlesListNeedsReload;
 
 @end
 
@@ -132,7 +129,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 @synthesize faviconMediator = _faviconMediator;
 @synthesize learnMoreItem = _learnMoreItem;
 @synthesize readingListNeedsReload = _readingListNeedsReload;
-@synthesize articlesListNeedsReload = _articlesListNeedsReload;
 @synthesize readingListItem = _readingListItem;
 @synthesize readingListUnreadCount = _readingListUnreadCount;
 @synthesize contentArticlesExpanded = _contentArticlesExpanded;
@@ -381,10 +377,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   ContentSuggestionsSectionInformation* sectionInfo =
       self.sectionInformationByCategory[wrapper];
   sectionInfo.expanded = [self.contentArticlesExpanded value];
-  self.sectionInformationByCategory[wrapper] = sectionInfo;
 
   // Reload the data model.
-  self.articlesListNeedsReload = YES;
   [self.dataSink reloadAllData];
 }
 
@@ -402,11 +396,6 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
     forceReload = self.readingListNeedsReload;
     self.readingListNeedsReload = NO;
-  }
-
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
-    forceReload = self.articlesListNeedsReload;
-    self.articlesListNeedsReload = NO;
   }
 
   if ([self isCategoryAvailable:category]) {
