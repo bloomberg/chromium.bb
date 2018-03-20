@@ -225,7 +225,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
   void AddDevToolsCallback(
       base::Callback<void(const WorkerId&, const std::string&)> callback) {
-    devtools_callbacks.push(callback);
+    devtools_callbacks.push(std::move(callback));
     MaybeRunDevToolsCallbacks();
   }
 

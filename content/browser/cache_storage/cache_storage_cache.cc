@@ -199,7 +199,7 @@ void ReadMetadata(disk_cache::Entry* entry, MetadataCallback callback) {
                       buffer->size(), read_header_callback);
 
   if (read_rv != net::ERR_IO_PENDING)
-    read_header_callback.Run(read_rv);
+    std::move(read_header_callback).Run(read_rv);
 }
 
 void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
@@ -615,7 +615,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
                      weak_ptr_factory_.GetWeakPtr(), callback_copy));
   auto completion_callback = base::BindRepeating(
       &CacheStorageCache::BatchDidOneOperation, weak_ptr_factory_.GetWeakPtr(),
-      barrier_closure, callback_copy);
+      std::move(barrier_closure), std::move(callback_copy));
 
   // Operations may synchronously invoke |callback| which could release the
   // last reference to this instance. Hold a handle for the duration of this
@@ -806,7 +806,7 @@ void CacheStorageCache::QueryCache(
     int rv = backend_->OpenEntry(request_ptr->url.spec(), entry_ptr,
                                  open_entry_callback);
     if (rv != net::ERR_IO_PENDING)
-      open_entry_callback.Run(rv);
+      std::move(open_entry_callback).Run(rv);
     return;
   }
 
@@ -853,7 +853,7 @@ void CacheStorageCache::QueryCacheOpenNextEntry(
   int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
-    open_entry_callback.Run(rv);
+    std::move(open_entry_callback).Run(rv);
 }
 
 void CacheStorageCache::QueryCacheFilterEntry(
@@ -1132,7 +1132,7 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
 
   int rv = backend_->OpenEntry(url.spec(), entry_ptr, open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
-    open_entry_callback.Run(rv);
+    std::move(open_entry_callback).Run(rv);
 }
 
 void CacheStorageCache::WriteSideDataDidOpenEntry(
@@ -1189,7 +1189,7 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
       write_side_data_callback, true /* truncate */);
 
   if (rv != net::ERR_IO_PENDING)
-    write_side_data_callback.Run(rv);
+    std::move(write_side_data_callback).Run(rv);
 }
 
 void CacheStorageCache::WriteSideDataDidWrite(
@@ -1311,7 +1311,7 @@ void CacheStorageCache::PutDidDeleteEntry(
                                     create_entry_callback);
 
   if (rv != net::ERR_IO_PENDING)
-    create_entry_callback.Run(rv);
+    std::move(create_entry_callback).Run(rv);
 }
 
 void CacheStorageCache::PutDidCreateEntry(
@@ -1383,7 +1383,7 @@ void CacheStorageCache::PutDidCreateEntry(
                                  true /* truncate */);
 
   if (rv != net::ERR_IO_PENDING)
-    write_headers_callback.Run(rv);
+    std::move(write_headers_callback).Run(rv);
 }
 
 void CacheStorageCache::PutDidWriteHeaders(
@@ -1474,7 +1474,7 @@ void CacheStorageCache::CalculateCacheSizePadding(
 
   int rv = backend_->CalculateSizeOfAllEntries(got_size_callback);
   if (rv != net::ERR_IO_PENDING)
-    got_size_callback.Run(rv);
+    std::move(got_size_callback).Run(rv);
 }
 
 void CacheStorageCache::CalculateCacheSizePaddingGotSize(
@@ -1711,7 +1711,7 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()),
       create_cache_callback);
   if (rv != net::ERR_IO_PENDING)
-    create_cache_callback.Run(rv);
+    std::move(create_cache_callback).Run(rv);
 }
 
 void CacheStorageCache::CreateBackendDidCreate(
@@ -1756,7 +1756,8 @@ void CacheStorageCache::InitDidCreateBackend(
       calculate_size_callback, cache_create_error));
 
   if (rv != net::ERR_IO_PENDING)
-    InitGotCacheSize(calculate_size_callback, cache_create_error, rv);
+    InitGotCacheSize(std::move(calculate_size_callback), cache_create_error,
+                     rv);
 }
 
 void CacheStorageCache::InitGotCacheSize(base::OnceClosure callback,

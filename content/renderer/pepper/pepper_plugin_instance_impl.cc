@@ -404,7 +404,7 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module);
   PPP_Instance_Combined* ppp_instance_combined =
-      PPP_Instance_Combined::Create(get_plugin_interface_func);
+      PPP_Instance_Combined::Create(std::move(get_plugin_interface_func));
   if (!ppp_instance_combined)
     return nullptr;
 
@@ -3047,7 +3047,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module_);
   PPP_Instance_Combined* ppp_instance_combined =
-      PPP_Instance_Combined::Create(get_plugin_interface_func);
+      PPP_Instance_Combined::Create(std::move(get_plugin_interface_func));
   if (!ppp_instance_combined) {
     // The proxy must support at least one usable PPP_Instance interface.
     // While this could be a failure to implement the interface in the NaCl

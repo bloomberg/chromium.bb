@@ -953,7 +953,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
         blink::mojom::StorageType::kSyncable, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                    base::Unretained(this), base::RetainedRef(quota_manager),
-                   special_storage_policy, origin_matcher, decrement_callback));
+                   special_storage_policy, origin_matcher,
+                   std::move(decrement_callback)));
   }
 
   DecrementTaskCountOnIO();
@@ -1105,7 +1106,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         FROM_HERE,
         base::BindOnce(&ClearPluginPrivateDataOnFileTaskRunner,
                        base::WrapRefCounted(filesystem_context), storage_origin,
-                       begin, end, decrement_callback));
+                       begin, end, std::move(decrement_callback)));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

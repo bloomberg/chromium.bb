@@ -967,7 +967,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
         }
-        device_ptr->PushPendingCallback(pending);
+        device_ptr->PushPendingCallback(std::move(pending));
         if (disconnect) {
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -989,7 +989,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
         }
-        device_ptr->PushPendingCallback(pending);
+        device_ptr->PushPendingCallback(std::move(pending));
         if (disconnect) {
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1014,7 +1014,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
         }
-        device_ptr->PushPendingCallback(pending);
+        device_ptr->PushPendingCallback(std::move(pending));
         if (disconnect) {
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1042,7 +1042,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
         }
-        device_ptr->PushPendingCallback(pending);
+        device_ptr->PushPendingCallback(std::move(pending));
         if (disconnect) {
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1063,7 +1063,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
         }
-        device_ptr->PushPendingCallback(pending);
+        device_ptr->PushPendingCallback(std::move(pending));
         if (disconnect) {
           device_ptr->SetConnected(false);
           base::ThreadTaskRunnerHandle::Get()->PostTask(

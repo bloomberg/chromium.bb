@@ -1151,7 +1151,7 @@ TEST_F(StoragePartitionImplTest, RemoveCookieWithMatcher) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ClearCookiesWithMatcher, partition, base::Time(),
-                     base::Time::Max(), false_predicate, &run_loop));
+                     base::Time::Max(), std::move(false_predicate), &run_loop));
   run_loop.RunUntilIdle();
   EXPECT_TRUE(tester.ContainsCookie());
 
@@ -1160,7 +1160,7 @@ TEST_F(StoragePartitionImplTest, RemoveCookieWithMatcher) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ClearCookiesWithMatcher, partition, base::Time(),
-                     base::Time::Max(), true_predicate, &run_loop2));
+                     base::Time::Max(), std::move(true_predicate), &run_loop2));
   run_loop2.RunUntilIdle();
   EXPECT_FALSE(tester.ContainsCookie());
 }

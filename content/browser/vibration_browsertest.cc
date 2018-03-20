@@ -47,7 +47,7 @@ class VibrationTest : public ContentBrowserTest,
 
  protected:
   bool TriggerVibrate(int duration, base::Closure vibrate_done) {
-    vibrate_done_ = vibrate_done;
+    vibrate_done_ = std::move(vibrate_done);
 
     bool result;
     RenderFrameHost* frame = shell()->web_contents()->GetMainFrame();

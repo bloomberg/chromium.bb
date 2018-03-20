@@ -151,7 +151,8 @@ void MediaPermissionDispatcher::OnPermissionStatus(
   PermissionStatusCB permission_status_cb = iter->second;
   requests_.erase(iter);
 
-  permission_status_cb.Run(status == blink::mojom::PermissionStatus::GRANTED);
+  std::move(permission_status_cb)
+      .Run(status == blink::mojom::PermissionStatus::GRANTED);
 }
 
 void MediaPermissionDispatcher::OnConnectionError() {

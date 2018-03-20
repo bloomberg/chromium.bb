@@ -1665,7 +1665,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
       base::BindOnce(&download::DownloadFile::RenameAndUniquify,
                      // Safe because we control download file lifetime.
                      base::Unretained(download_file_.get()), intermediate_path,
-                     callback));
+                     std::move(callback)));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
@@ -1779,7 +1779,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
                      base::Unretained(download_file_.get()),
                      GetTargetFilePath(),
                      delegate_->GetApplicationClientIdForFileScanning(),
-                     GetURL(), GetReferrerUrl(), callback));
+                     GetURL(), GetReferrerUrl(), std::move(callback)));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(

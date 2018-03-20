@@ -519,15 +519,15 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->source()->StartDataRequest(
-        path, wc_getter,
+        path, std::move(wc_getter),
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
     target_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&URLDataManagerBackend::CallStartRequest,
-                       base::RetainedRef(source), path, wc_getter, request_id));
+        FROM_HERE, base::BindOnce(&URLDataManagerBackend::CallStartRequest,
+                                  base::RetainedRef(source), path,
+                                  std::move(wc_getter), request_id));
   }
   return true;
 }

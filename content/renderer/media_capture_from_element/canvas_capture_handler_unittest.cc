@@ -181,7 +181,7 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(RunClosure(std::move(quit_closure)));
   source->StartCapture(
       params, base::Bind(&CanvasCaptureHandlerTest::OnDeliverFrame,
                          base::Unretained(this)),

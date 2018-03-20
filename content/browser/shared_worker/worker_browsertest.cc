@@ -81,7 +81,7 @@ class WorkerTest : public ContentBrowserTest {
   void RunTest(const GURL& url) { RunTest(shell(), url); }
 
   static void QuitUIMessageLoop(base::Callback<void()> callback) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
   }
 
   void NavigateAndWaitForAuth(const GURL& url) {
