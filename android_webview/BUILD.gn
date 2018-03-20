@@ -424,6 +424,15 @@ if (android_64bit_target_cpu) {
     if (use_lld) {
       configs += [ "//build/config/android:lld_pack_relocations" ]
     }
+
+    if (target_cpu != "mipsel" && target_cpu != "mips64el") {
+      # .gnu.hash support added in Android M. Without this flag, library will also
+      # contain an unused .hash section. (http://crbug.com/742525#c28)
+      # Not to be used for MIPS arhitecture since MIPS does not
+      # support hashstyle gnu: http://crbug.com/811306
+      ldflags = [ "-Wl,--hash-style=gnu" ]
+    }
+
     public_configs = extra_chrome_shared_library_configs
     deps += extra_chrome_shared_library_deps
   }
