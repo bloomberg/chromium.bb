@@ -174,8 +174,6 @@ source_set("app_shell_lib") {
     "browser/shell_url_request_context_getter.h",
     "browser/shell_virtual_keyboard_delegate.cc",
     "browser/shell_virtual_keyboard_delegate.h",
-    "browser/shell_web_view_guest_delegate.cc",
-    "browser/shell_web_view_guest_delegate.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
     "common/shell_extensions_client.cc",
