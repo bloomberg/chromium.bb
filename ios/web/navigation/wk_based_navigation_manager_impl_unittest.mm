@@ -292,6 +292,24 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   EXPECT_EQ(original_item0, manager_->GetPendingItem());
 }
 
+// Tests that AddPendingItem does not create a new NavigationItem if the new
+// pending item is a reload of app-specific URL.
+TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForReloadAppSpecificURL) {
+  // Simulate a previous app-specific navigation.
+  NSString* url = @"about:blank?for=chrome%3A%2F%2Fnewtab";
+  [mock_wk_list_ setCurrentURL:url];
+  NavigationItem* original_item = manager_->GetItemAtIndex(0);
+
+  OCMExpect([mock_web_view_ URL]).andReturn([[NSURL alloc] initWithString:url]);
+
+  manager_->AddPendingItem(
+      GURL("chrome://newtab"), Referrer(), ui::PAGE_TRANSITION_RELOAD,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  EXPECT_EQ(original_item, manager_->GetPendingItem());
+}
+
 // Tests that transient URL rewriters are only applied to a new pending item.
 TEST_F(WKBasedNavigationManagerTest,
        TransientURLRewritersOnlyUsedForPendingItem) {

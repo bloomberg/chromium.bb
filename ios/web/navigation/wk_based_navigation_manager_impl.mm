@@ -137,12 +137,18 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   // in-progress navigation is a back-forward navigation. In this case, current
   // item has already been updated to point to the new location in back-forward
   // history, so pending item index should be set to the current item index.
+  // Similarly, current item should be reused when reloading a placeholder URL.
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
   WKBackForwardListItem* current_wk_item = proxy.backForwardList.currentItem;
   GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
+  bool current_item_is_pending_item =
+      current_item_url == pending_item_->GetURL() ||
+      current_item_url ==
+          placeholder_navigation_util::CreatePlaceholderUrlForUrl(
+              pending_item_->GetURL());
   if (proxy.backForwardList.currentItem &&
       current_item_url == net::GURLWithNSURL(proxy.URL) &&
-      current_item_url == pending_item_->GetURL()) {
+      current_item_is_pending_item) {
     pending_item_index_ = GetWKCurrentItemIndex();
 
     // If |currentItem| is not already associated with a NavigationItemImpl,
