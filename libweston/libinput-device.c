@@ -434,16 +434,8 @@ notify_output_destroy(struct wl_listener *listener, void *data)
 	struct evdev_device *device =
 		container_of(listener,
 			     struct evdev_device, output_destroy_listener);
-	struct weston_compositor *c = device->seat->compositor;
-	struct weston_output *output;
 
-	if (!device->output_name && !wl_list_empty(&c->output_list)) {
-		output = container_of(c->output_list.next,
-				      struct weston_output, link);
-		evdev_device_set_output(device, output);
-	} else {
-		evdev_device_set_output(device, NULL);
-	}
+	evdev_device_set_output(device, NULL);
 }
 
 /**
