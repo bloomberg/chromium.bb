@@ -8,11 +8,13 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BytesConsumer.h"
 #include "core/fetch/BytesConsumerTestUtil.h"
 #include "core/fetch/FormDataBytesConsumer.h"
 #include "core/html/forms/FormData.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
+#include "platform/heap/GarbageCollected.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,6 +67,22 @@ class BodyStreamBufferTest : public ::testing::Test {
     }
     return r;
   }
+};
+
+class MockFetchDataLoader : public FetchDataLoader {
+ public:
+  // Cancel() gets called during garbage collection after the test is
+  // finished. Since most tests don't care about this, use NiceMock so that the
+  // calls to Cancel() are ignored.
+  static ::testing::NiceMock<MockFetchDataLoader>* Create() {
+    return new ::testing::NiceMock<MockFetchDataLoader>();
+  }
+
+  MOCK_METHOD2(Start, void(BytesConsumer*, FetchDataLoader::Client*));
+  MOCK_METHOD0(Cancel, void());
+
+ protected:
+  MockFetchDataLoader() = default;
 };
 
 TEST_F(BodyStreamBufferTest, Tee) {
@@ -545,6 +563,112 @@ TEST_F(BodyStreamBufferTest, AbortSignalMakesAborted) {
   EXPECT_FALSE(buffer->IsAborted());
   signal->SignalAbort();
   EXPECT_TRUE(buffer->IsAborted());
+}
+
+TEST_F(BodyStreamBufferTest,
+       AbortBeforeStartLoadingCallsDataLoaderClientAbort) {
+  V8TestingScope scope;
+  Checkpoint checkpoint;
+  MockFetchDataLoader* loader = MockFetchDataLoader::Create();
+  MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::Create();
+  auto* src = BytesConsumerTestUtil::MockBytesConsumer::Create();
+
+  EXPECT_CALL(*loader, Start(_, _)).Times(0);
+
+  InSequence s;
+  EXPECT_CALL(*src, SetClient(_));
+  EXPECT_CALL(*src, GetPublicState())
+      .WillOnce(Return(BytesConsumer::PublicState::kReadableOrWaiting));
+
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*src, Cancel());
+
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(*client, Abort());
+
+  EXPECT_CALL(checkpoint, Call(3));
+
+  auto* signal = new AbortSignal(scope.GetExecutionContext());
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, signal);
+
+  checkpoint.Call(1);
+  signal->SignalAbort();
+
+  checkpoint.Call(2);
+  buffer->StartLoading(loader, client);
+
+  checkpoint.Call(3);
+}
+
+TEST_F(BodyStreamBufferTest, AbortAfterStartLoadingCallsDataLoaderClientAbort) {
+  V8TestingScope scope;
+  Checkpoint checkpoint;
+  MockFetchDataLoader* loader = MockFetchDataLoader::Create();
+  MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::Create();
+  auto* src = BytesConsumerTestUtil::MockBytesConsumer::Create();
+
+  InSequence s;
+  EXPECT_CALL(*src, SetClient(_));
+  EXPECT_CALL(*src, GetPublicState())
+      .WillOnce(Return(BytesConsumer::PublicState::kReadableOrWaiting));
+
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*src, ClearClient());
+  EXPECT_CALL(*loader, Start(_, _));
+
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(*client, Abort());
+
+  EXPECT_CALL(checkpoint, Call(3));
+
+  auto* signal = new AbortSignal(scope.GetExecutionContext());
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, signal);
+
+  checkpoint.Call(1);
+  buffer->StartLoading(loader, client);
+
+  checkpoint.Call(2);
+  signal->SignalAbort();
+
+  checkpoint.Call(3);
+}
+
+TEST_F(BodyStreamBufferTest,
+       AsyncAbortAfterStartLoadingCallsDataLoaderClientAbort) {
+  V8TestingScope scope;
+  Checkpoint checkpoint;
+  MockFetchDataLoader* loader = MockFetchDataLoader::Create();
+  MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::Create();
+  auto* src = BytesConsumerTestUtil::MockBytesConsumer::Create();
+
+  InSequence s;
+  EXPECT_CALL(*src, SetClient(_));
+  EXPECT_CALL(*src, GetPublicState())
+      .WillOnce(Return(BytesConsumer::PublicState::kReadableOrWaiting));
+
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*src, ClearClient());
+  EXPECT_CALL(*loader, Start(_, _));
+
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(*client, Abort());
+
+  EXPECT_CALL(checkpoint, Call(3));
+
+  auto* signal = new AbortSignal(scope.GetExecutionContext());
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, signal);
+
+  checkpoint.Call(1);
+  buffer->StartLoading(loader, client);
+  testing::RunPendingTasks();
+
+  checkpoint.Call(2);
+  signal->SignalAbort();
+
+  checkpoint.Call(3);
 }
 
 }  // namespace

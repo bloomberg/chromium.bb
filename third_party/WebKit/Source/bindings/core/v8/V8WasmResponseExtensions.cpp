@@ -126,6 +126,12 @@ class WasmDataLoaderClient final
   explicit WasmDataLoaderClient() = default;
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
+  void Abort() override {
+    // TODO(ricea): This should probably cause the promise owned by
+    // v8::WasmModuleObjectBuilderStreaming to reject with an AbortError
+    // DOMException. As it is, the cancellation will cause it to reject with a
+    // TypeError later.
+  }
 };
 
 // This callback may be entered as a promise is resolved, or directly

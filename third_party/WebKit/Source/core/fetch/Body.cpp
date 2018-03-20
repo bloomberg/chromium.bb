@@ -39,6 +39,10 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
         Resolver()->GetScriptState()->GetIsolate(), "Failed to fetch"));
   }
 
+  void Abort() override {
+    resolver_->Reject(DOMException::Create(kAbortError));
+  }
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(resolver_);
     FetchDataLoader::Client::Trace(visitor);
@@ -294,15 +298,6 @@ ScriptPromise Body::RejectInvalidConsumption(ScriptState* script_state) {
         V8ThrowException::CreateTypeError(
             script_state->GetIsolate(),
             used ? "body stream already read" : "body stream is locked"));
-  }
-
-  // It should not be necessary to check IsAborted() here, because reading
-  // from the stream should reject with an AbortError once the stream has been
-  // aborted.
-  // TODO(ricea): Remove this check once there is a better way to do it.
-  if (BodyBuffer() && BodyBuffer()->IsAborted()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kAbortError));
   }
   return ScriptPromise();
 }
