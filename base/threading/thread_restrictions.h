@@ -359,11 +359,13 @@ class BASE_EXPORT ThreadRestrictions {
   // DEPRECATED. Use ScopedAllowBlocking(ForTesting).
   class BASE_EXPORT ScopedAllowIO {
    public:
-    ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
-    ~ScopedAllowIO() { SetIOAllowed(previous_value_); }
+    ScopedAllowIO() EMPTY_BODY_IF_DCHECK_IS_OFF;
+    ~ScopedAllowIO() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
    private:
-    // Whether IO is allowed when the ScopedAllowIO was constructed.
-    bool previous_value_;
+#if DCHECK_IS_ON()
+    const bool was_allowed_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(ScopedAllowIO);
   };
@@ -470,12 +472,13 @@ class BASE_EXPORT ThreadRestrictions {
   // DEPRECATED. Use ScopedAllowBaseSyncPrimitives.
   class BASE_EXPORT ScopedAllowWait {
    public:
-    ScopedAllowWait() { previous_value_ = SetWaitAllowed(true); }
-    ~ScopedAllowWait() { SetWaitAllowed(previous_value_); }
+    ScopedAllowWait() EMPTY_BODY_IF_DCHECK_IS_OFF;
+    ~ScopedAllowWait() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
    private:
-    // Whether singleton use is allowed when the ScopedAllowWait was
-    // constructed.
-    bool previous_value_;
+#if DCHECK_IS_ON()
+    const bool was_allowed_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(ScopedAllowWait);
   };
