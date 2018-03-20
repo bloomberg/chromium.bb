@@ -17,6 +17,8 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/filter/mock_source_stream.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +29,7 @@ namespace {
 const uint64_t kSignatureHeaderDate = 1520834000;
 const int kOutputBufferSize = 4096;
 
-std::string GetTestFileContents(const char* name) {
+std::string GetTestFileContents(base::StringPiece name) {
   base::FilePath path;
   PathService::Get(content::DIR_TEST_DATA, &path);
   path = path.AppendASCII("htxg").AppendASCII(name);
@@ -37,12 +39,21 @@ std::string GetTestFileContents(const char* name) {
   return contents;
 }
 
+scoped_refptr<net::X509Certificate> LoadCertificate(
+    const std::string& cert_file) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  return net::CreateCertificateChainFromFile(
+      net::GetTestCertsDirectory(), cert_file,
+      net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+}
+
 class MockSignedExchangeCertFetcherFactory
     : public SignedExchangeCertFetcherFactory {
  public:
-  MockSignedExchangeCertFetcherFactory(const GURL& expected_cert_url,
-                                       std::string cert_str)
-      : expected_cert_url_(expected_cert_url), cert_str_(cert_str) {}
+  void ExpectFetch(const GURL& cert_url, const std::string& cert_str) {
+    expected_cert_url_ = cert_url;
+    cert_str_ = cert_str;
+  }
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
@@ -50,11 +61,15 @@ class MockSignedExchangeCertFetcherFactory
       SignedExchangeCertFetcher::CertificateCallback callback) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
+    scoped_refptr<net::X509Certificate> cert;
+
     base::Optional<std::vector<base::StringPiece>> der_certs =
         SignedExchangeCertFetcher::GetCertChainFromMessage(cert_str_);
-    DCHECK(der_certs);
-    scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromDERCertChain(*der_certs);
+    EXPECT_TRUE(der_certs);
+    if (der_certs) {
+      cert = net::X509Certificate::CreateFromDERCertChain(*der_certs);
+      EXPECT_TRUE(cert);
+    }
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), cert));
@@ -62,8 +77,8 @@ class MockSignedExchangeCertFetcherFactory
   }
 
  private:
-  const GURL expected_cert_url_;
-  const std::string cert_str_;
+  GURL expected_cert_url_;
+  std::string cert_str_;
 };
 
 }  // namespace
@@ -83,14 +98,12 @@ class SignedExchangeHandlerTest
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
     feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
 
-    output_buffer_ = new net::IOBuffer(kOutputBufferSize);
     std::unique_ptr<net::MockSourceStream> source(new net::MockSourceStream());
     source->set_read_one_byte_at_a_time(true);
     source_ = source.get();
     auto cert_fetcher_factory =
-        std::make_unique<MockSignedExchangeCertFetcherFactory>(
-            GURL("https://cert.example.org/cert.msg"),
-            GetTestFileContents("wildcard_example.org.public.pem.msg"));
+        std::make_unique<MockSignedExchangeCertFetcherFactory>();
+    mock_cert_fetcher_factory_ = cert_fetcher_factory.get();
     request_context_getter_ = new net::TestURLRequestContextGetter(
         scoped_task_environment_.GetMainThreadTaskRunner());
     handler_ = std::make_unique<SignedExchangeHandler>(
@@ -106,15 +119,18 @@ class SignedExchangeHandlerTest
         base::Optional<base::Time>());
   }
 
-  // Reads from |payload_stream_| until an error occurs or the EOF is reached.
+  // Reads from |stream| until an error occurs or the EOF is reached.
   // When an error occurs, returns the net error code. When an EOF is reached,
-  // returns the number of bytes read and appends data read to |output|.
-  int ReadPayloadStream(std::string* output) {
+  // returns the number of bytes read. If |output| is non-null, appends data
+  // read to it.
+  int ReadStream(net::SourceStream* stream, std::string* output) {
+    scoped_refptr<net::IOBuffer> output_buffer =
+        new net::IOBuffer(kOutputBufferSize);
     int bytes_read = 0;
     while (true) {
       net::TestCompletionCallback callback;
-      int rv = payload_stream_->Read(output_buffer_.get(), kOutputBufferSize,
-                                     callback.callback());
+      int rv = stream->Read(output_buffer.get(), kOutputBufferSize,
+                            callback.callback());
       if (rv == net::ERR_IO_PENDING) {
         while (source_->awaiting_completion())
           source_->CompleteNextRead();
@@ -126,9 +142,14 @@ class SignedExchangeHandlerTest
         return rv;
       EXPECT_GT(rv, net::OK);
       bytes_read += rv;
-      output->append(output_buffer_->data(), rv);
+      if (output)
+        output->append(output_buffer->data(), rv);
     }
     return bytes_read;
+  }
+
+  int ReadPayloadStream(std::string* output) {
+    return ReadStream(payload_stream_.get(), output);
   }
 
   bool read_header() const { return read_header_; }
@@ -146,6 +167,7 @@ class SignedExchangeHandlerTest
   }
 
  protected:
+  MockSignedExchangeCertFetcherFactory* mock_cert_fetcher_factory_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
   net::MockSourceStream* source_;
   std::unique_ptr<SignedExchangeHandler> handler_;
@@ -167,7 +189,6 @@ class SignedExchangeHandlerTest
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   const url::Origin request_initiator_;
-  scoped_refptr<net::IOBuffer> output_buffer_;
 
   bool read_header_ = false;
   net::Error error_;
@@ -185,7 +206,20 @@ TEST_P(SignedExchangeHandlerTest, Empty) {
 }
 
 TEST_P(SignedExchangeHandlerTest, Simple) {
-  mock_cert_verifier_->set_default_result(net::OK);
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
   std::string contents = GetTestFileContents("test.example.org_test.htxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
@@ -213,6 +247,10 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
 }
 
 TEST_P(SignedExchangeHandlerTest, MimeType) {
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+
   mock_cert_verifier_->set_default_result(net::OK);
   std::string contents = GetTestFileContents("test.example.org_hello.txt.htxg");
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
@@ -255,6 +293,61 @@ TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
 
   ASSERT_TRUE(read_header());
   EXPECT_EQ(net::ERR_FAILED, error());
+}
+
+TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
+  // The certificate is for "127.0.0.1". And the SHA 256 hash of the certificate
+  // is different from the certSha256 of the signature in the htxg file. So the
+  // certification verification must fail.
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("127.0.0.1.public.pem.msg"));
+
+  // Set the default result of MockCertVerifier to OK, to check that the
+  // verification of SignedExchange must fail even if the certificate is valid.
+  mock_cert_verifier_->set_default_result(net::OK);
+
+  std::string contents = GetTestFileContents("test.example.org_test.htxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(net::ERR_FAILED, error());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
+}
+
+TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
+  // The certificate is for "*.example.com". But the request URL of the htxg
+  // file is "https://test.example.com/test/". So the certification verification
+  // must fail.
+  std::string contents =
+      GetTestFileContents("test.example.com_invalid_test.htxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(net::ERR_CERT_INVALID, error());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
 }
 
 INSTANTIATE_TEST_CASE_P(SignedExchangeHandlerTests,
