@@ -17,7 +17,6 @@
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
-#include "base/timer/timer.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -118,7 +117,6 @@ enum AuthenticationState {
     ChromeIdentityInteractionManagerDelegate,
     ChromeIdentityServiceObserver,
     SigninAccountSelectorViewControllerDelegate,
-    SigninConfirmationViewControllerDelegate,
     MDCActivityIndicatorDelegate>
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 
@@ -129,6 +127,7 @@ enum AuthenticationState {
   __weak id<ChromeSigninViewControllerDelegate> _delegate;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   ChromeIdentity* _selectedIdentity;
+  TimerGeneratorBlock _timerGenerator;
 
   // Authentication
   AlertCoordinator* _alertCoordinator;
@@ -167,6 +166,7 @@ enum AuthenticationState {
 @synthesize delegate = _delegate;
 @synthesize shouldClearData = _shouldClearData;
 @synthesize dispatcher = _dispatcher;
+@synthesize confirmationVC = _confirmationVC;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -603,7 +603,16 @@ enum AuthenticationState {
       [strongSelf->_activityIndicator stopAnimating];
       strongSelf->_leavingPendingStateTimer.reset();
     };
-    _leavingPendingStateTimer.reset(new base::Timer(false, false));
+    const bool retain_user_task = false;
+    const bool is_repeating = false;
+    if (self.timerGenerator) {
+      _leavingPendingStateTimer =
+          self.timerGenerator(retain_user_task, is_repeating);
+      DCHECK(_leavingPendingStateTimer);
+    } else {
+      _leavingPendingStateTimer =
+          std::make_unique<base::Timer>(retain_user_task, is_repeating);
+    }
     _leavingPendingStateTimer->Start(FROM_HERE, remainingTime,
                                      base::BindBlockArc(completionBlock));
   }
@@ -960,6 +969,18 @@ enum AuthenticationState {
                   forState:UIControlStateNormal];
   [_primaryButton setImage:nil forState:UIControlStateNormal];
   [self.view setNeedsLayout];
+}
+
+@end
+
+@implementation ChromeSigninViewController (Testing)
+
+- (TimerGeneratorBlock)timerGenerator {
+  return _timerGenerator;
+}
+
+- (void)setTimerGenerator:(TimerGeneratorBlock)timerGenerator {
+  _timerGenerator = [timerGenerator copy];
 }
 
 @end

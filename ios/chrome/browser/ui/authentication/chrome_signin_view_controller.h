@@ -7,8 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/timer/timer.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
+#include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 
 @protocol ApplicationCommands;
 @class ChromeIdentity;
@@ -17,6 +19,9 @@
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
+
+using TimerGeneratorBlock =
+    std::unique_ptr<base::Timer> (^)(bool retain_user_task, bool is_repeating);
 
 @protocol ChromeSigninViewControllerDelegate<NSObject>
 
@@ -59,7 +64,8 @@ class ChromeBrowserState;
 
 // ChromeSigninViewController is a view controller that handles all the
 // sign-in UI flow.
-@interface ChromeSigninViewController : UIViewController
+@interface ChromeSigninViewController
+    : UIViewController<SigninConfirmationViewControllerDelegate>
 
 @property(nonatomic, weak) id<ChromeSigninViewControllerDelegate> delegate;
 
@@ -68,6 +74,9 @@ class ChromeBrowserState;
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
 @property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+
+// Sign-in conformation view controller.
+@property(nonatomic, readonly) SigninConfirmationViewController* confirmationVC;
 
 // Designated initializer.
 // * |browserState| is the current browser state.
@@ -104,6 +113,14 @@ class ChromeBrowserState;
 
 @property(nonatomic, readonly) UIButton* primaryButton;
 @property(nonatomic, readonly) UIButton* secondaryButton;
+
+@end
+
+// Exposes methods for testing.
+@interface ChromeSigninViewController (Testing)
+
+// Timer generator. Should stay nil to use the default timer class: base::Timer.
+@property(nonatomic, copy) TimerGeneratorBlock timerGenerator;
 
 @end
 

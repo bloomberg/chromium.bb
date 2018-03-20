@@ -99,6 +99,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/geolocation:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
