@@ -1938,11 +1938,6 @@ void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   WasResized();
 }
 
-void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
-  UpdateNativeViewTree(nullptr);
-  overscroll_controller_.reset();
-}
-
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
   TRACE_EVENT1("browser",
                "RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged",

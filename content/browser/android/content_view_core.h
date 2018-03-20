@@ -42,6 +42,8 @@ class ContentViewCore : public WebContentsObserver {
                   WebContents* web_contents,
                   float dpi_scale);
 
+  ~ContentViewCore() override;
+
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
   WebContents* GetWebContents() const;
   ui::WindowAndroid* GetWindowAndroid() const;
@@ -123,13 +125,11 @@ class ContentViewCore : public WebContentsObserver {
   class ContentViewUserData;
 
   friend class ContentViewUserData;
-  ~ContentViewCore() override;
 
   // WebContentsObserver implementation.
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
-  void WebContentsDestroyed() override;
 
   // --------------------------------------------------------------------------
   // Other private methods and data

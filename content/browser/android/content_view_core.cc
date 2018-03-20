@@ -71,8 +71,6 @@ namespace content {
 
 namespace {
 
-const void* const kContentViewUserDataKey = &kContentViewUserDataKey;
-
 int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   DCHECK(host);
   RenderProcessHost* render_process = host->GetProcess();
@@ -82,32 +80,14 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   return 0;
 }
 
+void SetContentViewCore(WebContents* web_contents, ContentViewCore* cvc) {
+  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(web_contents)->GetView());
+  DCHECK(wcva);
+  wcva->SetContentViewCore(cvc);
+}
+
 }  // namespace
-
-// Enables a callback when the underlying WebContents is destroyed, to enable
-// nulling the back-pointer.
-class ContentViewCore::ContentViewUserData
-    : public base::SupportsUserData::Data {
- public:
-  explicit ContentViewUserData(ContentViewCore* content_view_core)
-      : content_view_core_(content_view_core) {}
-
-  ~ContentViewUserData() override {
-    // TODO(joth): When chrome has finished removing the TabContents class (see
-    // crbug.com/107201) consider inverting relationship, so ContentViewCore
-    // would own WebContents. That effectively implies making the WebContents
-    // destructor private on Android.
-    delete content_view_core_;
-  }
-
-  ContentViewCore* get() const { return content_view_core_; }
-
- private:
-  // Not using scoped_ptr as ContentViewCore destructor is private.
-  ContentViewCore* content_view_core_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentViewUserData);
-};
 
 ContentViewCore::ContentViewCore(JNIEnv* env,
                                  const JavaRef<jobject>& obj,
@@ -134,10 +114,6 @@ ContentViewCore::ContentViewCore(JNIEnv* env,
 }
 
 ContentViewCore::~ContentViewCore() {
-  for (auto* host : web_contents_->GetAllRenderWidgetHosts()) {
-    static_cast<RenderWidgetHostViewAndroid*>(host->GetView())
-        ->OnContentViewCoreDestroyed();
-  }
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   java_ref_.reset();
@@ -189,19 +165,12 @@ void ContentViewCore::OnJavaContentViewCoreDestroyed(
   // could have call in when swapping the WebContents,
   // see http://crbug.com/383939 .
   DCHECK(web_contents_);
-  static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents_)->GetView())
-      ->SetContentViewCore(NULL);
+  SetContentViewCore(web_contents(), nullptr);
 }
 
 void ContentViewCore::InitWebContents() {
   DCHECK(web_contents_);
-  static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents_)->GetView())
-      ->SetContentViewCore(this);
-  DCHECK(!web_contents_->GetUserData(kContentViewUserDataKey));
-  web_contents_->SetUserData(kContentViewUserDataKey,
-                             std::make_unique<ContentViewUserData>(this));
+  SetContentViewCore(web_contents(), this);
 }
 
 void ContentViewCore::RenderViewReady() {
@@ -412,13 +381,6 @@ jboolean ContentViewCore::UsingSynchronousCompositing(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return content::GetContentClient()->UsingSynchronousCompositing();
-}
-
-void ContentViewCore::WebContentsDestroyed() {
-  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents())->GetView());
-  DCHECK(wcva);
-  wcva->SetContentViewCore(NULL);
 }
 
 // This is called for each ContentView.

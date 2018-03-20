@@ -89,7 +89,6 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
-      content_view_core_(NULL),
       delegate_(delegate),
       view_(this, ui::ViewAndroid::LayoutType::NORMAL),
       synchronous_compositor_client_(nullptr) {}
@@ -99,9 +98,9 @@ WebContentsViewAndroid::~WebContentsViewAndroid() {
     view_.GetLayer()->RemoveFromParent();
 }
 
-void WebContentsViewAndroid::SetContentViewCore(
-    ContentViewCore* content_view_core) {
-  content_view_core_ = content_view_core;
+void WebContentsViewAndroid::SetContentViewCore(ContentViewCore* cvc) {
+  if (content_view_core_.get() != cvc)
+    content_view_core_.reset(cvc);
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->UpdateNativeViewTree(&view_);
