@@ -1541,6 +1541,9 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     }
   } else if (name == HTMLNames::nameAttr) {
     SetHasName(!params.new_value.IsNull());
+  } else if (name == HTMLNames::partAttr) {
+    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+      EnsureElementRareData().SetPart(params.new_value);
   } else if (IsStyledElement()) {
     if (name == styleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);
@@ -4805,6 +4808,23 @@ void Element::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappersWithManualWriteBarrier(GetElementRareData());
   }
   ContainerNode::TraceWrappers(visitor);
+}
+
+bool Element::HasPartName() const {
+  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    return false;
+  if (HasRareData()) {
+    if (auto* part_names = GetElementRareData()->PartNames()) {
+      return part_names->size() > 0;
+    }
+  }
+  return false;
+}
+
+const SpaceSplitString* Element::PartNames() const {
+  return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
+             ? GetElementRareData()->PartNames()
+             : nullptr;
 }
 
 }  // namespace blink

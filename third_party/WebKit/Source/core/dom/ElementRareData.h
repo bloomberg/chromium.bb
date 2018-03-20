@@ -35,6 +35,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/PseudoElementData.h"
+#include "core/dom/SpaceSplitString.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "core/html/custom/V0CustomElementDefinition.h"
 #include "core/intersection_observer/ElementIntersectionObserverData.h"
@@ -96,6 +97,16 @@ class ElementRareData : public NodeRareData {
   void SetClassList(DOMTokenList* class_list) {
     class_list_ = class_list;
   }
+
+  void SetPart(const AtomicString part_names) {
+    if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+      return;
+    if (!part_names_) {
+      part_names_.reset(new SpaceSplitString());
+    }
+    part_names_->Set(part_names);
+  }
+  const SpaceSplitString* PartNames() const { return part_names_.get(); }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {
@@ -181,6 +192,7 @@ class ElementRareData : public NodeRareData {
   TraceWrapperMember<DatasetDOMStringMap> dataset_;
   TraceWrapperMember<ElementShadow> shadow_;
   TraceWrapperMember<DOMTokenList> class_list_;
+  std::unique_ptr<SpaceSplitString> part_names_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;

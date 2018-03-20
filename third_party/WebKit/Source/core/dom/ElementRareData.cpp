@@ -40,7 +40,7 @@ namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
   IntSize scroll_offset;
-  void* pointers_or_strings[3];
+  void* pointers_or_strings[4];
   Member<void*> members[14];
 };
 

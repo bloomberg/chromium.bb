@@ -810,6 +810,9 @@ class CORE_EXPORT Element : public ContainerNode {
   const SpaceSplitString& ClassNames() const;
   bool HasClassName(const AtomicString& class_name) const;
 
+  bool HasPartName() const;
+  const SpaceSplitString* PartNames() const;
+
   ScrollOffset SavedLayerScrollOffset() const;
   void SetSavedLayerScrollOffset(const ScrollOffset&);
 
