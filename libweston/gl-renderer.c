@@ -2216,6 +2216,7 @@ import_known_dmabuf(struct gl_renderer *gr,
 		image->images[0] = import_simple_dmabuf(gr, &image->dmabuf->attributes);
 		if (!image->images[0])
 			return false;
+		image->num_images = 1;
 		break;
 
 	case IMPORT_TYPE_GL_CONVERSION:
