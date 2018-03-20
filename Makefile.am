@@ -629,6 +629,7 @@ nodist_weston_simple_dmabuf_drm_SOURCES =		\
 weston_simple_dmabuf_drm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_DRM_CLIENT_CFLAGS)
 weston_simple_dmabuf_drm_LDADD = $(SIMPLE_DMABUF_DRM_CLIENT_LIBS) \
 	$(LIBDRM_PLATFORM_FREEDRENO_LIBS) \
+	$(LIBDRM_PLATFORM_ETNAVIV_LIBS)   \
 	$(LIBDRM_PLATFORM_INTEL_LIBS)     \
 	libshared.la
 endif

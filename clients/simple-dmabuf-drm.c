@@ -39,6 +39,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <errno.h>
 
 #include <xf86drm.h>
 
@@ -48,6 +49,9 @@
 #endif
 #ifdef HAVE_LIBDRM_FREEDRENO
 #include <freedreno/freedreno_drmif.h>
+#endif
+#ifdef HAVE_LIBDRM_ETNAVIV
+#include <etnaviv_drmif.h>
 #endif
 #include <drm_fourcc.h>
 
@@ -108,6 +112,10 @@ struct buffer {
 	struct fd_device *fd_dev;
 	struct fd_bo *fd_bo;
 #endif /* HAVE_LIBDRM_FREEDRENO */
+#if HAVE_LIBDRM_ETNAVIV
+	struct etna_device *etna_dev;
+	struct etna_bo *etna_bo;
+#endif /* HAVE_LIBDRM_ETNAVIV */
 
 	uint32_t gem_handle;
 	int dmabuf_fd;
@@ -265,6 +273,56 @@ fd_device_destroy(struct buffer *buf)
 	fd_device_del(buf->fd_dev);
 }
 #endif /* HAVE_LIBDRM_FREEDRENO */
+#ifdef HAVE_LIBDRM_ETNAVIV
+
+static int
+etna_alloc_bo(struct buffer *buf)
+{
+	int flags = DRM_ETNA_GEM_CACHE_WC;
+	int size;
+
+	buf->stride = ALIGN(buf->width, 32) * buf->bpp / 8;
+	size = 	buf->stride * buf->height;
+	buf->etna_dev = etna_device_new(buf->drm_fd);
+	buf->etna_bo = etna_bo_new(buf->etna_dev, size, flags);
+
+	return buf->etna_bo != NULL;
+}
+
+static void
+etna_free_bo(struct buffer *buf)
+{
+	etna_bo_del(buf->etna_bo);
+}
+
+static int
+etna_bo_export_to_prime(struct buffer *buf)
+{
+	buf->dmabuf_fd = etna_bo_dmabuf(buf->etna_bo);
+	return buf->dmabuf_fd < 0;
+}
+
+static int
+etna_map_bo(struct buffer *buf)
+{
+	buf->mmap = etna_bo_map(buf->etna_bo);
+	return buf->mmap != NULL;
+}
+
+static void
+etna_unmap_bo(struct buffer *buf)
+{
+	if (munmap(buf->mmap, buf->stride * buf->height) < 0)
+		fprintf(stderr, "Failed to unmap buffer: %s", strerror(errno));
+	buf->mmap = NULL;
+}
+
+static void
+etna_device_destroy(struct buffer *buf)
+{
+	etna_device_del(buf->etna_dev);
+}
+#endif /* HAVE_LIBDRM_ENTAVIV */
 
 static void
 fill_content(struct buffer *my_buf)
@@ -331,6 +389,16 @@ drm_device_init(struct buffer *buf)
 		dev->map_bo = fd_map_bo;
 		dev->unmap_bo = fd_unmap_bo;
 		dev->device_destroy = fd_device_destroy;
+	}
+#endif
+#ifdef HAVE_LIBDRM_ETNAVIV
+	else if (!strcmp(dev->name, "etnaviv")) {
+		dev->alloc_bo = etna_alloc_bo;
+		dev->free_bo = etna_free_bo;
+		dev->export_bo_to_prime = etna_bo_export_to_prime;
+		dev->map_bo = etna_map_bo;
+		dev->unmap_bo = etna_unmap_bo;
+		dev->device_destroy = etna_device_destroy;
 	}
 #endif
 	else {
