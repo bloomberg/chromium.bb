@@ -104,11 +104,11 @@ void ChromeAshMessageCenterClient::Close(const std::string& /*profile_id*/,
 void ChromeAshMessageCenterClient::GetDisplayed(
     const std::string& /*profile_id*/,
     bool /*incognito*/,
-    const GetDisplayedNotificationsCallback& callback) const {
+    GetDisplayedNotificationsCallback callback) const {
   // Right now, this is only used to get web notifications that were created by
   // and have outlived a previous browser process. Ash itself doesn't outlive
   // the browser process, so there's no need to implement.
-  callback.Run(std::make_unique<std::set<std::string>>(), false);
+  std::move(callback).Run(std::make_unique<std::set<std::string>>(), false);
 }
 
 void ChromeAshMessageCenterClient::SetReadyCallback(

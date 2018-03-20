@@ -42,10 +42,9 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
 
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;
-  void GetDisplayed(
-      const std::string& profile_id,
-      bool incognito,
-      const GetDisplayedNotificationsCallback& callback) const override;
+  void GetDisplayed(const std::string& profile_id,
+                    bool incognito,
+                    GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
   // Processes a notification response generated from a user action

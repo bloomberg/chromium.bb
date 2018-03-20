@@ -77,10 +77,9 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;
-  void GetDisplayed(
-      const std::string& profile_id,
-      bool incognito,
-      const GetDisplayedNotificationsCallback& callback) const override;
+  void GetDisplayed(const std::string& profile_id,
+                    bool incognito,
+                    GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

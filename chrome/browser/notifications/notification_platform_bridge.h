@@ -55,7 +55,7 @@ class NotificationPlatformBridge {
   virtual void GetDisplayed(
       const std::string& profile_id,
       bool incognito,
-      const GetDisplayedNotificationsCallback& callback) const = 0;
+      GetDisplayedNotificationsCallback callback) const = 0;
 
   // Calls |callback| once |this| is initialized. The argument is
   // true if |this| is ready to be used and false if initialization

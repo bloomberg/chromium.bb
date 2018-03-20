@@ -256,7 +256,7 @@ void NotificationDisplayServiceImpl::Close(
 }
 
 void NotificationDisplayServiceImpl::GetDisplayed(
-    const DisplayedNotificationsCallback& callback) {
+    DisplayedNotificationsCallback callback) {
   if (!bridge_initialized_) {
     actions_.push(base::BindOnce(&NotificationDisplayServiceImpl::GetDisplayed,
                                  weak_factory_.GetWeakPtr(), callback));
@@ -264,7 +264,7 @@ void NotificationDisplayServiceImpl::GetDisplayed(
   }
 
   bridge_->GetDisplayed(GetProfileId(profile_), profile_->IsOffTheRecord(),
-                        callback);
+                        std::move(callback));
 }
 
 // Callback to run once the profile has been loaded in order to perform a

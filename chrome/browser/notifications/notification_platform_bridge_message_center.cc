@@ -143,14 +143,14 @@ void NotificationPlatformBridgeMessageCenter::Close(
 void NotificationPlatformBridgeMessageCenter::GetDisplayed(
     const std::string& /* profile_id */,
     bool /* incognito */,
-    const GetDisplayedNotificationsCallback& callback) const {
+    GetDisplayedNotificationsCallback callback) const {
   auto displayed_notifications = std::make_unique<std::set<std::string>>(
       g_browser_process->notification_ui_manager()->GetAllIdsByProfile(
           NotificationUIManager::GetProfileID(profile_)));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(callback, std::move(displayed_notifications),
+      base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }
 
