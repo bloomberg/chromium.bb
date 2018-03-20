@@ -107,6 +107,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   void Close() override;
 
+  void DelegateRequestsClose();
+
   std::string GetDevToolsAgentHostId();
 
   HeadlessBrowserImpl* browser() const;
@@ -191,6 +193,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::list<MojoService> mojo_services_;
   bool inject_mojo_services_into_isolated_world_;
   bool devtools_target_ready_notification_sent_ = false;
+  bool render_process_exited_ = false;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
   // TODO(alexclarke): With OOPIF there may be more than one renderer, we need
@@ -198,6 +201,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   content::RenderProcessHost* render_process_host_;  // Not owned.
 
   base::ObserverList<HeadlessWebContents::Observer> observers_;
+
+  base::Closure quit_closure_;
 
   service_manager::BinderRegistry registry_;
 
