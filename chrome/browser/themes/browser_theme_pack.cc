@@ -1217,17 +1217,17 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
   for (size_t i = 0; i < arraysize(kFrameTintMap); ++i) {
     int prs_id = kFrameTintMap[i].key;
     if (!images->count(prs_id)) {
-      // Fall back from inactive incognito to active incognito.
-      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE)
+      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
+        // Fall back from inactive incognito to active incognito.
         prs_id = PRS_THEME_FRAME_INCOGNITO;
-
-      // From there, fall back to the normal frame.
-      if (!images->count(prs_id))
-        prs_id = PRS_THEME_FRAME;
-
-      // Fall back from inactive overlay to overlay, but stop there.
-      if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE)
+        if (!images->count(prs_id)) {
+          // From there, fall back to the normal frame.
+          prs_id = PRS_THEME_FRAME;
+        }
+      } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
+        // Fall back from inactive overlay to overlay, but stop there.
         prs_id = PRS_THEME_FRAME_OVERLAY;
+      }
     }
 
     // Note that if the original ID and all the fallbacks are absent, the caller
