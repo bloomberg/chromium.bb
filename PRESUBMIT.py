@@ -2633,11 +2633,13 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
 
-  if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
-    results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-        input_api, output_api,
-        input_api.PresubmitLocalPath(),
-        whitelist=[r'^PRESUBMIT_test\.py$']))
+  for f in input_api.AffectedFiles():
+    path, name = input_api.os_path.split(f.LocalPath())
+    if name == 'PRESUBMIT.py':
+      full_path = input_api.os_path.join(input_api.PresubmitLocalPath(), path)
+      results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
+          input_api, output_api, full_path,
+          whitelist=[r'^PRESUBMIT_test\.py$']))
   return results
 
 
