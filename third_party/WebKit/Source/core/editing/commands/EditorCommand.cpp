@@ -3539,6 +3539,10 @@ bool Editor::ExecuteCommand(const String& command_name, const String& value) {
   return CreateCommand(command_name).Execute(value);
 }
 
+bool Editor::IsCommandEnabled(const String& command_name) const {
+  return CreateCommand(command_name).IsEnabled();
+}
+
 Editor::Command::Command() : command_(nullptr) {}
 
 Editor::Command::Command(const EditorInternalCommand* command,

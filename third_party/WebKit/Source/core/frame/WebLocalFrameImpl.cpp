@@ -1087,7 +1087,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
 
 bool WebLocalFrameImpl::IsCommandEnabled(const WebString& name) const {
   DCHECK(GetFrame());
-  return GetFrame()->GetEditor().CreateCommand(name).IsEnabled();
+  return GetFrame()->GetEditor().IsCommandEnabled(name);
 }
 
 bool WebLocalFrameImpl::SelectionTextDirection(WebTextDirection& start,
