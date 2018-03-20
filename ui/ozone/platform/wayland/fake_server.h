@@ -25,7 +25,7 @@ namespace wl {
 // Base class for managing the life cycle of server objects.
 class ServerObject {
  public:
-  ServerObject(wl_resource* resource);
+  explicit ServerObject(wl_resource* resource);
   virtual ~ServerObject();
 
   wl_resource* resource() { return resource_; }
@@ -71,7 +71,7 @@ class MockXdgSurface : public ServerObject {
 // Manage zxdg_toplevel for providing desktop UI.
 class MockXdgTopLevel : public MockXdgSurface {
  public:
-  MockXdgTopLevel(wl_resource* resource);
+  explicit MockXdgTopLevel(wl_resource* resource);
   ~MockXdgTopLevel() override;
 
   // TODO(msisov): mock other zxdg_toplevel specific methods once implementation
@@ -85,7 +85,7 @@ class MockXdgTopLevel : public MockXdgSurface {
 // Manage client surface
 class MockSurface : public ServerObject {
  public:
-  MockSurface(wl_resource* resource);
+  explicit MockSurface(wl_resource* resource);
   ~MockSurface() override;
 
   static MockSurface* FromResource(wl_resource* resource);
@@ -103,7 +103,7 @@ class MockSurface : public ServerObject {
 
 class MockPointer : public ServerObject {
  public:
-  MockPointer(wl_resource* resource);
+  explicit MockPointer(wl_resource* resource);
   ~MockPointer() override;
 
  private:
@@ -112,7 +112,7 @@ class MockPointer : public ServerObject {
 
 class MockKeyboard : public ServerObject {
  public:
-  MockKeyboard(wl_resource* resource);
+  explicit MockKeyboard(wl_resource* resource);
   ~MockKeyboard() override;
 
  private:
