@@ -188,7 +188,7 @@
     },
     {
       name: "ClientHintsPersistent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ClientPlaceholdersForServerLoFi",
