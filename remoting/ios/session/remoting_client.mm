@@ -184,10 +184,7 @@ static void ResolveFeedbackDataCallback(
 }
 
 - (void)disconnectFromHost {
-  if (_session) {
-    _session->Disconnect();
-    _runtime->network_task_runner()->DeleteSoon(FROM_HERE, _session.release());
-  }
+  _session.reset();
 
   _displayHandler = nil;
 

@@ -15,6 +15,8 @@ struct ConnectToHostInfo {
   ConnectToHostInfo(ConnectToHostInfo&& other);
   ~ConnectToHostInfo();
 
+  ConnectToHostInfo& operator=(const ConnectToHostInfo& other);
+
   std::string username;
   std::string auth_token;
   std::string host_jid;

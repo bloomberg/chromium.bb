@@ -11,4 +11,7 @@ ConnectToHostInfo::ConnectToHostInfo(const ConnectToHostInfo& other) = default;
 ConnectToHostInfo::ConnectToHostInfo(ConnectToHostInfo&& other) = default;
 ConnectToHostInfo::~ConnectToHostInfo() = default;
 
+ConnectToHostInfo& ConnectToHostInfo::operator=(
+    const ConnectToHostInfo& other) = default;
+
 }  // namespace remoting

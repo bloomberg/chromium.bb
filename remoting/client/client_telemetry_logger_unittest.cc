@@ -60,15 +60,12 @@ class FakeLogWriter : public ChromotingEventLogWriter {
   // ChromotingEventLogWriter overrides.
   void Log(const ChromotingEvent& entry) override;
   void SetAuthToken(const std::string& auth_token) override;
-  void SetAuthClosure(const base::Closure& closure) override;
 
   const std::string& auth_token() const { return auth_token_; }
-  const base::Closure& auth_closure() const { return auth_closure_; }
 
  private:
   base::circular_deque<ChromotingEvent> expected_events_;
   std::string auth_token_;
-  base::Closure auth_closure_;
 };
 
 void FakeLogWriter::AddExpectedEvent(const ChromotingEvent& entry) {
@@ -85,10 +82,6 @@ void FakeLogWriter::Log(const ChromotingEvent& entry) {
 
 void FakeLogWriter::SetAuthToken(const std::string& auth_token) {
   auth_token_ = auth_token;
-}
-
-void FakeLogWriter::SetAuthClosure(const base::Closure& closure) {
-  auth_closure_ = closure;
 }
 
 class ClientTelemetryLoggerTest : public testing::Test {
