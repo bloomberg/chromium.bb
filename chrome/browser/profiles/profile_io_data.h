@@ -460,9 +460,6 @@ class ProfileIOData {
       net::HttpTransactionFactory* main_http_factory,
       std::unique_ptr<net::HttpCache::BackendFactory> backend) const;
 
-  void SetCookieSettingsForTesting(
-      content_settings::CookieSettings* cookie_settings);
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
