@@ -1864,7 +1864,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose1) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-// Flaky on Chrome OS only. TODO(https://crbug.com/823396) fix it.
+// Flaky on Chrome OS only. TODO(https://crbug.com/823043) fix it.
 #if defined(OS_CHROMEOS)
 #define MAYBE_WindowOpenClose2 DISABLED_WindowOpenClose2
 #else
