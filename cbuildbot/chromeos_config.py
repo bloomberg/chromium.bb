@@ -3629,18 +3629,21 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
+          paygen=False,
       ),
 
       'lakitu-nc-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_nc_customizations,
           site_config.templates.lakitu_notification_emails,
           signer_tests=False,
+          paygen=False,
       ),
 
       'lakitu-st-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
+          paygen=False,
       ),
 
       'lakitu_next-release': config_lib.BuildConfig().apply(
