@@ -775,7 +775,7 @@ TEST_P(RootScrollerTest, RemoteIFrame) {
 }
 
 // Make sure that if an effective root scroller becomes a remote frame, it's
-// demoted.
+// immediately demoted.
 TEST_P(RootScrollerTest, IFrameSwapToRemote) {
   Initialize("root-scroller-iframe.html");
   Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
@@ -790,6 +790,9 @@ TEST_P(RootScrollerTest, IFrameSwapToRemote) {
   // Swap in a remote frame. Make sure we revert back to the document.
   {
     MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
+    EXPECT_EQ(MainFrame()->GetDocument(),
+              EffectiveRootScroller(MainFrame()->GetDocument()));
+    GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
     MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));

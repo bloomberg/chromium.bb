@@ -111,14 +111,15 @@ void RootScrollerController::DidResizeFrameView() {
 
 void RootScrollerController::DidUpdateIFrameFrameView(
     HTMLFrameOwnerElement& element) {
-  if (&element != effective_root_scroller_.Get())
+  if (&element != root_scroller_.Get() && &element != implicit_root_scroller_)
     return;
 
-  // Make sure we do a layout so we try to recalculate the effective root
-  // scroller. Ensure properties are applied even if the effective root
-  // scroller doesn't change.
+  // Reevaluate whether the iframe should be the effective root scroller (e.g.
+  // demote it if it became remote). Ensure properties are re-applied even if
+  // the effective root scroller doesn't change since the FrameView might have
+  // been swapped out.
   needs_apply_properties_ = true;
-  document_->GetFrame()->View()->SetNeedsLayout();
+  RecomputeEffectiveRootScroller();
 }
 
 void RootScrollerController::RecomputeEffectiveRootScroller() {
