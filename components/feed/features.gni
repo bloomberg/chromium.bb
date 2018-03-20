@@ -3,7 +3,5 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # TODO(agrieve): Re-enable for is_android once multidex issue is resolved:
-  #     https://crbug.com/820361
-  enable_feed_in_chrome = false
+  enable_feed_in_chrome = is_android
 }
