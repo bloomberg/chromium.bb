@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/web-animations/#the-animationeffectreadonly-interface
+// https://drafts.csswg.org/web-animations/#the-animationeffectreadonly-interface
 
 [
     RuntimeEnabled=WebAnimationsAPI
