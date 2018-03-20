@@ -387,7 +387,6 @@
       <if expr="enable_print_preview">
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML" file="resources\print_preview\pdf_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER"
                  file="resources\print_preview\images\1x\printer.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER"

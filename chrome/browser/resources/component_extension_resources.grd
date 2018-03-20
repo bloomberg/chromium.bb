@@ -101,8 +101,11 @@
         <include name="IDR_ARC_SUPPORT_ICON_HEADER" file="chromeos/arc_support/images/header.png" type="BINDATA" />
       </if>
       <if expr="enable_plugins">
-        <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" allowexternalscript="true" type="BINDATA" />
+        <!-- Note that resources included here also must be included in
+             print_preview_ui.cc such these resources will be exposed to
+             PDF in print preview. -->
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
         <include name="IDR_PDF_UI_MANAGER_JS" file="pdf/toolbar_manager.js" type="BINDATA" />
@@ -115,7 +118,6 @@
         <include name="IDR_PDF_ZOOM_MANAGER_JS" file="pdf/zoom_manager.js" type="BINDATA" />
         <include name="IDR_PDF_GESTURE_DETECTOR_JS" file="pdf/gesture_detector.js" type="BINDATA" />
         <include name="IDR_PDF_BROWSER_API_JS" file="pdf/browser_api.js" type="BINDATA" />
-        <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
         <include name="IDR_PDF_METRICS_JS" file="pdf/metrics.js" type="BINDATA" />
         <include name="IDR_PDF_COORDS_TRANSFORMER_JS" file="pdf/coords_transformer.js" type="BINDATA" />
 

@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/component_extension_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
@@ -420,13 +421,92 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
-  source->AddResourcePath("pdf_preview.html",
-                          IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML);
+  source->AddResourcePath("pdf/index.html", IDR_PDF_INDEX_HTML);
+  source->AddResourcePath("pdf/index.css", IDR_PDF_INDEX_CSS);
+  source->AddResourcePath("pdf/main.js", IDR_PDF_MAIN_JS);
+  source->AddResourcePath("pdf/pdf.js", IDR_PDF_PDF_JS);
+  source->AddResourcePath("pdf/toolbar_manager.js", IDR_PDF_UI_MANAGER_JS);
+  source->AddResourcePath("pdf/pdf_fitting_type.js",
+                          IDR_PDF_PDF_FITTING_TYPE_JS);
+  source->AddResourcePath("pdf/viewport.js", IDR_PDF_VIEWPORT_JS);
+  source->AddResourcePath("pdf/open_pdf_params_parser.js",
+                          IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS);
+  source->AddResourcePath("pdf/navigator.js", IDR_PDF_NAVIGATOR_JS);
+  source->AddResourcePath("pdf/viewport_scroller.js",
+                          IDR_PDF_VIEWPORT_SCROLLER_JS);
+  source->AddResourcePath("pdf/pdf_scripting_api.js",
+                          IDR_PDF_PDF_SCRIPTING_API_JS);
+  source->AddResourcePath("pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS);
+  source->AddResourcePath("pdf/gesture_detector.js",
+                          IDR_PDF_GESTURE_DETECTOR_JS);
+  source->AddResourcePath("pdf/browser_api.js", IDR_PDF_BROWSER_API_JS);
+  source->AddResourcePath("pdf/metrics.js", IDR_PDF_METRICS_JS);
+  source->AddResourcePath("pdf/coords_transformer.js",
+                          IDR_PDF_COORDS_TRANSFORMER_JS);
+
+  source->AddResourcePath("pdf/elements/shared-vars.html",
+                          IDR_PDF_SHARED_VARS_HTML);
+  source->AddResourcePath("pdf/elements/icons.html", IDR_PDF_ICONS_HTML);
+  source->AddResourcePath("pdf/elements/viewer-bookmark/viewer-bookmark.html",
+                          IDR_PDF_VIEWER_BOOKMARK_HTML);
+  source->AddResourcePath("pdf/elements/viewer-bookmark/viewer-bookmark.js",
+                          IDR_PDF_VIEWER_BOOKMARK_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html",
+      IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js",
+      IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-error-screen/viewer-error-screen.html",
+      IDR_PDF_VIEWER_ERROR_SCREEN_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-error-screen/viewer-error-screen.js",
+      IDR_PDF_VIEWER_ERROR_SCREEN_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-page-indicator/viewer-page-indicator.html",
+      IDR_PDF_VIEWER_PAGE_INDICATOR_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-page-indicator/viewer-page-indicator.js",
+      IDR_PDF_VIEWER_PAGE_INDICATOR_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-page-selector/viewer-page-selector.html",
+      IDR_PDF_VIEWER_PAGE_SELECTOR_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-page-selector/viewer-page-selector.js",
+      IDR_PDF_VIEWER_PAGE_SELECTOR_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-password-screen/viewer-password-screen.html",
+      IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-password-screen/viewer-password-screen.js",
+      IDR_PDF_VIEWER_PASSWORD_SCREEN_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html",
+      IDR_PDF_VIEWER_PDF_TOOLBAR_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js",
+      IDR_PDF_VIEWER_PDF_TOOLBAR_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html",
+      IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js",
+      IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.html",
+      IDR_PDF_VIEWER_ZOOM_BUTTON_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.js",
+      IDR_PDF_VIEWER_ZOOM_BUTTON_JS);
+  source->AddResourcePath(
+      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.html",
+      IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML);
+  source->AddResourcePath(
+      "pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.js",
+      IDR_PDF_VIEWER_ZOOM_SELECTOR_JS);
+
   source->SetRequestFilter(base::BindRepeating(&HandleRequestCallback));
-  source->OverrideContentSecurityPolicyScriptSrc(
-      base::StringPrintf("script-src chrome://resources 'self' 'unsafe-eval' "
-                         "chrome-extension://%s;",
-                         extension_misc::kPdfExtensionId));
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");

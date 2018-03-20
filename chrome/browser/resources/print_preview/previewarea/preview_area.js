@@ -488,7 +488,7 @@ cr.define('print_preview', function() {
     createPlugin_: function(srcUrl) {
       assert(!this.plugin_);
       this.plugin_ = /** @type {print_preview.PDFPlugin} */ (
-          PDFCreateOutOfProcessPlugin(srcUrl));
+          PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
       this.plugin_.setKeyEventCallback(this.keyEventCallback_);
 
       this.plugin_.setAttribute('class', 'preview-area-plugin');

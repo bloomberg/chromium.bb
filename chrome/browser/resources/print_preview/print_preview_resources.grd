@@ -149,9 +149,6 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_PREVIEW_AREA_JS"
                  file="new/preview_area.js"
                  type="chrome_html" />
-      <structure name="IDR_PDF_PDF_SCRIPTING_API_JS"
-                 file="../pdf/pdf_scripting_api.js"
-                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_HEADER_HTML"
                  file="new/header.html"
                  type="chrome_html" />

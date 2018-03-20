@@ -231,13 +231,14 @@ PDFScriptingAPI.prototype = {
  * interface which provides access to various features of the viewer for use
  * by print preview and accessibility.
  * @param {string} src the source URL of the PDF to load initially.
+ * @param {string} baseUrl the base URL of the PDF viewer
  * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
-function PDFCreateOutOfProcessPlugin(src) {
+function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   var client = new PDFScriptingAPI(window, null);
   var iframe = assertInstanceof(
       window.document.createElement('iframe'), HTMLIFrameElement);
-  iframe.setAttribute('src', 'pdf_preview.html?' + src);
+  iframe.setAttribute('src', baseUrl + '/index.html?' + src);
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');
 
