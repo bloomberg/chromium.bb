@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -13,6 +14,9 @@ using BrowserNonClientFrameViewBrowserTest = ExtensionBrowserTest;
 
 // Test is Flaky on Windows see crbug.com/600201.
 #if defined(OS_WIN)
+#define MAYBE_InactiveSeparatorColor DISABLED_InactiveSeparatorColor
+#elif defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
 #define MAYBE_InactiveSeparatorColor DISABLED_InactiveSeparatorColor
 #else
 #define MAYBE_InactiveSeparatorColor InactiveSeparatorColor
