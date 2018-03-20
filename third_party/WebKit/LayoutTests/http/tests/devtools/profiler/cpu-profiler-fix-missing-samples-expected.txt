@@ -1,0 +1,41 @@
+Tests missing samples are replaced with neighbor stacks.
+Profile tree:
+(root) id:1 total:16 self:0 depth:-1
+  (garbage collector) id:2 total:3.2 self:3.2 depth:0
+  (program) id:3 total:3.2 self:3.2 depth:0
+  bar id:4 total:6.4 self:3.2 depth:0
+    foo id:6 total:3.2 self:3.2 depth:1
+  baz id:5 total:3.2 self:3.2 depth:0
+raw samples: 3  4  3  4  3  6  2  2  3  6  3  3  6  5  3  6
+samples:     3  4  4  4  4  6  2  2  3  6  3  3  6  5  3  6
+timestamps: 1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+forEachFrame iterator structure:
++ 0 (program) 1
+- 0 (program) 1 1 1
++ 0 bar 2
+  + 1 foo 6
+    + 2 (garbage collector) 7
+    - 2 (garbage collector) 7 2 2
+  - 1 foo 6 3 1
+- 0 bar 2 7 4
++ 0 (program) 9
+- 0 (program) 9 1 1
++ 0 bar 10
+  + 1 foo 10
+  - 1 foo 10 1 1
+- 0 bar 10 1 0
++ 0 (program) 11
+- 0 (program) 11 2 2
++ 0 bar 13
+  + 1 foo 13
+  - 1 foo 13 1 1
+- 0 bar 13 1 0
++ 0 baz 14
+- 0 baz 14 1 1
++ 0 (program) 15
+- 0 (program) 15 1 1
++ 0 bar 16
+  + 1 foo 16
+  - 1 foo 16 1 1
+- 0 bar 16 1 0
+
