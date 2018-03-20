@@ -133,6 +133,64 @@ TEST_F(AccessibilityTest, LastPositionInContainerDiv) {
 TEST_F(AccessibilityTest, PositionFromPosition) {}
 
 //
+// Test comparing two AXPosition objects based on their position in the
+// accessibility tree.
+//
+
+TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
+  SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
+                   R"<p id='paragraph'>hello<br>there</p>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const auto root_first =
+      AXPosition::CreateFirstPositionInContainerObject(*root);
+  const auto root_last = AXPosition::CreateLastPositionInContainerObject(*root);
+
+  const AXObject* input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, input);
+  const auto input_before = AXPosition::CreatePositionBeforeObject(*input);
+  const auto input_after = AXPosition::CreatePositionAfterObject(*input);
+
+  const AXObject* paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, paragraph);
+  ASSERT_NE(nullptr, paragraph->FirstChild());
+  ASSERT_NE(nullptr, paragraph->LastChild());
+  const auto paragraph_before =
+      AXPosition::CreatePositionBeforeObject(*paragraph->FirstChild());
+  const auto paragraph_after =
+      AXPosition::CreatePositionAfterObject(*paragraph->LastChild());
+  const auto paragraph_start =
+      AXPosition::CreatePositionInTextObject(*paragraph->FirstChild(), 0);
+  const auto paragraph_end =
+      AXPosition::CreatePositionInTextObject(*paragraph->LastChild(), 5);
+
+  EXPECT_TRUE(root_first == root_first);
+  EXPECT_TRUE(root_last == root_last);
+  EXPECT_FALSE(root_first != root_first);
+  EXPECT_TRUE(root_first != root_last);
+
+  EXPECT_TRUE(root_first < root_last);
+  EXPECT_TRUE(root_first <= root_first);
+  EXPECT_TRUE(root_last > root_first);
+  EXPECT_TRUE(root_last >= root_last);
+
+  EXPECT_TRUE(input_before == root_first);
+  EXPECT_TRUE(input_after > root_first);
+  EXPECT_TRUE(input_after >= root_first);
+  EXPECT_FALSE(input_before < root_first);
+  EXPECT_TRUE(input_before <= root_first);
+
+  //
+  // Text positions.
+  //
+
+  EXPECT_TRUE(paragraph_before == paragraph_start);
+  EXPECT_TRUE(paragraph_after == paragraph_end);
+  EXPECT_TRUE(paragraph_start < paragraph_end);
+}
+
+//
 // Test converting to and from visible text with white space.
 // The accessibility tree is based on visible text with white space compressed,
 // vs. the DOM tree where white space is preserved.

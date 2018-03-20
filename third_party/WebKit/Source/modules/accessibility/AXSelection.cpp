@@ -127,7 +127,7 @@ void AXSelection::Select() {
 }
 
 bool operator==(const AXSelection& a, const AXSelection& b) {
-  DCHECK(!a.IsValid() || !b.IsValid());
+  DCHECK(a.IsValid() && b.IsValid());
   return a.Base() == b.Base() && a.Extent() == b.Extent();
 }
 
@@ -137,8 +137,8 @@ bool operator!=(const AXSelection& a, const AXSelection& b) {
 
 std::ostream& operator<<(std::ostream& ostream, const AXSelection& selection) {
   if (!selection.IsValid())
-    return ostream << "Invalid selection";
-  return ostream << "Selection from " << selection.Base() << " to "
+    return ostream << "Invalid AXSelection";
+  return ostream << "AXSelection from " << selection.Base() << " to "
                  << selection.Extent();
 }
 

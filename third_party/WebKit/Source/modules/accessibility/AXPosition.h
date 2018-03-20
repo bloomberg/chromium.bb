@@ -96,6 +96,10 @@ class MODULES_EXPORT AXPosition final {
 
 MODULES_EXPORT bool operator==(const AXPosition&, const AXPosition&);
 MODULES_EXPORT bool operator!=(const AXPosition&, const AXPosition&);
+MODULES_EXPORT bool operator<(const AXPosition&, const AXPosition&);
+MODULES_EXPORT bool operator<=(const AXPosition&, const AXPosition&);
+MODULES_EXPORT bool operator>(const AXPosition&, const AXPosition&);
+MODULES_EXPORT bool operator>=(const AXPosition&, const AXPosition&);
 MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXPosition&);
 
 }  // namespace blink
