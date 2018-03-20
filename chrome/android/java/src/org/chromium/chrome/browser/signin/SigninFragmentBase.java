@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,6 +75,8 @@ public abstract class SigninFragmentBase extends Fragment {
 
         Bundle arguments = getSigninArguments();
         initAccessPoint(arguments.getInt(ARGUMENT_ACCESS_POINT, -1));
+
+        mConsentTextTracker = new ConsentTextTracker(getResources());
     }
 
     private void initAccessPoint(@SigninAccessPoint int accessPoint) {
@@ -95,6 +100,7 @@ public abstract class SigninFragmentBase extends Fragment {
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = (SigninView) inflater.inflate(R.layout.signin_view, container, false);
+
         mView.getAcceptButton().setVisibility(View.GONE);
         mView.getMoreButton().setVisibility(View.VISIBLE);
         mView.getMoreButton().setOnClickListener(view -> {
@@ -110,14 +116,27 @@ public abstract class SigninFragmentBase extends Fragment {
         });
 
         updateConsentText();
+        updateProfileData();
 
         return mView;
     }
 
     private void updateConsentText() {
+        mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
         mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);
         mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
+    }
+
+    // TODO(https://crbug.com/814728): Get real profile data and remove SuppressLint.
+    @SuppressLint("SetTextI18n")
+    private void updateProfileData() {
+        Drawable avatar =
+                AppCompatResources.getDrawable(getActivity(), R.drawable.logo_avatar_anonymous);
+        mView.getAccountImageView().setImageDrawable(avatar);
+        mConsentTextTracker.setTextNonRecordable(mView.getAccountNameView(), "John Doe");
+        mConsentTextTracker.setTextNonRecordable(
+                mView.getAccountEmailView(), "john.doe@example.com");
     }
 
     private void showAcceptButton() {

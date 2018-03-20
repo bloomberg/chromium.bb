@@ -177,6 +177,9 @@
     <dimen name="signin_chooser_padding">16dp</dimen>
     <dimen name="signin_screen_top_padding">50dp</dimen>
 
+    <dimen name="signin_margin_start">16dp</dimen>
+    <dimen name="signin_margin_end">16dp</dimen>
+
     <!-- Signin promo dimensions -->
     <dimen name="signin_promo_account_image_size">48dp</dimen>
     <dimen name="signin_promo_cold_state_image_size">24dp</dimen>
