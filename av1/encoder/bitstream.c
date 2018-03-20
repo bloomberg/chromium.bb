@@ -3524,14 +3524,14 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi,
 
   write_uncompressed_header_obu(cpi, saved_wb, &wb);
 
+#if CONFIG_TRAILING_BITS
+  add_trailing_bits(&wb);
+#endif
+
   if (cm->show_existing_frame) {
     total_size = aom_wb_bytes_written(&wb);
     return total_size;
   }
-
-#if CONFIG_TRAILING_BITS
-  add_trailing_bits(&wb);
-#endif
 
   uncompressed_hdr_size = aom_wb_bytes_written(&wb);
   total_size = uncompressed_hdr_size;
