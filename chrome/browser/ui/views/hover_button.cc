@@ -221,8 +221,7 @@ void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
-  DCHECK(subtitle_);
-  if (!subtitle_->text().empty())
+  if (subtitle_ && !subtitle_->text().empty())
     subtitle_->SetElideBehavior(elide_behavior);
 }
 
@@ -360,7 +359,8 @@ void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
 }
 
 void HoverButton::SetSubtitleColor(SkColor color) {
-  subtitle_->SetEnabledColor(color);
+  if (subtitle_)
+    subtitle_->SetEnabledColor(color);
 }
 
 void HoverButton::OnMenuButtonClicked(MenuButton* source,
