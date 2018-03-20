@@ -570,7 +570,6 @@ test("ios_web_inttests") {
     "url_loader_inttest.mm",
     "web_state/favicon_callbacks_inttest.mm",
     "web_state/http_auth_inttest.mm",
-    "web_state/js/form_inttest.mm",
     "web_state/navigation_and_load_callbacks_inttest.mm",
     "webui/web_ui_mojo_inttest.mm",
   ]
@@ -614,7 +613,6 @@ js_compile_bundle("all_frames_web_bundle") {
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/base.js",
     "web_state/js/resources/common.js",
-    "web_state/js/resources/form.js",
     "web_state/js/resources/message.js",
   ]
 }

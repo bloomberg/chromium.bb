@@ -831,9 +831,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
 // Handles 'document.submit' message.
+// TODO(crbug.com/823285): move this handler to components/autofill.
 - (BOOL)handleDocumentSubmitMessage:(base::DictionaryValue*)message
                             context:(NSDictionary*)context;
 // Handles 'form.activity' message.
+// TODO(crbug.com/823285): move this handler to components/autofill.
 - (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context;
 // Handles 'window.error' message.

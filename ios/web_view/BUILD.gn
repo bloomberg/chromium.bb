@@ -312,6 +312,7 @@ js_compile_bundle("web_view_bundle") {
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/fill/resources/fill.js",
+    "//components/autofill/ios/fill/resources/form.js",
     "resources/web_view_bundle.js",
   ]
 }

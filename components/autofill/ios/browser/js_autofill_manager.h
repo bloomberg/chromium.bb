@@ -52,6 +52,9 @@
 // Adds a delay between filling the form fields.
 - (void)addJSDelay;
 
+// Installs a tracker to check the form updates in the page every 500ms.
+- (void)trackFormUpdates;
+
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

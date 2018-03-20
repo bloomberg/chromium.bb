@@ -46,6 +46,7 @@ template("java_action") {
                              "deps",
                              "outputs",
                              "sources",
+                             "testonly",
                              "visibility",
                            ])
   }
@@ -95,6 +96,7 @@ template("java_action_foreach") {
                              "deps",
                              "outputs",
                              "sources",
+                             "testonly",
                              "visibility",
                            ])
   }

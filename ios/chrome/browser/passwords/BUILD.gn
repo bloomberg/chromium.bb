@@ -192,7 +192,7 @@ js_compile_checked("injected_js") {
     "resources/password_controller.js",
   ]
   js_modules = [
-    "//ios/web/web_state/js/resources/form.js",
+    "//components/autofill/ios/fill/resources/form.js",
     "//components/autofill/ios/fill/resources/fill.js",
   ]
 }

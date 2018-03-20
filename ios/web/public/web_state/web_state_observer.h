@@ -138,6 +138,7 @@ class WebStateObserver {
   // Called on form submission in the main frame or in a same-origin iframe.
   // |user_initiated| is true if the user interacted with the page.
   // |is_main_frame| is true if the submitted form is in the main frame.
+  // TODO(crbug.com/823285): move this handler to components/autofill.
   virtual void DocumentSubmitted(WebState* web_state,
                                  const std::string& form_name,
                                  bool user_initiated,
@@ -146,6 +147,7 @@ class WebStateObserver {
   // Called when the user is typing on a form field in the main frame or in a
   // same-origin iframe. |params.input_missing| is indicating if there is any
   // error when parsing the form field information.
+  // TODO(crbug.com/823285): move this handler to components/autofill.
   virtual void FormActivityRegistered(WebState* web_state,
                                       const FormActivityParams& params) {}
 

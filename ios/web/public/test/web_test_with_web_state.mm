@@ -171,7 +171,7 @@ void WebTestWithWebState::WaitForBackgroundTasks() {
 
 void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
   base::test::ios::WaitUntilCondition(condition, true,
-                                      base::TimeDelta::FromSeconds(10));
+                                      base::TimeDelta::FromSeconds(1000));
 }
 
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {

@@ -44,6 +44,7 @@ template("js_compile_bundle") {
 
   java_action(compile_js_target_name) {
     visibility = [ ":$_target_name" ]
+    forward_variables_from(invoker, [ "testonly" ])
     script = closure_compiler_path
     sources = invoker.sources
     outputs = [
@@ -68,6 +69,7 @@ template("js_compile_bundle") {
                              "data_deps",
                              "deps",
                              "public_deps",
+                             "testonly",
                              "visibility",
                            ])
 
@@ -114,6 +116,7 @@ template("js_compile_checked") {
 
     java_action_foreach(compile_js_target_name) {
       visibility = [ ":$_target_name" ]
+      forward_variables_from(invoker, [ "testonly" ])
       script = closure_compiler_path
       sources = invoker.sources
       _js_modules = [
@@ -178,6 +181,7 @@ template("js_compile_checked") {
                                "data_deps",
                                "deps",
                                "public_deps",
+                               "testonly",
                                "visibility",
                              ])
 
@@ -197,6 +201,7 @@ template("js_compile_checked") {
                                "data_deps",
                                "deps",
                                "public_deps",
+                               "testonly",
                                "visibility",
                              ])
 
@@ -233,6 +238,7 @@ template("js_compile_unchecked") {
 
     java_action_foreach(compile_js_target_name) {
       visibility = [ ":$_target_name" ]
+      forward_variables_from(invoker, [ "testonly" ])
       script = closure_compiler_path
       sources = invoker.sources
       outputs = [
@@ -255,6 +261,7 @@ template("js_compile_unchecked") {
                                "data_deps",
                                "deps",
                                "public_deps",
+                               "testonly",
                                "visibility",
                              ])
 
@@ -274,6 +281,7 @@ template("js_compile_unchecked") {
                                "data_deps",
                                "deps",
                                "public_deps",
+                               "testonly",
                                "visibility",
                              ])
 
