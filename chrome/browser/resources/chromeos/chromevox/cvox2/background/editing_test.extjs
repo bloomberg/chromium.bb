@@ -60,7 +60,7 @@ TEST_F('EditingTest', 'Focus', function() {
         .expectSpeech('textArea',
                       'Line 1\nline 2\nline 3',
                       'Text area')
-        .expectBraille('textArea Line 1 mled',
+        .expectBraille('textArea Line 1\nline 2\nline 3 mled',
                       {startIndex: 9, endIndex: 9});
 
     mockFeedback.replay();
@@ -77,19 +77,19 @@ TEST_F('EditingTest', 'Multiline', function() {
         .expectSpeech('textArea',
                       'Line 1\nline 2\nline 3',
                       'Text area')
-        .expectBraille('textArea Line 1 mled',
+        .expectBraille('textArea Line 1\nline 2\nline 3 mled',
                       {startIndex: 9, endIndex: 9})
         .call(textarea.setSelection.bind(textarea, 1, 1))
         .expectSpeech('i')
-        .expectBraille('textArea Line 1 mled',
-                       {startIndex: 10, endIndex: 10})
+        .expectBraille('Line 1\nmled',
+                       {startIndex: 1, endIndex: 1})
         .call(textarea.setSelection.bind(textarea, 7, 7))
         .expectSpeech('line 2')
-        .expectBraille('line 2',
+        .expectBraille('line 2\n',
                        {startIndex: 0, endIndex: 0})
         .call(textarea.setSelection.bind(textarea, 7, 13))
         .expectSpeech('line 2', 'selected')
-        .expectBraille('line 2',
+        .expectBraille('line 2\n',
                        {startIndex: 0, endIndex: 6});
 
     mockFeedback.replay();
@@ -171,7 +171,7 @@ TEST_F('EditingTest', 'RichTextMoveByLine', function() {
           .expectBraille('\n')
           .call(moveByLine)
           .expectSpeech('hello', 'Heading 2')
-          .expectBraille('hello h2')
+          .expectBraille('hello h2 mled')
           .replay();
     });
     input.focus();
@@ -203,7 +203,7 @@ TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
     var moveByChar = input.doDefault.bind(input);
-    var lineText = 'This is a test.';
+    var lineText = 'This is a test. mled';
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -262,7 +262,7 @@ TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
     var moveByChar = input.doDefault.bind(input)
-    var lineText = 'hello world';
+    var lineText = 'hello world mled';
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -303,7 +303,7 @@ TEST_F('EditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
     var moveByChar = input.doDefault.bind(input);
-    var lineText = 'Test';
+    var lineText = 'Test mled';
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -339,8 +339,8 @@ TEST_F('EditingTest', 'RichTextLinkOutput', function() {
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
     var moveByChar = input.doDefault.bind(input);
-    var lineText = 'a test';
-    var lineOnLinkText = 'a test lnk';
+    var lineText = 'a test mled';
+    var lineOnLinkText = 'a test lnk mled';
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -420,8 +420,8 @@ TEST_F('EditingTest', 'RichTextImageByCharacter', function() {
     var moveByChar = input.doDefault.bind(input);
 
     this.listenOnce(input, 'focus', function() {
-      var lineText = 'dog is a cat test';
-      var lineOnDogText = 'dog img is a cat test';
+      var lineText = 'dog is a cat test mled';
+      var lineOnDogText = 'dog img is a cat test mled';
       var lineOnCatText = 'dog is a cat img test';
       mockFeedback
           // This is initial output from focusing the contenteditable (which has
@@ -507,10 +507,10 @@ TEST_F('EditingTest', 'RichTextSelectByLine', function() {
       // By character.
       mockFeedback.call(move)
           .expectSpeech('f', 'selected')
-          .expectBraille('first line\n', {startIndex: 0, endIndex: 1})
+          .expectBraille('first line\nmled', {startIndex: 0, endIndex: 1})
           .call(move)
           .expectSpeech('i', 'added to selection')
-          .expectBraille('first line\n', {startIndex: 0, endIndex: 2})
+          .expectBraille('first line\nmled', {startIndex: 0, endIndex: 2})
 
           // Forward selection.
 
@@ -533,7 +533,7 @@ TEST_F('EditingTest', 'RichTextSelectByLine', function() {
 
           .call(move)
           .expectSpeech('fi', 'selected')
-          .expectBraille('first line\n', {startIndex: 0, endIndex: 2})
+          .expectBraille('first line\nmled', {startIndex: 0, endIndex: 2})
 
           // Document boundary.
           .call(move)

@@ -146,15 +146,8 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var output = new Output();
-    output.withRichSpeech(
+    output.withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
-    if (!this.textEditHandler_) {
-      output.withBraille(
-          ChromeVoxState.instance.currentRange, prevRange, evt.type);
-    } else {
-      // Delegate event handling to the text edit handler for braille.
-      this.textEditHandler_.onEvent(evt);
-    }
     output.go();
   },
 

@@ -469,8 +469,7 @@ Output.RULES = {
           $if($roleDescription, $roleDescription,
               $if($multiline, @tag_textarea,
                   $if($inputType, $inputType, $role)))
-          $description $state $restriction`,
-      braille: ``
+          $description $state $restriction`
     },
     timer: {
       speak: `$nameFromNode $descendants $value $state $role

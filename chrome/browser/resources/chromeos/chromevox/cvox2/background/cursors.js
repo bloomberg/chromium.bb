@@ -482,9 +482,9 @@ cursors.Cursor.prototype = {
         var targetLine, targetIndex = 0;
         for (var i = 0, line, cur = 0; line = lines[i]; i++) {
           cur += line.name.length;
-          if (cur >= newIndex) {
+          if (cur > newIndex) {
             targetLine = line;
-            targetIndex = cur - newIndex;
+            targetIndex = newIndex - (cur - line.name.length);
             break;
           }
         }
@@ -492,7 +492,7 @@ cursors.Cursor.prototype = {
           // If we got here, that means the index is actually beyond the total
           // length of text. Just get the last line.
           targetLine = lines[lines.length - 1];
-          targetIndex = 0;
+          targetIndex = targetLine.name.length;
         }
         newNode = targetLine;
         newIndex = targetIndex;
