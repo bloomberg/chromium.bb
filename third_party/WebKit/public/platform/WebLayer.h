@@ -241,7 +241,7 @@ class WebLayer {
   virtual void SetSnapContainerData(base::Optional<cc::SnapContainerData>) = 0;
 
   // Sets the cc-side layer client.
-  virtual void SetLayerClient(base::WeakPtr<cc::LayerClient>) = 0;
+  virtual void SetLayerClient(cc::LayerClient*) = 0;
 
   // Gets the underlying cc layer.
   virtual const cc::Layer* CcLayer() const = 0;
