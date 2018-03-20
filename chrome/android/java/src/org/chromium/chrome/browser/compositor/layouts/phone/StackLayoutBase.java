@@ -54,7 +54,8 @@ import java.util.List;
 /**
  * Base class for layouts that show one or more stacks of tabs.
  */
-public abstract class StackLayoutBase extends Layout implements Animatable<StackLayout.Property> {
+public abstract class StackLayoutBase
+        extends Layout implements Animatable<StackLayoutBase.Property> {
     public enum Property {
         INNER_MARGIN_PERCENT,
         STACK_SNAP,
