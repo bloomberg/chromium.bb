@@ -1,7 +1,7 @@
-# A Crash Course in Debugging with about:net-internals
+# A Crash Course in Debugging with chrome://net-internals
 
 This document is intended to help get people started debugging network errors
-with about:net-internals, with some commonly useful tips and tricks.  This
+with chrome://net-internals, with some commonly useful tips and tricks.  This
 document is aimed more at how to get started using some of its features to
 investigate bug reports, rather than as a feature overview.
 
@@ -10,9 +10,9 @@ It would probably be useful to read
 
 # What Data Net-Internals Contains
 
-about:net-internals provides a view of browser activity from net/'s perspective.
-For this reason, it lacks knowledge of tabs, navigation, frames, resource types,
-etc.
+chrome://net-internals provides a view of browser activity from net/'s
+perspective.  For this reason, it lacks knowledge of tabs, navigation, frames,
+resource types, etc.
 
 The leftmost column presents a list of views.  Most debugging is done with the
 Events view, which will be all this document covers.
@@ -23,13 +23,13 @@ single, global, ChromeNetLog object.  This includes both incognito and
 non-incognito profiles, among other things.  The Events view only shows events
 for the period that net-internals was open and running, and is incrementally
 updated as events occur.  The code attempts to add a top level event for
-URLRequests that were active when the about:net-internals tab was opened, to
+URLRequests that were active when the chrome://net-internals tab was opened, to
 help debug hung requests, but that's best-effort only, and only includes
 requests for the current profile and the system URLRequestContext.
 
 The other views are all snapshots of the current state of the main
 URLRequestContext's components, and are updated on a 5 second timer.  These will
-show objects that were created before about:net-internals was opened.
+show objects that were created before chrome://net-internals was opened.
 
 # Events vs Sources
 
@@ -165,7 +165,7 @@ should generally ignore those, and look for a more interesting one.
 This is often useful in finding hung or slow requests.
 
 For a list of other filter commands, you can mouse over the question mark on
-about:net-internals.
+chrome://net-internals.
 
 Once you locate the problematic request, the next is to figure out where the
 problem is -- it's often one of the last events, though it could also be related

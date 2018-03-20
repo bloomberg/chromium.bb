@@ -21,7 +21,7 @@
   trace in the bug, so no one else has to look up the crash stack from the ID.
     * If there's just a blank form and a crash ID, just ignore the bug.
 
-* If network causes are possible, ask for a net-internals log (If it's not a
+* If network causes are possible, ask for a net-export log (If it's not a
   browser crash) and attach the most specific internals-network label that's
   applicable.  If there isn't an applicable narrower component, a clear owner
   for the issue, or there are multiple possibilities, attach the
@@ -50,7 +50,7 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
 ## Investigating component=Internals>Network bugs
 
 * Note that you may want to investigate Needs-Feedback bugs first, as
-  that may result in some bugs being added to this list.  
+  that may result in some bugs being added to this list.
 
 * It's recommended that while on triage duty, you subscribe to the
   Internals>Network component (but not its subcomponents). To do this, go
@@ -90,7 +90,7 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
 * If it may be a network bug, attach additional possibly relevant component if
   any, and continue investigating.  Once you either determine it's a
   non-network bug, or figure out accurate more specific network components, your
-  job is done, though you should still ask for a net-internals dump if it seems
+  job is done, though you should still ask for a net-export dump if it seems
   likely to be useful.
 
 * Note that Chrome-OS-specific network-related code (Captive portal detection,
@@ -105,11 +105,10 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
       user.
     * Try to reproduce locally.  If you can, and it's a regression, use
       src/tools/bisect-builds.py to figure out when it regressed.
-    * Ask more data from the user as needed (net-internals dumps, repro case,
-      crash ID from about:crashes, run tests, etc).
-    * If asking for an about:net-internals dump, provide this link:
+    * Ask more data from the user as needed (net-export dumps, repro case,
+      crash ID from chrome://crashes, run tests, etc).
+    * If asking for a chrome://net-export dump, provide this link:
       https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details.
-      Can just grab the link from about:net-internals, as needed.
 
 * Try to figure out what's going on, and which more specific network component
   is most appropriate.
@@ -119,10 +118,9 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
   strongly suspect CLs.
 
 * If you are having trouble with an issue, particularly for help understanding
-  net-internals logs, email the public net-dev@chromium.org list for help
+  net-export logs, email the public net-dev@chromium.org list for help
   debugging.  If it's a crasher, or for some other reason discussion needs to
-  be done in private, use chrome-network-debugging@google.com.  TODO(mmenke):
-  Write up a net-internals tips and tricks docs.
+  be done in private, use chrome-network-debugging@google.com.
 
 * If it appears to be a bug in the unowned core of the network stack (i.e. no
   subcomponent applies, or only the Internals>Network>HTTP subcomponent
@@ -184,7 +182,7 @@ As an alternative to the above, you can use [Eric Roman's new crash
 tool](https://ericroman.users.x20web.corp.google.com/www/net-crash-triage/index.html)
 (internal link).  Note that it isn't a perfect fit with the triage
 responsibilities, specifically:
-  
+
 * It's only showing Windows releases; Android, iOS, and WebView are
   usually different, and Mac is sometimes different.
 * The instructions are to look at the latest canary which has a days
@@ -192,7 +190,7 @@ responsibilities, specifically:
   than one canary into the past, and hence not visible on the tool.
 * Eric's tool filters based on files in "src/net" rather than looking
   for magic signature's including the string "net::" ("src/net" is
-  probably the better filter).    
+  probably the better filter).
 
 ## Investigating crashers
 
