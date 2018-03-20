@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
@@ -56,6 +57,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/default_browser_infobar_delegate.h"
@@ -589,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_obsolete_system) {
   ShowAndVerifyUi();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_session_crashed) {
   ShowAndVerifyUi();
 }
