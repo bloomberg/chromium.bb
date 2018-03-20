@@ -423,7 +423,8 @@ void Surface::TakeCopyOutputRequests(Surface::CopyRequestsMap* copy_requests) {
   if (!active_frame_data_)
     return;
 
-  TakeCopyOutputRequestsFromClient();
+  // TakeCopyOutputRequestsFromClient() has to be called before this method.
+  DCHECK(!surface_client_ || !surface_client_->HasCopyOutputRequests());
 
   for (const auto& render_pass : active_frame_data_->frame.render_pass_list) {
     for (auto& request : render_pass->copy_requests) {
@@ -431,6 +432,15 @@ void Surface::TakeCopyOutputRequests(Surface::CopyRequestsMap* copy_requests) {
           std::make_pair(render_pass->id, std::move(request)));
     }
     render_pass->copy_requests.clear();
+  }
+}
+
+void Surface::TakeCopyOutputRequestsFromClient() {
+  if (!surface_client_)
+    return;
+  for (std::unique_ptr<CopyOutputRequest>& request :
+       surface_client_->TakeCopyOutputRequests()) {
+    RequestCopyOfOutput(std::move(request));
   }
 }
 
@@ -543,17 +553,7 @@ void Surface::TakeLatencyInfoFromFrame(
 }
 
 void Surface::OnWillBeDrawn() {
-  TakeCopyOutputRequestsFromClient();
   surface_manager_->SurfaceWillBeDrawn(this);
-}
-
-void Surface::TakeCopyOutputRequestsFromClient() {
-  if (!surface_client_)
-    return;
-  for (std::unique_ptr<CopyOutputRequest>& request :
-       surface_client_->TakeCopyOutputRequests()) {
-    RequestCopyOfOutput(std::move(request));
-  }
 }
 
 }  // namespace viz

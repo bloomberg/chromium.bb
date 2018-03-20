@@ -1046,6 +1046,22 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
   CHECK(debug_weak_this.get());
 
+  if (!damage_rect.IsEmpty()) {
+    // The following call can cause one or more copy requests to be added to the
+    // Surface. Therefore, no code before this point should have assumed
+    // anything about the presence or absence of copy requests after this point.
+    surface->NotifyAggregatedDamage(damage_rect);
+  }
+
+  // If any CopyOutputRequests were made at FrameSink level, make sure we grab
+  // them too.
+  surface->TakeCopyOutputRequestsFromClient();
+
+  if (will_draw)
+    surface->OnWillBeDrawn();
+
+  CHECK(debug_weak_this.get());
+
   for (const auto& surface_id : frame.metadata.referenced_surfaces) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
@@ -1054,18 +1070,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         PrewalkTree(undrawn_surface, false, 0, false /* will_draw */, result);
     }
   }
-
-  CHECK(debug_weak_this.get());
-
-  if (!damage_rect.IsEmpty()) {
-    // The following call can cause one or more copy requests to be added to the
-    // Surface. Therefore, no code before this point should have assumed
-    // anything about the presence or absence of copy requests after this point.
-    surface->NotifyAggregatedDamage(damage_rect);
-  }
-
-  if (will_draw)
-    surface->OnWillBeDrawn();
 
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
