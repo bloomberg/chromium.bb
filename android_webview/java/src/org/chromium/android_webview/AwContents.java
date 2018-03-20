@@ -3561,23 +3561,23 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onCheckIsTextEditor() {
-            return isDestroyedOrNoOperation(NO_WARN)
-                    ? false
-                    : ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
+            if (isDestroyedOrNoOperation(NO_WARN)) return false;
+            ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContents);
+            return imeAdapter != null ? imeAdapter.onCheckIsTextEditor() : false;
         }
 
         @Override
         public AccessibilityNodeProvider getAccessibilityNodeProvider() {
-            return isDestroyedOrNoOperation(WARN)
-                    ? null
-                    : getWebContentsAccessibility().getAccessibilityNodeProvider();
+            if (isDestroyedOrNoOperation(NO_WARN)) return null;
+            WebContentsAccessibility wcax = getWebContentsAccessibility();
+            return wcax != null ? wcax.getAccessibilityNodeProvider() : null;
         }
 
         @Override
         public boolean performAccessibilityAction(final int action, final Bundle arguments) {
-            return isDestroyedOrNoOperation(WARN)
-                    ? false
-                    : getWebContentsAccessibility().performAction(action, arguments);
+            if (isDestroyedOrNoOperation(NO_WARN)) return false;
+            WebContentsAccessibility wcax = getWebContentsAccessibility();
+            return wcax != null ? wcax.performAction(action, arguments) : false;
         }
     }
 
