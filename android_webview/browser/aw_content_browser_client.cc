@@ -205,6 +205,7 @@ AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
   // just drops the incoming request, to avoid the 'Failed to locate a binder
   // for interface' error log..
   frame_interfaces_.AddInterface(base::Bind(&DummyBindPasswordManagerDriver));
+  sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
@@ -275,8 +276,7 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
 }
 
 bool AwContentBrowserClient::ForceSniffingFileUrlsForHtml() {
-  // Needed to support legacy consumers.
-  return true;
+  return sniff_file_urls_;
 }
 
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
