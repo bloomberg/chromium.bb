@@ -72,7 +72,7 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
   // call may asynchronously free system resources, but its client-visible
   // effects are synchronous. After destructor returns, no more callbacks
   // will be made on the client.
-  virtual ~JpegEncodeAccelerator() {}
+  virtual ~JpegEncodeAccelerator() = 0;
 
   // Initializes the JPEG encoder. Should be called once per encoder
   // construction. This call is synchronous and returns ENCODE_OK iff

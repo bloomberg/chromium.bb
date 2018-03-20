@@ -95,6 +95,8 @@ component("gpu") {
     "gles2_decoder_helper.h",
     "gpu_jpeg_decode_accelerator_factory.cc",
     "gpu_jpeg_decode_accelerator_factory.h",
+    "gpu_jpeg_encode_accelerator_factory.cc",
+    "gpu_jpeg_encode_accelerator_factory.h",
     "gpu_video_accelerator_util.cc",
     "gpu_video_accelerator_util.h",
     "gpu_video_decode_accelerator_factory.cc",

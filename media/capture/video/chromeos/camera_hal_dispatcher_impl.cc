@@ -114,11 +114,13 @@ bool CameraHalDispatcherImpl::StartThreads() {
 }
 
 bool CameraHalDispatcherImpl::Start(
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory) {
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
+    MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
   if (!StartThreads()) {
     return false;
   }
-  jda_factory_ = jda_factory;
+  jda_factory_ = std::move(jda_factory);
+  jea_factory_ = std::move(jea_factory);
   base::WaitableEvent started(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   blocking_io_task_runner_->PostTask(
@@ -197,6 +199,11 @@ void CameraHalDispatcherImpl::RegisterClient(
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
     media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   jda_factory_.Run(std::move(jda_request));
+}
+
+void CameraHalDispatcherImpl::GetJpegEncodeAccelerator(
+    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
+  jea_factory_.Run(std::move(jea_request));
 }
 
 void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {

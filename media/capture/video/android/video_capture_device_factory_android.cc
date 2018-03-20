@@ -146,7 +146,8 @@ VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory) {
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
+    MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
   return new VideoCaptureDeviceFactoryAndroid();
 }
 
