@@ -72,9 +72,9 @@ Tree link: https://github.com/PolymerElements/iron-form-element-behavior/tree/v1
 
 Name: iron-icon
 Repository: https://github.com/PolymerElements/iron-icon.git
-Tree: v1.0.10
-Revision: f4e146da4982ff96bb25db85290c09e8de4ec734
-Tree link: https://github.com/PolymerElements/iron-icon/tree/v1.0.10
+Tree: v2.0.1
+Revision: bfdf82f7c8eb4c205cb2d4af6996ffc98f41b1c1
+Tree link: https://github.com/PolymerElements/iron-icon/tree/v2.0.1
 
 Name: iron-icons
 Repository: https://github.com/PolymerElements/iron-icons.git
