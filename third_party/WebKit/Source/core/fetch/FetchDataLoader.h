@@ -53,6 +53,9 @@ class CORE_EXPORT FetchDataLoader
 
     virtual void DidFetchDataLoadFailed() = 0;
 
+    // This function is called when an abort has been signalled.
+    virtual void Abort() = 0;
+
     void Trace(blink::Visitor* visitor) override {}
   };
 

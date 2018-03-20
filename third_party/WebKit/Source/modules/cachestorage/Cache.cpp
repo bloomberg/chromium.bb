@@ -15,6 +15,7 @@
 #include "bindings/core/v8/V8Response.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchDataLoader.h"
@@ -291,10 +292,7 @@ class Cache::BarrierCallbackForPut final
   void OnSuccess(size_t index,
                  const WebServiceWorkerCache::BatchOperation& batch_operation) {
     DCHECK_LT(index, batch_operations_.size());
-    if (completed_)
-      return;
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
+    if (!StillActive())
       return;
     batch_operations_[index] = batch_operation;
     if (--number_of_remaining_operations_ != 0)
@@ -307,16 +305,20 @@ class Cache::BarrierCallbackForPut final
   }
 
   void OnError(const String& error_message) {
-    if (completed_)
+    if (!StillActive())
       return;
     completed_ = true;
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
     ScriptState* state = resolver_->GetScriptState();
-    ScriptState::Scope scope(state);
-    resolver_->Reject(
-        V8ThrowException::CreateTypeError(state->GetIsolate(), error_message));
+    RejectWithState(state, V8ThrowException::CreateTypeError(
+                               state->GetIsolate(), error_message));
+  }
+
+  void Abort() {
+    if (!StillActive())
+      return;
+    completed_ = true;
+    RejectWithState(resolver_->GetScriptState(),
+                    DOMException::Create(kAbortError));
   }
 
   virtual void Trace(blink::Visitor* visitor) {
@@ -325,6 +327,22 @@ class Cache::BarrierCallbackForPut final
   }
 
  private:
+  bool StillActive() {
+    if (completed_)
+      return false;
+    if (!resolver_->GetExecutionContext() ||
+        resolver_->GetExecutionContext()->IsContextDestroyed())
+      return false;
+
+    return true;
+  }
+
+  template <typename T>
+  void RejectWithState(ScriptState* state, T value) {
+    ScriptState::Scope scope(state);
+    resolver_->Reject(value);
+  }
+
   // Report the script stats if this cache storage is for service worker
   // execution context and it's in installation phase.
   void MaybeReportInstalledScripts() {
@@ -386,6 +404,8 @@ class Cache::BlobHandleCallbackForPut final
   void DidFetchDataLoadFailed() override {
     barrier_callback_->OnError("network error");
   }
+
+  void Abort() override { barrier_callback_->Abort(); }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(barrier_callback_);
@@ -466,6 +486,8 @@ class Cache::CodeCacheHandleCallbackForPut final
   void DidFetchDataLoadFailed() override {
     barrier_callback_->OnError("network error");
   }
+
+  void Abort() override { barrier_callback_->Abort(); }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(barrier_callback_);

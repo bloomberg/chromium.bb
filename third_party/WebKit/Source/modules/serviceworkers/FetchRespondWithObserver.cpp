@@ -128,6 +128,12 @@ class FetchLoaderClient final
 
   void DidFetchDataLoadedDataPipe() override { handle_->Completed(); }
   void DidFetchDataLoadFailed() override { handle_->Aborted(); }
+  void Abort() override {
+    // A fetch() aborted via AbortSignal in the ServiceWorker will just look
+    // like an ordinary failure to the page.
+    // TODO(ricea): Should a fetch() on the page get an AbortError instead?
+    handle_->Aborted();
+  }
 
   void Trace(blink::Visitor* visitor) override {
     FetchDataLoader::Client::Trace(visitor);

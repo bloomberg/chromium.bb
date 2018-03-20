@@ -19,6 +19,7 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
 
 namespace blink {
@@ -72,6 +73,8 @@ class BodyStreamBuffer::LoaderClient final
     buffer_->EndLoading();
     client_->DidFetchDataLoadFailed();
   }
+
+  void Abort() override { NOTREACHED(); }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(buffer_);
@@ -188,9 +191,14 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
   DCHECK(!loader_);
   DCHECK(script_state_->ContextIsValid());
   loader_ = loader;
-  // TODO(ricea): Call Abort() on |client| if |signal_| is aborted.  Add an
-  // algorithm to |signal_| to call Abort() on |client| when SignalAbort() is
-  // called.
+  if (signal_) {
+    if (signal_->aborted()) {
+      client->Abort();
+      return;
+    }
+    signal_->AddAlgorithm(
+        WTF::Bind(&FetchDataLoader::Client::Abort, WrapWeakPersistent(client)));
+  }
   loader->Start(ReleaseHandle(),
                 new LoaderClient(ExecutionContext::From(script_state_.get()),
                                  this, client));

@@ -36,11 +36,11 @@ PASS Already aborted signal can be used for many fetches
 PASS Signal can be used to abort other fetches, even if another fetch succeeded before aborting
 PASS Underlying connection is closed when aborting after receiving response
 PASS Underlying connection is closed when aborting after receiving response - no-cors
-FAIL Fetch aborted & connection closed when aborted after calling response.arrayBuffer() assert_throws: function "function() { throw e }" threw object "TypeError: Failed to fetch" that is not a DOMException AbortError: property "code" is equal to undefined, expected 20
-FAIL Fetch aborted & connection closed when aborted after calling response.blob() assert_throws: function "function() { throw e }" threw object "TypeError: Failed to fetch" that is not a DOMException AbortError: property "code" is equal to undefined, expected 20
-FAIL Fetch aborted & connection closed when aborted after calling response.formData() assert_throws: function "function() { throw e }" threw object "TypeError: Failed to fetch" that is not a DOMException AbortError: property "code" is equal to undefined, expected 20
-FAIL Fetch aborted & connection closed when aborted after calling response.json() assert_throws: function "function() { throw e }" threw object "TypeError: Failed to fetch" that is not a DOMException AbortError: property "code" is equal to undefined, expected 20
-FAIL Fetch aborted & connection closed when aborted after calling response.text() assert_throws: function "function() { throw e }" threw object "TypeError: Failed to fetch" that is not a DOMException AbortError: property "code" is equal to undefined, expected 20
+PASS Fetch aborted & connection closed when aborted after calling response.arrayBuffer()
+PASS Fetch aborted & connection closed when aborted after calling response.blob()
+PASS Fetch aborted & connection closed when aborted after calling response.formData()
+PASS Fetch aborted & connection closed when aborted after calling response.json()
+PASS Fetch aborted & connection closed when aborted after calling response.text()
 PASS Stream errors once aborted. Underlying connection closed.
 PASS Stream errors once aborted, after reading. Underlying connection closed.
 PASS Stream will not error if body is empty. It's closed with an empty queue before it errors.
