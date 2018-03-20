@@ -40,6 +40,10 @@ namespace network {
 class ResourceRequestBody;
 }
 
+namespace service_worker_handle_unittest {
+class ServiceWorkerHandleTest;
+}
+
 namespace storage {
 class BlobStorageContext;
 }
@@ -282,6 +286,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // The object info holds a Mojo connection to the ServiceWorkerHandle for the
   // |version| to ensure the handle stays alive while the object info is alive.
   // A new handle is created if one does not already exist.
+  // TODO(leonhsl): Make |version| be a scoped_refptr because we'll take its
+  // ownership.
   blink::mojom::ServiceWorkerObjectInfoPtr GetOrCreateServiceWorkerHandle(
       ServiceWorkerVersion* version);
 
@@ -345,6 +351,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration_id|.
   void RemoveServiceWorkerRegistrationObjectHost(int64_t registration_id);
 
+  // Removes the ServiceWorkerHandle corresponding to |version_id|.
+  void RemoveServiceWorkerHandle(int64_t version_id);
+
   // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
   // settings allows service workers to run at |scope|. If this provider is for
   // a window client, the check involves the topmost frame url as well as
@@ -361,6 +370,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
   friend class ServiceWorkerContextRequestHandlerTest;
+  friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_SameSizeScript);
@@ -529,6 +539,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
            std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
       registration_object_hosts_;
 
+  // Contains all ServiceWorkerHandle instances corresponding to
+  // the service worker JavaScript objects for the hosted execution
+  // context (service worker global scope or service worker client) in the
+  // renderer process.
+  std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerHandle>>
+      handles_;
+
   // The ready() promise is only allowed to be created once.
   // |get_ready_callback_| has three states:
   // 1. |get_ready_callback_| is null when ready() has not yet been called.
@@ -577,12 +594,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       bindings_for_worker_threads_;
 
   std::vector<base::Closure> queued_events_;
-
-  // S13nServiceWorker/NavigationMojoResponse:
-  // A service worker handle for the controller service worker that is
-  // pre-created before the renderer process (and therefore the dispatcher host)
-  // is created.
-  base::WeakPtr<ServiceWorkerHandle> precreated_controller_handle_;
 
   // For provider hosts that are hosting a running service worker.
   mojo::Binding<service_manager::mojom::InterfaceProvider>

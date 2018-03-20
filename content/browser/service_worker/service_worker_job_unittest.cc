@@ -19,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -49,42 +48,6 @@ using net::WrappedIOBuffer;
 namespace content {
 
 namespace {
-
-// A dispatcher host that holds on to all registered ServiceWorkerHandles.
-class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
- public:
-  KeepHandlesDispatcherHost(int render_process_id,
-                            ResourceContext* resource_context)
-      : ServiceWorkerDispatcherHost(render_process_id, resource_context) {}
-  void RegisterServiceWorkerHandle(
-      std::unique_ptr<ServiceWorkerHandle> handle) override {
-    handles_.push_back(std::move(handle));
-  }
-
-  void UnregisterServiceWorkerHandle(int handle_id) override {
-    auto iter = handles_.begin();
-    for (; iter != handles_.end(); ++iter) {
-      if ((*iter)->handle_id() == handle_id)
-        break;
-    }
-    ASSERT_NE(handles_.end(), iter);
-    handles_.erase(iter);
-  }
-
-  void Clear() {
-    handles_.clear();
-  }
-
-  const std::vector<std::unique_ptr<ServiceWorkerHandle>>& handles() {
-    return handles_;
-  }
-
- private:
-  ~KeepHandlesDispatcherHost() override {}
-
-  std::vector<std::unique_ptr<ServiceWorkerHandle>> handles_;
-  DISALLOW_COPY_AND_ASSIGN(KeepHandlesDispatcherHost);
-};
 
 void SaveRegistrationCallback(
     ServiceWorkerStatusCode expected_status,
@@ -338,41 +301,32 @@ TEST_F(ServiceWorkerJobTest, Register) {
 
 // Make sure registrations are cleaned up when they are unregistered.
 TEST_F(ServiceWorkerJobTest, Unregister) {
-  // During registration, service worker handles will be created to host the
-  // {installing,waiting,active} service worker objects for
-  // ServiceWorkerGlobalScope#registration. KeepHandlesDispatcherHost will store
-  // the handles.
-  scoped_refptr<KeepHandlesDispatcherHost> dispatcher_host =
-      base::MakeRefCounted<KeepHandlesDispatcherHost>(
-          helper_->mock_render_process_id(),
-          helper_->browser_context()->GetResourceContext());
-  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
-                                  dispatcher_host);
-  dispatcher_host->Init(helper_->context_wrapper());
-
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("http://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/service_worker.js"), options);
+  scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
 
-  // During the above registration, a service worker registration object host
-  // for ServiceWorkerGlobalScope#registration has been created/added into
-  // |provider_host|.
   ServiceWorkerProviderHost* provider_host =
       registration->active_version()->provider_host();
   ASSERT_NE(nullptr, provider_host);
+  // One ServiceWorkerRegistrationObjectHost should have been created for the
+  // new registration.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
-  EXPECT_EQ(3UL, dispatcher_host->handles().size());
+  // One ServiceWorkerHandle should have been created for the new service
+  // worker.
+  EXPECT_EQ(1UL, provider_host->handles_.size());
 
   RunUnregisterJob(options.scope);
 
-  // Clear all service worker handles.
-  dispatcher_host->Clear();
-  EXPECT_EQ(0UL, dispatcher_host->handles().size());
-  // The service worker registration object host has been destroyed together
-  // with |provider_host| by the above unregistration. Then the only reference
-  // to the registration should be |registration|.
+  // The service worker registration object host and service worker handle have
+  // been destroyed together with |provider_host| by the above unregistration.
+  // Then |registration| and |version| should be the last one reference to the
+  // corresponding instance.
   EXPECT_TRUE(registration->HasOneRef());
+  EXPECT_TRUE(version->HasOneRef());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 
   registration =
       FindRegistrationForPattern(options.scope, SERVICE_WORKER_ERROR_NOT_FOUND);
@@ -415,16 +369,6 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
 // Make sure that when registering a duplicate pattern+script_url
 // combination, that the same registration is used.
 TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
-  // During registration, handles will be created for hosting the worker's
-  // context. KeepHandlesDispatcherHost will store the handles.
-  scoped_refptr<KeepHandlesDispatcherHost> dispatcher_host =
-      new KeepHandlesDispatcherHost(
-          helper_->mock_render_process_id(),
-          helper_->browser_context()->GetResourceContext());
-  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
-                                  dispatcher_host);
-  dispatcher_host->Init(helper_->context_wrapper());
-
   GURL script_url("http://www.example.com/service_worker.js");
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("http://www.example.com/");
@@ -440,7 +384,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_NE(nullptr, provider_host);
 
   // Clear all service worker handles.
-  dispatcher_host->Clear();
+  provider_host->handles_.clear();
   // Ensure that the registration's object host doesn't have the reference.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
   provider_host->registration_object_hosts_.clear();
@@ -469,15 +413,6 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 // is updated when registering a duplicate pattern+script_url with a different
 // update_via_cache value.
 TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
-  // During registration, handles will be created for hosting the worker's
-  // context. KeepHandlesDispatcherHost will store the handles.
-  auto dispatcher_host = base::MakeRefCounted<KeepHandlesDispatcherHost>(
-      helper_->mock_render_process_id(),
-      helper_->browser_context()->GetResourceContext());
-  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
-                                  dispatcher_host);
-  dispatcher_host->Init(helper_->context_wrapper());
-
   GURL script_url("https://www.example.com/service_worker.js");
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/");
@@ -496,7 +431,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
   ASSERT_NE(nullptr, provider_host);
 
   // Clear all service worker handles.
-  dispatcher_host->Clear();
+  provider_host->handles_.clear();
   // Ensure that the registration's object host doesn't have the reference.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
   provider_host->registration_object_hosts_.clear();
