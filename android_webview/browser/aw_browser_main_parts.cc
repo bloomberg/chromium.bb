@@ -132,9 +132,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
       browser_client_->GetNetLog());
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
-
-  // TODO(meacer): Remove when PlzNavigate ships.
-  content::RenderFrameHost::AllowDataUrlNavigationForAndroidWebView();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

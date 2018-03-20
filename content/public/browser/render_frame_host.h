@@ -70,11 +70,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // is present only to support Android WebView and must not be used in other
   // configurations.
   static void AllowInjectingJavaScriptForAndroidWebView();
-
-  // Temporary hack to enable data URLs on Android Webview until PlzNavigate
-  // ships.
-  static void AllowDataUrlNavigationForAndroidWebView();
-  static bool IsDataUrlNavigationAllowedForAndroidWebView();
 #endif
 
   // Returns a RenderFrameHost given its accessibility tree ID.

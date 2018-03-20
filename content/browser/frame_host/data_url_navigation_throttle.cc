@@ -33,18 +33,6 @@ DataUrlNavigationThrottle::~DataUrlNavigationThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
 DataUrlNavigationThrottle::WillProcessResponse() {
-#if defined(OS_ANDROID)
-  // This should ideally be done in CreateThrottleForNavigation(), but
-  // NavigationHandleImpl::GetRenderFrameHost() expects to not be run before
-  // WillProcessResponse().
-  // TODO(meacer): Remove this special case when PlzNavigate is enabled.
-  if (!IsBrowserSideNavigationEnabled() &&
-      navigation_handle()
-          ->GetRenderFrameHost()
-          ->IsDataUrlNavigationAllowedForAndroidWebView()) {
-    return PROCEED;
-  }
-#endif
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());
   if (handle->IsDownload())
