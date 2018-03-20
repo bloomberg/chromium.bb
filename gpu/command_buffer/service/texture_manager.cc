@@ -526,7 +526,7 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
   DCHECK(face_idx < level_images_.size());
   DCHECK(level >= 0);
 
-  if (static_cast<GLint>(level_images_[face_idx].size()) < level) {
+  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
     return nullptr;
   }
 
