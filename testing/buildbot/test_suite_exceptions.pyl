@@ -3086,7 +3086,7 @@
       },
       'Marshmallow Tablet Tester': {
         'swarming': {
-          'hard_timeout': 60,
+          'hard_timeout': 120,
         },
       },
 
