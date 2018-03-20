@@ -30,6 +30,7 @@ SignOutButton::SignOutButton(views::ButtonListener* listener)
   SetEnabledTextColors(kUnifiedMenuTextColor);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+  label()->SetSubpixelRenderingEnabled(false);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
