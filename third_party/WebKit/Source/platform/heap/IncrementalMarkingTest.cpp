@@ -29,8 +29,11 @@ class IncrementalMarkingScope {
       : gc_forbidden_scope_(thread_state),
         thread_state_(thread_state),
         heap_(thread_state_->Heap()),
-        marking_stack_(heap_.MarkingStack()) {
+        marking_stack_(heap_.MarkingStack()),
+        not_fully_constructed_marking_stack_(
+            heap_.NotFullyConstructedMarkingStack()) {
     EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
     heap_.CommitCallbackStacks();
     heap_.EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
@@ -39,11 +42,15 @@ class IncrementalMarkingScope {
 
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
     heap_.DisableIncrementalMarkingBarrier();
     heap_.DecommitCallbackStacks();
   }
 
   CallbackStack* marking_stack() const { return marking_stack_; }
+  CallbackStack* not_fully_constructed_marking_stack() const {
+    return not_fully_constructed_marking_stack_;
+  }
   ThreadHeap& heap() const { return heap_; }
 
  protected:
@@ -51,6 +58,7 @@ class IncrementalMarkingScope {
   ThreadState* const thread_state_;
   ThreadHeap& heap_;
   CallbackStack* const marking_stack_;
+  CallbackStack* const not_fully_constructed_marking_stack_;
 };
 
 // Expects that the write barrier fires for the objects passed to the
@@ -1448,6 +1456,68 @@ TEST(IncrementalMarkingTest, WeakHashMapPromptlyFreeDisabled) {
   }
   state->SetGCState(ThreadState::kIncrementalMarkingFinalizeScheduled);
   state->SetGCState(ThreadState::kNoGCScheduled);
+}
+
+namespace {
+
+class RegisteringMixin;
+using ObjectRegistry = HeapHashMap<void*, Member<RegisteringMixin>>;
+
+class RegisteringMixin : public GarbageCollectedMixin {
+ public:
+  explicit RegisteringMixin(ObjectRegistry* registry) {
+    HeapObjectHeader* header = GetHeapObjectHeader();
+    const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
+    EXPECT_EQ(uninitialized_value, header);
+    registry->insert(reinterpret_cast<void*>(this), this);
+  }
+};
+
+class RegisteringObject : public GarbageCollected<RegisteringObject>,
+                          public RegisteringMixin {
+  USING_GARBAGE_COLLECTED_MIXIN(RegisteringObject);
+
+ public:
+  explicit RegisteringObject(ObjectRegistry* registry)
+      : RegisteringMixin(registry) {}
+};
+
+}  // namespace
+
+TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
+  IncrementalMarkingScope scope(ThreadState::Current());
+  ObjectRegistry registry;
+  RegisteringObject* object = new RegisteringObject(&registry);
+  EXPECT_FALSE(scope.marking_stack()->IsEmpty());
+  CallbackStack::Item* item = scope.marking_stack()->Pop();
+  RegisteringObject* recorded_object =
+      reinterpret_cast<RegisteringObject*>(item->Object());
+  // In this case, the Member write barrier will also add the object to the
+  // regular marking stack. The not-fully-constructed object marking stack is
+  // only needed when going through custom off-heap data structures that require
+  // eager tracing.
+  EXPECT_EQ(object, recorded_object);
+  // In this example, there are two more objects on the callback stack: the
+  // backing store for which a write barrier triggers after rehashing, and
+  // a write barrier for the Member assignment (which might not always happen).
+  scope.marking_stack()->Pop();
+  scope.marking_stack()->Pop();
+  // The mixin object should be on the not-fully-constructed object marking
+  // stack.
+  EXPECT_FALSE(scope.not_fully_constructed_marking_stack()->IsEmpty());
+  CallbackStack::Item* item2 =
+      scope.not_fully_constructed_marking_stack()->Pop();
+  RegisteringObject* recorded_object2 =
+      reinterpret_cast<RegisteringObject*>(item2->Object());
+  EXPECT_EQ(object, recorded_object2);
+}
+
+TEST(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
+  ObjectRegistry registry;
+  RegisteringMixin* mixin = new RegisteringObject(&registry);
+  HeapObjectHeader* header = mixin->GetHeapObjectHeader();
+  const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
+  EXPECT_NE(uninitialized_value, header);
 }
 
 }  // namespace incremental_marking_test

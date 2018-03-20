@@ -123,6 +123,9 @@ class PLATFORM_EXPORT BlinkGC final {
     kV8MinorGC,
     kV8MajorGC,
   };
+
+  // Sentinel used to mark not-fully-constructed during mixins.
+  static constexpr void* kNotFullyConstructedObject = nullptr;
 };
 
 }  // namespace blink

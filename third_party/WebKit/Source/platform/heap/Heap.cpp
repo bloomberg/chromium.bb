@@ -137,6 +137,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       heap_does_not_contain_cache_(std::make_unique<HeapDoesNotContainCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
       marking_stack_(CallbackStack::Create()),
+      not_fully_constructed_marking_stack_(CallbackStack::Create()),
       post_marking_callback_stack_(CallbackStack::Create()),
       weak_callback_stack_(CallbackStack::Create()),
       ephemeron_stack_(CallbackStack::Create()),
@@ -212,19 +213,48 @@ Address ThreadHeap::CheckAndMarkPointer(
     heap_does_not_contain_cache_->AddEntry(address);
   return nullptr;
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 void ThreadHeap::PushTraceCallback(void* object, TraceCallback callback) {
   DCHECK(thread_state_->IsInGC() || thread_state_->IsIncrementalMarking());
-
   CallbackStack::Item* slot = marking_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
 }
 
-bool ThreadHeap::PopAndInvokeTraceCallback(Visitor* visitor) {
+void ThreadHeap::PushNotFullyConstructedTraceCallback(void* object) {
+  DCHECK(thread_state_->IsInGC() || thread_state_->IsIncrementalMarking());
+  CallbackStack::Item* slot =
+      not_fully_constructed_marking_stack_->AllocateEntry();
+  *slot = CallbackStack::Item(object, nullptr);
+}
+
+bool ThreadHeap::PopAndInvokeNotFullyConstructedTraceCallback(Visitor* v) {
+  DCHECK(!thread_state_->IsIncrementalMarking());
+  MarkingVisitor* visitor = reinterpret_cast<MarkingVisitor*>(v);
+  CallbackStack::Item* item = not_fully_constructed_marking_stack_->Pop();
+  if (!item)
+    return false;
+
+  // This is called in the atomic marking phase. We mark all
+  // not-fully-constructed objects that have found before this point
+  // conservatively. See comments on GarbageCollectedMixin for more details.
+  // - Objects that are fully constructed are safe to process.
+  // - Objects may still have uninitialized parts. This will not crash as fields
+  //   are zero initialized and it is still correct as values are held alive
+  //   from other references as it would otherwise be impossible to use them for
+  //   assignment.
+  BasePage* const page = PageFromObject(item->Object());
+  visitor->ConservativelyMarkAddress(page,
+                                     reinterpret_cast<Address>(item->Object()));
+  return true;
+}
+
+bool ThreadHeap::PopAndInvokeTraceCallback(Visitor* v) {
+  MarkingVisitor* visitor = reinterpret_cast<MarkingVisitor*>(v);
   CallbackStack::Item* item = marking_stack_->Pop();
   if (!item)
     return false;
+  DCHECK(item->Callback());
   item->Call(visitor);
   return true;
 }
@@ -284,6 +314,7 @@ bool ThreadHeap::WeakTableRegistered(const void* table) {
 
 void ThreadHeap::CommitCallbackStacks() {
   marking_stack_->Commit();
+  not_fully_constructed_marking_stack_->Commit();
   post_marking_callback_stack_->Commit();
   weak_callback_stack_->Commit();
   ephemeron_stack_->Commit();
@@ -312,6 +343,7 @@ void ThreadHeap::RegisterMovingObjectCallback(MovableReference reference,
 
 void ThreadHeap::DecommitCallbackStacks() {
   marking_stack_->Decommit();
+  not_fully_constructed_marking_stack_->Decommit();
   post_marking_callback_stack_->Decommit();
   weak_callback_stack_->Decommit();
   ephemeron_stack_->Decommit();
@@ -322,6 +354,13 @@ void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
   bool complete = AdvanceMarkingStackProcessing(
       visitor, std::numeric_limits<double>::infinity());
   CHECK(complete);
+}
+
+void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
+  TRACE_EVENT0("blink_gc", "ThreadHeap::MarkNotFullyConstructedObjects");
+  DCHECK(!thread_state_->IsIncrementalMarking());
+  while (PopAndInvokeNotFullyConstructedTraceCallback(visitor)) {
+  }
 }
 
 bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,

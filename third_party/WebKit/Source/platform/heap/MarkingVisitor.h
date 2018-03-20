@@ -58,7 +58,12 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
   void Visit(void* object, TraceDescriptor desc) final {
     DCHECK(object);
-    DCHECK(desc.base_object_payload);
+    if (desc.base_object_payload == BlinkGC::kNotFullyConstructedObject) {
+      // This means that the objects are not-yet-fully-constructed. See comments
+      // on GarbageCollectedMixin for how those objects are handled.
+      Heap().PushNotFullyConstructedTraceCallback(object);
+      return;
+    }
     // Default mark method of the trait just calls the two-argument mark
     // method on the visitor. The second argument is the static trace method
     // of the trait, which by default calls the instance method
