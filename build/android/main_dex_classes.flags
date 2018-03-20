@@ -44,22 +44,18 @@
 -keep @**.RunWith class * {}
 
 # The following are based on $SDK_BUILD_TOOLS/mainDexClasses.rules
-# Ours differ in that it omits -keeps for application / instrumentation /
-# backupagents (these are added by aapt's main dex list rules output).
-# The keeps in this file are not only redundant, but the explicit -keep
-# of Application.attachBaseContext() is overly broad and adds ~20k methods to
-# chrome_public_apk at the time of this change.
+# Ours differ in that:
+# 1. It omits -keeps for application / instrumentation / backupagents (these are
+#    redundant since they are added by aapt's main dex list rules output).
+# 2. Omits keep for Application.attachBaseContext(), which is overly broad.
+# 3. Omits keep for all annotations, which is also overly broad (and pulls in
+#    any class that has an @IntDef).
 
 ######## START mainDexClasses.rules ########
 
-# We need to keep all annotation classes because proguard does not trace annotation attribute
-# it just filter the annotation attributes according to annotation classes it already kept.
--keep public class * extends java.lang.annotation.Annotation {
- *;
-}
-# Keep old fashion tests in the main dex or they'll be silently ignored by InstrumentationTestRunner↵
+# Keep old fashion tests in the main dex or they'll be silently ignored by InstrumentationTestRunner
 -keep public class * extends android.test.InstrumentationTestCase {
- <init>();
+  <init>();
 }
 
 ######## END mainDexClasses.rules ########
