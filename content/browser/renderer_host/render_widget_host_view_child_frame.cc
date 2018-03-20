@@ -408,6 +408,7 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // RenderWidgetHostInputEventRouter afterwards.
   NotifyObserversAboutShutdown();
 
+  host()->SetView(nullptr);
   RenderWidgetHostViewBase::Destroy();
 
   delete this;
