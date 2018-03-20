@@ -51,7 +51,7 @@ class GPU_EXPORT SyncPointOrderData
 
   uint32_t unprocessed_order_num() const {
     base::AutoLock auto_lock(lock_);
-    return unprocessed_order_num_;
+    return last_unprocessed_order_num_;
   }
 
   uint32_t current_order_num() const {
@@ -122,9 +122,7 @@ class GPU_EXPORT SyncPointOrderData
   bool paused_ = false;
 
   // This lock protects destroyed_, processed_order_num_,
-  // unprocessed_order_num_, and order_fence_queue_. All order numbers (n) in
-  // order_fence_queue_ must follow the invariant:
-  //   processed_order_num_ < n <= unprocessed_order_num_.
+  // unprocessed_order_nums_, and order_fence_queue_.
   mutable base::Lock lock_;
 
   bool destroyed_ = false;
@@ -132,8 +130,13 @@ class GPU_EXPORT SyncPointOrderData
   // Last finished IPC order number.
   uint32_t processed_order_num_ = 0;
 
-  // Unprocessed order number expected to be processed under normal execution.
-  uint32_t unprocessed_order_num_ = 0;
+  // Last unprocessed order number. Updated in GenerateUnprocessedOrderNumber.
+  uint32_t last_unprocessed_order_num_ = 0;
+
+  // Queue of unprocessed order numbers. Order numbers are enqueued in
+  // GenerateUnprocessedOrderNumber, and dequeued in
+  // FinishProcessingOrderNumber.
+  std::queue<uint32_t> unprocessed_order_nums_;
 
   // In situations where we are waiting on fence syncs that do not exist, we
   // validate by making sure the order number does not pass the order number
@@ -141,7 +144,9 @@ class GPU_EXPORT SyncPointOrderData
   // wait command's, we should automatically release up to the expected
   // release count. Note that this also releases other lower release counts,
   // so a single misbehaved fence sync is enough to invalidate/signal all
-  // previous fence syncs.
+  // previous fence syncs. All order numbers (n) in order_fence_queue_ must
+  // follow the invariant:
+  //   unprocessed_order_nums_.front() < n <= unprocessed_order_nums_.back().
   OrderFenceQueue order_fence_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointOrderData);
