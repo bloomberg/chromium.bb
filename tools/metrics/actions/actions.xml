@@ -11620,6 +11620,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileDownloadRetryDownload">
+  <owner>eugenebut@chromium.org</owner>
+  <description>
+    User attempted to retry downloading a file after the download failed.
+  </description>
+</action>
+
 <action name="MobileExternalNavigationDispatched">
   <owner>mariakhomenko@chromium.org</owner>
   <description>
