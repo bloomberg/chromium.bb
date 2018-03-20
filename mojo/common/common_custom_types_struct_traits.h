@@ -10,28 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/unguessable_token.h"
-#include "base/version.h"
 #include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
 #include "mojo/common/text_direction.mojom-shared.h"
 #include "mojo/common/thread_priority.mojom-shared.h"
 #include "mojo/common/unguessable_token.mojom-shared.h"
-#include "mojo/common/version.mojom-shared.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<common::mojom::VersionDataView, base::Version> {
-  static bool IsNull(const base::Version& version) {
-    return !version.IsValid();
-  }
-  static void SetToNull(base::Version* out) {
-    *out = base::Version(std::string());
-  }
-  static const std::vector<uint32_t>& components(const base::Version& version);
-  static bool Read(common::mojom::VersionDataView data, base::Version* out);
-};
 
 // If base::UnguessableToken is no longer 128 bits, the logic below and the
 // mojom::UnguessableToken type should be updated.

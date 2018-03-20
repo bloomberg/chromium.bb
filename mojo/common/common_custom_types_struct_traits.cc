@@ -9,25 +9,6 @@
 namespace mojo {
 
 // static
-const std::vector<uint32_t>&
-StructTraits<common::mojom::VersionDataView, base::Version>::components(
-    const base::Version& version) {
-  return version.components();
-}
-
-// static
-bool StructTraits<common::mojom::VersionDataView, base::Version>::Read(
-    common::mojom::VersionDataView data,
-    base::Version* out) {
-  std::vector<uint32_t> components;
-  if (!data.ReadComponents(&components))
-    return false;
-
-  *out = base::Version(base::Version(std::move(components)));
-  return out->IsValid();
-}
-
-// static
 bool StructTraits<
     common::mojom::UnguessableTokenDataView,
     base::UnguessableToken>::Read(common::mojom::UnguessableTokenDataView data,

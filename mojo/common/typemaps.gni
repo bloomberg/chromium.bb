@@ -11,5 +11,4 @@ typemaps = [
   "//mojo/common/thread_priority.typemap",
   "//mojo/common/unguessable_token.typemap",
   "//mojo/common/values.typemap",
-  "//mojo/common/version.typemap",
 ]
