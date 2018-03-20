@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "cc/cc_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -28,6 +29,11 @@ class CC_EXPORT RenderFrameMetadata {
   RenderFrameMetadata& operator=(RenderFrameMetadata&& other);
   bool operator==(const RenderFrameMetadata& other);
   bool operator!=(const RenderFrameMetadata& other);
+
+  // The background color of a CompositorFrame. It can be used for filling the
+  // content area if the primary surface is unavailable and fallback is not
+  // specified.
+  SkColor root_background_color = SK_ColorWHITE;
 
   // Scroll offset of the root layer. This optional parameter is only valid
   // during tests.

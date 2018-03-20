@@ -283,6 +283,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnHostMovedInPixels(aura::WindowTreeHost* host,
                            const gfx::Point& new_origin_in_pixels) override;
 
+  // RenderFrameMetadataProvider::Observer
+  void OnRenderFrameMetadataChanged() override;
+
 #if defined(OS_WIN)
   // Gets the HWND of the host window.
   HWND GetHostWindowHWND() const;
@@ -522,7 +525,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UpdateNeedsBeginFramesInternal();
 
   // Applies background color without notifying the RenderWidget about
-  // opaqueness changes.
+  // opaqueness changes. This allows us to, when navigating to a new page,
+  // transfer this color to that page. This allows us to pass this background
+  // color to new views on navigation.
   void UpdateBackgroundColorFromRenderer(SkColor color);
 
   const bool is_mus_browser_plugin_guest_;

@@ -95,7 +95,6 @@ namespace content {
 class BrowserAccessibilityManager;
 class InputRouter;
 class MockRenderWidgetHost;
-class RenderFrameMetadataProvider;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
@@ -602,7 +601,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return last_auto_resize_request_number_;
   }
 
-  RenderFrameMetadataProvider* render_frame_metadata_provider() {
+  RenderFrameMetadataProviderImpl* render_frame_metadata_provider() {
     return &render_frame_metadata_provider_;
   }
 

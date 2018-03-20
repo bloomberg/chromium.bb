@@ -1847,6 +1847,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   RenderFrameMetadata metadata;
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+  metadata.root_background_color = active_tree_->background_color();
   return metadata;
 }
 
