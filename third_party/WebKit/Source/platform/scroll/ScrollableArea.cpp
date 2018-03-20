@@ -395,10 +395,11 @@ void ScrollableArea::MouseCapturedScrollbar() {
     fade_overlay_scrollbars_timer_->Stop();
 }
 
-void ScrollableArea::MouseReleasedScrollbar() {
+void ScrollableArea::MouseReleasedScrollbar(ScrollbarOrientation orientation) {
   scrollbar_captured_ = false;
   // This will kick off the fade out timer.
   ShowOverlayScrollbars();
+  SnapAfterScrollbarDragging(orientation);
 }
 
 void ScrollableArea::ContentAreaDidShow() const {

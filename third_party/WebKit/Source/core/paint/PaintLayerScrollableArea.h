@@ -537,6 +537,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool SetHasHorizontalScrollbar(bool has_scrollbar);
   bool SetHasVerticalScrollbar(bool has_scrollbar);
 
+  void SnapAfterScrollbarDragging(ScrollbarOrientation) override;
+
   void UpdateScrollCornerStyle();
   LayoutSize MinimumSizeForResizing(float zoom_factor);
   LayoutRect LayoutContentRect(IncludeScrollbarsInRect) const;
