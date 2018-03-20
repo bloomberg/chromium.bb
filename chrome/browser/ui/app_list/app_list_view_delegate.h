@@ -96,6 +96,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetUpSearchUI();
 
   // Overridden from ash::mojom::WallpaperObserver:
+  void OnWallpaperChanged(uint32_t image_id) override;
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override;
 
@@ -126,9 +127,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // The binding this instance uses to implement mojom::WallpaperObserver.
   mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
-
-  // Ash's mojom::WallpaperController.
-  ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr_;
 
   std::vector<SkColor> wallpaper_prominent_colors_;
 

@@ -53,6 +53,13 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
       const base::FilePath& customized_default_large_path);
   void SetPolicyWallpaper(const AccountId& account_id,
                           std::unique_ptr<std::string> data);
+  void SetThirdPartyWallpaper(
+      const AccountId& account_id,
+      const wallpaper::WallpaperFilesId& wallpaper_files_id,
+      const std::string& file_name,
+      wallpaper::WallpaperLayout layout,
+      const gfx::ImageSkia& image,
+      ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback);
   void ConfirmPreviewWallpaper();
   void CancelPreviewWallpaper();
   void UpdateCustomWallpaperLayout(const AccountId& account_id,
@@ -63,6 +70,11 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void RemovePolicyWallpaper(const AccountId& account_id);
   void SetAnimationDuration(const base::TimeDelta& animation_duration);
   void OpenWallpaperPickerIfAllowed();
+  void AddObserver(ash::mojom::WallpaperObserverAssociatedPtrInfo observer);
+  void GetWallpaperImage(
+      ash::mojom::WallpaperController::GetWallpaperImageCallback callback);
+  void GetWallpaperColors(
+      ash::mojom::WallpaperController::GetWallpaperColorsCallback callback);
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
           IsActiveUserWallpaperControlledByPolicyCallback callback);

@@ -324,20 +324,6 @@ class ASH_EXPORT WallpaperController
   bool InitializeUserWallpaperInfo(const AccountId& account_id,
                                    bool is_ephemeral);
 
-  // TODO(crbug.com/776464): This method is a temporary workaround during the
-  // refactoring. It should be combined with |SetCustomWallpaper|.
-  // The same with |SetCustomWallpaper|, except that |image| wasn't once
-  // converted to |SkBitmap|, so that the image id is preserved.
-  // ArcWallpaperService needs this to track the wallpaper change.
-  void SetArcWallpaper(const AccountId& account_id,
-                       const user_manager::UserType user_type,
-                       const std::string& wallpaper_files_id,
-                       const std::string& file_name,
-                       const gfx::ImageSkia& image,
-                       wallpaper::WallpaperLayout layout,
-                       bool is_ephemeral,
-                       bool show_wallpaper);
-
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const AccountId& account_id,
                              gfx::ImageSkia* image);
@@ -359,10 +345,10 @@ class ASH_EXPORT WallpaperController
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
-                          const SkBitmap& image,
+                          const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaper(mojom::WallpaperUserInfoPtr user_info,
-                          const SkBitmap& image,
+                          const gfx::ImageSkia& image,
                           const std::string& url,
                           wallpaper::WallpaperLayout layout,
                           bool preview_mode) override;
@@ -376,6 +362,12 @@ class ASH_EXPORT WallpaperController
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void SetThirdPartyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                              const std::string& wallpaper_files_id,
+                              const std::string& file_name,
+                              wallpaper::WallpaperLayout layout,
+                              const gfx::ImageSkia& image,
+                              SetThirdPartyWallpaperCallback callback) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCustomWallpaperLayout(mojom::WallpaperUserInfoPtr user_info,
@@ -389,6 +381,7 @@ class ASH_EXPORT WallpaperController
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
+  void GetWallpaperImage(GetWallpaperImageCallback callback) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
   void IsActiveUserWallpaperControlledByPolicy(
       IsActiveUserWallpaperControlledByPolicyCallback callback) override;

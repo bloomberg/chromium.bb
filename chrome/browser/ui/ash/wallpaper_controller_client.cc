@@ -190,9 +190,9 @@ void WallpaperControllerClient::SetCustomWallpaper(
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
-  wallpaper_controller_->SetCustomWallpaper(
-      std::move(user_info), wallpaper_files_id.id(), file_name, layout,
-      *image.bitmap(), preview_mode);
+  wallpaper_controller_->SetCustomWallpaper(std::move(user_info),
+                                            wallpaper_files_id.id(), file_name,
+                                            layout, image, preview_mode);
 }
 
 void WallpaperControllerClient::SetOnlineWallpaper(
@@ -205,8 +205,8 @@ void WallpaperControllerClient::SetOnlineWallpaper(
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
-  wallpaper_controller_->SetOnlineWallpaper(
-      std::move(user_info), *image.bitmap(), url, layout, preview_mode);
+  wallpaper_controller_->SetOnlineWallpaper(std::move(user_info), image, url,
+                                            layout, preview_mode);
 }
 
 void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
@@ -260,6 +260,22 @@ void WallpaperControllerClient::SetPolicyWallpaper(
 
   wallpaper_controller_->SetPolicyWallpaper(std::move(user_info),
                                             GetFilesId(account_id).id(), *data);
+}
+
+void WallpaperControllerClient::SetThirdPartyWallpaper(
+    const AccountId& account_id,
+    const wallpaper::WallpaperFilesId& wallpaper_files_id,
+    const std::string& file_name,
+    wallpaper::WallpaperLayout layout,
+    const gfx::ImageSkia& image,
+    ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback) {
+  ash::mojom::WallpaperUserInfoPtr user_info =
+      AccountIdToWallpaperUserInfo(account_id);
+  if (!user_info)
+    return;
+  wallpaper_controller_->SetThirdPartyWallpaper(
+      std::move(user_info), wallpaper_files_id.id(), file_name, layout, image,
+      std::move(callback));
 }
 
 void WallpaperControllerClient::ConfirmPreviewWallpaper() {
@@ -344,6 +360,21 @@ void WallpaperControllerClient::SetAnimationDuration(
 
 void WallpaperControllerClient::OpenWallpaperPickerIfAllowed() {
   wallpaper_controller_->OpenWallpaperPickerIfAllowed();
+}
+
+void WallpaperControllerClient::AddObserver(
+    ash::mojom::WallpaperObserverAssociatedPtrInfo observer) {
+  wallpaper_controller_->AddObserver(std::move(observer));
+}
+
+void WallpaperControllerClient::GetWallpaperImage(
+    ash::mojom::WallpaperController::GetWallpaperImageCallback callback) {
+  wallpaper_controller_->GetWallpaperImage(std::move(callback));
+}
+
+void WallpaperControllerClient::GetWallpaperColors(
+    ash::mojom::WallpaperController::GetWallpaperColorsCallback callback) {
+  wallpaper_controller_->GetWallpaperColors(std::move(callback));
 }
 
 void WallpaperControllerClient::IsActiveUserWallpaperControlledByPolicy(
