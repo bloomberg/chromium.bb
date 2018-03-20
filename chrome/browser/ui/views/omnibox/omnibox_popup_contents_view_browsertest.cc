@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -144,6 +145,7 @@ class OmniboxPopupContentsViewTest
   }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsViewTest);
@@ -190,10 +192,18 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
   }
 }
 
+#if defined(OS_MACOSX)
+// This test doesn't work on Mac because Mac doesn't theme the omnibox the way
+// it expects.
+#define MAYBE_ThemeIntegration DISABLED_ThemeIntegration
+#else
+#define MAYBE_ThemeIntegration ThemeIntegration
+#endif
+
 // Integration test for omnibox popup theming. This is a browser test since it
 // relies on initialization done in chrome_browser_main_extra_parts_views_linux
 // propagating through correctly to OmniboxPopupContentsView::GetTint().
-IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, ThemeIntegration) {
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
   // Sanity check the bot: ensure the profile is configured to use the system
   // theme. On Linux, the default depends on a whitelist using the result of
   // base::nix::GetDesktopEnvironment(). E.g. KDE never uses the system theme.
