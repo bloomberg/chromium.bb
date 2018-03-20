@@ -12,6 +12,8 @@
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/ScopedDisplayItemFragment.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/PaintTestConfigurations.h"
@@ -1143,6 +1145,79 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
   CHECK(markers);
   EXPECT_EQ(0u, markers->start);
   EXPECT_EQ(4u, markers->end);
+}
+
+TEST_P(PaintControllerTest, CachedSubsequenceWithFragments) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
+  GraphicsContext context(GetPaintController());
+  FakeDisplayItemClient root("root");
+  constexpr size_t kFragmentCount = 3;
+  FakeDisplayItemClient container("container");
+
+  // The first paint.
+  auto paint_container = [this, &context, &container, kFragmentCount]() {
+    SubsequenceRecorder r(context, container);
+    for (size_t i = 0; i < kFragmentCount; ++i) {
+      ScopedDisplayItemFragment scoped_fragment(context, i);
+      ScopedPaintChunkProperties content_chunk_properties(
+          GetPaintController(), testing::DefaultPaintChunkProperties(),
+          container, kBackgroundType);
+      DrawRect(context, container, kBackgroundType,
+               FloatRect(100, 100, 100, 100));
+    }
+  };
+  {
+    ScopedPaintChunkProperties root_chunk_properties(
+        GetPaintController(), testing::DefaultPaintChunkProperties(), root,
+        kBackgroundType);
+    DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
+    paint_container();
+    DrawRect(context, root, kForegroundType, FloatRect(100, 100, 100, 100));
+  }
+  GetPaintController().CommitNewDisplayItems();
+
+  // Check results of the first paint.
+  auto check_paint_results = [this, &root, &container, kFragmentCount]() {
+    const auto& chunks = GetPaintController().PaintChunks();
+    ASSERT_EQ(2u + kFragmentCount, chunks.size());
+    EXPECT_EQ(root, chunks[0].id.client);
+    EXPECT_EQ(kBackgroundType, chunks[0].id.type);
+    EXPECT_EQ(0u, chunks[0].id.fragment);
+    for (size_t i = 0; i < kFragmentCount; ++i) {
+      const auto& id = chunks[i + 1].id;
+      EXPECT_EQ(container, id.client);
+      EXPECT_EQ(kBackgroundType, id.type);
+      EXPECT_EQ(i, id.fragment);
+    }
+    EXPECT_EQ(root, chunks.back().id.client);
+    EXPECT_EQ(kForegroundType, chunks.back().id.type);
+    EXPECT_EQ(0u, chunks.back().id.fragment);
+  };
+  check_paint_results();
+
+  // The second paint.
+  {
+    ScopedPaintChunkProperties root_chunk_properties(
+        GetPaintController(), testing::DefaultPaintChunkProperties(), root,
+        kBackgroundType);
+    DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
+
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+      EXPECT_FALSE(
+          GetPaintController().UseCachedSubsequenceIfPossible(container));
+      paint_container();
+    } else {
+      EXPECT_TRUE(
+          GetPaintController().UseCachedSubsequenceIfPossible(container));
+    }
+    DrawRect(context, root, kForegroundType, FloatRect(100, 100, 100, 100));
+  }
+  GetPaintController().CommitNewDisplayItems();
+
+  // The second paint should produce the exactly same results.
+  check_paint_results();
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {

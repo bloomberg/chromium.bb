@@ -79,8 +79,8 @@ class PLATFORM_EXPORT PaintController {
       const PaintChunkProperties& properties) {
     if (id) {
       PaintChunk::Id id_with_fragment(*id, current_fragment_);
-      new_paint_chunks_.UpdateCurrentPaintChunkProperties(id_with_fragment,
-                                                          properties);
+      UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(id_with_fragment,
+                                                           properties);
 #if DCHECK_IS_ON()
       CheckDuplicatePaintChunkId(id_with_fragment);
 #endif
@@ -282,6 +282,13 @@ class PLATFORM_EXPORT PaintController {
   size_t FindCachedItem(const DisplayItem::Id&);
   size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
   void CopyCachedSubsequence(size_t begin_index, size_t end_index);
+
+  void UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
+      const PaintChunk::Id& id_with_fragment,
+      const PaintChunkProperties& properties) {
+    new_paint_chunks_.UpdateCurrentPaintChunkProperties(id_with_fragment,
+                                                        properties);
+  }
 
   // Resets the indices (e.g. next_item_to_match_) of
   // current_paint_artifact_.GetDisplayItemList() to their initial values. This
