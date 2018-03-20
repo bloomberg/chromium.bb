@@ -22,6 +22,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -106,6 +110,13 @@ const base::Feature TabUnderNavigationThrottle::kBlockTabUnders{
     "BlockTabUnders", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // static
+void TabUnderNavigationThrottle::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kTabUnderProtection,
+                                true /* default_value */);
+}
+
+// static
 std::unique_ptr<content::NavigationThrottle>
 TabUnderNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
   if (handle->IsInMainFrame())
@@ -124,7 +135,10 @@ TabUnderNavigationThrottle::TabUnderNavigationThrottle(
                                                  0 /* default_value */)),
       off_the_record_(
           handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()),
-      block_(base::FeatureList::IsEnabled(kBlockTabUnders)),
+      block_(base::FeatureList::IsEnabled(kBlockTabUnders) &&
+             user_prefs::UserPrefs::Get(
+                 handle->GetWebContents()->GetBrowserContext())
+                 ->GetBoolean(prefs::kTabUnderProtection)),
       has_opened_popup_since_last_user_gesture_at_start_(
           HasOpenedPopupSinceLastUserGesture()) {}
 

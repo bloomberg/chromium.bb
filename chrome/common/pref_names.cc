@@ -116,6 +116,10 @@ const char kSiteEngagementLastUpdateTime[] = "profile.last_engagement_time";
 // 5: open the New Tab Page on startup.
 const char kRestoreOnStartup[] = "session.restore_on_startup";
 
+// A boolean pref to indicate whether or not Chrome should be performing
+// tab-under protection (i.e. blocking navigations it detects as tab-unders).
+const char kTabUnderProtection[] = "tab_under_protection";
+
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.startup_urls";
