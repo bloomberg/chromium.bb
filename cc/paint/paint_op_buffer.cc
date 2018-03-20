@@ -269,6 +269,10 @@ std::string PaintOpTypeToString(PaintOpType type) {
   return "UNKNOWN";
 }
 
+std::ostream& operator<<(std::ostream& os, PaintOpType type) {
+  return os << PaintOpTypeToString(type);
+}
+
 template <typename T>
 size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
   if (sizeof(T) > size)

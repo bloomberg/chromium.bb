@@ -114,11 +114,15 @@ class ConversionContext {
   void ApplyTransform(const TransformPaintPropertyNode* target_transform) {
     if (target_transform == current_transform_)
       return;
+    cc_list_.push<cc::ConcatOp>(GetSkMatrix(target_transform));
+  }
 
-    cc_list_.push<cc::ConcatOp>(
-        static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
-            GeometryMapper::SourceToDestinationProjection(
-                target_transform, current_transform_))));
+  SkMatrix GetSkMatrix(
+      const TransformPaintPropertyNode* target_transform) const {
+    return AffineTransformToSkMatrix(
+        GeometryMapper::SourceToDestinationProjection(target_transform,
+                                                      current_transform_)
+            .ToAffineTransform());
   }
 
   void AppendRestore(size_t n) {
@@ -127,6 +131,10 @@ class ConversionContext {
       cc_list_.push<cc::RestoreOp>();
     cc_list_.EndPaintOfPairedEnd();
   }
+
+  void UpdateEffectBounds(const FloatRect&, const TransformPaintPropertyNode*);
+  void PopToParentEffect();
+  void PopClips();
 
   const PropertyTreeState& layer_state_;
   gfx::Vector2dF layer_offset_;
@@ -152,12 +160,30 @@ class ConversionContext {
   };
   Vector<StateEntry> state_stack_;
 
+  // This structure accumulates bounds of all chunks under an effect. When an
+  // effect starts, we emit a SaveLayerOp with null bounds starts, and push a
+  // new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect ends,
+  // we update the bounds of the SaveLayerOp.
+  struct EffectBoundsInfo {
+    // The id of the SaveLayerOp for this effect. It's recorded when we push the
+    // SaveLayerOp for this effect, and used when this effect ends in
+    // UpdateSaveLayerBounds().
+    size_t save_layer_id;
+    // The transform space when the SaveLayerOp was emitted.
+    const TransformPaintPropertyNode* transform;
+    // Records the bounds of the effect which initiated the entry. Note that
+    // the effect is not |this->effect| (which is the previous effect), but the
+    // |current_effect_| when this entry is the top of the stack.
+    FloatRect bounds;
+  };
+  Vector<EffectBoundsInfo> effect_bounds_stack_;
+
   cc::DisplayItemList& cc_list_;
 };
 
 ConversionContext::~ConversionContext() {
-  for (auto& entry : state_stack_)
-    AppendRestore(entry.saved_count);
+  while (state_stack_.size())
+    PopToParentEffect();
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
@@ -298,13 +324,7 @@ void ConversionContext::SwitchToEffect(
 #endif
     if (!state_stack_.size())
       break;
-
-    StateEntry& previous_state = state_stack_.back();
-    AppendRestore(previous_state.saved_count);
-    current_transform_ = previous_state.transform;
-    current_clip_ = previous_state.clip;
-    current_effect_ = previous_state.effect;
-    state_stack_.pop_back();
+    PopToParentEffect();
   }
 
   // Step 2: Collect all effects between the target effect and the current
@@ -325,37 +345,29 @@ void ConversionContext::SwitchToEffect(
 
     // Step 3a: Before each effect can be applied, we must enter its output
     // clip first, or exit all clips if it doesn't have one.
-    if (sub_effect->OutputClip()) {
+    if (sub_effect->OutputClip())
       SwitchToClip(sub_effect->OutputClip());
-    } else {
-      while (state_stack_.size() &&
-             state_stack_.back().type == StateEntry::kClip) {
-        StateEntry& previous_state = state_stack_.back();
-        AppendRestore(previous_state.saved_count);
-        current_transform_ = previous_state.transform;
-        current_clip_ = previous_state.clip;
-        DCHECK_EQ(previous_state.effect, current_effect_);
-        state_stack_.pop_back();
-      }
-    }
+    else
+      PopClips();
 
-    // Step 3b: Apply non-spatial effects first, adjust CTM, then apply spatial
-    // effects. Strictly speaking the CTM shall be appled first, it is done
-    // in this particular order only to save one SaveOp.
+    // Step 3b: Apply effects.
     cc_list_.StartPaint();
-    cc::PaintFlags flags;
     int saved_count = 0;
+    size_t save_layer_id = kNotFound;
+    const auto* target_transform = current_transform_;
 
-    auto save_layer_once = [this, &flags, &saved_count]() {
-      if (!saved_count) {
-        saved_count = 1;
-        cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
-      }
-    };
+    // We always create separate effect nodes for normal effects and filter
+    // effects, so we can handle them separately.
+    bool has_filter = !sub_effect->Filter().IsEmpty();
+    bool has_other_effects = sub_effect->Opacity() != 1.f ||
+                             sub_effect->BlendMode() != SkBlendMode::kSrcOver ||
+                             sub_effect->GetColorFilter() != kColorFilterNone;
+    DCHECK(!has_filter || !has_other_effects);
 
-    if (sub_effect->BlendMode() != SkBlendMode::kSrcOver ||
-        sub_effect->Opacity() != 1.f ||
-        sub_effect->GetColorFilter() != kColorFilterNone) {
+    if (!has_filter) {
+      // No need to adjust transform for non-filter effects because transform
+      // doesn't matter.
+      cc::PaintFlags flags;
       flags.setBlendMode(sub_effect->BlendMode());
       // TODO(ajuma): This should really be rounding instead of flooring the
       // alpha value, but that breaks slimming paint reftests.
@@ -363,38 +375,37 @@ void ConversionContext::SwitchToEffect(
           static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity())));
       flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
           sub_effect->GetColorFilter()));
-      save_layer_once();
-    }
-
-    const TransformPaintPropertyNode* target_transform =
-        sub_effect->LocalTransformSpace();
-    if (current_transform_ != target_transform) {
-      save_layer_once();
-      ApplyTransform(target_transform);
-    }
-
-    if (sub_effect->Filter().IsEmpty()) {
-      save_layer_once();
+      save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
+      saved_count++;
     } else {
+      // Handle filter effect. Adjust transform first.
+      target_transform = sub_effect->LocalTransformSpace();
       FloatPoint filter_origin = sub_effect->PaintOffset();
-      if (filter_origin != FloatPoint()) {
-        save_layer_once();
-        cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
+      if (current_transform_ != target_transform ||
+          filter_origin != FloatPoint()) {
+        auto matrix = GetSkMatrix(target_transform);
+        matrix.preTranslate(filter_origin.X(), filter_origin.Y());
+        cc_list_.push<cc::SaveOp>();
+        cc_list_.push<cc::ConcatOp>(matrix);
+        saved_count++;
       }
+
       // The size parameter is only used to computed the origin of zoom
       // operation, which we never generate.
       gfx::SizeF empty;
       cc::PaintFlags filter_flags;
       filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
           sub_effect->Filter().AsCcFilterOperations(), empty));
-      cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
+      save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
+
       if (filter_origin != FloatPoint())
         cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
-
       saved_count++;
     }
 
-    DCHECK(saved_count);
+    DCHECK_GT(saved_count, 0);
+    DCHECK_LE(saved_count, 2);
+    DCHECK_NE(save_layer_id, kNotFound);
     cc_list_.EndPaintOfPairedBegin();
 
     // Step 3c: Adjust state and push previous state onto effect stack.
@@ -403,9 +414,81 @@ void ConversionContext::SwitchToEffect(
     state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kEffect,
                                          saved_count, current_transform_,
                                          current_clip_, current_effect_});
+    effect_bounds_stack_.emplace_back(
+        EffectBoundsInfo{save_layer_id, target_transform});
     current_transform_ = target_transform;
     current_clip_ = input_clip;
     current_effect_ = sub_effect;
+  }
+}
+
+void ConversionContext::UpdateEffectBounds(
+    const FloatRect& bounds,
+    const TransformPaintPropertyNode* transform) {
+  if (effect_bounds_stack_.IsEmpty() || bounds.IsEmpty())
+    return;
+
+  auto& effect_bounds_info = effect_bounds_stack_.back();
+  FloatRect mapped_bounds = bounds;
+  GeometryMapper::SourceToDestinationRect(
+      transform, effect_bounds_info.transform, mapped_bounds);
+  effect_bounds_info.bounds.Unite(mapped_bounds);
+}
+
+// Pop clip states (if any) and one effect state (if any) on the top of the
+// stack. Update the bounds of the SaveLayerOp of the effect.
+void ConversionContext::PopToParentEffect() {
+  DCHECK(state_stack_.size());
+  PopClips();
+  if (state_stack_.IsEmpty())
+    return;
+
+  const auto& previous_state = state_stack_.back();
+  DCHECK_EQ(previous_state.type, StateEntry::kEffect);
+  DCHECK_EQ(current_effect_->Parent(), previous_state.effect);
+  DCHECK_EQ(current_clip_, previous_state.clip);
+
+  DCHECK(effect_bounds_stack_.size());
+  const auto& bounds_info = effect_bounds_stack_.back();
+  FloatRect bounds = bounds_info.bounds;
+  if (!bounds.IsEmpty()) {
+    if (current_effect_->Filter().IsEmpty()) {
+      cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
+    } else {
+      // The bounds for the SaveLayerOp should be the source bounds before the
+      // filter is applied, in the space of the TranslateOp which was emitted
+      // before the SaveLayerOp.
+      auto save_layer_bounds = bounds;
+      save_layer_bounds.MoveBy(-current_effect_->PaintOffset());
+      cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
+                                     save_layer_bounds);
+      // We need to propagate the filtered bounds to the parent.
+      bounds = current_effect_->MapRect(bounds);
+    }
+  }
+
+  effect_bounds_stack_.pop_back();
+  current_effect_ = previous_state.effect;
+
+  // Propagate the bounds to the parent effect.
+  UpdateEffectBounds(bounds, current_transform_);
+
+  AppendRestore(previous_state.saved_count);
+  current_effect_ = previous_state.effect;
+  current_transform_ = previous_state.transform;
+  state_stack_.pop_back();
+}
+
+// Pop clip states on the top of the stack until the top is an effect state
+// or the stack is empty.
+void ConversionContext::PopClips() {
+  while (state_stack_.size() && state_stack_.back().type == StateEntry::kClip) {
+    const auto& previous_state = state_stack_.back();
+    AppendRestore(previous_state.saved_count);
+    current_transform_ = previous_state.transform;
+    current_clip_ = previous_state.clip;
+    DCHECK_EQ(previous_state.effect, current_effect_);
+    state_stack_.pop_back();
   }
 }
 
@@ -478,6 +561,7 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
     }
     if (transformed)
       AppendRestore(1);
+    UpdateEffectBounds(chunk.bounds, chunk_state.Transform());
   }
   if (translated)
     AppendRestore(1);
