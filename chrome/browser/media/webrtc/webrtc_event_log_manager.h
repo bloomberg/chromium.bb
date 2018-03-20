@@ -216,6 +216,12 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                   base::OnceCallback<void(bool)> reply);
   void DisableLocalLoggingInternal(base::OnceCallback<void(bool)> reply);
 
+  void OnWebRtcEventLogWriteInternal(
+      PeerConnectionKey key,
+      bool remote_logging_allowed,
+      const std::string& message,
+      base::OnceCallback<void(std::pair<bool, bool>)> reply);
+
   void StartRemoteLoggingInternal(int render_process_id,
                                   BrowserContextId browser_context_id,
                                   const std::string& peer_connection_id,
@@ -223,12 +229,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                   size_t max_file_size_bytes,
                                   const std::string& metadata,
                                   base::OnceCallback<void(bool)> reply);
-
-  void OnWebRtcEventLogWriteInternal(
-      PeerConnectionKey key,
-      bool remote_logging_allowed,
-      const std::string& message,
-      base::OnceCallback<void(std::pair<bool, bool>)> reply);
 
   void RenderProcessExitedInternal(int render_process_id);
 
