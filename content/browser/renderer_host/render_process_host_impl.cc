@@ -54,6 +54,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -341,6 +344,50 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path) {
 bool has_done_stun_trials = false;
 
 #endif
+
+// Globally tracks all existing RenderProcessHostImpl instances.
+//
+// TODO(https://crbug.com/813045): Remove this.
+class RenderProcessMemoryDumpProvider
+    : public base::trace_event::MemoryDumpProvider {
+ public:
+  RenderProcessMemoryDumpProvider() {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "RenderProcessHost", base::ThreadTaskRunnerHandle::Get());
+  }
+
+  ~RenderProcessMemoryDumpProvider() override {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  void AddHost(RenderProcessHostImpl* host) { hosts_.insert(host); }
+  void RemoveHost(RenderProcessHostImpl* host) { hosts_.erase(host); }
+
+ private:
+  // base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override {
+    for (auto* host : hosts_) {
+      base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+          base::StringPrintf("mojo/render_process_host/0x%" PRIxPTR,
+                             reinterpret_cast<uintptr_t>(host)));
+      dump->AddScalar("is_initialized",
+                      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                      host->is_initialized() ? 1 : 0);
+    }
+    return true;
+  }
+
+  std::set<RenderProcessHostImpl*> hosts_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessMemoryDumpProvider);
+};
+
+RenderProcessMemoryDumpProvider& GetMemoryDumpProvider() {
+  static base::NoDestructor<RenderProcessMemoryDumpProvider> tracker;
+  return *tracker;
+}
 
 // the global list of all renderer processes
 base::LazyInstance<base::IDMap<RenderProcessHost*>>::Leaky g_all_hosts =
@@ -1367,6 +1414,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   if (!base::FeatureList::IsEnabled(features::kMash))
     gpu_client_.reset(new GpuClient(GetID()));
+
+  GetMemoryDumpProvider().AddHost(this);
 }
 
 // static
@@ -1430,6 +1479,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::BindOnce(&RemoveShaderInfo, GetID()));
   }
+
+  GetMemoryDumpProvider().RemoveHost(this);
 }
 
 bool RenderProcessHostImpl::Init() {

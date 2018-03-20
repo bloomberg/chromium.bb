@@ -391,6 +391,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return *permission_service_context_;
   }
 
+  bool is_initialized() const { return is_initialized_; }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;

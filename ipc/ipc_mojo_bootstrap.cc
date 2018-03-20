@@ -4,10 +4,12 @@
 
 #include "ipc/ipc_mojo_bootstrap.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -16,10 +18,15 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/connector.h"
@@ -36,6 +43,50 @@
 namespace IPC {
 
 namespace {
+
+class ChannelAssociatedGroupController;
+
+// Used to track some internal Channel state in pursuit of message leaks.
+//
+// TODO(https://crbug.com/813045): Remove this.
+class ControllerMemoryDumpProvider
+    : public base::trace_event::MemoryDumpProvider {
+ public:
+  ControllerMemoryDumpProvider() {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "IPCChannel", nullptr);
+  }
+
+  ~ControllerMemoryDumpProvider() override {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  void AddController(ChannelAssociatedGroupController* controller) {
+    base::AutoLock lock(lock_);
+    controllers_.insert(controller);
+  }
+
+  void RemoveController(ChannelAssociatedGroupController* controller) {
+    base::AutoLock lock(lock_);
+    controllers_.erase(controller);
+  }
+
+  // base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
+ private:
+  base::Lock lock_;
+  std::set<ChannelAssociatedGroupController*> controllers_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControllerMemoryDumpProvider);
+};
+
+ControllerMemoryDumpProvider& GetMemoryDumpProvider() {
+  static base::NoDestructor<ControllerMemoryDumpProvider> provider;
+  return *provider;
+}
 
 class ChannelAssociatedGroupController
     : public mojo::AssociatedGroupController,
@@ -58,6 +109,13 @@ class ChannelAssociatedGroupController
         "IPC::mojom::Bootstrap [master] PipeControlMessageHandler");
     filters_.Append<mojo::MessageHeaderValidator>(
         "IPC::mojom::Bootstrap [master] MessageHeaderValidator");
+
+    GetMemoryDumpProvider().AddController(this);
+  }
+
+  size_t GetQueuedMessageCount() {
+    base::AutoLock lock(outgoing_messages_lock_);
+    return outgoing_messages_.size();
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -86,7 +144,10 @@ class ChannelAssociatedGroupController
 
   void FlushOutgoingMessages() {
     std::vector<mojo::Message> outgoing_messages;
-    std::swap(outgoing_messages, outgoing_messages_);
+    {
+      base::AutoLock lock(outgoing_messages_lock_);
+      std::swap(outgoing_messages, outgoing_messages_);
+    }
     for (auto& message : outgoing_messages)
       SendMessage(&message);
   }
@@ -127,6 +188,8 @@ class ChannelAssociatedGroupController
     connector_->CloseMessagePipe();
     OnPipeError();
     connector_.reset();
+
+    base::AutoLock lock(outgoing_messages_lock_);
     outgoing_messages_.clear();
   }
 
@@ -581,6 +644,8 @@ class ChannelAssociatedGroupController
     }
 
     DCHECK(endpoints_.empty());
+
+    GetMemoryDumpProvider().RemoveController(this);
   }
 
   bool SendMessage(mojo::Message* message) {
@@ -588,6 +653,7 @@ class ChannelAssociatedGroupController
       DCHECK(thread_checker_.CalledOnValidThread());
       if (!connector_ || paused_) {
         if (!shut_down_) {
+          base::AutoLock lock(outgoing_messages_lock_);
           outgoing_messages_.emplace_back(std::move(*message));
 
           // TODO(https://crbug.com/813045): Remove this. Typically this queue
@@ -871,6 +937,10 @@ class ChannelAssociatedGroupController
   // NOTE: It is unsafe to call into this object while holding |lock_|.
   mojo::PipeControlMessageProxy control_message_proxy_;
 
+  // Guards access to |outgoing_messages_| only. Used to support memory dumps
+  // which may be triggered from any thread.
+  base::Lock outgoing_messages_lock_;
+
   // Outgoing messages that were sent before this controller was bound to a
   // real message pipe.
   std::vector<mojo::Message> outgoing_messages_;
@@ -888,6 +958,22 @@ class ChannelAssociatedGroupController
 
   DISALLOW_COPY_AND_ASSIGN(ChannelAssociatedGroupController);
 };
+
+bool ControllerMemoryDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  base::AutoLock lock(lock_);
+  for (auto* controller : controllers_) {
+    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("mojo/queued_ipc_channel_message/0x%" PRIxPTR,
+                           reinterpret_cast<uintptr_t>(controller)));
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    controller->GetQueuedMessageCount());
+  }
+
+  return true;
+}
 
 class MojoBootstrapImpl : public MojoBootstrap {
  public:
