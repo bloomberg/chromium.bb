@@ -19,6 +19,7 @@
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -139,9 +140,6 @@ void RemoveStaleEntriesAndUpdateCache(
 
 }  // namespace
 
-const base::Feature kIncompatibleApplicationsWarning{
-    "IncompatibleApplicationsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // ProblematicProgram ----------------------------------------------------------
 
 ProblematicProgramsUpdater::ProblematicProgram::ProblematicProgram(
@@ -160,6 +158,14 @@ ProblematicProgramsUpdater::ProblematicProgram::operator=(
 
 // ProblematicProgramsUpdater --------------------------------------------------
 
+ProblematicProgramsUpdater::ProblematicProgramsUpdater(
+    const ModuleListFilter& module_list_filter,
+    const InstalledPrograms& installed_programs)
+    : module_list_filter_(module_list_filter),
+      installed_programs_(installed_programs) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
 ProblematicProgramsUpdater::~ProblematicProgramsUpdater() = default;
 
 // static
@@ -169,37 +175,16 @@ void ProblematicProgramsUpdater::RegisterLocalStatePrefs(
 }
 
 // static
-std::unique_ptr<ProblematicProgramsUpdater>
-ProblematicProgramsUpdater::MaybeCreate(
-    const ModuleListFilter& module_list_filter,
-    const InstalledPrograms& installed_programs) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::unique_ptr<ProblematicProgramsUpdater> instance;
-
-  if (base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning)) {
-    instance.reset(
-        new ProblematicProgramsUpdater(module_list_filter, installed_programs));
-  }
-
-  return instance;
+bool ProblematicProgramsUpdater::IsIncompatibleApplicationsWarningEnabled() {
+  return ModuleDatabase::GetInstance() &&
+         ModuleDatabase::GetInstance()->third_party_conflicts_manager();
 }
 
 // static
 bool ProblematicProgramsUpdater::HasCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning))
-    return false;
-
-  std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
-      *g_browser_process->local_state()
-           ->FindPreference(prefs::kProblematicPrograms)
-           ->GetValue());
-
-  RemoveStaleEntriesAndUpdateCache(&programs);
-
-  return !programs.empty();
+  return !GetCachedPrograms().empty();
 }
 
 // static
@@ -207,12 +192,7 @@ std::vector<ProblematicProgramsUpdater::ProblematicProgram>
 ProblematicProgramsUpdater::GetCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::vector<ProblematicProgram> programs;
-
-  if (!base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning))
-    return programs;
-
-  programs = ConvertToProblematicProgramsVector(
+  std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
       *g_browser_process->local_state()
            ->FindPreference(prefs::kProblematicPrograms)
            ->GetValue());
@@ -294,9 +274,3 @@ void ProblematicProgramsUpdater::OnModuleDatabaseIdle() {
                               std::move(element.second));
   }
 }
-
-ProblematicProgramsUpdater::ProblematicProgramsUpdater(
-    const ModuleListFilter& module_list_filter,
-    const InstalledPrograms& installed_programs)
-    : module_list_filter_(module_list_filter),
-      installed_programs_(installed_programs) {}

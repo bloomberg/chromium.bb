@@ -97,8 +97,8 @@ void ThirdPartyConflictsManager::OnInstalledProgramsCreated(
 void ThirdPartyConflictsManager::InitializeProblematicProgramsUpdater() {
   DCHECK(module_list_filter_);
   DCHECK(installed_programs_);
-  problematic_programs_updater_ = ProblematicProgramsUpdater::MaybeCreate(
+
+  problematic_programs_updater_ = std::make_unique<ProblematicProgramsUpdater>(
       *module_list_filter_, *installed_programs_);
-  if (problematic_programs_updater_)
-    module_database_->AddObserver(problematic_programs_updater_.get());
+  module_database_->AddObserver(problematic_programs_updater_.get());
 }

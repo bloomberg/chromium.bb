@@ -11,6 +11,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <windows.h>
@@ -29,7 +31,8 @@ const uint64_t kInvalidLoadAddress = 0xDEADBEEF;
 class ModuleEventSinkImplTest : public testing::Test {
  protected:
   ModuleEventSinkImplTest()
-      : module_database_(std::make_unique<ModuleDatabase>(
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        module_database_(std::make_unique<ModuleDatabase>(
             base::SequencedTaskRunnerHandle::Get())) {}
 
   void CreateModuleSinkImpl() {
@@ -44,6 +47,7 @@ class ModuleEventSinkImplTest : public testing::Test {
 
   // Must be before |module_database_|.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<ModuleDatabase> module_database_;
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
 

@@ -272,6 +272,7 @@
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
@@ -466,6 +467,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   desktop_ios_promotion::RegisterLocalPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)
+  ModuleDatabase::RegisterLocalStatePrefs(registry);
   ProblematicProgramsUpdater::RegisterLocalStatePrefs(registry);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif
