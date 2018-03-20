@@ -19,7 +19,7 @@ def PostUploadHook(cl, change, output_api):
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl,
     [
-      'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+      'luci.chromium.try:mac_optional_gpu_tests_rel',
       'master.tryserver.chromium.win:win10_chromium_x64_rel_ng'
     ],
     'Automatically added optional Mac GPU and Windows 10 tests to run on CQ.')
