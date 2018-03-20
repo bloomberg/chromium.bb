@@ -94,7 +94,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  int event_id_2 = timer.StartEvent(std::move(do_nothing_callback));
+  int event_id_2 = timer.StartEvent(do_nothing_callback);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there are two inflight events.
   EXPECT_FALSE(is_idle);

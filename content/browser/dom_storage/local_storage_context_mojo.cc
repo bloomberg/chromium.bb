@@ -109,8 +109,8 @@ void MigrateStorageHelper(
     (*values)[LocalStorageContextMojo::MigrateString(it.first)] =
         LocalStorageContextMojo::MigrateString(it.second.string());
   }
-  reply_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(values)));
+  reply_task_runner->PostTask(FROM_HERE,
+                              base::BindOnce(callback, std::move(values)));
 }
 
 // Helper to convert from OnceCallback to Callback.

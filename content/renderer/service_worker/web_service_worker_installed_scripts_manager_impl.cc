@@ -132,7 +132,7 @@ class BundledReceivers {
     base::RepeatingClosure wait_all_closure =
         base::BarrierClosure(2, std::move(callback));
     meta_data_.Start(wait_all_closure);
-    body_.Start(std::move(wait_all_closure));
+    body_.Start(wait_all_closure);
   }
 
   Receiver* meta_data() { return &meta_data_; }

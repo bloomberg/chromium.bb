@@ -1189,7 +1189,7 @@ void NavigationHandleImpl::RunCompleteCallback(
   }
 
   if (!callback.is_null())
-    std::move(callback).Run(result);
+    callback.Run(result);
 
   // No code after running the callback, as it might have resulted in our
   // destruction.

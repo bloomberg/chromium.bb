@@ -147,7 +147,7 @@ void CacheStorageBlobToDiskCache::OnDataPipeReadable(MojoResult unused) {
                              buffer.get(), bytes_to_read, cache_write_callback,
                              true /* truncate */);
   if (rv != net::ERR_IO_PENDING)
-    std::move(cache_write_callback).Run(rv);
+    cache_write_callback.Run(rv);
 }
 
 }  // namespace content

@@ -532,8 +532,7 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
     base::RepeatingClosure collect = base::BindRepeating(
         &ResourceUsageReporterImpl::CollectOnWorkerThread,
         base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
-    workers_to_go_ =
-        RenderThread::Get()->PostTaskToAllWebWorkers(std::move(collect));
+    workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
     if (workers_to_go_) {
       // The guard task to send out partial stats
       // in case some workers are not responsive.

@@ -924,23 +924,23 @@ void BrowserMainLoop::CreateStartupTasks() {
 #endif
   StartupTask pre_create_threads =
       base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
-  startup_task_runner_->AddTask(std::move(pre_create_threads));
+  startup_task_runner_->AddTask(pre_create_threads);
 
   StartupTask create_threads =
       base::Bind(&BrowserMainLoop::CreateThreads, base::Unretained(this));
-  startup_task_runner_->AddTask(std::move(create_threads));
+  startup_task_runner_->AddTask(create_threads);
 
   StartupTask post_create_threads =
       base::Bind(&BrowserMainLoop::PostCreateThreads, base::Unretained(this));
-  startup_task_runner_->AddTask(std::move(post_create_threads));
+  startup_task_runner_->AddTask(post_create_threads);
 
   StartupTask browser_thread_started = base::Bind(
       &BrowserMainLoop::BrowserThreadsStarted, base::Unretained(this));
-  startup_task_runner_->AddTask(std::move(browser_thread_started));
+  startup_task_runner_->AddTask(browser_thread_started);
 
   StartupTask pre_main_message_loop_run = base::Bind(
       &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
-  startup_task_runner_->AddTask(std::move(pre_main_message_loop_run));
+  startup_task_runner_->AddTask(pre_main_message_loop_run);
 
 #if defined(OS_ANDROID)
   if (parameters_.ui_task) {

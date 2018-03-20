@@ -138,12 +138,12 @@ class TracingControllerTest : public ContentBrowserTest {
                                      const std::set<std::string>& categories) {
     get_categories_done_callback_count_++;
     EXPECT_TRUE(categories.size() > 0);
-    std::move(quit_callback).Run();
+    quit_callback.Run();
   }
 
   void StartTracingDoneCallbackTest(base::Closure quit_callback) {
     enable_recording_done_callback_count_++;
-    std::move(quit_callback).Run();
+    quit_callback.Run();
   }
 
   void StopTracingStringDoneCallbackTest(
@@ -154,7 +154,7 @@ class TracingControllerTest : public ContentBrowserTest {
     last_metadata_ = std::move(metadata);
     last_data_ = data->data();
     EXPECT_TRUE(data->size() > 0);
-    std::move(quit_callback).Run();
+    quit_callback.Run();
   }
 
   void StopTracingFileDoneCallbackTest(base::Closure quit_callback,
@@ -167,7 +167,7 @@ class TracingControllerTest : public ContentBrowserTest {
       base::GetFileSize(file_path, &file_size);
       EXPECT_GT(file_size, 0);
     }
-    std::move(quit_callback).Run();
+    quit_callback.Run();
     last_actual_recording_file_path_ = file_path;
   }
 
@@ -206,8 +206,8 @@ class TracingControllerTest : public ContentBrowserTest {
           base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
                      base::Unretained(this),
                      run_loop.QuitClosure());
-      bool result =
-          controller->StartTracing(TraceConfig(), std::move(callback));
+      bool result = controller->StartTracing(
+          TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -221,7 +221,7 @@ class TracingControllerTest : public ContentBrowserTest {
               &TracingControllerTest::StopTracingStringDoneCallbackTest,
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
-          TracingController::CreateStringEndpoint(std::move(callback)));
+          TracingController::CreateStringEndpoint(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
@@ -251,7 +251,7 @@ class TracingControllerTest : public ContentBrowserTest {
       TraceConfig config = TraceConfig();
       config.EnableArgumentFilter();
 
-      bool result = controller->StartTracing(config, std::move(callback));
+      bool result = controller->StartTracing(config, callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -266,7 +266,7 @@ class TracingControllerTest : public ContentBrowserTest {
               base::Unretained(this), run_loop.QuitClosure());
 
       scoped_refptr<TracingController::TraceDataEndpoint> trace_data_endpoint =
-          TracingController::CreateStringEndpoint(std::move(callback));
+          TracingController::CreateStringEndpoint(callback);
 
       metadata_ = std::make_unique<base::DictionaryValue>();
       metadata_->SetString("not-whitelisted", "this_not_found");
@@ -289,8 +289,7 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::StartTracingDoneCallback callback =
           base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
                      base::Unretained(this), run_loop.QuitClosure());
-      bool result =
-          controller->StartTracing(TraceConfig(), std::move(callback));
+      bool result = controller->StartTracing(TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -305,7 +304,7 @@ class TracingControllerTest : public ContentBrowserTest {
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
           TracingControllerImpl::CreateCompressedStringEndpoint(
-              new TracingControllerTestEndpoint(std::move(callback)),
+              new TracingControllerTestEndpoint(callback),
               true /* compress_with_background_priority */));
       ASSERT_TRUE(result);
       run_loop.Run();
@@ -325,8 +324,7 @@ class TracingControllerTest : public ContentBrowserTest {
           base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
                      base::Unretained(this),
                      run_loop.QuitClosure());
-      bool result =
-          controller->StartTracing(TraceConfig(), std::move(callback));
+      bool result = controller->StartTracing(TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -339,9 +337,8 @@ class TracingControllerTest : public ContentBrowserTest {
           base::Unretained(this),
           run_loop.QuitClosure(),
           result_file_path);
-      bool result =
-          controller->StopTracing(TracingController::CreateFileEndpoint(
-              result_file_path, std::move(callback)));
+      bool result = controller->StopTracing(
+          TracingController::CreateFileEndpoint(result_file_path, callback));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
@@ -368,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
       base::Bind(&TracingControllerTest::GetCategoriesDoneCallbackTest,
                  base::Unretained(this),
                  run_loop.QuitClosure());
-  ASSERT_TRUE(controller->GetCategories(std::move(callback)));
+  ASSERT_TRUE(controller->GetCategories(callback));
   run_loop.Run();
   EXPECT_EQ(get_categories_done_callback_count(), 1);
 }
@@ -471,9 +468,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
       TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
           [](base::Closure quit_closure,
              std::unique_ptr<const base::DictionaryValue> metadata,
-             base::RefCountedString* trace_str) {
-            std::move(quit_closure).Run();
-          },
+             base::RefCountedString* trace_str) { quit_closure.Run(); },
           run_loop.QuitClosure()))));
   run_loop.Run();
 }
@@ -489,9 +484,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
       TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
           [](base::Closure quit_closure,
              std::unique_ptr<const base::DictionaryValue> metadata,
-             base::RefCountedString* trace_str) {
-            std::move(quit_closure).Run();
-          },
+             base::RefCountedString* trace_str) { quit_closure.Run(); },
           run_loop.QuitClosure()))));
   EXPECT_FALSE(controller->StopTracing(nullptr));
   run_loop.Run();

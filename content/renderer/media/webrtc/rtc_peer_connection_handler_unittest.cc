@@ -536,8 +536,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   template <typename T>
   void InvokeOnSignalingThread(T callback) {
-    mock_dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, std::move(callback));
+    mock_dependency_factory_->GetWebRtcSignalingThread()->PostTask(FROM_HERE,
+                                                                   callback);
     RunMessageLoopsUntilIdle();
   }
 

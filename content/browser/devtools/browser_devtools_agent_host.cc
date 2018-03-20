@@ -31,7 +31,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForBrowser(
 
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForDiscovery() {
   CreateServerSocketCallback null_callback;
-  return new BrowserDevToolsAgentHost(nullptr, std::move(null_callback), true);
+  return new BrowserDevToolsAgentHost(nullptr, null_callback, true);
 }
 
 BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(

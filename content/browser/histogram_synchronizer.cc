@@ -242,7 +242,7 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
       base::Unretained(this),
       sequence_number);
 
-  RequestContext::Register(std::move(callback), sequence_number);
+  RequestContext::Register(callback, sequence_number);
 
   // Get histogram data from renderer and browser child processes.
   HistogramController::GetInstance()->GetHistogramData(sequence_number);
@@ -299,7 +299,7 @@ void HistogramSynchronizer::SetTaskRunnerAndCallback(
     async_sequence_number_ = kNeverUsableSequenceNumber;
   }
   // Just in case there was a task pending....
-  InternalPostTask(std::move(old_task_runner), std::move(old_callback));
+  InternalPostTask(std::move(old_task_runner), old_callback);
 }
 
 void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
@@ -314,7 +314,7 @@ void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
     task_runner = std::move(callback_task_runner_);
     callback_.Reset();
   }
-  InternalPostTask(std::move(task_runner), std::move(callback));
+  InternalPostTask(std::move(task_runner), callback);
 }
 
 void HistogramSynchronizer::InternalPostTask(

@@ -189,7 +189,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
       [](base::Closure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
-        std::move(callback).Run();
+        callback.Run();
       },
       loop.QuitClosure()));
   loop.Run();
@@ -212,7 +212,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
       [](base::Closure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
-        std::move(callback).Run();
+        callback.Run();
       },
       loop.QuitClosure()));
   loop.Run();
@@ -259,7 +259,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
       [](base::Closure callback, GeopositionPtr geoposition) {
         EXPECT_DOUBLE_EQ(kMockLatitude, geoposition->latitude);
         EXPECT_DOUBLE_EQ(kMockLongitude, geoposition->longitude);
-        std::move(callback).Run();
+        callback.Run();
       },
       loop.QuitClosure()));
   loop.Run();

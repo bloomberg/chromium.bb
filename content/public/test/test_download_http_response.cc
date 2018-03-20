@@ -373,10 +373,9 @@ void TestDownloadHttpResponse::SendResponse(
                        body.size()));
   }
 
-  SendResponses(
-      header, body, requested_range_begin_, std::move(parameters_),
-      base::Bind(&OnResponseBodySent, std::move(request_completed_cb), done),
-      send);
+  SendResponses(header, body, requested_range_begin_, std::move(parameters_),
+                base::Bind(&OnResponseBodySent, request_completed_cb, done),
+                send);
 }
 
 std::string TestDownloadHttpResponse::GetResponseHeaders() {

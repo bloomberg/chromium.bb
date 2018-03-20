@@ -225,8 +225,7 @@ WriteToDiskCacheWithCustomResponseInfoAsync(
   WriteBodyToDiskCache(std::move(body_writer), std::move(http_info), body,
                        barrier);
   auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id);
-  WriteMetaDataToDiskCache(std::move(metadata_writer), meta_data,
-                           std::move(barrier));
+  WriteMetaDataToDiskCache(std::move(metadata_writer), meta_data, barrier);
   return ServiceWorkerDatabase::ResourceRecord(resource_id, script_url,
                                                body.size());
 }

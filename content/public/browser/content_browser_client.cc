@@ -260,7 +260,7 @@ void ContentBrowserClient::AllowWorkerFileSystem(
     ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames,
     base::Callback<void(bool)> callback) {
-  std::move(callback).Run(true);
+  callback.Run(true);
 }
 
 bool ContentBrowserClient::AllowWorkerIndexedDB(

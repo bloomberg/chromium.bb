@@ -473,8 +473,7 @@ void ResourceLoader::OnCertificateRequested(
   std::unique_ptr<net::ClientCertStore> client_cert_store =
       GetContentClient()->browser()->CreateClientCertStore(resource_context_);
   ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
-      std::move(client_cert_store), std::move(web_contents_getter), cert_info,
-      this));
+      std::move(client_cert_store), web_contents_getter, cert_info, this));
   ssl_client_auth_handler_->SelectCertificate();
 }
 

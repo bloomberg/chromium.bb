@@ -1513,7 +1513,7 @@ void MediaStreamManager::UseFakeUIFactoryForTests(
     base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
         fake_ui_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  fake_ui_factory_ = std::move(fake_ui_factory);
+  fake_ui_factory_ = fake_ui_factory;
 }
 
 // static
@@ -1855,7 +1855,7 @@ void MediaStreamManager::SetCapturingLinkSecured(int render_process_id,
 
 void MediaStreamManager::SetGenerateStreamCallbackForTesting(
     GenerateStreamTestCallback test_callback) {
-  generate_stream_test_callback_ = std::move(test_callback);
+  generate_stream_test_callback_ = test_callback;
 }
 
 MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(

@@ -86,7 +86,7 @@ void CollectLocalStorageUsage(
     base::Closure done_callback,
     const std::vector<LocalStorageUsageInfo>& in_info) {
   out_info->insert(out_info->end(), in_info.begin(), in_info.end());
-  std::move(done_callback).Run();
+  done_callback.Run();
 }
 
 void GotMojoDeletionCallback(
@@ -181,7 +181,7 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
       2, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper, callback,
                         std::move(infos)));
   auto collect_callback = base::BindRepeating(
-      CollectLocalStorageUsage, infos_ptr, std::move(got_local_storage_usage));
+      CollectLocalStorageUsage, infos_ptr, got_local_storage_usage);
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
   // as soon as that task is posted, mojo_state_ is set to null, preventing
@@ -196,8 +196,7 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::BindOnce(&GetLegacyLocalStorageUsage, legacy_localstorage_path_,
-                     base::ThreadTaskRunnerHandle::Get(),
-                     std::move(collect_callback)));
+                     base::ThreadTaskRunnerHandle::Get(), collect_callback));
 }
 
 void DOMStorageContextWrapper::GetSessionStorageUsage(

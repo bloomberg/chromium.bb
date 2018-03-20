@@ -129,7 +129,7 @@ bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
 
 void BrowserAccessibilityStateImpl::AddHistogramCallback(
     base::Closure callback) {
-  histogram_callbacks_.push_back(std::move(callback));
+  histogram_callbacks_.push_back(callback);
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {

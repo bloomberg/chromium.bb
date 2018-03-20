@@ -208,7 +208,7 @@ bool SecurityHandler::NotifyCertificateError(int cert_error,
                                              CertErrorCallback handler) {
   if (cert_error_override_mode_ == CertErrorOverrideMode::kIgnoreAll) {
     if (handler)
-      std::move(handler).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
+      handler.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
     return true;
   }
 
@@ -224,7 +224,7 @@ bool SecurityHandler::NotifyCertificateError(int cert_error,
     return false;
   }
 
-  cert_error_callbacks_[last_cert_error_id_] = std::move(handler);
+  cert_error_callbacks_[last_cert_error_id_] = handler;
   return true;
 }
 

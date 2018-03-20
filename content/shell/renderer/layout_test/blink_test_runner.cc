@@ -956,7 +956,7 @@ void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
   base::Callback<void(const std::vector<std::string>&)> callback =
       get_bluetooth_events_callbacks_.front();
   get_bluetooth_events_callbacks_.pop_front();
-  std::move(callback).Run(events);
+  callback.Run(events);
 }
 
 void BlinkTestRunner::ReportLeakDetectionResult(

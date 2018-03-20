@@ -247,8 +247,7 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
               GetURLRequestContext());
   DCHECK(trace_uploader_);
   trace_uploader_->DoUpload(file_contents, upload_mode, nullptr,
-                            std::move(progress_callback),
-                            std::move(done_callback));
+                            progress_callback, done_callback);
   // TODO(mmandlis): Add support for stopping the upload in progress.
 }
 

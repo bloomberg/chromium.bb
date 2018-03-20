@@ -219,7 +219,7 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
     int64_t content_length) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebContents* web_contents = std::move(web_contents_getter).Run();
+  WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
     return;
 

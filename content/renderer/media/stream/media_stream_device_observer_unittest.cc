@@ -32,7 +32,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
       observer_->AddStream(label, device);
     }
 
-    std::move(quit_closure).Run();
+    quit_closure.Run();
   }
 
  protected:

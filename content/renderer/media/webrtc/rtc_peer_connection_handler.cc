@@ -1648,9 +1648,8 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::LocalDescription() {
       base::Bind(&webrtc::PeerConnectionInterface::local_description,
                  native_peer_connection_);
   RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetSdpAndTypeFromSessionDescription,
-                 std::move(description_cb), base::Unretained(&sdp),
-                 base::Unretained(&type)),
+      base::Bind(&GetSdpAndTypeFromSessionDescription, description_cb,
+          base::Unretained(&sdp), base::Unretained(&type)),
       "localDescription");
 
   return CreateWebKitSessionDescription(sdp, type);
@@ -1668,9 +1667,8 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::RemoteDescription() {
       base::Bind(&webrtc::PeerConnectionInterface::remote_description,
                  native_peer_connection_);
   RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetSdpAndTypeFromSessionDescription,
-                 std::move(description_cb), base::Unretained(&sdp),
-                 base::Unretained(&type)),
+      base::Bind(&GetSdpAndTypeFromSessionDescription, description_cb,
+          base::Unretained(&sdp), base::Unretained(&type)),
       "remoteDescription");
 
   return CreateWebKitSessionDescription(sdp, type);

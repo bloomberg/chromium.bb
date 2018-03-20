@@ -61,7 +61,7 @@ void PhysicalDevicesEnumerated(base::Closure quit_closure,
                                MediaDeviceEnumeration* out,
                                const MediaDeviceEnumeration& enumeration) {
   *out = enumeration;
-  std::move(quit_closure).Run();
+  quit_closure.Run();
 }
 
 class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {

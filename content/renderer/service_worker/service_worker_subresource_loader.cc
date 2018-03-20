@@ -46,9 +46,8 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
   static network::mojom::URLLoaderClientPtr CreateAndBind(
       network::mojom::URLLoaderClientPtr url_loader_client,
       RewriteHeaderCallback rewrite_header_callback) {
-    return (new HeaderRewritingURLLoaderClient(
-                std::move(url_loader_client),
-                std::move(rewrite_header_callback)))
+    return (new HeaderRewritingURLLoaderClient(std::move(url_loader_client),
+                                               rewrite_header_callback))
         ->CreateInterfacePtrAndBind();
   }
 

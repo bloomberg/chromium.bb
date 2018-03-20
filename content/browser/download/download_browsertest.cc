@@ -308,7 +308,7 @@ download::DownloadFile* DownloadFileWithDelayFactory::CreateFile(
 
 void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  rename_callbacks_.push_back(std::move(callback));
+  rename_callbacks_.push_back(callback);
   if (waiting_)
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
@@ -354,8 +354,7 @@ class CountingDownloadFile : public download::DownloadFileImpl {
                   bool is_parallelizable) override {
     DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
-    download::DownloadFileImpl::Initialize(std::move(callback),
-                                           cancel_request_callback,
+    download::DownloadFileImpl::Initialize(callback, cancel_request_callback,
                                            received_slices, is_parallelizable);
   }
 

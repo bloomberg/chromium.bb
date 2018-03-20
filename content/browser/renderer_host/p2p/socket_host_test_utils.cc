@@ -46,7 +46,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     read_buffer_ = nullptr;
     net::CompletionCallback cb = read_callback_;
     read_callback_.Reset();
-    std::move(cb).Run(result);
+    cb.Run(result);
   }
 }
 

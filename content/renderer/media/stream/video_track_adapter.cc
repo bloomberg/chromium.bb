@@ -430,7 +430,7 @@ void VideoTrackAdapter::AddTrackOnIO(
     adapters_.push_back(adapter);
   }
 
-  adapter->AddCallback(track, std::move(frame_callback));
+  adapter->AddCallback(track, frame_callback);
 }
 
 void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
@@ -461,7 +461,7 @@ void VideoTrackAdapter::StartFrameMonitoring(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoTrackAdapter::StartFrameMonitoringOnIO, this,
-                     std::move(bound_on_muted_callback), source_frame_rate));
+                     bound_on_muted_callback, source_frame_rate));
 }
 
 void VideoTrackAdapter::StopFrameMonitoring() {

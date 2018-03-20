@@ -94,7 +94,7 @@ void DidOpenFile(base::WeakPtr<PepperFileIOHost> file_host,
                  base::File file,
                  base::OnceClosure on_close_callback) {
   if (file_host) {
-    std::move(callback).Run(std::move(file), std::move(on_close_callback));
+    callback.Run(std::move(file), std::move(on_close_callback));
   } else {
     task_runner->PostTaskAndReply(
         FROM_HERE, base::BindOnce(&FileCloser, std::move(file)),

@@ -295,7 +295,7 @@ void TetheringHandler::TetheringImpl::Bind(
   BoundSocket::AcceptedCallback accepted = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
   std::unique_ptr<BoundSocket> bound_socket =
-      std::make_unique<BoundSocket>(std::move(accepted), socket_callback_);
+      std::make_unique<BoundSocket>(accepted, socket_callback_);
   if (!bound_socket->Listen(port)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

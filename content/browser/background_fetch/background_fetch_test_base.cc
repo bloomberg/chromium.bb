@@ -44,7 +44,7 @@ void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
 
   *out_service_worker_registration_id = service_worker_registration_id;
 
-  std::move(quit_closure).Run();
+  quit_closure.Run();
 }
 
 void DidFindServiceWorkerRegistration(
@@ -57,7 +57,7 @@ void DidFindServiceWorkerRegistration(
 
   *out_service_worker_registration = service_worker_registration;
 
-  std::move(quit_closure).Run();
+  quit_closure.Run();
 }
 
 }  // namespace

@@ -199,18 +199,17 @@ void StartURLLoader(const network::ResourceRequest& request,
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
       source->source()->TaskRunnerForRequestPath(path);
   if (!target_runner) {
-    source->source()->StartDataRequest(path, std::move(wc_getter),
-                                       std::move(data_available_callback));
+    source->source()->StartDataRequest(path, wc_getter,
+                                       data_available_callback);
     return;
   }
 
   // The DataSource wants StartDataRequest to be called on a specific
   // thread, usually the UI thread, for this path.
   target_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&URLDataSource::StartDataRequest,
-                     base::Unretained(source->source()), path,
-                     std::move(wc_getter), std::move(data_available_callback)));
+      FROM_HERE, base::BindOnce(&URLDataSource::StartDataRequest,
+                                base::Unretained(source->source()), path,
+                                wc_getter, data_available_callback));
 }
 
 class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,

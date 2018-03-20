@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-                     base::Unretained(this), std::move(condition)));
+                     base::Unretained(this), base::ConstRef(condition)));
   WaitForTasksOnIOThread();
 
   // Expect that only "icon2.png" and "icon3.png" were deleted.
