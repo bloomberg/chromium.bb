@@ -38,6 +38,32 @@ void RecordRetryCount(int count) {
                              count, kMaxRetries + 1);
 }
 
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("quic_chromium_packet_writer", R"(
+        semantics {
+          sender: "QUIC Packet Writer"
+          description:
+            "A QUIC packet is written to the wire based on a request from "
+            "a QUIC stream."
+          trigger:
+            "A request from QUIC stream."
+          data: "Any data sent by the stream."
+          destination: OTHER
+          destination_other: "Any destination choosen by the stream."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification:
+            "Essential for network access."
+        }
+        comments:
+          "All requests that are received by QUIC streams have network traffic "
+          "annotation, but the annotation is not passed to the writer function "
+          "due to technial overheads. Please see QuicChromiumClientSession and "
+          "QuicChromiumClientStream classes for references."
+    )");
+
 }  // namespace
 
 QuicChromiumPacketWriter::ReusableIOBuffer::ReusableIOBuffer(size_t capacity)
@@ -108,34 +134,9 @@ WriteResult QuicChromiumPacketWriter::WritePacketToSocket(
 
 WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
   base::TimeTicks now = base::TimeTicks::Now();
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("quic_chromium_packet_writer", R"(
-        semantics {
-          sender: "QUIC Packet Writer"
-          description:
-            "A QUIC packet is written to the wire based on a request from "
-            "a QUIC stream."
-          trigger:
-            "A request from QUIC stream."
-          data: "Any data sent by the stream."
-          destination: OTHER
-          destination_other: "Any destination choosen by the stream."
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled in settings."
-          policy_exception_justification:
-            "Essential for network access."
-        }
-        comments:
-          "All requests that are received by QUIC streams have network traffic "
-          "annotation, but the annotation is not passed to the writer function "
-          "due to technial overheads. Please see QuicChromiumClientSession and "
-          "QuicChromiumClientStream classes for references."
-    )");
 
   int rv = socket_->Write(packet_.get(), packet_->size(), write_callback_,
-                          traffic_annotation);
+                          kTrafficAnnotation);
 
   if (MaybeRetryAfterWriteError(rv))
     return WriteResult(WRITE_STATUS_BLOCKED, ERR_IO_PENDING);
