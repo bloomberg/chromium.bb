@@ -536,11 +536,15 @@ TEST_F(FileCacheTest, MountUnmount) {
   base::FilePath cache_file_path;
   EXPECT_EQ(FILE_ERROR_OK, cache_->MarkAsMounted(id, &cache_file_path));
 
+  EXPECT_TRUE(cache_->IsMarkedAsMounted(id));
+
   // Try to remove it.
   EXPECT_EQ(FILE_ERROR_IN_USE, cache_->Remove(id));
 
   // Clear mounted state of the file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->MarkAsUnmounted(cache_file_path));
+
+  EXPECT_FALSE(cache_->IsMarkedAsMounted(id));
 
   // Try to remove again.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(id));

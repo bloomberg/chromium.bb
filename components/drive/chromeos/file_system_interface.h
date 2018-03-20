@@ -149,6 +149,10 @@ typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)>
     MarkMountedCallback;
 
+// Used to check if a cached file is mounted.
+typedef base::Callback<void(FileError error, bool is_mounted)>
+    IsMountedCallback;
+
 // Used to get file path.
 typedef base::Callback<void(FileError error, const base::FilePath& file_path)>
     GetFilePathCallback;
@@ -441,6 +445,13 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
                                       const MarkMountedCallback& callback) = 0;
+
+  // Checks if the cached file is marked as mounted, and passes the result to
+  // |callback| upon completion. If the file was not found in the cache, the
+  // result is false. |callback| must not be null.
+  virtual void IsCacheFileMarkedAsMounted(
+      const base::FilePath& drive_file_path,
+      const IsMountedCallback& callback) = 0;
 
   // Marks the cached file as unmounted, and runs |callback| upon completion.
   // Note that this method expects that the |cached_file_path| is the path

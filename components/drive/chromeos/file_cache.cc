@@ -475,6 +475,11 @@ FileError FileCache::Unpin(const std::string& id) {
   return FILE_ERROR_OK;
 }
 
+bool FileCache::IsMarkedAsMounted(const std::string& id) {
+  AssertOnSequencedWorkerPool();
+  return mounted_files_.count(id);
+}
+
 FileError FileCache::MarkAsMounted(const std::string& id,
                                    base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();

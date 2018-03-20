@@ -1001,6 +1001,15 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
+  error = FILE_ERROR_FAILED;
+  bool is_marked_as_mounted = false;
+  file_system_->IsCacheFileMarkedAsMounted(
+      file_in_root, google_apis::test_util::CreateCopyResultCallback(
+                        &error, &is_marked_as_mounted));
+  content::RunAllTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_TRUE(is_marked_as_mounted);
+
   // Cannot remove a cache entry while it's being mounted.
   EXPECT_EQ(FILE_ERROR_IN_USE, cache_->Remove(entry->local_id()));
 
@@ -1011,6 +1020,15 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
+
+  error = FILE_ERROR_FAILED;
+  is_marked_as_mounted = true;
+  file_system_->IsCacheFileMarkedAsMounted(
+      file_in_root, google_apis::test_util::CreateCopyResultCallback(
+                        &error, &is_marked_as_mounted));
+  content::RunAllTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_FALSE(is_marked_as_mounted);
 
   // Now able to remove the cache entry.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(entry->local_id()));

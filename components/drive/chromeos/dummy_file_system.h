@@ -90,6 +90,8 @@ class DummyFileSystem : public FileSystemInterface {
   void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) override {}
+  void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
+                                  const IsMountedCallback& callback) override {}
   void AddPermission(const base::FilePath& drive_file_path,
                      const std::string& email,
                      google_apis::drive::PermissionRole role,
