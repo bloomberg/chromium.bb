@@ -146,6 +146,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   // rather than |Document::execCommand|.
   bool ExecuteCommand(const String&);
   bool ExecuteCommand(const String& command_name, const String& value);
+  bool IsCommandEnabled(const String&) const;
 
   bool InsertText(const String&, KeyboardEvent* triggering_event);
   bool InsertTextWithoutSendingTextEvent(
