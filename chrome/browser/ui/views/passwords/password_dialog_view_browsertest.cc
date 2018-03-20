@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -200,6 +201,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   EXPECT_CALL(*this, OnChooseCredential(nullptr));
   EXPECT_CALL(*controller(), OnDialogClosed());
   dialog->GetWidget()->Close();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
@@ -254,6 +256,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   EXPECT_CALL(*this, OnChooseCredential(nullptr));
   EXPECT_CALL(*controller(), OnDialogClosed());
   dialog->GetWidget()->Close();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
 
@@ -383,6 +386,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   EXPECT_TRUE(dialog->GetWidget()->client_view()->AcceleratorPressed(esc));
   EXPECT_TRUE(bubble_observer.widget_closed());
   content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(controller());
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
