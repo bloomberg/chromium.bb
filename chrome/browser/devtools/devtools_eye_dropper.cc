@@ -72,7 +72,6 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
   video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
   video_capturer_->SetFormat(media::PIXEL_FORMAT_ARGB,
                              media::COLOR_SPACE_UNSPECIFIED);
-  video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
   video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
                                        kMaxFrameRate);
 
