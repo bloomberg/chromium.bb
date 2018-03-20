@@ -771,6 +771,9 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
 
   for (auto& observer : observers_)
     observer.OnWallpaperDataChanged();
+  mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
+    observer->OnWallpaperChanged(current_wallpaper_->original_image_id());
+  });
 
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
@@ -1032,29 +1035,6 @@ bool WallpaperController::InitializeUserWallpaperInfo(
   return SetUserWallpaperInfo(account_id, info, is_ephemeral);
 }
 
-void WallpaperController::SetArcWallpaper(
-    const AccountId& account_id,
-    const user_manager::UserType user_type,
-    const std::string& wallpaper_files_id,
-    const std::string& file_name,
-    const gfx::ImageSkia& image,
-    wallpaper::WallpaperLayout layout,
-    bool is_ephemeral,
-    bool show_wallpaper) {
-  if (!CanSetUserWallpaper(account_id, is_ephemeral))
-    return;
-
-  ash::mojom::WallpaperUserInfoPtr user_info =
-      ash::mojom::WallpaperUserInfo::New();
-  user_info->account_id = account_id;
-  user_info->type = user_type;
-  user_info->is_ephemeral = is_ephemeral;
-  // |has_gaia_account| is unused.
-  user_info->has_gaia_account = true;
-  SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
-                      wallpaper::CUSTOMIZED, layout, show_wallpaper, image);
-}
-
 bool WallpaperController::GetWallpaperFromCache(const AccountId& account_id,
                                                 gfx::ImageSkia* image) {
   CustomWallpaperMap::const_iterator it = wallpaper_cache_map_.find(account_id);
@@ -1109,37 +1089,34 @@ void WallpaperController::SetCustomWallpaper(
     const std::string& wallpaper_files_id,
     const std::string& file_name,
     wallpaper::WallpaperLayout layout,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     bool preview_mode) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
-  const gfx::ImageSkia custom_wallpaper =
-      gfx::ImageSkia::CreateFrom1xBitmap(image);
   const bool is_active_user = IsActiveUser(user_info->account_id);
   if (preview_mode) {
     DCHECK(is_active_user);
-    confirm_preview_wallpaper_callback_ =
-        base::BindOnce(&WallpaperController::SaveAndSetWallpaper,
-                       weak_factory_.GetWeakPtr(), std::move(user_info),
-                       wallpaper_files_id, file_name, wallpaper::CUSTOMIZED,
-                       layout, false /*show_wallpaper=*/, custom_wallpaper);
+    confirm_preview_wallpaper_callback_ = base::BindOnce(
+        &WallpaperController::SaveAndSetWallpaper, weak_factory_.GetWeakPtr(),
+        std::move(user_info), wallpaper_files_id, file_name,
+        wallpaper::CUSTOMIZED, layout, false /*show_wallpaper=*/, image);
     ShowWallpaperImage(
-        custom_wallpaper,
+        image,
         wallpaper::WallpaperInfo{std::string(), layout, wallpaper::CUSTOMIZED,
                                  base::Time::Now().LocalMidnight()},
         true /*preview_mode=*/);
   } else {
     SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
                         wallpaper::CUSTOMIZED, layout,
-                        is_active_user /*show_wallpaper=*/, custom_wallpaper);
+                        is_active_user /*show_wallpaper=*/, image);
   }
 }
 
 void WallpaperController::SetOnlineWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const std::string& url,
     wallpaper::WallpaperLayout layout,
     bool preview_mode) {
@@ -1147,22 +1124,20 @@ void WallpaperController::SetOnlineWallpaper(
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
-  const gfx::ImageSkia online_wallpaper =
-      gfx::ImageSkia::CreateFrom1xBitmap(image);
   const bool is_active_user = IsActiveUser(user_info->account_id);
   if (preview_mode) {
     DCHECK(is_active_user);
     confirm_preview_wallpaper_callback_ =
         base::BindOnce(&WallpaperController::SetOnlineWallpaperImpl,
-                       weak_factory_.GetWeakPtr(), online_wallpaper, url,
-                       layout, std::move(user_info), false /*show_wallpaper=*/);
+                       weak_factory_.GetWeakPtr(), image, url, layout,
+                       std::move(user_info), false /*show_wallpaper=*/);
     ShowWallpaperImage(
-        online_wallpaper,
+        image,
         wallpaper::WallpaperInfo{std::string(), layout, wallpaper::ONLINE,
                                  base::Time::Now().LocalMidnight()},
         true /*preview_mode=*/);
   } else {
-    SetOnlineWallpaperImpl(online_wallpaper, url, layout, std::move(user_info),
+    SetOnlineWallpaperImpl(image, url, layout, std::move(user_info),
                            is_active_user /*show_wallpaper=*/);
   }
 }
@@ -1242,6 +1217,27 @@ void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
     // users list.
     // TODO(xdai): Get the account id from the session controller and then call
     // ShowUserWallpaper() to display it.
+  }
+}
+
+void WallpaperController::SetThirdPartyWallpaper(
+    mojom::WallpaperUserInfoPtr user_info,
+    const std::string& wallpaper_files_id,
+    const std::string& file_name,
+    wallpaper::WallpaperLayout layout,
+    const gfx::ImageSkia& image,
+    SetThirdPartyWallpaperCallback callback) {
+  const uint32_t image_id = wallpaper::WallpaperResizer::GetImageId(image);
+  bool allowed_to_set_wallpaper =
+      CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral);
+  bool allowed_to_show_wallpaper = IsActiveUser(user_info->account_id);
+  std::move(callback).Run(allowed_to_set_wallpaper && allowed_to_show_wallpaper,
+                          image_id);
+
+  if (allowed_to_set_wallpaper) {
+    SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
+                        wallpaper::CUSTOMIZED, layout,
+                        allowed_to_show_wallpaper, image);
   }
 }
 
@@ -1423,6 +1419,11 @@ void WallpaperController::AddObserver(
   observer_ptr.Bind(std::move(observer));
   observer_ptr->OnWallpaperColorsChanged(prominent_colors_);
   mojo_observers_.AddPtr(std::move(observer_ptr));
+}
+
+void WallpaperController::GetWallpaperImage(
+    GetWallpaperImageCallback callback) {
+  std::move(callback).Run(GetWallpaper());
 }
 
 void WallpaperController::GetWallpaperColors(
