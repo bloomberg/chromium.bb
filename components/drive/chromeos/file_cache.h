@@ -122,6 +122,9 @@ class FileCache {
   FileError MarkAsMounted(const std::string& id,
                           base::FilePath* cache_file_path);
 
+  // Returns if a file corresponding to |id| is marked as mounted.
+  bool IsMarkedAsMounted(const std::string& id);
+
   // Sets the state of the cache entry corresponding to file_path as unmounted.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
 
