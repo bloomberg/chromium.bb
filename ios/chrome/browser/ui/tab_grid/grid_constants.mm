@@ -39,7 +39,7 @@ const CGFloat kGridCellIconCornerRadius = 3.0f;
 // The cell header contains the icon, title, and close button.
 const CGFloat kGridCellHeaderHeight = 32.0f;
 const CGFloat kGridCellHeaderLeadingInset = 5.0f;
-const CGFloat kGridCellHeaderTrailingInset = 8.5f;
+const CGFloat kGridCellCloseButtonContentInset = 8.5f;
 const CGFloat kGridCellIconDiameter = 22.0f;
 const CGFloat kGridCellSelectionRingGapWidth = 2.0f;
 const CGFloat kGridCellSelectionRingTintWidth = 5.0f;

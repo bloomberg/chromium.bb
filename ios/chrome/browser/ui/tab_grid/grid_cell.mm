@@ -190,6 +190,8 @@
   UIImage* closeImage = [[UIImage imageNamed:@"grid_cell_close_button"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [closeButton setImage:closeImage forState:UIControlStateNormal];
+  closeButton.contentEdgeInsets = UIEdgeInsetsMake(
+      0, kGridCellCloseButtonContentInset, 0, kGridCellCloseButtonContentInset);
   [closeButton addTarget:self
                   action:@selector(closeButtonTapped:)
         forControlEvents:UIControlEventTouchUpInside];
@@ -213,18 +215,19 @@
         constraintEqualToAnchor:iconView.trailingAnchor
                        constant:kGridCellHeaderLeadingInset],
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
-    [closeButton.leadingAnchor
-        constraintEqualToAnchor:titleLabel.trailingAnchor],
-    [closeButton.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
-    [closeButton.trailingAnchor
-        constraintEqualToAnchor:topBar.trailingAnchor
-                       constant:-kGridCellHeaderTrailingInset],
+    [titleLabel.trailingAnchor
+        constraintLessThanOrEqualToAnchor:closeButton.leadingAnchor
+                                 constant:kGridCellCloseButtonContentInset],
+    [closeButton.topAnchor constraintEqualToAnchor:topBar.topAnchor],
+    [closeButton.bottomAnchor constraintEqualToAnchor:topBar.bottomAnchor],
+    [closeButton.trailingAnchor constraintEqualToAnchor:topBar.trailingAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
-  [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow
-                                forAxis:UILayoutConstraintAxisHorizontal];
   [titleLabel
       setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  [closeButton
+      setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisHorizontal];
   [closeButton setContentHuggingPriority:UILayoutPriorityRequired
                                  forAxis:UILayoutConstraintAxisHorizontal];
