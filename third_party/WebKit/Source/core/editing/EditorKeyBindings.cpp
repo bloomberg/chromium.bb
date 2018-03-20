@@ -28,6 +28,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/commands/EditorCommand.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -42,7 +43,7 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
     return false;
 
   String command_name = Behavior().InterpretKeyEvent(*evt);
-  Command command = this->CreateCommand(command_name);
+  const EditorCommand command = this->CreateCommand(command_name);
 
   if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how

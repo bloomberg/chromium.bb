@@ -142,7 +142,7 @@ static bool InSameTreeAndOrdered(const Position& should_be_former,
 }
 
 void InsertListCommand::DoApply(EditingState* editing_state) {
-  // Only entry points are Editor::Command::execute and
+  // Only entry points are EditorCommand::execute and
   // IndentOutdentCommand::outdentParagraph, both of which ensure clean layout.
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
