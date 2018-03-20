@@ -47,6 +47,8 @@ component("services") {
     "mojo_demuxer_stream_adapter.h",
     "mojo_jpeg_decode_accelerator_service.cc",
     "mojo_jpeg_decode_accelerator_service.h",
+    "mojo_jpeg_encode_accelerator_service.cc",
+    "mojo_jpeg_encode_accelerator_service.h",
     "mojo_media_client.cc",
     "mojo_media_client.h",
     "mojo_media_log.cc",

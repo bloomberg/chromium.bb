@@ -112,6 +112,24 @@ void CreateJpegDecodeAccelerator(
                                          std::move(request)));
 }
 
+void CreateJpegEncodeAcceleratorOnIOThread(
+    media::mojom::JpegEncodeAcceleratorRequest request) {
+  auto* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+  if (host) {
+    host->gpu_service()->CreateJpegEncodeAccelerator(std::move(request));
+  } else {
+    LOG(ERROR) << "No GpuProcessHost";
+  }
+}
+
+void CreateJpegEncodeAccelerator(
+    media::mojom::JpegEncodeAcceleratorRequest request) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CreateJpegEncodeAcceleratorOnIOThread,
+                                         std::move(request)));
+}
+
 void ParseStreamType(const StreamControls& controls,
                      MediaStreamType* audio_type,
                      MediaStreamType* video_type) {
@@ -495,7 +513,8 @@ MediaStreamManager::MediaStreamManager(
               media::VideoCaptureDeviceFactory::CreateFactory(
                   BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
                   BrowserGpuMemoryBufferManager::current(),
-                  base::BindRepeating(&CreateJpegDecodeAccelerator))),
+                  base::BindRepeating(&CreateJpegDecodeAccelerator),
+                  base::BindRepeating(&CreateJpegEncodeAccelerator))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }

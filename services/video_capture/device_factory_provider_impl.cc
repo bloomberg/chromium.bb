@@ -59,7 +59,9 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
           nullptr,
           // TODO(mojahsu): Create a GpuJpegDecoderMojoFactoryCB here.
           base::BindRepeating(
-              [](media::mojom::JpegDecodeAcceleratorRequest) {}));
+              [](media::mojom::JpegDecodeAcceleratorRequest) {}),
+          base::BindRepeating(
+              [](media::mojom::JpegEncodeAcceleratorRequest) {}));
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));
 

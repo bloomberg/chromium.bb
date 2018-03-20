@@ -285,7 +285,9 @@ class VideoCaptureDeviceTest
             nullptr,
 #endif
             base::BindRepeating(
-                [](media::mojom::JpegDecodeAcceleratorRequest) {}))) {
+                [](media::mojom::JpegDecodeAcceleratorRequest) {}),
+            base::DoNothing::Repeatedly<
+                media::mojom::JpegEncodeAcceleratorRequest>())) {
   }
 
   void SetUp() override {

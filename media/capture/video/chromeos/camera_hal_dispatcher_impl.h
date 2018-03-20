@@ -47,7 +47,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
  public:
   static CameraHalDispatcherImpl* GetInstance();
 
-  bool Start(MojoJpegDecodeAcceleratorFactoryCB jda_factory);
+  bool Start(MojoJpegDecodeAcceleratorFactoryCB jda_factory,
+             MojoJpegEncodeAcceleratorFactoryCB jea_factory);
 
   void AddClientObserver(std::unique_ptr<CameraClientObserver> observer);
 
@@ -58,6 +59,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterClient(arc::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
       media::mojom::JpegDecodeAcceleratorRequest jda_request) final;
+  void GetJpegEncodeAccelerator(
+      media::mojom::JpegEncodeAcceleratorRequest jea_request) final;
 
  private:
   friend struct base::DefaultSingletonTraits<CameraHalDispatcherImpl>;
@@ -107,6 +110,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   std::set<std::unique_ptr<CameraClientObserver>> client_observers_;
 
   MojoJpegDecodeAcceleratorFactoryCB jda_factory_;
+
+  MojoJpegEncodeAcceleratorFactoryCB jea_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraHalDispatcherImpl);
 };

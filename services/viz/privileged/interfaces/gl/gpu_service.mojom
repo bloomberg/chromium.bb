@@ -12,6 +12,7 @@ import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
+import "media/mojo/interfaces/jpeg_encode_accelerator.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
@@ -39,6 +40,9 @@ interface GpuService {
 
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
   CreateJpegDecodeAccelerator(media.mojom.JpegDecodeAccelerator& jda);
+
+  // Creates a new JpegEncodeAccelerator and binds it to |jea|.
+  CreateJpegEncodeAccelerator(media.mojom.JpegEncodeAccelerator& jea);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(

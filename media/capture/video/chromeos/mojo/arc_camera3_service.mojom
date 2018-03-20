@@ -8,6 +8,7 @@ module arc.mojom;
 
 import "media/capture/video/chromeos/mojo/camera_common.mojom";
 import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
+import "media/mojo/interfaces/jpeg_encode_accelerator.mojom";
 
 // The ARC++ camera HAL v3 Mojo dispatcher.  The dispatcher acts as a proxy and
 // waits for the server and the clients to register.  There can only be one
@@ -16,7 +17,7 @@ import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
 // channel to the server and pass the established Mojo channel to the client in
 // order to set up a Mojo channel between the client and the server.
 //
-// Next method ID: 2
+// Next method ID: 4
 interface CameraHalDispatcher {
   // A CameraHalServer calls RegisterServer to register itself with the
   // dispatcher.
@@ -29,6 +30,10 @@ interface CameraHalDispatcher {
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(
     media.mojom.JpegDecodeAccelerator& jda_request);
+
+  // Get JpegEncodeAccelerator from dispatcher.
+  [MinVersion=2] GetJpegEncodeAccelerator@3(
+    media.mojom.JpegEncodeAccelerator& jea_request);
 };
 
 // The ARC++ camera HAL v3 Mojo server.
