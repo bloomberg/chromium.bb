@@ -455,8 +455,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     ])
     return s
 
-
-
   @property
   def requirements(self):
     """Calculate the list of requirements."""
@@ -676,7 +674,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    cipd_root = None
     for name, dep_value in deps.iteritems():
       should_process = self.recursion_limit and self.should_process
       deps_file = self.deps_file
@@ -709,14 +706,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           should_process = should_process and condition_value
 
       if dep_type == 'cipd':
-        if not cipd_root:
-          cipd_root = gclient_scm.CipdRoot(
-              os.path.join(self.root.root_dir, self.name),
-              # TODO(jbudorick): Support other service URLs as necessary.
-              # Service URLs should be constant over the scope of a cipd
-              # root, so a var per DEPS file specifying the service URL
-              # should suffice.
-              'https://chrome-infra-packages.appspot.com')
+        cipd_root = self.GetCipdRoot()
         for package in dep_value.get('packages', []):
           if 'version' in package:
             # Matches version to vars value.
@@ -1171,6 +1161,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for hook in self.pre_deps_hooks:
       hook.run(self.root.root_dir)
 
+  def GetCipdRoot(self):
+    if self.root is self:
+      # Let's not infinitely recurse. If this is root and isn't an
+      # instance of GClient, do nothing.
+      return None
+    return self.root.GetCipdRoot()
+
   def subtree(self, include_all):
     """Breadth first recursion excluding root node."""
     dependencies = self.dependencies
@@ -1399,6 +1396,7 @@ solutions = %(solution_list)s
     self._enforced_os = tuple(set(enforced_os))
     self._enforced_cpu = detect_host_arch.HostArch(),
     self._root_dir = root_dir
+    self._cipd_root = None
     self.config_content = None
 
   def _CheckConfig(self):
@@ -1637,6 +1635,9 @@ it or fix the checkout.
       print('Please fix your script, having invalid --revision flags will soon '
             'considered an error.', file=sys.stderr)
 
+    if self._cipd_root:
+      self._cipd_root.run(command)
+
     # Once all the dependencies have been processed, it's now safe to write
     # out any gn_args_files and run the hooks.
     if command == 'update':
@@ -1844,6 +1845,17 @@ it or fix the checkout.
     print('Loaded .gclient config in %s:\n%s' % (
         self.root_dir, self.config_content))
 
+  def GetCipdRoot(self):
+    if not self._cipd_root:
+      self._cipd_root = gclient_scm.CipdRoot(
+          self.root_dir,
+          # TODO(jbudorick): Support other service URLs as necessary.
+          # Service URLs should be constant over the scope of a cipd
+          # root, so a var per DEPS file specifying the service URL
+          # should suffice.
+          'https://chrome-infra-packages.appspot.com')
+    return self._cipd_root
+
   @property
   def root_dir(self):
     """Root directory of gclient checkout."""
@@ -1906,12 +1918,30 @@ class CipdDependency(Dependency):
       # TODO(jbudorick): Implement relative if necessary.
       raise gclient_utils.Error(
           'Relative CIPD dependencies are not currently supported.')
+    self._cipd_package = None
     self._cipd_root = cipd_root
-
     self._cipd_subdir = os.path.relpath(
         os.path.join(self.root.root_dir, name), cipd_root.root_dir)
-    self._cipd_package = self._cipd_root.add_package(
-        self._cipd_subdir, package, version)
+    self._package_name = package
+    self._package_version = version
+
+  #override
+  def run(self, revision_overrides, command, args, work_queue, options):
+    """Runs |command| then parse the DEPS file."""
+    logging.info('CipdDependency(%s).run()' % self.name)
+    if not self.should_process:
+      return
+    self._CreatePackageIfNecessary()
+    super(CipdDependency, self).run(revision_overrides, command, args,
+                                    work_queue, options)
+
+  def _CreatePackageIfNecessary(self):
+    # We lazily create the CIPD package to make sure that only packages
+    # that we want (as opposed to all packages defined in all DEPS files
+    # we parse) get added to the root and subsequently ensured.
+    if not self._cipd_package:
+      self._cipd_package = self._cipd_root.add_package(
+          self._cipd_subdir, self._package_name, self._package_version)
 
   def ParseDepsFile(self):
     """CIPD dependencies are not currently allowed to have nested deps."""
@@ -1933,6 +1963,7 @@ class CipdDependency(Dependency):
   def CreateSCM(self, url, root_dir=None, relpath=None, out_fh=None,
                 out_cb=None):
     """Create a Wrapper instance suitable for handling this CIPD dependency."""
+    self._CreatePackageIfNecessary()
     return gclient_scm.CipdWrapper(
         url, root_dir, relpath, out_fh, out_cb,
         root=self._cipd_root,
@@ -1941,12 +1972,13 @@ class CipdDependency(Dependency):
   def ToLines(self):
     """Return a list of lines representing this in a DEPS file."""
     s = []
+    self._CreatePackageIfNecessary()
     if self._cipd_package.authority_for_subdir:
       condition_part = (['    "condition": %r,' % self.condition]
                         if self.condition else [])
       s.extend([
           '  # %s' % self.hierarchy(include_url=False),
-          '  "%s": {' % (self.name,),
+          '  "%s": {' % (self.name.split(':')[0],),
           '    "packages": [',
       ])
       for p in self._cipd_root.packages(self._cipd_subdir):
@@ -1956,6 +1988,7 @@ class CipdDependency(Dependency):
             '        "version": "%s",' % p.version,
             '      },',
         ])
+
       s.extend([
           '    ],',
           '    "dep_type": "cipd",',

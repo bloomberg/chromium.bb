@@ -929,27 +929,10 @@ class CipdWrapperTestCase(BaseTestCase):
 
     self.fail('Unable to find a satisfactory package.')
 
-  def testSingleRootAuthority(self):
-    """Checks that exactly one package has root authority."""
-    self.assertEquals(1, len([p for p in self._cipd_packages
-                              if p.authority_for_root]))
-
   def testRevert(self):
-    """Checks that revert w/ root authority clobbers and reruns ensure."""
+    """Checks that revert does nothing."""
     scm = self.createScmWithPackageThatSatisfies(
-        lambda p: p.authority_for_root)
-
-    self._cipd_root.clobber()
-    self._cipd_root.ensure()
-
-    self.mox.ReplayAll()
-
-    scm.revert(None, (), [])
-
-  def testRevertWithoutAuthority(self):
-    """Checks that revert w/o root authority does nothing."""
-    scm = self.createScmWithPackageThatSatisfies(
-        lambda p: not p.authority_for_root)
+        lambda _: True)
 
     self.mox.ReplayAll()
 
@@ -991,20 +974,9 @@ class CipdWrapperTestCase(BaseTestCase):
     self.assertEquals(revinfo, expected_revinfo)
 
   def testUpdate(self):
-    """Checks that update w/ root authority runs ensure."""
+    """Checks that update does nothing."""
     scm = self.createScmWithPackageThatSatisfies(
-        lambda p: p.authority_for_root)
-
-    self._cipd_root.ensure()
-
-    self.mox.ReplayAll()
-
-    scm.update(None, (), [])
-
-  def testUpdateWithoutAuthority(self):
-    """Checks that update w/o root authority does nothing."""
-    scm = self.createScmWithPackageThatSatisfies(
-        lambda p: not p.authority_for_root)
+        lambda _: True)
 
     self.mox.ReplayAll()
 

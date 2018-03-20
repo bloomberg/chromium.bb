@@ -1215,24 +1215,10 @@ class GitWrapper(SCMWrapper):
 class CipdPackage(object):
   """A representation of a single CIPD package."""
 
-  def __init__(self, name, version, authority_for_root, authority_for_subdir):
-    self._authority_for_root = authority_for_root
+  def __init__(self, name, version, authority_for_subdir):
     self._authority_for_subdir = authority_for_subdir
     self._name = name
     self._version = version
-
-  @property
-  def authority_for_root(self):
-    """Whether this package has authority to act on behalf of its root.
-
-    Some operations should only be performed once per cipd root. A package
-    that has authority for its cipd root is the only package that should
-    perform such operations.
-
-    Returns:
-      bool; whether this package has root authority.
-    """
-    return self._authority_for_root
 
   @property
   def authority_for_subdir(self):
@@ -1284,7 +1270,6 @@ class CipdRoot(object):
     with self._mutator_lock:
       cipd_package = CipdPackage(
           package, version,
-          not self._packages_by_subdir,
           not self._packages_by_subdir[subdir])
       self._all_packages.add(cipd_package)
       self._packages_by_subdir[subdir].append(cipd_package)
@@ -1301,7 +1286,7 @@ class CipdRoot(object):
     packages.
     """
     with self._mutator_lock:
-      cipd_cache_dir = os.path.join(self._cipd_root, '.cipd')
+      cipd_cache_dir = os.path.join(self.root_dir, '.cipd')
       try:
         gclient_utils.rmtree(os.path.join(cipd_cache_dir))
       except OSError:
@@ -1335,6 +1320,13 @@ class CipdRoot(object):
             '-ensure-file', ensure_file,
         ]
         gclient_utils.CheckCallAndFilterAndHeader(cmd)
+
+  def run(self, command):
+    if command == 'update':
+      self.ensure()
+    elif command == 'revert':
+      self.clobber()
+      self.ensure()
 
   def created_package(self, package):
     """Checks whether this root created the given package.
@@ -1385,10 +1377,12 @@ class CipdWrapper(SCMWrapper):
     return True
 
   def revert(self, options, args, file_list):
-    """Deletes .cipd and reruns ensure."""
-    if self._package.authority_for_root:
-      self._root.clobber()
-      self._root.ensure()
+    """Does nothing.
+
+    CIPD packages should be reverted at the root by running
+    `CipdRoot.run('revert')`.
+    """
+    pass
 
   def diff(self, options, args, file_list):
     """CIPD has no notion of diffing."""
@@ -1422,6 +1416,9 @@ class CipdWrapper(SCMWrapper):
     pass
 
   def update(self, options, args, file_list):
-    """Runs ensure."""
-    if self._package.authority_for_root:
-      self._root.ensure()
+    """Does nothing.
+
+    CIPD packages should be updated at the root by running
+    `CipdRoot.run('update')`.
+    """
+    pass
