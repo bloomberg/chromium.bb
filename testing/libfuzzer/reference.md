@@ -1,6 +1,6 @@
 # libFuzzer Integration Reference
 
-## Additional sanitizer configuration
+## Additional Sanitizer Configuration
 
 ### MSan
 
@@ -79,11 +79,13 @@ Following arguments are supported:
 
 | Argument | Description |
 |----------|-------------|
-| sources | **required** list of fuzzer test source files |
-| deps | fuzzer dependencies |
-| additional_configs | additional GN configurations to be used for compilation |
-| dict | a dictionary file for the fuzzer |
-| libfuzzer_options | runtime options file for the fuzzer. See [Fuzzer Runtime Options](#Fuzzer-Runtime-Options) |
+| `sources` | **required** list of fuzzer test source files |
+| `deps` | fuzzer dependencies |
+| `additional_configs` | additional GN configurations to be used for compilation |
+| `dict` | a dictionary file for the fuzzer |
+| `libfuzzer_options` | runtime options file for the fuzzer. See [Fuzzer Runtime Options](#Fuzzer-Runtime-Options) |
+| `seed_corpus` | single directory containing test inputs, parsed recursively |
+| `seed_corpuses` | multiple directories with the same purpose as `seed_corpus` |
 
 
 ## Fuzzer Runtime Options
