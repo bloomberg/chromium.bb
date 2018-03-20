@@ -172,10 +172,6 @@ extern const base::Feature kImportantSitesInCbd;
 
 extern const base::Feature kImprovedRecoveryComponent;
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-extern const base::Feature kIncompatibleApplicationsWarning;
-#endif
-
 #if !defined(OS_ANDROID)
 extern const base::Feature kLocalScreenCasting;
 #endif

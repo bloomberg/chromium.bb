@@ -19,12 +19,11 @@
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
-class ModuleDatabaseObserver;
-
 #if defined(GOOGLE_CHROME_BUILD)
-class PrefRegistrySimple;
-class ThirdPartyConflictsManager;
+#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #endif
+
+class ModuleDatabaseObserver;
 
 namespace base {
 class FilePath;
@@ -116,11 +115,9 @@ class ModuleDatabase {
   void IncreaseInspectionPriority();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
-
   // Accessor for the third party conflicts manager. This is exposed so that the
   // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
-  // Returns null if the tracking of incompatible applications is disabled.
+  // Returns returns null on Windows 8.1 and lower.
   ThirdPartyConflictsManager* third_party_conflicts_manager() {
     return third_party_conflicts_manager_.get();
   }
@@ -172,15 +169,6 @@ class ModuleDatabase {
   // Notifies the |observer| of already found and inspected modules via
   // OnNewModuleFound().
   void NotifyLoadedModules(ModuleDatabaseObserver* observer);
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // Initializes the ThirdPartyConflictsManager, which controls the warning of
-  // incompatible applications that injects into Chrome.
-  // The manager is not initialized if it is disabled via a base::Feature or a
-  // group policy. Note that it is also not initialized on Windows version
-  // 8.1 and less.
-  void MaybeInitializeThirdPartyConflictsManager();
-#endif
 
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

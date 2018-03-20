@@ -13,12 +13,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
-#include "chrome/common/chrome_features.h"
-#include "components/prefs/pref_registry_simple.h"
-#endif
-
 namespace {
 
 // Document the assumptions made on the ProcessType enum in order to convert
@@ -55,7 +49,11 @@ ModuleDatabase::ModuleDatabase(
   AddObserver(&third_party_metrics_);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  MaybeInitializeThirdPartyConflictsManager();
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    third_party_conflicts_manager_ =
+        std::make_unique<ThirdPartyConflictsManager>(this);
+    AddObserver(third_party_conflicts_manager_.get());
+  }
 #endif
 }
 
@@ -174,15 +172,6 @@ void ModuleDatabase::IncreaseInspectionPriority() {
   module_inspector_.IncreaseInspectionPriority();
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-// static
-void ModuleDatabase::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  // Register the pref used to disable the Incompatible Applications warning
-  // using group policy.
-  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
-}
-#endif
-
 // static
 uint32_t ModuleDatabase::ProcessTypeToBit(content::ProcessType process_type) {
   uint32_t bit_index =
@@ -269,23 +258,3 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
       observer->OnNewModuleFound(module.first, module.second);
   }
 }
-
-#if defined(GOOGLE_CHROME_BUILD)
-void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
-  // Early exit if disabled via group policy.
-  const PrefService::Preference* third_party_blocking_enabled_pref =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kThirdPartyBlockingEnabled);
-  if (third_party_blocking_enabled_pref->IsManaged() &&
-      !third_party_blocking_enabled_pref->GetValue()->GetBool())
-    return;
-
-  if (base::FeatureList::IsEnabled(
-          features::kIncompatibleApplicationsWarning) &&
-      base::win::GetVersion() >= base::win::VERSION_WIN10) {
-    third_party_conflicts_manager_ =
-        std::make_unique<ThirdPartyConflictsManager>(this);
-    AddObserver(third_party_conflicts_manager_.get());
-  }
-}
-#endif
