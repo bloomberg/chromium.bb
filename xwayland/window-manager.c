@@ -1387,6 +1387,8 @@ weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 		                                    CAIRO_FORMAT_ARGB32,
 		                                    width, height, width * 4);
 
+	free(reply);
+
 	/* Bail out in case anything wrong happened during surface creation. */
 	if (cairo_surface_status(new_surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(new_surface);
