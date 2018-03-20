@@ -216,6 +216,8 @@ cast_source_set("browser") {
       "cast_web_view_extension.h",
       "extension_request_protocol_handler.cc",
       "extension_request_protocol_handler.h",
+      "extensions/api/bookmarks/bookmarks_api.cc",
+      "extensions/api/bookmarks/bookmarks_api.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
       "extensions/cast_display_info_provider.cc",
@@ -239,6 +241,7 @@ cast_source_set("browser") {
 
     deps += [
       "//chromecast/common/extensions_api:api_registration_bundle_generator_registration",
+      "//chromecast/common/extensions_api:api_schema_generator",
       "//components/guest_view/browser",
       "//components/keyed_service/content",
       "//components/pref_registry",
