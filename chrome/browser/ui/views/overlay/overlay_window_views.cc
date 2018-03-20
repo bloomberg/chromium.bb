@@ -45,9 +45,8 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 };
 
 OverlayWindowViews::OverlayWindowViews() {
-  // TODO(apacible): Change window type to TYPE_WINDOW_FRAMELESS. It is
-  // temporarily TYPE_WINDOW for resizing purposes.
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateBounds();
   params.keep_on_top = true;
