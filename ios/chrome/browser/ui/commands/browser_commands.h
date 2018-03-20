@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/external_search_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
+#import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/tools_menu_commands.h"
@@ -24,6 +25,7 @@
                           ActivityServiceCommands,
                           ExternalSearchCommands,
                           PageInfoCommands,
+                          PopupMenuCommands,
                           QRScannerCommands,
                           SnackbarCommands,
                           TabHistoryPopupCommands,

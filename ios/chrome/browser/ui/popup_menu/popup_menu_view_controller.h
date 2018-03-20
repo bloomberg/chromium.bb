@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol BrowserCommands;
+@protocol PopupMenuCommands;
 @protocol PopupMenuViewControllerDelegate;
 
 // ViewController displaying a popup for a menu. The view of this controller is
@@ -21,8 +21,8 @@
 
 // View containing the content of this popup.
 @property(nonatomic, strong, readonly) UIView* contentContainer;
-// Dispatcher.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// CommandHandler.
+@property(nonatomic, weak) id<PopupMenuCommands> commandHandler;
 
 // Adds |content| as a child ViewController and its view to the popup.
 - (void)addContent:(UIViewController*)content;

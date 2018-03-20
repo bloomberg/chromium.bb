@@ -19,7 +19,7 @@
 @implementation PopupMenuViewController
 
 @synthesize contentContainer = _contentContainer;
-@synthesize dispatcher = _dispatcher;
+@synthesize commandHandler = _commandHandler;
 
 #pragma mark - Public
 
@@ -62,7 +62,7 @@
                           [recognizer locationInView:self.view])) {
     return;
   }
-  // TODO(crbug.com/804771):dismiss the popup using the dispatcher.
+  [self.commandHandler dismissPopupMenu];
 }
 
 @end

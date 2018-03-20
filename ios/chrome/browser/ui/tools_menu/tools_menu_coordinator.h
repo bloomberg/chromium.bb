@@ -16,6 +16,7 @@
 
 // ToolsMenuCoordinator is a ChromeCoordinator that encapsulates logic for
 // showing tools menu UI. In the typical case that may be a tools menu popup.
+// TODO(crbug.com/800266): Remove this coordinator once Phase 1 is enabled.
 @interface ToolsMenuCoordinator
     : ChromeCoordinator<ToolsMenuPresentationStateProvider>
 
