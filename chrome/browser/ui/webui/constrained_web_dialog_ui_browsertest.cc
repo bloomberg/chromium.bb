@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/ui_features.h"
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
 using content::WebContents;
@@ -194,12 +196,11 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   gfx::Size max_size = gfx::Size(200, 200);
   gfx::Size initial_dialog_size;
 
- // OSX windows must be initially created with non-empty dimensions. The
- // autoresizeable dialog's window dimensions are determined after initial
- // creation.
-#if defined(OS_MACOSX)
+// When using Cocoa windows, the initial dimensions must be nonzero.
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
   initial_dialog_size = gfx::Size(1, 1);
 #endif
+
   delegate->GetDialogSize(&initial_dialog_size);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
