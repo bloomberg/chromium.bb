@@ -65,7 +65,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Don't use except for tracing.
   struct TaskDescriptionForTracing {
     TaskType task_type;
-    MainThreadTaskQueue::QueueType queue_type;
+    base::Optional<MainThreadTaskQueue::QueueType> queue_type;
 
     // Required in order to wrap in TraceableState.
     constexpr bool operator!=(const TaskDescriptionForTracing& rhs) const {
@@ -277,6 +277,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
+
+  base::WeakPtr<RendererSchedulerImpl> GetWeakPtr();
 
  protected:
   // RendererScheduler implementation.

@@ -46,9 +46,14 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     kIPC = 17,
     kInput = 18,
 
+    // Detached is used in histograms for tasks which are run after frame
+    // is detached and task queue is gracefully shutdown.
+    // TODO(altimin): Move to the top when histogram is renumbered.
+    kDetached = 19,
+
     // Used to group multiple types when calculating Expected Queueing Time.
-    kOther = 19,
-    kCount = 20
+    kOther = 20,
+    kCount = 21
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -168,6 +173,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
  private:
   friend class TaskQueueManager;
+
+  // Clear references to main thread scheduler and frame scheduler and dispatch
+  // appropriate notifications. This is the common part of ShutdownTaskQueue and
+  // DetachFromRendererScheduler.
+  void ClearReferencesToSchedulers();
 
   QueueType queue_type_;
   QueueClass queue_class_;
