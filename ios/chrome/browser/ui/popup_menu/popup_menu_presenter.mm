@@ -38,7 +38,7 @@
 
   [self.baseViewController addChildViewController:self.popupViewController];
   [self.baseViewController.view addSubview:self.popupViewController.view];
-  self.popupViewController.view.frame = self.baseViewController.view.frame;
+  self.popupViewController.view.frame = self.baseViewController.view.bounds;
 
   // TODO(crbug.com/804774): Prepare for animation.
   self.popupViewController.contentContainer.alpha = 0;
