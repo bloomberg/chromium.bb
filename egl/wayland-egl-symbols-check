@@ -16,14 +16,6 @@ fi
 
 AVAIL_FUNCS="$($NM -D --format=bsd --defined-only $LIB | awk '{print $3}')"
 
-# Platform specific symbols.
-PLAT_FUNCS="__bss_start
-_edata
-_end
-_fini
-_init
-"
-
 # Official ABI, taken from the header.
 REQ_FUNCS="wl_egl_window_resize
 wl_egl_window_create
@@ -32,8 +24,8 @@ wl_egl_window_get_attached_size
 "
 
 NEW_ABI=$(echo "$AVAIL_FUNCS" | while read func; do
+    echo "$func" | grep -q "^_" && continue
     echo "$REQ_FUNCS" | grep -q "^$func$" && continue
-    echo "$PLAT_FUNCS" | grep -q "^$func$" && continue
 
     echo $func
 done)
