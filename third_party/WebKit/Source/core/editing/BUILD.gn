@@ -101,6 +101,7 @@ blink_core_sources("editing") {
     "commands/ApplyStyleCommand.h",
     "commands/BreakBlockquoteCommand.cpp",
     "commands/BreakBlockquoteCommand.h",
+    "commands/ClipboardCommands.cpp",
     "commands/ClipboardCommands.h",
     "commands/CompositeEditCommand.cpp",
     "commands/CompositeEditCommand.h",
