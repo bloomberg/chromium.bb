@@ -14,6 +14,11 @@ namespace mojo {
 template <>
 struct StructTraits<content::mojom::RenderFrameMetadataDataView,
                     cc::RenderFrameMetadata> {
+  static SkColor root_background_color(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.root_background_color;
+  }
+
   static base::Optional<gfx::Vector2dF> root_scroll_offset(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.root_scroll_offset;

@@ -15,11 +15,11 @@ RenderFrameMetadata::RenderFrameMetadata(RenderFrameMetadata&& other) = default;
 
 RenderFrameMetadata::~RenderFrameMetadata() {}
 
+// static
 bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
     const RenderFrameMetadata& rfm1,
     const RenderFrameMetadata& rfm2) {
-  // TODO(jonross): as low frequency fields are added, update this method.
-  return false;
+  return rfm1.root_background_color != rfm2.root_background_color;
 }
 
 RenderFrameMetadata& RenderFrameMetadata::operator=(
@@ -29,7 +29,8 @@ RenderFrameMetadata& RenderFrameMetadata::operator=(
     RenderFrameMetadata&& other) = default;
 
 bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) {
-  return root_scroll_offset == other.root_scroll_offset;
+  return root_scroll_offset == other.root_scroll_offset &&
+         root_background_color == other.root_background_color;
 }
 
 bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) {

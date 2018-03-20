@@ -23,6 +23,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
@@ -88,8 +89,10 @@ class WebCursor;
 struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
-class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
-                                                public IPC::Listener {
+class CONTENT_EXPORT RenderWidgetHostViewBase
+    : public RenderWidgetHostView,
+      public IPC::Listener,
+      public RenderFrameMetadataProvider::Observer {
  public:
   using CreateCompositorFrameSinkCallback =
       base::OnceCallback<void(const viz::FrameSinkId&)>;
@@ -135,6 +138,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
+
+  // RenderFrameMetadataProvider::Observer
+  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameSubmission() override;
 
   void SetPopupType(blink::WebPopupType popup_type);
 
