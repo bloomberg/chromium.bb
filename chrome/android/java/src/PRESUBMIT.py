@@ -15,7 +15,9 @@ This presubmit checks for the following:
 import re
 
 NEW_NOTIFICATION_BUILDER_RE = re.compile(
-  r'new\sNotification(Compat)?\.Builder')
+    r'\bnew\sNotification(Compat)?\.Builder\b')
+
+COMMENT_RE = re.compile(r'^\s*(//|/\*|\*)')
 
 def CheckChangeOnUpload(input_api, output_api):
   return _CommonChecks(input_api, output_api)
@@ -32,18 +34,21 @@ def _CommonChecks(input_api, output_api):
   return result
 
 def _CheckNotificationConstructors(input_api, output_api):
-  whitelist = [
+  # "Blacklist" because the following files are excluded from the check.
+  blacklist = (
       'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
           'NotificationBuilder.java',
       'chrome/android/java/src/org/chromium/chrome/browser/notifications/'
           'NotificationCompatBuilder.java'
-  ]
+  )
   problems = []
-  for f in input_api.AffectedFiles():
-    if f.LocalPath() in whitelist:
-      continue
+  sources = lambda x: input_api.FilterSourceFile(
+      x, white_list=(r'\.java$',), black_list=blacklist)
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=sources):
     for line_number, line in f.ChangedContents():
-      if NEW_NOTIFICATION_BUILDER_RE.search(line):
+      if (NEW_NOTIFICATION_BUILDER_RE.search(line)
+          and not COMMENT_RE.search(line)):
         problems.append(
           '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if problems:
