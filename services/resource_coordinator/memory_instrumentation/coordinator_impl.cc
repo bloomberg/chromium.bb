@@ -341,6 +341,9 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
 
+  if (request == nullptr)
+    return;
+
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
   for (const auto& kv : clients_) {
     auto client_identity = kv.second->identity;
