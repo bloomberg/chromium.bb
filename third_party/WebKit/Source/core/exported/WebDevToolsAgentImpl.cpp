@@ -88,7 +88,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
-#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebSettings.h"
@@ -464,8 +463,6 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
 
   inspector_session_->Append(new InspectorAuditsAgent(network_agent_));
 
-  tracing_agent_->SetLayerTreeId(agent_->layer_tree_id_);
-
   if (agent_->include_view_agents_) {
     // TODO(dgozman): we should actually pass the view instead of frame, but
     // during remote->local transition we cannot access mainFrameImpl() yet, so
@@ -490,29 +487,14 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
     WebLocalFrameImpl* frame) {
-  if (!IsMainFrame(frame)) {
-    WebDevToolsAgentImpl* agent =
-        new WebDevToolsAgentImpl(frame, false, nullptr);
-    if (frame->FrameWidgetImpl())
-      agent->LayerTreeViewChanged(frame->FrameWidgetImpl()->GetLayerTreeView());
-    return agent;
-  }
-
-  WebViewImpl* view = frame->ViewImpl();
-  WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, true, nullptr);
-  agent->LayerTreeViewChanged(view->LayerTreeView());
-  return agent;
+  return new WebDevToolsAgentImpl(frame, IsMainFrame(frame), nullptr);
 }
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForWorker(
     WebLocalFrameImpl* frame,
     WorkerClient* worker_client) {
-  WebViewImpl* view = frame->ViewImpl();
-  WebDevToolsAgentImpl* agent =
-      new WebDevToolsAgentImpl(frame, true, worker_client);
-  agent->LayerTreeViewChanged(view->LayerTreeView());
-  return agent;
+  return new WebDevToolsAgentImpl(frame, true, worker_client);
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
@@ -527,8 +509,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
           web_local_frame_impl_->GetFrame())),
       inspected_frames_(new InspectedFrames(web_local_frame_impl_->GetFrame())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
-      include_view_agents_(include_view_agents),
-      layer_tree_id_(0) {
+      include_view_agents_(include_view_agents) {
   DCHECK(IsMainThread());
   DCHECK(web_local_frame_impl_->GetFrame());
 }
@@ -653,13 +634,6 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
 void WebDevToolsAgentImpl::RootLayerCleared() {
   for (auto& session : sessions_)
     session->tracing_agent()->RootLayerCleared();
-}
-
-void WebDevToolsAgentImpl::LayerTreeViewChanged(
-    WebLayerTreeView* layer_tree_view) {
-  layer_tree_id_ = layer_tree_view ? layer_tree_view->LayerTreeId() : 0;
-  for (auto& session : sessions_)
-    session->tracing_agent()->SetLayerTreeId(layer_tree_id_);
 }
 
 void WebDevToolsAgentImpl::ShowReloadingBlanket() {

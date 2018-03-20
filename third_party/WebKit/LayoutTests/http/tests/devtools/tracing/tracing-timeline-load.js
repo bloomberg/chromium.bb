@@ -286,7 +286,9 @@
       'tts': 2613843
     },
     {
-      'args': {'sessionId': '26.5'},
+      'args': {'data': {'sessionId': '26.5', 'frames': [
+        {'frame': 'frame1', 'url': 'frameurl', 'name': 'frame-name'}
+      ]}},
       'cat': 'disabled-by-default-devtools.timeline',
       'name': 'TracingStartedInPage',
       'ph': 'I',
@@ -297,7 +299,7 @@
       'tts': 1432596
     },
     {
-      'args': {'layerTreeId': 1, 'sessionId': '26.5'},
+      'args': {'data': {'layerTreeId': 1, 'frame': 'frame1'}},
       'cat': 'disabled-by-default-devtools.timeline',
       'name': 'SetLayerTreeId',
       'ph': 'I',

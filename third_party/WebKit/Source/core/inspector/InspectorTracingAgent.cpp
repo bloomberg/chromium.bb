@@ -13,6 +13,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
 
@@ -30,9 +31,7 @@ const char kDevtoolsMetadataEventCategory[] =
 
 InspectorTracingAgent::InspectorTracingAgent(Client* client,
                                              InspectedFrames* inspected_frames)
-    : layer_tree_id_(0),
-      client_(client),
-      inspected_frames_(inspected_frames) {}
+    : client_(client), inspected_frames_(inspected_frames) {}
 
 InspectorTracingAgent::~InspectorTracingAgent() {}
 
@@ -106,8 +105,6 @@ void InspectorTracingAgent::EmitMetadataEvents() {
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTracingStartedInFrame::Data(
                            session_id_, inspected_frames_->Root()));
-  if (layer_tree_id_)
-    SetLayerTreeId(layer_tree_id_);
   for (WorkerInspectorProxy* proxy : WorkerInspectorProxy::AllProxies()) {
     // For now we assume this is document. TODO(kinuko): Fix this.
     DCHECK(proxy->GetExecutionContext()->IsDocument());
@@ -126,14 +123,6 @@ void InspectorTracingAgent::WriteTimelineStartedEventForWorker(
                        "data",
                        InspectorTracingSessionIdForWorkerEvent::Data(
                            session_id_, worker_thread));
-}
-
-void InspectorTracingAgent::SetLayerTreeId(int layer_tree_id) {
-  layer_tree_id_ = layer_tree_id;
-  TRACE_EVENT_INSTANT1(
-      kDevtoolsMetadataEventCategory, "SetLayerTreeId",
-      TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorSetLayerTreeId::Data(session_id_, layer_tree_id_));
 }
 
 void InspectorTracingAgent::RootLayerCleared() {

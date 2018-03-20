@@ -52,7 +52,6 @@ class InspectedFrames;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class LocalFrame;
-class WebLayerTreeView;
 class WebLocalFrameImpl;
 
 class CORE_EXPORT WebDevToolsAgentImpl final
@@ -87,7 +86,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void DidCommitLoadForLocalFrame(LocalFrame*);
   void DidStartProvisionalLoad(LocalFrame*);
   bool ScreencastEnabled();
-  void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
   String NavigationInitiatorInfo(LocalFrame*);
   String EvaluateInOverlayForTesting(const String& script);
@@ -134,7 +132,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   Member<InspectorResourceContainer> resource_container_;
   Member<Node> node_to_inspect_;
   bool include_view_agents_;
-  int layer_tree_id_;
 };
 
 }  // namespace blink

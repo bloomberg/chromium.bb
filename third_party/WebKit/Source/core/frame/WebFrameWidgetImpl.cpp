@@ -993,9 +993,6 @@ void WebFrameWidgetImpl::InitializeLayerTreeView() {
         layer_tree_view_->CompositorAnimationHost());
   }
 
-  if (WebDevToolsAgentImpl* dev_tools = local_root_->DevToolsAgentImpl())
-    dev_tools->LayerTreeViewChanged(layer_tree_view_);
-
   GetPage()->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
   if (layer_tree_view_) {
     GetPage()->LayerTreeViewInitialized(*layer_tree_view_,

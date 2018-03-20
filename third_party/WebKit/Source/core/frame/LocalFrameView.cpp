@@ -3250,6 +3250,9 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     });
 
     {
+      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                           "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
+                           InspectorSetLayerTreeId::Data(frame_.Get()));
       TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
                    InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
 

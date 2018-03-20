@@ -3648,9 +3648,6 @@ void WebViewImpl::InitializeLayerTreeView() {
     }
   }
 
-  if (WebDevToolsAgentImpl* dev_tools = MainFrameDevToolsAgentImpl())
-    dev_tools->LayerTreeViewChanged(layer_tree_view_);
-
   page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
   if (layer_tree_view_) {
     page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
