@@ -621,8 +621,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
   }
 
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-  if (!signin->IsAuthenticated()) {
+  if (IsProfileAuthNeeded()) {
     // For web-based signin, the signin page is not displayed in an overlay
     // on the settings page. So if we get here, it must be due to the user
     // cancelling signin (by reloading the sync settings page during initial
@@ -758,35 +757,6 @@ void PeopleHandler::OpenSyncSetup() {
   ProfileSyncService* service = GetSyncService();
   if (service && !sync_blocker_)
     sync_blocker_ = service->GetSetupInProgressHandle();
-
-  // There are several different UI flows that can bring the user here:
-  // 1) Signin promo.
-  // 2) Normal signin through settings page (IsAuthenticated() is false).
-  // 3) Previously working credentials have expired.
-  // 4) User is signed in, but has stopped sync via the google dashboard, and
-  //    signout is prohibited by policy so we need to force a re-auth.
-  // 5) User clicks [Advanced Settings] button on options page while already
-  //    logged in.
-  // 6) One-click signin (credentials are already available, so should display
-  //    sync configure UI, not login UI).
-  // 7) User re-enables sync after disabling it via advanced settings.
-#if !defined(OS_CHROMEOS)
-  if (IsProfileAuthNeeded()) {
-    // User is not logged in (cases 1-2), or login has been specially requested
-    // because previously working credentials have expired (case 3). Close sync
-    // setup including any visible overlays, and display the gaia auth page.
-    // Control will be returned to the sync settings page once auth is complete.
-    CloseUI();
-    DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
-    return;
-  }
-#endif
-  if (!service) {
-    // This can happen if the user directly navigates to /settings/syncSetup.
-    DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
-    CloseUI();
-    return;
-  }
 
   // Early exit if there is already a preferences push pending sync startup.
   if (sync_startup_tracker_)
