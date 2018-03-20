@@ -983,6 +983,8 @@ std::unique_ptr<TracedValue> FrameEventData(LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   bool is_main_frame = frame && frame->IsMainFrame();
   value->SetBoolean("isMainFrame", is_main_frame);
+  // TODO(dgozman): this does not work with OOPIF, so everyone who
+  // uses it should migrate to frame instead.
   value->SetString("page",
                    IdentifiersFactory::FrameId(&frame->LocalFrameRoot()));
   return value;
@@ -1270,6 +1272,7 @@ std::unique_ptr<TracedValue> InspectorTracingStartedInFrame::Data(
   value->SetString("sessionId", session_id);
   value->SetString("page",
                    IdentifiersFactory::FrameId(&frame->LocalFrameRoot()));
+  value->SetBoolean("persistentIds", true);
   value->BeginArray("frames");
   for (Frame* f = frame; f; f = f->Tree().TraverseNext(frame)) {
     if (!f->IsLocalFrame())
