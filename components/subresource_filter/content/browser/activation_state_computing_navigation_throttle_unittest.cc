@@ -10,11 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/activation_level.h"
@@ -36,7 +38,9 @@ class ActivationStateComputingNavigationThrottleTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver {
  public:
-  ActivationStateComputingNavigationThrottleTest() {}
+  ActivationStateComputingNavigationThrottleTest()
+      : simple_task_runner_(
+            base::MakeRefCounted<base::TestSimpleTaskRunner>()) {}
   ~ActivationStateComputingNavigationThrottleTest() override {}
 
   void SetUp() override {
@@ -49,7 +53,11 @@ class ActivationStateComputingNavigationThrottleTest
   void TearDown() override {
     ruleset_handle_.reset();
     dealer_handle_.reset();
-    RunUntilIdle();
+
+    // The various ruleset classes post tasks to delete their blocking task
+    // runners. Make sure that happens now to avoid test-only leaks.
+    base::RunLoop().RunUntilIdle();
+    simple_task_runner()->RunUntilIdle();
     content::RenderViewHostTestHarness::TearDown();
   }
 
@@ -78,12 +86,7 @@ class ActivationStateComputingNavigationThrottleTest
     // Make the blocking task runner run on the current task runner for the
     // tests, to ensure that the NavigationSimulator properly runs all necessary
     // tasks while waiting for throttle checks to finish.
-    dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
-        base::MessageLoop::current()->task_runner());
-    dealer_handle_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
-                                             base::DoNothing());
-    ruleset_handle_ =
-        std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
+    InitializeRulesetHandles(base::SequencedTaskRunnerHandle::Get());
   }
 
   void NavigateAndCommitMainFrameWithPageActivationState(
@@ -95,8 +98,6 @@ class ActivationStateComputingNavigationThrottleTest
     NotifyPageActivation(page_activation);
     SimulateCommitAndExpectToProceed();
   }
-
-  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   void CreateTestNavigationForMainFrame(const GURL& first_url) {
     navigation_simulator_ =
@@ -136,12 +137,19 @@ class ActivationStateComputingNavigationThrottleTest
               navigation_simulator_->GetLastThrottleCheckResult());
   }
 
+  void InitializeRulesetHandles(
+      scoped_refptr<base::SequencedTaskRunner> ruleset_task_runner) {
+    dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
+        std::move(ruleset_task_runner));
+    dealer_handle_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                             base::DoNothing());
+    ruleset_handle_ =
+        std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
+  }
+
   void NotifyPageActivation(ActivationState state) {
-    test_throttle_->NotifyPageActivationWithRuleset(
-        state.activation_level == ActivationLevel::DISABLED
-            ? nullptr
-            : ruleset_handle_.get(),
-        state);
+    test_throttle_->NotifyPageActivationWithRuleset(ruleset_handle_.get(),
+                                                    state);
   }
 
   ActivationState last_activation_state() {
@@ -152,6 +160,10 @@ class ActivationStateComputingNavigationThrottleTest
 
   content::RenderFrameHost* last_committed_frame_host() {
     return last_committed_frame_host_;
+  }
+
+  scoped_refptr<base::TestSimpleTaskRunner> simple_task_runner() {
+    return simple_task_runner_;
   }
 
  protected:
@@ -203,6 +215,8 @@ class ActivationStateComputingNavigationThrottleTest
 
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
+  scoped_refptr<base::TestSimpleTaskRunner> simple_task_runner_;
+
   // Owned by the current navigation.
   ActivationStateComputingNavigationThrottle* test_throttle_;
   base::Optional<ActivationState> last_activation_state_;
@@ -236,16 +250,6 @@ TEST_F(ActivationStateComputingThrottleMainFrameTest,
   // Never send NotifyPageActivation.
   SimulateCommitAndExpectToProceed();
 
-  ActivationState state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
-}
-
-TEST_F(ActivationStateComputingThrottleMainFrameTest,
-       DisabledPageActivation_NoActivation) {
-  // Notify that the page level activation is explicitly disabled. Should be
-  // equivalent to not sending the message at all to the main frame throttle.
-  NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://example.test/"), ActivationState(ActivationLevel::DISABLED));
   ActivationState state = last_activation_state();
   EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
 }
@@ -472,6 +476,100 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
   EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
   histogram_tester.ExpectTotalCount(kActivationDelay, 2);
   histogram_tester.ExpectTotalCount(kActivationDelayMainFrame, 1);
+}
+
+TEST_F(ActivationStateComputingThrottleSubFrameTest, SpeculativeSubframes) {
+  // Use the activation performance metric as a proxy for how many times
+  // activation computation occurred.
+  base::HistogramTester histogram_tester;
+  const char kActivationCPU[] =
+      "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
+
+  // Main frames don't do speculative lookups, a navigation commit should only
+  // trigger a single ruleset lookup.
+  CreateTestNavigationForMainFrame(GURL("http://example.test/"));
+  SimulateStartAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+
+  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+
+  NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
+  SimulateCommitAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+
+  CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
+                                      last_committed_frame_host(),
+                                      last_activation_state());
+  // For subframes, do a ruleset lookup at the start and every redirect.
+  SimulateStartAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 2);
+
+  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
+
+  // No ruleset lookup required at commit because we've already checked the
+  // latest URL.
+  SimulateCommitAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
+}
+
+TEST_F(ActivationStateComputingThrottleSubFrameTest,
+       SpeculativeSubframesWithDelay) {
+  InitializeRulesetHandles(simple_task_runner());
+
+  // TODO(csharrison): Once crbug.com/822275 is resolved, implement this via a
+  // Wait() style interface on NavigationSimulator. Right now it is very hacky:
+  // essentially we post a task to finish tasks on |simple_task_runner_| before
+  // a navigation stage (when necessary). NavigationSimulator internals pump the
+  // run loop which runs this task after throttles run.
+  auto task_runner = simple_task_runner();
+  auto post_advance = [task_runner]() {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&base::TestSimpleTaskRunner::RunPendingTasks,
+                                  base::RetainedRef(task_runner)));
+  };
+
+  // Use the activation performance metric as a proxy for how many times
+  // activation computation occurred.
+  base::HistogramTester histogram_tester;
+  const char kActivationCPU[] =
+      "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
+
+  // Main frames don't do speculative lookups, a navigation commit should only
+  // trigger a single ruleset lookup.
+  CreateTestNavigationForMainFrame(GURL("http://example.test/"));
+  SimulateStartAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+
+  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+
+  NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
+  post_advance();
+  SimulateCommitAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+
+  CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
+                                      last_committed_frame_host(),
+                                      last_activation_state());
+
+  // Simulate slow ruleset checks for the subframe, these should not delay the
+  // navigation until commit time.
+  SimulateStartAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+
+  // Calling redirect should ensure that the throttle does not receive the
+  // results of the check, but the task to actually perform the check will still
+  // happen.
+  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+
+  // Finish the checks dispatched in the start and redirect phase when the
+  // navigation is ready to commit.
+  post_advance();
+  SimulateCommitAndExpectToProceed();
+  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
 }
 
 }  // namespace subresource_filter

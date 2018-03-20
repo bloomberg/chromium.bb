@@ -151,6 +151,23 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
       ActivationState(ActivationLevel::ENABLED));
 }
 
+TEST_F(AsyncDocumentSubresourceFilterTest, DeleteFilter_NoActivationCallback) {
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
+  auto ruleset_handle = CreateRulesetHandle();
+
+  AsyncDocumentSubresourceFilter::InitializationParams params(
+      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+
+  testing::TestActivationStateCallbackReceiver activation_state;
+  auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
+
+  EXPECT_FALSE(filter->has_activation_state());
+  filter.reset();
+  RunUntilIdle();
+  EXPECT_EQ(0, activation_state.callback_count());
+}
+
 TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
   dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();

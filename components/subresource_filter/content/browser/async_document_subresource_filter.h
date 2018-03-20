@@ -95,6 +95,9 @@ class AsyncDocumentSubresourceFilter {
   // with the current thread. If MemoryMappedRuleset is not present or
   // malformed, then a default ActivationState is reported (with ActivationLevel
   // equal to DISABLED).
+  //
+  // If deleted before |activation_state_callback| is called, the callback will
+  // never be called.
   AsyncDocumentSubresourceFilter(
       VerifiedRuleset::Handle* ruleset_handle,
       InitializationParams params,
