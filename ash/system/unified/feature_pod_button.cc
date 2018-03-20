@@ -27,6 +27,7 @@ void ConfigureFeaturePodLabel(views::Label* label) {
   label->SetMultiLine(true);
   label->SizeToFit(kUnifiedFeaturePodSize.width());
   label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  label->SetSubpixelRenderingEnabled(false);
 }
 
 }  // namespace

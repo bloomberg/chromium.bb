@@ -4,10 +4,13 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
+#include "ui/app_list/app_list_features.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -21,6 +24,13 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+
+  SetBackground(
+      views::CreateSolidBackground(app_list::features::IsBackgroundBlurEnabled()
+                                       ? kUnifiedMenuBackgroundColorWithBlur
+                                       : kUnifiedMenuBackgroundColor));
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 
   AddChildView(new TopShortcutsView(controller_));
   AddChildView(feature_pods_container_);

@@ -66,6 +66,7 @@ DateView::DateView() : label_(new views::Label) {
   AddChildView(label_);
 
   label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetSubpixelRenderingEnabled(false);
   label_->SetEnabledColor(kUnifiedMenuTextColor);
   Update();
 
@@ -174,6 +175,7 @@ void BatteryView::Update() {
 
 void BatteryView::ConfigureLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
+  label->SetSubpixelRenderingEnabled(false);
   label->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
 }
 
@@ -207,6 +209,7 @@ EnterpriseManagedView::EnterpriseManagedView() {
 
   auto* label = new views::Label;
   label->SetAutoColorReadabilityEnabled(false);
+  label->SetSubpixelRenderingEnabled(false);
   label->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
   label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT));
