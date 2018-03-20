@@ -141,12 +141,6 @@ void ContentViewCore::UpdateWindowAndroid(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-ContentViewCore::GetWebContentsAndroid(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj) {
-  return web_contents_->GetJavaWebContents();
-}
-
-base::android::ScopedJavaLocalRef<jobject>
 ContentViewCore::GetJavaWindowAndroid(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   if (!GetWindowAndroid())
