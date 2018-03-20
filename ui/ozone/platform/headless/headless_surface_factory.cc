@@ -28,6 +28,8 @@ namespace ui {
 
 namespace {
 
+const base::FilePath::CharType kDevNull[] = FILE_PATH_LITERAL("/dev/null");
+
 void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
@@ -137,7 +139,7 @@ HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
 
 base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
     gfx::AcceleratedWidget widget) {
-  if (base_path_.empty() || base_path_ == base::FilePath("/dev/null"))
+  if (base_path_.empty() || base_path_ == base::FilePath(kDevNull))
     return base_path_;
 
   // Disambiguate multiple window output files with the window id.
@@ -177,7 +179,7 @@ void HeadlessSurfaceFactory::CheckBasePath() const {
     return;
 
   if (!DirectoryExists(base_path_) && !base::CreateDirectory(base_path_) &&
-      base_path_ != base::FilePath("/dev/null"))
+      base_path_ != base::FilePath(kDevNull))
     PLOG(FATAL) << "Unable to create output directory";
 
   if (!base::PathIsWritable(base_path_))

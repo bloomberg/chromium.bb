@@ -17,11 +17,11 @@ namespace ui {
 
 namespace {
 
-const char kDevInput[] = "/dev/input";
+const base::FilePath::CharType kDevInput[] = FILE_PATH_LITERAL("/dev/input");
 
 void ScanDevicesOnWorkerThread(std::vector<base::FilePath>* result) {
-  base::FileEnumerator file_enum(base::FilePath(FILE_PATH_LITERAL(kDevInput)),
-                                 false, base::FileEnumerator::FILES,
+  base::FileEnumerator file_enum(base::FilePath(kDevInput), false,
+                                 base::FileEnumerator::FILES,
                                  FILE_PATH_LITERAL("event*[0-9]"));
   for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
@@ -58,7 +58,7 @@ void DeviceManagerManual::RemoveObserver(DeviceEventObserver* observer) {
 }
 
 void DeviceManagerManual::StartWatching() {
-  if (!watcher_.Watch(base::FilePath(FILE_PATH_LITERAL(kDevInput)), false,
+  if (!watcher_.Watch(base::FilePath(kDevInput), false,
                       base::Bind(&DeviceManagerManual::OnWatcherEvent,
                                  weak_ptr_factory_.GetWeakPtr()))) {
     LOG(ERROR) << "Failed to start FilePathWatcher";
