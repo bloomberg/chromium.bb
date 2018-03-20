@@ -1184,10 +1184,6 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	      compare_launcher_info);
 
 	wl_array_for_each(data, &launchers) {
-		x = 0;
-		y = 0;
-		ret = 0;
-		layout_surface = NULL;
 		add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
 					      sizeof(*add_surface_id));
 
