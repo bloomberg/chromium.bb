@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "cc/base/region.h"
@@ -622,6 +623,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // If the value == 0, means we should not perform trilinear filtering on the
   // layer.
   unsigned trilinear_filtering_request_;
+
+  base::WeakPtrFactory<Layer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

@@ -335,7 +335,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   TakeDebugInfo();
   virtual void didUpdateMainThreadScrollingReasons();
 
-  void SetLayerClient(LayerClient* client) { inputs_.client = client; }
+  void SetLayerClient(base::WeakPtr<LayerClient> client) {
+    inputs_.client = std::move(client);
+  }
 
   virtual bool IsSnapped();
 
@@ -627,7 +629,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool hide_layer_and_subtree : 1;
 
     // The following elements can not and are not serialized.
-    LayerClient* client;
+    base::WeakPtr<LayerClient> client;
     base::Callback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;

@@ -460,8 +460,8 @@ void WebLayerImpl::SetScrollOffsetFromImplSideForTesting(
   layer_->SetScrollOffsetFromImplSide(offset);
 }
 
-void WebLayerImpl::SetLayerClient(cc::LayerClient* client) {
-  layer_->SetLayerClient(client);
+void WebLayerImpl::SetLayerClient(base::WeakPtr<cc::LayerClient> client) {
+  layer_->SetLayerClient(std::move(client));
 }
 
 const cc::Layer* WebLayerImpl::CcLayer() const {

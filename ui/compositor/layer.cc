@@ -113,7 +113,8 @@ Layer::Layer()
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
-      trilinear_filtering_request_(0) {
+      trilinear_filtering_request_(0),
+      weak_ptr_factory_(this) {
   CreateCcLayer();
 }
 
@@ -140,7 +141,8 @@ Layer::Layer(LayerType type)
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
-      trilinear_filtering_request_(0) {
+      trilinear_filtering_request_(0),
+      weak_ptr_factory_(this) {
   CreateCcLayer();
 }
 
@@ -628,7 +630,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     DCHECK(child->cc_layer_);
     cc_layer_->AddChild(child->cc_layer_);
   }
-  cc_layer_->SetLayerClient(this);
+  cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
@@ -1263,7 +1265,7 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->SetLayerClient(this);
+  cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
   RecomputePosition();
 }
