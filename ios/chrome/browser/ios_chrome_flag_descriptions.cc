@@ -82,6 +82,10 @@ const char kMemexTabSwitcherDescription[] =
     "prototype site instead of triggering the native Tab Switcher. The native "
     "TabSwitcher is accessible by long pressing the button";
 
+const char kNewToolsMenuName[] = "Enable the new tools menu";
+const char kNewToolsMenuDescription[] =
+    "When enabled, the new tools menu is displayed";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
