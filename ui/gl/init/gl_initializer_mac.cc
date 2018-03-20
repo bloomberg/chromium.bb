@@ -143,11 +143,7 @@ const char kEGLSwiftShaderLibraryName[] =
     "Libraries/libswiftshader_libEGL.dylib";
 
 bool InitializeStaticEGLInternal(GLImplementation implementation) {
-  base::FilePath module_path;
-  if (!PathService::Get(base::DIR_MODULE, &module_path)) {
-    return false;
-  }
-
+  base::FilePath module_path = base::mac::FrameworkBundlePath();
   base::FilePath glesv2_path;
   base::FilePath egl_path;
   if (implementation == kGLImplementationSwiftShaderGL) {
