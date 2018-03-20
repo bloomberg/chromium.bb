@@ -54,7 +54,7 @@ source_set("lib") {
       "//libassistant/contrib/platform/net",
       "//libassistant/contrib/platform/resources",
       "//libassistant/contrib/platform/system",
-      "//libassistant/internal/assistant/controller:libassistant_static",
+      "//libassistant/internal/assistant/controller:libassistant",
       "//libassistant/shared/internal_api/c:api_wrappers_for_caller_no_chromium",
       "//libassistant/shared/proto:assistant_proto",
       "//libassistant/shared/public",
