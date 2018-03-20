@@ -397,8 +397,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   EXPECT_TRUE(VerifyVisibleCount(1u));
 }
 
+class BrowserActionsContainerOverflowViewsTest
+    : public BrowserActionsContainerOverflowTest {
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+};
+
 // Test drag and drop between the overflow container and the main container.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowViewsTest,
                        TestOverflowDragging) {
   LoadExtensions();
 
