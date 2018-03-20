@@ -6,7 +6,6 @@
 
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TagCollection.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "core/layout/ng/ng_block_break_token.h"
@@ -18,6 +17,7 @@
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

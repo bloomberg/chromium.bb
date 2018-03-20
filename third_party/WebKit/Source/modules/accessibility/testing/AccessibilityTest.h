@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

@@ -6,8 +6,8 @@
 
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/PaintTestConfigurations.h"
 #include "platform/testing/UnitTestHelpers.h"
 

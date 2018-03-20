@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/runtime_enabled_features.h"

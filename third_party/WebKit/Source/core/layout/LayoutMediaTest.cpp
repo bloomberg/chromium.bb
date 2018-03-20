@@ -4,7 +4,7 @@
 
 #include "core/layout/LayoutVideo.h"
 
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 

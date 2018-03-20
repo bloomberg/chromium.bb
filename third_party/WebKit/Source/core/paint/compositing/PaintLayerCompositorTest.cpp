@@ -6,7 +6,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/ElementAnimation.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {

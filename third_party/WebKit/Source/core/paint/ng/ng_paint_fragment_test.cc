@@ -4,10 +4,10 @@
 
 #include "core/paint/ng/ng_paint_fragment.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

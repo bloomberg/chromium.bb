@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 

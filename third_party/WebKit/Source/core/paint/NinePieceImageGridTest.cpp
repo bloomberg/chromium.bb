@@ -5,9 +5,9 @@
 #include "core/paint/NinePieceImageGrid.h"
 
 #include "core/css/CSSGradientValue.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/StyleGeneratedImage.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

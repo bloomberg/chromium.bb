@@ -5,7 +5,7 @@
 #include "core/layout/LayoutEmbeddedContent.h"
 
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

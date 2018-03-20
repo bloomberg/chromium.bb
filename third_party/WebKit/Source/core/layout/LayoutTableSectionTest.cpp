@@ -5,7 +5,7 @@
 #include "core/layout/LayoutTableSection.h"
 
 #include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 

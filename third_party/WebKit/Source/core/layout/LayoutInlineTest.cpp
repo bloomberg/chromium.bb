@@ -5,7 +5,7 @@
 #include "core/layout/LayoutInline.h"
 
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"

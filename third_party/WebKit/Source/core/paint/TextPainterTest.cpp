@@ -9,11 +9,11 @@
 #include "core/css_property_names.h"
 #include "core/css_value_keywords.h"
 #include "core/frame/Settings.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/api/LineLayoutText.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ShadowData.h"
 #include "core/style/ShadowList.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

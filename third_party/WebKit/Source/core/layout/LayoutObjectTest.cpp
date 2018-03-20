@@ -6,10 +6,10 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/svg/SVGGElement.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/json/JSONValues.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"

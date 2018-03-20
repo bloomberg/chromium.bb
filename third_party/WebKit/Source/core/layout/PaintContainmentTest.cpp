@@ -4,7 +4,7 @@
 
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

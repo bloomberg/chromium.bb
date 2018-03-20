@@ -4,7 +4,6 @@
 
 #include "core/paint/ng/ng_text_fragment_painter.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -13,6 +12,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/style/ComputedStyle.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/runtime_enabled_features.h"

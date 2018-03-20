@@ -5,7 +5,7 @@
 #include "core/paint/CSSMaskPainter.h"
 
 #include <gtest/gtest.h>
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 namespace {

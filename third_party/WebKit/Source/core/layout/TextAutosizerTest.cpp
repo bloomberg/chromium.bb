@@ -4,9 +4,9 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/loader/EmptyClients.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/PlatformFrameView.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/WebFloatRect.h"
