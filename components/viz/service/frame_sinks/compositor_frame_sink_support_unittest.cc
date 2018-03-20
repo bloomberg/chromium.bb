@@ -640,7 +640,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(std::move(request));
-  GetSurfaceForId(surface_id)->OnWillBeDrawn();
+  GetSurfaceForId(surface_id)->TakeCopyOutputRequestsFromClient();
   EXPECT_FALSE(called1);
 
   bool called2 = false;
@@ -650,7 +650,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   request->set_source(kArbitrarySourceId2);
 
   support_->RequestCopyOfOutput(std::move(request));
-  GetSurfaceForId(surface_id)->OnWillBeDrawn();
+  GetSurfaceForId(surface_id)->TakeCopyOutputRequestsFromClient();
   // Callbacks have different sources so neither should be called.
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -662,7 +662,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(std::move(request));
-  GetSurfaceForId(surface_id)->OnWillBeDrawn();
+  GetSurfaceForId(surface_id)->TakeCopyOutputRequestsFromClient();
   // Two callbacks are from source1, so the first should be called.
   EXPECT_TRUE(called1);
   EXPECT_FALSE(called2);
@@ -810,10 +810,11 @@ TEST_F(CompositorFrameSinkSupportTest, FrameIndexCarriedOverToNewSurface) {
   EXPECT_EQ(frame_index + 1, surface2->GetActiveFrameIndex());
 }
 
-// If the first surface is the one reported being drawn by SurfaceAggregator,
-// move CopyOutputRequest to that surface.
+// Verifies that CopyOutputRequests made at frame sink level are sent to the
+// surface that takes them first. In this test this surface is not the last
+// activated surface.
 TEST_F(CompositorFrameSinkSupportTest,
-       FirstSurfaceIsDrawnAndReceivesCopyRequest) {
+       OldSurfaceTakesCopyOutputRequestsFromClient) {
   LocalSurfaceId local_surface_id1(1, kArbitraryToken);
   LocalSurfaceId local_surface_id2(2, kArbitraryToken);
   SurfaceId id1(support_->frame_sink_id(), local_surface_id1);
@@ -837,9 +838,15 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
   EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
 
-  // Notify that the first surface will be drawn. Now only the first surface
-  // should report having CopyOutputRequests.
-  GetSurfaceForId(id1)->OnWillBeDrawn();
+  // First surface takes CopyOutputRequests from its client. Now only the first
+  // surface should report having CopyOutputRequests.
+  GetSurfaceForId(id1)->TakeCopyOutputRequestsFromClient();
+  EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
+  EXPECT_FALSE(GetSurfaceForId(id2)->HasCopyOutputRequests());
+
+  // Calling TakeCopyOutputRequestsFromClient() on the second surface should
+  // have no effect.
+  GetSurfaceForId(id2)->TakeCopyOutputRequestsFromClient();
   EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
   EXPECT_FALSE(GetSurfaceForId(id2)->HasCopyOutputRequests());
 
@@ -852,10 +859,11 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_FALSE(requests_map.empty());
 }
 
-// If the second surface is the one reported being drawn by SurfaceAggregator,
-// move CopyOutputRequest to that surface.
+// Verifies that CopyOutputRequests made at frame sink level are sent to the
+// surface that takes them first. In this test this surface is the last
+// activated surface.
 TEST_F(CompositorFrameSinkSupportTest,
-       SecondSurfaceIsDrawnAndReceivesCopyRequest) {
+       LastSurfaceTakesCopyOutputRequestsFromClient) {
   LocalSurfaceId local_surface_id1(1, kArbitraryToken);
   LocalSurfaceId local_surface_id2(2, kArbitraryToken);
   SurfaceId id1(support_->frame_sink_id(), local_surface_id1);
@@ -880,9 +888,15 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
   EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
 
-  // Notify that the second surface will be drawn. Now only the second surface
-  // should report having CopyOutputRequests.
-  GetSurfaceForId(id2)->OnWillBeDrawn();
+  // Second surface takes CopyOutputRequests from its client. Now only the
+  // second surface should report having CopyOutputRequests.
+  GetSurfaceForId(id2)->TakeCopyOutputRequestsFromClient();
+  EXPECT_FALSE(GetSurfaceForId(id1)->HasCopyOutputRequests());
+  EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
+
+  // Calling TakeCopyOutputRequestsFromClient() on the first surface should have
+  // no effect.
+  GetSurfaceForId(id1)->TakeCopyOutputRequestsFromClient();
   EXPECT_FALSE(GetSurfaceForId(id1)->HasCopyOutputRequests());
   EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
 
@@ -893,97 +907,6 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(requests_map.empty());
   GetSurfaceForId(id2)->TakeCopyOutputRequests(&requests_map);
   EXPECT_FALSE(requests_map.empty());
-}
-
-// Move CopyOutputRequests to whatever surface wants it first (in this test, the
-// first surface).
-TEST_F(CompositorFrameSinkSupportTest, FirstSurfaceTakesCopyRequest) {
-  LocalSurfaceId local_surface_id1(1, kArbitraryToken);
-  LocalSurfaceId local_surface_id2(2, kArbitraryToken);
-  SurfaceId id1(support_->frame_sink_id(), local_surface_id1);
-  SurfaceId id2(support_->frame_sink_id(), local_surface_id2);
-
-  // Create the first surface.
-  support_->SubmitCompositorFrame(local_surface_id1,
-                                  MakeDefaultCompositorFrame());
-
-  // Create the second surface.
-  support_->SubmitCompositorFrame(local_surface_id2,
-                                  MakeDefaultCompositorFrame());
-
-  // Send a CopyOutputRequest.
-  auto request = std::make_unique<CopyOutputRequest>(
-      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfOutput(std::move(request));
-
-  // Both surfaces should report that they have a CopyOutputRequest.
-  EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
-  EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
-
-  // Neither surface will be reported drawn. We call TakeCopyOutputRequests()
-  // on |id1| first so it takes it.
-  Surface::CopyRequestsMap requests_map;
-  GetSurfaceForId(id1)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_FALSE(requests_map.empty());
-
-  // Neither surface should report having CopyOutputRequests anymore.
-  EXPECT_FALSE(GetSurfaceForId(id1)->HasCopyOutputRequests());
-  EXPECT_FALSE(GetSurfaceForId(id2)->HasCopyOutputRequests());
-
-  // Also try TakeCopyOutputRequests, to see if its output is consistent with
-  // HasCopyOutputRequests.
-  requests_map.clear();
-  GetSurfaceForId(id2)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_TRUE(requests_map.empty());
-  GetSurfaceForId(id1)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_TRUE(requests_map.empty());
-}
-
-// Move CopyOutputRequests to whatever surface wants it first (in this test, the
-// second surface).
-TEST_F(CompositorFrameSinkSupportTest, SecondSurfaceTakesCopyRequest) {
-  LocalSurfaceId local_surface_id1(1, kArbitraryToken);
-  LocalSurfaceId local_surface_id2(2, kArbitraryToken);
-  SurfaceId id1(support_->frame_sink_id(), local_surface_id1);
-  SurfaceId id2(support_->frame_sink_id(), local_surface_id2);
-
-  // Create the first surface.
-  support_->SubmitCompositorFrame(local_surface_id1,
-                                  MakeDefaultCompositorFrame());
-
-  // Send a CopyOutputRequest. Note that the second surface doesn't even exist
-  // yet.
-  auto request = std::make_unique<CopyOutputRequest>(
-      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfOutput(std::move(request));
-
-  // Create the second surface.
-  support_->SubmitCompositorFrame(local_surface_id2,
-                                  MakeDefaultCompositorFrame());
-
-  // Both surfaces should report that they have a CopyOutputRequest.
-  EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
-  EXPECT_TRUE(GetSurfaceForId(id2)->HasCopyOutputRequests());
-
-  // Neither surface will be reported drawn. We call TakeCopyOutputRequests()
-  // on |id2| first so it takes it.
-  Surface::CopyRequestsMap requests_map;
-  GetSurfaceForId(id2)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_FALSE(requests_map.empty());
-
-  // Neither surface should report having CopyOutputRequests anymore.
-  EXPECT_FALSE(GetSurfaceForId(id1)->HasCopyOutputRequests());
-  EXPECT_FALSE(GetSurfaceForId(id2)->HasCopyOutputRequests());
-
-  // Also try TakeCopyOutputRequests, to see if its output is consistent with
-  // HasCopyOutputRequests.
-  requests_map.clear();
-  GetSurfaceForId(id2)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_TRUE(requests_map.empty());
-  GetSurfaceForId(id1)->TakeCopyOutputRequests(&requests_map);
-  EXPECT_TRUE(requests_map.empty());
 }
 
 }  // namespace

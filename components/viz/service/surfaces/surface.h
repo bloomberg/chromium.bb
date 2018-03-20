@@ -150,6 +150,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // ids.
   void TakeCopyOutputRequests(CopyRequestsMap* copy_requests);
 
+  // Takes CopyOutputRequests made at the client level and adds them to this
+  // Surface.
+  void TakeCopyOutputRequestsFromClient();
+
   // Returns whether there is a CopyOutputRequest inside the active frame or at
   // the client level.
   bool HasCopyOutputRequests();
@@ -259,8 +263,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
       std::vector<ui::LatencyInfo>* latency_info);
 
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
-
-  void TakeCopyOutputRequestsFromClient();
 
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
