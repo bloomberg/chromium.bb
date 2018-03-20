@@ -11,13 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/scoped_observer.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
-#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -45,7 +43,6 @@ class PluginDataRemover;
 // as the embedder.
 class ChromeBrowsingDataRemoverDelegate
     : public content::BrowsingDataRemoverDelegate,
-      public history::HistoryServiceObserver,
       public KeyedService
 #if BUILDFLAG(ENABLE_PLUGINS)
     ,
@@ -151,8 +148,7 @@ class ChromeBrowsingDataRemoverDelegate
   static_assert((IMPORTANT_SITES_DATA_TYPES & ~FILTERABLE_DATA_TYPES) == 0,
                 "All important sites datatypes must be filterable.");
 
-  ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context,
-                                    history::HistoryService* history_service);
+  ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
   // KeyedService:
@@ -169,13 +165,6 @@ class ChromeBrowsingDataRemoverDelegate
       const content::BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
       base::OnceClosure callback) override;
-
-  // history::HistoryServiceObserver:
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionTimeRange& time_range,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
 
 #if defined(OS_ANDROID)
   void OverrideWebappRegistryForTesting(
@@ -268,9 +257,6 @@ class ChromeBrowsingDataRemoverDelegate
   // not initialised, so the registry must be mocked out.
   std::unique_ptr<WebappRegistry> webapp_registry_;
 #endif
-
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_observer_;
 
   base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_;
 
