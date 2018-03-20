@@ -57,6 +57,8 @@ QuickUnlockNotificationController::CreateForPin(Profile* profile) {
   NotificationParams* params = &controller->params_;
   params->title_message_id = IDS_QUICK_UNLOCK_NOTIFICATION_TITLE;
   params->body_message_id = IDS_QUICK_UNLOCK_NOTIFICATION_BODY;
+  // TODO(http://crbug.com/291747): Change this to actual icon for quick unlock
+  // feature notification, also use a vector icon instead of raster asset.
   params->icon_id = IDR_SCREENSHOT_NOTIFICATION_ICON;
   params->notifier = kNotifierPinUnlock;
   params->feature_name_id = IDS_PIN_UNLOCK_FEATURE_NOTIFIER_NAME;
@@ -110,6 +112,7 @@ QuickUnlockNotificationController::CreateForFingerprint(Profile* profile) {
   NotificationParams* params = &controller->params_;
   params->title_message_id = IDS_FINGERPRINT_NOTIFICATION_TITLE;
   params->body_message_id = IDS_FINGERPRINT_NOTIFICATION_BODY;
+  // TODO(sammiequon): Change to a vector icon identifier.
   params->icon_id = IDR_NOTIFICATION_FINGERPRINT;
   params->notifier = kNotifierFingerprintUnlock;
   params->feature_name_id = IDS_FINGERPRINT_UNLOCK_FEATURE_NOTIFIER_NAME;
@@ -215,8 +218,6 @@ QuickUnlockNotificationController::CreateNotification() {
       message_center::NOTIFICATION_TYPE_SIMPLE, params_.notification_id,
       l10n_util::GetStringUTF16(params_.title_message_id),
       l10n_util::GetStringUTF16(params_.body_message_id),
-      // TODO(http://crbug.com/291747): Change this to actual icon for
-      // quick unlock feature notification.
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(params_.icon_id),
       l10n_util::GetStringUTF16(params_.feature_name_id), GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,

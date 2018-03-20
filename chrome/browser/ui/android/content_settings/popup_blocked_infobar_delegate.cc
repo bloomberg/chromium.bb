@@ -6,20 +6,20 @@
 
 #include <stddef.h>
 #include <utility>
+
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-
 
 // static
 void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
@@ -63,7 +63,7 @@ PopupBlockedInfoBarDelegate::GetIdentifier() const {
 }
 
 int PopupBlockedInfoBarDelegate::GetIconId() const {
-  return IDR_BLOCKED_POPUPS;
+  return IDR_ANDROID_INFOBAR_BLOCKED_POPUPS;
 }
 
 PopupBlockedInfoBarDelegate*
