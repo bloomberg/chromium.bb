@@ -45723,6 +45723,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebApkInstallSource">
+  <obsolete>
+    Deprecated as of 3/2018
+  </obsolete>
   <int value="0" label="Installation started from the app banner"/>
   <int value="1" label="Installation started from the add to homescreen menu"/>
 </enum>
