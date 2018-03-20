@@ -78,7 +78,7 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
             br->PreviousSibling()->RoleValue());
 }
 
-TEST_F(AccessibilityTest, ComparisonOperators) {
+TEST_F(AccessibilityTest, AXObjectComparisonOperators) {
   SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
                    R"<p id='paragraph'>hello<br id='br'>there</p>"
                    R"<button id='button'>button</button>)HTML");

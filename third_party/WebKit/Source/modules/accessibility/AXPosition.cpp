@@ -24,7 +24,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(const AXObject& child) {
   if (child.GetNode() && child.GetNode()->IsTextNode())
     return CreateFirstPositionInContainerObject(child);
 
-  const AXObject* parent = child.ParentObject();
+  const AXObject* parent = child.ParentObjectUnignored();
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent();
@@ -39,7 +39,7 @@ const AXPosition AXPosition::CreatePositionAfterObject(const AXObject& child) {
   if (child.GetNode() && child.GetNode()->IsTextNode())
     return CreateLastPositionInContainerObject(child);
 
-  const AXObject* parent = child.ParentObject();
+  const AXObject* parent = child.ParentObjectUnignored();
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent() + 1;
@@ -88,6 +88,8 @@ const AXPosition AXPosition::CreatePositionInTextObject(
     const AXObject& container,
     int offset,
     TextAffinity affinity) {
+  DCHECK(container.GetNode() && container.GetNode()->IsTextNode())
+      << "Text positions should be anchored to a text node.";
   AXPosition position(container);
   position.text_offset_or_child_index_ = offset;
   position.affinity_ = affinity;
@@ -248,25 +250,69 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity() const {
 }
 
 bool operator==(const AXPosition& a, const AXPosition& b) {
-  DCHECK(!a.IsValid() || !b.IsValid());
-  return a.ContainerObject() == b.ContainerObject() &&
-         a.ChildIndex() == b.ChildIndex() && a.TextOffset() == b.TextOffset() &&
-         a.Affinity() == b.Affinity();
+  DCHECK(a.IsValid() && b.IsValid());
+  if (*a.ContainerObject() != *b.ContainerObject())
+    return false;
+  if (a.IsTextPosition() && b.IsTextPosition())
+    return a.TextOffset() == b.TextOffset() && a.Affinity() == b.Affinity();
+  if (!a.IsTextPosition() && !b.IsTextPosition())
+    return a.ChildIndex() == b.ChildIndex();
+  NOTREACHED() << "AXPosition objects having the same container object should "
+                  "have the same type.";
+  return false;
 }
 
 bool operator!=(const AXPosition& a, const AXPosition& b) {
   return !(a == b);
 }
 
+bool operator<(const AXPosition& a, const AXPosition& b) {
+  DCHECK(a.IsValid() && b.IsValid());
+  if (*a.ContainerObject() > *b.ContainerObject())
+    return false;
+  if (*a.ContainerObject() < *b.ContainerObject())
+    return true;
+  if (a.IsTextPosition() && b.IsTextPosition())
+    return a.TextOffset() < b.TextOffset();
+  if (!a.IsTextPosition() && !b.IsTextPosition())
+    return a.ChildIndex() < b.ChildIndex();
+  NOTREACHED() << "AXPosition objects having the same container object should "
+                  "have the same type.";
+  return false;
+}
+
+bool operator<=(const AXPosition& a, const AXPosition& b) {
+  return a < b || a == b;
+}
+
+bool operator>(const AXPosition& a, const AXPosition& b) {
+  DCHECK(a.IsValid() && b.IsValid());
+  if (*a.ContainerObject() < *b.ContainerObject())
+    return false;
+  if (*a.ContainerObject() > *b.ContainerObject())
+    return true;
+  if (a.IsTextPosition() && b.IsTextPosition())
+    return a.TextOffset() > b.TextOffset();
+  if (!a.IsTextPosition() && !b.IsTextPosition())
+    return a.ChildIndex() > b.ChildIndex();
+  NOTREACHED() << "AXPosition objects having the same container object should "
+                  "have the same type.";
+  return false;
+}
+
+bool operator>=(const AXPosition& a, const AXPosition& b) {
+  return a > b || a == b;
+}
+
 std::ostream& operator<<(std::ostream& ostream, const AXPosition& position) {
   if (!position.IsValid())
-    return ostream << "Invalid position";
+    return ostream << "Invalid AXPosition";
   if (position.IsTextPosition()) {
-    return ostream << "Text position in " << position.ContainerObject() << ", "
-                   << position.TextOffset();
+    return ostream << "AX text position in " << position.ContainerObject()
+                   << ", " << position.TextOffset();
   }
-  return ostream << "Object anchored position in " << position.ContainerObject()
-                 << ", " << position.ChildIndex();
+  return ostream << "AX object anchored position in "
+                 << position.ContainerObject() << ", " << position.ChildIndex();
 }
 
 }  // namespace blink
