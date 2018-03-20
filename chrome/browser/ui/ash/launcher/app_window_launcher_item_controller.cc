@@ -110,8 +110,6 @@ std::unique_ptr<ui::MenuModel> AppWindowLauncherItemController::GetContextMenu(
 }
 
 void AppWindowLauncherItemController::Close() {
-  // Note: Closing windows may affect the contents of app_windows_.
-  WindowList windows_to_close = windows_;
   for (auto* window : windows_)
     window->Close();
 }
