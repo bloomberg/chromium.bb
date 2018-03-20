@@ -240,8 +240,10 @@ Polymer({
       return;
 
     if (selected != LockScreenUnlockType.PIN_PASSWORD && this.setModes_) {
-      this.setModes_.call(null, [], [], function(didSet) {
-        assert(didSet, 'Failed to clear quick unlock modes');
+      this.setModes_.call(null, [], [], function(result) {
+        assert(result, 'Failed to clear quick unlock modes');
+        if (!result)
+          console.error('Failed to clear quick unlock modes');
       });
     }
   },

@@ -87,7 +87,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         testElement.submitPassword_();
         assertDeepEquals([QuickUnlockMode.PIN],
                          quickUnlockPrivateApi.activeModes);
-        assertDeepEquals([''], quickUnlockPrivateApi.credentials);
+        assertDeepEquals([], quickUnlockPrivateApi.credentials);
       });
 
       test('EnterInvalidPasswordSelectsAllText', function() {
@@ -143,21 +143,13 @@ cr.define('settings_people_page_quick_unlock', function() {
       test('AuthenticationTimesOut', function(done) {
         quickUnlockPrivateApi.accountPassword = 'foo';
 
-        testElement.passwordActiveDurationMs_ = 0;
         passwordElement.value = 'foo';
         testElement.submitPassword_();
-
-        assertFalse(!!testElement.password_);
-        assertTrue(!!testElement.setModes);
-
-        // Two setTimeout calls with the same delay are guaranteed to execute in
-        // the same order that they were submitted in, so using
-        // testElement.autosubmitDelayMs_ is safe.
+        // Fake lifetime is 0 so setModes should be reset in next frame.
         setTimeout(function() {
-          assertFalse(!!testElement.password_);
           assertFalse(!!testElement.setModes);
           done();
-        }, testElement.passwordActiveDurationMs_);
+        }, 0);
       });
     });
   }
@@ -251,8 +243,11 @@ cr.define('settings_people_page_quick_unlock', function() {
           document.body.appendChild(testElement);
           Polymer.dom.flush();
 
-          testElement.setModes_ =
-              quickUnlockPrivateApi.setModes.bind(quickUnlockPrivateApi, '');
+          testElement.setModes_ = quickUnlockPrivateApi.setModes.bind(
+              quickUnlockPrivateApi, quickUnlockPrivateApi.getFakeToken(), [],
+              [], () => {
+                return true;
+              });
 
           passwordRadioButton =
               getFromElement('paper-radio-button[name="password"]');
@@ -355,8 +350,12 @@ cr.define('settings_people_page_quick_unlock', function() {
         // Create setup-pin element.
         testElement = document.createElement('settings-setup-pin-dialog');
         testElement.quickUnlockPrivate_ = quickUnlockPrivateApi;
-        testElement.setModes =
-            quickUnlockPrivateApi.setModes.bind(quickUnlockPrivateApi, '');
+        testElement.setModes = (modes, credentials, onComplete) => {
+          quickUnlockPrivateApi.setModes(
+              quickUnlockPrivateApi.getFakeToken(), modes, credentials, () => {
+                onComplete(true);
+              });
+        };
         testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
 
         document.body.appendChild(testElement);

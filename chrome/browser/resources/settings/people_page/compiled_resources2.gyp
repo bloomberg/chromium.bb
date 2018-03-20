@@ -114,6 +114,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         '<(EXTERNS_GYP):quick_unlock_private',
+        '<(INTERFACES_GYP):quick_unlock_private_interface',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -142,6 +143,7 @@
         '../compiled_resources2.gyp:route',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-extracted',
         '<(EXTERNS_GYP):quick_unlock_private',
+        '<(INTERFACES_GYP):quick_unlock_private_interface',
         'lock_screen_constants',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

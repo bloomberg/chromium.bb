@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.quickUnlockPrivate</code> API to change the active quick
+// Use the <code>chrome.quickUnlockPrivate</code> API to change tthe active quick
 // unlock modes and to change their respective credentials.
 //
 // Quick unlock only supports unlocking an account that has already been signed
@@ -14,6 +14,15 @@
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"]
 namespace quickUnlockPrivate {
+  dictionary TokenInfo {
+    // The authentication token that can be passed to $(ref:setModes) calls.
+    DOMString token;
+
+    // The number of seconds until the token expires. The UI should refresh the
+    // token before it expires.
+    long lifetimeSeconds;
+  };
+
   // TODO(jdufault): Add more quick unlock modes, such as a pattern unlock.
   enum QuickUnlockMode {
     PIN
@@ -30,6 +39,7 @@ namespace quickUnlockPrivate {
   dictionary CredentialCheck {
     // The given PINs errors. Users cannot proceed with an error.
     CredentialProblem[] errors;
+
     // THe given PINs warnings. Users can, but are not advised to proceed with
     // a warning.
     CredentialProblem[] warnings;
@@ -38,18 +48,27 @@ namespace quickUnlockPrivate {
   dictionary CredentialRequirements {
     // The minimum allowed length for a PIN.
     long minLength;
+
     // The maximum allowed length for a PIN. A value of 0 indicates no maximum
     // length.
     long maxLength;
   };
 
+  callback VoidResultCallback = void ();
   callback BooleanResultCallback = void (boolean value);
+  callback TokenResultCallback = void (TokenInfo result);
   callback ModesCallback = void (QuickUnlockMode[] modes);
   callback CredentialCheckCallback = void (CredentialCheck check);
   callback CredentialRequirementsCallback =
       void (CredentialRequirements requirements);
 
   interface Functions {
+    // Returns a token that can be used for future operations and the number
+    // of seconds until the token expires.
+    // |accountPassword|: The account password for the logged in user.
+    static void getAuthToken(DOMString accountPassword,
+                             TokenResultCallback onComplete);
+
     // Returns the set of quick unlock modes that are available for the user to
     // use. Some quick unlock modes may be disabled by policy.
     static void getAvailableModes(ModesCallback onComplete);
@@ -73,19 +92,20 @@ namespace quickUnlockPrivate {
     // |onComplete|: Called with the credential requirements of the given
     //     |mode|.
     static void getCredentialRequirements(
-        QuickUnlockMode mode, CredentialRequirementsCallback onComplete);
+        QuickUnlockMode mode,
+        CredentialRequirementsCallback onComplete);
 
     // Update the set of quick unlock modes that are currently active/enabled.
-    // |accountPassword|: The password associated with the account (e.g. the
-    // GAIA password). This is required to change the quick unlock credentials.
+    // |token|: The token returned by $(ref:getAuthToken).
     // |modes|: The quick unlock modes that should be active.
     // |credentials|: The associated credential for each mode. To keep
     // the credential the same for the associated mode, pass an empty string.
     // |onComplete|: Called with true if the quick unlock state was updated,
     // false otherwise. The update is treated as a single atomic operation.
-    static void setModes(DOMString accountPassword,
-                         QuickUnlockMode[] modes, DOMString[] credentials,
-                         BooleanResultCallback onComplete);
+    static void setModes(DOMString token,
+                         QuickUnlockMode[] modes,
+                         DOMString[] credentials,
+                         VoidResultCallback onComplete);
   };
 
   interface Events {

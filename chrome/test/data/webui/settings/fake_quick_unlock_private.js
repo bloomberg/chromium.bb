@@ -12,6 +12,8 @@
  */
 const TEST_WEAK_PINS = ['1111', '1234', '1313', '2001', '1010'];
 
+const FAKE_TOKEN = 'token';
+
 cr.define('settings', function() {
   /**
    * Fake of the chrome.quickUnlockPrivate API.
@@ -29,14 +31,39 @@ cr.define('settings', function() {
         this.credentialRequirements = {minLength: 4, maxLength: 0};
   }
 
+  function clearError_() {
+    chrome.runtime.lastError = undefined;
+  }
+
   FakeQuickUnlockPrivate.prototype = {
     // Public testing methods.
+    getFakeToken: function() {
+      return FAKE_TOKEN;
+    },
+
+    // Public fake API implementations.
+    /**
+     * @override
+     * @param {function(
+     *     !Array<!chrome.quickUnlockPrivate.QuickUnlockMode>):void} onComplete
+     */
+    getAuthToken: function(password, onComplete) {
+      if (password != this.accountPassword) {
+        chrome.runtime.lastError = 'Incorrect Password';
+        onComplete();
+        return;
+      }
+      clearError_();
+      onComplete({token: FAKE_TOKEN, lifetime: 0});
+    },
+
     /**
      * @override
      * @param {function(
      *     !Array<!chrome.quickUnlockPrivate.QuickUnlockMode>):void} onComplete
      */
     getAvailableModes: function(onComplete) {
+      clearError_();
       onComplete(this.availableModes);
     },
 
@@ -46,23 +73,27 @@ cr.define('settings', function() {
      *     !Array<!chrome.quickUnlockPrivate.QuickUnlockMode>):void} onComplete
      */
     getActiveModes: function(onComplete) {
+      clearError_();
       onComplete(this.activeModes);
     },
 
     /**
      * @override
-     * @param {string} accountPassword
+     * @param {string} token
      * @param {!Array<!chrome.quickUnlockPrivate.QuickUnlockMode>} modes
      * @param {!Array<string>} credentials
      * @param {function(boolean):void} onComplete
      */
-    setModes: function(accountPassword, modes, credentials, onComplete) {
-      // Even if the account password is wrong we still update activeModes and
-      // credentials so that the mock owner has a chance to see what was given
-      // to the API.
+    setModes: function(token, modes, credentials, onComplete) {
+      if (token != FAKE_TOKEN) {
+        chrome.runtime.lastError = 'Authentication token invalid';
+        onComplete();
+        return;
+      }
       this.activeModes = modes;
       this.credentials = credentials;
-      onComplete(this.accountPassword == accountPassword);
+      clearError_();
+      onComplete();
     },
 
     /**
@@ -92,6 +123,7 @@ cr.define('settings', function() {
 
       message.errors = errors;
       message.warnings = warnings;
+      clearError_();
       onComplete(message);
     },
 
@@ -102,6 +134,7 @@ cr.define('settings', function() {
      *     !chrome.quickUnlockPrivate.CredentialRequirements):void onComplete
      */
     getCredentialRequirements: function(mode, onComplete) {
+      clearError_();
       onComplete(this.credentialRequirements);
     },
   };

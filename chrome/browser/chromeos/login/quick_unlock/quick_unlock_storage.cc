@@ -6,12 +6,15 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace quick_unlock {
+
+const int QuickUnlockStorage::kTokenExpirationSeconds = 5 * 60;
 
 QuickUnlockStorage::QuickUnlockStorage(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -22,7 +25,7 @@ QuickUnlockStorage::QuickUnlockStorage(PrefService* pref_service)
 QuickUnlockStorage::~QuickUnlockStorage() {}
 
 void QuickUnlockStorage::MarkStrongAuth() {
-  last_strong_auth_ = base::Time::Now();
+  last_strong_auth_ = base::TimeTicks::Now();
   fingerprint_storage()->ResetUnlockAttemptCount();
   pin_storage()->ResetUnlockAttemptCount();
 }
@@ -43,7 +46,7 @@ bool QuickUnlockStorage::HasStrongAuth() const {
 
 base::TimeDelta QuickUnlockStorage::TimeSinceLastStrongAuth() const {
   DCHECK(!last_strong_auth_.is_null());
-  return base::Time::Now() - last_strong_auth_;
+  return base::TimeTicks::Now() - last_strong_auth_;
 }
 
 bool QuickUnlockStorage::IsFingerprintAuthenticationAvailable() const {
@@ -60,12 +63,24 @@ bool QuickUnlockStorage::TryAuthenticatePin(const std::string& pin,
   return HasStrongAuth() && pin_storage()->TryAuthenticatePin(pin, key_type);
 }
 
-FingerprintStorage* QuickUnlockStorage::fingerprint_storage() {
-  return fingerprint_storage_.get();
+std::string QuickUnlockStorage::CreateAuthToken() {
+  auth_token_ = base::UnguessableToken::Create();
+  auth_token_issue_time_ = base::TimeTicks::Now();
+  return auth_token_.ToString();
 }
 
-PinStorage* QuickUnlockStorage::pin_storage() {
-  return pin_storage_.get();
+bool QuickUnlockStorage::GetAuthTokenExpired() {
+  return base::TimeTicks::Now() >=
+         auth_token_issue_time_ +
+             base::TimeDelta::FromSeconds(kTokenExpirationSeconds);
+}
+
+std::string QuickUnlockStorage::GetAuthToken() {
+  if (GetAuthTokenExpired()) {
+    auth_token_ = base::UnguessableToken();
+    return std::string();
+  }
+  return auth_token_.is_empty() ? std::string() : auth_token_.ToString();
 }
 
 void QuickUnlockStorage::Shutdown() {
