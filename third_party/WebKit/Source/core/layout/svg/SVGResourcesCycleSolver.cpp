@@ -33,15 +33,25 @@ SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject& layout_object)
 
 SVGResourcesCycleSolver::~SVGResourcesCycleSolver() = default;
 
-struct ActiveFrame {
+class ScopedTraversalPath {
+ public:
   typedef SVGResourcesCycleSolver::ResourceSet ResourceSet;
 
-  ActiveFrame(ResourceSet& active_set, LayoutSVGResourceContainer* resource)
-      : active_set_(active_set), resource_(resource) {
-    active_set_.insert(resource_);
+  ScopedTraversalPath(ResourceSet& active_set)
+      : active_set_(active_set), resource_(nullptr) {}
+  ~ScopedTraversalPath() {
+    if (resource_)
+      active_set_.erase(resource_);
   }
-  ~ActiveFrame() { active_set_.erase(resource_); }
 
+  bool Enter(LayoutSVGResourceContainer* resource) {
+    if (!active_set_.insert(resource).is_new_entry)
+      return false;
+    resource_ = resource;
+    return true;
+  }
+
+ private:
   ResourceSet& active_set_;
   LayoutSVGResourceContainer* resource_;
 };
@@ -53,10 +63,9 @@ bool SVGResourcesCycleSolver::TraverseResourceContainer(
   if (dag_cache_.Contains(resource))
     return false;
 
-  if (active_resources_.Contains(resource))
+  ScopedTraversalPath scope(active_resources_);
+  if (!scope.Enter(resource))
     return true;
-
-  ActiveFrame frame(active_resources_, resource);
 
   LayoutObject* node = resource;
   while (node) {
