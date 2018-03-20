@@ -431,26 +431,20 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
 
-  // Release stream should know it should release fence sync by order [3],
-  // so going through order [1] should not release it yet.
+  // Release stream should know it should release fence sync by order [3], but
+  // it has no unprocessed order numbers less than 3, so it runs the callback.
   release_stream.BeginProcessing();
   EXPECT_EQ(1u, release_stream.order_data->current_order_num());
   release_stream.EndProcessing();
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
-  EXPECT_EQ(10, test_num);
-
-  // Beginning order [4] should immediately trigger the wait although the fence
-  // sync is still not released yet.
-  release_stream.BeginProcessing();
-  EXPECT_EQ(4u, release_stream.order_data->current_order_num());
   EXPECT_EQ(123, test_num);
-  EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 
   // Ensure that the wait callback does not get triggered again when it is
   // actually released.
-  test_num = 1;
+  release_stream.BeginProcessing();
+  test_num = 10;
   release_stream.client_state->ReleaseFenceSync(1);
-  EXPECT_EQ(1, test_num);
+  EXPECT_EQ(10, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 }
 
@@ -478,6 +472,125 @@ TEST_F(SyncPointManagerTest, WaitOnSameSequenceFails) {
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
+}
+
+TEST_F(SyncPointManagerTest, HandleInvalidWaitOrderNumber) {
+  CommandBufferNamespace kNamespaceId = gpu::CommandBufferNamespace::GPU_IO;
+  CommandBufferId kCmdBufferId1 = CommandBufferId::FromUnsafeValue(0x123);
+  CommandBufferId kCmdBufferId2 = CommandBufferId::FromUnsafeValue(0x234);
+
+  SyncPointStream stream1(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId1);
+  SyncPointStream stream2(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId2);
+
+  stream1.AllocateOrderNum();  // stream 1, order num 1
+  stream2.AllocateOrderNum();  // stream 2, order num 2
+  stream2.AllocateOrderNum();  // stream 2, order num 3
+  stream1.AllocateOrderNum();  // stream 1, order num 4
+
+  // Run stream 1, order num 1.
+  stream1.BeginProcessing();
+  stream1.EndProcessing();
+
+  // Stream 2 waits on stream 1 with order num 3. This wait is invalid because
+  // there's no unprocessed order num less than 3 on stream 1.
+  int test_num = 10;
+  bool valid_wait = sync_point_manager_->Wait(
+      SyncToken(kNamespaceId, kCmdBufferId1, 1),
+      stream2.order_data->sequence_id(), 3,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+  EXPECT_FALSE(valid_wait);
+  EXPECT_EQ(10, test_num);
+}
+
+TEST_F(SyncPointManagerTest, RetireInvalidWaitAfterOrderNumberPasses) {
+  CommandBufferNamespace kNamespaceId = gpu::CommandBufferNamespace::GPU_IO;
+  CommandBufferId kCmdBufferId1 = CommandBufferId::FromUnsafeValue(0x123);
+  CommandBufferId kCmdBufferId2 = CommandBufferId::FromUnsafeValue(0x234);
+
+  SyncPointStream stream1(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId1);
+  SyncPointStream stream2(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId2);
+
+  stream1.AllocateOrderNum();  // stream 1, order num 1
+  stream1.AllocateOrderNum();  // stream 1, order num 2
+  stream2.AllocateOrderNum();  // stream 2, order num 3
+
+  // Stream 2 waits on stream 1 with order num 3.
+  int test_num = 10;
+  bool valid_wait = sync_point_manager_->Wait(
+      SyncToken(kNamespaceId, kCmdBufferId1, 1),
+      stream2.order_data->sequence_id(), 3,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+  EXPECT_TRUE(valid_wait);
+  EXPECT_EQ(10, test_num);
+
+  stream1.AllocateOrderNum();  // stream 1, order num 4
+
+  // Run stream 1, order num 1. The wait isn't retired.
+  stream1.BeginProcessing();
+  stream1.EndProcessing();
+  EXPECT_EQ(10, test_num);
+
+  // Run stream 1, order num 2. Wait is retired because we reach the last order
+  // number that was unprocessed at the time the wait was enqueued.
+  stream1.BeginProcessing();
+  stream1.EndProcessing();
+  EXPECT_EQ(123, test_num);
+}
+
+TEST_F(SyncPointManagerTest, HandleInvalidCyclicWaits) {
+  CommandBufferNamespace kNamespaceId = gpu::CommandBufferNamespace::GPU_IO;
+  CommandBufferId kCmdBufferId1 = CommandBufferId::FromUnsafeValue(0x123);
+  CommandBufferId kCmdBufferId2 = CommandBufferId::FromUnsafeValue(0x234);
+
+  SyncPointStream stream1(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId1);
+  SyncPointStream stream2(sync_point_manager_.get(), kNamespaceId,
+                          kCmdBufferId2);
+
+  stream1.AllocateOrderNum();  // stream 1, order num 1
+  stream2.AllocateOrderNum();  // stream 2, order num 2
+  stream1.AllocateOrderNum();  // stream 1, order num 3
+  stream2.AllocateOrderNum();  // stream 2, order num 4
+
+  // Stream 2 waits on stream 1 with order num 2.
+  int test_num1 = 10;
+  bool valid_wait = sync_point_manager_->Wait(
+      SyncToken(kNamespaceId, kCmdBufferId1, 1),
+      stream2.order_data->sequence_id(), 2,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num1, 123));
+  EXPECT_TRUE(valid_wait);
+  EXPECT_EQ(10, test_num1);
+
+  // Stream 1 waits on stream 2 with order num 3.
+  int test_num2 = 10;
+  valid_wait = sync_point_manager_->Wait(
+      SyncToken(kNamespaceId, kCmdBufferId2, 1),
+      stream1.order_data->sequence_id(), 3,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num2, 123));
+  EXPECT_TRUE(valid_wait);
+  EXPECT_EQ(10, test_num2);
+
+  // Run stream 1, order num 1.
+  stream1.BeginProcessing();
+  stream1.EndProcessing();
+
+  // Since there's no unprocessed order num less than 2 on stream 1, the wait is
+  // released.
+  EXPECT_EQ(123, test_num1);
+  EXPECT_EQ(10, test_num2);
+
+  // Run stream 2, order num 2.
+  stream2.BeginProcessing();
+  stream2.EndProcessing();
+
+  // Since there's no unprocessed order num less than 3 on stream 2, the wait is
+  // released.
+  EXPECT_EQ(123, test_num1);
+  EXPECT_EQ(123, test_num2);
 }
 
 }  // namespace gpu
