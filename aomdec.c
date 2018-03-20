@@ -58,6 +58,7 @@ static const char *exec_name;
 
 struct AvxDecInputContext {
   struct AvxInputContext *aom_input_ctx;
+  struct ObuDecInputContext *obu_ctx;
   struct WebmInputContext *webm_ctx;
 };
 
@@ -246,12 +247,13 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
                             buffer_size);
 #if CONFIG_OBU_NO_IVF
     case FILE_TYPE_OBU:
-      return obu_read_temporal_unit(input->aom_input_ctx->file, buf,
+      return obudec_read_temporal_unit(input->obu_ctx, buf,
 #if CONFIG_SCALABILITY
-                                    bytes_in_buffer, buffer_size, 0);
+                                       bytes_in_buffer, buffer_size, 0
 #else
-                                    bytes_in_buffer, buffer_size);
+                                       bytes_in_buffer, buffer_size
 #endif
+      );
 #endif
     default: return 1;
   }
@@ -528,12 +530,17 @@ static int main_loop(int argc, const char **argv_) {
   MD5Context md5_ctx;
   unsigned char md5_digest[16];
 
-  struct AvxDecInputContext input = { NULL, NULL };
+  struct AvxDecInputContext input = { NULL, NULL, NULL };
   struct AvxInputContext aom_input_ctx;
 #if CONFIG_WEBM_IO
   struct WebmInputContext webm_ctx;
-  memset(&(webm_ctx), 0, sizeof(webm_ctx));
+  memset(&webm_ctx, 0, sizeof(webm_ctx));
   input.webm_ctx = &webm_ctx;
+#endif
+#if CONFIG_OBU_NO_IVF
+  struct ObuDecInputContext obu_ctx = { NULL, NULL, 0, 0 };
+  obu_ctx.avx_ctx = &aom_input_ctx;
+  input.obu_ctx = &obu_ctx;
 #endif
   input.aom_input_ctx = &aom_input_ctx;
 
@@ -655,7 +662,7 @@ static int main_loop(int argc, const char **argv_) {
     input.aom_input_ctx->file_type = FILE_TYPE_WEBM;
 #endif
 #if CONFIG_OBU_NO_IVF
-  else if (file_is_obu(input.aom_input_ctx))
+  else if (file_is_obu(&obu_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_OBU;
 #endif
   else if (file_is_raw(input.aom_input_ctx))
@@ -1024,6 +1031,10 @@ fail2:
 #if CONFIG_WEBM_IO
   if (input.aom_input_ctx->file_type == FILE_TYPE_WEBM)
     webm_free(input.webm_ctx);
+#endif
+#if CONFIG_OBU_NO_IVF
+  if (input.aom_input_ctx->file_type == FILE_TYPE_OBU)
+    obudec_free(input.obu_ctx);
 #endif
 
   if (input.aom_input_ctx->file_type != FILE_TYPE_WEBM) free(buf);

@@ -87,11 +87,6 @@ static const char *exec_name;
 
 #define MAX_LAYERS 5
 
-struct AvxDecInputContext {
-  struct AvxInputContext *aom_input_ctx;
-  struct WebmInputContext *webm_ctx;
-};
-
 void usage_exit(void) {
   fprintf(stderr, "Usage: %s <infile>\n", exec_name);
   exit(EXIT_FAILURE);
@@ -108,9 +103,8 @@ int main(int argc, char **argv) {
   size_t bytes_in_buffer = 0;
   size_t buffer_size = 0;
   int next_layer_id = 0;
-  struct AvxDecInputContext input = { NULL, NULL };
   struct AvxInputContext aom_input_ctx;
-  input.aom_input_ctx = &aom_input_ctx;
+  struct ObuDecInputContext obu_ctx = { &aom_input_ctx, NULL, 0, 0 };
   aom_codec_stream_info_t si;
   uint8_t tmpbuf[32];
   unsigned int i;
@@ -121,8 +115,8 @@ int main(int argc, char **argv) {
 
   if (!(inputfile = fopen(argv[1], "rb")))
     die("Failed to open %s for read.", argv[1]);
-  input.aom_input_ctx->file = inputfile;
-  input.aom_input_ctx->filename = argv[1];
+  obu_ctx.avx_ctx->file = inputfile;
+  obu_ctx.avx_ctx->filename = argv[1];
 
   decoder = get_aom_decoder_by_index(0);
   printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
@@ -130,7 +124,7 @@ int main(int argc, char **argv) {
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
 
-  if (!file_is_obu(input.aom_input_ctx))
+  if (!file_is_obu(&obu_ctx))
     die_codec(&codec, "Input is not a valid obu file");
 
   // peak sequence header OBU to get enhancement layer count, if any
@@ -148,8 +142,8 @@ int main(int argc, char **argv) {
       die("Failed to open output for writing.");
   }
 
-  while (!obu_read_temporal_unit(inputfile, &buf, &bytes_in_buffer,
-                                 &buffer_size, next_layer_id)) {
+  while (!obudec_read_temporal_unit(&obu_ctx, &buf, &bytes_in_buffer,
+                                    &buffer_size, next_layer_id)) {
     aom_codec_iter_t iter = NULL;
     aom_image_t *img = NULL;
     if (aom_codec_decode(&codec, buf, (unsigned int)bytes_in_buffer, NULL))
