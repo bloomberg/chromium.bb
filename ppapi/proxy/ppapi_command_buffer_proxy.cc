@@ -170,6 +170,11 @@ void PpapiCommandBufferProxy::SetLock(base::Lock*) {
 }
 
 void PpapiCommandBufferProxy::EnsureWorkVisible() {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  if (flush_info_->flush_pending)
+    FlushInternal();
   DCHECK_GE(flushed_fence_sync_release_, validated_fence_sync_release_);
   Send(new PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible(
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_));
