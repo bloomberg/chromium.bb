@@ -304,16 +304,15 @@ class NotificationPlatformBridgeLinuxImpl
                        this, profile_id, notification_id));
   }
 
-  void GetDisplayed(
-      const std::string& profile_id,
-      bool incognito,
-      const GetDisplayedNotificationsCallback& callback) const override {
+  void GetDisplayed(const std::string& profile_id,
+                    bool incognito,
+                    GetDisplayedNotificationsCallback callback) const override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &NotificationPlatformBridgeLinuxImpl::GetDisplayedOnTaskRunner,
-            this, profile_id, incognito, callback));
+            this, profile_id, incognito, std::move(callback)));
   }
 
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override {
@@ -720,7 +719,7 @@ class NotificationPlatformBridgeLinuxImpl
   void GetDisplayedOnTaskRunner(
       const std::string& profile_id,
       bool incognito,
-      const GetDisplayedNotificationsCallback& callback) const {
+      GetDisplayedNotificationsCallback callback) const {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     auto displayed = std::make_unique<std::set<std::string>>();
     for (const auto& pair : notifications_) {
@@ -730,7 +729,7 @@ class NotificationPlatformBridgeLinuxImpl
     }
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(callback, std::move(displayed), true));
+        base::BindOnce(std::move(callback), std::move(displayed), true));
   }
 
   NotificationData* FindNotificationData(const std::string& notification_id,
@@ -1005,8 +1004,8 @@ void NotificationPlatformBridgeLinux::Close(
 void NotificationPlatformBridgeLinux::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const GetDisplayedNotificationsCallback& callback) const {
-  impl_->GetDisplayed(profile_id, incognito, callback);
+    GetDisplayedNotificationsCallback callback) const {
+  impl_->GetDisplayed(profile_id, incognito, std::move(callback));
 }
 
 void NotificationPlatformBridgeLinux::SetReadyCallback(

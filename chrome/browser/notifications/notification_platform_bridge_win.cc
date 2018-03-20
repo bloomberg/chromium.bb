@@ -440,7 +440,7 @@ class NotificationPlatformBridgeWinImpl
 
   void GetDisplayed(const std::string& profile_id,
                     bool incognito,
-                    const GetDisplayedNotificationsCallback& callback) const {
+                    GetDisplayedNotificationsCallback callback) const {
     // TODO(finnur): Once this function is properly implemented, add DCHECK(UI)
     // to NotificationPlatformBridgeWin::GetDisplayed.
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -464,7 +464,7 @@ class NotificationPlatformBridgeWinImpl
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(callback, std::move(displayed_notifications),
+        base::BindOnce(std::move(callback), std::move(displayed_notifications),
                        /*supports_synchronization=*/true));
   }
 
@@ -727,11 +727,11 @@ void NotificationPlatformBridgeWin::Close(const std::string& profile_id,
 void NotificationPlatformBridgeWin::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const GetDisplayedNotificationsCallback& callback) const {
+    GetDisplayedNotificationsCallback callback) const {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::GetDisplayed, impl_,
-                     profile_id, incognito, callback));
+                     profile_id, incognito, std::move(callback)));
 }
 
 void NotificationPlatformBridgeWin::SetReadyCallback(

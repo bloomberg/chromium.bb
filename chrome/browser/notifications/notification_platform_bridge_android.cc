@@ -321,12 +321,13 @@ void NotificationPlatformBridgeAndroid::Close(
 void NotificationPlatformBridgeAndroid::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const GetDisplayedNotificationsCallback& callback) const {
+    GetDisplayedNotificationsCallback callback) const {
   auto displayed_notifications = std::make_unique<std::set<std::string>>();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(&displayed_notifications),
-                 false /* supports_synchronization */));
+      base::BindOnce(std::move(callback),
+                     base::Passed(&displayed_notifications),
+                     false /* supports_synchronization */));
 }
 
 void NotificationPlatformBridgeAndroid::SetReadyCallback(

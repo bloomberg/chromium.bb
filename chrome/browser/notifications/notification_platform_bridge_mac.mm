@@ -322,12 +322,12 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
 void NotificationPlatformBridgeMac::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const GetDisplayedNotificationsCallback& callback) const {
+    GetDisplayedNotificationsCallback callback) const {
   [alert_dispatcher_
       getDisplayedAlertsForProfileId:base::SysUTF8ToNSString(profile_id)
                            incognito:incognito
                   notificationCenter:notification_center_
-                            callback:callback];
+                            callback:std::move(callback)];
 }
 
 void NotificationPlatformBridgeMac::SetReadyCallback(
