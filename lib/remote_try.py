@@ -275,7 +275,7 @@ class RemoteTryJob(object):
     buildbucket_id = buildbucket_lib.GetBuildId(content)
     self.buildbucket_ids.append(buildbucket_id)
     print(self.BUILDBUCKET_PUT_RESP_FORMAT %
-          (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
+          (request_body['bucket'], bot, buildbucket_id))
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.
