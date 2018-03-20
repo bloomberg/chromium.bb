@@ -963,6 +963,11 @@ struct weston_compositor {
 	struct wl_signal output_moved_signal;
 	struct wl_signal output_resized_signal; /* callback argument: resized output */
 
+	/* Signal for output changes triggered by configuration from frontend
+	 * or head state changes from backend.
+	 */
+	struct wl_signal output_heads_changed_signal; /* arg: weston_output */
+
 	struct wl_signal session_signal;
 	int session_active;
 
@@ -1031,6 +1036,9 @@ struct weston_compositor {
 	/* Whether to let the compositor run without any input device. */
 	bool require_input;
 
+	/* Signal for a backend to inform a frontend about possible changes
+	 * in head status.
+	 */
 	struct wl_signal heads_changed_signal;
 	struct wl_event_source *heads_changed_source;
 };

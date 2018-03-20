@@ -4463,15 +4463,40 @@ weston_head_init(struct weston_head *head, const char *name)
 	head->name = strdup(name);
 }
 
+/** Send output heads changed signal
+ *
+ * \param output The output that changed.
+ *
+ * Notify that the enabled output gained and/or lost heads, or that the
+ * associated heads may have changed their connection status. This does not
+ * include cases where the output becomes enabled or disabled. The registered
+ * callbacks are called after the change has successfully happened.
+ *
+ * If connection status change causes the compositor to attach or detach a head
+ * to an enabled output, the registered callbacks may be called multiple times.
+ */
+static void
+weston_output_emit_heads_changed(struct weston_output *output)
+{
+	wl_signal_emit(&output->compositor->output_heads_changed_signal,
+		       output);
+}
+
 /** Idle task for emitting heads_changed_signal */
 static void
 weston_compositor_call_heads_changed(void *data)
 {
 	struct weston_compositor *compositor = data;
+	struct weston_head *head;
 
 	compositor->heads_changed_source = NULL;
 
 	wl_signal_emit(&compositor->heads_changed_signal, compositor);
+
+	wl_list_for_each(head, &compositor->head_list, compositor_link) {
+		if (head->output && head->output->enabled)
+			weston_output_emit_heads_changed(head->output);
+	}
 }
 
 /** Schedule a call on idle to heads_changed callback
@@ -4678,6 +4703,8 @@ weston_output_attach_head(struct weston_output *output,
 		weston_log("Output '%s' updated to have head(s) %s\n",
 			   output->name, head_names);
 		free(head_names);
+
+		weston_output_emit_heads_changed(output);
 	}
 
 	return 0;
@@ -4723,6 +4750,8 @@ weston_head_detach(struct weston_head *head)
 			weston_log("Output '%s' updated to have head(s) %s\n",
 				   output->name, head_names);
 			free(head_names);
+
+			weston_output_emit_heads_changed(output);
 		}
 	}
 }
@@ -6255,6 +6284,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_signal_init(&ec->output_moved_signal);
 	wl_signal_init(&ec->output_resized_signal);
 	wl_signal_init(&ec->heads_changed_signal);
+	wl_signal_init(&ec->output_heads_changed_signal);
 	wl_signal_init(&ec->session_signal);
 	ec->session_active = 1;
 

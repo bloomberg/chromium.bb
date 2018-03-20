@@ -68,9 +68,16 @@ output_find_by_head_name(struct weston_compositor *compositor,
 	if (!head_name)
 		return NULL;
 
-	/* only enabled outputs */
+	/* Only enabled outputs with connected heads.
+	 * This means force-enabled outputs but with disconnected heads
+	 * will be ignored; if the touchscreen doesn't have a video signal,
+	 * touching it is meaningless.
+	 */
 	wl_list_for_each(output, &compositor->output_list, link) {
 		wl_list_for_each(head, &output->head_list, output_link) {
+			if (!weston_head_is_connected(head))
+				continue;
+
 			if (strcmp(head_name, head->name) == 0)
 				return output;
 		}
@@ -377,12 +384,9 @@ udev_seat_led_update(struct weston_seat *seat_base, enum weston_led leds)
 }
 
 static void
-notify_output_create(struct wl_listener *listener, void *data)
+udev_seat_output_changed(struct udev_seat *seat, struct weston_output *output)
 {
-	struct udev_seat *seat = container_of(listener, struct udev_seat,
-					      output_create_listener);
 	struct evdev_device *device;
-	struct weston_output *output = data;
 	struct weston_output *found;
 
 	wl_list_for_each(device, &seat->devices_list, link) {
@@ -406,6 +410,26 @@ notify_output_create(struct wl_listener *listener, void *data)
 	}
 }
 
+static void
+notify_output_create(struct wl_listener *listener, void *data)
+{
+	struct udev_seat *seat = container_of(listener, struct udev_seat,
+					      output_create_listener);
+	struct weston_output *output = data;
+
+	udev_seat_output_changed(seat, output);
+}
+
+static void
+notify_output_heads_changed(struct wl_listener *listener, void *data)
+{
+	struct udev_seat *seat = container_of(listener, struct udev_seat,
+					      output_heads_listener);
+	struct weston_output *output = data;
+
+	udev_seat_output_changed(seat, output);
+}
+
 static struct udev_seat *
 udev_seat_create(struct udev_input *input, const char *seat_name)
 {
@@ -422,6 +446,10 @@ udev_seat_create(struct udev_input *input, const char *seat_name)
 	seat->output_create_listener.notify = notify_output_create;
 	wl_signal_add(&c->output_created_signal,
 		      &seat->output_create_listener);
+
+	seat->output_heads_listener.notify = notify_output_heads_changed;
+	wl_signal_add(&c->output_heads_changed_signal,
+		      &seat->output_heads_listener);
 
 	wl_list_init(&seat->devices_list);
 
@@ -440,6 +468,7 @@ udev_seat_destroy(struct udev_seat *seat)
 	udev_seat_remove_devices(seat);
 	weston_seat_release(&seat->base);
 	wl_list_remove(&seat->output_create_listener.link);
+	wl_list_remove(&seat->output_heads_listener.link);
 	free(seat);
 }
 
