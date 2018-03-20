@@ -251,11 +251,7 @@ static int
 fd_map_bo(struct buffer *buf)
 {
 	buf->mmap = fd_bo_map(buf->fd_bo);
-
-	if (buf->mmap != NULL)
-		return 1;
-
-	return 0;
+	return buf->mmap != NULL;
 }
 
 static void
