@@ -843,10 +843,10 @@ ivi_layout_transition_fade_layer(
 			uint32_t duration)
 {
 	struct ivi_layout_transition *transition;
-	struct fade_layer_data *data = NULL;
-	wl_fixed_t fixed_opacity = 0.0;
-	double now_opacity = 0.0;
-	double remain = 0.0;
+	struct fade_layer_data *data;
+	wl_fixed_t fixed_opacity;
+	double now_opacity;
+	double remain;
 
 	transition = get_transition_from_type_and_id(
 					IVI_LAYOUT_TRANSITION_LAYER_FADE,
@@ -858,7 +858,6 @@ ivi_layout_transition_fade_layer(
 		/* FIXME */
 		fixed_opacity = layer->prop.opacity;
 		now_opacity = wl_fixed_to_double(fixed_opacity);
-		remain = 0.0;
 
 		data->is_fade_in = is_fade_in;
 		data->start_alpha = now_opacity;
