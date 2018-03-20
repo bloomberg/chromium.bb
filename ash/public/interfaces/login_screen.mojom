@@ -166,4 +166,10 @@ interface LoginScreenClient {
 
   // Show Gaia signin dialog in chrome.
   ShowGaiaSignin();
+
+  // Notification that the remove user warning was shown.
+  OnRemoveUserWarningShown();
+
+  // Try to remove |account_id|.
+  RemoveUser(signin.mojom.AccountId account_id);
 };

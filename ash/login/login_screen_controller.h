@@ -92,6 +92,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
   void FocusLockScreenApps(bool reverse);
   void ShowGaiaSignin();
+  void OnRemoveUserWarningShown();
+  void RemoveUser(const AccountId& account_id);
 
   // Methods to manage lock screen apps focus observers.
   // The observers will be notified when lock screen apps focus changes are
