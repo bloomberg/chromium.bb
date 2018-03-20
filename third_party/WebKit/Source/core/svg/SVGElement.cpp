@@ -1257,30 +1257,12 @@ void SVGElement::AddReferenceTo(SVGElement* target_element) {
   target_element->EnsureSVGRareData()->IncomingReferences().insert(this);
 }
 
-void SVGElement::NotifyIncomingReferences(
-    const InvalidationCallback& invalidation_callback) {
-  if (!HasSVGRareData())
-    return;
-
-  SVGElementSet& dependencies = SvgRareData()->IncomingReferences();
-  if (dependencies.IsEmpty())
-    return;
-
-  // We allow cycles in the reference graph in order to avoid expensive
-  // adjustments on changes, so we need to break possible cycles here.
+SVGElementSet& SVGElement::GetDependencyTraversalVisitedSet() {
   // This strong reference is safe, as it is guaranteed that this set will be
-  // emptied at the end of recursion.
+  // emptied at the end of recursion in NotifyIncomingReferences.
   DEFINE_STATIC_LOCAL(SVGElementSet, invalidating_dependencies,
                       (new SVGElementSet));
-
-  for (SVGElement* element : dependencies) {
-    if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
-      // Reference cycle: we are in process of invalidating this dependant.
-      continue;
-    }
-    invalidation_callback.Run(*element);
-    invalidating_dependencies.erase(element);
-  }
+  return invalidating_dependencies;
 }
 
 void SVGElement::RebuildAllIncomingReferences() {

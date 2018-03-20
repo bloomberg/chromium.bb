@@ -157,12 +157,12 @@ void SVGGradientElement::InvalidateGradient(
 }
 
 void SVGGradientElement::InvalidateDependentGradients() {
-  NotifyIncomingReferences(WTF::BindRepeating([](SVGElement& element) {
+  NotifyIncomingReferences([](SVGElement& element) {
     if (auto* gradient = ToSVGGradientElementOrNull(element)) {
       gradient->InvalidateGradient(
           LayoutInvalidationReason::kSvgResourceInvalidated);
     }
-  }));
+  });
 }
 
 void SVGGradientElement::CollectCommonAttributes(

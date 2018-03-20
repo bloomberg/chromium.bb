@@ -171,8 +171,8 @@ class CORE_EXPORT SVGElement : public Element {
   bool InUseShadowTree() const;
 
   void AddReferenceTo(SVGElement*);
-  using InvalidationCallback = base::RepeatingCallback<void(SVGElement&)>;
-  void NotifyIncomingReferences(const InvalidationCallback&);
+  template <typename InvalidationFunction>
+  void NotifyIncomingReferences(InvalidationFunction&&);
   void RebuildAllIncomingReferences();
   void RemoveAllIncomingReferences();
   void RemoveAllOutgoingReferences();
@@ -271,6 +271,7 @@ class CORE_EXPORT SVGElement : public Element {
     return EnsureComputedStyle(pseudo_element_specifier);
   }
   void WillRecalcStyle(StyleRecalcChange) override;
+  static SVGElementSet& GetDependencyTraversalVisitedSet();
 
   HeapHashSet<WeakMember<SVGElement>> elements_with_relative_lengths_;
 
@@ -285,6 +286,27 @@ class CORE_EXPORT SVGElement : public Element {
   Member<SVGElementRareData> svg_rare_data_;
   Member<SVGAnimatedString> class_name_;
 };
+
+template <typename InvalidationFunction>
+void SVGElement::NotifyIncomingReferences(
+    InvalidationFunction&& invalidation_function) {
+  SVGElementSet* dependencies = SetOfIncomingReferences();
+  if (!dependencies)
+    return;
+
+  // We allow cycles in the reference graph in order to avoid expensive
+  // adjustments on changes, so we need to break possible cycles here.
+  SVGElementSet& invalidating_dependencies = GetDependencyTraversalVisitedSet();
+
+  for (SVGElement* element : *dependencies) {
+    if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
+      // Reference cycle: we are in process of invalidating this dependant.
+      continue;
+    }
+    invalidation_function(*element);
+    invalidating_dependencies.erase(element);
+  }
+}
 
 struct SVGAttributeHashTranslator {
   STATIC_ONLY(SVGAttributeHashTranslator);
