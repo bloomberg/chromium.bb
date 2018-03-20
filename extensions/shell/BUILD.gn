@@ -423,6 +423,8 @@ if (is_mac) {
   mac_framework_bundle("app_shell_framework") {
     testonly = true
     output_name = "App Shell Framework"
+    framework_version = "A"
+    framework_contents = [ "Resources" ]
     sources = [
       "app/shell_main_mac.cc",
       "app/shell_main_mac.h",

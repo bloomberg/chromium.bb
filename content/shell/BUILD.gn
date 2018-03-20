@@ -724,6 +724,13 @@ if (is_mac) {
 
     output_name = content_shell_framework_name
 
+    framework_version = "C"
+
+    framework_contents = [
+      "Helpers",
+      "Resources",
+    ]
+
     sources = [
       "app/shell_content_main.cc",
       "app/shell_content_main.h",
@@ -758,11 +765,11 @@ if (is_mac) {
     if (is_component_build) {
       # Set up the rpath for the framework so that it can find dylibs in the
       # root output directory. The framework is at
-      # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Content Shell Framework
+      # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Versions/C/Content Shell Framework
       # so use loader_path to go back to the root output directory.
       ldflags += [
         "-rpath",
-        "@loader_path/../../../..",
+        "@loader_path/../../../../../..",
       ]
     }
 

@@ -1044,6 +1044,8 @@ test("ui_base_unittests") {
 if (is_mac) {
   mac_framework_bundle("ui_unittests_framework") {
     testonly = true
+    framework_version = "U"
+    framework_contents = [ "Resources" ]
     deps = [
       "//ui/resources:ui_test_pak_bundle_data",
     ]

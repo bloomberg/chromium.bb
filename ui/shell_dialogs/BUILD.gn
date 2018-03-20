@@ -89,6 +89,8 @@ if (is_mac) {
 
   mac_framework_bundle("shell_dialogs_unittests_bundle") {
     testonly = true
+    framework_version = "S"
+    framework_contents = [ "Resources" ]
     info_plist = "//ui/base/test/framework-Info.plist"
     deps = [
       ":shell_dialogs_unittests_xibs",
