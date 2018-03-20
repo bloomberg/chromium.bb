@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -15,8 +16,6 @@ class Rect;
 
 namespace viz {
 
-struct BeginFrameAck;
-struct BeginFrameArgs;
 class CopyOutputRequest;
 
 // Interface for CompositorFrameSink implementations that support frame sink
@@ -29,16 +28,15 @@ class CapturableFrameSink {
    public:
     virtual ~Client() = default;
 
-    // Called to indicate compositing has started for a new frame.
-    virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
-
-    // Called to indicate a frame's content has changed since the last
-    // frame. |ack| identifies the frame. |frame_size| is the output size of the
-    // frame, with |damage_rect| being the region within the frame that has
-    // changed.
-    virtual void OnFrameDamaged(const BeginFrameAck& ack,
-                                const gfx::Size& frame_size,
-                                const gfx::Rect& damage_rect) = 0;
+    // Called when a frame's content, or that of one or more of its child
+    // frames, has changed. |frame_size| is the output size of the currently-
+    // active compositor frame for the frame sink being monitored, with
+    // |damage_rect| being the region within that has changed (never empty).
+    // |expected_display_time| indicates when the content change was expected to
+    // appear on the Display.
+    virtual void OnFrameDamaged(const gfx::Size& frame_size,
+                                const gfx::Rect& damage_rect,
+                                base::TimeTicks expected_display_time) = 0;
   };
 
   virtual ~CapturableFrameSink() = default;

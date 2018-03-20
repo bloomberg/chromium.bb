@@ -324,28 +324,19 @@ class FrameSinkVideoCapturerTest : public testing::Test {
     PropagateMojoTasks();
   }
 
-  void AdvanceClockToNextVsync() {
+  base::TimeTicks GetNextVsync() const {
     const auto now = task_runner_->NowTicks();
     const auto num_vsyncs_elapsed = (now - start_time_) / kVsyncInterval;
-    const auto advance_to_time =
-        start_time_ + (num_vsyncs_elapsed + 1) * kVsyncInterval;
-    task_runner_->FastForwardBy(advance_to_time - now);
+    return start_time_ + (num_vsyncs_elapsed + 1) * kVsyncInterval;
   }
 
-  void NotifyBeginFrame(int source_id, int frame_number) {
-    BeginFrameArgs args;
-    args.interval = kVsyncInterval;
-    args.frame_time = task_runner_->NowTicks();
-    args.sequence_number = BeginFrameArgs::kStartingFrameNumber + frame_number;
-    args.source_id = source_id;
-    capturer_.OnBeginFrame(args);
+  void AdvanceClockToNextVsync() {
+    task_runner_->FastForwardBy(GetNextVsync() - task_runner_->NowTicks());
   }
 
-  void NotifyFrameDamaged(int source_id, int frame_number) {
-    BeginFrameAck ack;
-    ack.sequence_number = BeginFrameArgs::kStartingFrameNumber + frame_number;
-    ack.source_id = source_id;
-    capturer_.OnFrameDamaged(ack, kSourceSize, gfx::Rect(kSourceSize));
+  void NotifyFrameDamaged() {
+    capturer_.OnFrameDamaged(kSourceSize, gfx::Rect(kSourceSize),
+                             GetNextVsync());
   }
 
   void NotifyTargetWentAway() {
@@ -360,15 +351,6 @@ class FrameSinkVideoCapturerTest : public testing::Test {
   void AdvanceClockForRefreshTimer() {
     task_runner_->FastForwardBy(capturer_.GetDelayBeforeNextRefreshAttempt());
     PropagateMojoTasks();
-  }
-
-  bool HasCacheEntryForSource(int source_id) {
-    return capturer_.frame_display_times_.find(source_id) !=
-           capturer_.frame_display_times_.end();
-  }
-
-  static constexpr base::TimeDelta GetDisplayTimeCacheKeepAliveInterval() {
-    return FrameSinkVideoCapturerImpl::kDisplayTimeCacheKeepAliveInterval;
   }
 
  protected:
@@ -513,12 +495,10 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
        ++i) {
     SCOPED_TRACE(testing::Message() << "frame #" << i);
 
-    // Move time forward to the next display vsync and notify the capturer that
-    // compositing of the frame has begun.
+    // Move time forward to the next display vsync.
     AdvanceClockToNextVsync();
     const base::TimeTicks expected_reference_time =
         task_runner_->NowTicks() + kVsyncInterval;
-    NotifyBeginFrame(1, i);
 
     // Change the content of the frame sink and notify the capturer of the
     // damage.
@@ -527,7 +507,7 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
     task_runner_->FastForwardBy(kVsyncInterval / 4);
     const base::TimeTicks expected_capture_begin_time =
         task_runner_->NowTicks();
-    NotifyFrameDamaged(1, i);
+    NotifyFrameDamaged();
 
     // The frame sink should have received a CopyOutputRequest. Simulate a short
     // pause before the result is sent back to the capturer, and the capturer
@@ -602,8 +582,7 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   int num_frames = FrameSinkVideoCapturerImpl::kDesignLimitMaxFrames;
   for (int i = num_refresh_frames; i < num_frames; ++i) {
     AdvanceClockToNextVsync();
-    NotifyBeginFrame(1, i);
-    NotifyFrameDamaged(1, i);
+    NotifyFrameDamaged();
     // The oracle should not be rejecting captures caused by compositor updates.
     ASSERT_FALSE(IsRefreshRetryTimerRunning());
   }
@@ -613,10 +592,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   // requests to be issued at this point. However, the refresh timer should be
   // scheduled to account for the capture of changed content that could not take
   // place.
-  const int first_uncaptured_frame = num_frames;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, first_uncaptured_frame);
-  NotifyFrameDamaged(1, first_uncaptured_frame);
+  NotifyFrameDamaged();
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
@@ -625,10 +602,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   // frame is still in the middle of being delivered/consumed.
   frame_sink_.SendCopyOutputResult(0);
   ASSERT_EQ(1, consumer.num_frames_received());
-  const int second_uncaptured_frame = num_frames;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, second_uncaptured_frame);
-  NotifyFrameDamaged(1, second_uncaptured_frame);
+  NotifyFrameDamaged();
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
@@ -638,10 +613,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   // capture will satisfy the need to send updated content to the consumer.
   EXPECT_TRUE(consumer.TakeFrame(0));
   consumer.SendDoneNotification(0);
-  const int first_capture_resumed_frame = second_uncaptured_frame + 1;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, first_capture_resumed_frame);
-  NotifyFrameDamaged(1, first_capture_resumed_frame);
+  NotifyFrameDamaged();
   ++num_frames;
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   EXPECT_FALSE(IsRefreshRetryTimerRunning());
@@ -649,10 +622,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
   // With yet another compositor update, no new copy requests should be issued
   // because the pipeline became saturated again. Once again, the refresh timer
   // should be started to account for the need to capture at some future point.
-  const int third_uncaptured_frame = first_capture_resumed_frame + 1;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, third_uncaptured_frame);
-  NotifyFrameDamaged(1, third_uncaptured_frame);
+  NotifyFrameDamaged();
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
@@ -664,10 +635,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
     frame_sink_.SendCopyOutputResult(i);
   }
   ASSERT_EQ(frame_sink_.num_copy_results(), consumer.num_frames_received());
-  const int fourth_uncaptured_frame = third_uncaptured_frame + 1;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, fourth_uncaptured_frame);
-  NotifyFrameDamaged(1, fourth_uncaptured_frame);
+  NotifyFrameDamaged();
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
@@ -678,10 +647,8 @@ TEST_F(FrameSinkVideoCapturerTest, HaltsWhenPipelineIsFull) {
     EXPECT_TRUE(consumer.TakeFrame(i));
     consumer.SendDoneNotification(i);
   }
-  const int second_capture_resumed_frame = fourth_uncaptured_frame + 1;
   AdvanceClockToNextVsync();
-  NotifyBeginFrame(1, second_capture_resumed_frame);
-  NotifyFrameDamaged(1, second_capture_resumed_frame);
+  NotifyFrameDamaged();
   ++num_frames;
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   frame_sink_.SendCopyOutputResult(frame_sink_.num_copy_results() - 1);
@@ -717,8 +684,7 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversFramesInOrder) {
                               static_cast<uint8_t>((i << 4) + 0x20)});
     frame_sink_.SetCopyOutputColor(colors.back());
     AdvanceClockToNextVsync();
-    NotifyBeginFrame(1, i);
-    NotifyFrameDamaged(1, i);
+    NotifyFrameDamaged();
   }
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
 
@@ -771,8 +737,7 @@ TEST_F(FrameSinkVideoCapturerTest, CancelsInFlightCapturesOnStop) {
   for (int i = num_refresh_frames; i < num_copy_requests; ++i) {
     SCOPED_TRACE(testing::Message() << "frame #" << i);
     AdvanceClockToNextVsync();
-    NotifyBeginFrame(1, i);
-    NotifyFrameDamaged(1, i);
+    NotifyFrameDamaged();
   }
   ASSERT_EQ(num_copy_requests, frame_sink_.num_copy_results());
 
@@ -820,8 +785,7 @@ TEST_F(FrameSinkVideoCapturerTest, CancelsInFlightCapturesOnStop) {
     if (i == 0) {
       // Expect that advancing the clock caused the refresh timer to fire.
     } else {
-      NotifyBeginFrame(1, num_copy_requests);
-      NotifyFrameDamaged(1, num_copy_requests);
+      NotifyFrameDamaged();
     }
     ++num_copy_requests;
     ASSERT_EQ(num_copy_requests, frame_sink_.num_copy_results());
@@ -866,8 +830,7 @@ TEST_F(FrameSinkVideoCapturerTest, EventuallySendsARefreshFrame) {
   int num_frames = 1 + num_update_frames;
   for (int i = 1; i < num_frames; ++i) {
     AdvanceClockToNextVsync();
-    NotifyBeginFrame(1, i);
-    NotifyFrameDamaged(1, i);
+    NotifyFrameDamaged();
     ASSERT_EQ(i + 1, frame_sink_.num_copy_results());
     ASSERT_FALSE(IsRefreshRetryTimerRunning());
     frame_sink_.SendCopyOutputResult(i);
@@ -891,43 +854,6 @@ TEST_F(FrameSinkVideoCapturerTest, EventuallySendsARefreshFrame) {
   EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
   StopCapture();
-}
-
-// Tests that the capturer caches display times from OnBeginFrame()
-// notifications and throws away old data.
-TEST_F(FrameSinkVideoCapturerTest, CachesAndPrunesDisplayTimes) {
-  EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
-      .WillRepeatedly(Return(&frame_sink_));
-  capturer_.ChangeTarget(kFrameSinkId);
-
-  // The first OnBeginFrame() call should create a cache entry for source_id=1.
-  NotifyBeginFrame(1, 1);
-  EXPECT_TRUE(HasCacheEntryForSource(1));
-
-  // The next OnBeginFrame() call should create a second cache entry, for
-  // source_id=2.
-  NotifyBeginFrame(2, 1);
-  EXPECT_TRUE(HasCacheEntryForSource(1));
-  EXPECT_TRUE(HasCacheEntryForSource(2));
-
-  // Make a sequence of OnBeginFrame() calls for source_id=2. The cache entries
-  // for both sources should remain.
-  const base::TimeTicks end_time =
-      task_runner_->NowTicks() + GetDisplayTimeCacheKeepAliveInterval();
-  int seq = 2;
-  while (task_runner_->NowTicks() < end_time) {
-    task_runner_->FastForwardBy(kVsyncInterval);
-    NotifyBeginFrame(2, seq++);
-    ASSERT_TRUE(HasCacheEntryForSource(1));
-    ASSERT_TRUE(HasCacheEntryForSource(2));
-  }
-
-  // Now, if a third source is introduced, the garbage collection will run and
-  // prune out the entry for source_id=1 since it has not been actively updated.
-  NotifyBeginFrame(3, 1);
-  EXPECT_FALSE(HasCacheEntryForSource(1));
-  EXPECT_TRUE(HasCacheEntryForSource(2));
-  EXPECT_TRUE(HasCacheEntryForSource(3));
 }
 
 }  // namespace viz

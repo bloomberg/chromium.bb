@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -71,8 +72,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
  public:
   using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
+                                   const gfx::Size& frame_size_in_pixels,
                                    const gfx::Rect& damage_rect,
-                                   const CompositorFrame& frame)>;
+                                   base::TimeTicks expected_display_time)>;
   using PresentedCallback =
       base::OnceCallback<void(base::TimeTicks, base::TimeDelta, uint32_t)>;
 
@@ -175,7 +177,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   bool TakePresentedCallback(PresentedCallback* callback);
   void RunDrawCallback();
-  void NotifyAggregatedDamage(const gfx::Rect& damage_rect);
+  void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
+                              base::TimeTicks expected_display_time);
 
   const std::vector<SurfaceId>* active_referenced_surfaces() const {
     return active_frame_data_
