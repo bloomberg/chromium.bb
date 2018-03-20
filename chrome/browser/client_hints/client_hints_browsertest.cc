@@ -261,14 +261,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
                 base::ContainsKey(request.headers, "device-memory"));
       EXPECT_EQ(expect_client_hints_on_main_frame_,
                 base::ContainsKey(request.headers, "dpr"));
-// Sending of viewport-width is not enabled on main frame navigations for
-// Android.
-#if defined(OS_ANDROID)
-      EXPECT_FALSE(base::ContainsKey(request.headers, "viewport-width"));
-#else
       EXPECT_EQ(expect_client_hints_on_main_frame_,
                 base::ContainsKey(request.headers, "viewport-width"));
-#endif
       if (expect_client_hints_on_main_frame_) {
         double value = 0.0;
         EXPECT_TRUE(base::StringToDouble(
@@ -278,11 +272,12 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
-
-#if !defined(OS_ANDROID)
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
+#if !defined(OS_ANDROID)
         EXPECT_LT(0.0, value);
+#else
+        EXPECT_EQ(980, value);
 #endif
       }
     }
@@ -307,7 +302,11 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
+#if !defined(OS_ANDROID)
         EXPECT_LT(0.0, value);
+#else
+        EXPECT_EQ(980, value);
+#endif
       }
     }
 
@@ -410,14 +409,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-// Two client hints are attached to the image request, and the device-memory
-// and dpr headers are attached to the main frame request.
-// On desktop, viewport-width is also attached to the main frame request.
-#if defined(OS_ANDROID)
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
-#else
+  // Three client hints are attached to the image request, and three to the main
+  // frame request.
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-#endif
 
   // Navigating to without_accept_ch_without_lifetime_img_foo_com() should not
   // attach client hints to the image subresouce contained in that page since
@@ -510,14 +504,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_local_url());
 
-// Two client hints are attached to the image request, and the device-memory
-// header is attached to the main frame request.
-// On desktop, viewport-width is also attached to the main frame request.
-#if defined(OS_ANDROID)
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
-#else
+  // Three client hints are attached to the image request, and three to the main
+  // frame request.
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-#endif
 }
 
 // Loads a webpage that does not request persisting of client hints.
@@ -574,14 +563,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
 
-// Two client hints are attached to the image request, and the device-memory
-// and dpr headers are attached to the main frame request.
-// On desktop, viewport-width is also attached to the main frame request.
-#if defined(OS_ANDROID)
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
-#else
+  // Three client hints are attached to the image request, and three to the main
+  // frame request.
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-#endif
 }
 
 // Ensure that when cookies are blocked, client hint preferences are not
@@ -674,14 +658,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
-// Two client hints are attached to the image request, and the device-memory
-// header is attached to the main frame request.
-// On desktop, viewport-width is also attached to the main frame request.
-#if defined(OS_ANDROID)
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
-#else
+
+  // Three client hints are attached to the image request, and three to the main
+  // frame request.
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-#endif
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -780,14 +760,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
-// Two client hints are attached to the image request, and the device-memory
-// and dpr headers are attached to the main frame request.
-// On desktop, viewport-width is also attached to the main frame request.
-#if defined(OS_ANDROID)
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
-#else
+
+  // Three client hints are attached to the image request, and three to the main
+  // frame request.
   EXPECT_EQ(6u, count_client_hints_headers_seen());
-#endif
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
