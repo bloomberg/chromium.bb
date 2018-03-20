@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 // This file intentionally does not have header guards, it's included
-// inside a macro to generate enum.
-//
+// inside a macro to generate enum. The following line silences a
+// presubmit warning that would otherwise be triggered by this:
+// no-include-guard-because-multiply-included
+
 // This file contains the list of HTTP status codes. Taken from IANA HTTP Status
 // Code Registry.
 // http://www.iana.org/assignments/http-status-codes/http-status-codes.xml

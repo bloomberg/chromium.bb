@@ -4,6 +4,9 @@
 
 // NOTE: No header guards are used, since this file is intended to be expanded
 // directly into net_log.h. DO NOT include this file anywhere else.
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
 
 // In the event of a failure, a many end events will have a |net_error|
 // parameter with the integer error code associated with the failure.  Most

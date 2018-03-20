@@ -4,6 +4,9 @@
 
 // NOTE: No header guards are used, since this file is intended to be expanded
 // directly within a block where the SOURCE_TYPE macro is defined.
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this:
+// no-include-guard-because-multiply-included
 
 // Used for global events which don't correspond to a particular entity.
 SOURCE_TYPE(NONE)
