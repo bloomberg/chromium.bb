@@ -171,14 +171,14 @@ using content::WebContents;
 using security_interstitials::SecurityInterstitialControllerClient;
 using web_modal::WebContentsModalDialogManager;
 
+namespace {
+
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
 const uint32_t kLargeVersionId = 0xFFFFFFu;
 
 const char kHstsTestHostName[] = "hsts-example.test";
-
-namespace {
 
 enum ProceedDecision {
   SSL_INTERSTITIAL_PROCEED,
