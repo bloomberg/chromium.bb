@@ -324,6 +324,9 @@
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
 
+# Fails because data: URL is not downloaded but navigated to.
+-BrowserActionApiTest.BrowserActionPopupDownload
+
 # Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65822%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FNoSessionRestoreTest.PRE_CookiesClearedOnExit%2F0
 -NoSessionRestoreTest.CookiesClearedOnExit
 
