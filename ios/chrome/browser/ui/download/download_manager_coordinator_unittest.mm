@@ -24,6 +24,7 @@
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -491,6 +492,38 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   base::FilePath download_dir;
   ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
+
+  ASSERT_EQ(0,
+            user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
+}
+
+// Tests retrying the download. Verifies that kDownloadManagerRetryDownload UMA
+// metric is logged.
+TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  task.SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
+  web::DownloadTask* task_ptr = &task;
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+
+  // Starting download is async for model.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
+
+  ASSERT_EQ(1,
+            user_action_tester_.GetActionCount("MobileDownloadRetryDownload"));
 }
 
 // Tests that viewController returns correct view controller if coordinator is
