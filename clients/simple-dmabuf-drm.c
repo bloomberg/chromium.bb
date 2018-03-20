@@ -828,7 +828,7 @@ create_display(int opts, int format)
 	display = malloc(sizeof *display);
 	if (display == NULL) {
 		fprintf(stderr, "out of memory\n");
-		exit(1);
+		return NULL;
 	}
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
@@ -851,7 +851,7 @@ create_display(int opts, int format)
 	wl_display_roundtrip(display->display);
 	if (display->dmabuf == NULL) {
 		fprintf(stderr, "No zwp_linux_dmabuf global\n");
-		exit(1);
+		return NULL;
 	}
 
 	wl_display_roundtrip(display->display);
@@ -860,7 +860,7 @@ create_display(int opts, int format)
 		(format == DRM_FORMAT_NV12 && (!display->nv12_format_found ||
 			!display->nv12_modifier_found))) {
 		fprintf(stderr, "requested format is not available\n");
-		exit(1);
+		return NULL;
 	}
 
 	return display;
@@ -970,6 +970,8 @@ main(int argc, char **argv)
 	}
 
 	display = create_display(opts, import_format);
+	if (!display)
+		return 1;
 	window = create_window(display, 256, 256, import_format, opts);
 	if (!window)
 		return 1;
