@@ -117,6 +117,14 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   shelf_view_->bounds_animator_->RemoveObserver(observer.get());
 }
 
+gfx::Rect ShelfViewTestAPI::GetMenuAnchorRect(const views::View* source,
+                                              const gfx::Point& location,
+                                              ui::MenuSourceType source_type,
+                                              bool context_menu) const {
+  return shelf_view_->GetMenuAnchorRect(source, location, source_type,
+                                        context_menu);
+}
+
 bool ShelfViewTestAPI::CloseMenu() {
   if (!shelf_view_->launcher_menu_runner_)
     return false;

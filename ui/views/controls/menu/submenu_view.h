@@ -56,7 +56,7 @@ class VIEWS_EXPORT SubmenuView : public View,
 
   // Returns the number of child views that are MenuItemViews.
   // MenuItemViews are identified by ID.
-  int GetMenuItemCount();
+  int GetMenuItemCount() const;
 
   // Returns the MenuItemView at the specified index.
   MenuItemView* GetMenuItemAt(int index);

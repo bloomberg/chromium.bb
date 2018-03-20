@@ -23,6 +23,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image.h"
 
 using l10n_util::GetStringUTF16;
@@ -128,8 +129,9 @@ ShelfContextMenuModel::ShelfContextMenuModel(MenuItemList menu_items,
       menu_items_(std::move(menu_items)),
       delegate_(delegate),
       display_id_(display_id) {
-  // Append some menu items that are handled locally by Ash.
-  AddLocalMenuItems(&menu_items_, display_id);
+  // Append shelf settings and wallpaper items if no shelf item was selected.
+  if (!features::IsTouchableAppContextMenuEnabled() || !delegate)
+    AddLocalMenuItems(&menu_items_, display_id);
   menu_utils::PopulateMenuFromMojoMenuItems(this, this, menu_items_,
                                             &submenus_);
 }

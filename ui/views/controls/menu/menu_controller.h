@@ -198,6 +198,11 @@ class VIEWS_EXPORT MenuController
   // Only used for testing.
   static void TurnOffMenuSelectionHoldForTest();
 
+  void set_use_touchable_layout(bool use_touchable_layout) {
+    use_touchable_layout_ = use_touchable_layout;
+  }
+  bool use_touchable_layout() const { return use_touchable_layout_; }
+
  private:
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
@@ -680,6 +685,9 @@ class VIEWS_EXPORT MenuController
 
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_ = false;
+
+  // Whether to use the touchable layout.
+  bool use_touchable_layout_ = false;
 
   // During mouse event handling, this is the RootView to forward mouse events
   // to. We need this, because if we forward one event to it (e.g., mouse

@@ -62,13 +62,12 @@ BorderImages::~BorderImages() {}
 
 namespace {
 
+// The border corner radius for material design bubble borders.
+constexpr int kMaterialDesignCornerRadius = 2;
+
 // The border is stroked at 1px, but for the purposes of reserving space we have
 // to deal in dip coordinates, so round up to 1dip.
-const int kBorderThicknessDip = 1;
-
-bool UseMaterialDesign() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
-}
+constexpr int kBorderThicknessDip = 1;
 
 // Utility functions for getting alignment points on the edge of a rectangle.
 gfx::Point CenterTop(const gfx::Rect& rect) {
@@ -177,13 +176,7 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
       background_color_(color),
       use_theme_background_color_(false) {
   DCHECK(shadow_ < SHADOW_COUNT);
-  if (UseMaterialDesign()) {
-    // Harmony bubbles don't use arrows.
-    alignment_ = ALIGN_EDGE_TO_ANCHOR_EDGE;
-    arrow_paint_type_ = PAINT_NONE;
-  } else {
-    images_ = GetBorderImages(shadow_);
-  }
+  Init();
 }
 
 BubbleBorder::~BubbleBorder() {}
@@ -194,6 +187,11 @@ gfx::Insets BubbleBorder::GetBorderAndShadowInsets() {
   constexpr gfx::Insets offset(-kShadowVerticalOffset, 0, kShadowVerticalOffset,
                                0);
   return blur + offset;
+}
+
+void BubbleBorder::SetCornerRadius(int corner_radius) {
+  corner_radius_ = corner_radius;
+  Init();
 }
 
 void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
@@ -303,7 +301,9 @@ int BubbleBorder::GetBorderThickness() const {
 }
 
 int BubbleBorder::GetBorderCornerRadius() const {
-  return UseMaterialDesign() ? 2 : images_->corner_radius;
+  if (UseMaterialDesign())
+    return corner_radius_.value_or(kMaterialDesignCornerRadius);
+  return images_->corner_radius;
 }
 
 int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
@@ -336,6 +336,16 @@ void BubbleBorder::SetBorderInteriorThickness(int border_interior_thickness) {
   images_->border_interior_thickness = border_interior_thickness;
   if (!has_arrow(arrow_) || arrow_paint_type_ != PAINT_NORMAL)
     images_->border_thickness = border_interior_thickness;
+}
+
+void BubbleBorder::Init() {
+  if (UseMaterialDesign()) {
+    // Harmony bubbles don't use arrows.
+    alignment_ = ALIGN_EDGE_TO_ANCHOR_EDGE;
+    arrow_paint_type_ = PAINT_NONE;
+  } else {
+    images_ = GetBorderImages(shadow_);
+  }
 }
 
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
@@ -559,6 +569,11 @@ void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
 
 internal::BorderImages* BubbleBorder::GetImagesForTest() const {
   return images_;
+}
+
+bool BubbleBorder::UseMaterialDesign() const {
+  return ui::MaterialDesignController::IsSecondaryUiMaterial() ||
+         corner_radius_.has_value();
 }
 
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {

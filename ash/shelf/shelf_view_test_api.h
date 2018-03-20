@@ -7,8 +7,10 @@
 
 #include "ash/public/cpp/shelf_item.h"
 #include "base/macros.h"
+#include "ui/base/ui_base_types.h"
 
 namespace gfx {
+class Point;
 class Rect;
 }
 
@@ -70,6 +72,13 @@ class ShelfViewTestAPI {
 
   // Runs message loop and waits until all add/remove animations are done.
   void RunMessageLoopUntilAnimationsDone();
+
+  // Gets the anchor point that would be used for a context menu with these
+  // parameters.
+  gfx::Rect GetMenuAnchorRect(const views::View* source,
+                              const gfx::Point& location,
+                              ui::MenuSourceType source_type,
+                              bool context_menu) const;
 
   // Close any open app list or context menu; returns true if a menu was closed.
   bool CloseMenu();
