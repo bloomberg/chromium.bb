@@ -73,8 +73,9 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
   // assistant_client::AudioInputProvider overrides:
   assistant_client::AudioInputConfig& GetAudioInputConfig() override;
   assistant_client::AudioInput& GetAudioInput() override;
-
+  // Assumes no config would change.
   void RegisterConfigChangeCallback(ConfigChangeCallback callback) override {}
+  int64_t GetCurrentAudioTime() override;
 
  private:
   AudioInputConfigImpl audio_input_config_;

@@ -133,5 +133,10 @@ assistant_client::AudioInput& AudioInputProviderImpl::GetAudioInput() {
   return audio_input_;
 }
 
+int64_t AudioInputProviderImpl::GetCurrentAudioTime() {
+  // TODO(xiaohuic): see if we can support real timestamp.
+  return 0;
+}
+
 }  // namespace assistant
 }  // namespace chromeos
