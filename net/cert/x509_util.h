@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace crypto {
@@ -66,7 +67,7 @@ NET_EXPORT bool CreateKeyAndSelfSignedCert(
 
 // Creates a self-signed certificate from a provided key, using the specified
 // hash algorithm.
-NET_EXPORT bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+NET_EXPORT bool CreateSelfSignedCert(EVP_PKEY* key,
                                      DigestAlgorithm alg,
                                      const std::string& subject,
                                      uint32_t serial_number,

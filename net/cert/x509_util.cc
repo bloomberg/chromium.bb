@@ -202,10 +202,10 @@ bool CreateKeyAndSelfSignedCert(const std::string& subject,
                                 std::string* der_cert) {
   std::unique_ptr<crypto::RSAPrivateKey> new_key(
       crypto::RSAPrivateKey::Create(kRSAKeyLength));
-  if (!new_key.get())
+  if (!new_key)
     return false;
 
-  bool success = CreateSelfSignedCert(new_key.get(),
+  bool success = CreateSelfSignedCert(new_key->key(),
                                       kSignatureDigestAlgorithm,
                                       subject,
                                       serial_number,
@@ -218,7 +218,7 @@ bool CreateKeyAndSelfSignedCert(const std::string& subject,
   return success;
 }
 
-bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+bool CreateSelfSignedCert(EVP_PKEY* key,
                           DigestAlgorithm alg,
                           const std::string& subject,
                           uint32_t serial_number,
@@ -256,7 +256,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
       !AddTime(&validity, not_valid_before) ||
       !AddTime(&validity, not_valid_after) ||
       !AddNameWithCommonName(&tbs_cert, common_name) ||  // subject
-      !EVP_marshal_public_key(&tbs_cert, key->key()) ||  // subjectPublicKeyInfo
+      !EVP_marshal_public_key(&tbs_cert, key) ||  // subjectPublicKeyInfo
       !CBB_finish(cbb.get(), &tbs_cert_bytes, &tbs_cert_len)) {
     return false;
   }
@@ -275,8 +275,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
       !AddRSASignatureAlgorithm(&cert, alg) ||
       !CBB_add_asn1(&cert, &signature, CBS_ASN1_BITSTRING) ||
       !CBB_add_u8(&signature, 0 /* no unused bits */) ||
-      !EVP_DigestSignInit(ctx.get(), nullptr, ToEVP(alg), nullptr,
-                          key->key()) ||
+      !EVP_DigestSignInit(ctx.get(), nullptr, ToEVP(alg), nullptr, key) ||
       // Compute the maximum signature length.
       !EVP_DigestSign(ctx.get(), nullptr, &sig_len, tbs_cert_bytes,
                       tbs_cert_len) ||
