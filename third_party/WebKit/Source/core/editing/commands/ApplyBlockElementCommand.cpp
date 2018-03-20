@@ -88,10 +88,7 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
     builder.Collapse(visible_start.ToPositionWithAffinity());
     if (new_end.IsNotNull())
       builder.Extend(new_end);
-    const SelectionInDOMTree& new_selection = builder.Build();
-    if (new_selection.IsNone())
-      return;
-    SetEndingSelection(SelectionForUndoStep::From(new_selection));
+    SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
   }
 
   VisibleSelection selection =
