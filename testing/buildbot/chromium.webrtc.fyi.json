@@ -44,12 +44,7 @@
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "jingle_unittests",
-      "remoting_unittests"
+      "all"
     ]
   },
   "Mac Builder": {
@@ -86,12 +81,7 @@
   },
   "Win Builder (dbg)": {
     "additional_compile_targets": [
-      "browser_tests",
-      "capture_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "jingle_unittests",
-      "remoting_unittests"
+      "all"
     ]
   }
 }

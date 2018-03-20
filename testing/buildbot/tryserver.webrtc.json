@@ -18,7 +18,8 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "mac_chromium_compile": {
@@ -28,7 +29,8 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "win_chromium_compile": {
@@ -38,7 +40,8 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   }
 }
