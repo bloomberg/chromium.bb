@@ -348,30 +348,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                             packages,
                             extra_env=self._portage_extra_env)
 
-  def GetListOfPackagesToBuild(self):
-    """Returns a list of packages to build."""
-    if self._run.config.packages:
-      # If the list of packages is set in the config, use it.
-      return self._run.config.packages
-
-    # TODO: the logic below is duplicated from the build_packages
-    # script. Once we switch to `cros build`, we should consolidate
-    # the logic in a shared location.
-    packages = ['virtual/target-os']
-    # Build Dev packages by default.
-    packages += ['virtual/target-os-dev']
-    # Build test packages by default.
-    packages += ['virtual/target-os-test']
-    # Build factory packages if requested by config.
-    if self._run.config.factory:
-      packages += ['virtual/target-os-factory',
-                   'virtual/target-os-factory-shim']
-
-    if self._run.ShouldBuildAutotest():
-      packages += ['chromeos-base/autotest-all']
-
-    return packages
-
   def RecordPackagesUnderTest(self, packages_to_build):
     """Records all packages that may affect the board to BuilderRun."""
     deps = dict()

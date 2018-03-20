@@ -904,6 +904,30 @@ class BoardSpecificBuilderStage(BuilderStage):
     kwargs.setdefault('board', self._current_board)
     super(BoardSpecificBuilderStage, self)._InsertBuildStageInCIDB(**kwargs)
 
+  def GetListOfPackagesToBuild(self):
+    """Returns a list of packages to build."""
+    if self._run.config.packages:
+      # If the list of packages is set in the config, use it.
+      return self._run.config.packages
+
+    # TODO: the logic below is duplicated from the build_packages
+    # script. Once we switch to `cros build`, we should consolidate
+    # the logic in a shared location.
+    packages = [constants.TARGET_OS_PKG]
+    # Build Dev packages by default.
+    packages += [constants.TARGET_OS_DEV_PKG]
+    # Build test packages by default.
+    packages += [constants.TARGET_OS_TEST_PKG]
+    # Build factory packages if requested by config.
+    if self._run.config.factory:
+      packages += ['virtual/target-os-factory',
+                   'virtual/target-os-factory-shim']
+
+    if self._run.ShouldBuildAutotest():
+      packages += ['chromeos-base/autotest-all']
+
+    return packages
+
   def GetParallel(self, board_attr, timeout=None, pretty_name=None):
     """Wait for given |board_attr| to show up.
 

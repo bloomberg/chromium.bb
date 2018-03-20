@@ -461,6 +461,11 @@ CREATED_BRANCHES = [
     MERGE_BRANCH
 ]
 
+# Default OS target packages.
+TARGET_OS_PKG = 'virtual/target-os'
+TARGET_OS_DEV_PKG = 'virtual/target-os-dev'
+TARGET_OS_TEST_PKG = 'virtual/target-os-test'
+
 # Constants for uprevving Chrome
 
 CHROMEOS_BASE = 'chromeos-base'
@@ -1021,6 +1026,7 @@ BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
 BASE_IMAGE_GCE_TAR = ImageBinToGceTar(BASE_IMAGE_BIN)
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
+TARGET_SYSROOT_TAR = 'sysroot_%s.tar.xz' % _SlashToUnderscore(TARGET_OS_PKG)
 VM_IMAGE_NAME = 'chromiumos_qemu_image'
 VM_IMAGE_BIN = '%s.bin' % VM_IMAGE_NAME
 VM_IMAGE_TAR = '%s.tar.xz' % VM_IMAGE_NAME

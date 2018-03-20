@@ -1286,6 +1286,8 @@ def GeneralTemplates(site_config, ge_build_config):
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-asan',
+      images=['base'],
+      packages=['virtual/target-fuzzers'],
   )
 
   site_config.AddTemplate(
