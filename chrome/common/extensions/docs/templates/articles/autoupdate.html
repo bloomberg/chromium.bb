@@ -105,13 +105,6 @@ but you can force an update using the Extensions page's
 <b>Update extensions now</b> button.
 </p>
 
-<p>
-Another option is to use the --extensions-update-frequency command-line flag to set a more frequent interval in seconds. For example, to make checks run every 45 seconds, run Google Chrome like this:</p>
-<pre>
-chrome.exe <b>--extensions-update-frequency=45</b></pre>
-
-<p>Note that this affects checks for all installed extensions and apps, so consider the bandwidth and server load implications of this. You may want to temporarily uninstall all but the one you are testing with, and should not run with this option turned on during normal browser usage.</p>
-
 
 <h2 id="request_parameters">Advanced usage: request parameters</h2>
 <p>The basic autoupdate mechanism is designed to make the server-side work as easy as just dropping a static XML file onto any plain web server such as Apache, and updating that XML file as you release new versions of your extensions.</p>
