@@ -81,7 +81,7 @@ static INLINE void segfeatures_copy(struct segmentation *dst,
     for (j = 0; j < SEG_LVL_MAX; j++) {
       dst->feature_data[i][j] = src->feature_data[i][j];
 #if CONFIG_SPATIAL_SEGMENTATION
-      if (segfeature_active(src, i, (SEG_LVL_FEATURES)j)) {
+      if (src->feature_mask[i] & (1 << j)) {
         dst->preskip_segid |= j >= SEG_LVL_REF_FRAME;
         dst->last_active_segid = i;
         src->preskip_segid = dst->preskip_segid;
