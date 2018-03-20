@@ -325,22 +325,9 @@ ExtensionService::ExtensionService(Profile* profile,
 
   // Set up the ExtensionUpdater.
   if (autoupdate_enabled) {
-    int update_frequency = extensions::kDefaultUpdateFrequencySeconds;
-    bool is_extensions_update_frequency_switch_used =
-        command_line->HasSwitch(switches::kExtensionsUpdateFrequency);
-    if (is_extensions_update_frequency_switch_used) {
-      base::StringToInt(command_line->GetSwitchValueASCII(
-          switches::kExtensionsUpdateFrequency),
-          &update_frequency);
-    }
-    UMA_HISTOGRAM_BOOLEAN("Extensions.UpdateFrequencyCommandLineFlagIsUsed",
-                          is_extensions_update_frequency_switch_used);
     updater_.reset(new extensions::ExtensionUpdater(
-        this,
-        extension_prefs,
-        profile->GetPrefs(),
-        profile,
-        update_frequency,
+        this, extension_prefs, profile->GetPrefs(), profile,
+        extensions::kDefaultUpdateFrequencySeconds,
         extensions::ExtensionsBrowserClient::Get()->GetExtensionCache(),
         base::Bind(ChromeExtensionDownloaderFactory::CreateForProfile,
                    profile)));
