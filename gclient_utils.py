@@ -1278,7 +1278,7 @@ def freeze(obj):
 
   Will raise TypeError if you pass an object which is not hashable.
   """
-  if isinstance(obj, dict):
+  if isinstance(obj, collections.Mapping):
     return FrozenDict((freeze(k), freeze(v)) for k, v in obj.iteritems())
   elif isinstance(obj, (list, tuple)):
     return tuple(freeze(i) for i in obj)
