@@ -10,8 +10,8 @@
 #include <set>
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/browser/content_verifier_delegate.h"
 
 namespace content {
@@ -29,6 +29,7 @@ class PolicyExtensionReinstaller;
 class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
  public:
   static Mode GetDefaultMode();
+  static void SetDefaultModeForTesting(base::Optional<Mode> mode);
 
   explicit ChromeContentVerifierDelegate(content::BrowserContext* context);
 

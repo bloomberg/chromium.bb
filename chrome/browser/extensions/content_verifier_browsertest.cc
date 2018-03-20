@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -181,11 +180,18 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   ContentVerifierTest() {}
   ~ContentVerifierTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kExtensionContentVerification,
-        switches::kExtensionContentVerificationEnforce);
+  void SetUp() override {
+    // Override content verification mode before ExtensionSystemImpl initializes
+    // ChromeContentVerifierDelegate.
+    ChromeContentVerifierDelegate::SetDefaultModeForTesting(
+        ContentVerifierDelegate::ENFORCE);
+
+    ExtensionBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    ExtensionBrowserTest::TearDown();
+    ChromeContentVerifierDelegate::SetDefaultModeForTesting(base::nullopt);
   }
 
   bool ShouldEnableContentVerification() override { return true; }
