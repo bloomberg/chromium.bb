@@ -274,7 +274,7 @@
       # generation script is merged with this one, this should be promoted from
       # the Android-specific section.
       'android_swarming': {
-        'hard_timeout': 60,
+        'hard_timeout': 120,
       },
     },
     'mojo_test_apk': {

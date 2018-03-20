@@ -5415,7 +5415,7 @@
               "device_type": "gce_x86"
             }
           ],
-          "hard_timeout": 60
+          "hard_timeout": 120
         },
         "test": "gl_unittests"
       },
