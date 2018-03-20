@@ -87,6 +87,8 @@ class HEADLESS_EXPORT Request {
   // Whether or not an asynchronous IPC was used to load this resource.
   virtual bool IsAsync() const = 0;
 
+  virtual bool HasUserGesture() const = 0;
+
  protected:
   Request() {}
   virtual ~Request() {}
@@ -165,6 +167,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   uint64_t GetPostDataSize() const override;
   ResourceType GetResourceType() const override;
   bool IsAsync() const override;
+  bool HasUserGesture() const override;
   bool IsBrowserSideFetch() const override;
 
  private:
