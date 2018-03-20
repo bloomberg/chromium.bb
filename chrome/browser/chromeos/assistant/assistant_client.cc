@@ -23,7 +23,8 @@ AssistantClient* AssistantClient::Get() {
   return g_instance;
 }
 
-AssistantClient::AssistantClient() : audio_input_binding_(&audio_input_) {
+AssistantClient::AssistantClient()
+    : client_binding_(this), audio_input_binding_(&audio_input_) {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
@@ -38,7 +39,15 @@ void AssistantClient::Start(service_manager::Connector* connector) {
   mojom::AudioInputPtr audio_input_ptr;
   audio_input_binding_.Bind(mojo::MakeRequest(&audio_input_ptr));
 
-  assistant_connection_->Init(std::move(audio_input_ptr));
+  mojom::ClientPtr client_ptr;
+  client_binding_.Bind(mojo::MakeRequest(&client_ptr));
+
+  assistant_connection_->Init(std::move(client_ptr),
+                              std::move(audio_input_ptr));
+}
+
+void AssistantClient::OnAssistantStatusChanged(bool running) {
+  running_ = running;
 }
 
 }  // namespace assistant

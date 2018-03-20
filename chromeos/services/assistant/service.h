@@ -59,7 +59,7 @@ class Service : public service_manager::Service,
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
 
   // mojom::AssistantPlatform overrides:
-  void Init(mojom::AudioInputPtr audio_input) override;
+  void Init(mojom::ClientPtr client, mojom::AudioInputPtr audio_input) override;
 
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
@@ -84,6 +84,7 @@ class Service : public service_manager::Service,
   mojo::Binding<mojom::AssistantPlatform> platform_binding_;
   mojo::Binding<ash::mojom::SessionActivationObserver>
       session_observer_binding_;
+  mojom::ClientPtr client_;
 
   identity::mojom::IdentityManagerPtr identity_manager_;
 
