@@ -387,6 +387,9 @@ void AutofillAgent::UserGestureObserved() {
 
 void AutofillAgent::DoAcceptDataListSuggestion(
     const base::string16& suggested_value) {
+  if (element_.IsNull())
+    return;
+
   WebInputElement* input_element = ToWebInputElement(&element_);
   DCHECK(input_element);
   base::string16 new_value = suggested_value;
@@ -418,6 +421,9 @@ void AutofillAgent::DoAcceptDataListSuggestion(
 
 // mojom::AutofillAgent:
 void AutofillAgent::FillForm(int32_t id, const FormData& form) {
+  if (element_.IsNull())
+    return;
+
   if (id != autofill_query_id_ && id != kNoQueryId)
     return;
 
@@ -430,6 +436,9 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
 }
 
 void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
+  if (element_.IsNull())
+    return;
+
   if (id != autofill_query_id_)
     return;
 
@@ -441,6 +450,9 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
 
 void AutofillAgent::FieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
+  if (element_.IsNull())
+    return;
+
   bool attach_predictions_to_dom =
       base::FeatureList::IsEnabled(features::kAutofillShowTypePredictions);
   for (const auto& form : forms) {
@@ -449,6 +461,9 @@ void AutofillAgent::FieldTypePredictionsAvailable(
 }
 
 void AutofillAgent::ClearForm() {
+  if (element_.IsNull())
+    return;
+
   form_cache_.ClearFormWithElement(element_);
 }
 
@@ -467,6 +482,9 @@ void AutofillAgent::ClearPreviewedForm() {
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value) {
+  if (element_.IsNull())
+    return;
+
   WebInputElement* input_element = ToWebInputElement(&element_);
   if (input_element) {
     DoFillFieldWithValue(value, input_element);
@@ -475,6 +493,9 @@ void AutofillAgent::FillFieldWithValue(const base::string16& value) {
 }
 
 void AutofillAgent::PreviewFieldWithValue(const base::string16& value) {
+  if (element_.IsNull())
+    return;
+
   WebInputElement* input_element = ToWebInputElement(&element_);
   if (input_element)
     DoPreviewFieldWithValue(value, input_element);
@@ -486,6 +507,9 @@ void AutofillAgent::AcceptDataListSuggestion(const base::string16& value) {
 
 void AutofillAgent::FillPasswordSuggestion(const base::string16& username,
                                            const base::string16& password) {
+  if (element_.IsNull())
+    return;
+
   bool handled =
       password_autofill_agent_->FillSuggestion(element_, username, password);
   DCHECK(handled);
@@ -493,6 +517,9 @@ void AutofillAgent::FillPasswordSuggestion(const base::string16& username,
 
 void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
                                               const base::string16& password) {
+  if (element_.IsNull())
+    return;
+
   bool handled = password_autofill_agent_->PreviewSuggestion(
       element_, blink::WebString::FromUTF16(username),
       blink::WebString::FromUTF16(password));
