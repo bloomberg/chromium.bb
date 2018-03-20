@@ -166,12 +166,6 @@ if _libkms != 'false'
 endif
 
 config.set10('UDEV', with_udev)
-if with_udev
-  dep_udev = dependency('udev')
-else
-  dep_udev = []
-endif
-
 # Among others FreeBSD does not have a separate dl library.
 if not cc.has_function('dlsym')
   dep_dl = cc.find_library('dl', required : with_nouveau)
@@ -294,7 +288,7 @@ libdrm = shared_library(
    config_file,
   ],
   c_args : warn_c_args,
-  dependencies : [dep_udev, dep_valgrind, dep_rt, dep_m],
+  dependencies : [dep_valgrind, dep_rt, dep_m],
   include_directories : inc_drm,
   version : '2.4.0',
   install : true,
