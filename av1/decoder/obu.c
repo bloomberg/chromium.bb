@@ -466,12 +466,15 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           break;
         }
 #if CONFIG_OBU_FRAME
-        if (obu_header.type == OBU_FRAME_HEADER) break;
+        if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
+#if !CONFIG_TRAILING_BITS
+        av1_init_read_bit_buffer(pbi, &rb, data + obu_payload_offset, data_end);
+#endif                             // !CONFIG_TRAILING_BITS
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
-#else
+#else                              // CONFIG_OBU_FRAME
         break;
-#endif  // CONFIG_OBU_FRAME
+#endif                             // CONFIG_OBU_FRAME
       case OBU_TILE_GROUP:
         if (!frame_header_received) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
