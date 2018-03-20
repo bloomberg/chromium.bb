@@ -67,11 +67,7 @@ void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
 
 void JniClient::DisconnectFromHost() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  if (session_) {
-    session_->Disconnect();
-    runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
-                                                session_.release());
-  }
+  session_.reset();
   if (secret_fetcher_) {
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
                                                 secret_fetcher_.release());

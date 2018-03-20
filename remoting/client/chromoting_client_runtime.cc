@@ -63,7 +63,11 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
   url_requester_ =
       new URLRequestContextGetter(network_task_runner_, file_task_runner_);
 
-  CreateLogWriter();
+  log_writer_ = std::make_unique<TelemetryLogWriter>(
+      kTelemetryBaseUrl,
+      std::make_unique<ChromiumUrlRequestFactory>(url_requester()),
+      base::BindRepeating(&ChromotingClientRuntime::RequestAuthTokenForLogger,
+                          base::Unretained(this)));
 }
 
 ChromotingClientRuntime::~ChromotingClientRuntime() {
@@ -86,32 +90,12 @@ void ChromotingClientRuntime::SetDelegate(
   delegate_ = delegate;
 }
 
-void ChromotingClientRuntime::CreateLogWriter() {
-  if (!network_task_runner()->BelongsToCurrentThread()) {
-    network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingClientRuntime::CreateLogWriter,
-                              base::Unretained(this)));
-    return;
-  }
-  log_writer_.reset(new TelemetryLogWriter(
-      kTelemetryBaseUrl,
-      std::make_unique<ChromiumUrlRequestFactory>(url_requester())));
-  log_writer_->SetAuthClosure(
-      base::Bind(&ChromotingClientRuntime::RequestAuthTokenForLogger,
-                 base::Unretained(this)));
-}
-
 void ChromotingClientRuntime::RequestAuthTokenForLogger() {
   if (delegate_) {
     delegate_->RequestAuthTokenForLogger();
   } else {
     DLOG(ERROR) << "ClientRuntime Delegate is null.";
   }
-}
-
-ChromotingEventLogWriter* ChromotingClientRuntime::log_writer() {
-  DCHECK(network_task_runner()->BelongsToCurrentThread());
-  return log_writer_.get();
 }
 
 OAuthTokenGetter* ChromotingClientRuntime::token_getter() {

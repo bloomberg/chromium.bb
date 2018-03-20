@@ -34,7 +34,9 @@ struct ClientTelemetryLogger::HostInfo {
 ClientTelemetryLogger::ClientTelemetryLogger(
     ChromotingEventLogWriter* log_writer,
     ChromotingEvent::Mode mode)
-    : mode_(mode), log_writer_(log_writer) {}
+    : mode_(mode), log_writer_(log_writer), weak_factory_(this) {
+  thread_checker_.DetachFromThread();
+}
 
 ClientTelemetryLogger::~ClientTelemetryLogger() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -88,6 +90,10 @@ void ClientTelemetryLogger::LogStatistics(
 
   ChromotingEvent event = MakeStatsEvent(perf_tracker);
   log_writer_->Log(event);
+}
+
+base::WeakPtr<ClientTelemetryLogger> ClientTelemetryLogger::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void ClientTelemetryLogger::PrintLogStatistics(

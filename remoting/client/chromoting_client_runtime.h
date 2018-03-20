@@ -80,8 +80,7 @@ class ChromotingClientRuntime {
     return url_requester_;
   }
 
-  // Must call and use log_writer on the network thread.
-  ChromotingEventLogWriter* log_writer();
+  ChromotingEventLogWriter* log_writer() { return log_writer_.get(); }
 
   OAuthTokenGetter* token_getter();
 
@@ -89,7 +88,6 @@ class ChromotingClientRuntime {
   ChromotingClientRuntime();
   virtual ~ChromotingClientRuntime();
 
-  void CreateLogWriter();
   void RequestAuthTokenForLogger();
 
   // Chromium code's connection to the app message loop. Once created the

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/base/chromoting_event.h"
 #include "remoting/base/chromoting_event_log_writer.h"
 #include "remoting/base/url_request.h"
@@ -21,7 +22,7 @@
 namespace remoting {
 
 // ClientTelemetryLogger sends client log entries to the telemetry server.
-// The logger should be run entirely on one single thread.
+// The logger should be used entirely on one single thread after it is created.
 // TODO(yuweih): Implement new features that session_logger.js provides.
 class ClientTelemetryLogger {
  public:
@@ -51,6 +52,8 @@ class ClientTelemetryLogger {
   const ChromotingEvent& current_session_state_event() const {
     return current_session_state_event_;
   }
+
+  base::WeakPtr<ClientTelemetryLogger> GetWeakPtr();
 
   static ChromotingEvent::SessionState TranslateState(
       protocol::ConnectionToHost::State state);
@@ -104,6 +107,7 @@ class ClientTelemetryLogger {
 
   base::ThreadChecker thread_checker_;
 
+  base::WeakPtrFactory<ClientTelemetryLogger> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ClientTelemetryLogger);
 };
 

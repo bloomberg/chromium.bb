@@ -17,23 +17,22 @@ const int kMaxSendAttempts = 5;
 
 TelemetryLogWriter::TelemetryLogWriter(
     const std::string& telemetry_base_url,
-    std::unique_ptr<UrlRequestFactory> request_factory)
+    std::unique_ptr<UrlRequestFactory> request_factory,
+    const base::RepeatingClosure& auth_closure)
     : telemetry_base_url_(telemetry_base_url),
-      request_factory_(std::move(request_factory)) {}
+      request_factory_(std::move(request_factory)),
+      auth_closure_(auth_closure) {
+  thread_checker_.DetachFromThread();
+}
 
 TelemetryLogWriter::~TelemetryLogWriter() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void TelemetryLogWriter::SetAuthToken(const std::string& auth_token) {
+void TelemetryLogWriter::SetAuthToken(const std::string& access_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auth_token_ = auth_token;
+  access_token_ = access_token;
   SendPendingEntries();
-}
-
-void TelemetryLogWriter::SetAuthClosure(const base::Closure& closure) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  auth_closure_ = closure;
 }
 
 void TelemetryLogWriter::Log(const ChromotingEvent& entry) {
@@ -96,15 +95,15 @@ void TelemetryLogWriter::PostJsonToServer(const std::string& json) {
         })");
   request_ = request_factory_->CreateUrlRequest(
       UrlRequest::Type::POST, telemetry_base_url_, traffic_annotation);
-  if (!auth_token_.empty()) {
-    request_->AddHeader("Authorization:Bearer " + auth_token_);
+  if (!access_token_.empty()) {
+    request_->AddHeader("Authorization:Bearer " + access_token_);
   }
 
   VLOG(1) << "Posting log to telemetry server: " << json;
 
   request_->SetPostData("application/json", json);
-  request_->Start(
-      base::Bind(&TelemetryLogWriter::OnSendLogResult, base::Unretained(this)));
+  request_->Start(base::BindRepeating(&TelemetryLogWriter::OnSendLogResult,
+                                      base::Unretained(this)));
 }
 
 void TelemetryLogWriter::OnSendLogResult(

@@ -82,7 +82,10 @@ class TelemetryLogWriterTest : public testing::Test {
  public:
   TelemetryLogWriterTest()
       : request_factory_(new FakeUrlRequestFactory()),
-        log_writer_("", base::WrapUnique(request_factory_)) {
+        log_writer_("",
+                    base::WrapUnique(request_factory_),
+                    base::BindRepeating(&TelemetryLogWriterTest::SetAuth,
+                                        base::Unretained(this))) {
     success_result_.success = true;
     success_result_.status = 200;
     success_result_.response_body = "{}";
@@ -98,11 +101,6 @@ class TelemetryLogWriterTest : public testing::Test {
     entry.SetInteger("id", id_);
     id_++;
     log_writer_.Log(entry);
-  }
-
-  void SetAuthClosure() {
-    log_writer_.SetAuthClosure(
-        base::Bind(&TelemetryLogWriterTest::SetAuth, base::Unretained(this)));
   }
 
   UrlRequest::Result success_result_;
@@ -204,8 +202,6 @@ TEST_F(TelemetryLogWriterTest, PostThreeLogsFailedAndResendWithOnePending) {
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedCallClosureAndRetry) {
-  SetAuthClosure();
-
   auto respond1 = request_factory_->AddExpectedRequest(
       "{\"event\":[{\"id\":0}]}", unauth_result_);
   LogFakeEvent();
@@ -216,19 +212,6 @@ TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedCallClosureAndRetry) {
   respond2.Run();
 
   EXPECT_EQ(1, set_auth_count_);
-}
-
-TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedAndJustRetry) {
-  auto respond1 = request_factory_->AddExpectedRequest(
-      "{\"event\":[{\"id\":0}]}", unauth_result_);
-  LogFakeEvent();
-
-  auto respond2 = request_factory_->AddExpectedRequest(
-      "{\"event\":[{\"id\":0}]}", success_result_);
-  respond1.Run();
-  respond2.Run();
-
-  EXPECT_EQ(0, set_auth_count_);
 }
 
 }  // namespace remoting
