@@ -103,19 +103,28 @@ void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
   DCHECK(IsParentContextThread());
   was_script_evaluated_ = true;
 
+  Vector<QueuedTask> tasks;
+  queued_early_tasks_.swap(tasks);
+
+  // The worker thread can already be terminated.
+  if (!GetWorkerThread()) {
+    DCHECK(AskedToTerminate());
+    return;
+  }
+
   // Post all queued tasks to the worker.
-  for (auto& queued_task : queued_early_tasks_) {
-    WTF::CrossThreadClosure task = CrossThreadBind(
-        &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
-        CrossThreadUnretained(&WorkerObjectProxy()),
-        WTF::Passed(std::move(queued_task.message)),
-        WTF::Passed(std::move(queued_task.channels)),
-        CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
+  // TODO(nhiroki): Consider whether to post the queued tasks to the worker when
+  // |success| is false.
+  for (auto& task : tasks) {
     PostCrossThreadTask(
         *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
-        std::move(task));
+        CrossThreadBind(
+            &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
+            CrossThreadUnretained(&WorkerObjectProxy()),
+            WTF::Passed(std::move(task.message)),
+            WTF::Passed(std::move(task.channels)),
+            CrossThreadUnretained(GetWorkerThread()), task.stack_id));
   }
-  queued_early_tasks_.clear();
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
