@@ -79,7 +79,7 @@ void MediaControlDownloadButtonElement::DefaultEventHandler(Event* event) {
         (event->PlatformTimeStamp() - TimeTicks()).InSecondsF());
     request.SetInputPerfMetricReportPolicy(
         InputToLoadPerfMetricReportPolicy::kReportLink);
-    request.SetSuggestedFilename(String());
+    request.SetSuggestedFilename(MediaElement().title());
     request.SetRequestContext(WebURLRequest::kRequestContextDownload);
     request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
     GetDocument().GetFrame()->Client()->DownloadURL(request);

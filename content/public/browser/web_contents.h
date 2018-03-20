@@ -611,9 +611,11 @@ class WebContents : public PageNavigator,
   // provided, is used to make a request to the URL rather than using cache.
   // Format of |headers| is a new line separated list of key value pairs:
   // "<key1>: <value1>\r\n<key2>: <value2>".
-  virtual void SaveFrameWithHeaders(const GURL& url,
-                                    const Referrer& referrer,
-                                    const std::string& headers) = 0;
+  virtual void SaveFrameWithHeaders(
+      const GURL& url,
+      const Referrer& referrer,
+      const std::string& headers,
+      const base::string16& suggested_filename) = 0;
 
   // Generate an MHTML representation of the current page in the given file.
   // If |use_binary_encoding| is specified, a Content-Transfer-Encoding value of

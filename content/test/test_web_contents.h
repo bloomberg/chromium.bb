@@ -85,7 +85,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       NavigationHandle* navigation_handle,
       scoped_refptr<net::HttpResponseHeaders> response_headers) override;
   void SetOpener(WebContents* opener) override;
-  const std::string& GetSaveFrameHeaders() override;
+  const std::string& GetSaveFrameHeaders() const override;
+  const base::string16& GetSuggestedFileName() const override;
   bool HasPendingDownloadImage(const GURL& url) override;
   bool TestDidDownloadImage(
       const GURL& url,
@@ -170,7 +171,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void ShowCreatedFullscreenWidget(int process_id, int route_id) override;
   void SaveFrameWithHeaders(const GURL& url,
                             const Referrer& referrer,
-                            const std::string& headers) override;
+                            const std::string& headers,
+                            const base::string16& suggested_filename) override;
 
   RenderViewHostDelegateView* delegate_view_override_;
 
@@ -179,6 +181,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   int expect_set_history_offset_and_length_history_offset_;
   int expect_set_history_offset_and_length_history_length_;
   std::string save_frame_headers_;
+  base::string16 suggested_filename_;
   // Map keyed by image URL. Values are <id, callback> pairs.
   std::map<GURL, std::list<std::pair<int, ImageDownloadCallback>>>
       pending_image_downloads_;

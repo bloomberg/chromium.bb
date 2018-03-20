@@ -2417,7 +2417,8 @@ void RenderViewContextMenu::ExecSaveAs() {
       headers = data_reduction_proxy::chrome_proxy_pass_through_header();
     }
 
-    source_web_contents_->SaveFrameWithHeaders(url, referrer, headers);
+    source_web_contents_->SaveFrameWithHeaders(url, referrer, headers,
+                                               params_.suggested_filename);
   }
 }
 

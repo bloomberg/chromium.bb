@@ -161,8 +161,12 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   rfh->SendNavigateWithParams(&params, was_within_same_document);
 }
 
-const std::string& TestWebContents::GetSaveFrameHeaders() {
+const std::string& TestWebContents::GetSaveFrameHeaders() const {
   return save_frame_headers_;
+}
+
+const base::string16& TestWebContents::GetSuggestedFileName() const {
+  return suggested_filename_;
 }
 
 bool TestWebContents::HasPendingDownloadImage(const GURL& url) {
@@ -376,10 +380,13 @@ void TestWebContents::ShowCreatedFullscreenWidget(int process_id,
                                                   int route_id) {
 }
 
-void TestWebContents::SaveFrameWithHeaders(const GURL& url,
-                                           const Referrer& referrer,
-                                           const std::string& headers) {
+void TestWebContents::SaveFrameWithHeaders(
+    const GURL& url,
+    const Referrer& referrer,
+    const std::string& headers,
+    const base::string16& suggested_filename) {
   save_frame_headers_ = headers;
+  suggested_filename_ = suggested_filename;
 }
 
 void TestWebContents::SetMainFrameMimeType(const std::string& mime_type) {

@@ -344,6 +344,7 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
     } else if (IsHTMLAudioElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
+    data.suggested_filename = media_element->title();
     if (media_element->error())
       data.media_flags |= WebContextMenuData::kMediaInError;
     if (media_element->paused())

@@ -3334,12 +3334,14 @@ bool WebContentsImpl::SavePage(const base::FilePath& main_file,
 
 void WebContentsImpl::SaveFrame(const GURL& url,
                                 const Referrer& referrer) {
-  SaveFrameWithHeaders(url, referrer, std::string());
+  SaveFrameWithHeaders(url, referrer, std::string(), base::string16());
 }
 
-void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
-                                           const Referrer& referrer,
-                                           const std::string& headers) {
+void WebContentsImpl::SaveFrameWithHeaders(
+    const GURL& url,
+    const Referrer& referrer,
+    const std::string& headers,
+    const base::string16& suggested_filename) {
   if (!GetLastCommittedURL().is_valid())
     return;
   if (delegate_ && delegate_->SaveFrame(url, referrer))
@@ -3401,6 +3403,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
       params->add_request_header(key_value.first, key_value.second);
     }
   }
+  params->set_suggested_name(suggested_filename);
   params->set_download_source(download::DownloadSource::WEB_CONTENTS_API);
   BrowserContext::GetDownloadManager(GetBrowserContext())
       ->DownloadUrl(std::move(params));
