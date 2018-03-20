@@ -6,12 +6,18 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ui/base/test/ios/ui_image_test_utils.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 TestSigninResourcesProvider::TestSigninResourcesProvider()
-    : default_avatar_([[UIImage alloc] init]) {}
+    : default_avatar_(ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
+          CGSizeMake(32, 32),
+          UIColor.whiteColor)) {
+  // A real UIImage for default_avatar_ is required to be cached/resized.
+}
 
 TestSigninResourcesProvider::~TestSigninResourcesProvider() {}
 

@@ -40,6 +40,7 @@ source_set("test_support") {
     "//base",
     "//google_apis",
     "//ios/public/provider/chrome/browser",
+    "//ui/base:test_support",
   ]
   public_deps = [
     "//testing/gmock",
