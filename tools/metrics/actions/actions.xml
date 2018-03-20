@@ -1381,6 +1381,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.OpenedByExpandButton">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1389,6 +1390,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.OpenedByNTP">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1397,6 +1399,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.OpenedByOmnibox">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1405,6 +1408,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.OpenedByStartup">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>thildebr@chromium.org</owner>
   <description>
     The Chrome Home bottom sheet was automatically opened on startup after a
