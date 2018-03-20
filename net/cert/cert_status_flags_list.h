@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file intentionally does not have header guards, it's included
+// inside a macro to generate enum values. The following line silences a
+// presubmit warning that would otherwise be triggered by this:
+// no-include-guard-because-multiply-included
+
 // This is the list of CertStatus flags and their values.
 //
 // Defines the values using a macro CERT_STATUS_FLAG,
