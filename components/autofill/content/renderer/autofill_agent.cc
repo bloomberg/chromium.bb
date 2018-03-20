@@ -968,6 +968,7 @@ bool AutofillAgent::GetSubmittedForm(FormData* form) {
 
 void AutofillAgent::ResetLastInteractedElements() {
   last_interacted_form_.Reset();
+  last_clicked_form_control_element_for_testing_.Reset();
   formless_elements_user_edited_.clear();
   provisionally_saved_form_.reset();
 }
