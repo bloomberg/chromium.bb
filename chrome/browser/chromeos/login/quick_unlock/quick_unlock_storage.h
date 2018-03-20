@@ -6,19 +6,27 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_
 
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
 
+namespace base {
+class Time;
+}
+
 namespace chromeos {
 
 class QuickUnlockStorageTestApi;
+class QuickUnlockStorageUnitTest;
 
 namespace quick_unlock {
 
+// Helper class for managing state for quick unlock services (pin and
+// fingerprint), and general lock screen management (tokens for extension API
+// authentication used by Settings).
 class QuickUnlockStorage : public KeyedService {
  public:
   explicit QuickUnlockStorage(PrefService* pref_service);
@@ -46,20 +54,38 @@ class QuickUnlockStorage : public KeyedService {
   // attempt. This always returns false if HasStrongAuth returns false.
   bool TryAuthenticatePin(const std::string& pin, Key::KeyType key_type);
 
-  FingerprintStorage* fingerprint_storage();
+  // Creates a new authentication token to be used by the quickSettingsPrivate
+  // API for authenticating requests. Resets the expiration timer and
+  // invalidates any previously issued tokens.
+  std::string CreateAuthToken();
 
-  PinStorage* pin_storage();
+  // Returns true if the current authentication token has expired.
+  bool GetAuthTokenExpired();
+
+  // Checks the token expiration time and returns the current authentication
+  // token if valid, or an empty string if it has expired.
+  std::string GetAuthToken();
+
+  FingerprintStorage* fingerprint_storage() {
+    return fingerprint_storage_.get();
+  }
+  PinStorage* pin_storage() { return pin_storage_.get(); }
+
+  static const int kTokenExpirationSeconds;
 
  private:
   friend class chromeos::QuickUnlockStorageTestApi;
+  friend class chromeos::QuickUnlockStorageUnitTest;
 
   // KeyedService:
   void Shutdown() override;
 
   PrefService* pref_service_;
-  base::Time last_strong_auth_;
+  base::TimeTicks last_strong_auth_;
   std::unique_ptr<FingerprintStorage> fingerprint_storage_;
   std::unique_ptr<PinStorage> pin_storage_;
+  base::UnguessableToken auth_token_;
+  base::TimeTicks auth_token_issue_time_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockStorage);
 };

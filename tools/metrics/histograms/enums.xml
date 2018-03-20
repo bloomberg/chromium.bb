@@ -14811,6 +14811,7 @@ Called by update_net_error_codes.py.-->
   <int value="1225" label="WALLPAPERPRIVATE_CANCELPREVIEWWALLPAPER"/>
   <int value="1226" label="WEBRTCLOGGINGPRIVATE_STARTEVENTLOGGING"/>
   <int value="1227" label="VIRTUALKEYBOARDPRIVATE_SETCONTAINERBEHAVIOR"/>
+  <int value="1228" label="QUICKUNLOCKPRIVATE_GETAUTHTOKEN"/>
 </enum>
 
 <enum name="ExtensionIconState">

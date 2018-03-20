@@ -38,6 +38,15 @@ Polymer({
 
   properties: {
     /**
+     * Reflects property set in password_prompt_dialog.js.
+     * @type {?Object}
+     */
+    setModes: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * The current PIN keyboard value.
      * @private
      */
@@ -294,6 +303,7 @@ Polymer({
         this.$.dialog.close();
     }
 
+    assert(this.setModes);
     this.setModes.call(
         null, [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
         [this.pinKeyboardValue_], onSetModesCompleted.bind(this));

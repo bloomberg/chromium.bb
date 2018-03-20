@@ -35,7 +35,7 @@ const LockStateBehavior = {
 
     /**
      * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
-     * @private
+     * @private {QuickUnlockPrivate}
      */
     quickUnlockPrivate_: {type: Object, value: chrome.quickUnlockPrivate},
   },

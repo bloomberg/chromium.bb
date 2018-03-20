@@ -21,6 +21,42 @@ class ExtendedAuthenticator;
 
 namespace extensions {
 
+class QuickUnlockPrivateGetAuthTokenFunction
+    : public UIThreadExtensionFunction,
+      public chromeos::AuthStatusConsumer {
+ public:
+  using AuthenticatorAllocator =
+      base::Callback<chromeos::ExtendedAuthenticator*(
+          chromeos::AuthStatusConsumer* auth_status_consumer)>;
+
+  QuickUnlockPrivateGetAuthTokenFunction();
+
+  // Use the given |allocator| to create an ExtendedAuthenticator instance. This
+  // lets tests intercept authentication calls.
+  void SetAuthenticatorAllocatorForTesting(
+      const AuthenticatorAllocator& allocator);
+
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.getAuthToken",
+                             QUICKUNLOCKPRIVATE_GETAUTHTOKEN);
+
+ protected:
+  ~QuickUnlockPrivateGetAuthTokenFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  // AuthStatusConsumer overrides.
+  void OnAuthFailure(const chromeos::AuthFailure& error) override;
+  void OnAuthSuccess(const chromeos::UserContext& user_context) override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+  scoped_refptr<chromeos::ExtendedAuthenticator> extended_authenticator_;
+  AuthenticatorAllocator authenticator_allocator_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetAuthTokenFunction);
+};
+
 class QuickUnlockPrivateGetAvailableModesFunction
     : public UIThreadExtensionFunction {
  public:
@@ -93,23 +129,14 @@ class QuickUnlockPrivateGetCredentialRequirementsFunction
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetCredentialRequirementsFunction);
 };
 
-class QuickUnlockPrivateSetModesFunction : public UIThreadExtensionFunction,
-                                           public chromeos::AuthStatusConsumer {
+class QuickUnlockPrivateSetModesFunction : public UIThreadExtensionFunction {
  public:
-  using AuthenticatorAllocator =
-      base::Callback<chromeos::ExtendedAuthenticator*(
-          chromeos::AuthStatusConsumer* auth_status_consumer)>;
   using QuickUnlockMode =
       extensions::api::quick_unlock_private::QuickUnlockMode;
   using ModesChangedEventHandler =
       base::Callback<void(const std::vector<QuickUnlockMode>&)>;
 
   QuickUnlockPrivateSetModesFunction();
-
-  // Use the given |allocator| to create an ExtendedAuthenticator instance. This
-  // lets tests intercept authentication calls.
-  void SetAuthenticatorAllocatorForTesting(
-      const AuthenticatorAllocator& allocator);
 
   // The given event handler will be called whenever a
   // quickUnlockPrivate.onActiveModesChanged event is raised instead of the
@@ -126,20 +153,14 @@ class QuickUnlockPrivateSetModesFunction : public UIThreadExtensionFunction,
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
-  // AuthStatusConsumer overrides.
-  void OnAuthFailure(const chromeos::AuthFailure& error) override;
-  void OnAuthSuccess(const chromeos::UserContext& user_context) override;
-
   void ApplyModeChange();
 
  private:
   void FireEvent(const std::vector<QuickUnlockMode>& modes);
 
   ChromeExtensionFunctionDetails chrome_details_;
-  scoped_refptr<chromeos::ExtendedAuthenticator> extended_authenticator_;
   std::unique_ptr<api::quick_unlock_private::SetModes::Params> params_;
 
-  AuthenticatorAllocator authenticator_allocator_;
   ModesChangedEventHandler modes_changed_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateSetModesFunction);
