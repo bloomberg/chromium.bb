@@ -42,6 +42,7 @@ target(cpp_target_type, "cpp") {
       # This library is distributed as a part of the SDK and as such has to
       # be a static library rather than a source set.
       complete_static_lib = true
+      configs -= [ "//build/config/compiler:thin_archive" ]
     }
   }
 }

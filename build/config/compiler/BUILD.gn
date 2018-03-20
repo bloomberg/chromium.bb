@@ -1503,6 +1503,31 @@ config("no_rtti") {
   }
 }
 
+# thin_archive -----------------------------------------------------------------
+#
+# Enables thin archives on posix.  Regular archives directly include the object
+# fiels used to generate it.  Thin archives merely reference the object files.
+# This makes building them faster since it requires less disk IO, but is in
+# appropriate if you wish to redistribute your static library.
+# This config is added to the global config, so thin archives should already be
+# enabled.  If you want to make a distributable static library, you need to do 2
+# things:
+# 1. Set complete_static_lib so that all dependencies of the library make it
+#    into the library. See `gn help complete_static_lib` for details.
+# 2. Remove the thin_archive config, so that the .a file actually contains all
+#    .o files, instead of just references to .o files in the build directoy
+config("thin_archive") {
+  if (is_posix && !is_nacl) {
+    # TODO(thomasanderson): Remove !is_clang conditional once llvm-ar supports
+    # multiple dashed flags.
+    if (!is_clang) {
+      # TODO(thomasanderson): Introduce -T once :thin_archive is removed from
+      # all third_party repos where appropriate.
+      # arflags = [ "-T" ]
+    }
+  }
+}
+
 # exceptions -------------------------------------------------------------------
 #
 # Allows turning Exceptions on or off.
