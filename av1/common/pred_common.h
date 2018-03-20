@@ -64,11 +64,14 @@ static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
   }
 
   // Pick CDF index based on number of matching/out-of-bounds segment IDs.
-  *cdf_index = 0;
-  if ((prev_ul == prev_u) && (prev_ul == prev_l))
+  if (prev_ul < 0 || prev_u < 0 || prev_l < 0) /* Edge case */
+    *cdf_index = 0;
+  else if ((prev_ul == prev_u) && (prev_ul == prev_l))
     *cdf_index = 2;
   else if ((prev_ul == prev_u) || (prev_ul == prev_l) || (prev_u == prev_l))
     *cdf_index = 1;
+  else
+    *cdf_index = 0;
 
   // If 2 or more are identical returns that as predictor, otherwise prev_l.
   if (prev_u == -1)  // edge case
