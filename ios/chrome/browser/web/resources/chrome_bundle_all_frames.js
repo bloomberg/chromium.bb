@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // The set of scripts to be injected into the web view as early as possible.
-goog.provide('__crWeb.chromeBundle');
+goog.provide('__crWeb.chromeBundleAllFrames');
 
-goog.require('__crWeb.autofill');
-goog.require('__crWeb.fill');
-goog.require('__crWeb.print');
+goog.require('__crWeb.form');

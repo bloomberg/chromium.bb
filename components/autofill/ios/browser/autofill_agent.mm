@@ -726,7 +726,11 @@ void GetFormAndField(autofill::FormData* form,
 
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
+  [jsAutofillManager_ trackFormUpdates];
+  [self scanFormsInPage:webState pageURL:pageURL];
+}
 
+- (void)scanFormsInPage:(web::WebState*)webState pageURL:(const GURL&)pageURL {
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
     AutofillAgent* strongSelf = weakSelf;
@@ -764,6 +768,17 @@ void GetFormAndField(autofill::FormData* form,
   // page is fully loaded.
   [self processPage:webState];
 
+  web::URLVerificationTrustLevel trustLevel;
+  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
+
+  // If the event is a form_changed, then the event concerns the whole page and
+  // not a particular form. The whole page need to be reparsed to find the new
+  // forms.
+  if (params.type.compare("form_changed") == 0) {
+    [self scanFormsInPage:webState pageURL:pageURL];
+    return;
+  }
+
   // Blur not handled; we don't reset the suggestion state because if the
   // keyboard is about to be dismissed there's no point. If not it means the
   // next focus event will update the suggestion state within milliseconds, so
@@ -784,9 +799,6 @@ void GetFormAndField(autofill::FormData* form,
                                         webState:webState];
     }
   };
-
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
 
   // Re-extract the active form and field only. There is no minimum field
   // requirement because key/value suggestions are offered even on short forms.

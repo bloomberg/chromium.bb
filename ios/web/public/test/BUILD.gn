@@ -6,6 +6,10 @@ source_set("test") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
+  public_deps = [
+    "//ios/web/public/test/fakes",
+  ]
+
   deps = [
     "//base",
     "//base/test:test_support",
@@ -13,7 +17,6 @@ source_set("test") {
     "//ios/web:web",
     "//ios/web/interstitials",
     "//ios/web/navigation:core",
-    "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
     "//ios/web/test:test_support",
     "//testing/gtest",

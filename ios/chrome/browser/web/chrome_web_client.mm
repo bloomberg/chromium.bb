@@ -173,10 +173,15 @@ void ChromeWebClient::PostBrowserURLRewriterCreation(
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
 }
 
+NSString* ChromeWebClient::GetDocumentStartScriptForAllFrames(
+    web::BrowserState* browser_state) const {
+  return GetPageScript(@"chrome_bundle_all_frames");
+}
+
 NSString* ChromeWebClient::GetDocumentStartScriptForMainFrame(
     web::BrowserState* browser_state) const {
   NSMutableArray* scripts = [NSMutableArray array];
-  [scripts addObject:GetPageScript(@"chrome_bundle")];
+  [scripts addObject:GetPageScript(@"chrome_bundle_main_frame")];
 
   if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
     [scripts addObject:GetPageScript(@"credential_manager")];

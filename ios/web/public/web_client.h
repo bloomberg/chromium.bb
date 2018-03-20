@@ -120,6 +120,16 @@ class WebClient {
 
   // Gives the embedder a chance to provide the JavaScript to be injected into
   // the web view as early as possible. Result must not be nil.
+  // The script returned will be injected in all frames (main and subframes).
+  //
+  // TODO(crbug.com/703964): Change the return value to NSArray<NSString*> to
+  // improve performance.
+  virtual NSString* GetDocumentStartScriptForAllFrames(
+      BrowserState* browser_state) const;
+
+  // Gives the embedder a chance to provide the JavaScript to be injected into
+  // the web view as early as possible. Result must not be nil.
+  // The script returned will only be injected in the main frame.
   //
   // TODO(crbug.com/703964): Change the return value to NSArray<NSString*> to
   // improve performance.

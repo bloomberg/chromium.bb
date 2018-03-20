@@ -70,6 +70,11 @@ base::RefCountedMemory* WebClient::GetDataResourceBytes(int resource_id) const {
   return nullptr;
 }
 
+NSString* WebClient::GetDocumentStartScriptForAllFrames(
+    BrowserState* browser_state) const {
+  return @"";
+}
+
 NSString* WebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return @"";

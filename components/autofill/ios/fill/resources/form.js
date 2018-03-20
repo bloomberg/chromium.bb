@@ -11,8 +11,6 @@
 
 goog.provide('__crWeb.form');
 
-goog.require('__crWeb.message');
-
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected. String 'form' is used in |__gCrWeb['form']| as it needs to be
@@ -49,6 +47,17 @@ __gCrWeb.form.kNamelessFormIDPrefix = 'gChrome~form~';
  * are included in a form.
  */
 __gCrWeb.form.kNamelessFieldIDPrefix = 'gChrome~field~';
+
+/**
+ * The interval watching for form changes.
+ */
+__gCrWeb.form.formWatcherInterval = null;
+
+/**
+ * The value of the form signature last time formWatcherInterval was
+ * triggerred.
+ */
+__gCrWeb.form.lastFormSignature = {};
 
 /**
  * Based on Element::isFormControlElement() (WebKit)
@@ -281,6 +290,48 @@ var getFullyQualifiedUrl_ = function(originalURL) {
   anchor.href = originalURL;
   return anchor.href;
 };
+
+  /**
+   * Returns a simple signature of the form content of the page. Must be fast
+   * as it is called regularly.
+   */
+  var getFormSignature_ = function() {
+    return {
+      forms: document.forms.length,
+      input: document.getElementsByTagName('input').length
+    };
+  };
+
+  /**
+   * Install a watcher to check the form changes. Delay is the interval between
+   * checks in milliseconds.
+   */
+  __gCrWeb.form['trackFormUpdates'] = function(delay) {
+    if (__gCrWeb.form.formWatcherInterval) {
+      clearInterval(__gCrWeb.form.formWatcherInterval);
+      __gCrWeb.form.formWatcherInterval = null;
+    }
+    if (delay) {
+      __gCrWeb.form.lastFormSignature = getFormSignature_();
+      __gCrWeb.form.formWatcherInterval = setInterval(function() {
+        var signature = getFormSignature_();
+        var old_signature = __gCrWeb.form.lastFormSignature;
+        if (signature.forms != old_signature.forms ||
+            signature.input != old_signature.input) {
+          var msg = {
+            'command': 'form.activity',
+            'formName': '',
+            'fieldName': '',
+            'fieldType': '',
+            'type': 'form_changed',
+            'value': ''
+          };
+          __gCrWeb.form.lastFormSignature = signature;
+          __gCrWeb.message.invokeOnHost(msg);
+        }
+      }, delay);
+    }
+  };
 
 /** Flush the message queue. */
 if (__gCrWeb.message) {

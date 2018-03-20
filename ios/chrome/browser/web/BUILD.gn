@@ -108,12 +108,20 @@ source_set("unit_tests") {
   ]
 }
 
-js_compile_bundle("chrome_bundle") {
-  closure_entry_point = "__crWeb.chromeBundle"
+js_compile_bundle("chrome_bundle_all_frames") {
+  closure_entry_point = "__crWeb.chromeBundleAllFrames"
+  sources = [
+    "//components/autofill/ios/fill/resources/form.js",
+    "resources/chrome_bundle_all_frames.js",
+  ]
+}
+
+js_compile_bundle("chrome_bundle_main_frame") {
+  closure_entry_point = "__crWeb.chromeBundleMainFrame"
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/fill/resources/fill.js",
-    "resources/chrome_bundle.js",
+    "resources/chrome_bundle_main_frame.js",
     "resources/print.js",
   ]
 
@@ -155,7 +163,8 @@ source_set("web_internal") {
     "web_state_printer.h",
   ]
   deps = [
-    ":chrome_bundle",
+    ":chrome_bundle_all_frames",
+    ":chrome_bundle_main_frame",
     "//base",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",

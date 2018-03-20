@@ -38,6 +38,8 @@ class ChromeWebClient : public web::WebClient {
       std::vector<std::string>* additional_schemes) override;
   void PostBrowserURLRewriterCreation(
       web::BrowserURLRewriter* rewriter) override;
+  NSString* GetDocumentStartScriptForAllFrames(
+      web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   void AllowCertificateError(
