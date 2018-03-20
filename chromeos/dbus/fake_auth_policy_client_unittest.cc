@@ -14,6 +14,8 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace em = enterprise_management;
+
 namespace chromeos {
 namespace {
 
@@ -31,11 +33,16 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  protected:
   FakeAuthPolicyClient* authpolicy_client() { return auth_policy_client_ptr_; }
+  FakeSessionManagerClient* session_manager_client() {
+    return session_manager_client_ptr_;
+  }
 
   void SetUp() override {
     ::testing::Test::SetUp();
+    auto session_manager_client = std::make_unique<FakeSessionManagerClient>();
+    session_manager_client_ptr_ = session_manager_client.get();
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::make_unique<FakeSessionManagerClient>());
+        std::move(session_manager_client));
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::make_unique<FakeCryptohomeClient>());
     auto auth_policy_client = std::make_unique<FakeAuthPolicyClient>();
@@ -84,6 +91,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  private:
   FakeAuthPolicyClient* auth_policy_client_ptr_;  // not owned.
+  FakeSessionManagerClient* session_manager_client_ptr_;  // not owned.
   base::MessageLoop loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClientTest);
@@ -285,6 +293,46 @@ TEST_F(FakeAuthPolicyClientTest, NotLockedDeviceCachesPolicy) {
       },
       loop.QuitClosure()));
   loop.Run();
+}
+
+// Tests that RefreshDevicePolicy stores device policy in the session manager.
+TEST_F(FakeAuthPolicyClientTest, RefreshDevicePolicyStoresPolicy) {
+  authpolicy_client()->set_started(true);
+  LockDeviceActiveDirectory();
+
+  {
+    // Call RefreshDevicePolicy.
+    base::RunLoop loop;
+    em::ChromeDeviceSettingsProto policy;
+    policy.mutable_allow_new_users()->set_allow_new_users(true);
+    authpolicy_client()->set_device_policy(policy);
+    authpolicy_client()->RefreshDevicePolicy(base::BindOnce(
+        [](base::OnceClosure closure, authpolicy::ErrorType error) {
+          EXPECT_EQ(authpolicy::ERROR_NONE, error);
+          std::move(closure).Run();
+        },
+        loop.QuitClosure()));
+    loop.Run();
+  }
+
+  {
+    // Retrieve device policy from the session manager.
+    std::string response_blob;
+    EXPECT_EQ(
+        SessionManagerClient::RetrievePolicyResponseType::SUCCESS,
+        session_manager_client()->BlockingRetrieveDevicePolicy(&response_blob));
+    em::PolicyFetchResponse response;
+    EXPECT_TRUE(response.ParseFromString(response_blob));
+    EXPECT_TRUE(response.has_policy_data());
+
+    em::PolicyData policy_data;
+    EXPECT_TRUE(policy_data.ParseFromString(response.policy_data()));
+
+    em::ChromeDeviceSettingsProto policy;
+    EXPECT_TRUE(policy.ParseFromString(policy_data.policy_value()));
+    EXPECT_TRUE(policy.has_allow_new_users());
+    EXPECT_TRUE(policy.allow_new_users().allow_new_users());
+  }
 }
 
 }  // namespace chromeos

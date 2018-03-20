@@ -14,6 +14,8 @@
 
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 class AccountId;
 
@@ -96,6 +98,11 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
     on_get_status_closure_ = std::move(on_get_status_closure);
   }
 
+  void set_device_policy(
+      const enterprise_management::ChromeDeviceSettingsProto& device_policy) {
+    device_policy_ = device_policy;
+  }
+
   void DisableOperationDelayForTesting() {
     dbus_operation_delay_ = disk_operation_delay_ =
         base::TimeDelta::FromSeconds(0);
@@ -123,6 +130,7 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   base::TimeDelta dbus_operation_delay_ = base::TimeDelta::FromSeconds(3);
   base::TimeDelta disk_operation_delay_ =
       base::TimeDelta::FromMilliseconds(100);
+  enterprise_management::ChromeDeviceSettingsProto device_policy_;
 
   base::WeakPtrFactory<FakeAuthPolicyClient> weak_factory_{this};
 
