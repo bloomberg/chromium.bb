@@ -77,6 +77,14 @@ class QuicStreamFactoryPeer;
 // When a connection is idle for 30 seconds it will be closed.
 const int kIdleConnectionTimeoutSeconds = 30;
 
+// The default maximum time QUIC session could be on non-default network before
+// migrate back to default network.
+const int64_t kMaxTimeOnNonDefaultNetworkSecs = 128;
+
+// The default maximum number of migrations to non default network on path
+// degrading per network. Used in chromium only.
+const int64_t kMaxMigrationsToNonDefaultNetworkOnPathDegrading = 5;
+
 enum QuicPlatformNotification {
   NETWORK_CONNECTED,
   NETWORK_MADE_DEFAULT,
