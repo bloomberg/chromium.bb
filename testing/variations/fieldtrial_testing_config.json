@@ -2500,6 +2500,21 @@
             ]
         }
     ],
+    "PasswordManagerSearchSettings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PasswordSearchEnabled",
+                    "enable_features": [
+                        "PasswordSearchMobile"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordProtectionForEnterprise": [
         {
             "platforms": [
