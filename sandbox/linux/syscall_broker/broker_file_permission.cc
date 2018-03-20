@@ -141,12 +141,12 @@ bool BrokerFilePermission::CheckOpen(const char* requested_filename,
     return false;
   }
 
-  // Check if read is allowed
+  // Check if read is allowed.
   if (!allow_read_ && (access_mode == O_RDONLY || access_mode == O_RDWR)) {
     return false;
   }
 
-  // Check if write is allowed
+  // Check if write is allowed.
   if (!allow_write_ && (access_mode == O_WRONLY || access_mode == O_RDWR)) {
     return false;
   }
@@ -165,6 +165,12 @@ bool BrokerFilePermission::CheckOpen(const char* requested_filename,
   // Some flags affect the behavior of the current process. We don't support
   // them and don't allow them for now.
   if (flags & kCurrentProcessOpenFlagsMask) {
+    return false;
+  }
+
+  // The effect of (O_RDONLY | O_TRUNC) is undefined, and in some cases it
+  // actually truncates, so deny.
+  if (access_mode == O_RDONLY && (flags & O_TRUNC) != 0) {
     return false;
   }
 
