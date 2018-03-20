@@ -773,12 +773,34 @@ cvox.CommandStore.CMD_WHITELIST = {
       {announce: true, msgId: 'skip_to_col_beginning', category: 'tables'},
   'goToColLastCell':
       {announce: true, msgId: 'skip_to_col_end', category: 'tables'},
-  // These commands are left out of the options page because they involve
-  // multiple, non-user configurable modifiers.
-  'previousRow': {backward: true, announce: true, skipInput: true},
-  'previousCol': {backward: true, announce: true, skipInput: true},
-  'nextRow': {forward: true, announce: true, skipInput: true},
-  'nextCol': {forward: true, announce: true, skipInput: true},
+  'previousRow': {
+    backward: true,
+    announce: true,
+    skipInput: true,
+    msgId: 'skip_to_prev_row',
+    category: 'tables'
+  },
+  'previousCol': {
+    backward: true,
+    announce: true,
+    skipInput: true,
+    msgId: 'skip_to_prev_col',
+    category: 'tables'
+  },
+  'nextRow': {
+    forward: true,
+    announce: true,
+    skipInput: true,
+    msgId: 'skip_to_next_row',
+    category: 'tables'
+  },
+  'nextCol': {
+    forward: true,
+    announce: true,
+    skipInput: true,
+    msgId: 'skip_to_next_col',
+    category: 'tables'
+  },
 
   // Generic Actions.
   'enterShifter':
