@@ -440,8 +440,8 @@ MediaCodecStatus MediaCodecBridgeImpl::QueueSecureInputBuffer(
       Java_MediaCodecBridge_queueSecureInputBuffer(
           env, j_bridge_, index, 0, j_iv, j_key_id, clear_array, cypher_array,
           num_subsamples, static_cast<int>(encryption_scheme.mode()),
-          static_cast<int>(encryption_scheme.pattern().encrypt_blocks()),
-          static_cast<int>(encryption_scheme.pattern().skip_blocks()),
+          static_cast<int>(encryption_scheme.pattern().crypt_byte_block()),
+          static_cast<int>(encryption_scheme.pattern().skip_byte_block()),
           presentation_time.InMicroseconds()));
 }
 

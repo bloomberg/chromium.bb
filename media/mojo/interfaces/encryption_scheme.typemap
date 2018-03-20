@@ -4,7 +4,10 @@
 
 mojom = "//media/mojo/interfaces/media_types.mojom"
 
-public_headers = [ "//media/base/encryption_scheme.h" ]
+public_headers = [
+  "//media/base/encryption_scheme.h",
+  "//media/base/encryption_pattern.h",
+]
 
 traits_headers = [ "//media/mojo/interfaces/encryption_scheme_struct_traits.h" ]
 
@@ -22,6 +25,6 @@ deps = [
 
 # See media_types.typemap for enum mappings.
 type_mappings = [
-  "media.mojom.Pattern=media::EncryptionScheme::Pattern",
+  "media.mojom.EncryptionPattern=media::EncryptionPattern",
   "media.mojom.EncryptionScheme=media::EncryptionScheme",
 ]

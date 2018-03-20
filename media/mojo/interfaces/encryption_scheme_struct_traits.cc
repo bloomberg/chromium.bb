@@ -7,12 +7,12 @@
 namespace mojo {
 
 // static
-bool StructTraits<media::mojom::PatternDataView,
-                  media::EncryptionScheme::Pattern>::
-    Read(media::mojom::PatternDataView input,
-         media::EncryptionScheme::Pattern* output) {
-  *output = media::EncryptionScheme::Pattern(input.encrypt_blocks(),
-                                             input.skip_blocks());
+bool StructTraits<media::mojom::EncryptionPatternDataView,
+                  media::EncryptionPattern>::
+    Read(media::mojom::EncryptionPatternDataView input,
+         media::EncryptionPattern* output) {
+  *output = media::EncryptionPattern(input.crypt_byte_block(),
+                                     input.skip_byte_block());
   return true;
 }
 
@@ -25,7 +25,7 @@ bool StructTraits<
   if (!input.ReadMode(&mode))
     return false;
 
-  media::EncryptionScheme::Pattern pattern;
+  media::EncryptionPattern pattern;
   if (!input.ReadPattern(&pattern))
     return false;
 

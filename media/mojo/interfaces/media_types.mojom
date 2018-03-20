@@ -65,11 +65,11 @@ enum VideoRotation;
 [Native]
 enum WatchTimeKey;
 
-// This defines a mojo transport format for media::EncryptionScheme::Pattern
-// See media/base/encryption_scheme.h for description.
-struct Pattern {
-  uint32 encrypt_blocks;
-  uint32 skip_blocks;
+// This defines a mojo transport format for media::EncryptionPattern
+// See media/base/encryption_pattern.h for description.
+struct EncryptionPattern {
+  uint32 crypt_byte_block;
+  uint32 skip_byte_block;
 };
 
 // This defines a mojo transport format for media::EncryptionScheme.
@@ -79,7 +79,7 @@ struct EncryptionScheme {
   enum CipherMode;
 
   CipherMode mode;
-  Pattern pattern;
+  EncryptionPattern pattern;
 };
 
 // This defines a mojo transport format for media::VideoColorSpace.

@@ -8,6 +8,8 @@
 #include "build/build_config.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "media/base/channel_layout.h"
+#include "media/base/encryption_pattern.h"
+#include "media/base/encryption_scheme.h"
 
 namespace chromecast {
 namespace media {
@@ -167,15 +169,15 @@ EncryptionScheme::CipherMode ToCipherMode(
 }
 
 EncryptionScheme::Pattern ToPatternSpec(
-    const ::media::EncryptionScheme::Pattern& pattern) {
-  return EncryptionScheme::Pattern(
-      pattern.encrypt_blocks(), pattern.skip_blocks());
+    const ::media::EncryptionPattern& pattern) {
+  return EncryptionScheme::Pattern(pattern.crypt_byte_block(),
+                                   pattern.skip_byte_block());
 }
 
-::media::EncryptionScheme::Pattern ToMediaPatternSpec(
+::media::EncryptionPattern ToMediaPatternSpec(
     const EncryptionScheme::Pattern& pattern) {
-  return ::media::EncryptionScheme::Pattern(
-      pattern.encrypt_blocks, pattern.skip_blocks);
+  return ::media::EncryptionPattern(pattern.encrypt_blocks,
+                                    pattern.skip_blocks);
 }
 
 EncryptionScheme ToEncryptionScheme(

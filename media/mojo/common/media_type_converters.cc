@@ -14,6 +14,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -21,16 +22,16 @@
 namespace mojo {
 
 template <>
-struct TypeConverter<media::mojom::PatternPtr,
-                     media::EncryptionScheme::Pattern> {
-  static media::mojom::PatternPtr Convert(
-      const media::EncryptionScheme::Pattern& input);
+struct TypeConverter<media::mojom::EncryptionPatternPtr,
+                     media::EncryptionPattern> {
+  static media::mojom::EncryptionPatternPtr Convert(
+      const media::EncryptionPattern& input);
 };
 template <>
-struct TypeConverter<media::EncryptionScheme::Pattern,
-                     media::mojom::PatternPtr> {
-  static media::EncryptionScheme::Pattern Convert(
-      const media::mojom::PatternPtr& input);
+struct TypeConverter<media::EncryptionPattern,
+                     media::mojom::EncryptionPatternPtr> {
+  static media::EncryptionPattern Convert(
+      const media::mojom::EncryptionPatternPtr& input);
 };
 
 // static

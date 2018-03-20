@@ -13,6 +13,8 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
+#include "media/base/encryption_pattern.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
@@ -261,7 +263,7 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header,
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   if (use_hls_sample_aes_) {
     scheme = EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
-                              EncryptionScheme::Pattern());
+                              EncryptionPattern());
   }
 #endif
   AudioDecoderConfig audio_decoder_config(

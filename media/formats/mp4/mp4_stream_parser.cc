@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
@@ -46,7 +47,7 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
     return Unencrypted();
   FourCC fourcc = sinf.type.type;
   EncryptionScheme::CipherMode mode = EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-  EncryptionScheme::Pattern pattern;
+  EncryptionPattern pattern;
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   bool uses_pattern_encryption = false;
 #endif
@@ -66,9 +67,8 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   }
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   if (uses_pattern_encryption) {
-    uint8_t crypt = sinf.info.track_encryption.default_crypt_byte_block;
-    uint8_t skip = sinf.info.track_encryption.default_skip_byte_block;
-    pattern = EncryptionScheme::Pattern(crypt, skip);
+    pattern = {sinf.info.track_encryption.default_crypt_byte_block,
+               sinf.info.track_encryption.default_skip_byte_block};
   }
 #endif
   return EncryptionScheme(mode, pattern);
