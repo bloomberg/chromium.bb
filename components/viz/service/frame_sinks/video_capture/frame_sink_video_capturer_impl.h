@@ -194,6 +194,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                          scoped_refptr<media::VideoFrame> frame,
                          const gfx::Rect& content_rect);
 
+  // For ARGB format, ensures that every dimension of |size| is positive. For
+  // I420 format, ensures that every dimension is even and at least 2.
+  gfx::Size AdjustSizeForPixelFormat(const gfx::Size& size);
+
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
 

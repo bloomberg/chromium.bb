@@ -476,7 +476,7 @@ TEST_F(VideoUtilTest, PadToMatchAspectRatio) {
       gfx::Size(40000, 30000), gfx::Size(0, 0)).IsEmpty());
 }
 
-TEST_F(VideoUtilTest, LetterboxYUV) {
+TEST_F(VideoUtilTest, LetterboxVideoFrame) {
   int width = 40;
   int height = 30;
   gfx::Size size(width, height);
@@ -491,7 +491,7 @@ TEST_F(VideoUtilTest, LetterboxYUV) {
                               width - left_margin - right_margin,
                               height - top_margin - bottom_margin);
           FillYUV(frame.get(), 0x1, 0x2, 0x3);
-          LetterboxYUV(frame.get(), view_area);
+          LetterboxVideoFrame(frame.get(), view_area);
           for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
               bool inside = x >= view_area.x() &&

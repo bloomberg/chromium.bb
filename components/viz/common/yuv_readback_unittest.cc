@@ -404,7 +404,7 @@ class YUVReadbackTest : public testing::Test {
 
     const gfx::Rect paste_rect(gfx::Point(xmargin, ymargin),
                                gfx::Size(xsize, ysize));
-    media::LetterboxYUV(output_frame.get(), paste_rect);
+    media::LetterboxVideoFrame(output_frame.get(), paste_rect);
     run_loop.Run();
 
     if (flip) {

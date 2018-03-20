@@ -31,12 +31,12 @@ MEDIA_EXPORT void FillYUVA(VideoFrame* frame,
                            uint8_t v,
                            uint8_t a);
 
-// Creates a border in |frame| such that all pixels outside of
-// |view_area| are black. The size and position of |view_area|
-// must be even to align correctly with the color planes.
-// Only YV12 format video frames are currently supported.
-MEDIA_EXPORT void LetterboxYUV(VideoFrame* frame,
-                               const gfx::Rect& view_area);
+// Creates a border in |frame| such that all pixels outside of |view_area| are
+// black. Only YV12 and ARGB format video frames are currently supported. If
+// format is YV12, the size and position of |view_area| must be even to align
+// correctly with the color planes.
+MEDIA_EXPORT void LetterboxVideoFrame(VideoFrame* frame,
+                                      const gfx::Rect& view_area);
 
 // Rotates |src| plane by |rotation| degree with possible flipping vertically
 // and horizontally.

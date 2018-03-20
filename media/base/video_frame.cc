@@ -602,6 +602,51 @@ size_t VideoFrame::RowBytes(size_t plane, VideoPixelFormat format, int width) {
 }
 
 // static
+int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
+  DCHECK(IsValidPlane(plane, format));
+  switch (format) {
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB32:
+      return 4;
+    case PIXEL_FORMAT_RGB24:
+      return 3;
+    case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P10:
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12:
+      return 2;
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_MT21: {
+      static const int bytes_per_element[] = {1, 2};
+      DCHECK_LT(plane, arraysize(bytes_per_element));
+      return bytes_per_element[plane];
+    }
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_I422:
+    case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_I444:
+      return 1;
+    case PIXEL_FORMAT_MJPEG:
+      return 0;
+    case PIXEL_FORMAT_UNKNOWN:
+      break;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
 size_t VideoFrame::Rows(size_t plane, VideoPixelFormat format, int height) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_height = SampleSize(format, plane).height();
@@ -882,9 +927,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
 
   // TODO(miu): This function should support any pixel format.
   // http://crbug.com/555909
-  if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_Y16) {
-    LOG(DFATAL) << "Only PIXEL_FORMAT_I420 and PIXEL_FORMAT_Y16 formats are"
-                   "supported: "
+  if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_Y16 &&
+      format != PIXEL_FORMAT_ARGB) {
+    LOG(DFATAL) << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, and "
+                   "PIXEL_FORMAT_ARGB formats are supported: "
                 << VideoPixelFormatToString(format);
     return nullptr;
   }
@@ -1127,51 +1173,6 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
   }
   NOTREACHED();
   return gfx::Size();
-}
-
-// static
-int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
-  DCHECK(IsValidPlane(plane, format));
-  switch (format) {
-    case PIXEL_FORMAT_ARGB:
-    case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB32:
-      return 4;
-    case PIXEL_FORMAT_RGB24:
-      return 3;
-    case PIXEL_FORMAT_Y16:
-    case PIXEL_FORMAT_UYVY:
-    case PIXEL_FORMAT_YUY2:
-    case PIXEL_FORMAT_YUV420P9:
-    case PIXEL_FORMAT_YUV422P9:
-    case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV420P10:
-    case PIXEL_FORMAT_YUV422P10:
-    case PIXEL_FORMAT_YUV444P10:
-    case PIXEL_FORMAT_YUV420P12:
-    case PIXEL_FORMAT_YUV422P12:
-    case PIXEL_FORMAT_YUV444P12:
-      return 2;
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_MT21: {
-      static const int bytes_per_element[] = {1, 2};
-      DCHECK_LT(plane, arraysize(bytes_per_element));
-      return bytes_per_element[plane];
-    }
-    case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_I422:
-    case PIXEL_FORMAT_I420A:
-    case PIXEL_FORMAT_I444:
-      return 1;
-    case PIXEL_FORMAT_MJPEG:
-      return 0;
-    case PIXEL_FORMAT_UNKNOWN:
-      break;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 // static

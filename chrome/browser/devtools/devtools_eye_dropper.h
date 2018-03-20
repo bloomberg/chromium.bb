@@ -55,6 +55,13 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
   void OnTargetLost(const viz::FrameSinkId& frame_sink_id) override;
   void OnStopped() override;
 
+  // This object keeps the shared memory that backs |frame_| mapped.
+  mojo::ScopedSharedBufferMapping shared_memory_mapping_;
+
+  // This object prevents FrameSinkVideoCapturer from recycling the shared
+  // memory that backs |frame_|.
+  viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr shared_memory_releaser_;
+
   EyeDropperCallback callback_;
   SkBitmap frame_;
   int last_cursor_x_;
