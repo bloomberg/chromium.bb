@@ -7373,7 +7373,6 @@ static int64_t handle_inter_mode(
 
   mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
 
-  memset(tmp_buf_, 0, sizeof(tmp_buf_));
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_buf = CONVERT_TO_BYTEPTR(tmp_buf_);
   else
