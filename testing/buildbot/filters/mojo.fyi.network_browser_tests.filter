@@ -55,10 +55,6 @@
 -WebViewTests/WebViewTest.ClearData/1
 -WebViewTests/WebViewTest.ClearDataCache/0
 -WebViewTests/WebViewTest.ClearDataCache/1
--WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/0
--WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
--WebViewTests/WebViewTest.StoragePersistence/0
--WebViewTests/WebViewTest.StoragePersistence/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
 # Need support for blocking cookies via content settings:
@@ -310,12 +306,6 @@
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
 
-# Session cookies tests are flaky.
-# https://crbug.com/795417
--ContinueWhereILeftOffTest.SessionCookies
--RestartTest.SessionCookies
-
-
 # Requires a replacement for ChromeNetworkDelegate.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
 
@@ -326,12 +316,6 @@
 
 # Fails because data: URL is not downloaded but navigated to.
 -BrowserActionApiTest.BrowserActionPopupDownload
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65822%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FNoSessionRestoreTest.PRE_CookiesClearedOnExit%2F0
--NoSessionRestoreTest.CookiesClearedOnExit
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65817%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FRestartTest.CookiesClearedOnExit%2F0
--RestartTest.CookiesClearedOnExit
 
 # Flaky in linux tests.
 # https://crbug.com/820995

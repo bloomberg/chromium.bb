@@ -2483,6 +2483,16 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   return simple_loader->NetError();
 }
 
+void EnsureCookiesFlushed(BrowserContext* browser_context) {
+  BrowserContext::ForEachStoragePartition(
+      browser_context, base::BindRepeating([](StoragePartition* partition) {
+        base::RunLoop run_loop;
+        partition->GetCookieManagerForBrowserProcess()->FlushCookieStore(
+            run_loop.QuitClosure());
+        run_loop.Run();
+      }));
+}
+
 bool HasValidProcessForProcessGroup(const std::string& process_group_name) {
   return ServiceManagerContext::HasValidProcessForProcessGroup(
       process_group_name);

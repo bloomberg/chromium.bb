@@ -1109,6 +1109,10 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      int process_id = 0,
                      int render_frame_id = 0);
 
+// Ensures that all StoragePartitions for the given BrowserContext have their
+// cookies flushed to disk.
+void EnsureCookiesFlushed(BrowserContext* browser_context);
+
 // Returns true if there is a valid process for |process_group_name|. Must be
 // called on the IO thread.
 bool HasValidProcessForProcessGroup(const std::string& process_group_name);
