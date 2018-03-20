@@ -2965,7 +2965,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
+#if CONFIG_CDF_UPDATE_MODE
+  const int might_bwd_adapt =
+      !(cm->large_scale_tile) && !(cm->disable_cdf_update);
+#else
   const int might_bwd_adapt = !(cm->large_scale_tile);
+#endif
   if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
                                     ? REFRESH_FRAME_CONTEXT_DISABLED

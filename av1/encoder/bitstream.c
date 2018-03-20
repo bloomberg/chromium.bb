@@ -3184,7 +3184,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->seq_params.frame_id_numbers_present_flag)
     cm->refresh_mask = get_refresh_mask(cpi);
 
+#if CONFIG_CDF_UPDATE_MODE
+  const int might_bwd_adapt =
+      !(cm->large_scale_tile) && !(cm->disable_cdf_update);
+#else
   const int might_bwd_adapt = !(cm->large_scale_tile);
+#endif
   if (might_bwd_adapt) {
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
