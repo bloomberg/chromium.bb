@@ -74,6 +74,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -130,10 +131,12 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK};
 
-// Checks flag for HID-detection screen show.
+// Checks if device is in tablet mode, and that HID-detection screen is not
+// disabled by flag.
 bool CanShowHIDDetectionScreen() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableHIDDetectionOnOOBE);
+  return !TabletModeClient::Get()->tablet_mode_enabled() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
 bool IsResumableScreen(chromeos::OobeScreen screen) {
