@@ -49,12 +49,10 @@ int GetSimilarLanguageGroupCode(const std::string& language) {
 }
 
 // Well-known languages which often have wrong server configuration of
-// Content-Language: en. The list must be sorted alphabatically so
-// they can be binary searched.
+// Content-Language: en.
 const char* const kWellKnownCodesOnWrongConfiguration[] = {
-    "ar", "da", "de", "el", "es", "fa", "fr",    "hi",
-    "hu", "id", "it", "ja", "ms", "nl", "pl",    "pt",
-    "ro", "ru", "sv", "th", "tr", "vi", "zh-CN", "zh-TW"};
+    "es",    "pt", "ja", "ru", "de", "zh-CN",
+    "zh-TW", "ar", "id", "fr", "it", "th"};
 
 // Applies a series of language code modification in proper order.
 void ApplyLanguageCodeCorrection(std::string* code) {
@@ -328,9 +326,11 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
 }
 
 bool IsServerWrongConfigurationLanguage(const std::string& language_code) {
-  return binary_search(kWellKnownCodesOnWrongConfiguration,
-                       std::end(kWellKnownCodesOnWrongConfiguration),
-                       language_code);
+  for (size_t i = 0; i < arraysize(kWellKnownCodesOnWrongConfiguration); ++i) {
+    if (language_code == kWellKnownCodesOnWrongConfiguration[i])
+      return true;
+  }
+  return false;
 }
 
 bool MaybeServerWrongConfiguration(const std::string& page_language,

@@ -178,10 +178,9 @@ TEST_F(LanguageDetectionUtilTest, AdoptHtmlLang) {
 TEST_F(LanguageDetectionUtilTest, IsServerWrongConfigurationLanguage) {
   // These languages should all be identified as having the wrong server
   // configuration.
-  const char* const wrong_languages[] = {
-      "ar", "da", "de", "el", "es", "fa", "fr",    "hi",
-      "hu", "id", "it", "ja", "ms", "nl", "pl",    "pt",
-      "ro", "ru", "sv", "th", "tr", "vi", "zh-CN", "zh-TW"};
+  const char* const wrong_languages[] = {"es", "pt",    "ja",    "ru",
+                                         "de", "zh-CN", "zh-TW", "ar",
+                                         "id", "fr",    "it",    "th"};
   for (const char* const language : wrong_languages) {
     EXPECT_TRUE(translate::IsServerWrongConfigurationLanguage(language));
   }
