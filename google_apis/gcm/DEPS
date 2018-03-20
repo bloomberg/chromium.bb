@@ -10,4 +10,5 @@ include_rules = [
   "+google",  # For third_party/protobuf/src.
   "+net",
   "+third_party/leveldatabase",
+  "+services/network",
 ]

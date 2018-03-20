@@ -70,7 +70,8 @@ ProxyResolvingClientSocketFactory::~ProxyResolvingClientSocketFactory() {}
 std::unique_ptr<ProxyResolvingClientSocket>
 ProxyResolvingClientSocketFactory::CreateSocket(
     const net::SSLConfig& ssl_config,
-    const GURL& url) {
+    const GURL& url,
+    bool use_tls) {
   // |request_context|'s HttpAuthCache might have updates. For example, a user
   // might have since entered proxy credentials. Clear the http auth of
   // |network_session_| and copy over the data from |request_context|'s auth
@@ -83,7 +84,7 @@ ProxyResolvingClientSocketFactory::CreateSocket(
           ->http_auth_cache();
   network_session_->http_auth_cache()->UpdateAllFrom(*other_auth_cache);
   return std::make_unique<ProxyResolvingClientSocket>(network_session_.get(),
-                                                      ssl_config, url);
+                                                      ssl_config, url, use_tls);
 }
 
 }  // namespace network

@@ -146,6 +146,7 @@ int InitSocketHandleForWebSocketRequest(
     const OnHostResolutionCallback& resolution_callback,
     const CompletionCallback& callback);
 
+// Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
 // ClientSocketHandle with the relevant socket pool. Use this method for
 // a raw socket connection to a host-port pair (that needs to tunnel through
@@ -163,6 +164,7 @@ NET_EXPORT int InitSocketHandleForRawConnect(
     ClientSocketHandle* socket_handle,
     const CompletionCallback& callback);
 
+// Deprecated: Please do not use this outside of //net and //services/network.
 // A helper method that uses the passed in proxy information to initialize a
 // ClientSocketHandle with the relevant socket pool. Use this method for
 // a raw socket connection with TLS negotiation to a host-port pair (that needs
@@ -170,6 +172,8 @@ NET_EXPORT int InitSocketHandleForRawConnect(
 NET_EXPORT int InitSocketHandleForTlsConnect(
     const HostPortPair& host_port_pair,
     HttpNetworkSession* session,
+    int request_load_flags,
+    RequestPriority request_priority,
     const ProxyInfo& proxy_info,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,

@@ -18,10 +18,11 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/socket/client_socket_handle.h"
 #include "url/gurl.h"
+
+namespace network {
+class ProxyResolvingClientSocket;
+}
 
 namespace net {
 class HttpNetworkSession;
@@ -123,12 +124,6 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // handshake. On connection/handshake failure, goes into backoff.
   void ConnectImpl();
 
-  // Proxy resolution and connection functions.
-  void OnProxyResolveDone(int status);
-  void OnProxyConnectDone(int status);
-  int ReconsiderProxyAfterError(int error);
-  void ReportSuccessfulProxyConnection();
-
   // Closes the local socket if one is present, and resets connection handler.
   void CloseSocket();
 
@@ -157,15 +152,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // HTTP Network session. If set, is used for extracting proxy auth
   // credentials. If nullptr, is ignored.
   net::HttpNetworkSession* http_network_session_;
-  // Net log to use in connection attempts.
-  net::NetLogWithSource net_log_;
-  // The current proxy resolution request, if one exists. Owned by the proxy
-  // service.
-  net::ProxyResolutionService::Request* proxy_resolve_request_;
-  // The current proxy info.
-  net::ProxyInfo proxy_info_;
   // The handle to the socket for the current connection, if one exists.
-  net::ClientSocketHandle socket_handle_;
+  std::unique_ptr<network::ProxyResolvingClientSocket> socket_;
   // Current backoff entry.
   std::unique_ptr<net::BackoffEntry> backoff_entry_;
   // Backoff entry from previous connection attempt. Updated on each login

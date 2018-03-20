@@ -190,7 +190,8 @@ void XmppSignalStrategy::Core::Connect() {
       net::SSLConfig(),
       GURL("https://" +
            net::HostPortPair(xmpp_server_config_.host, xmpp_server_config_.port)
-               .ToString()));
+               .ToString()),
+      false /*use_tls*/);
 
   int result = socket_->Connect(base::Bind(
       &Core::OnSocketConnected, base::Unretained(this)));
