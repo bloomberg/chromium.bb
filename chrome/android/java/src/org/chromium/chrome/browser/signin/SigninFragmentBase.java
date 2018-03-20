@@ -11,9 +11,11 @@ import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 
 /**
  * This fragment implements sign-in screen with account picker and descriptions of signin-related
@@ -28,6 +30,7 @@ public abstract class SigninFragmentBase extends Fragment {
     private @SigninAccessPoint int mSigninAccessPoint;
 
     private SigninView mView;
+    private ConsentTextTracker mConsentTextTracker;
     private @StringRes int mCancelButtonTextId = R.string.cancel;
 
     /**
@@ -106,9 +109,15 @@ public abstract class SigninFragmentBase extends Fragment {
             onSigninRefused();
         });
 
-        // TODO(https://crbug.com/814728): Set texts for UI elements
+        updateConsentText();
 
         return mView;
+    }
+
+    private void updateConsentText() {
+        mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);
+        mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
+        mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
     }
 
     private void showAcceptButton() {
@@ -120,5 +129,14 @@ public abstract class SigninFragmentBase extends Fragment {
     private void setButtonsEnabled(boolean enabled) {
         mView.getAcceptButton().setEnabled(enabled);
         mView.getRefuseButton().setEnabled(enabled);
+    }
+
+    /**
+     * Records the Sync consent.
+     * @param confirmationView The view that the user clicked when consenting.
+     */
+    private void recordConsent(TextView confirmationView) {
+        mConsentTextTracker.recordConsent(
+                ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
     }
 }

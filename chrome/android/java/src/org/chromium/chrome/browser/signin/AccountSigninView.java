@@ -10,14 +10,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -27,7 +25,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.consent_auditor.ConsentAuditorBridge;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -46,11 +43,8 @@ import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -106,37 +100,6 @@ public class AccountSigninView extends FrameLayout {
          */
         FragmentManager getFragmentManager();
     }
-
-    /**
-     * Stores metadata about the text associated with a given TextView in order to extract and
-     * validate the Sync consent text.
-     */
-    private static class TextViewMetadata {
-        private final String mString;
-        private final @StringRes int mId;
-
-        /**
-         * @param Text The text which was programatically assigned to the associated TextView.
-         * @param id The ID of the string resource assigned to the associated TextView that
-         *         will be used for consent recording, or 0 if this string should not be recorded
-         *         as a part of the consent.
-         */
-        public TextViewMetadata(String text, @StringRes int id) {
-            mString = text;
-            mId = id;
-        }
-
-        public String getString() {
-            return mString;
-        }
-
-        public int getId() {
-            return mId;
-        }
-    }
-
-    /** A CharSequence -> CharSequence transformation. */
-    private interface TextTransformation { public CharSequence transform(CharSequence input); }
 
     private static final String TAG = "AccountSigninView";
 
@@ -202,8 +165,7 @@ public class AccountSigninView extends FrameLayout {
     private TextView mSigninPersonalizeServiceDescription;
     private TextView mSigninSettingsControl;
     private ConfirmSyncDataStateMachine mConfirmSyncDataStateMachine;
-
-    private final Map<TextView, TextViewMetadata> mTextViewToMetadataMap = new HashMap<>();
+    private ConsentTextTracker mConsentTextTracker;
 
     public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -211,6 +173,7 @@ public class AccountSigninView extends FrameLayout {
         mProfileDataCacheObserver = (String accountId) -> updateProfileData();
         mProfileDataCache = new ProfileDataCache(context,
                 context.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
+        mConsentTextTracker = new ConsentTextTracker(context.getResources());
     }
 
     /**
@@ -357,17 +320,19 @@ public class AccountSigninView extends FrameLayout {
 
     private void updateConsentText() {
         // Static strings.
-        setText(mSigninSyncTitle, R.string.sync_confirmation_chrome_sync_title);
-        setText(mSigninSyncDescription, R.string.sync_confirmation_chrome_sync_message);
-        setText(mSigninPersonalizeServiceTitle,
+        mConsentTextTracker.setText(mSigninSyncTitle, R.string.sync_confirmation_chrome_sync_title);
+        mConsentTextTracker.setText(
+                mSigninSyncDescription, R.string.sync_confirmation_chrome_sync_message);
+        mConsentTextTracker.setText(mSigninPersonalizeServiceTitle,
                 R.string.sync_confirmation_personalize_services_title);
-        setText(mSigninPersonalizeServiceDescription,
+        mConsentTextTracker.setText(mSigninPersonalizeServiceDescription,
                 mIsChildAccount ? R.string.sync_confirmation_personalize_services_body_child_account
                                 : R.string.sync_confirmation_personalize_services_body);
-        setText(mSigninSettingsControl, R.string.signin_signed_in_settings_description);
-        setText(mNegativeButton, mCancelButtonTextId);
-        setText(mPositiveButton, R.string.choose_account_sign_in);
-        setText(mMoreButton, R.string.more);
+        mConsentTextTracker.setText(
+                mSigninSettingsControl, R.string.signin_signed_in_settings_description);
+        mConsentTextTracker.setText(mNegativeButton, mCancelButtonTextId);
+        mConsentTextTracker.setText(mPositiveButton, R.string.choose_account_sign_in);
+        mConsentTextTracker.setText(mMoreButton, R.string.more);
 
         // The clickable "Settings" link.
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
@@ -381,10 +346,11 @@ public class AccountSigninView extends FrameLayout {
                 recordConsent((TextView) widget);
             }
         };
-        setText(mSigninSettingsControl, getSettingsControlDescription(mIsChildAccount), input -> {
-            return SpanApplier.applySpans(input.toString(),
-                    new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
-        });
+        mConsentTextTracker.setText(
+                mSigninSettingsControl, getSettingsControlDescription(mIsChildAccount), input -> {
+                    return SpanApplier.applySpans(input.toString(),
+                            new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
+                });
     }
 
     @Override
@@ -630,9 +596,9 @@ public class AccountSigninView extends FrameLayout {
         String name = null;
         if (mIsChildAccount) name = profileData.getGivenName();
         if (name == null) name = profileData.getFullNameOrEmail();
-        setTextNonRecordable(
+        mConsentTextTracker.setTextNonRecordable(
                 mSigninAccountName, getResources().getString(R.string.signin_hi_name, name));
-        setTextNonRecordable(mSigninAccountEmail, mSelectedAccountName);
+        mConsentTextTracker.setTextNonRecordable(mSigninAccountEmail, mSelectedAccountName);
     }
 
     private void showSigninPage() {
@@ -730,7 +696,7 @@ public class AccountSigninView extends FrameLayout {
     private void setUpCancelButton() {
         setNegativeButtonVisible(true);
 
-        setText(mNegativeButton, mCancelButtonTextId);
+        mConsentTextTracker.setText(mNegativeButton, mCancelButtonTextId);
         mNegativeButton.setOnClickListener(view -> {
             setButtonsEnabled(false);
             mListener.onAccountSelectionCanceled();
@@ -739,10 +705,10 @@ public class AccountSigninView extends FrameLayout {
 
     private void setUpSigninButton(boolean hasAccounts) {
         if (hasAccounts) {
-            setText(mPositiveButton, R.string.continue_sign_in);
+            mConsentTextTracker.setText(mPositiveButton, R.string.continue_sign_in);
             mPositiveButton.setOnClickListener(view -> showConfirmationPageForSelectedAccount());
         } else {
-            setText(mPositiveButton, R.string.choose_account_sign_in);
+            mConsentTextTracker.setText(mPositiveButton, R.string.choose_account_sign_in);
             mPositiveButton.setOnClickListener(view -> {
                 if (hasGmsError()) return;
 
@@ -759,7 +725,7 @@ public class AccountSigninView extends FrameLayout {
             return;
         }
         setNegativeButtonVisible(true);
-        setText(mNegativeButton, R.string.undo);
+        mConsentTextTracker.setText(mNegativeButton, R.string.undo);
         mNegativeButton.setOnClickListener(view -> {
             RecordUserAction.record("Signin_Undo_Signin");
             onSigninConfirmationCancel();
@@ -776,7 +742,7 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void setUpConfirmButton() {
-        setText(mPositiveButton, R.string.signin_accept);
+        mConsentTextTracker.setText(mPositiveButton, R.string.signin_accept);
         mPositiveButton.setOnClickListener(view -> {
             mListener.onAccountSelected(mSelectedAccountName, mIsDefaultAccountSelected, false);
             RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
@@ -827,109 +793,11 @@ public class AccountSigninView extends FrameLayout {
     }
 
     /**
-     * Applies a |transformation| on the string resource with given |id|, assigns the resulting
-     * text to |view|, and caches the string resource |id| which will later be needed for consent
-     * recording. Note that TextView instances used at the Sync consent screen MUST have their text
-     * assigned using this method or {#link setTextNonRecordable}, which is verified
-     * in {#link recordConsent()}.
-     * @param view The TextView to which the text should be assigned.
-     * @param id The id of the string resource with the text.
-     * @param transformation The transformation to be applied on the text. Can be null to indicate
-     *         no transformation (i.e. identity).
-     */
-    private void setText(
-            TextView view, @StringRes int id, @Nullable TextTransformation transformation) {
-        CharSequence text = getResources().getText(id);
-        if (transformation != null) text = transformation.transform(text);
-        view.setText(text);
-        mTextViewToMetadataMap.put(view, new TextViewMetadata(text.toString(), id));
-    }
-
-    /**
-     * Like {@link #setText(TextView, @StringRes int, TextTransformation)}, but with
-     * no transformation applied on the assigned text.
-     * @see #setText(TextView, @StringRes int, TextTransformation)
-     * @param view The TextView to which the text should be assigned.
-     * @param id The id of the string resource with the text.
-     */
-    private void setText(TextView view, @StringRes int id) {
-        setText(view, id, null /* no text transformation */);
-    }
-
-    /**
-     * Assigns a |text| to the given |view| and remembers that this text should be out of scope
-     * for consent recording.
-     * @see #setText(TextView, @StringRes int, TextTransformation)
-     * @param view The TextView to which the text should be assigned.
-     * @param text The text to be assigned.
-     */
-    private void setTextNonRecordable(TextView view, CharSequence text) {
-        view.setText(text);
-        mTextViewToMetadataMap.put(
-                view, new TextViewMetadata(text.toString(), 0 /* no resource id */));
-    }
-
-    /**
-     * Retrieves the string resource id from a given TextView while verifying that it corresponds
-     * to the text of that TextView. This can be only done if the text was previously set by
-     * {#link setText()} or {#link setTextNonRecordable()}.
-     * @param view The TextView whose string resource id should be retrieved.
-     * @return The string resource id of the |view|'s text. Can be 0 if this |view|'s text shouldn't
-     *         be part of the consent record (Note: 0 is not a valid resource id).
-     */
-    private @StringRes int getConsentStringResource(TextView view) {
-        TextViewMetadata metadata = mTextViewToMetadataMap.get(view);
-
-        // Ensure that setText() was used to assign this text.
-        assert metadata
-                != null : "The text '" + view.getText().toString() + "' was not assigned "
-                          + "by setText() or setTextNonRecordable().";
-
-        // Ensure that the text hasn't changed since the assignment.
-        assert view.getText().toString().equals(metadata.getString())
-            : "The text '"
-                + view.getText().toString()
-                + "' has been modified after it was assigned by setText() "
-                + "or setTextNonRecordable().";
-        return metadata.getId();
-    }
-
-    /**
-     * @param view The root View where to start scanning.
-     * @param outViews The output list to which |view| and all its transitive
-     *         children, if visible, will be appended.
-     */
-    private void getAllVisibleViews(View view, ArrayList<View> outViews) {
-        if (view.getVisibility() != View.VISIBLE) return;
-        outViews.add(view);
-        if (!(view instanceof ViewGroup)) return;
-        ViewGroup group = (ViewGroup) view;
-        for (int i = 0; i < group.getChildCount(); ++i) {
-            getAllVisibleViews(group.getChildAt(i), outViews);
-        }
-    }
-
-    /**
      * Records the Sync consent.
      * @param confirmationView The view that the user clicked when consenting.
      */
     private void recordConsent(TextView confirmationView) {
-        int consentConfirmation = getConsentStringResource(confirmationView);
-
-        ArrayList<Integer> consentDescription = new ArrayList<>();
-        ArrayList<View> visibleViews = new ArrayList<>();
-        getAllVisibleViews(findViewById(R.id.signin_confirmation_view), visibleViews);
-        getAllVisibleViews(findViewById(R.id.button_bar), visibleViews);
-
-        for (View view : visibleViews) {
-            if (!(view instanceof TextView)) continue; // This element doesn't hold any text.
-            @StringRes
-            int id = getConsentStringResource((TextView) view);
-            if (id == 0) continue; // This text is not relevant for consent recording.
-            consentDescription.add(id);
-        }
-
-        ConsentAuditorBridge.getInstance().recordConsent(
-                ConsentAuditorFeature.CHROME_SYNC, consentDescription, consentConfirmation);
+        mConsentTextTracker.recordConsent(ConsentAuditorFeature.CHROME_SYNC, confirmationView,
+                findViewById(R.id.signin_confirmation_view), findViewById(R.id.button_bar));
     }
 }
