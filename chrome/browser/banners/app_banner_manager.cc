@@ -191,6 +191,10 @@ void AppBannerManager::OnInstall(bool is_native,
       mojo::MakeRequest(&installation_service));
   DCHECK(installation_service);
   installation_service->OnInstall();
+
+  // We've triggered an installation, so reset bindings to ensure that any
+  // existing beforeinstallprompt events cannot trigger add to home screen.
+  ResetBindings();
 }
 
 void AppBannerManager::SendBannerAccepted() {
