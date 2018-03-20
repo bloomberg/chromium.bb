@@ -40380,6 +40380,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Sync account switcher"/>
 </enum>
 
+<enum name="SigninTokenStateTransition">
+  <int value="0" label="None to Invalid"/>
+  <int value="1" label="None to Regular"/>
+  <int value="2" label="Invalid to Regular"/>
+  <int value="3" label="Regular to Invalid"/>
+  <int value="4" label="Regular to Regular"/>
+  <int value="5" label="Invalid to None"/>
+  <int value="6" label="Regular to None"/>
+  <int value="7" label="Load Regular"/>
+  <int value="8" label="Load Invalid"/>
+</enum>
+
 <enum name="SigninTokenTableReadTokenFromDBResult">
   <int value="0" label="Success"/>
   <int value="1" label="Decrypt failed"/>

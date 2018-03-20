@@ -31,6 +31,27 @@ namespace {
 const char kAccountIdPrefix[] = "AccountId-";
 const size_t kAccountIdPrefixLength = 10;
 
+// Used to records token state transitions in histograms.
+// Do not change existing values, new values can only be added at the end.
+enum class TokenStateTransition {
+  // Update events.
+  kNoneToInvalid = 0,
+  kNoneToRegular,
+  kInvalidToRegular,
+  kRegularToInvalid,
+  kRegularToRegular,
+
+  // Revocation events.
+  kInvalidToNone,
+  kRegularToNone,
+
+  // Load events.
+  kLoadRegular,
+  kLoadInvalid,
+
+  kCount
+};
+
 // Enum for the Signin.LoadTokenFromDB histogram.
 // Do not modify, or add or delete other than directly before
 // NUM_LOAD_TOKEN_FROM_DB_STATUS.
@@ -45,6 +66,57 @@ enum class LoadTokenFromDBStatus {
 
   NUM_LOAD_TOKEN_FROM_DB_STATUS
 };
+
+// Adds a sample to the TokenStateTransition histogram. Encapsuled in a function
+// to reduce executable size, because histogram macros may generate a lot of
+// code.
+void RecordTokenStateTransition(TokenStateTransition transition) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.TokenStateTransition", transition,
+                            TokenStateTransition::kCount);
+}
+
+// Record metrics when a token was updated.
+void RecordTokenChanged(const std::string& existing_token,
+                        const std::string& new_token) {
+  DCHECK_NE(existing_token, new_token);
+  DCHECK(!new_token.empty());
+  TokenStateTransition transition = TokenStateTransition::kCount;
+  if (existing_token.empty()) {
+    transition =
+        (new_token ==
+         MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+            ? TokenStateTransition::kNoneToInvalid
+            : TokenStateTransition::kNoneToRegular;
+  } else if (existing_token ==
+             MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken) {
+    transition = TokenStateTransition::kInvalidToRegular;
+  } else {
+    // Existing token is a regular token.
+    transition =
+        (new_token ==
+         MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+            ? TokenStateTransition::kRegularToInvalid
+            : transition = TokenStateTransition::kRegularToRegular;
+  }
+  DCHECK_NE(TokenStateTransition::kCount, transition);
+  RecordTokenStateTransition(transition);
+}
+
+// Record metrics when a token was loaded.
+void RecordTokenLoaded(const std::string& token) {
+  RecordTokenStateTransition(
+      (token == MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+          ? TokenStateTransition::kLoadInvalid
+          : TokenStateTransition::kLoadRegular);
+}
+
+// Record metrics when a token was revoked.
+void RecordTokenRevoked(const std::string& token) {
+  RecordTokenStateTransition(
+      (token == MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken)
+          ? TokenStateTransition::kInvalidToNone
+          : TokenStateTransition::kRegularToNone);
+}
 
 std::string ApplyAccountIdPrefix(const std::string& account_id) {
   return kAccountIdPrefix + account_id;
@@ -554,9 +626,11 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             LoadTokenFromDBStatus::NUM_LOAD_TOKEN_FROM_DB_STATUS);
 
         if (load_account) {
+          RecordTokenLoaded(refresh_token);
           UpdateCredentialsInMemory(account_id, refresh_token);
           FireRefreshTokenAvailable(account_id);
         } else {
+          RecordTokenRevoked(refresh_token);
           RevokeCredentialsOnServer(refresh_token);
           ClearPersistedCredentials(account_id);
           FireRefreshTokenRevoked(account_id);
@@ -585,8 +659,10 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
   ValidateAccountId(account_id);
   signin_metrics::LogSigninAddAccount();
 
-  if (GetRefreshToken(account_id) != refresh_token) {
+  const std::string& existing_token = GetRefreshToken(account_id);
+  if (existing_token != refresh_token) {
     ScopedBatchChange batch(this);
+    RecordTokenChanged(existing_token, refresh_token);
     UpdateCredentialsInMemory(account_id, refresh_token);
     PersistCredentials(account_id, refresh_token);
     FireRefreshTokenAvailable(account_id);
@@ -663,7 +739,9 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
   if (refresh_tokens_.count(account_id) > 0) {
     VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
     ScopedBatchChange batch(this);
-    RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
+    const std::string& token = refresh_tokens_[account_id]->refresh_token();
+    RecordTokenRevoked(token);
+    RevokeCredentialsOnServer(token);
     refresh_tokens_.erase(account_id);
     ClearPersistedCredentials(account_id);
     FireRefreshTokenRevoked(account_id);
