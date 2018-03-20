@@ -131,7 +131,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // When the user is in the Most Visited field trial, we ask the TopSites
   // service for the most visited URLs. It then calls back to this function to
   // return those |urls|.
-  void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& urls);
+  void OnMostVisitedUrlsAvailable(size_t request_num,
+                                  const history::MostVisitedURLList& urls);
 
   // When the user is in the contextual omnibox suggestions field trial, we ask
   // the ContextualSuggestionsService for a fetcher to retrieve recommendations.
@@ -162,6 +163,9 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // The result type that is currently being processed by provider.
   // When the provider is not running, the result type is set to NONE.
   ResultType result_type_running_;
+
+  // For reconciling asynchronous requests for most visited URLs.
+  size_t most_visited_request_num_;
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;
