@@ -246,7 +246,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
     Browser* browser) {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
-    return CreateSyncConfirmationDelegate(signin_view_controller, browser);
+    return CreateSyncConfirmationDelegateCocoa(signin_view_controller, browser);
   }
 #endif
   return new SigninViewControllerDelegateViews(
