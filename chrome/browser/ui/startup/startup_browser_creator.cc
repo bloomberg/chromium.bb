@@ -960,7 +960,7 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
   if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
     std::string profile_id =
         NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
-            command_line.GetSwitchValueASCII(switches::kNotificationLaunchId));
+            command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
     if (!profile_id.empty()) {
       return user_data_dir.Append(
           base::FilePath(base::UTF8ToUTF16(profile_id)));

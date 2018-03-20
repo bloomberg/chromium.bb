@@ -16,6 +16,7 @@ class NotificationLaunchId {
   NotificationLaunchId();
   NotificationLaunchId(const NotificationLaunchId& other);
 
+  // |notification_id| and |profile_id| must be UTF8 strings.
   NotificationLaunchId(NotificationHandler::Type notification_type,
                        const std::string& notification_id,
                        const std::string& profile_id,
@@ -48,40 +49,61 @@ class NotificationLaunchId {
     DCHECK(is_valid());
     return notification_type_;
   }
+
   const std::string& notification_id() const {
     DCHECK(is_valid());
     return notification_id_;
   }
+
   const std::string& profile_id() const {
     DCHECK(is_valid());
     return profile_id_;
   }
+
   bool incognito() const {
     DCHECK(is_valid());
     return incognito_;
   }
+
   const GURL& origin_url() const {
     DCHECK(is_valid());
     return origin_url_;
   }
+
   int button_index() const {
     DCHECK(is_valid());
     return button_index_;
   }
+
   bool is_for_context_menu() const {
     DCHECK(is_valid());
     return is_for_context_menu_;
   }
 
  private:
+  // The notification type this launch ID is associated with.
   NotificationHandler::Type notification_type_;
+
+  // The notification id this launch ID is associated with. The string is UTF8.
   std::string notification_id_;
+
+  // The profile id this launch ID is associated with. The string is UTF8.
   std::string profile_id_;
+
+  // A flat indicating if the notification associated with this launch ID is in
+  // incognito mode or not.
   bool incognito_ = false;
+
+  // The original URL this launch ID is associated with.
   GURL origin_url_;
+
+  // The button index this launch ID is associated with.
   int button_index_ = -1;
+
+  // A flag indicating if this launch ID is targeting for context menu or not.
   bool is_for_context_menu_ = false;
 
+  // A flag indicating if this launch ID is valid.
   bool is_valid_ = false;
 };
 
