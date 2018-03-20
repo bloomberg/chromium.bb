@@ -194,12 +194,14 @@ const char* TaskTypeToString(TaskType task_type) {
 }
 
 const char* OptionalTaskDescriptionToString(
-    base::Optional<RendererSchedulerImpl::TaskDescriptionForTracing> opt_desc) {
-  if (!opt_desc)
+    base::Optional<RendererSchedulerImpl::TaskDescriptionForTracing> desc) {
+  if (!desc)
     return nullptr;
-  if (opt_desc->task_type != TaskType::kDeprecatedNone)
-    return TaskTypeToString(opt_desc->task_type);
-  return MainThreadTaskQueue::NameForQueueType(opt_desc->queue_type);
+  if (desc->task_type != TaskType::kDeprecatedNone)
+    return TaskTypeToString(desc->task_type);
+  if (!desc->queue_type)
+    return "detached_tq";
+  return MainThreadTaskQueue::NameForQueueType(desc->queue_type.value());
 }
 
 bool IsUnconditionalHighPriorityInputEnabled() {
@@ -2457,7 +2459,10 @@ void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
   seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start, queue);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
-      static_cast<TaskType>(task.task_type()), queue->queue_type()};
+      static_cast<TaskType>(task.task_type()),
+      queue
+          ? base::Optional<MainThreadTaskQueue::QueueType>(queue->queue_type())
+          : base::nullopt};
 }
 
 void RendererSchedulerImpl::OnTaskCompleted(
@@ -2471,7 +2476,8 @@ void RendererSchedulerImpl::OnTaskCompleted(
   seqlock_queueing_time_estimator_.data.OnTopLevelTaskCompleted(end);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 
-  task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
+  if (queue)
+    task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
 
   // TODO(altimin): Per-page metrics should also be considered.
   main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end,
@@ -2595,6 +2601,10 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
 }
 
 void RendererSchedulerImpl::OnTraceLogDisabled() {}
+
+base::WeakPtr<RendererSchedulerImpl> RendererSchedulerImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
 
 // static
 const char* RendererSchedulerImpl::UseCaseToString(UseCase use_case) {

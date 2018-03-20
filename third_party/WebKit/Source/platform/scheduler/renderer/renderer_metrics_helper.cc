@@ -185,7 +185,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
   MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time,
                                          thread_time);
 
-  MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
+  MainThreadTaskQueue::QueueType queue_type =
+      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kDetached;
   base::TimeDelta duration = end_time - start_time;
 
   // Discard anomalously long idle periods.
@@ -346,7 +347,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
                                                               duration);
   }
 
-  FrameStatus frame_status = GetFrameStatus(queue->GetFrameScheduler());
+  FrameStatus frame_status =
+      GetFrameStatus(queue ? queue->GetFrameScheduler() : nullptr);
   per_frame_status_duration_reporter_.RecordTask(frame_status, duration);
   UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME, frame_status,
                             FrameStatus::kCount);
