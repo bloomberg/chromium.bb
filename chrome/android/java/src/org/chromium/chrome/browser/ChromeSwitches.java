@@ -183,6 +183,12 @@ public abstract class ChromeSwitches {
      */
     public static final String DONT_CRASH_ON_VIEW_MAIN_INTENTS = "dont-crash-on-view-main-intents";
 
+    /**
+     * Disables digital asset link verification for the given website.
+     */
+    public static final String DISABLE_DIGITAL_ASSET_LINK_VERIFICATION =
+            "disable-digital-asset-link-verification-for-url";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
