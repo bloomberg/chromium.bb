@@ -115,8 +115,7 @@ namespace notifications {
     // Current progress ranges from 0 to 100.
     long? progress;
 
-    // Whether to show UI indicating that the app will visibly respond to
-    // clicks on the body of a notification.
+    [deprecated="This UI hint is ignored as of Chrome 67"]
     boolean? isClickable;
 
     // Indicates that the notification should remain visible on screen until the

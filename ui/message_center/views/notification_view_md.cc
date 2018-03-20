@@ -44,7 +44,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/native_cursor.h"
-#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -535,44 +534,6 @@ class InlineSettingsRadioButton : public views::RadioButton {
 // NotificationViewMD
 // ////////////////////////////////////////////////////////////
 
-views::View* NotificationViewMD::TargetForRect(views::View* root,
-                                               const gfx::Rect& rect) {
-  CHECK_EQ(root, this);
-
-  // TODO(tetsui): Modify this function to support rect-based event
-  // targeting. Using the center point of |rect| preserves this function's
-  // expected behavior for the time being.
-  gfx::Point point = rect.CenterPoint();
-
-  // Want to return this for underlying views, otherwise GetCursor is not
-  // called. But buttons are exceptions, they'll have their own event handlings.
-  std::vector<views::View*> buttons;
-  if (header_row_->expand_button())
-    buttons.push_back(header_row_->expand_button());
-  buttons.push_back(header_row_);
-
-  if (action_buttons_row_->visible()) {
-    buttons.insert(buttons.end(), action_buttons_.begin(),
-                   action_buttons_.end());
-  }
-  if (inline_reply_->visible())
-    buttons.push_back(inline_reply_);
-  if (settings_row_) {
-    buttons.push_back(block_all_button_);
-    buttons.push_back(dont_block_button_);
-    buttons.push_back(settings_done_button_);
-  }
-
-  for (size_t i = 0; i < buttons.size(); ++i) {
-    gfx::Point point_in_child = point;
-    ConvertPointToTarget(this, buttons[i], &point_in_child);
-    if (buttons[i]->HitTestPoint(point_in_child))
-      return buttons[i]->GetEventHandlerForPoint(point_in_child);
-  }
-
-  return root;
-}
-
 void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateContextTitleView(notification);
   CreateOrUpdateTitleView(notification);
@@ -593,8 +554,7 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
 
 NotificationViewMD::NotificationViewMD(const Notification& notification)
     : MessageView(notification),
-      ink_drop_container_(new views::InkDropContainerView()),
-      clickable_(notification.clickable()) {
+      ink_drop_container_(new views::InkDropContainerView()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
@@ -659,8 +619,6 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   CreateOrUpdateViews(notification);
   UpdateControlButtonsVisibilityWithNotification(notification);
 
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   set_notify_enter_exit_on_child(true);
 
   click_activator_ = std::make_unique<ClickActivator>(this);
@@ -721,27 +679,6 @@ void NotificationViewMD::ScrollRectToVisible(const gfx::Rect& rect) {
   // Notification want to show the whole notification when a part of it (like
   // a button) gets focused.
   views::View::ScrollRectToVisible(GetLocalBounds());
-}
-
-gfx::NativeCursor NotificationViewMD::GetCursor(const ui::MouseEvent& event) {
-  // Do not change the cursor on a notification that isn't clickable.
-  if (!clickable_)
-    return views::View::GetCursor(event);
-
-  // Do not change the cursor on the actions row.
-  if (expanded_) {
-    DCHECK(actions_row_);
-    gfx::Point point_in_child = event.location();
-    ConvertPointToTarget(this, actions_row_, &point_in_child);
-    if (actions_row_->HitTestPoint(point_in_child))
-      return views::View::GetCursor(event);
-  }
-
-  // Do not change the cursor when inline settings is shown.
-  if (settings_row_ && settings_row_->visible())
-    return views::View::GetCursor(event);
-
-  return views::GetNativeHandCursor();
 }
 
 bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {

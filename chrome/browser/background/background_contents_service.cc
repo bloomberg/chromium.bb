@@ -163,7 +163,6 @@ void NotificationImageReady(const std::string extension_name,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierId),
       {}, delegate);
-  notification.set_clickable(true);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, notification);

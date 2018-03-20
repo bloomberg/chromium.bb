@@ -194,11 +194,7 @@ DownloadItemNotification::DownloadItemNotification(download::DownloadItem* item)
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_factory_.GetWeakPtr()));
-
   notification_->set_progress(0);
-  // Dangerous notifications don't have a click handler.
-  notification_->set_clickable(!item_->IsDangerous());
-
   Update();
 }
 

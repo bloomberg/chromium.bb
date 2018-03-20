@@ -58,7 +58,6 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_factory_.GetWeakPtr()));
-  notification_->set_clickable(true);
   UpdateNotification();
 }
 

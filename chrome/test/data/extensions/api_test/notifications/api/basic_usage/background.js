@@ -186,7 +186,6 @@ function testBaseFormat() {
       priority: 1,
       eventTime: 123457896.12389,
       expandedMessage: "This is a longer expanded message.",
-      isClickable: true
     };
 
     for (var i = 0; i < toDelete.length; i++) {
@@ -250,7 +249,6 @@ function testListItem() {
     priority: 1,
     eventTime: 123457896.12389,
     items: [item, item, item, item, item],
-    isClickable: true
   };
   create("id", options).then(succeed, fail);
 };

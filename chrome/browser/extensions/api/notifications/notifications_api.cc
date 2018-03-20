@@ -358,9 +358,6 @@ bool NotificationsApiFunction::CreateNotification(
     }
   }
 
-  if (options->is_clickable.get())
-    optional_fields.clickable = *options->is_clickable;
-
   optional_fields.settings_button_handler =
       base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
           ? message_center::SettingsButtonHandler::INLINE
@@ -520,10 +517,6 @@ bool NotificationsApiFunction::UpdateNotification(
     }
     notification->set_items(items);
   }
-
-  // Then override if it's already set.
-  if (options->is_clickable.get())
-    notification->set_clickable(*options->is_clickable);
 
   // It's safe to follow the regular path for adding a new notification as it's
   // already been verified that there is a notification that can be updated.

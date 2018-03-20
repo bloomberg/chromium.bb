@@ -145,9 +145,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
   // depending on visual assistance systems.
   bool should_make_spoken_feedback_for_popup_updates = true;
 
-  // Whether it should be possible for the user to click on the notification.
-  bool clickable = false;
-
 #if defined(OS_CHROMEOS)
   // Flag if the notification is pinned. If true, the notification is pinned
   // and the user can't remove it.
@@ -390,9 +387,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   void set_never_timeout(bool never_timeout) {
     optional_fields_.never_timeout = never_timeout;
   }
-
-  bool clickable() const { return optional_fields_.clickable; }
-  void set_clickable(bool clickable) { optional_fields_.clickable = clickable; }
 
   bool pinned() const {
 #if defined(OS_CHROMEOS)

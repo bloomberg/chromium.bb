@@ -185,7 +185,6 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       RichNotificationData(),
       new HandleNotificationClickDelegate(click_callback), gfx::kNoneIcon,
       SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->set_clickable(true);
   notification->SetSystemPriority();
   return notification;
 }
