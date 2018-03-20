@@ -39,86 +39,92 @@
 #include "core/paint/PaintInfo.h"
 
 namespace blink {
-
 #if DCHECK_IS_ON()
-LineBoxList::~LineBoxList() {
-  DCHECK(!first_line_box_);
-  DCHECK(!last_line_box_);
+template <typename InlineBoxType>
+InlineBoxList<InlineBoxType>::~InlineBoxList() {
+  DCHECK(!first_);
+  DCHECK(!last_);
 }
 #endif
 
-void LineBoxList::AppendLineBox(InlineFlowBox* box) {
-  if (!first_line_box_) {
-    first_line_box_ = last_line_box_ = box;
+template <typename InlineBoxType>
+void InlineBoxList<InlineBoxType>::AppendLineBox(InlineBoxType* box) {
+  if (!first_) {
+    first_ = last_ = box;
   } else {
-    last_line_box_->SetNextLineBox(box);
-    box->SetPreviousLineBox(last_line_box_);
-    last_line_box_ = box;
+    last_->SetNextForSameLayoutObject(box);
+    box->SetPreviousForSameLayoutObject(last_);
+    last_ = box;
   }
 }
 
 void LineBoxList::DeleteLineBoxTree() {
-  InlineFlowBox* line = first_line_box_;
+  InlineFlowBox* line = first_;
   InlineFlowBox* next_line;
   while (line) {
-    next_line = line->NextLineBox();
+    next_line = line->NextForSameLayoutObject();
     line->DeleteLine();
     line = next_line;
   }
-  first_line_box_ = last_line_box_ = nullptr;
+  first_ = last_ = nullptr;
 }
 
-void LineBoxList::ExtractLineBox(InlineFlowBox* box) {
-  last_line_box_ = box->PrevLineBox();
-  if (box == first_line_box_)
-    first_line_box_ = nullptr;
-  if (box->PrevLineBox())
-    box->PrevLineBox()->SetNextLineBox(nullptr);
-  box->SetPreviousLineBox(nullptr);
-  for (InlineFlowBox* curr = box; curr; curr = curr->NextLineBox())
+template <typename InlineBoxType>
+void InlineBoxList<InlineBoxType>::ExtractLineBox(InlineBoxType* box) {
+  last_ = box->PrevForSameLayoutObject();
+  if (box == first_)
+    first_ = nullptr;
+  if (box->PrevForSameLayoutObject())
+    box->PrevForSameLayoutObject()->SetNextForSameLayoutObject(nullptr);
+  box->SetPreviousForSameLayoutObject(nullptr);
+  for (InlineBoxType* curr = box; curr; curr = curr->NextForSameLayoutObject())
     curr->SetExtracted();
 }
 
-void LineBoxList::AttachLineBox(InlineFlowBox* box) {
-  if (last_line_box_) {
-    last_line_box_->SetNextLineBox(box);
-    box->SetPreviousLineBox(last_line_box_);
+template <typename InlineBoxType>
+void InlineBoxList<InlineBoxType>::AttachLineBox(InlineBoxType* box) {
+  if (last_) {
+    last_->SetNextForSameLayoutObject(box);
+    box->SetPreviousForSameLayoutObject(last_);
   } else {
-    first_line_box_ = box;
+    first_ = box;
   }
-  InlineFlowBox* last = box;
-  for (InlineFlowBox* curr = box; curr; curr = curr->NextLineBox()) {
+  InlineBoxType* last = box;
+  for (InlineBoxType* curr = box; curr;
+       curr = curr->NextForSameLayoutObject()) {
     curr->SetExtracted(false);
     last = curr;
   }
-  last_line_box_ = last;
+  last_ = last;
 }
 
-void LineBoxList::RemoveLineBox(InlineFlowBox* box) {
-  if (box == first_line_box_)
-    first_line_box_ = box->NextLineBox();
-  if (box == last_line_box_)
-    last_line_box_ = box->PrevLineBox();
-  if (box->NextLineBox())
-    box->NextLineBox()->SetPreviousLineBox(box->PrevLineBox());
-  if (box->PrevLineBox())
-    box->PrevLineBox()->SetNextLineBox(box->NextLineBox());
+template <typename InlineBoxType>
+void InlineBoxList<InlineBoxType>::RemoveLineBox(InlineBoxType* box) {
+  if (box == first_)
+    first_ = box->NextForSameLayoutObject();
+  if (box == last_)
+    last_ = box->PrevForSameLayoutObject();
+  if (InlineBoxType* next = box->NextForSameLayoutObject())
+    next->SetPreviousForSameLayoutObject(box->PrevForSameLayoutObject());
+  if (InlineBoxType* prev = box->PrevForSameLayoutObject())
+    prev->SetNextForSameLayoutObject(box->NextForSameLayoutObject());
 }
 
-void LineBoxList::DeleteLineBoxes() {
-  if (first_line_box_) {
-    InlineFlowBox* next;
-    for (InlineFlowBox* curr = first_line_box_; curr; curr = next) {
-      next = curr->NextLineBox();
+template <typename InlineBoxType>
+void InlineBoxList<InlineBoxType>::DeleteLineBoxes() {
+  if (first_) {
+    InlineBoxType* next;
+    for (InlineBoxType* curr = first_; curr; curr = next) {
+      next = curr->NextForSameLayoutObject();
       curr->Destroy();
     }
-    first_line_box_ = nullptr;
-    last_line_box_ = nullptr;
+    first_ = nullptr;
+    last_ = nullptr;
   }
 }
 
 void LineBoxList::DirtyLineBoxes() {
-  for (InlineFlowBox* curr = FirstLineBox(); curr; curr = curr->NextLineBox())
+  for (InlineFlowBox* curr : *this)
     curr->DirtyLineBoxes();
 }
 
@@ -157,12 +163,12 @@ bool LineBoxList::AnyLineIntersectsRect(LineLayoutBoxModel layout_object,
   // FIXME: This check is flawed in the following extremely obscure way:
   // if some line in the middle has a huge overflow, it might actually extend
   // below the last line.
-  RootInlineBox& first_root_box = FirstLineBox()->Root();
-  RootInlineBox& last_root_box = LastLineBox()->Root();
+  RootInlineBox& first_root_box = First()->Root();
+  RootInlineBox& last_root_box = Last()->Root();
   LayoutUnit first_line_top =
-      FirstLineBox()->LogicalTopVisualOverflow(first_root_box.LineTop());
+      First()->LogicalTopVisualOverflow(first_root_box.LineTop());
   LayoutUnit last_line_bottom =
-      LastLineBox()->LogicalBottomVisualOverflow(last_root_box.LineBottom());
+      Last()->LogicalBottomVisualOverflow(last_root_box.LineBottom());
 
   return RangeIntersectsRect(layout_object, first_line_top, last_line_bottom,
                              cull_rect, offset);
@@ -195,14 +201,14 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
 
   // If we have no lines then we have no work to do.
-  if (!FirstLineBox())
+  if (!First())
     return false;
 
   const LayoutPoint& point = location_in_container.Point();
   IntRect hit_search_bounding_box = location_in_container.EnclosingIntRect();
 
   CullRect cull_rect(
-      FirstLineBox()->IsHorizontal()
+      First()->IsHorizontal()
           ? IntRect(point.X().ToInt(), hit_search_bounding_box.Y(), 1,
                     hit_search_bounding_box.Height())
           : IntRect(hit_search_bounding_box.X(), point.Y().ToInt(),
@@ -214,7 +220,7 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
   // See if our root lines contain the point. If so, then we hit test them
   // further. Note that boxes can easily overlap, so we can't make any
   // assumptions based off positions of our first line box or our last line box.
-  for (InlineFlowBox* curr = LastLineBox(); curr; curr = curr->PrevLineBox()) {
+  for (InlineFlowBox* curr : InReverseOrder()) {
     RootInlineBox& root = curr->Root();
     if (RangeIntersectsRect(
             layout_object, curr->LogicalTopVisualOverflow(root.LineTop()),
@@ -255,7 +261,7 @@ void LineBoxList::DirtyLinesFromChangedChild(LineLayoutItem container,
 
   InlineBox* first_box = inline_container
                              ? inline_container.FirstLineBoxIncludingCulling()
-                             : FirstLineBox();
+                             : First();
 
   // If we have no first line box, then just bail early.
   if (!first_box) {
@@ -352,5 +358,8 @@ void LineBoxList::DirtyLinesFromChangedChild(LineLayoutItem container,
       next_root_box->MarkDirty();
   }
 }
+
+template class InlineBoxList<InlineFlowBox>;
+template class InlineBoxList<InlineTextBox>;
 
 }  // namespace blink

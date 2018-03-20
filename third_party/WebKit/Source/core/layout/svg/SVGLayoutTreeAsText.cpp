@@ -501,8 +501,7 @@ static inline void WriteSVGInlineTextBox(TextStream& ts,
 static inline void WriteSVGInlineTextBoxes(TextStream& ts,
                                            const LayoutText& text,
                                            int indent) {
-  for (InlineTextBox* box = text.FirstTextBox(); box;
-       box = box->NextTextBox()) {
+  for (InlineTextBox* box : text.TextBoxes()) {
     if (!box->IsSVGInlineTextBox())
       continue;
 

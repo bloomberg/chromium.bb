@@ -52,7 +52,7 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
                                                paint_offset);
 
   // If we have no lines then we have no work to do.
-  if (!line_box_list_.FirstLineBox())
+  if (!line_box_list_.First())
     return;
 
   if (!line_box_list_.AnyLineIntersectsRect(
@@ -63,8 +63,7 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
   // See if our root lines intersect with the dirty rect. If so, then we paint
   // them. Note that boxes can easily overlap, so we can't make any assumptions
   // based off positions of our first line box or our last line box.
-  for (InlineFlowBox* curr = line_box_list_.FirstLineBox(); curr;
-       curr = curr->NextLineBox()) {
+  for (InlineFlowBox* curr : line_box_list_) {
     if (line_box_list_.LineIntersectsDirtyRect(
             LineLayoutBoxModel(
                 const_cast<LayoutBoxModelObject*>(&layout_object)),

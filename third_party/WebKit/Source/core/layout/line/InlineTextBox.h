@@ -56,10 +56,10 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
   void Destroy() final;
 
-  InlineTextBox* PrevTextBox() const { return prev_text_box_; }
-  InlineTextBox* NextTextBox() const { return next_text_box_; }
-  void SetNextTextBox(InlineTextBox* n) { next_text_box_ = n; }
-  void SetPreviousTextBox(InlineTextBox* p) { prev_text_box_ = p; }
+  InlineTextBox* PrevForSameLayoutObject() const { return prev_text_box_; }
+  InlineTextBox* NextForSameLayoutObject() const { return next_text_box_; }
+  void SetNextForSameLayoutObject(InlineTextBox* n) { next_text_box_ = n; }
+  void SetPreviousForSameLayoutObject(InlineTextBox* p) { prev_text_box_ = p; }
 
   // FIXME: These accessors should DCHECK(!isDirty()). See
   // https://bugs.webkit.org/show_bug.cgi?id=97264
@@ -216,9 +216,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   void CharacterWidths(Vector<float>&) const;
 
  private:
-  // The previous box that also uses our LayoutObject.
+  // The next/previous box that also uses our LayoutObject.
   InlineTextBox* prev_text_box_;
-  // The next box that also uses our LayoutObject.
   InlineTextBox* next_text_box_;
 
   int start_;

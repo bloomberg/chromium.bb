@@ -33,12 +33,12 @@ LayoutSize LogicalOffsetOnLine(const InlineFlowBox& flow_box) {
   // unbroken continuous strip (c.f box-decoration-break: slice.)
   LayoutUnit logical_offset_on_line;
   if (flow_box.IsLeftToRightDirection()) {
-    for (const InlineFlowBox* curr = flow_box.PrevLineBox(); curr;
-         curr = curr->PrevLineBox())
+    for (const InlineFlowBox* curr = flow_box.PrevForSameLayoutObject(); curr;
+         curr = curr->PrevForSameLayoutObject())
       logical_offset_on_line += curr->LogicalWidth();
   } else {
-    for (const InlineFlowBox* curr = flow_box.NextLineBox(); curr;
-         curr = curr->NextLineBox())
+    for (const InlineFlowBox* curr = flow_box.NextForSameLayoutObject(); curr;
+         curr = curr->NextForSameLayoutObject())
       logical_offset_on_line += curr->LogicalWidth();
   }
   LayoutSize logical_offset(logical_offset_on_line, LayoutUnit());
@@ -102,7 +102,8 @@ FloatRoundedRect BoxModelObjectPainter::GetBackgroundRoundedRect(
     bool include_logical_right_edge) const {
   FloatRoundedRect border = BoxPainterBase::GetBackgroundRoundedRect(
       border_rect, include_logical_left_edge, include_logical_right_edge);
-  if (flow_box_ && (flow_box_->NextLineBox() || flow_box_->PrevLineBox())) {
+  if (flow_box_ && (flow_box_->NextForSameLayoutObject() ||
+                    flow_box_->PrevForSameLayoutObject())) {
     FloatRoundedRect segment_border = box_model_.StyleRef().GetRoundedBorderFor(
         LayoutRect(LayoutPoint(), LayoutSize(FlooredIntSize(flow_box_size_))),
         include_logical_left_edge, include_logical_right_edge);

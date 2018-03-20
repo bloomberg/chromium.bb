@@ -814,7 +814,7 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
   Vector<InlineTextBox*> sorted_text_boxes;
   size_t sorted_text_boxes_position = 0;
 
-  for (InlineTextBox* text_box : InlineTextBoxesOf(*text_layout_object))
+  for (InlineTextBox* text_box : text_layout_object->TextBoxes())
     sorted_text_boxes.push_back(text_box);
 
   // If there is mixed directionality text, the boxes can be out of order,

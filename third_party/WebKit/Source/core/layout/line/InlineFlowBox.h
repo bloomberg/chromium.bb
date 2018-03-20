@@ -93,10 +93,10 @@ class InlineFlowBox : public InlineBox {
 #endif
   const char* BoxName() const override;
 
-  InlineFlowBox* PrevLineBox() const { return prev_line_box_; }
-  InlineFlowBox* NextLineBox() const { return next_line_box_; }
-  void SetNextLineBox(InlineFlowBox* n) { next_line_box_ = n; }
-  void SetPreviousLineBox(InlineFlowBox* p) { prev_line_box_ = p; }
+  InlineFlowBox* PrevForSameLayoutObject() const { return prev_line_box_; }
+  InlineFlowBox* NextForSameLayoutObject() const { return next_line_box_; }
+  void SetNextForSameLayoutObject(InlineFlowBox* n) { next_line_box_ = n; }
+  void SetPreviousForSameLayoutObject(InlineFlowBox* p) { prev_line_box_ = p; }
 
   InlineBox* FirstChild() const { return first_child_; }
   InlineBox* LastChild() const { return last_child_; }
@@ -455,10 +455,11 @@ class InlineFlowBox : public InlineBox {
   InlineBox* first_child_;
   InlineBox* last_child_;
 
-  InlineFlowBox*
-      prev_line_box_;  // The previous box that also uses our LayoutObject
-  InlineFlowBox*
-      next_line_box_;  // The next box that also uses our LayoutObject
+  // The next/previous box that also uses our LayoutObject.
+  // RootInlineBox, a subclass of this class, uses these fields for
+  // next/previous RootInlineBox.
+  InlineFlowBox* prev_line_box_;
+  InlineFlowBox* next_line_box_;
 
  private:
   unsigned include_logical_left_edge_ : 1;

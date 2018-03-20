@@ -111,7 +111,7 @@ void LayoutInline::WillBeDestroyed() {
       // not have a parent that means they are either already disconnected or
       // root lines that can just be destroyed without disconnecting.
       if (FirstLineBox()->Parent()) {
-        for (InlineFlowBox* box = FirstLineBox(); box; box = box->NextLineBox())
+        for (InlineFlowBox* box : *LineBoxes())
           box->Remove();
       }
     } else if (Parent()) {
@@ -667,8 +667,8 @@ void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
   }
   if (!AlwaysCreateLineBoxes()) {
     GenerateCulledLineBoxRects(yield, this);
-  } else if (InlineFlowBox* curr = FirstLineBox()) {
-    for (; curr; curr = curr->NextLineBox())
+  } else {
+    for (InlineFlowBox* curr : *LineBoxes())
       yield(LayoutRect(curr->Location(), curr->Size()));
   }
 }
@@ -738,8 +738,7 @@ void LayoutInline::GenerateCulledLineBoxRects(
       if (!curr_inline->AlwaysCreateLineBoxes()) {
         curr_inline->GenerateCulledLineBoxRects(yield, container);
       } else {
-        for (InlineFlowBox* child_line = curr_inline->FirstLineBox();
-             child_line; child_line = child_line->NextLineBox()) {
+        for (InlineFlowBox* child_line : *curr_inline->LineBoxes()) {
           RootInlineBox& root_box = child_line->Root();
           ComputeItemTopHeight(container, root_box, &logical_top,
                                &logical_height);
@@ -759,7 +758,7 @@ void LayoutInline::GenerateCulledLineBoxRects(
       }
     } else if (curr->IsText()) {
       LayoutText* curr_text = ToLayoutText(curr);
-      for (InlineTextBox* child_text : InlineTextBoxesOf(*curr_text)) {
+      for (InlineTextBox* child_text : curr_text->TextBoxes()) {
         RootInlineBox& root_box = child_text->Root();
         ComputeItemTopHeight(container, root_box, &logical_top,
                              &logical_height);
@@ -1037,8 +1036,7 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
     // Return the width of the minimal left side and the maximal right side.
     LayoutUnit logical_left_side;
     LayoutUnit logical_right_side;
-    for (InlineFlowBox* curr = FirstLineBox(); curr;
-         curr = curr->NextLineBox()) {
+    for (InlineFlowBox* curr : *LineBoxes()) {
       if (curr == FirstLineBox() || curr->LogicalLeft() < logical_left_side)
         logical_left_side = curr->LogicalLeft();
       if (curr == FirstLineBox() || curr->LogicalRight() > logical_right_side)
@@ -1171,7 +1169,7 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   // Return the width of the minimal left side and the maximal right side.
   LayoutUnit logical_left_side = LayoutUnit::Max();
   LayoutUnit logical_right_side = LayoutUnit::Min();
-  for (InlineFlowBox* curr = FirstLineBox(); curr; curr = curr->NextLineBox()) {
+  for (InlineFlowBox* curr : *LineBoxes()) {
     logical_left_side =
         std::min(logical_left_side, curr->LogicalLeftVisualOverflow());
     logical_right_side =
@@ -1395,12 +1393,11 @@ void LayoutInline::DirtyLineBoxes(bool full_layout) {
       } else if (!curr->SelfNeedsLayout()) {
         if (curr->IsLayoutInline()) {
           LayoutInline* curr_inline = ToLayoutInline(curr);
-          for (InlineFlowBox* child_line = curr_inline->FirstLineBox();
-               child_line; child_line = child_line->NextLineBox())
+          for (InlineFlowBox* child_line : *curr_inline->LineBoxes())
             child_line->Root().MarkDirty();
         } else if (curr->IsText()) {
           LayoutText* curr_text = ToLayoutText(curr);
-          for (InlineTextBox* child_text : InlineTextBoxesOf(*curr_text))
+          for (InlineTextBox* child_text : curr_text->TextBoxes())
             child_text->Root().MarkDirty();
         }
       }
@@ -1639,7 +1636,7 @@ void LayoutInline::InvalidateDisplayItemClients(
 
   paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
 
-  for (InlineFlowBox* box = FirstLineBox(); box; box = box->NextLineBox())
+  for (InlineFlowBox* box : *LineBoxes())
     paint_invalidator.InvalidateDisplayItemClient(*box, invalidation_reason);
 }
 

@@ -138,7 +138,7 @@ static void CollectTextBoxesInLogicalOrder(
     Vector<SVGInlineTextBox*>& text_boxes) {
   text_boxes.Shrink(0);
   for (InlineTextBox* text_box = text_line_layout.FirstTextBox(); text_box;
-       text_box = text_box->NextTextBox())
+       text_box = text_box->NextForSameLayoutObject())
     text_boxes.push_back(ToSVGInlineTextBox(text_box));
   std::sort(text_boxes.begin(), text_boxes.end(),
             InlineTextBox::CompareByStart);

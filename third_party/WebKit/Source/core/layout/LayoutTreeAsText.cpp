@@ -410,8 +410,7 @@ static void WriteInlineFlowBox(TextStream& ts,
 void LayoutTreeAsText::WriteLineBoxTree(TextStream& ts,
                                         const LayoutBlockFlow& o,
                                         int indent) {
-  for (const InlineFlowBox* root_box = o.FirstLineBox(); root_box;
-       root_box = root_box->NextLineBox()) {
+  for (const InlineFlowBox* root_box : o.LineBoxes()) {
     WriteInlineFlowBox(ts, *root_box, indent);
   }
 }
@@ -551,8 +550,7 @@ void Write(TextStream& ts,
         WriteTextFragment(ts, *child.fragment, child.offset_to_container_box);
       }
     } else {
-      for (InlineTextBox* box = text.FirstTextBox(); box;
-           box = box->NextTextBox()) {
+      for (InlineTextBox* box : text.TextBoxes()) {
         WriteIndent(ts, indent + 1);
         WriteTextRun(ts, text, *box);
       }

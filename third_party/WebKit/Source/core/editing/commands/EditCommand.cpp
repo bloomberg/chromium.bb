@@ -73,7 +73,7 @@ bool EditCommand::IsRenderedCharacter(const Position& position) {
   // TODO(editing-dev): This doesn't handle first-letter correctly. Fix it.
   const LayoutText* layout_text = ToLayoutText(layout_object);
   const int offset_in_node = position.OffsetInContainerNode();
-  for (InlineTextBox* box : InlineTextBoxesOf(*layout_text)) {
+  for (InlineTextBox* box : layout_text->TextBoxes()) {
     if (offset_in_node < static_cast<int>(box->Start()) &&
         !layout_text->ContainsReversedText()) {
       // The offset we're looking for is before this node this means the offset

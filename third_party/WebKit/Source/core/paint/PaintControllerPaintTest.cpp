@@ -78,7 +78,8 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
-  InlineTextBox& second_text_box = *new_text.FirstTextBox()->NextTextBox();
+  InlineTextBox& second_text_box =
+      *new_text.FirstTextBox()->NextForSameLayoutObject();
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,

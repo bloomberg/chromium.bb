@@ -2904,8 +2904,7 @@ void LayoutBlockFlow::WillBeDestroyed() {
       // that will outlast this block. In the non-anonymous block case those
       // children will be destroyed by the time we return from this function.
       if (IsAnonymousBlock()) {
-        for (InlineFlowBox* box = FirstLineBox(); box;
-             box = box->NextLineBox()) {
+        for (InlineFlowBox* box : *LineBoxes()) {
           while (InlineBox* child_box = box->FirstChild())
             child_box->Remove();
         }

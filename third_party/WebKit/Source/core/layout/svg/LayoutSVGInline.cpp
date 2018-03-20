@@ -107,7 +107,7 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
     return;
 
   FloatRect text_bounding_box = text_root->StrokeBoundingBox();
-  for (InlineFlowBox* box = FirstLineBox(); box; box = box->NextLineBox()) {
+  for (InlineFlowBox* box : *LineBoxes()) {
     quads.push_back(LocalToAbsoluteQuad(
         FloatRect(text_bounding_box.X() + box->X().ToFloat(),
                   text_bounding_box.Y() + box->Y().ToFloat(),

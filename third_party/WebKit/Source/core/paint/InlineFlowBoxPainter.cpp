@@ -78,7 +78,8 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
                                           rect.Size());
   if ((!has_fill_image &&
        !inline_flow_box_.GetLineLayoutItem().Style()->HasBorderRadius()) ||
-      (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
+      (!inline_flow_box_.PrevForSameLayoutObject() &&
+       !inline_flow_box_.NextForSameLayoutObject()) ||
       !inline_flow_box_.Parent()) {
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
                                      kBackgroundBleedNone, geometry, op);
@@ -106,7 +107,8 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
 }
 
 inline bool InlineFlowBoxPainter::ShouldForceIncludeLogicalEdges() const {
-  return (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
+  return (!inline_flow_box_.PrevForSameLayoutObject() &&
+          !inline_flow_box_.NextForSameLayoutObject()) ||
          !inline_flow_box_.Parent();
 }
 
@@ -178,20 +180,20 @@ LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
   LayoutUnit logical_offset_on_line;
   LayoutUnit total_logical_width;
   if (direction == TextDirection::kLtr) {
-    for (const InlineFlowBox* curr = inline_flow_box_.PrevLineBox(); curr;
-         curr = curr->PrevLineBox())
+    for (const InlineFlowBox* curr = inline_flow_box_.PrevForSameLayoutObject();
+         curr; curr = curr->PrevForSameLayoutObject())
       logical_offset_on_line += curr->LogicalWidth();
     total_logical_width = logical_offset_on_line;
     for (const InlineFlowBox* curr = &inline_flow_box_; curr;
-         curr = curr->NextLineBox())
+         curr = curr->NextForSameLayoutObject())
       total_logical_width += curr->LogicalWidth();
   } else {
-    for (const InlineFlowBox* curr = inline_flow_box_.NextLineBox(); curr;
-         curr = curr->NextLineBox())
+    for (const InlineFlowBox* curr = inline_flow_box_.NextForSameLayoutObject();
+         curr; curr = curr->NextForSameLayoutObject())
       logical_offset_on_line += curr->LogicalWidth();
     total_logical_width = logical_offset_on_line;
     for (const InlineFlowBox* curr = &inline_flow_box_; curr;
-         curr = curr->PrevLineBox())
+         curr = curr->PrevForSameLayoutObject())
       total_logical_width += curr->LogicalWidth();
   }
   LayoutUnit strip_x =
@@ -225,8 +227,8 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
     // The simple case is where we either have no border image or we are the
     // only box for this object.  In those cases only a single call to draw is
     // required.
-    if (!has_border_image ||
-        (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()))
+    if (!has_border_image || (!inline_flow_box_.PrevForSameLayoutObject() &&
+                              !inline_flow_box_.NextForSameLayoutObject()))
       return kPaintBordersWithoutClip;
 
     // We have a border image that spans multiple lines.
@@ -383,7 +385,8 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   // The simple case is where we are the only box for this object. In those
   // cases only a single call to draw is required.
-  if (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) {
+  if (!inline_flow_box_.PrevForSameLayoutObject() &&
+      !inline_flow_box_.NextForSameLayoutObject()) {
     NinePieceImagePainter::Paint(paint_info.context, box_model,
                                  box_model.GetDocument(), GetNode(&box_model),
                                  paint_rect, box_model.StyleRef(),
