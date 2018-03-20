@@ -30,6 +30,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
@@ -46,7 +47,6 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
-#include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -650,7 +650,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                    int result);
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
   void OpenWindow(GURL url,
-                  WindowOpenDisposition disposition,
+                  service_worker_client_utils::WindowType type,
                   OpenNewTabCallback callback);
 
   void OnPongFromWorker();

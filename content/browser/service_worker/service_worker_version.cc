@@ -26,7 +26,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/payment_handler_support.h"
-#include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
@@ -1122,7 +1121,7 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
 
 void ServiceWorkerVersion::OpenNewTab(const GURL& url,
                                       OpenNewTabCallback callback) {
-  OpenWindow(url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+  OpenWindow(url, service_worker_client_utils::WindowType::NEW_TAB_WINDOW,
              std::move(callback));
 }
 
@@ -1140,9 +1139,9 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
   PaymentHandlerSupport::ShowPaymentHandlerWindow(
       url, context_.get(),
       base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
-      base::BindOnce(&ServiceWorkerVersion::OpenWindow,
-                     weak_factory_.GetWeakPtr(), url,
-                     WindowOpenDisposition::NEW_POPUP),
+      base::BindOnce(
+          &ServiceWorkerVersion::OpenWindow, weak_factory_.GetWeakPtr(), url,
+          service_worker_client_utils::WindowType::PAYMENT_HANDLER_WINDOW),
       std::move(callback));
 }
 
@@ -1316,9 +1315,10 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
     listener.OnCachedMetadataUpdated(this, 0);
 }
 
-void ServiceWorkerVersion::OpenWindow(GURL url,
-                                      WindowOpenDisposition disposition,
-                                      OpenNewTabCallback callback) {
+void ServiceWorkerVersion::OpenWindow(
+    GURL url,
+    service_worker_client_utils::WindowType type,
+    OpenNewTabCallback callback) {
   // Just respond failure if we are shutting down.
   if (!context_) {
     std::move(callback).Run(
@@ -1351,7 +1351,7 @@ void ServiceWorkerVersion::OpenWindow(GURL url,
   }
 
   service_worker_client_utils::OpenWindow(
-      url, script_url_, embedded_worker_->process_id(), context_, disposition,
+      url, script_url_, embedded_worker_->process_id(), context_, type,
       base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
 }
 
