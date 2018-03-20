@@ -18,6 +18,8 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
+#include "media/base/encryption_pattern.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder_config.h"
 #include "media/remoting/rpc.pb.h"
@@ -113,7 +115,7 @@ TEST_F(ProtoUtilsTest, PassValidDecoderBuffer) {
 TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
   const std::string extra_data = "ACEG";
   const EncryptionScheme encryption_scheme(
-      EncryptionScheme::CIPHER_MODE_AES_CTR, EncryptionScheme::Pattern(20, 40));
+      EncryptionScheme::CIPHER_MODE_AES_CTR, EncryptionPattern(20, 40));
   AudioDecoderConfig audio_config(
       kCodecAAC, kSampleFormatF32, CHANNEL_LAYOUT_MONO, 48000,
       std::vector<uint8_t>(extra_data.begin(), extra_data.end()),

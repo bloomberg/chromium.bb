@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/media_log.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
@@ -127,7 +128,7 @@ std::string DecryptBuffer(const StreamParserBuffer& buffer,
   EXPECT_TRUE(scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC);
   bool has_pattern = scheme.pattern().IsInEffect();
   EXPECT_TRUE(!has_pattern ||
-              scheme.pattern().Matches(EncryptionScheme::Pattern(1, 9)));
+              scheme.pattern().Matches(EncryptionPattern(1, 9)));
 
   std::string key;
   EXPECT_TRUE(

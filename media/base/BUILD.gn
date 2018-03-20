@@ -134,6 +134,8 @@ source_set("base") {
     "djb2.cc",
     "djb2.h",
     "eme_constants.h",
+    "encryption_pattern.cc",
+    "encryption_pattern.h",
     "encryption_scheme.cc",
     "encryption_scheme.h",
     "fake_audio_worker.cc",

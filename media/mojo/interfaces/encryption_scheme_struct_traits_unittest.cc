@@ -15,7 +15,7 @@ namespace media {
 TEST(EncryptionSchemeStructTraitsTest,
      ConvertEncryptionSchemeAesCbcWithPattern) {
   EncryptionScheme input(EncryptionScheme::CIPHER_MODE_AES_CBC,
-                         EncryptionScheme::Pattern(1, 9));
+                         EncryptionPattern(1, 9));
   std::vector<uint8_t> data = media::mojom::EncryptionScheme::Serialize(&input);
 
   EncryptionScheme output;

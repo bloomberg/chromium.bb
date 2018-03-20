@@ -4,6 +4,8 @@
 
 #include "media/base/media_util.h"
 
+#include "media/base/encryption_pattern.h"
+
 namespace media {
 
 std::vector<uint8_t> EmptyExtraData() {
@@ -16,7 +18,7 @@ EncryptionScheme Unencrypted() {
 
 EncryptionScheme AesCtrEncryptionScheme() {
   return EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CTR,
-                          EncryptionScheme::Pattern());
+                          EncryptionPattern());
 }
 
 }  // namespace media

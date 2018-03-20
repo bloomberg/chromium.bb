@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
@@ -422,10 +423,9 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
     if (use_hls_sample_aes_) {
       // Note that for SampleAES the (encrypt,skip) pattern is constant.
-      scheme =
-          EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
-                           EncryptionScheme::Pattern(kSampleAESEncryptBlocks,
-                                                     kSampleAESSkipBlocks));
+      scheme = EncryptionScheme(
+          EncryptionScheme::CIPHER_MODE_AES_CBC,
+          EncryptionPattern(kSampleAESEncryptBlocks, kSampleAESSkipBlocks));
     }
 #endif
     RCHECK(UpdateVideoDecoderConfig(sps, scheme));

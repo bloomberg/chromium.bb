@@ -8,6 +8,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_point.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/limits.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -69,8 +70,8 @@ void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
 }
 
 template <>
-struct ParamTraits<media::EncryptionScheme::Pattern> {
-  typedef media::EncryptionScheme::Pattern param_type;
+struct ParamTraits<media::EncryptionPattern> {
+  typedef media::EncryptionPattern param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -88,7 +89,7 @@ bool ParamTraits<media::EncryptionScheme>::Read(const base::Pickle* m,
                                                 base::PickleIterator* iter,
                                                 param_type* r) {
   media::EncryptionScheme::CipherMode mode;
-  media::EncryptionScheme::Pattern pattern;
+  media::EncryptionPattern pattern;
   if (!ReadParam(m, iter, &mode) || !ReadParam(m, iter, &pattern))
     return false;
   *r = media::EncryptionScheme(mode, pattern);
@@ -100,26 +101,28 @@ void ParamTraits<media::EncryptionScheme>::Log(const param_type& p,
   l->append(base::StringPrintf("<EncryptionScheme>"));
 }
 
-void ParamTraits<media::EncryptionScheme::Pattern>::Write(base::Pickle* m,
-                                                          const param_type& p) {
-  WriteParam(m, p.encrypt_blocks());
-  WriteParam(m, p.skip_blocks());
+void ParamTraits<media::EncryptionPattern>::Write(base::Pickle* m,
+                                                  const param_type& p) {
+  WriteParam(m, p.crypt_byte_block());
+  WriteParam(m, p.skip_byte_block());
 }
 
-bool ParamTraits<media::EncryptionScheme::Pattern>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  uint8_t encrypt_blocks, skip_blocks;
-  if (!ReadParam(m, iter, &encrypt_blocks) || !ReadParam(m, iter, &skip_blocks))
+bool ParamTraits<media::EncryptionPattern>::Read(const base::Pickle* m,
+                                                 base::PickleIterator* iter,
+                                                 param_type* r) {
+  uint32_t crypt_byte_block, skip_byte_block;
+  if (!ReadParam(m, iter, &crypt_byte_block) ||
+      !ReadParam(m, iter, &skip_byte_block)) {
     return false;
-  *r = media::EncryptionScheme::Pattern(encrypt_blocks, skip_blocks);
+  }
+
+  *r = media::EncryptionPattern(crypt_byte_block, skip_byte_block);
   return true;
 }
 
-void ParamTraits<media::EncryptionScheme::Pattern>::Log(const param_type& p,
-                                                        std::string* l) {
-  l->append(base::StringPrintf("<Pattern>"));
+void ParamTraits<media::EncryptionPattern>::Log(const param_type& p,
+                                                std::string* l) {
+  l->append(base::StringPrintf("<EncryptionPattern>"));
 }
 
 }  // namespace IPC
