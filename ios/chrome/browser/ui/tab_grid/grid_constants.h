@@ -23,6 +23,31 @@ extern NSString* const kGridCellCloseButtonIdentifier;
 // Grid styling.
 extern const int kGridBackgroundColor;
 
+// GridLayout.
+// Extra-small screens require a slightly different layout configuration (e.g.,
+// margins) even though they may be categorized into the same size class as
+// larger screens. These screens are determined to have a "limited width" in
+// their size class by the definition below. The first size class refers to the
+// horizontal; the second to the vertical.
+extern const CGFloat kGridLayoutCompactCompactLimitedWidth;
+extern const CGFloat kGridLayoutCompactRegularLimitedWidth;
+// Insets for size classes. The first refers to the horizontal size class; the
+// second to the vertical.
+extern const UIEdgeInsets kGridLayoutInsetsCompactCompact;
+extern const UIEdgeInsets kGridLayoutInsetsCompactCompactLimitedWidth;
+extern const UIEdgeInsets kGridLayoutInsetsCompactRegular;
+extern const UIEdgeInsets kGridLayoutInsetsCompactRegularLimitedWidth;
+extern const UIEdgeInsets kGridLayoutInsetsRegularCompact;
+extern const UIEdgeInsets kGridLayoutInsetsRegularRegular;
+// Minimum line spacing for size classes. The first refers to the horizontal
+// size class; the second to the vertical.
+extern const CGFloat kGridLayoutLineSpacingCompactCompact;
+extern const CGFloat kGridLayoutLineSpacingCompactCompactLimitedWidth;
+extern const CGFloat kGridLayoutLineSpacingCompactRegular;
+extern const CGFloat kGridLayoutLineSpacingCompactRegularLimitedWidth;
+extern const CGFloat kGridLayoutLineSpacingRegularCompact;
+extern const CGFloat kGridLayoutLineSpacingRegularRegular;
+
 // GridCell styling.
 // Common colors.
 extern const int kGridCellIconBackgroundColor;
@@ -39,6 +64,9 @@ extern const int kGridDarkThemeCellSelectionColor;
 extern const int kGridDarkThemeCellCloseButtonTintColor;
 
 // GridCell dimensions.
+extern const CGSize kGridCellSizeSmall;
+extern const CGSize kGridCellSizeMedium;
+extern const CGSize kGridCellSizeLarge;
 extern const CGFloat kGridCellCornerRadius;
 extern const CGFloat kGridCellIconCornerRadius;
 // The cell header contains the icon, title, and close button.
