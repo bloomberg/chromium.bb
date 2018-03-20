@@ -80,7 +80,7 @@ const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
 
 #if defined(OS_MACOSX)
 const base::Feature kCreditCardAutofillTouchBar{
-    "CreditCardAutofillTouchBar", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CreditCardAutofillTouchBar", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 namespace {
