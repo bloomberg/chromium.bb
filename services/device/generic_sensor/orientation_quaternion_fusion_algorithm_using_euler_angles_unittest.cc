@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -56,6 +58,47 @@ TEST_F(OrientationQuaternionFusionAlgorithmUsingEulerAnglesTest,
   for (size_t i = 0; i < euler_angles_in_degrees_test_values.size(); ++i) {
     // alpha
     reading.orientation_euler.z = euler_angles_in_degrees_test_values[i][0];
+    // beta
+    reading.orientation_euler.x = euler_angles_in_degrees_test_values[i][1];
+    // gamma
+    reading.orientation_euler.y = euler_angles_in_degrees_test_values[i][2];
+
+    fake_fusion_sensor_->SetSensorReading(source_type, reading,
+                                          true /* sensor_reading_success */);
+    EXPECT_TRUE(fusion_algorithm_->GetFusedData(source_type, &fused_reading));
+
+    double x = fused_reading.orientation_quat.x;
+    double y = fused_reading.orientation_quat.y;
+    double z = fused_reading.orientation_quat.z;
+    double w = fused_reading.orientation_quat.w;
+
+    EXPECT_NEAR(quaternions_test_values[i][0], x, kEpsilon)
+        << "on test value " << i;
+    EXPECT_NEAR(quaternions_test_values[i][1], y, kEpsilon)
+        << "on test value " << i;
+    EXPECT_NEAR(quaternions_test_values[i][2], z, kEpsilon)
+        << "on test value " << i;
+    EXPECT_NEAR(quaternions_test_values[i][3], w, kEpsilon)
+        << "on test value " << i;
+
+    EXPECT_NEAR(1.0, x * x + y * y + z * z + w * w, kEpsilon)
+        << "on test value " << i;
+  }
+
+  // Test when alpha is NAN.
+  for (size_t i = 0; i < euler_angles_in_degrees_test_values.size(); ++i) {
+    if (euler_angles_in_degrees_test_values[i][0] != 0.0) {
+      // Here we need to test when alpha is NAN, it is considered the same as
+      // its value is 0.0 in
+      // OrientationQuaternionFusionAlgorithmUsingEulerAngles fusion sensor
+      // algorithm. So we reuse the test data entries in
+      // |euler_angles_in_degrees_test_values| whose alpha value is 0.0, and
+      // skip other test data that has non-zero alpha values.
+      continue;
+    }
+
+    // alpha
+    reading.orientation_euler.z = NAN;
     // beta
     reading.orientation_euler.x = euler_angles_in_degrees_test_values[i][1];
     // gamma
