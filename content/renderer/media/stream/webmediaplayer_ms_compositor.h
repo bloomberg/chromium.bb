@@ -166,11 +166,12 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   size_t dropped_frame_count_;
 
   bool stopped_;
+  bool render_started_;
 
   std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
 
   // |current_frame_lock_| protects |current_frame_used_by_compositor_|,
-  // |current_frame_|, and |rendering_frame_buffer_|.
+  // |current_frame_|, |rendering_frame_buffer_|, and |render_started_|.
   base::Lock current_frame_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);

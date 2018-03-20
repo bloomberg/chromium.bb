@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/hash.h"
@@ -137,7 +138,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      stopped_(true) {
+      stopped_(true),
+      render_started_(!stopped_) {
   main_message_loop_ = base::MessageLoop::current();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
@@ -307,6 +309,9 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::GetCurrentFrame",
                        TRACE_EVENT_SCOPE_THREAD, "Timestamp",
                        current_frame_->timestamp().InMicroseconds());
+  if (!render_started_)
+    return nullptr;
+
   current_frame_used_by_compositor_ = true;
   return current_frame_;
 }
@@ -319,11 +324,18 @@ scoped_refptr<media::VideoFrame>
 WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
   DVLOG(3) << __func__;
   base::AutoLock auto_lock(current_frame_lock_);
+  if (!render_started_)
+    return nullptr;
+
   return current_frame_;
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    render_started_ = true;
+  }
   compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSCompositor::StartRenderingInternal,
