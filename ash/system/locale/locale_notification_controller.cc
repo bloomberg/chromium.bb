@@ -116,7 +116,6 @@ void LocaleNotificationController::OnLocaleChanged(
           optional, new LocaleNotificationDelegate(std::move(callback)),
           kNotificationSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

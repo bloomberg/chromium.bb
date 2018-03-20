@@ -18,7 +18,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class ImageButton;
@@ -217,8 +216,7 @@ class NotificationInputContainerMD : public views::InkDropHostView,
 class MESSAGE_CENTER_EXPORT NotificationViewMD
     : public MessageView,
       public NotificationInputDelegate,
-      public views::ButtonListener,
-      public views::ViewTargeterDelegate {
+      public views::ButtonListener {
  public:
   explicit NotificationViewMD(const Notification& notification);
   ~NotificationViewMD() override;
@@ -232,7 +230,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void Layout() override;
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
-  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -262,9 +259,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Overridden from NotificationInputDelegate:
   void OnNotificationInputSubmit(size_t index,
                                  const base::string16& text) override;
-
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, CreateOrUpdateTest);

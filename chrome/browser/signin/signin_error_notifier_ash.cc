@@ -105,7 +105,6 @@ void SigninErrorNotifier::OnErrorChanged() {
               base::Bind(&HandleNotificationClick)),
           ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
-  notification->set_clickable(true);
   notification->SetSystemPriority();
 
   // Update or add the notification.

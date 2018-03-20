@@ -60,7 +60,6 @@ struct RichNotificationData {
   mojo_base.mojom.String16 progress_status;
   array<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
-  bool clickable;
   bool pinned;
   // |vibration_pattern| intentionally omitted
   // |renotify| intentionally omitted

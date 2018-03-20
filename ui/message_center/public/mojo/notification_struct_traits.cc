@@ -112,12 +112,6 @@ bool RichNotificationDataStructTraits::
 }
 
 // static
-bool RichNotificationDataStructTraits::clickable(
-    const RichNotificationData& r) {
-  return r.clickable;
-}
-
-// static
 bool RichNotificationDataStructTraits::pinned(const RichNotificationData& r) {
   return r.pinned;
 }
@@ -171,7 +165,6 @@ bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
   out->progress = data.progress();
   out->should_make_spoken_feedback_for_popup_updates =
       data.should_make_spoken_feedback_for_popup_updates();
-  out->clickable = data.clickable();
   out->pinned = data.pinned();
 
   // Look up the vector icon by ID. This will only work if RegisterVectorIcon

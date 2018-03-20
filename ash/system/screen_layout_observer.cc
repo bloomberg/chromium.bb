@@ -376,7 +376,6 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
               base::Bind(&OnNotificationClicked)),
           kNotificationScreenIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_clickable(true);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(

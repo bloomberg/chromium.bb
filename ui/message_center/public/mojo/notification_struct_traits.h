@@ -175,7 +175,6 @@ struct StructTraits<message_center::mojom::RichNotificationDataDataView,
       const message_center::RichNotificationData& r);
   static bool should_make_spoken_feedback_for_popup_updates(
       const message_center::RichNotificationData& r);
-  static bool clickable(const message_center::RichNotificationData& r);
   static bool pinned(const message_center::RichNotificationData& r);
   static const base::string16& accessible_name(
       const message_center::RichNotificationData& r);

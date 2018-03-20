@@ -262,7 +262,6 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
               &NotificationClicked, default_network->guid(), info_url)),
           ash::kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_clickable(true);
   NotificationDisplayService::GetForProfile(GetProfileForNotifications())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 
@@ -302,7 +301,6 @@ bool DataPromoNotification::ShowDataSaverNotification() {
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),
           ash::kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_clickable(true);
   NotificationDisplayService::GetForProfile(GetProfileForNotifications())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification);
   base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));

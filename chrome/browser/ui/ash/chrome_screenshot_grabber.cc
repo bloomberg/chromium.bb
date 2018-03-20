@@ -692,7 +692,6 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
                                                     screenshot_path),
           ash::kNotificationImageIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_clickable(success);
 
   NotificationDisplayService::GetForProfile(GetProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification);

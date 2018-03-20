@@ -49,7 +49,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
                   .should_make_spoken_feedback_for_popup_updates,
               output.rich_notification_data()
                   .should_make_spoken_feedback_for_popup_updates);
-    EXPECT_EQ(input.clickable(), output.clickable());
     EXPECT_EQ(input.accessible_name(), output.accessible_name());
     EXPECT_EQ(input.accent_color(), output.accent_color());
     EXPECT_EQ(input.should_show_settings_button(),
@@ -97,7 +96,6 @@ TEST_F(StructTraitsTest, Notification) {
   input.set_type(NotificationType::NOTIFICATION_TYPE_PROGRESS);
   input.set_progress(50);
   input.set_progress_status(base::ASCIIToUTF16("progress text"));
-  input.set_clickable(!input.clickable());
   input.set_image(gfx::test::CreateImage(48, 48));
   input.set_small_image(gfx::test::CreateImage(16, 16));
   input.set_accent_color(SK_ColorMAGENTA);

@@ -43,7 +43,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
-#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -146,34 +145,6 @@ void NotificationItemView::SetVisible(bool visible) {
 
 // NotificationView ////////////////////////////////////////////////////////////
 
-views::View* NotificationView::TargetForRect(views::View* root,
-                                             const gfx::Rect& rect) {
-  CHECK_EQ(root, this);
-
-  // TODO(tdanderson): Modify this function to support rect-based event
-  // targeting. Using the center point of |rect| preserves this function's
-  // expected behavior for the time being.
-  gfx::Point point = rect.CenterPoint();
-
-  // Want to return this for underlying views, otherwise GetCursor is not
-  // called. But buttons are exceptions, they'll have their own event handlings.
-  std::vector<views::View*> buttons(action_buttons_.begin(),
-                                    action_buttons_.end());
-  if (control_buttons_view_->settings_button())
-    buttons.push_back(control_buttons_view_->settings_button());
-  if (control_buttons_view_->close_button())
-    buttons.push_back(control_buttons_view_->close_button());
-
-  for (size_t i = 0; i < buttons.size(); ++i) {
-    gfx::Point point_in_child = point;
-    ConvertPointToTarget(this, buttons[i], &point_in_child);
-    if (buttons[i]->HitTestPoint(point_in_child))
-      return buttons[i]->GetEventHandlerForPoint(point_in_child);
-  }
-
-  return root;
-}
-
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
@@ -187,7 +158,7 @@ void NotificationView::CreateOrUpdateViews(const Notification& notification) {
 }
 
 NotificationView::NotificationView(const Notification& notification)
-    : MessageView(notification), clickable_(notification.clickable()) {
+    : MessageView(notification) {
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -221,8 +192,6 @@ NotificationView::NotificationView(const Notification& notification)
   AddChildView(small_image_view_.get());
   UpdateControlButtonsVisibilityWithNotification(notification);
 
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   set_notify_enter_exit_on_child(true);
 }
 
@@ -335,12 +304,6 @@ void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
   // a button) gets focused.
   views::View::ScrollRectToVisible(GetLocalBounds());
 }
-
-gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
-  return clickable_ ? views::GetNativeHandCursor()
-                    : views::View::GetCursor(event);
-}
-
 
 void NotificationView::OnMouseEntered(const ui::MouseEvent& event) {
   MessageView::OnMouseEntered(event);

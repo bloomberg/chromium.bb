@@ -233,7 +233,6 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
       data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_factory_.GetWeakPtr()));
-  notification->set_clickable(true);
   notification->SetSystemPriority();
   message_center->AddNotification(std::move(notification));
 }
