@@ -6859,7 +6859,7 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
 
     using WebContentsObserver::Observe;
 
-    void SetCallback(Callback callback) { callback_ = callback; }
+    void SetCallback(Callback callback) { callback_ = std::move(callback); }
 
    private:
     void DidFinishNavigation(NavigationHandle* navigation_handle) override {

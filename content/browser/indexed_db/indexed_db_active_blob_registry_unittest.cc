@@ -143,13 +143,13 @@ TEST_F(IndexedDBActiveBlobRegistryTest, SimpleUse) {
       registry()->GetAddBlobRefCallback(kDatabaseId0, kBlobKey0);
   ReleaseCallback release =
       registry()->GetFinalReleaseCallback(kDatabaseId0, kBlobKey0);
-  add_ref.Run();
+  std::move(add_ref).Run();
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckUnusedBlobsEmpty());
 
-  release.Run(base::FilePath());
+  std::move(release).Run(base::FilePath());
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckNoOriginsInUse());
@@ -165,7 +165,7 @@ TEST_F(IndexedDBActiveBlobRegistryTest, DeleteWhileInUse) {
   ReleaseCallback release =
       registry()->GetFinalReleaseCallback(kDatabaseId0, kBlobKey0);
 
-  add_ref.Run();
+  std::move(add_ref).Run();
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
@@ -177,7 +177,7 @@ TEST_F(IndexedDBActiveBlobRegistryTest, DeleteWhileInUse) {
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckUnusedBlobsEmpty());
 
-  release.Run(base::FilePath());
+  std::move(release).Run(base::FilePath());
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckNoOriginsInUse());
@@ -205,16 +205,16 @@ TEST_F(IndexedDBActiveBlobRegistryTest, MultipleBlobs) {
   ReleaseCallback release_11 =
       registry()->GetFinalReleaseCallback(kDatabaseId1, kBlobKey1);
 
-  add_ref_00.Run();
-  add_ref_01.Run();
+  std::move(add_ref_00).Run();
+  std::move(add_ref_01).Run();
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckUnusedBlobsEmpty());
 
-  release_00.Run(base::FilePath());
-  add_ref_10.Run();
-  add_ref_11.Run();
+  std::move(release_00).Run(base::FilePath());
+  std::move(add_ref_10).Run();
+  std::move(add_ref_11).Run();
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
@@ -226,14 +226,14 @@ TEST_F(IndexedDBActiveBlobRegistryTest, MultipleBlobs) {
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckUnusedBlobsEmpty());
 
-  release_01.Run(base::FilePath());
-  release_11.Run(base::FilePath());
+  std::move(release_01).Run(base::FilePath());
+  std::move(release_11).Run(base::FilePath());
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckSingleUnusedBlob(kDatabaseId0, kBlobKey1));
 
-  release_10.Run(base::FilePath());
+  std::move(release_10).Run(base::FilePath());
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckNoOriginsInUse());
@@ -253,7 +253,7 @@ TEST_F(IndexedDBActiveBlobRegistryTest, ForceShutdown) {
   ReleaseCallback release_1 =
       registry()->GetFinalReleaseCallback(kDatabaseId0, kBlobKey1);
 
-  add_ref_0.Run();
+  std::move(add_ref_0).Run();
   RunUntilIdle();
 
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
@@ -261,15 +261,15 @@ TEST_F(IndexedDBActiveBlobRegistryTest, ForceShutdown) {
 
   registry()->ForceShutdown();
 
-  add_ref_1.Run();
+  std::move(add_ref_1).Run();
   RunUntilIdle();
 
   // Nothing changes.
   EXPECT_TRUE(factory()->CheckSingleOriginInUse(backing_store()->origin()));
   EXPECT_TRUE(backing_store()->CheckUnusedBlobsEmpty());
 
-  release_0.Run(base::FilePath());
-  release_1.Run(base::FilePath());
+  std::move(release_0).Run(base::FilePath());
+  std::move(release_1).Run(base::FilePath());
   RunUntilIdle();
 
   // Nothing changes.

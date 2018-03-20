@@ -51,7 +51,7 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
              std::unique_ptr<GlobalMemoryDump> result) {
             EXPECT_TRUE(success);
             *out_result = std::move(result);
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           run_loop.QuitClosure(), &result));
   run_loop.Run();

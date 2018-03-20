@@ -10626,7 +10626,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   CommitMessageOrderReverser commit_order_reverser(
       shell()->web_contents(), kSubframeSameSiteUrl /* deferred_url */,
-      did_start_deferring_commit_callback);
+      std::move(did_start_deferring_commit_callback));
 
   ASSERT_TRUE(ExecuteScript(shell(), kAddSameSiteDynamicSubframe));
   commit_order_reverser.WaitForBothCommits();

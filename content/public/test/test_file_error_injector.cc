@@ -221,7 +221,8 @@ void DownloadFileWithError::RenameAndUniquify(
                                  error_to_return);
   }
 
-  download::DownloadFileImpl::RenameAndUniquify(full_path, callback_to_use);
+  download::DownloadFileImpl::RenameAndUniquify(full_path,
+                                                std::move(callback_to_use));
 }
 
 void DownloadFileWithError::RenameAndAnnotate(
@@ -252,8 +253,9 @@ void DownloadFileWithError::RenameAndAnnotate(
                                  error_to_return);
   }
 
-  download::DownloadFileImpl::RenameAndAnnotate(
-      full_path, client_guid, source_url, referrer_url, callback_to_use);
+  download::DownloadFileImpl::RenameAndAnnotate(full_path, client_guid,
+                                                source_url, referrer_url,
+                                                std::move(callback_to_use));
 }
 
 bool DownloadFileWithError::OverwriteError(

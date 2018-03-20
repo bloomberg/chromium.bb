@@ -1272,8 +1272,8 @@ void GpuProcessHost::SendOutstandingReplies(
   while (!channel_requests_.empty()) {
     auto callback = channel_requests_.front();
     channel_requests_.pop();
-    callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
-                 gpu::GpuFeatureInfo(), failure_status);
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                            gpu::GpuFeatureInfo(), failure_status);
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {

@@ -460,7 +460,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
                    base::Unretained(this),
                    base::Unretained(state));
     std::unique_ptr<base::Value> out;
-    if (strategy_->FromV8Array(val, &out, isolate, callback))
+    if (strategy_->FromV8Array(val, &out, isolate, std::move(callback)))
       return out;
   }
 
@@ -540,7 +540,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Object(
                    base::Unretained(this),
                    base::Unretained(state));
     std::unique_ptr<base::Value> out;
-    if (strategy_->FromV8Object(val, &out, isolate, callback))
+    if (strategy_->FromV8Object(val, &out, isolate, std::move(callback)))
       return out;
   }
 

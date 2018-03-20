@@ -219,7 +219,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
       .Times(1)
       .WillOnce(DoAll(SaveArg<1>(&third_frame_encoded_data),
                       SaveArg<2>(&third_frame_encoded_alpha),
-                      RunClosure(quit_closure)));
+                      RunClosure(std::move(quit_closure))));
   Encode(video_frame2, base::TimeTicks::Now());
 
   run_loop.Run();
@@ -261,7 +261,7 @@ TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
   base::Closure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(RunClosure(std::move(quit_closure)));
   Encode(video_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -298,7 +298,7 @@ TEST_F(VideoTrackRecorderTest, ForceKeyframeOnAlphaSwitch) {
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, false))
       .Times(1)
       .WillOnce(DoAll(SaveArg<2>(&third_frame_encoded_alpha),
-                      RunClosure(quit_closure)));
+                      RunClosure(std::move(quit_closure))));
   Encode(alpha_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -330,7 +330,7 @@ TEST_F(VideoTrackRecorderTest, HandlesOnError) {
   base::Closure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(RunClosure(std::move(quit_closure)));
   Encode(video_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -354,7 +354,7 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
       base::BindOnce(set_to_true, &frame_is_destroyed));
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(RunClosure(std::move(quit_closure)));
   Encode(video_frame, base::TimeTicks::Now());
   video_frame = nullptr;
   run_loop.Run();

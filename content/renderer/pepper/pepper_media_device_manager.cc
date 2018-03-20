@@ -272,7 +272,7 @@ void PepperMediaDeviceManager::OnDeviceOpened(int request_id,
   OpenDeviceCallback callback = iter->second;
   open_callbacks_.erase(iter);
 
-  callback.Run(request_id, success, success ? label : std::string());
+  std::move(callback).Run(request_id, success, success ? label : std::string());
 }
 
 void PepperMediaDeviceManager::DevicesEnumerated(

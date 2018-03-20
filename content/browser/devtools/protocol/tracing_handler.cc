@@ -440,7 +440,7 @@ void TracingHandler::RequestMemoryDump(
       ->RequestGlobalDumpAndAppendToTrace(
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
           base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
-          on_memory_dump_finished);
+          std::move(on_memory_dump_finished));
 }
 
 void TracingHandler::OnMemoryDumpFinished(

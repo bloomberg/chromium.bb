@@ -1172,12 +1172,12 @@ bool DevToolsURLInterceptorRequestJob::ProcessAuthResponse(
 
 void DevToolsURLInterceptorRequestJob::SetRequestHeadersCallback(
     net::RequestHeadersCallback callback) {
-  request_headers_callback_ = callback;
+  request_headers_callback_ = std::move(callback);
 }
 
 void DevToolsURLInterceptorRequestJob::SetResponseHeadersCallback(
     net::ResponseHeadersCallback callback) {
-  response_headers_callback_ = callback;
+  response_headers_callback_ = std::move(callback);
 }
 
 DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(

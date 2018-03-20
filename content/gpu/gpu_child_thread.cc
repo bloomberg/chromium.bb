@@ -275,7 +275,7 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
   service_factory_.reset(new GpuServiceFactory(
       gpu_service->gpu_preferences(),
       gpu_service->media_gpu_channel_manager()->AsWeakPtr(),
-      overlay_factory_cb));
+      std::move(overlay_factory_cb)));
 
   if (GetContentClient()->gpu()) {  // NULL in tests.
     GetContentClient()->gpu()->GpuServiceInitialized(

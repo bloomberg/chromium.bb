@@ -63,8 +63,9 @@ class AssociatedResourceFetcherImpl::ClientImpl
     // Take a reference to the callback as running the callback may lead to our
     // destruction.
     Callback callback = callback_;
-    callback.Run(status_ == LOAD_FAILED ? blink::WebURLResponse() : response_,
-                 status_ == LOAD_FAILED ? std::string() : data_);
+    std::move(callback).Run(
+        status_ == LOAD_FAILED ? blink::WebURLResponse() : response_,
+        status_ == LOAD_FAILED ? std::string() : data_);
   }
 
   // WebAssociatedURLLoaderClient methods:
