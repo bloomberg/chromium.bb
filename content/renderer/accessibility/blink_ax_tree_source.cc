@@ -911,22 +911,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
                              src.SelectionEnd());
       }
-
-#if defined(OS_CHROMEOS)
-      // This attribute will soon be deprecated; see crbug.com/669134.
-      if (src.IsEditable() && !src.IsRichlyEditable()) {
-        WebVector<int> src_line_breaks;
-        src.LineBreaks(src_line_breaks);
-        if (src_line_breaks.size()) {
-          std::vector<int32_t> line_breaks;
-          line_breaks.reserve(src_line_breaks.size());
-          for (size_t i = 0; i < src_line_breaks.size(); ++i)
-            line_breaks.push_back(src_line_breaks[i]);
-          dst->AddIntListAttribute(ax::mojom::IntListAttribute::kLineBreaks,
-                                   line_breaks);
-        }
-      }
-#endif  // defined OS_CHROMEOS
     }
 
     // ARIA role.

@@ -43,8 +43,19 @@ editing.TextEditHandler = function(node) {
   /** @const {!AutomationNode} @private */
   this.node_ = node;
 
+  if (!node.state[StateType.EDITABLE])
+    throw '|node| must be editable.';
+
   chrome.automation.getDesktop(function(desktop) {
-    var useRichText = node.state[StateType.RICHLY_EDITABLE];
+    // A rich text field is one where selection gets placed on a DOM descendant
+    // to a root text field. This is one of:
+    // - content editables (detected via richly editable state)
+    // - the node is a textarea
+    //
+    // The only other editables we expect are all single line (including those
+    // from ARC++).
+    var useRichText =
+        node.state[StateType.RICHLY_EDITABLE] || node.htmlTag == 'textarea';
 
     /** @private {!AutomationEditableText} */
     this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
@@ -125,8 +136,6 @@ function AutomationEditableText(node) {
   this.multiline = node.state[StateType.MULTILINE] || false;
   /** @type {!AutomationNode} @private */
   this.node_ = node;
-  /** @type {Array<number>} @private */
-  this.lineBreaks_ = [];
 }
 
 AutomationEditableText.prototype = {
@@ -139,9 +148,6 @@ AutomationEditableText.prototype = {
   onUpdate: function(eventFrom) {
     var newValue = this.node_.value || '';
 
-    if (this.value != newValue)
-      this.lineBreaks_ = [];
-
     var textChangeEvent = new cvox.TextChangeEvent(
         newValue, this.node_.textSelStart || 0, this.node_.textSelEnd || 0,
         true /* triggered by user */);
@@ -153,76 +159,37 @@ AutomationEditableText.prototype = {
    * Returns true if selection starts on the first line.
    */
   isSelectionOnFirstLine: function() {
-    var lineIndex = this.getLineIndex(this.start);
-    return this.multiline && lineIndex == 0;
+    return true;
   },
 
   /**
    * Returns true if selection ends on the last line.
    */
   isSelectionOnLastLine: function() {
-    var lineIndex = this.getLineIndex(this.end);
-    var lastLineIndex = this.getLineIndex(this.value.length);
-    return this.multiline && lineIndex == lastLineIndex;
+    return true;
   },
 
   /** @override */
   getLineIndex: function(charIndex) {
-    if (!this.multiline)
-      return 0;
-    var breaks = this.node_.lineBreaks || [];
-    var index = 0;
-    while (index < breaks.length && breaks[index] <= charIndex)
-      ++index;
-    return index;
+    return 0;
   },
 
   /** @override */
   getLineStart: function(lineIndex) {
-    if (!this.multiline || lineIndex == 0)
-      return 0;
-    var breaks = this.getLineBreaks_();
-    return breaks[lineIndex - 1] || this.node_.value.length;
+    return 0;
   },
 
   /** @override */
   getLineEnd: function(lineIndex) {
-    var breaks = this.getLineBreaks_();
-    var value = this.node_.value;
-    if (lineIndex >= breaks.length)
-      return value.length;
-    return breaks[lineIndex] - 1;
-  },
-
-  /**
-   * @return {Array<number>}
-   * @private
-   */
-  getLineBreaks_: function() {
-    // node.lineBreaks is undefined when the multiline field has no line
-    // breaks.
-    return this.node_.lineBreaks || [];
+    return this.node_.value.length;
   },
 
   /** @private */
   outputBraille_: function() {
-    var isFirstLine = this.isSelectionOnFirstLine();
     var output = new Output();
     var range;
-    if (this.multiline) {
-      var lineIndex = this.getLineIndex(this.start);
-      if (isFirstLine)
-        output.formatForBraille('$name', this.node_);
-
-      range = new Range(
-          new Cursor(this.node_, this.getLineStart(lineIndex)),
-          new Cursor(this.node_, this.getLineEnd(lineIndex)));
-    } else {
-      range = Range.fromNode(this.node_);
-    }
+    range = Range.fromNode(this.node_);
     output.withBraille(range, null, Output.EventType.NAVIGATE);
-    if (isFirstLine)
-      output.formatForBraille('@tag_textarea');
     output.go();
   }
 };
@@ -260,15 +227,13 @@ AutomationRichEditableText.prototype = {
 
   /** @override */
   isSelectionOnFirstLine: function() {
-    var anchorObject = this.node_.root.anchorObject;
-    var anchorOffset = this.node_.root.anchorOffset;
-    if (!anchorObject || anchorOffset === undefined)
-      return false;
-    var cursor = new cursors.Cursor(anchorObject, anchorOffset);
-    var deep = cursor.deepEquivalent.node || anchorObject;
+    var deep = this.line_.end_.node;
+    while (deep.previousOnLine)
+      deep = deep.previousOnLine;
     var next = AutomationUtil.findNextNode(
-                   deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox) ||
-        deep;
+        deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox);
+    if (!next)
+      return true;
     var exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
       return item == this.node_;
@@ -277,15 +242,13 @@ AutomationRichEditableText.prototype = {
 
   /** @override */
   isSelectionOnLastLine: function() {
-    var focusObject = this.node_.root.focusObject;
-    var focusOffset = this.node_.root.focusOffset;
-    if (!focusObject || focusOffset === undefined)
-      return false;
-    var cursor = new cursors.Cursor(focusObject, focusOffset);
-    var deep = cursor.deepEquivalent.node || focusObject;
+    var deep = this.line_.end_.node;
+    while (deep.nextOnLine)
+      deep = deep.nextOnLine;
     var next = AutomationUtil.findNextNode(
-                   deep, Dir.FORWARD, AutomationPredicate.inlineTextBox) ||
-        deep;
+        deep, Dir.FORWARD, AutomationPredicate.inlineTextBox);
+    if (!next)
+      return true;
     var exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
       return item == this.node_;
@@ -587,6 +550,7 @@ AutomationRichEditableText.prototype = {
 
   /** @private */
   brailleCurrentRichLine_: function() {
+    var isFirstLine = this.isSelectionOnFirstLine();
     var cur = this.line_;
     if (cur.value_ === null)
       return;
@@ -633,6 +597,12 @@ AutomationRichEditableText.prototype = {
         }
       }
     }
+
+    if (isFirstLine) {
+      if (!/\s/.test(value.toString()[value.length - 1]))
+        value.append(Output.SPACE);
+      value.append(Msgs.getMsg('tag_textarea_brl'));
+    }
     value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
     value.setSpan(
         new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
@@ -667,11 +637,6 @@ AutomationRichEditableText.prototype = {
   /** @override */
   getLineEnd: function(lineIndex) {
     return this.value.length;
-  },
-
-  /** @override */
-  getLineBreaks_: function() {
-    return [];
   },
 
   /**
