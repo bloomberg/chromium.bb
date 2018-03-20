@@ -61,11 +61,6 @@ void DrmOverlayManager::CheckOverlaySupport(
       continue;
     }
 
-    // Compositor doesn't have information about the total size of primary
-    // candidate. We get this information from display rect.
-    if (candidate.plane_z_order == 0)
-      candidate.buffer_size = gfx::ToNearestRect(candidate.display_rect).size();
-
     result_candidates.push_back(OverlaySurfaceCandidate(candidate));
     // Start out hoping that we can have an overlay.
     result_candidates.back().overlay_handled = true;
