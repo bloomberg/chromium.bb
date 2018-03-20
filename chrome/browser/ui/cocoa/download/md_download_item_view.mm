@@ -79,6 +79,15 @@ NSTextField* MakeLabel(
 }
 }  // namespace
 
+@interface MDDownloadItemButton : MDHoverButton
+@end
+
+@implementation MDDownloadItemButton
+- (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent*)event {
+  return YES;
+}
+@end
+
 @interface MDDownloadItemMenuButton : MDHoverButton
 @end
 
@@ -243,7 +252,7 @@ NSTextField* MakeLabel(
     const NSRect buttonRect = NSMakeRect(kButtonXInset, kButtonYInset,
                                          NSWidth(bounds) - kButtonXInset * 2,
                                          NSHeight(bounds) - kButtonYInset * 2);
-    base::scoped_nsobject<MDHoverButton> button([[MDHoverButton alloc]
+    base::scoped_nsobject<MDHoverButton> button([[MDDownloadItemButton alloc]
         initWithFrame:[self cr_localizedRect:buttonRect]]);
     button_ = button;
     button_.imagePosition = NSImageOnly;
