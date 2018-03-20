@@ -190,6 +190,23 @@ class InstallUtil {
       const BrowserDistribution* dist,
       WorkItemList* list);
 
+  // Returns the registry key path and value name where the enrollment token is
+  // stored for machine level user cloud policies.
+  static void GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
+      std::wstring* key_path,
+      std::wstring* value_name);
+
+  // Returns the registry key path and value name where the enrollment token is
+  // stored for machine level user cloud policies.
+  static void GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
+      std::wstring* key_path,
+      std::wstring* value_name);
+
+  // Returns the token used to enroll this chrome instance for machine level
+  // user cloud policies.  Returns an empty string if this machine should not
+  // be enrolled.
+  static std::wstring GetMachineLevelUserCloudPolicyEnrollmentToken();
+
   // A predicate that compares the program portion of a command line with a
   // given file path.  First, the file paths are compared directly.  If they do
   // not match, the filesystem is consulted to determine if the paths reference

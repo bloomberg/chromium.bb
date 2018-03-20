@@ -1021,6 +1021,20 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
         cmd_line.GetSwitchValueNative(
             installer::switches::kSetDisplayVersionValue));
     *exit_code = OverwriteDisplayVersions(registry_product, registry_value);
+#if defined(GOOGLE_CHROME_BUILD)
+  } else if (cmd_line.HasSwitch(installer::switches::kStoreDMToken)) {
+    // Write the specified token to the registry, overwriting any already
+    // existing value.
+    base::string16 token_switch_value =
+        cmd_line.GetSwitchValueNative(installer::switches::kStoreDMToken);
+    base::Optional<std::string> token;
+    if (!(token = installer::DecodeDMTokenSwitchValue(token_switch_value)) ||
+        !installer::StoreDMToken(*token)) {
+      *exit_code = installer::STORE_DMTOKEN_FAILED;
+    } else {
+      *exit_code = installer::STORE_DMTOKEN_SUCCESS;
+    }
+#endif
   } else {
     handled = false;
   }

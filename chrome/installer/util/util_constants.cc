@@ -124,6 +124,9 @@ const char kRemoveChromeRegistration[] = "remove-chrome-registration";
 // line flag so that we try the launch only once.
 const char kRunAsAdmin[] = "run-as-admin";
 
+// Saves the specified device management token to the registry.
+const char kStoreDMToken[] = "store-dmtoken";
+
 // Combined with --uninstall, signals to setup.exe that this uninstall was
 // triggered by a self-destructing Chrome.
 const char kSelfDestruct[] = "self-destruct";
@@ -188,6 +191,7 @@ const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
+const wchar_t kCmdStoreDMToken[] = L"store-dmtoken";
 const wchar_t kEULASentinelFile[] = L"EULA Accepted";
 const wchar_t kInstallBinaryDir[] = L"Application";
 const wchar_t kInstallerDir[] = L"Installer";

@@ -106,8 +106,11 @@ enum InstallStatus {
                                                // delete all files that belong
                                                // to old versions of Chrome too
                                                // many times without success.
-
-  MAX_INSTALL_STATUS   = 64,  // When adding a new result, bump this and update
+  STORE_DMTOKEN_FAILED = 64,  // Failed to write the specified DMToken to the
+                              // registry.
+  STORE_DMTOKEN_SUCCESS = 65,  // Writing the specified DMToken to the registry
+                               // succeeded.
+  MAX_INSTALL_STATUS   = 66,  // When adding a new result, bump this and update
                               // the InstallStatus enum in histograms.xml.
 };
 
@@ -172,6 +175,7 @@ extern const char kRegisterURLProtocol[];
 extern const char kRenameChromeExe[];
 extern const char kRemoveChromeRegistration[];
 extern const char kRunAsAdmin[];
+extern const char kStoreDMToken[];
 extern const char kSelfDestruct[];
 extern const char kSystemLevel[];
 extern const char kTriggerActiveSetup[];
@@ -200,6 +204,7 @@ extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
+extern const wchar_t kCmdStoreDMToken[];
 extern const wchar_t kEULASentinelFile[];
 extern const wchar_t kInstallBinaryDir[];
 extern const wchar_t kInstallerDir[];

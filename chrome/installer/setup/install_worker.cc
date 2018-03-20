@@ -890,6 +890,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   AddOsUpgradeWorkItems(installer_state, setup_path, new_version, product,
                         install_list);
+#if defined(GOOGLE_CHROME_BUILD)
+  AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
+                                   product, install_list);
+#endif
   AddFirewallRulesWorkItems(installer_state, dist, current_version == nullptr,
                             install_list);
 
@@ -1055,5 +1059,43 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, install_list);
   }
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
+                                      const base::FilePath& setup_path,
+                                      const base::Version& new_version,
+                                      const Product& product,
+                                      WorkItemList* install_list) {
+  if (!installer_state.system_install())
+    return;
+
+  const HKEY root_key = installer_state.root_key();
+  const base::string16 cmd_key(
+      GetRegCommandKey(product.distribution(), kCmdStoreDMToken));
+
+  if (installer_state.operation() == InstallerState::UNINSTALL) {
+    install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key, KEY_WOW64_32KEY)
+        ->set_log_message("Removing store DM token command");
+  } else {
+    // Register a command to allow Chrome to request Google Update to run
+    // setup.exe --store-dmtoken=<token>, which will store the specifed token in
+    // the registry.
+    base::CommandLine cmd_line(
+        installer_state.GetInstallerDirectory(new_version)
+            .Append(setup_path.BaseName()));
+    cmd_line.AppendSwitchASCII(switches::kStoreDMToken, "%1");
+    cmd_line.AppendSwitch(switches::kSystemLevel);
+    cmd_line.AppendSwitch(switches::kVerboseLogging);
+    InstallUtil::AppendModeSwitch(&cmd_line);
+
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    // TODO(alito): For now setting this command as web accessible is required
+    // by Google Update.  Could revisit this should Google Update change the
+    // way permissions are handled for commands.
+    cmd.set_is_web_accessible(true);
+    cmd.AddWorkItems(root_key, cmd_key, install_list);
+  }
+}
+#endif
 
 }  // namespace installer

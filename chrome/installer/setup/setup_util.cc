@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -877,6 +878,56 @@ bool OsSupportsDarkTextTiles() {
   auto windows_version = base::win::GetVersion();
   return windows_version == base::win::VERSION_WIN8_1 ||
          windows_version >= base::win::VERSION_WIN10_RS1;
+}
+
+base::Optional<std::string> DecodeDMTokenSwitchValue(
+    const base::string16& encoded_token) {
+  if (encoded_token.empty()) {
+    LOG(ERROR) << "Empty DMToken specified on the command line";
+    return base::nullopt;
+  }
+
+  // The token passed on the command line is base64-encoded, but since this is
+  // on Windows, it is passed in as a wide string containing base64 values only.
+  std::string token;
+  if (!base::IsStringASCII(encoded_token) ||
+      !base::Base64Decode(base::UTF16ToASCII(encoded_token), &token)) {
+    LOG(ERROR) << "DMToken passed on the command line is not correctly encoded";
+    return base::nullopt;
+  }
+
+  return token;
+}
+
+bool StoreDMToken(const std::string& token) {
+  DCHECK(install_static::IsSystemInstall());
+
+  std::wstring path;
+  std::wstring name;
+  InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(&path,
+                                                                 &name);
+
+  base::win::RegKey key;
+  LONG result = key.Create(HKEY_LOCAL_MACHINE, path.c_str(),
+                           KEY_WRITE | KEY_WOW64_64KEY);
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to create/open registry key HKLM\\" << path
+               << " for writing result=" << result;
+    return false;
+  }
+
+  result =
+      key.WriteValue(name.c_str(), token.data(),
+                     base::saturated_cast<DWORD>(token.size()), REG_BINARY);
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to write specified DMToken to the registry at HKLM\\"
+               << path << "\\" << name << " result=" << result;
+    return false;
+  }
+
+  VLOG(1) << "Successfully stored specified DMToken in the registry.";
+
+  return true;
 }
 
 }  // namespace installer
