@@ -138,7 +138,7 @@ def get_waterfall_config():
          ('media_perftests', 'build74-b1--device7'),
        ],
        'perf_tests_with_args': [
-         ('angle_perftests', 'build73-b1--device4', ['--shard-timeout=180'],
+         ('angle_perftests', 'build73-b1--device4', ['--shard-timeout=300'],
            'angle_perftests'),
        ]
       }

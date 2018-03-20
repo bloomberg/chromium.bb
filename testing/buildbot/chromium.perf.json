@@ -4722,7 +4722,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--shard-timeout=180"
+          "--shard-timeout=300"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
