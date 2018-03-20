@@ -18,12 +18,14 @@
 @synthesize footerTitle = _footerTitle;
 @synthesize emptyText = _emptyText;
 @synthesize showIfEmpty = _showIfEmpty;
+@synthesize expanded = _expanded;
 
 - (instancetype)initWithSectionID:(ContentSuggestionsSectionID)sectionID {
   self = [super init];
   if (self) {
     DCHECK(sectionID < ContentSuggestionsSectionUnknown);
     _sectionID = sectionID;
+    _expanded = YES;
   }
   return self;
 }

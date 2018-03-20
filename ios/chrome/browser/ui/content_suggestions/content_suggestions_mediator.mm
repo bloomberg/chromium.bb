@@ -108,6 +108,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     ContentSuggestionsMostVisitedActionItem* readingListItem;
 // Number of unread items in reading list model.
 @property(nonatomic, assign) NSInteger readingListUnreadCount;
+// Whether to force the reload the Articles List section next time it is
+// updated. Reset to NO after actual reload.
+@property(nonatomic, assign) BOOL articlesListNeedsReload;
 
 @end
 
@@ -129,8 +132,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 @synthesize faviconMediator = _faviconMediator;
 @synthesize learnMoreItem = _learnMoreItem;
 @synthesize readingListNeedsReload = _readingListNeedsReload;
+@synthesize articlesListNeedsReload = _articlesListNeedsReload;
 @synthesize readingListItem = _readingListItem;
 @synthesize readingListUnreadCount = _readingListUnreadCount;
+@synthesize contentArticlesExpanded = _contentArticlesExpanded;
+@synthesize contentArticlesEnabled = _contentArticlesEnabled;
 
 #pragma mark - Public
 
@@ -229,8 +235,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (!self.sectionInformationByCategory[categoryWrapper]) {
       [self addSectionInformationForCategory:category];
     }
-    if (IsCategoryStatusAvailable(
-            self.contentService->GetCategoryStatus(category))) {
+    if ([self isCategoryAvailable:category]) {
       [sectionsInfo
           addObject:self.sectionInformationByCategory[categoryWrapper]];
     }
@@ -365,6 +370,24 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   return [self.headerProvider headerForWidth:width];
 }
 
+- (void)toggleArticlesVisibility {
+  [self.contentArticlesExpanded setValue:![self.contentArticlesExpanded value]];
+
+  // Update the section information for new collapsed state.
+  ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
+      ntp_snippets::KnownCategories::ARTICLES);
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+  ContentSuggestionsSectionInformation* sectionInfo =
+      self.sectionInformationByCategory[wrapper];
+  sectionInfo.expanded = [self.contentArticlesExpanded value];
+  self.sectionInformationByCategory[wrapper] = sectionInfo;
+
+  // Reload the data model.
+  self.articlesListNeedsReload = YES;
+  [self.dataSink reloadAllData];
+}
+
 #pragma mark - ContentSuggestionsServiceObserver
 
 - (void)contentSuggestionsService:
@@ -381,8 +404,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     self.readingListNeedsReload = NO;
   }
 
-  if (ntp_snippets::IsCategoryStatusAvailable(
-          self.contentService->GetCategoryStatus(category))) {
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
+    forceReload = self.articlesListNeedsReload;
+    self.articlesListNeedsReload = NO;
+  }
+
+  if ([self isCategoryAvailable:category]) {
     [self.dataSink
         dataAvailableForSection:self.sectionInformationByCategory[wrapper]
                     forceReload:forceReload];
@@ -395,7 +422,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                   statusChangedTo:(ntp_snippets::CategoryStatus)status {
   ContentSuggestionsCategoryWrapper* wrapper =
       [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
-  if (!ntp_snippets::IsCategoryStatusInitOrAvailable(status)) {
+  if (![self isCategoryInitOrAvailable:category]) {
     // Remove the category from the UI if it is not available.
     ContentSuggestionsSectionInformation* sectionInfo =
         self.sectionInformationByCategory[wrapper];
@@ -531,8 +558,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
             (const std::vector<ntp_snippets::ContentSuggestion>&)suggestions
           fromCategory:(ntp_snippets::Category&)category
            toItemArray:(NSMutableArray<CSCollectionViewItem*>*)itemArray {
-  if (!ntp_snippets::IsCategoryStatusAvailable(
-          self.contentService->GetCategoryStatus(category))) {
+  if (![self isCategoryExpanded:category]) {
     return;
   }
 
@@ -561,8 +587,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   base::Optional<ntp_snippets::CategoryInfo> categoryInfo =
       self.contentService->GetCategoryInfo(category);
 
+  BOOL expanded = [self isCategoryExpanded:category];
   ContentSuggestionsSectionInformation* sectionInfo =
-      SectionInformationFromCategoryInfo(categoryInfo, category);
+      SectionInformationFromCategoryInfo(categoryInfo, category, expanded);
 
   self.sectionInformationByCategory[[ContentSuggestionsCategoryWrapper
       wrapperWithCategory:category]] = sectionInfo;
@@ -597,6 +624,47 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (void)useFreshMostVisited {
   self.mostVisitedItems = self.freshMostVisitedItems;
   [self.dataSink reloadSection:self.mostVisitedSectionInfo];
+}
+
+// ntp_snippets doesn't differentiate between disabled vs collapsed, so if
+// the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
+// |contentArticlesEnabled|.
+- (BOOL)isCategoryInitOrAvailable:(ntp_snippets::Category)category {
+  ntp_snippets::CategoryStatus status =
+      self.contentService->GetCategoryStatus(category);
+  if (IsUIRefreshPhase1Enabled() &&
+      category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
+      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
+    return [self.contentArticlesEnabled value];
+  else
+    return IsCategoryStatusInitOrAvailable(
+        self.contentService->GetCategoryStatus(category));
+}
+
+// ntp_snippets doesn't differentiate between disabled vs collapsed, so if
+// the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
+// |contentArticlesEnabled|.
+- (BOOL)isCategoryAvailable:(ntp_snippets::Category)category {
+  ntp_snippets::CategoryStatus status =
+      self.contentService->GetCategoryStatus(category);
+  if (IsUIRefreshPhase1Enabled() &&
+      category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
+      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
+    return [self.contentArticlesEnabled value];
+  } else {
+    return IsCategoryStatusAvailable(
+        self.contentService->GetCategoryStatus(category));
+  }
+}
+
+// Returns whether the Articles category pref indicates it should be expanded,
+// otherwise returns YES.
+- (BOOL)isCategoryExpanded:(ntp_snippets::Category)category {
+  if (IsUIRefreshPhase1Enabled() &&
+      category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
+    return [self.contentArticlesExpanded value];
+  else
+    return YES;
 }
 
 #pragma mark - Properties
