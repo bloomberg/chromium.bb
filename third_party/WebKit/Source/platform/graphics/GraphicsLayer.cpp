@@ -105,14 +105,13 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_layer_(nullptr),
       contents_layer_id_(0),
       scrollable_area_(nullptr),
-      rendering_context3d_(0),
-      weak_ptr_factory_(this) {
+      rendering_context3d_(0) {
 #if DCHECK_IS_ON()
   client.VerifyNotPainting();
 #endif
   layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(this);
   layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
-  layer_->Layer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  layer_->Layer()->SetLayerClient(this);
 
   UpdateTrackingRasterInvalidations();
 }
@@ -557,7 +556,7 @@ void GraphicsLayer::SetContentsLayer(WebLayer* contents_layer) {
     contents_layer_id_ = 0;
     return;
   }
-  contents_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  contents_layer_->SetLayerClient(this);
   contents_layer_id_ = contents_layer_->Id();
 }
 
@@ -1293,7 +1292,7 @@ void GraphicsLayer::SetPaintingPhase(GraphicsLayerPaintingPhase phase) {
 void GraphicsLayer::AddLinkHighlight(LinkHighlight* link_highlight) {
   DCHECK(link_highlight && !link_highlights_.Contains(link_highlight));
   link_highlights_.push_back(link_highlight);
-  link_highlight->Layer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  link_highlight->Layer()->SetLayerClient(this);
   UpdateChildList();
 }
 
