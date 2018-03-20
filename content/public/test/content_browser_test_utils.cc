@@ -147,9 +147,9 @@ void LookupAndLogNameAndIdOfFirstCamera() {
                       LOG(INFO) << "Using camera "
                                 << descriptors.front().display_name() << " ("
                                 << descriptors.front().model_id << ")";
-                      std::move(quit_closure).Run();
+                      quit_closure.Run();
                     },
-                    std::move(quit_closure)));
+                    quit_closure));
           },
           media_stream_manager, run_loop.QuitClosure()));
   run_loop.Run();

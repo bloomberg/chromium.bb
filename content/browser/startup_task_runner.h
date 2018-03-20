@@ -43,7 +43,7 @@ class CONTENT_EXPORT StartupTaskRunner {
   ~StartupTaskRunner();
 
   // Add a task to the queue of startup tasks to be run.
-  void AddTask(StartupTask callback);
+  void AddTask(StartupTask& callback);
 
   // Start running the tasks asynchronously.
   void StartRunningTasksAsync();

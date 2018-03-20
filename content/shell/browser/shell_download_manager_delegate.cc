@@ -93,8 +93,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
       base::BindOnce(&ShellDownloadManagerDelegate::GenerateFilename,
                      download->GetURL(), download->GetContentDisposition(),
                      download->GetSuggestedFilename(), download->GetMimeType(),
-                     default_download_path_,
-                     std::move(filename_determined_callback)));
+                     default_download_path_, filename_determined_callback));
   return true;
 }
 

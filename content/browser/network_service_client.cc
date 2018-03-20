@@ -134,9 +134,9 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
       ResourceRequestInfo::WebContentsGetter web_contents_getter) {
     std::unique_ptr<net::ClientCertStore> client_cert_store =
         GetContentClient()->browser()->CreateClientCertStore(resource_context);
-    ssl_client_auth_handler_.reset(new SSLClientAuthHandler(
-        std::move(client_cert_store), std::move(web_contents_getter),
-        cert_info_.get(), this));
+    ssl_client_auth_handler_.reset(
+        new SSLClientAuthHandler(std::move(client_cert_store),
+                                 web_contents_getter, cert_info_.get(), this));
     ssl_client_auth_handler_->SelectCertificate();
   }
 
@@ -260,9 +260,9 @@ void NetworkServiceClient::OnAuthRequired(
           ? RenderFrameHost::FromID(process_id, routing_id)
           : FrameTreeNode::GloballyFindByID(routing_id)->current_frame_host();
   bool is_main_frame = !rfh->GetParent();
-  new LoginHandlerDelegate(std::move(callback), std::move(web_contents_getter),
-                           auth_info, is_main_frame, process_id, routing_id,
-                           request_id, url,
+  new LoginHandlerDelegate(std::move(callback), web_contents_getter, auth_info,
+                           is_main_frame, process_id, routing_id, request_id,
+                           url,
                            first_auth_attempt);  // deletes self
 }
 
@@ -285,7 +285,7 @@ void NetworkServiceClient::OnCertificateRequested(
                             true /* cancel_certificate_selection */);
     return;
   }
-  new SSLClientAuthDelegate(std::move(callback), std::move(web_contents_getter),
+  new SSLClientAuthDelegate(std::move(callback), web_contents_getter,
                             cert_info);  // deletes self
 }
 
@@ -304,9 +304,9 @@ void NetworkServiceClient::OnSSLCertificateError(
       process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
                               process_id, routing_id)
                  : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
-  SSLManager::OnSSLCertificateError(
-      delegate->GetWeakPtr(), static_cast<ResourceType>(resource_type), url,
-      std::move(web_contents_getter), ssl_info, fatal);
+  SSLManager::OnSSLCertificateError(delegate->GetWeakPtr(),
+                                    static_cast<ResourceType>(resource_type),
+                                    url, web_contents_getter, ssl_info, fatal);
 }
 
 }  // namespace content

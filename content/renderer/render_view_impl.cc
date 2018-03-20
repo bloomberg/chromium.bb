@@ -1343,7 +1343,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                  base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      compositor_deps_, std::move(view_params), std::move(show_callback),
+      compositor_deps_, std::move(view_params), show_callback,
       creator->GetTaskRunner(blink::TaskType::kUnthrottled));
 
   return view->webview();

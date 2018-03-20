@@ -391,7 +391,7 @@ void BluetoothDeviceChooserController::GetDevice(
 
   if (WebContentsDelegate* delegate = web_contents_->GetDelegate()) {
     chooser_ = delegate->RunBluetoothChooser(render_frame_host_,
-                                             std::move(chooser_event_handler));
+                                             chooser_event_handler);
   }
 
   if (!chooser_.get()) {

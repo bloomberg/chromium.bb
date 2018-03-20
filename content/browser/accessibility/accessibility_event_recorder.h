@@ -45,7 +45,7 @@ class AccessibilityEventRecorder {
   }
 
   void ListenToEvents(AccessibilityEventCallback callback) {
-    callback_ = std::move(callback);
+    callback_ = callback;
   }
 
   // Access the vector of human-readable event logs, one string per event.

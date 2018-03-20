@@ -237,7 +237,7 @@ TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
   main_test_rfh()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithModificationCallback(
-      2, true, url, std::move(set_bad_file_path_callback));
+      2, true, url, set_bad_file_path_callback);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 

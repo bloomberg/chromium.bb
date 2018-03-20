@@ -49,8 +49,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink, OnVideoFrame())
-        .WillOnce(RunClosure(std::move(quit_closure)));
+    EXPECT_CALL(*sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
     const scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateColorFrame(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
@@ -279,8 +278,7 @@ TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
   MockMediaStreamVideoSink sink;
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(sink, OnVideoFrame())
-      .WillOnce(RunClosure(std::move(quit_closure)));
+  EXPECT_CALL(sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
   sink.ConnectToTrack(track);
   run_loop.Run();
   EXPECT_EQ(1, sink.number_of_frames());

@@ -57,17 +57,17 @@ class MemoryTracingTest : public ContentBrowserTest {
     // the run loop (which is the IN_PROC_BROWSER_TEST_F main thread).
     if (!task_runner->RunsTasksInCurrentSequence()) {
       task_runner->PostTask(
-          FROM_HERE, base::BindOnce(&MemoryTracingTest::OnGlobalMemoryDumpDone,
-                                    base::Unretained(this), task_runner,
-                                    std::move(closure), request_index, success,
-                                    dump_guid));
+          FROM_HERE,
+          base::BindOnce(&MemoryTracingTest::OnGlobalMemoryDumpDone,
+                         base::Unretained(this), task_runner, closure,
+                         request_index, success, dump_guid));
       return;
     }
     if (success)
       EXPECT_NE(0u, dump_guid);
     OnMemoryDumpDone(request_index, success);
     if (!closure.is_null())
-      std::move(closure).Run();
+      closure.Run();
   }
 
   void RequestGlobalDumpWithClosure(
@@ -85,11 +85,11 @@ class MemoryTracingTest : public ContentBrowserTest {
               RequestGlobalDumpAndAppendToTrace,
           base::Unretained(
               memory_instrumentation::MemoryInstrumentation::GetInstance()),
-          dump_type, level_of_detail, std::move(callback)));
+          dump_type, level_of_detail, callback));
     } else {
       memory_instrumentation::MemoryInstrumentation::GetInstance()
           ->RequestGlobalDumpAndAppendToTrace(dump_type, level_of_detail,
-                                              std::move(callback));
+                                              callback);
     }
   }
 
@@ -137,9 +137,7 @@ class MemoryTracingTest : public ContentBrowserTest {
         TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
             [](base::Closure quit_closure,
                std::unique_ptr<const base::DictionaryValue> metadata,
-               base::RefCountedString* trace_str) {
-              std::move(quit_closure).Run();
-            },
+               base::RefCountedString* trace_str) { quit_closure.Run(); },
             run_loop.QuitClosure())));
     EXPECT_TRUE(success);
     run_loop.Run();

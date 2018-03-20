@@ -817,8 +817,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 
   bool has_sw_echo_cancellation = false;
-  MediaStreamAudioSource* const audio_source = CreateAudioSource(
-      device, std::move(source_ready), &has_sw_echo_cancellation);
+  MediaStreamAudioSource* const audio_source =
+      CreateAudioSource(device, source_ready, &has_sw_echo_cancellation);
   audio_source->SetStopCallback(base::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
 

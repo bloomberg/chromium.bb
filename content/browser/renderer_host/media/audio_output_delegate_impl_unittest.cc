@@ -203,7 +203,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PlayTest(base::Closure done, bool use_bound_observer) {
@@ -249,7 +249,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PauseTest(base::Closure done) {
@@ -280,7 +280,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PlayPausePlayTest(base::Closure done) {
@@ -317,7 +317,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PlayPlayTest(base::Closure done) {
@@ -351,7 +351,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void CreateDivertTest(base::Closure done) {
@@ -383,7 +383,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void CreateDivertPauseTest(base::Closure done) {
@@ -414,7 +414,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PlayDivertTest(base::Closure done) {
@@ -448,7 +448,7 @@ class AudioOutputDelegateTest : public testing::Test {
       EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void TrampolineToUI(base::Closure done,
@@ -456,7 +456,7 @@ class AudioOutputDelegateTest : public testing::Test {
     // Destruct and then sync since destruction will post some tasks.
     delegate.reset();
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void ErrorTest(base::Closure done) {
@@ -489,7 +489,7 @@ class AudioOutputDelegateTest : public testing::Test {
     EXPECT_CALL(event_handler_, OnStreamError(kStreamId))
         .WillOnce(media::RunClosure(media::BindToCurrentLoop(base::Bind(
             &AudioOutputDelegateTest::TrampolineToUI, base::Unretained(this),
-            std::move(done), base::Passed(&delegate)))));
+            done, base::Passed(&delegate)))));
   }
 
   void CreateAndDestroyTest(base::Closure done) {
@@ -514,7 +514,7 @@ class AudioOutputDelegateTest : public testing::Test {
           Params(), std::move(observer_ptr), kDefaultDeviceId);
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void PlayAndDestroyTest(base::Closure done) {
@@ -544,7 +544,7 @@ class AudioOutputDelegateTest : public testing::Test {
       delegate.OnPlayStream();
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void ErrorAndDestroyTest(base::Closure done) {
@@ -573,7 +573,7 @@ class AudioOutputDelegateTest : public testing::Test {
       delegate.GetControllerForTesting()->OnError();
     }
     SyncWithAllThreads();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(done));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
  protected:

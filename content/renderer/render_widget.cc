@@ -486,8 +486,7 @@ RenderWidget* RenderWidget::CreateForPopup(
       task_runner, std::move(widget_channel_request)));
   ShowCallback opener_callback =
       base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
-  widget->Init(std::move(opener_callback),
-               RenderWidget::CreateWebWidget(widget.get()));
+  widget->Init(opener_callback, RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
   return widget.get();
 }

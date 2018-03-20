@@ -205,7 +205,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     controller_ = controller;
     if (!continuation)
       return;
-    std::move(continuation).Run();
+    continuation.Run();
   }
 
  protected:

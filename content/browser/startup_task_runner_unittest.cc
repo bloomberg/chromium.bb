@@ -120,11 +120,11 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecution) {
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner.AddTask(std::move(task1));
+  runner.AddTask(task1);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner.AddTask(std::move(task2));
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
@@ -158,11 +158,11 @@ TEST_F(StartupTaskRunnerTest, NullObserver) {
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner.AddTask(std::move(task1));
+  runner.AddTask(task1);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner.AddTask(std::move(task2));
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
@@ -193,11 +193,11 @@ TEST_F(StartupTaskRunnerTest, SynchronousExecutionFailedTask) {
 
   StartupTask task3 =
       base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
-  runner.AddTask(std::move(task3));
+  runner.AddTask(task3);
   EXPECT_EQ(GetLastTask(), 0);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner.AddTask(std::move(task2));
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
@@ -234,10 +234,10 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecution) {
 
   StartupTask task1 =
       base::Bind(&StartupTaskRunnerTest::Task1, base::Unretained(this));
-  runner.AddTask(std::move(task1));
+  runner.AddTask(task1);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner.AddTask(std::move(task2));
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);
@@ -280,10 +280,10 @@ TEST_F(StartupTaskRunnerTest, AsynchronousExecutionFailedTask) {
 
   StartupTask task3 =
       base::Bind(&StartupTaskRunnerTest::FailingTask, base::Unretained(this));
-  runner.AddTask(std::move(task3));
+  runner.AddTask(task3);
   StartupTask task2 =
       base::Bind(&StartupTaskRunnerTest::Task2, base::Unretained(this));
-  runner.AddTask(std::move(task2));
+  runner.AddTask(task2);
 
   // Nothing should run until we tell them to.
   EXPECT_EQ(GetLastTask(), 0);

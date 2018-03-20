@@ -679,7 +679,7 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
   base::Callback<bool(const GURL&)> url_filter =
       GetSingleURLFilter(download_urls_[0]);
   int remove_count = download_manager_->RemoveDownloadsByURLAndTime(
-      std::move(url_filter), base::Time(), base::Time::Max());
+      url_filter, base::Time(), base::Time::Max());
   EXPECT_EQ(remove_count, 1);
 }
 

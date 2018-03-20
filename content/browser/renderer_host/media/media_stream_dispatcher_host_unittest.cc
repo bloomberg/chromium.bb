@@ -71,7 +71,7 @@ void AudioInputDevicesEnumerated(base::Closure quit_closure,
   for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
     out->emplace_back(info.label, info.device_id, info.group_id);
   }
-  std::move(quit_closure).Run();
+  quit_closure.Run();
 }
 
 }  // anonymous namespace

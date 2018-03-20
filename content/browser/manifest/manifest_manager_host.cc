@@ -75,7 +75,7 @@ void ManifestManagerHost::OnRequestManifestResponse(int request_id,
                                                     const Manifest& manifest) {
   auto callback = std::move(*callbacks_.Lookup(request_id));
   callbacks_.Remove(request_id);
-  std::move(callback).Run(url, manifest);
+  callback.Run(url, manifest);
 }
 
 void ManifestManagerHost::ManifestUrlChanged(

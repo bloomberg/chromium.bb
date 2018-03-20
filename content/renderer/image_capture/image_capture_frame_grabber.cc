@@ -75,7 +75,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   SkPixmap pixmap;
   if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
     DLOG(ERROR) << "Error trying to map SkSurface's pixels";
-    std::move(callback).Run(sk_sp<SkImage>());
+    callback.Run(sk_sp<SkImage>());
     return;
   }
 
@@ -103,7 +103,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
                              pixmap.height());
   }
 
-  std::move(callback).Run(surface->makeImageSnapshot());
+  callback.Run(surface->makeImageSnapshot());
 }
 
 ImageCaptureFrameGrabber::ImageCaptureFrameGrabber()

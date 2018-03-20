@@ -380,7 +380,7 @@ void MHTMLGenerationManager::Job::CloseFile(
     // Only update the status if that won't hide an earlier error.
     if (save_status == MhtmlSaveStatus::SUCCESS)
       save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
-    std::move(callback).Run(std::make_tuple(save_status, -1));
+    callback.Run(std::make_tuple(save_status, -1));
     return;
   }
 
@@ -393,7 +393,7 @@ void MHTMLGenerationManager::Job::CloseFile(
           (save_status == MhtmlSaveStatus::SUCCESS ? mhtml_boundary_marker_
                                                    : std::string()),
           base::Passed(&browser_file_), base::Passed(&extra_data_parts_)),
-      std::move(callback));
+      callback);
 }
 
 bool MHTMLGenerationManager::Job::IsMessageFromFrameExpected(

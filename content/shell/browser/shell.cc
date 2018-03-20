@@ -167,7 +167,7 @@ void Shell::CloseAllWindows() {
 void Shell::SetShellCreatedCallback(
     base::Callback<void(Shell*)> shell_created_callback) {
   DCHECK(shell_created_callback_.is_null());
-  shell_created_callback_ = std::move(shell_created_callback);
+  shell_created_callback_ = shell_created_callback;
 }
 
 Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {

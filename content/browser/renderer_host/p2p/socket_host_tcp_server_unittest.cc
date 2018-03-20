@@ -40,7 +40,7 @@ class FakeServerSocket : public net::ServerSocket {
       // callback.
       net::CompletionCallback cb = accept_callback_;
       accept_callback_.Reset();
-      std::move(cb).Run(net::OK);
+      cb.Run(net::OK);
     } else {
       incoming_sockets_.push_back(socket);
     }

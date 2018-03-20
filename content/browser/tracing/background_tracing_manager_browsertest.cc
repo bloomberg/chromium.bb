@@ -141,8 +141,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
     EXPECT_EQ(Z_STREAM_END, result);
 
     last_file_contents_.assign(output_str.data(), bytes_written);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            std::move(done_callback));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_callback);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   }
 
@@ -169,7 +168,7 @@ void StartedFinalizingCallback(base::Closure callback,
                                bool value) {
   EXPECT_EQ(expected, value);
   if (!callback.is_null())
-    std::move(callback).Run();
+    callback.Run();
 }
 
 std::unique_ptr<BackgroundTracingConfig> CreatePreemptiveConfig() {

@@ -4353,14 +4353,14 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
       &WebContentsImpl::SendPpapiBrokerPermissionResult, base::Unretained(this),
       source->GetProcess()->GetID(), ppb_broker_route_id);
   if (!delegate_) {
-    std::move(permission_result_callback).Run(false);
+    permission_result_callback.Run(false);
     return;
   }
 
   if (!delegate_->RequestPpapiBrokerPermission(this, url, plugin_path,
                                                permission_result_callback)) {
     NOTIMPLEMENTED();
-    std::move(permission_result_callback).Run(false);
+    permission_result_callback.Run(false);
   }
 }
 

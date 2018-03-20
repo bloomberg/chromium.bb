@@ -227,7 +227,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   void MHTMLGenerated(base::Closure quit_closure, int64_t size) {
     has_mhtml_callback_run_ = true;
     file_size_ = size;
-    std::move(quit_closure).Run();
+    quit_closure.Run();
   }
 
   bool has_mhtml_callback_run_;

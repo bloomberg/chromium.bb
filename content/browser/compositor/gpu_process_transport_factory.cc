@@ -497,15 +497,15 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       }
       display_output_surface =
           std::make_unique<SoftwareBrowserCompositorOutputSurface>(
-              CreateSoftwareOutputDevice(compositor->widget()),
-              std::move(vsync_callback), compositor->task_runner());
+              CreateSoftwareOutputDevice(compositor->widget()), vsync_callback,
+              compositor->task_runner());
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();
       if (data->surface_handle == gpu::kNullSurfaceHandle) {
         display_output_surface =
             std::make_unique<OffscreenBrowserCompositorOutputSurface>(
-                context_provider, std::move(vsync_callback),
+                context_provider, vsync_callback,
                 std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
@@ -521,8 +521,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #else
         auto gpu_output_surface =
             std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
-                context_provider, data->surface_handle,
-                std::move(vsync_callback),
+                context_provider, data->surface_handle, vsync_callback,
                 CreateOverlayCandidateValidator(compositor->widget()),
                 GL_TEXTURE_2D, GL_RGB,
                 display::DisplaySnapshot::PrimaryFormat(),
@@ -541,8 +540,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
         auto gpu_output_surface =
             std::make_unique<GpuBrowserCompositorOutputSurface>(
-                context_provider, std::move(vsync_callback),
-                std::move(validator));
+                context_provider, vsync_callback, std::move(validator));
         gpu_vsync_control = gpu_output_surface.get();
         display_output_surface = std::move(gpu_output_surface);
       }

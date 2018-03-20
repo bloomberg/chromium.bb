@@ -114,7 +114,7 @@ void PluginList::LoadPlugins() {
     will_load_callback = will_load_plugins_callback_;
   }
   if (!will_load_callback.is_null())
-    std::move(will_load_callback).Run();
+    will_load_callback.Run();
 
   std::vector<base::FilePath> plugin_paths;
   GetPluginPathsToLoad(&plugin_paths);

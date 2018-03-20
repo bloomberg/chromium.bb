@@ -215,7 +215,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     *out_registration =
         registration ? registration.value() : BackgroundFetchRegistration();
 
-    std::move(quit_closure).Run();
+    quit_closure.Run();
   }
 
   void DidGetError(base::Closure quit_closure,
@@ -223,7 +223,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
                    blink::mojom::BackgroundFetchError error) {
     *out_error = error;
 
-    std::move(quit_closure).Run();
+    quit_closure.Run();
   }
 
   void DidGetDeveloperIds(base::Closure quit_closure,
@@ -234,7 +234,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     *out_error = error;
     *out_developer_ids = developer_ids;
 
-    std::move(quit_closure).Run();
+    quit_closure.Run();
   }
 
   scoped_refptr<BackgroundFetchContext> context_;

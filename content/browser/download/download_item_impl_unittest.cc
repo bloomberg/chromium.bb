@@ -1847,7 +1847,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockOnce) {
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
+  copy_delegate_callback.Run();
   ASSERT_TRUE(delegate_callback.is_null());
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_FALSE(item->IsDangerous());
@@ -1891,7 +1891,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   item->OnContentCheckCompleted(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
                                 download::DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
+  copy_delegate_callback.Run();
   ASSERT_TRUE(delegate_callback.is_null());
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_TRUE(item->IsDangerous());
@@ -1946,7 +1946,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
-  std::move(copy_delegate_callback).Run();
+  copy_delegate_callback.Run();
   ASSERT_TRUE(delegate_callback.is_null());
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
   EXPECT_FALSE(item->IsDangerous());
