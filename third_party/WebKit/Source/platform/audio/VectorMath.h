@@ -29,6 +29,7 @@
 #include <cstddef>
 
 #include "platform/PlatformExport.h"
+#include "platform/audio/AudioArray.h"
 
 // Defines the interface for several vector math functions whose implementation
 // will ideally be optimized.
@@ -47,7 +48,14 @@ PLATFORM_EXPORT void Conv(const float* source_p,
                           float* dest_p,
                           int dest_stride,
                           size_t frames_to_process,
-                          size_t filter_size);
+                          size_t filter_size,
+                          const AudioFloatArray* prepared_filter);
+
+// Prepare filter for Conv for faster processing.
+PLATFORM_EXPORT void PrepareFilterForConv(const float* filter_p,
+                                          int filter_stride,
+                                          size_t filter_size,
+                                          AudioFloatArray* prepared_filter);
 
 // Vector scalar multiply and then add.
 //

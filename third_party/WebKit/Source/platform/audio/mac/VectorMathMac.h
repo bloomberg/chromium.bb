@@ -8,6 +8,7 @@
 #include <Accelerate/Accelerate.h>
 
 #include "build/build_config.h"
+#include "platform/audio/AudioArray.h"
 
 namespace blink {
 namespace VectorMath {
@@ -26,7 +27,8 @@ static ALWAYS_INLINE void Conv(const float* source_p,
                                float* dest_p,
                                int dest_stride,
                                size_t frames_to_process,
-                               size_t filter_size) {
+                               size_t filter_size,
+                               const AudioFloatArray* /*prepared_filter*/) {
 #if defined(ARCH_CPU_X86)
   ::conv(source_p, source_stride, filter_p, filter_stride, dest_p, dest_stride,
          frames_to_process, filter_size);

@@ -45,7 +45,7 @@ class PLATFORM_EXPORT UpSampler {
   WTF_MAKE_NONCOPYABLE(UpSampler);
 
  public:
-  UpSampler(size_t input_block_size);
+  explicit UpSampler(size_t input_block_size);
 
   // The destination buffer |destP| is of size sourceFramesToProcess * 2.
   void Process(const float* source_p,
@@ -61,12 +61,6 @@ class PLATFORM_EXPORT UpSampler {
   enum { kDefaultKernelSize = 128 };
 
   size_t input_block_size_;
-
-  // Computes ideal band-limited filter coefficients to sample in between each
-  // source sample-frame.  This filter will be used to compute the odd
-  // sample-frames of the output.
-  void InitializeKernel();
-  AudioFloatArray kernel_;
 
   // Computes the odd sample-frames of the output.
   DirectConvolver convolver_;

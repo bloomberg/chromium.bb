@@ -28,6 +28,8 @@
 
 #include "platform/audio/DirectConvolver.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "platform/audio/VectorMath.h"
 
@@ -41,13 +43,23 @@
 
 namespace blink {
 
-using namespace VectorMath;
+namespace {
+using VectorMath::Conv;
+using VectorMath::PrepareFilterForConv;
+}  // namespace
 
-DirectConvolver::DirectConvolver(size_t input_block_size)
-    : input_block_size_(input_block_size), buffer_(input_block_size * 2) {}
+DirectConvolver::DirectConvolver(
+    size_t input_block_size,
+    std::unique_ptr<AudioFloatArray> convolution_kernel)
+    : input_block_size_(input_block_size),
+      buffer_(input_block_size * 2),
+      convolution_kernel_(std::move(convolution_kernel)) {
+  size_t kernel_size = ConvolutionKernelSize();
+  PrepareFilterForConv(convolution_kernel_->Data() + kernel_size - 1, -1,
+                       kernel_size, &prepared_convolution_kernel_);
+}
 
-void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
-                              const float* source_p,
+void DirectConvolver::Process(const float* source_p,
                               float* dest_p,
                               size_t frames_to_process) {
   DCHECK_EQ(frames_to_process, input_block_size_);
@@ -55,12 +67,12 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
     return;
 
   // Only support kernelSize <= m_inputBlockSize
-  size_t kernel_size = convolution_kernel->size();
+  size_t kernel_size = ConvolutionKernelSize();
   DCHECK_LE(kernel_size, input_block_size_);
   if (kernel_size > input_block_size_)
     return;
 
-  float* kernel_p = convolution_kernel->Data();
+  float* kernel_p = convolution_kernel_->Data();
 
   // Sanity check
   bool is_copy_good = kernel_p && source_p && dest_p && buffer_.Data();
@@ -74,7 +86,7 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
   memcpy(input_p, source_p, sizeof(float) * frames_to_process);
 
   Conv(input_p - kernel_size + 1, 1, kernel_p + kernel_size - 1, -1, dest_p, 1,
-       frames_to_process, kernel_size);
+       frames_to_process, kernel_size, &prepared_convolution_kernel_);
 
   // Copy 2nd half of input buffer to 1st half.
   memcpy(buffer_.Data(), input_p, sizeof(float) * frames_to_process);

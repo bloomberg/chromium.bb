@@ -2,23 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file intentionally does not have header guards, it's included from
+// VectorMathAVX.h and from VectorMathSSE.h with different macro definitions.
+// The following line silences a presubmit warning that would otherwise be
+// triggered by this: no-include-guard-because-multiply-included
+
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
 
-#include "platform/wtf/Assertions.h"
-
 #include <algorithm>
 #include <cmath>
+
+#include "platform/audio/AudioArray.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 namespace VectorMath {
 namespace VECTOR_MATH_SIMD_NAMESPACE_NAME {
 
+// This stride is chosen so that the same prepared filter created by
+// AVX::PrepareFilterForConv can be used by both AVX::Conv and SSE::Conv.
+// A prepared filter created by SSE::PrepareFilterForConv can only be used
+// by SSE::Conv.
+constexpr size_t kReversedFilterStride = 8u / kPackedFloatsPerRegister;
+
 bool IsAligned(const float* p) {
   constexpr size_t kBytesPerRegister = kBitsPerRegister / 8u;
   constexpr size_t kAlignmentOffsetMask = kBytesPerRegister - 1u;
   return (reinterpret_cast<size_t>(p) & kAlignmentOffsetMask) == 0u;
+}
+
+void PrepareFilterForConv(const float* filter_p,
+                          int filter_stride,
+                          size_t filter_size,
+                          AudioFloatArray* prepared_filter) {
+  // Only contiguous convolution is implemented. Correlation (positive
+  // |filter_stride|) and support for non-contiguous vectors are not
+  // implemented.
+  DCHECK_EQ(-1, filter_stride);
+  DCHECK(prepared_filter);
+
+  // Reverse the filter and repeat each value across a vector
+  prepared_filter->Allocate(kReversedFilterStride * kPackedFloatsPerRegister *
+                            filter_size);
+  MType* reversed_filter = reinterpret_cast<MType*>(prepared_filter->Data());
+  for (size_t i = 0; i < filter_size; ++i) {
+    reversed_filter[kReversedFilterStride * i] = MM_PS(set1)(*(filter_p - i));
+  }
+}
+
+// Direct vector convolution:
+// dest[k] = sum(source[k+m]*filter[m*filter_stride]) for all m
+// provided that |prepared_filter_p| is |prepared_filter->Data()| and that
+// |prepared_filter| is prepared with |PrepareFilterForConv|.
+void Conv(const float* source_p,
+          const float* prepared_filter_p,
+          float* dest_p,
+          size_t frames_to_process,
+          size_t filter_size) {
+  const float* const dest_end_p = dest_p + frames_to_process;
+
+  DCHECK_EQ(0u, frames_to_process % kPackedFloatsPerRegister);
+  DCHECK_EQ(0u, filter_size % kPackedFloatsPerRegister);
+
+  const MType* reversed_filter =
+      reinterpret_cast<const MType*>(prepared_filter_p);
+
+  // Do convolution with kPackedFloatsPerRegister inputs at a time.
+  while (dest_p < dest_end_p) {
+    MType m_convolution_sum = MM_PS(setzero)();
+
+    // |filter_size| is a multiple of kPackedFloatsPerRegister so we can unroll
+    // the loop by kPackedFloatsPerRegister, manually.
+    for (size_t i = 0; i < filter_size; i += kPackedFloatsPerRegister) {
+      for (size_t j = 0; j < kPackedFloatsPerRegister; ++j) {
+        size_t k = i + j;
+        MType m_product;
+        MType m_source;
+
+        m_source = MM_PS(loadu)(source_p + k);
+        m_product =
+            MM_PS(mul)(reversed_filter[kReversedFilterStride * k], m_source);
+        m_convolution_sum = MM_PS(add)(m_convolution_sum, m_product);
+      }
+    }
+    MM_PS(storeu)(dest_p, m_convolution_sum);
+
+    source_p += kPackedFloatsPerRegister;
+    dest_p += kPackedFloatsPerRegister;
+  }
 }
 
 // dest[k] = source1[k] + source2[k]

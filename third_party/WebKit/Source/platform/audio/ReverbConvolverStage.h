@@ -30,6 +30,7 @@
 #define ReverbConvolverStage_h
 
 #include <memory>
+
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/wtf/Allocator.h"
@@ -95,7 +96,6 @@ class PLATFORM_EXPORT ReverbConvolverStage {
   AudioFloatArray temporary_buffer_;
 
   bool direct_mode_;
-  std::unique_ptr<AudioFloatArray> direct_kernel_;
   std::unique_ptr<DirectConvolver> direct_convolver_;
 };
 
