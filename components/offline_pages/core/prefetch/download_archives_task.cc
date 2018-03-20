@@ -99,13 +99,8 @@ std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
     return nullptr;
   }
 
-  // TODO(fgorski): Move the ownership of the clock up to prefetch dispatcher or
-  // a similar object.
-  // Code below is fine for now, because both objects are destroyed at the end
-  // of the method. Clock inside of |PrefetchDownloaderQuota| has to be
-  // controlled from the outside, therefore is passed by a pointer.
-  base::DefaultClock clock;
-  PrefetchDownloaderQuota downloader_quota(db, &clock);
+  PrefetchDownloaderQuota downloader_quota(db,
+                                           base::DefaultClock::GetInstance());
   int64_t available_quota = downloader_quota.GetAvailableQuotaBytes();
   if (available_quota <= 0 && !IsLimitlessPrefetchingEnabled())
     return nullptr;

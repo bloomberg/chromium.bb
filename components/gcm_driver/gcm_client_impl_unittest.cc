@@ -213,10 +213,10 @@ void AutoAdvancingTestClock::Advance(base::TimeDelta delta) {
 
 class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
  public:
-  FakeGCMInternalsBuilder(base::TimeDelta clock_step);
+  explicit FakeGCMInternalsBuilder(base::TimeDelta clock_step);
   ~FakeGCMInternalsBuilder() override;
 
-  std::unique_ptr<base::Clock> BuildClock() override;
+  base::Clock* GetClock() override;
   std::unique_ptr<MCSClient> BuildMCSClient(
       const std::string& version,
       base::Clock* clock,
@@ -231,17 +231,16 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
       GCMStatsRecorder* recorder) override;
 
  private:
-  base::TimeDelta clock_step_;
+  AutoAdvancingTestClock clock_;
 };
 
 FakeGCMInternalsBuilder::FakeGCMInternalsBuilder(base::TimeDelta clock_step)
-    : clock_step_(clock_step) {
-}
+    : clock_(clock_step) {}
 
 FakeGCMInternalsBuilder::~FakeGCMInternalsBuilder() {}
 
-std::unique_ptr<base::Clock> FakeGCMInternalsBuilder::BuildClock() {
-  return base::WrapUnique<base::Clock>(new AutoAdvancingTestClock(clock_step_));
+base::Clock* FakeGCMInternalsBuilder::GetClock() {
+  return &clock_;
 }
 
 std::unique_ptr<MCSClient> FakeGCMInternalsBuilder::BuildMCSClient(
@@ -400,7 +399,7 @@ class GCMClientImplTest : public testing::Test,
   void PumpLoopUntilIdle();
   bool CreateUniqueTempDir();
   AutoAdvancingTestClock* clock() const {
-    return reinterpret_cast<AutoAdvancingTestClock*>(gcm_client_->clock_.get());
+    return static_cast<AutoAdvancingTestClock*>(gcm_client_->clock_);
   }
   net::TestURLFetcherFactory* url_fetcher_factory() {
     return &url_fetcher_factory_;

@@ -980,11 +980,11 @@ OfflinePageRequestJobTest::BuildTestOfflinePageModel(
   std::unique_ptr<ArchiveManager> archive_manager(
       new ArchiveManager(private_archives_dir_, private_archives_dir_,
                          public_archives_dir_, task_runner));
-  std::unique_ptr<base::Clock> clock(new base::DefaultClock);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), task_runner, std::move(clock)));
+      std::move(download_manager), task_runner,
+      base::DefaultClock::GetInstance()));
 }
 
 // static

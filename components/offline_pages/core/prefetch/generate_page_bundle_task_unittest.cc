@@ -60,19 +60,19 @@ TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
 TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   base::MockCallback<PrefetchRequestFinishedCallback> request_callback;
 
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  base::SimpleTestClock clock;
 
   PrefetchItem item1 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
-  item1.freshness_time = clock->Now();
+  item1.freshness_time = clock.Now();
   item1.creation_time = item1.freshness_time;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
 
-  clock->Advance(base::TimeDelta::FromSeconds(1));
+  clock.Advance(base::TimeDelta::FromSeconds(1));
 
   PrefetchItem item2 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
-  item1.freshness_time = clock->Now();
+  item1.freshness_time = clock.Now();
   item1.creation_time = item1.freshness_time;
   item2.generate_bundle_attempts = 1;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
@@ -85,12 +85,12 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
-  clock->Advance(base::TimeDelta::FromHours(1));
+  clock.Advance(base::TimeDelta::FromHours(1));
 
   GeneratePageBundleTask task(store(), gcm_handler(),
                               prefetch_request_factory(),
                               request_callback.Get());
-  task.SetClockForTesting(base::WrapUnique(clock));
+  task.SetClockForTesting(&clock);
   RunTask(&task);
 
   auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
@@ -115,7 +115,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   EXPECT_EQ(1, updated_item1->generate_bundle_attempts);
   // Item #1 should have had it's freshness date updated during the task
   // execution.
-  EXPECT_EQ(clock->Now(), updated_item1->freshness_time);
+  EXPECT_EQ(clock.Now(), updated_item1->freshness_time);
 
   EXPECT_EQ(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, updated_item2->state);
   EXPECT_EQ(2, updated_item2->generate_bundle_attempts);

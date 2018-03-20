@@ -263,8 +263,8 @@ void RecordRegistrationRequestToUMA(gcm::RegistrationCacheStatus status) {
 GCMInternalsBuilder::GCMInternalsBuilder() {}
 GCMInternalsBuilder::~GCMInternalsBuilder() {}
 
-std::unique_ptr<base::Clock> GCMInternalsBuilder::BuildClock() {
-  return base::WrapUnique<base::Clock>(new base::DefaultClock());
+base::Clock* GCMInternalsBuilder::GetClock() {
+  return base::DefaultClock::GetInstance();
 }
 
 std::unique_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
@@ -319,7 +319,7 @@ GCMClientImpl::GCMClientImpl(
       state_(UNINITIALIZED),
       delegate_(nullptr),
       start_mode_(DELAYED_START),
-      clock_(internals_builder_->BuildClock()),
+      clock_(internals_builder_->GetClock()),
       gcm_store_reset_(false),
       url_request_context_getter_(nullptr),
       periodic_checkin_ptr_factory_(this),
@@ -517,7 +517,7 @@ void GCMClientImpl::InitializeMCSClient() {
       &recorder_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
-      chrome_build_info_.version, clock_.get(), connection_factory_.get(),
+      chrome_build_info_.version, clock_, connection_factory_.get(),
       gcm_store_.get(), &recorder_);
 
   mcs_client_->Initialize(

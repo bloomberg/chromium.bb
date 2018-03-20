@@ -103,7 +103,7 @@ class GCMAccountMapper : public GCMAppHandler {
       const std::string& message_id);
 
   // Sets the clock for testing.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // GCMDriver owns GCMAccountMapper.
   GCMDriver* gcm_driver_;
@@ -112,7 +112,7 @@ class GCMAccountMapper : public GCMAppHandler {
   DispatchMessageCallback dispatch_message_callback_;
 
   // Clock for timestamping status changes.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Currnetly tracked account mappings.
   AccountMappings accounts_;

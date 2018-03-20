@@ -231,7 +231,7 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
       std::move(download_manager), base::ThreadTaskRunnerHandle::Get(),
-      task_runner_->DeprecatedGetMockClock());
+      task_runner_->GetMockClock());
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();

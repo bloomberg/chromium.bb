@@ -45,10 +45,9 @@ const char kGCMAccountMapperAppId[] = "com.google.android.gms";
 
 GCMAccountMapper::GCMAccountMapper(GCMDriver* gcm_driver)
     : gcm_driver_(gcm_driver),
-      clock_(new base::DefaultClock),
+      clock_(base::DefaultClock::GetInstance()),
       initialized_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 GCMAccountMapper::~GCMAccountMapper() {
 }
@@ -392,8 +391,8 @@ GCMAccountMapper::FindMappingByMessageId(const std::string& message_id) {
   return accounts_.end();
 }
 
-void GCMAccountMapper::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void GCMAccountMapper::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace gcm

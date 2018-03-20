@@ -59,7 +59,7 @@ class GCMInternalsBuilder {
   GCMInternalsBuilder();
   virtual ~GCMInternalsBuilder();
 
-  virtual std::unique_ptr<base::Clock> BuildClock();
+  virtual base::Clock* GetClock();
   virtual std::unique_ptr<MCSClient> BuildMCSClient(
       const std::string& version,
       base::Clock* clock,
@@ -345,9 +345,8 @@ class GCMClientImpl
   // Device checkin info (android ID and security token used by device).
   CheckinInfo device_checkin_info_;
 
-  // Clock used for timing of retry logic. Passed in for testing. Owned by
-  // GCMClientImpl.
-  std::unique_ptr<base::Clock> clock_;
+  // Clock used for timing of retry logic. Passed in for testing.
+  base::Clock* clock_;
 
   // Information about the chrome build.
   // TODO(fgorski): Check if it can be passed in constructor and made const.
