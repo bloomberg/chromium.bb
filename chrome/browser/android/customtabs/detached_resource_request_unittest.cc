@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/test/base/testing_profile.h"
@@ -15,6 +16,8 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -35,6 +38,7 @@ constexpr const char kHttpNoContent[] = "/nocontent";
 constexpr const char kEchoTitle[] = "/echotitle";
 constexpr const char kCookieKey[] = "cookie";
 constexpr const char kUrlKey[] = "url";
+constexpr const char kCookieFromNoContent[] = "no-content-cookie";
 
 // /set-cookie-and-redirect?cookie=bla&url=https://redictected-url
 // Sets a cookies, then responds with HTTP code 302.
@@ -62,21 +66,16 @@ std::unique_ptr<HttpResponse> SetCookieAndRedirect(const HttpRequest& request) {
   return response;
 }
 
-// /set-cookie-and-no-content?cookie=bla
+// /set-cookie-and-no-content
 // Sets a cookies, and replies with HTTP code 204.
 std::unique_ptr<HttpResponse> SetCookieAndNoContent(
     const HttpRequest& request) {
   const auto& url = request.GetURL();
-  if (url.path() != kSetCookieAndNoContent || !url.has_query())
+  if (url.path() != kSetCookieAndNoContent)
     return nullptr;
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  RequestQuery query = net::test_server::ParseQuery(url);
-  if (query.find(kCookieKey) == query.end())
-    return nullptr;
-  std::string cookie = query[kCookieKey][0];
-
-  response->AddCustomHeader("Set-Cookie", cookie);
+  response->AddCustomHeader("Set-Cookie", kCookieFromNoContent);
   response->set_code(net::HTTP_NO_CONTENT);
   return response;
 }
@@ -115,6 +114,8 @@ class DetachedResourceRequestTest : public ::testing::Test {
         base::BindRepeating(&SetCookieAndNoContent));
     embedded_test_server()->AddDefaultHandlers(
         base::FilePath("chrome/test/data"));
+    host_resolver_ = std::make_unique<content::TestHostResolver>();
+    host_resolver_->host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void TearDown() override {
@@ -193,6 +194,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
  private:
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<content::TestHostResolver> host_resolver_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
 };
 
@@ -328,9 +330,7 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
   base::RunLoop request_completion_waiter;
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  auto relative_url = base::StringPrintf("%s?%s=%s", kSetCookieAndNoContent,
-                                         kCookieKey, "acookie");
-  GURL url(embedded_test_server()->GetURL(relative_url));
+  GURL url(embedded_test_server()->GetURL(kSetCookieAndNoContent));
   GURL site_for_cookies("http://cats.google.com/");
 
   std::string cookie = content::GetCookies(browser_context(), url);
@@ -348,7 +348,7 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
 
   request_completion_waiter.Run();
   cookie = content::GetCookies(browser_context(), url);
-  ASSERT_EQ("acookie", cookie);
+  ASSERT_EQ(kCookieFromNoContent, cookie);
 }
 
 TEST_F(DetachedResourceRequestTest, DefaultReferrerPolicy) {
@@ -368,6 +368,52 @@ TEST_F(DetachedResourceRequestTest, NeverClearReferrerPolicy) {
   SetAndCheckReferrer("https://cats.google.com/cute-cats",
                       "https://cats.google.com/cute-cats",
                       net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER);
+}
+
+TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
+  base::RunLoop first_request_waiter;
+  base::RunLoop second_request_waiter;
+  base::RunLoop detached_request_waiter;
+
+  embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+      &WatchPathAndReportHeaders, kSetCookieAndRedirect, nullptr, nullptr,
+      first_request_waiter.QuitClosure()));
+  embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+      &WatchPathAndReportHeaders, kSetCookieAndNoContent, nullptr, nullptr,
+      second_request_waiter.QuitClosure()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL redirected_origin("http://notgoogle.com");
+  GURL redirected_url(embedded_test_server()->GetURL(redirected_origin.host(),
+                                                     kSetCookieAndNoContent));
+  std::string relative_url =
+      base::StringPrintf("%s?%s=%s&%s=%s", kSetCookieAndRedirect, kCookieKey,
+                         "acookie", kUrlKey, redirected_url.spec().c_str());
+
+  GURL url(embedded_test_server()->GetURL(relative_url));
+  GURL site_for_cookies = GURL("http://cats.google.com");
+
+  std::string cookie = content::GetCookies(browser_context(), url);
+  ASSERT_EQ("", cookie);
+  cookie = content::GetCookies(browser_context(), redirected_origin);
+  ASSERT_EQ("", cookie);
+
+  auto quit_closure = detached_request_waiter.QuitClosure();
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
+      base::BindLambdaForTesting([=](bool success) {
+        EXPECT_TRUE(success);
+        quit_closure.Run();
+      }));
+  first_request_waiter.Run();
+  second_request_waiter.Run();
+  detached_request_waiter.Run();
+
+  cookie = content::GetCookies(browser_context(), url);
+  ASSERT_EQ("acookie", cookie);
+  cookie = content::GetCookies(browser_context(), redirected_origin);
+  ASSERT_EQ(kCookieFromNoContent, cookie);
 }
 
 }  // namespace customtabs
