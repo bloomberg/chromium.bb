@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -48,7 +49,8 @@
   UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-  UIButton* centerButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  TabGridNewTabButton* centerButton = [TabGridNewTabButton
+      buttonWithSizeClass:TabGridNewTabButtonSizeClassSmall];
   centerButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   [toolbar.contentView addSubview:leadingButton];
