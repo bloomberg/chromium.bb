@@ -156,27 +156,6 @@ static INLINE void lower_mv_precision(MV *mv, int allow_hp
 #endif
 }
 
-static INLINE uint8_t av1_get_pred_diff_ctx(const int_mv pred_mv,
-                                            const int_mv this_mv) {
-  if (abs(this_mv.as_mv.row - pred_mv.as_mv.row) <= 4 &&
-      abs(this_mv.as_mv.col - pred_mv.as_mv.col) <= 4)
-    return 2;
-  else
-    return 1;
-}
-
-static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
-                              const CANDIDATE_MV *ref_mv_stack, int ref,
-                              int ref_mv_idx) {
-  return 0;
-
-  if (ref_mv_idx < ref_mv_count &&
-      ref_mv_stack[ref_mv_idx].weight >= REF_CAT_LEVEL)
-    return ref_mv_stack[ref_mv_idx].pred_diff[ref];
-
-  return 0;
-}
-
 static INLINE int8_t get_uni_comp_ref_idx(const MV_REFERENCE_FRAME *const rf) {
   // Single ref pred
   if (rf[1] <= INTRA_FRAME) return -1;

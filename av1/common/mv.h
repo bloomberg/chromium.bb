@@ -301,7 +301,6 @@ static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
 typedef struct candidate_mv {
   int_mv this_mv;
   int_mv comp_mv;
-  uint8_t pred_diff[2];
   int weight;
 } CANDIDATE_MV;
 

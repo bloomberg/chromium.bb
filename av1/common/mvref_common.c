@@ -131,8 +131,6 @@ static void add_ref_mv_candidate(
         // Add a new item to the list.
         if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
           ref_mv_stack[index].this_mv = this_refmv;
-          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-              get_sub_block_pred_mv(candidate_mi, ref, col), this_refmv);
           ref_mv_stack[index].weight = weight * len;
           ++(*refmv_count);
         }
@@ -172,10 +170,6 @@ static void add_ref_mv_candidate(
       if (index == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[index].this_mv = this_refmv[0];
         ref_mv_stack[index].comp_mv = this_refmv[1];
-        ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-            get_sub_block_pred_mv(candidate_mi, 0, col), this_refmv[0]);
-        ref_mv_stack[index].pred_diff[1] = av1_get_pred_diff_ctx(
-            get_sub_block_pred_mv(candidate_mi, 1, col), this_refmv[1]);
         ref_mv_stack[index].weight = weight * len;
         ++(*refmv_count);
       }
@@ -459,9 +453,6 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       if (idx == refmv_count[rf[0]] &&
           refmv_count[rf[0]] < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
-        // TODO(jingning): Hard coded context number. Need to make it better
-        // sense.
-        ref_mv_stack[idx].pred_diff[0] = 1;
         ref_mv_stack[idx].weight = 2 * weight_unit;
         ++(refmv_count[rf[0]]);
       }
@@ -526,10 +517,6 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           refmv_count[ref_frame] < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
         ref_mv_stack[idx].comp_mv.as_int = comp_refmv.as_int;
-        // TODO(jingning): Hard coded context number. Need to make it better
-        // sense.
-        ref_mv_stack[idx].pred_diff[0] = 1;
-        ref_mv_stack[idx].pred_diff[1] = 1;
         ref_mv_stack[idx].weight = 2 * weight_unit;
         ++(refmv_count[ref_frame]);
       }
