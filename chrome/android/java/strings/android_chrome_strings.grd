@@ -2298,6 +2298,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Strings for Streamlined Signin and Unified Consent. -->
       <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
+      <message name="IDS_SIGNIN_TITLE" desc="Title for the screen that asks users to sign-in and turn on Sync and personalization. [CHAR-LIMIT=27]" translateable="false">
+        Get even more from Chrome
+      </message>
       <message name="IDS_SIGNIN_ACCEPT_BUTTON" desc="Text for the confirmation button in the sign-in screen. By clicking this button users signs in and turns on Sync and personalization. [CHAR-LIMIT=20]" translateable="false">
         Yes, I'm in
       </message>
