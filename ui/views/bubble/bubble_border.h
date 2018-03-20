@@ -192,6 +192,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     (canvas->sk_canvas()->*draw)(rect, GetBorderAndShadowFlags());
   }
 
+  // Set the corner radius, enables Material Design.
+  void SetCornerRadius(int radius);
+
   // Get or set the arrow type.
   void set_arrow(Arrow arrow) { arrow_ = arrow; }
   Arrow arrow() const { return arrow_; }
@@ -266,6 +269,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // The border and arrow stroke size used in image assets, in pixels.
   static const int kStroke;
 
+  // Initializes the MD or non-MD BubbleBorder.
+  void Init();
+
   gfx::Size GetSizeForContentsSize(const gfx::Size& contents_size) const;
   gfx::ImageSkia* GetArrowImage() const;
   gfx::Rect GetArrowRect(const gfx::Rect& bounds) const;
@@ -287,8 +293,14 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 
   internal::BorderImages* GetImagesForTest() const;
 
+  // Whether to use material design.
+  bool UseMaterialDesign() const;
+
   Arrow arrow_;
   int arrow_offset_;
+  // Corner radius for the bubble border. If supplied the border will use
+  // material design.
+  base::Optional<int> corner_radius_;
   ArrowPaintType arrow_paint_type_;
   BubbleAlignment alignment_;
   Shadow shadow_;

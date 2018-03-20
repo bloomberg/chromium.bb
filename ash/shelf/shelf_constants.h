@@ -58,6 +58,9 @@ constexpr float kShelfInkDropVisibleOpacity = 0.2f;
 // notifications, etc).
 ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
+// The dip offset for showing a context menu with a long touch press.
+ASH_EXPORT constexpr int kScaledIconContextMenuOffset = 5;
+
 // The alpha value for the shelf background when a window is overlapping.
 ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;
 

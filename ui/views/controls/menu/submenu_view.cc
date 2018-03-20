@@ -24,10 +24,10 @@
 namespace {
 
 // Height of the drop indicator. This should be an even number.
-const int kDropIndicatorHeight = 2;
+constexpr int kDropIndicatorHeight = 2;
 
 // Color of the drop indicator.
-const SkColor kDropIndicatorColor = SK_ColorBLACK;
+constexpr SkColor kDropIndicatorColor = SK_ColorBLACK;
 
 }  // namespace
 
@@ -69,7 +69,7 @@ bool SubmenuView::HasVisibleChildren() {
   return false;
 }
 
-int SubmenuView::GetMenuItemCount() {
+int SubmenuView::GetMenuItemCount() const {
   int count = 0;
   for (int i = 0; i < child_count(); ++i) {
     if (child_at(i)->id() == MenuItemView::kMenuItemViewID)
@@ -144,6 +144,8 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
   int max_complex_width = 0;
   // The max. width of items which contain a label and maybe an accelerator.
   int max_simple_width = 0;
+  // The minimum width of touchable items.
+  int touchable_minimum_width = 0;
 
   // We perform the size calculation in two passes. In the first pass, we
   // calculate the width of the menu. In the second, we calculate the height
@@ -163,6 +165,7 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
           std::max(max_minor_text_width_, dimensions.minor_text_width);
       max_complex_width = std::max(max_complex_width,
           dimensions.standard_width + dimensions.children_width);
+      touchable_minimum_width = dimensions.standard_width;
     } else {
       max_complex_width = std::max(max_complex_width,
                                    child->GetPreferredSize().width());
@@ -177,6 +180,10 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
                        std::max(max_simple_width + max_minor_text_width_ +
                                     insets.width(),
                                 minimum_preferred_width_ - 2 * insets.width()));
+
+  if (GetMenuItem()->GetMenuController() &&
+      GetMenuItem()->GetMenuController()->use_touchable_layout())
+    width = std::max(touchable_minimum_width, width);
 
   // Then, the height for that width.
   int height = 0;

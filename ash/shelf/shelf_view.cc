@@ -63,17 +63,17 @@ namespace ash {
 // The proportion of the shelf space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.
-const float kReservedNonPanelIconProportion = 0.67f;
+constexpr float kReservedNonPanelIconProportion = 0.67f;
 
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
-const int kRipOffDistance = 48;
+constexpr int kRipOffDistance = 48;
 
 // The rip off drag and drop proxy image should get scaled by this factor.
-const float kDragAndDropProxyScale = 1.2f;
+constexpr float kDragAndDropProxyScale = 1.2f;
 
 // The opacity represents that this partially disappeared item will get removed.
-const float kDraggedImageOpacity = 0.5f;
+constexpr float kDraggedImageOpacity = 0.5f;
 
 namespace {
 
@@ -1463,6 +1463,99 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
   overflow_view->last_visible_index_ = last_overflow_index;
 }
 
+gfx::Rect ShelfView::GetMenuAnchorRect(const views::View* source,
+                                       const gfx::Point& location,
+                                       ui::MenuSourceType source_type,
+                                       bool context_menu) const {
+  if (context_menu) {
+    if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH)
+      return GetTouchMenuAnchorRect(source, location);
+    return gfx::Rect(location, gfx::Size());
+  }
+
+  // The menu is for an application list.
+  DCHECK(source) << "Application lists require a source button view.";
+  // Application lists use a bubble. It is possible to invoke the menu while
+  // it is sliding into view. To cover that case, the screen coordinates are
+  // offsetted by the animation delta.
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  gfx::Rect anchor =
+      source->GetBoundsInScreen() +
+      (window->GetTargetBounds().origin() - window->bounds().origin());
+  if (source->border())
+    anchor.Inset(source->border()->GetInsets());
+  return anchor;
+}
+
+gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
+                                            const gfx::Point& location) const {
+  const bool for_item = ShelfItemForView(source);
+  const bool use_touchable_menu_alignment =
+      features::IsTouchableAppContextMenuEnabled() && for_item;
+  const gfx::Rect shelf_bounds =
+      is_overflow_mode()
+          ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
+          : screen_util::GetDisplayBoundsWithShelf(
+                shelf_widget_->GetNativeWindow());
+  const gfx::Rect& source_bounds_in_screen = source->GetBoundsInScreen();
+  gfx::Point origin;
+  switch (shelf_->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      origin =
+          gfx::Point(use_touchable_menu_alignment ? source_bounds_in_screen.x()
+                                                  : location.x(),
+                     shelf_bounds.bottom() - kShelfSize);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      if (use_touchable_menu_alignment)
+        origin = gfx::Point(shelf_bounds.x(), source_bounds_in_screen.y());
+      else
+        origin = gfx::Point(shelf_bounds.x() + kShelfSize, location.y());
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      origin =
+          gfx::Point(shelf_bounds.right() - kShelfSize,
+                     use_touchable_menu_alignment ? source_bounds_in_screen.y()
+                                                  : location.y());
+      break;
+  }
+  if (use_touchable_menu_alignment) {
+    // When showing a context menu with long press, the icon enlarges by 20%
+    // from the center point. After the context menu is shown and the long
+    // press is released the icon will scale back down and the context menu
+    // is left 5px off.
+    origin.Offset(
+        shelf_->IsHorizontalAlignment() ? kScaledIconContextMenuOffset : 0,
+        shelf_->IsHorizontalAlignment() ? 0 : kScaledIconContextMenuOffset);
+  }
+  return gfx::Rect(origin,
+                   for_item ? source_bounds_in_screen.size() : gfx::Size());
+}
+
+views::MenuAnchorPosition ShelfView::GetMenuAnchorPosition(
+    bool for_item,
+    bool context_menu) const {
+  if (features::IsTouchableAppContextMenuEnabled() && for_item) {
+    return shelf_->IsHorizontalAlignment()
+               ? views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE
+               : views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+  }
+  if (!context_menu) {
+    switch (shelf_->alignment()) {
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        return views::MENU_ANCHOR_BUBBLE_ABOVE;
+      case SHELF_ALIGNMENT_LEFT:
+        return views::MENU_ANCHOR_BUBBLE_RIGHT;
+      case SHELF_ALIGNMENT_RIGHT:
+        return views::MENU_ANCHOR_BUBBLE_LEFT;
+    }
+  }
+  return shelf_->IsHorizontalAlignment() ? views::MENU_ANCHOR_FIXED_BOTTOMCENTER
+                                         : views::MENU_ANCHOR_FIXED_SIDECENTER;
+}
+
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
   gfx::Size preferred_size;
   if (is_overflow_mode()) {
@@ -1839,35 +1932,9 @@ void ShelfView::AfterGetContextMenuItems(
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
-  gfx::Point context_menu_point = point;
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-
-  // Align the context menu to the edge of the shelf for touch events.
-  if (source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
-    gfx::Rect shelf_bounds =
-        is_overflow_mode()
-            ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
-            : screen_util::GetDisplayBoundsWithShelf(shelf_window);
-
-    switch (shelf_->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        context_menu_point.SetPoint(point.x(),
-                                    shelf_bounds.bottom() - kShelfSize);
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        context_menu_point.SetPoint(shelf_bounds.x() + kShelfSize, point.y());
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        context_menu_point.SetPoint(shelf_bounds.right() - kShelfSize,
-                                    point.y());
-        break;
-    }
-  }
   last_pressed_index_ = -1;
-
-  const int64_t display_id = GetDisplayIdForView(this);
   const ShelfItem* item = ShelfItemForView(source);
+  const int64_t display_id = GetDisplayIdForView(this);
   if (!item || !model_->GetShelfItemDelegate(item->id)) {
     UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Shelf", source_type,
                               ui::MENU_SOURCE_TYPE_LAST);
@@ -1876,8 +1943,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
         std::make_unique<ShelfContextMenuModel>(
             std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
     menu_model->set_histogram_name(kNonAppContextMenuExecuteCommand);
-    ShowMenu(std::move(menu_model), source, context_menu_point, true,
-             source_type, nullptr);
+    ShowMenu(std::move(menu_model), source, point, true, source_type, nullptr);
     return;
   }
 
@@ -1888,8 +1954,8 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   // Get any custom entries; show the context menu in AfterGetContextMenuItems.
   model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
       display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
-                             weak_factory_.GetWeakPtr(), item->id,
-                             context_menu_point, source, source_type));
+                             weak_factory_.GetWeakPtr(), item->id, point,
+                             source, source_type));
 }
 
 void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
@@ -1898,16 +1964,22 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
                          bool context_menu,
                          ui::MenuSourceType source_type,
                          views::InkDrop* ink_drop) {
-  menu_model_ = std::move(menu_model);
+  if (menu_model->GetItemCount() == 0)
+    return;
 
+  menu_model_ = std::move(menu_model);
   closing_event_time_ = base::TimeTicks();
   int run_types = 0;
   if (context_menu)
     run_types |=
         views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
 
-  // Only selected shelf items with context menu opened can be dragged.
   const ShelfItem* item = ShelfItemForView(source);
+  // Only use the touchable layout if the menu is for an app.
+  if (features::IsTouchableAppContextMenuEnabled() && item)
+    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT;
+
+  // Only selected shelf items with context menu opened can be dragged.
   if (context_menu && item && ShelfButtonIsInDrag(item->type, source) &&
       source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
@@ -1917,47 +1989,11 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
       menu_model_.get(), run_types,
       base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), ink_drop));
 
-  views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
-  gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
-
-  if (!context_menu) {
-    DCHECK(source) << "Application lists require a source button view.";
-    // Application lists use a bubble.
-    // It is possible to invoke the menu while it is sliding into view. To cover
-    // that case, the screen coordinates are offsetted by the animation delta.
-    aura::Window* window = GetWidget()->GetNativeWindow();
-    anchor = source->GetBoundsInScreen() +
-             (window->GetTargetBounds().origin() - window->bounds().origin());
-
-    // Adjust the anchor location for shelf items with asymmetrical borders.
-    if (source->border())
-      anchor.Inset(source->border()->GetInsets());
-
-    // Determine the menu alignment dependent on the shelf.
-    switch (shelf_->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_ABOVE;
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_RIGHT;
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_LEFT;
-        break;
-    }
-  } else {
-    // Distinguish the touch events that triggered on the bottom or left / right
-    // shelf. Since they should have different |MenuAnchorPosition|.
-    if (shelf_->IsHorizontalAlignment())
-      menu_alignment = views::MENU_ANCHOR_FIXED_BOTTOMCENTER;
-    else
-      menu_alignment = views::MENU_ANCHOR_FIXED_SIDECENTER;
-  }
-
   // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
-  launcher_menu_runner_->RunMenuAt(GetWidget(), nullptr, anchor, menu_alignment,
-                                   source_type);
+  launcher_menu_runner_->RunMenuAt(
+      GetWidget(), nullptr,
+      GetMenuAnchorRect(source, click_point, source_type, context_menu),
+      GetMenuAnchorPosition(item, context_menu), source_type);
 }
 
 void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {

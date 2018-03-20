@@ -1929,8 +1929,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     pref.set_width(std::max(pref.width(), state_.initial_bounds.width()));
 
   // Don't let the menu go too wide.
-  pref.set_width(std::min(pref.width(),
-                            item->GetDelegate()->GetMaxWidthForMenu(item)));
+  pref.set_width(
+      std::min(pref.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
   if (!state_.monitor_bounds.IsEmpty())
     pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
 
@@ -2161,6 +2161,28 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     }
     submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
         pref.width() / 2 - x + x_old);
+  } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE) {
+    // Align the left edges of the menu and anchor, and the bottom of the menu
+    // with the top of the anchor.
+    x = owner_bounds.origin().x();
+    y = owner_bounds.origin().y() - pref.height();
+    // Align the right of the container with the right of the app icon.
+    if (x + pref.width() > state_.monitor_bounds.width())
+      x = owner_bounds.right() - pref.width();
+    // Align the top of the menu with the bottom of the anchor.
+    if (y < 0)
+      y = owner_bounds.bottom();
+  } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT) {
+    // Align the right of the menu with the left of the anchor, and the top of
+    // the menu with the top of the anchor.
+    x = owner_bounds.origin().x() - pref.width();
+    y = owner_bounds.origin().y();
+    // Align the left of the menu with the right of the anchor.
+    if (x < 0)
+      x = owner_bounds.right();
+    // Align the bottom of the menu to the bottom of the anchor.
+    if (y + pref.height() > state_.monitor_bounds.height())
+      y = owner_bounds.bottom() - pref.height();
   } else {
     if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT)
       x = owner_bounds.right() - kBubbleTipSizeLeftRight;

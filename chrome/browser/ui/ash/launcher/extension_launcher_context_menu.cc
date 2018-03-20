@@ -21,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -53,7 +54,8 @@ void ExtensionLauncherContextMenu::Init() {
                           ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
                           : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW;
       AddItemWithStringId(MENU_OPEN_NEW, string_id);
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      if (!features::IsTouchableAppContextMenuEnabled())
+        AddSeparator(ui::NORMAL_SEPARATOR);
     }
 
     AddPinMenu();
@@ -63,7 +65,8 @@ void ExtensionLauncherContextMenu::Init() {
 
     if (!controller()->IsPlatformApp(item().id) &&
         item().type == ash::TYPE_PINNED_APP) {
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      if (!features::IsTouchableAppContextMenuEnabled())
+        AddSeparator(ui::NORMAL_SEPARATOR);
       if (extensions::util::IsNewBookmarkAppsEnabled()) {
         // With bookmark apps enabled, hosted apps launch in a window by
         // default. This menu item is re-interpreted as a single, toggle-able
@@ -98,14 +101,16 @@ void ExtensionLauncherContextMenu::Init() {
   } else if (controller()->IsOpen(item().id)) {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
-  AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!features::IsTouchableAppContextMenuEnabled())
+    AddSeparator(ui::NORMAL_SEPARATOR);
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
     const extensions::MenuItem::ExtensionKey app_key(item().id.app_id);
     if (!app_key.empty()) {
       int index = 0;
       extension_items_->AppendExtensionItems(app_key, base::string16(), &index,
                                              false);  // is_action_menu
-      AddSeparator(ui::NORMAL_SEPARATOR);
+      if (!features::IsTouchableAppContextMenuEnabled())
+        AddSeparator(ui::NORMAL_SEPARATOR);
     }
   }
 }

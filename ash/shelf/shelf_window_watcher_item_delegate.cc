@@ -17,6 +17,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -84,9 +85,11 @@ void ShelfWindowWatcherItemDelegate::GetContextMenuItems(
   close->label = l10n_util::GetStringUTF16(IDS_CLOSE);
   close->enabled = true;
   items.push_back(std::move(close));
-  ash::mojom::MenuItemPtr separator(ash::mojom::MenuItem::New());
-  separator->type = ui::MenuModel::TYPE_SEPARATOR;
-  items.push_back(std::move(separator));
+  if (!features::IsTouchableAppContextMenuEnabled()) {
+    ash::mojom::MenuItemPtr separator(ash::mojom::MenuItem::New());
+    separator->type = ui::MenuModel::TYPE_SEPARATOR;
+    items.push_back(std::move(separator));
+  }
   std::move(callback).Run(std::move(items));
 }
 

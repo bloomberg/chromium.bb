@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/ui_base_features.h"
 
 ArcLauncherContextMenu::ArcLauncherContextMenu(
     ChromeLauncherController* controller,
@@ -40,7 +41,8 @@ void ArcLauncherContextMenu::Init() {
   if (!app_is_open) {
     DCHECK(app_info->launchable);
     AddItemWithStringId(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-    AddSeparator(ui::NORMAL_SEPARATOR);
+    if (!features::IsTouchableAppContextMenuEnabled())
+      AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (!app_id.has_shelf_group_id() && app_info->launchable)
@@ -48,5 +50,6 @@ void ArcLauncherContextMenu::Init() {
 
   if (app_is_open)
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-  AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!features::IsTouchableAppContextMenuEnabled())
+    AddSeparator(ui::NORMAL_SEPARATOR);
 }

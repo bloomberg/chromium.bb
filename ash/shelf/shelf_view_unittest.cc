@@ -16,6 +16,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
@@ -2006,7 +2007,8 @@ TEST_F(ShelfViewTest, ShelfViewShowsContextMenu) {
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
-// Tests that the app list button shows a context menu on right click.
+// Tests that the app list button shows a context menu on right click when
+// touchable app context menus are not enabled.
 TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
@@ -2077,6 +2079,94 @@ class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
 
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTouchableContextMenuTest);
 };
+
+// Tests that anchor points are aligned with the shelf button bounds for touch.
+TEST_F(ShelfViewTouchableContextMenuTest,
+       ShelfViewContextMenuAnchorPointTouch) {
+  const ShelfButton* shelf_button = GetButtonByID(AddApp());
+  EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
+            GetPrimaryShelf()->alignment());
+
+  // Test for bottom shelf.
+  EXPECT_EQ(shelf_button->GetBoundsInScreen().y(),
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
+                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
+                                    true /*context_menu*/)
+                .y());
+
+  // Test for left shelf.
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+
+  EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
+                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
+                                    true /*context_menu*/)
+                .x());
+
+  // Test for right shelf.
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+
+  EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, gfx::Point(),
+                                    ui::MenuSourceType::MENU_SOURCE_TOUCH,
+                                    true /*context_menu*/)
+                .x());
+}
+
+// Tests that anchor points are the click point for mouse context menus.
+TEST_F(ShelfViewTouchableContextMenuTest, ShelfViewContextMenuAnchorPoint) {
+  const ShelfButton* shelf_button = GetButtonByID(AddApp());
+  EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
+            GetPrimaryShelf()->alignment());
+
+  // Test for bottom shelf.
+  const gfx::Point click_point_bottom =
+      shelf_button->GetBoundsInScreen().CenterPoint();
+
+  EXPECT_EQ(click_point_bottom,
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, click_point_bottom,
+                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
+                                    true /*context_menu*/)
+                .origin());
+
+  // Test for left shelf.
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+  const gfx::Point click_point_left =
+      shelf_button->GetBoundsInScreen().CenterPoint();
+
+  EXPECT_EQ(click_point_left,
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, click_point_left,
+                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
+                                    true /*context_menu*/)
+                .origin());
+
+  // Test for right shelf.
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  const gfx::Point click_point_right =
+      shelf_button->GetBoundsInScreen().CenterPoint();
+
+  EXPECT_EQ(click_point_right,
+            test_api_
+                ->GetMenuAnchorRect(shelf_button, click_point_right,
+                                    ui::MenuSourceType::MENU_SOURCE_MOUSE,
+                                    true /*context_menu*/)
+                .origin());
+}
+
+// Tests that the app list button does not show a context menu on right click
+// when touchable app context menus are enabled.
+TEST_F(ShelfViewTouchableContextMenuTest, AppListButtonDoesNotShowContextMenu) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  const AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  generator.MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
+  generator.PressRightButton();
+  EXPECT_FALSE(test_api_->CloseMenu());
+}
 
 // Tests that an item has a notification indicator when it recieves a
 // notification.

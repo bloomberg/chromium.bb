@@ -128,6 +128,8 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);
   controller->set_send_gesture_events_to_owner(
       (run_types & MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER) != 0);
+  controller->set_use_touchable_layout(
+      (run_types & MenuRunner::USE_TOUCHABLE_LAYOUT) != 0);
   controller_ = controller->AsWeakPtr();
   menu_->set_controller(controller_.get());
   menu_->PrepareForRun(owns_controller_, has_mnemonics,

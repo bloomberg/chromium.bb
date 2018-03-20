@@ -199,7 +199,9 @@ bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
   return anchor == MENU_ANCHOR_BUBBLE_LEFT ||
          anchor == MENU_ANCHOR_BUBBLE_RIGHT ||
          anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_BELOW;
+         anchor == MENU_ANCHOR_BUBBLE_BELOW ||
+         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE ||
+         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
 }
 
 // static
@@ -1012,6 +1014,15 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   MenuItemDimensions dimensions;
   // Get the container height.
   dimensions.children_width = child_size.width();
+  const MenuConfig& menu_config = MenuConfig::instance();
+
+  if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
+    // MenuItemViews that use the touchable layout have fixed height and width.
+    dimensions.height = menu_config.touchable_menu_height;
+    dimensions.standard_width = menu_config.touchable_menu_width;
+    return dimensions;
+  }
+
   dimensions.height = child_size.height();
   // Adjust item content height if menu has both items with and without icons.
   // This way all menu items will have the same height.
