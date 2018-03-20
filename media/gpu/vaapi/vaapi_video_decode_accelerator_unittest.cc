@@ -349,19 +349,6 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
 #endif
 }
 
-// Verifies the expected buffer format.
-TEST_P(VaapiVideoDecodeAcceleratorTest, PictureBufferFormat) {
-  gfx::BufferFormat format = mock_vaapi_picture_factory_->GetBufferFormat();
-
-#if defined(USE_OZONE)
-  EXPECT_EQ(gfx::BufferFormat::BGRX_8888, format);
-#else
-  EXPECT_EQ(gfx::BufferFormat::RGBX_8888, format);
-#endif  // USE_OZONE
-
-  EXPECT_EQ(PIXEL_FORMAT_XRGB, GfxBufferFormatToVideoPixelFormat(format));
-}
-
 INSTANTIATE_TEST_CASE_P(/* No prefix. */,
                         VaapiVideoDecodeAcceleratorTest,
                         ValuesIn(kCodecProfiles));

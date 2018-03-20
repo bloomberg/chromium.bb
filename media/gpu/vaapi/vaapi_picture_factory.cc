@@ -106,7 +106,7 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
 
 gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
 #if defined(USE_OZONE)
-  return gfx::BufferFormat::BGRX_8888;
+  return gfx::BufferFormat::YUV_420_BIPLANAR;
 #else
   return gfx::BufferFormat::RGBX_8888;
 #endif

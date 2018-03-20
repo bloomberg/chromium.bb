@@ -59,6 +59,9 @@ unsigned VaapiPictureNativePixmap::BufferFormatToInternalFormat(
     case gfx::BufferFormat::YVU_420:
       return GL_RGB_YCRCB_420_CHROMIUM;
 
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return GL_RGB_YCBCR_420V_CHROMIUM;
+
     default:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return GL_BGRA_EXT;
