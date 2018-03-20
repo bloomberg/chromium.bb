@@ -33,7 +33,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -162,7 +161,6 @@ public class WebVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    @DisabledTest(message = "https://crbug.com/808524")
     public void testControllerClicksRegisteredOnDaydream() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         mVrTestFramework.loadUrlAndAwaitInitialization(
@@ -202,6 +200,58 @@ public class WebVrInputTest {
     }
 
     /**
+     * Tests that Daydream controller clicks are registered as XR input in an exclusive session.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testControllerClicksRegisteredOnDaydream_WebXr() throws InterruptedException {
+        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
+        mXrTestFramework.loadUrlAndAwaitInitialization(
+                XrTestFramework.getHtmlTestFile("test_webxr_input"), PAGE_LOAD_TIMEOUT_S);
+        TransitionUtils.enterPresentationOrFail(mXrTestFramework);
+        int numIterations = 10;
+        XrTestFramework.runJavaScriptOrFail(
+                "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS,
+                mXrTestFramework.getFirstTabWebContents());
+
+        // Click the touchpad a bunch of times and make sure they're all registered.
+        for (int i = 0; i < numIterations; i++) {
+            controller.sendClickButtonToggleEvent();
+            controller.sendClickButtonToggleEvent();
+        }
+
+        XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
+        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+    }
+
+    private long sendScreenTouchDown(final View view, final int x, final int y) {
+        long downTime = SystemClock.uptimeMillis();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                view.dispatchTouchEvent(
+                        MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
+            }
+        });
+        return downTime;
+    }
+
+    private void sendScreenTouchUp(final View view, final int x, final int y, final long downTime) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                long now = SystemClock.uptimeMillis();
+                view.dispatchTouchEvent(
+                        MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
+            }
+        });
+    }
+
+    /**
      * Tests that screen touches are still registered when the viewer is Cardboard.
      */
     @Test
@@ -220,30 +270,57 @@ public class WebVrInputTest {
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         int x = mVrTestFramework.getFirstTabContentView().getWidth() / 2;
         int y = mVrTestFramework.getFirstTabContentView().getHeight() / 2;
-        // TODO(mthiesse, crbug.com/758374): Injecting touch events into the root GvrLayout
+        // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
         final View presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
                                               .getPresentationViewForTesting();
-        long downTime = SystemClock.uptimeMillis();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                presentationView.dispatchTouchEvent(
-                        MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
-            }
-        });
+        long downTime = sendScreenTouchDown(presentationView, x, y);
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                long now = SystemClock.uptimeMillis();
-                presentationView.dispatchTouchEvent(
-                        MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
-            }
-        });
+        sendScreenTouchUp(presentationView, x, y, downTime);
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that screen touches are registered as XR input when the viewer is Cardboard.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testScreenTapsRegisteredOnCardboard_WebXr() throws InterruptedException {
+        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
+        mXrTestFramework.loadUrlAndAwaitInitialization(
+                XrTestFramework.getHtmlTestFile("test_webxr_input"), PAGE_LOAD_TIMEOUT_S);
+        TransitionUtils.enterPresentationOrFail(mXrTestFramework);
+        int numIterations = 10;
+        XrTestFramework.runJavaScriptOrFail(
+                "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS,
+                mXrTestFramework.getFirstTabWebContents());
+
+        int x = mXrTestFramework.getFirstTabContentView().getWidth() / 2;
+        int y = mXrTestFramework.getFirstTabContentView().getHeight() / 2;
+        // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
+        // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
+        // view for no apparent reason. We should figure out why this is and see if it's fixable.
+        final View presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
+                                              .getPresentationViewForTesting();
+
+        // Tap the screen a bunch of times and make sure that they're all registered.
+        // Android doesn't seem to like sending touch events too quickly, so have a short delay
+        // between events.
+        for (int i = 0; i < numIterations; i++) {
+            long downTime = sendScreenTouchDown(presentationView, x, y);
+            SystemClock.sleep(100);
+            sendScreenTouchUp(presentationView, x, y, downTime);
+            SystemClock.sleep(100);
+        }
+
+        XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
+        XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 
     /**
