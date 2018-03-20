@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -57,6 +59,8 @@ void SyncConsentScreen::Hide() {
 
 void SyncConsentScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionConinueAndReview) {
+    profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
+                                     true);
     Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
     return;
   }

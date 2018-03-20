@@ -82,6 +82,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -1954,6 +1955,12 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Show the one-time notification and update the relevant pref about the
   // completion of the file system migration necessary for ARC, when needed.
   arc::ShowArcMigrationSuccessNotificationIfNeeded(profile);
+
+  if (should_launch_browser_ &&
+      profile->GetPrefs()->GetBoolean(prefs::kShowSyncSettingsOnSessionStart)) {
+    profile->GetPrefs()->ClearPref(prefs::kShowSyncSettingsOnSessionStart);
+    chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
+  }
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(
