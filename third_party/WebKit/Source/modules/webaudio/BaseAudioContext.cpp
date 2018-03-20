@@ -1036,4 +1036,11 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
   }
 }
 
+bool BaseAudioContext::CheckWorkletGlobalScopeOnRenderingThread() {
+  DCHECK(!IsMainThread());
+
+  return worklet_backing_worker_thread_ &&
+         worklet_backing_worker_thread_->GlobalScope();
+}
+
 }  // namespace blink
