@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
@@ -81,7 +82,7 @@ TEST_F(AppControllerTest, LastProfile) {
 
   // Delete the active profile.
   profile_manager_.profile_manager()->ScheduleProfileForDeletion(
-      dest_path1, ProfileManager::CreateCallback());
+      dest_path1, base::DoNothing());
 
   base::RunLoop().RunUntilIdle();
 
