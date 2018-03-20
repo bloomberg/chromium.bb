@@ -4135,6 +4135,9 @@ static void superres_post_encode(AV1_COMP *cpi) {
 
   if (av1_superres_unscaled(cm)) return;
 
+  assert(cpi->oxcf.enable_superres);
+  assert(!is_lossless_requested(&cpi->oxcf));
+
   av1_superres_upscale(cm, NULL);
 
   // If regular resizing is occurring the source will need to be downscaled to

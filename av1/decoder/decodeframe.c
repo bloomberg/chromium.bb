@@ -3095,6 +3095,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
+    if (!av1_superres_unscaled(cm)) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Fully lossless frame cannot use super-resolution");
+    }
   } else {
     setup_loopfilter(cm, rb);
     setup_cdef(cm, rb);
