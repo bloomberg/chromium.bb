@@ -113,12 +113,18 @@ void FillYUVA(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v, uint8_t a) {
 
 static void LetterboxPlane(VideoFrame* frame,
                            int plane,
-                           const gfx::Rect& view_area,
+                           const gfx::Rect& view_area_in_pixels,
                            uint8_t fill_byte) {
   uint8_t* ptr = frame->data(plane);
   const int rows = frame->rows(plane);
   const int row_bytes = frame->row_bytes(plane);
   const int stride = frame->stride(plane);
+  const int bytes_per_element =
+      VideoFrame::BytesPerElement(frame->format(), plane);
+  gfx::Rect view_area(view_area_in_pixels.x() * bytes_per_element,
+                      view_area_in_pixels.y(),
+                      view_area_in_pixels.width() * bytes_per_element,
+                      view_area_in_pixels.height());
 
   CHECK_GE(stride, row_bytes);
   CHECK_GE(view_area.x(), 0);
@@ -153,20 +159,27 @@ static void LetterboxPlane(VideoFrame* frame,
   }
 }
 
-void LetterboxYUV(VideoFrame* frame, const gfx::Rect& view_area) {
-  DCHECK(!(view_area.x() & 1));
-  DCHECK(!(view_area.y() & 1));
-  DCHECK(!(view_area.width() & 1));
-  DCHECK(!(view_area.height() & 1));
-  DCHECK(frame->format() == PIXEL_FORMAT_YV12 ||
-         frame->format() == PIXEL_FORMAT_I420);
-  LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
-  gfx::Rect half_view_area(view_area.x() / 2,
-                           view_area.y() / 2,
-                           view_area.width() / 2,
-                           view_area.height() / 2);
-  LetterboxPlane(frame, VideoFrame::kUPlane, half_view_area, 0x80);
-  LetterboxPlane(frame, VideoFrame::kVPlane, half_view_area, 0x80);
+void LetterboxVideoFrame(VideoFrame* frame, const gfx::Rect& view_area) {
+  switch (frame->format()) {
+    case PIXEL_FORMAT_ARGB:
+      LetterboxPlane(frame, VideoFrame::kARGBPlane, view_area, 0x00);
+      break;
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420: {
+      DCHECK(!(view_area.x() & 1));
+      DCHECK(!(view_area.y() & 1));
+      DCHECK(!(view_area.width() & 1));
+      DCHECK(!(view_area.height() & 1));
+      LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
+      gfx::Rect half_view_area(view_area.x() / 2, view_area.y() / 2,
+                               view_area.width() / 2, view_area.height() / 2);
+      LetterboxPlane(frame, VideoFrame::kUPlane, half_view_area, 0x80);
+      LetterboxPlane(frame, VideoFrame::kVPlane, half_view_area, 0x80);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 void RotatePlaneByPixels(const uint8_t* src,
@@ -378,7 +391,7 @@ void CopyRGBToVideoFrame(const uint8_t* source,
   const int uv_stride = frame->stride(kU);
 
   if (region_in_frame != gfx::Rect(frame->coded_size())) {
-    LetterboxYUV(frame, region_in_frame);
+    LetterboxVideoFrame(frame, region_in_frame);
   }
 
   const int y_offset =

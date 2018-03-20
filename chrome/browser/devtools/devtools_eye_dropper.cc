@@ -70,6 +70,9 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
       false);
   video_capturer_->SetAutoThrottlingEnabled(false);
   video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
+  video_capturer_->SetFormat(media::PIXEL_FORMAT_ARGB,
+                             media::COLOR_SPACE_UNSPECIFIED);
+  video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
   video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
                                        kMaxFrameRate);
 
@@ -324,22 +327,17 @@ void DevToolsEyeDropper::OnFrameCaptured(
     DLOG(ERROR) << "Shared memory mapping failed.";
     return;
   }
-  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapExternalData(
-      info->pixel_format, info->coded_size, info->visible_rect,
-      info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
-      buffer_size, info->timestamp);
-  if (!frame)
-    return;
-  frame->AddDestructionObserver(base::BindOnce(
-      [](mojo::ScopedSharedBufferMapping mapping) {}, std::move(mapping)));
 
-  SkBitmap skbitmap;
-  skbitmap.allocN32Pixels(info->visible_rect.width(),
-                          info->visible_rect.height());
-  cc::SkiaPaintCanvas canvas(skbitmap);
-  video_renderer_.Copy(frame, &canvas, media::Context3D());
+  SkImageInfo image_info = SkImageInfo::MakeN32(
+      content_rect.width(), content_rect.height(), kPremul_SkAlphaType);
+  SkPixmap pixmap(image_info, mapping.get(),
+                  media::VideoFrame::RowBytes(media::VideoFrame::kARGBPlane,
+                                              info->pixel_format,
+                                              info->coded_size.width()));
+  frame_.installPixels(pixmap);
+  shared_memory_mapping_ = std::move(mapping);
+  shared_memory_releaser_ = std::move(callbacks);
 
-  frame_ = skbitmap;
   UpdateCursor();
 }
 

@@ -367,7 +367,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
                  event_time, capture_frame_cb, video_frame, region_in_frame,
                  base::Passed(&release_callback)));
-  media::LetterboxYUV(video_frame.get(), region_in_frame);
+  media::LetterboxVideoFrame(video_frame.get(), region_in_frame);
   return true;
 }
 
