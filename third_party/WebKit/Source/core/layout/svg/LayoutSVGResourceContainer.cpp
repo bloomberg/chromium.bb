@@ -190,16 +190,6 @@ void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
       LayoutInvalidationReason::kSvgResourceInvalidated, layout_scope);
 }
 
-static void MarkForLayoutAndParentResourceInvalidationCallback(
-    bool needs_layout,
-    SVGElement& element) {
-  LayoutObject* layout_object = element.GetLayoutObject();
-  if (!layout_object)
-    return;
-  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-      *layout_object, needs_layout);
-}
-
 static inline void RemoveFromCacheAndInvalidateDependencies(
     LayoutObject& object,
     bool needs_layout) {
@@ -215,9 +205,14 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
   if (!object.GetNode() || !object.GetNode()->IsSVGElement())
     return;
 
-  auto callback = WTF::BindRepeating(
-      &MarkForLayoutAndParentResourceInvalidationCallback, needs_layout);
-  ToSVGElement(object.GetNode())->NotifyIncomingReferences(callback);
+  ToSVGElement(object.GetNode())
+      ->NotifyIncomingReferences([needs_layout](SVGElement& element) {
+        LayoutObject* layout_object = element.GetLayoutObject();
+        if (!layout_object)
+          return;
+        LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+            *layout_object, needs_layout);
+      });
 }
 
 void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
