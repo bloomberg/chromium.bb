@@ -338,6 +338,9 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
     [_pendingElementFetchRequests removeObjectForKey:requestID];
     [self logElementFetchDurationWithStartTime:fetchRequest.creationTime];
     [fetchRequest runHandlerWithResponse:response];
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(
+        "ContextMenu.UnexpectedFindElementResultHandlerMessage", true);
   }
 }
 
