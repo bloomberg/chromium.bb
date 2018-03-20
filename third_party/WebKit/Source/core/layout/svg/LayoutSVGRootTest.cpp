@@ -4,9 +4,9 @@
 
 #include "core/layout/svg/LayoutSVGRoot.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

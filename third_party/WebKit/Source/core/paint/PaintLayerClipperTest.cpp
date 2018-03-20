@@ -6,9 +6,9 @@
 
 #include "build/build_config.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"

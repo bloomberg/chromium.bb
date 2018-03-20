@@ -34,7 +34,7 @@
 
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"

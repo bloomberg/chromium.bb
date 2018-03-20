@@ -6,8 +6,8 @@
 
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarTheme.h"

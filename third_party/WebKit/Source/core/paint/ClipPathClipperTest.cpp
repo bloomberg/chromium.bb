@@ -5,7 +5,7 @@
 #include "core/paint/ClipPathClipper.h"
 
 #include <gtest/gtest.h>
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 namespace {

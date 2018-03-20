@@ -8,9 +8,9 @@
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMRect.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/page/PrintContext.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 

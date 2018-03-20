@@ -6,8 +6,8 @@
 
 #include "core/editing/FrameSelection.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutTestHelper_h
-#define LayoutTestHelper_h
+#ifndef CoreUnitTestHelper_h
+#define CoreUnitTestHelper_h
 
 #include <gtest/gtest.h>
 #include <memory>
@@ -111,4 +111,4 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
 
 }  // namespace blink
 
-#endif  // LayoutTestHelper_h
+#endif  // CoreUnitTestHelper_h

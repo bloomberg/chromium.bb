@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/ScriptController.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/HistogramTester.h"
 
 namespace blink {

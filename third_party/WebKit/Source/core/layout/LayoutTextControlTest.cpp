@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "core/html/forms/HTMLInputElement.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 

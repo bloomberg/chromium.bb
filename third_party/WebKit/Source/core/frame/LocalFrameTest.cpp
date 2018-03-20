@@ -4,8 +4,8 @@
 
 #include "core/frame/LocalFrame.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/loader/EmptyClients.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,8 +8,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutText.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutImage.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/test/StubImage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

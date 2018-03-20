@@ -7,10 +7,10 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

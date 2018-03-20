@@ -5,13 +5,12 @@
 #ifndef NG_BASE_LAYOUT_ALGORITHM_TEST_H_
 #define NG_BASE_LAYOUT_ALGORITHM_TEST_H_
 
-#include "core/layout/LayoutTestHelper.h"
-
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_test.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 #include "platform/wtf/Allocator.h"

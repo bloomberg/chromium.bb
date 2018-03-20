@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/CoreUnitTestHelper.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
