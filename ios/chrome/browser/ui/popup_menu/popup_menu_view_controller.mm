@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PopupMenuViewController ()
+@interface PopupMenuViewController ()<UIGestureRecognizerDelegate>
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* contentContainer;
 @end
@@ -30,6 +30,7 @@
     UITapGestureRecognizer* gestureRecognizer = [[UITapGestureRecognizer alloc]
         initWithTarget:self
                 action:@selector(touchOnScrim:)];
+    gestureRecognizer.delegate = self;
     [self.view addGestureRecognizer:gestureRecognizer];
   }
   return self;
@@ -58,11 +59,17 @@
 
 // Handler receiving the touch event on the background scrim.
 - (void)touchOnScrim:(UITapGestureRecognizer*)recognizer {
-  if (CGRectContainsPoint(self.contentContainer.frame,
-                          [recognizer locationInView:self.view])) {
-    return;
+  if (recognizer.state == UIGestureRecognizerStateEnded) {
+    [self.commandHandler dismissPopupMenu];
   }
-  [self.commandHandler dismissPopupMenu];
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+       shouldReceiveTouch:(UITouch*)touch {
+  // Do no get the touches on the container view.
+  return touch.view != self.contentContainer;
 }
 
 @end
