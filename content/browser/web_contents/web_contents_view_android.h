@@ -35,9 +35,7 @@ class WebContentsViewAndroid : public WebContentsView,
                          WebContentsViewDelegate* delegate);
   ~WebContentsViewAndroid() override;
 
-  // Sets the interface to the view system. ContentViewCore is owned
-  // by its Java ContentViewCore counterpart, whose lifetime is managed
-  // by the UI frontend.
+  // Sets the interface to the view system.
   void SetContentViewCore(ContentViewCore* content_view_core);
 
   // Sets the object that show/hide popup view for <select> tag.
@@ -136,7 +134,7 @@ class WebContentsViewAndroid : public WebContentsView,
   WebContentsImpl* web_contents_;
 
   // ContentViewCore is our interface to the view system.
-  ContentViewCore* content_view_core_;
+  std::unique_ptr<ContentViewCore> content_view_core_;
 
   // Handles "overscroll to refresh" events
   std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler_;
