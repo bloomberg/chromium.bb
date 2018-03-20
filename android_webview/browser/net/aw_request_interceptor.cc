@@ -154,9 +154,9 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
   if (request->GetUserData(kRequestAlreadyHasJobDataKey))
     return nullptr;
 
-  // With PlzNavigate, we now seem to receive blob URLs in interceptor.
-  // Ignore these URLs.
-  // TODO(sgurun) is this the best place to do that? Talk with jam@.
+  // It's not useful to emit shouldInterceptRequest for blob URLs, so we
+  // intentionally skip the callback for all such URLs. See
+  // http://crbug.com/822983.
   if (request->url().SchemeIs(url::kBlobScheme)) {
     return nullptr;
   }
