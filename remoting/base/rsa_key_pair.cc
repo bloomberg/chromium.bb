@@ -97,7 +97,7 @@ std::string RsaKeyPair::SignMessage(const std::string& message) const {
 std::string RsaKeyPair::GenerateCertificate() const {
   std::string der_cert;
   net::x509_util::CreateSelfSignedCert(
-      key_.get(), net::x509_util::DIGEST_SHA256, "CN=chromoting",
+      key_->key(), net::x509_util::DIGEST_SHA256, "CN=chromoting",
       base::RandInt(1, std::numeric_limits<int>::max()), base::Time::Now(),
       base::Time::Now() + base::TimeDelta::FromDays(1), &der_cert);
   return der_cert;

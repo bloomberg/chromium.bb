@@ -431,7 +431,7 @@ TEST_F(CTPolicyEnforcerTest,
     // Create a self-signed certificate with exactly the validity period.
     std::string cert_data;
     ASSERT_TRUE(x509_util::CreateSelfSignedCert(
-        private_key.get(), x509_util::DIGEST_SHA256, "CN=test",
+        private_key->key(), x509_util::DIGEST_SHA256, "CN=test",
         i * 10 + required_scts, start, end, &cert_data));
     scoped_refptr<X509Certificate> cert(
         X509Certificate::CreateFromBytes(cert_data.data(), cert_data.size()));
