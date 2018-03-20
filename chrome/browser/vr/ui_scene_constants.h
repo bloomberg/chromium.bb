@@ -295,8 +295,8 @@ static constexpr float kPromptVerticalOffsetDMM = -0.1f;
 static constexpr float kPromptShadowOffsetDMM = 0.1f;
 static constexpr float kPromptDistance = 2.4f;
 
-static constexpr float kRepositionCursorBackgroundSize = 1.4f;
-static constexpr float kRepositionCursorSize = 1.2f;
+static constexpr float kRepositionCursorBackgroundSize = 1.85f;
+static constexpr float kRepositionCursorSize = 1.5f;
 
 static constexpr float kMinResizerScale = 0.5f;
 static constexpr float kMaxResizerScale = 1.5f;
