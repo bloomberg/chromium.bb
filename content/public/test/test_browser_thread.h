@@ -12,20 +12,27 @@
 
 namespace base {
 class MessageLoop;
+class Thread;
 }
 
 namespace content {
 
-class TestBrowserThreadImpl;
+class BrowserProcessSubThread;
+class BrowserThreadImpl;
 
 // DEPRECATED: use TestBrowserThreadBundle instead. See http://crbug.com/272091
 // A BrowserThread for unit tests; this lets unit tests in chrome/ create
 // BrowserThread instances.
 class TestBrowserThread {
  public:
+  // Constructs a TestBrowserThread with a |real_thread_| and starts it (with a
+  // MessageLoopForIO if |identifier == BrowserThread::IO|.
   explicit TestBrowserThread(BrowserThread::ID identifier);
+
+  // Constructs a TestBrowserThread based on |message_loop| (no |real_thread_|).
   TestBrowserThread(BrowserThread::ID identifier,
                     base::MessageLoop* message_loop);
+
   ~TestBrowserThread();
 
   // We provide a subset of the capabilities of the Thread interface
@@ -34,28 +41,34 @@ class TestBrowserThread {
   // interface.
 
   // Starts the thread with a generic message loop.
-  bool Start();
+  void Start();
 
   // Starts the thread with a generic message loop and waits for the
   // thread to run.
-  bool StartAndWaitForTesting();
+  void StartAndWaitForTesting();
 
   // Starts the thread with an IOThread message loop.
-  bool StartIOThread();
+  void StartIOThread();
 
-  // Initializes the BrowserThreadDelegate.
-  void InitIOThreadDelegate();
+  // Together these are the same as StartIOThread(). They can be called in
+  // phases to test binding BrowserThread::IO after its underlying thread was
+  // started.
+  void StartIOThreadUnregistered();
+  void RegisterAsBrowserThread();
 
-  // Stops the thread.
+  // Stops the thread, no-op if this is not a real thread.
   void Stop();
 
-  // Returns true if the thread is running.
-  bool IsRunning();
-
  private:
-  std::unique_ptr<TestBrowserThreadImpl> impl_;
-
   const BrowserThread::ID identifier_;
+
+  // A real thread which represents |identifier_| when constructor #1 is used
+  // (null otherwise).
+  std::unique_ptr<BrowserProcessSubThread> real_thread_;
+
+  // Binds |identifier_| to |message_loop| when constructor #2 is used (null
+  // otherwise).
+  std::unique_ptr<BrowserThreadImpl> fake_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThread);
 };

@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,17 +32,22 @@ class BrowserThreadTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI));
-    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO));
+    ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
     ui_thread_->Start();
-    io_thread_->Start();
+
+    io_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
+    base::Thread::Options io_options;
+    io_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    io_thread_->StartWithOptions(io_options);
+
+    ui_thread_->RegisterAsBrowserThread();
+    io_thread_->RegisterAsBrowserThread();
   }
 
   void TearDown() override {
-    StopUIThread();
-    io_thread_->Stop();
-    ui_thread_ = nullptr;
-    io_thread_ = nullptr;
+    io_thread_.reset();
+    ui_thread_.reset();
+
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
   }
@@ -73,8 +79,8 @@ class BrowserThreadTest : public testing::Test {
   };
 
  private:
-  std::unique_ptr<BrowserThreadImpl> ui_thread_;
-  std::unique_ptr<BrowserThreadImpl> io_thread_;
+  std::unique_ptr<BrowserProcessSubThread> ui_thread_;
+  std::unique_ptr<BrowserProcessSubThread> io_thread_;
   // It's kind of ugly to make this mutable - solely so we can post the Quit
   // Task from Release(). This should be fixed.
   mutable base::MessageLoop loop_;
