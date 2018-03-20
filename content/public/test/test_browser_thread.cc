@@ -9,71 +9,32 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/notification_service_impl.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
-#endif
 
 namespace content {
 
-class TestBrowserThreadImpl : public BrowserThreadImpl {
- public:
-  explicit TestBrowserThreadImpl(BrowserThread::ID identifier)
-      : BrowserThreadImpl(identifier) {}
-
-  TestBrowserThreadImpl(BrowserThread::ID identifier,
-                        base::MessageLoop* message_loop)
-      : BrowserThreadImpl(identifier, message_loop) {}
-
-  ~TestBrowserThreadImpl() override { Stop(); }
-
-  void Init() override {
-#if defined(OS_WIN)
-    com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>();
-#endif
-
-    notification_service_ = std::make_unique<NotificationServiceImpl>();
-    BrowserThreadImpl::Init();
-  }
-
-  void CleanUp() override {
-    BrowserThreadImpl::CleanUp();
-    notification_service_.reset();
-#if defined(OS_WIN)
-    com_initializer_.reset();
-#endif
-  }
-
- private:
-#if defined(OS_WIN)
-  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-#endif
-
-  std::unique_ptr<NotificationService> notification_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadImpl);
-};
-
 TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier)
-    : impl_(new TestBrowserThreadImpl(identifier)), identifier_(identifier) {}
+    : identifier_(identifier),
+      real_thread_(std::make_unique<BrowserProcessSubThread>(identifier_)) {
+  real_thread_->AllowBlockingForTesting();
+}
 
 TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier,
                                      base::MessageLoop* message_loop)
-    : impl_(new TestBrowserThreadImpl(identifier, message_loop)),
-      identifier_(identifier) {}
+    : identifier_(identifier),
+      fake_thread_(
+          new BrowserThreadImpl(identifier_, message_loop->task_runner())) {}
 
 TestBrowserThread::~TestBrowserThread() {
   // The upcoming BrowserThreadImpl::ResetGlobalsForTesting() call requires that
-  // |impl_| have triggered the shutdown phase for its BrowserThread::ID. This
-  // either happens when the thread is stopped (if real) or destroyed (when fake
-  // -- i.e. using an externally provided MessageLoop).
-  impl_.reset();
+  // |identifier_| have completed its SHUTDOWN phase.
+  real_thread_.reset();
+  fake_thread_.reset();
 
-  // Resets BrowserThreadImpl's globals so that |impl_| is no longer bound to
-  // |identifier_|. This is fine since the underlying MessageLoop has already
-  // been flushed and deleted in Stop(). In the case of an externally provided
+  // Resets BrowserThreadImpl's globals so that |identifier_| is no longer
+  // bound. This is fine since the underlying MessageLoop has already been
+  // flushed and deleted above. In the case of an externally provided
   // MessageLoop however, this means that TaskRunners obtained through
   // |BrowserThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
   // recognize their BrowserThreadImpl for RunsTasksInCurrentSequence(). This
@@ -87,30 +48,34 @@ TestBrowserThread::~TestBrowserThread() {
   BrowserThreadImpl::ResetGlobalsForTesting(identifier_);
 }
 
-bool TestBrowserThread::Start() {
-  return impl_->Start();
+void TestBrowserThread::Start() {
+  CHECK(real_thread_->Start());
+  RegisterAsBrowserThread();
 }
 
-bool TestBrowserThread::StartAndWaitForTesting() {
-  return impl_->StartAndWaitForTesting();
+void TestBrowserThread::StartAndWaitForTesting() {
+  CHECK(real_thread_->StartAndWaitForTesting());
+  RegisterAsBrowserThread();
 }
 
-bool TestBrowserThread::StartIOThread() {
+void TestBrowserThread::StartIOThread() {
+  StartIOThreadUnregistered();
+  RegisterAsBrowserThread();
+}
+
+void TestBrowserThread::StartIOThreadUnregistered() {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
-  return impl_->StartWithOptions(options);
+  CHECK(real_thread_->StartWithOptions(options));
 }
 
-void TestBrowserThread::InitIOThreadDelegate() {
-  impl_->InitIOThreadDelegate();
+void TestBrowserThread::RegisterAsBrowserThread() {
+  real_thread_->RegisterAsBrowserThread();
 }
 
 void TestBrowserThread::Stop() {
-  impl_->Stop();
-}
-
-bool TestBrowserThread::IsRunning() {
-  return impl_->IsRunning();
+  if (real_thread_)
+    real_thread_->Stop();
 }
 
 }  // namespace content

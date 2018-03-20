@@ -172,9 +172,11 @@ class CONTENT_EXPORT BrowserThread {
   // thread.  To DCHECK this, use the DCHECK_CURRENTLY_ON() macro above.
   static bool CurrentlyOn(ID identifier) WARN_UNUSED_RESULT;
 
+  // Deprecated: This is equivalent to IsThreadInitialized().
   // Callable on any thread.  Returns whether the threads message loop is valid.
   // If this returns false it means the thread is in the process of shutting
   // down.
+  // TODO(gab): Replace callers with IsThreadInitialized().
   static bool IsMessageLoopValid(ID identifier) WARN_UNUSED_RESULT;
 
   // If the current message loop is one of the known threads, returns true and
@@ -188,16 +190,12 @@ class CONTENT_EXPORT BrowserThread {
 
   // Sets the delegate for BrowserThread::IO.
   //
-  // This only supports the IO thread as it doesn't work for potentially
-  // redirected threads (ref. http://crbug.com/653916) and also doesn't make
-  // sense for the UI thread.
-  //
   // Only one delegate may be registered at a time. The delegate may be
   // unregistered by providing a nullptr pointer.
   //
-  // If the caller unregisters the delegate before CleanUp has been called, it
-  // must perform its own locking to ensure the delegate is not deleted while
-  // unregistering.
+  // The delegate can only be registered through this call before
+  // BrowserThreadImpl(BrowserThread::IO) is created and unregistered after
+  // it was destroyed and its underlying thread shutdown.
   static void SetIOThreadDelegate(BrowserThreadDelegate* delegate);
 
   // Use these templates in conjunction with RefCountedThreadSafe or scoped_ptr

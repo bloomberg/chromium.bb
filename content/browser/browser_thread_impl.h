@@ -5,47 +5,31 @@
 #ifndef CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 
-#include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace base {
-class MessageLoop;
-class RunLoop;
-}
-
-namespace base {
-class Location;
-}
-
 namespace content {
 
+class BrowserMainLoop;
+class BrowserProcessSubThread;
+class TestBrowserThread;
+
+// BrowserThreadImpl is a scoped object which maps a SingleThreadTaskRunner to a
+// BrowserThread::ID. On ~BrowserThreadImpl() that ID enters a SHUTDOWN state
+// (in which BrowserThread::IsThreadInitialized() returns false) but the mapping
+// isn't undone to avoid shutdown races (the task runner is free to stop
+// accepting tasks however).
+//
 // Very few users should use this directly. To mock BrowserThreads, tests should
 // use TestBrowserThreadBundle instead.
-class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
-                                         public base::Thread {
+class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
  public:
-  // Construct a BrowserThreadImpl with the supplied identifier.  It is an error
-  // to construct a BrowserThreadImpl that already exists.
-  explicit BrowserThreadImpl(BrowserThread::ID identifier);
+  ~BrowserThreadImpl();
 
-  // Special constructor for the main (UI) thread and unittests. If a
-  // |message_loop| is provied, we use a dummy thread here since the main
-  // thread already exists.
-  BrowserThreadImpl(BrowserThread::ID identifier,
-                    base::MessageLoop* message_loop);
-  ~BrowserThreadImpl() override;
-
-  bool Start();
-  bool StartWithOptions(const Options& options);
-  bool StartAndWaitForTesting();
-  // Called only by the BrowserThread::IO thread to initialize its
-  // BrowserThreadDelegate after the thread is created. See
-  // https://crbug.com/729596.
-  void InitIOThreadDelegate();
+  // Returns the thread name for |identifier|.
+  static const char* GetThreadName(BrowserThread::ID identifier);
 
   // Resets globals for |identifier|. Used in tests to clear global state that
   // would otherwise leak to the next test. Globals are not otherwise fully
@@ -55,35 +39,19 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // |identifier|.
   static void ResetGlobalsForTesting(BrowserThread::ID identifier);
 
- protected:
-  void Init() override;
-  void Run(base::RunLoop* run_loop) override;
-  void CleanUp() override;
-
  private:
-  // We implement all the functionality of the public BrowserThread
-  // functions, but state is stored in the BrowserThreadImpl to keep
-  // the API cleaner. Therefore make BrowserThread a friend class.
-  friend class BrowserThread;
+  // Restrict instantiation to BrowserProcessSubThread as it performs important
+  // initialization that shouldn't be bypassed (except by BrowserMainLoop for
+  // the main thread).
+  friend class BrowserProcessSubThread;
+  friend class BrowserMainLoop;
+  // TestBrowserThread is also allowed to construct this when instantiating fake
+  // threads.
+  friend class TestBrowserThread;
 
-  // The following are unique function names that makes it possible to tell
-  // the thread id from the callstack alone in crash dumps.
-  void UIThreadRun(base::RunLoop* run_loop);
-  void ProcessLauncherThreadRun(base::RunLoop* run_loop);
-  void IOThreadRun(base::RunLoop* run_loop);
-
-  static bool PostTaskHelper(BrowserThread::ID identifier,
-                             const base::Location& from_here,
-                             base::OnceClosure task,
-                             base::TimeDelta delay,
-                             bool nestable);
-
-  // Common initialization code for the constructors.
-  void Initialize();
-
-  // For testing.
-  friend class ContentTestSuiteBaseListener;
-  friend class TestBrowserThreadBundle;
+  // Binds |identifier| to |task_runner| for the browser_thread.h API.
+  BrowserThreadImpl(BrowserThread::ID identifier,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.
