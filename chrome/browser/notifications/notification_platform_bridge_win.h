@@ -48,7 +48,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   static bool HandleActivation(const base::CommandLine& command_line);
 
   // Extracts the profile ID from |launch_id_str|.
-  static std::string GetProfileIdFromLaunchId(const std::string& launch_id_str);
+  static std::string GetProfileIdFromLaunchId(
+      const base::string16& launch_id_str);
 
   // Checks if native notification is enabled.
   static bool NativeNotificationEnabled();

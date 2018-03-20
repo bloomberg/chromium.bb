@@ -748,8 +748,8 @@ bool NotificationPlatformBridgeWin::HandleActivation(
     const base::CommandLine& command_line) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  NotificationLaunchId launch_id(
-      command_line.GetSwitchValueASCII(switches::kNotificationLaunchId));
+  NotificationLaunchId launch_id(base::UTF16ToUTF8(
+      command_line.GetSwitchValueNative(switches::kNotificationLaunchId)));
   if (!launch_id.is_valid())
     return false;
 
@@ -773,8 +773,8 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 
 // static
 std::string NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
-    const std::string& launch_id_str) {
-  NotificationLaunchId launch_id(launch_id_str);
+    const base::string16& launch_id_str) {
+  NotificationLaunchId launch_id(base::UTF16ToUTF8(launch_id_str));
   return launch_id.is_valid() ? launch_id.profile_id() : std::string();
 }
 
