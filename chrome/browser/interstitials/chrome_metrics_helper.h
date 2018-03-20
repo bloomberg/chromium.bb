@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "chrome/common/buildflags.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -39,7 +38,7 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
   void RecordExtraShutdownMetrics() override;
 
  private:
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   content::WebContents* web_contents_;
 #endif
   const GURL request_url_;

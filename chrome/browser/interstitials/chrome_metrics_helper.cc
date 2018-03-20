@@ -10,7 +10,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_metrics_recorder.h"
@@ -26,7 +25,7 @@ ChromeMetricsHelper::ChromeMetricsHelper(
           HistoryServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
               ServiceAccessType::EXPLICIT_ACCESS)),
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
       web_contents_(web_contents),
 #endif
       request_url_(request_url) {
