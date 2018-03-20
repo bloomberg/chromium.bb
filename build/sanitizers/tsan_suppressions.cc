@@ -255,6 +255,9 @@ char kTSanDefaultSuppressions[] =
     "race:base::i18n::IsRTL\n"
     "race:base::i18n::SetICUDefaultLocale\n"
 
+    // https://crbug.com/794920
+    "race:crash_reporter::InitializeCrashKeys\n"
+
     // http://crbug.com/795110
     "race:third_party/fontconfig/*\n"
 
