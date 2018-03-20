@@ -25,6 +25,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +33,7 @@
 #include "content/public/common/child_process_host.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom.h"
+#include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -160,7 +162,9 @@ blink::mojom::ServiceWorkerClientInfoPtr FocusOnUI(
 }
 
 // This is only called for main frame navigations in OpenWindowOnUI().
-void DidOpenURLOnUI(OpenURLCallback callback, WebContents* web_contents) {
+void DidOpenURLOnUI(WindowType type,
+                    OpenURLCallback callback,
+                    WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!web_contents) {
@@ -183,6 +187,12 @@ void DidOpenURLOnUI(OpenURLCallback callback, WebContents* web_contents) {
   new OpenURLObserver(web_contents,
                       rfhi->frame_tree_node()->frame_tree_node_id(),
                       std::move(callback));
+
+  if (type == WindowType::PAYMENT_HANDLER_WINDOW) {
+    // Set the opened web_contents to payment app provider to manage its life
+    // cycle.
+    PaymentAppProvider::GetInstance()->SetOpenedWindow(web_contents);
+  }
 }
 
 void OpenWindowOnUI(
@@ -190,7 +200,7 @@ void OpenWindowOnUI(
     const GURL& script_url,
     int worker_process_id,
     const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper,
-    WindowOpenDisposition disposition,
+    WindowType type,
     OpenURLCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -216,13 +226,15 @@ void OpenWindowOnUI(
       url,
       Referrer::SanitizeForRequest(
           url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
-      disposition, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      true /* is_renderer_initiated */);
+      type == WindowType::PAYMENT_HANDLER_WINDOW
+          ? WindowOpenDisposition::NEW_POPUP
+          : WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
 
   GetContentClient()->browser()->OpenURL(
       browser_context, params,
       base::AdaptCallbackForRepeating(
-          base::BindOnce(&DidOpenURLOnUI, std::move(callback))));
+          base::BindOnce(&DidOpenURLOnUI, type, std::move(callback))));
 }
 
 void NavigateClientOnUI(const GURL& url,
@@ -446,14 +458,14 @@ void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
-                WindowOpenDisposition disposition,
+                WindowType type,
                 NavigationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           &OpenWindowOnUI, url, script_url, worker_process_id,
-          base::WrapRefCounted(context->wrapper()), disposition,
+          base::WrapRefCounted(context->wrapper()), type,
           base::BindOnce(&DidNavigate, context, script_url.GetOrigin(),
                          std::move(callback))));
 }

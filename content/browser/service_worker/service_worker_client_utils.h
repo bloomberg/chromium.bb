@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "ui/base/mojo/window_open_disposition.mojom.h"
 
 class GURL;
 
@@ -34,6 +33,12 @@ using ServiceWorkerClientPtrs =
 using ClientsCallback =
     base::OnceCallback<void(std::unique_ptr<ServiceWorkerClientPtrs> clients)>;
 
+// The type of an opened window.
+enum class WindowType {
+  NEW_TAB_WINDOW = 0,
+  PAYMENT_HANDLER_WINDOW,
+};
+
 // Focuses the window client associated with |provider_host|. |callback| is
 // called with the client information on completion.
 void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
@@ -45,7 +50,7 @@ void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
-                WindowOpenDisposition disposition,
+                WindowType type,
                 NavigationCallback callback);
 
 // Navigates the client specified by |process_id| and |frame_id| to |url|.

@@ -68,6 +68,13 @@ class CONTENT_EXPORT PaymentAppProvider {
                             int64_t registration_id,
                             PaymentEventResultCallback callback) = 0;
 
+  // Set opened window for payment handler. Note that we maintain at most one
+  // opened window for payment handler at any moment in a browser context. The
+  // previously opened window in the same browser context will be closed after
+  // calling this interface.
+  virtual void SetOpenedWindow(WebContents* web_contents) = 0;
+  virtual void CloseOpenedWindow(BrowserContext* browser_context) = 0;
+
  protected:
   virtual ~PaymentAppProvider() {}
 };
