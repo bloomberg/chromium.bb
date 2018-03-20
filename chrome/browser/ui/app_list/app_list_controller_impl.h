@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
-#define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_IMPL_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_IMPL_H_
 
 #include <string>
 
@@ -20,10 +20,10 @@ class AppListController;
 }  // namespace mojom
 }  // namespace ash
 
-class AppListControllerDelegateAsh : public AppListControllerDelegate {
+class AppListControllerDelegateImpl : public AppListControllerDelegate {
  public:
-  AppListControllerDelegateAsh();
-  ~AppListControllerDelegateAsh() override;
+  AppListControllerDelegateImpl();
+  ~AppListControllerDelegateImpl() override;
 
   // AppListControllerDelegate overrides:
   void DismissView() override;
@@ -64,7 +64,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   // Not owned.
   ash::mojom::AppListController* app_list_controller_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_IMPL_H_

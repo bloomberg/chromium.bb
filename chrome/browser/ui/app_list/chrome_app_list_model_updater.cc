@@ -9,8 +9,8 @@
 
 #include "ash/app_list/model/search/search_model.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
@@ -19,7 +19,7 @@ ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
   // TODO(hejq): remove this when search migration is done.
   if (!ash_util::IsRunningInMash())
-    search_model_ = AppListServiceAsh::GetInstance()->GetSearchModelFromAsh();
+    search_model_ = AppListServiceImpl::GetInstance()->GetSearchModelFromAsh();
 }
 
 ChromeAppListModelUpdater::~ChromeAppListModelUpdater() {}
@@ -30,7 +30,7 @@ void ChromeAppListModelUpdater::SetActive(bool active) {
     return;
 
   app_list_controller_ =
-      active ? AppListServiceAsh::GetInstance()->GetAppListController()
+      active ? AppListServiceImpl::GetInstance()->GetAppListController()
              : nullptr;
   if (!app_list_controller_)
     return;

@@ -100,10 +100,6 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-#include "chrome/browser/ui/app_list/app_list_service.h"
-#endif
-
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 
@@ -276,6 +272,7 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 
 void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
 #if !defined(OS_CHROMEOS)
+  // TODO(crbug/821659): Clean up the desktop UserManager webui.
   profiles::UserManagerAction action =
       command_line.HasSwitch(switches::kShowAppList) ?
           profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
@@ -967,13 +964,6 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
     }
   }
 #endif  // defined(OS_WIN)
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-  // If we are showing the app list then chrome isn't shown so load the app
-  // list's profile rather than chrome's.
-  if (command_line.HasSwitch(switches::kShowAppList))
-    return AppListService::Get()->GetProfilePath(user_data_dir);
-#endif
 
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);

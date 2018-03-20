@@ -2097,44 +2097,9 @@ const char kRLZDisabled[] = "rlz.disabled";
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-// The directory in user data dir that contains the profile to be used with the
-// app launcher.
-const char kAppListProfile[] = "app_list.profile";
-
-// The number of times the app launcher was launched since last ping and
-// the time of the last ping.
-const char kAppListLaunchCount[] = "app_list.launch_count";
-const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
-
-// The number of times the an app was launched from the app launcher since last
-// ping and the time of the last ping.
-const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
-const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
-
-// A boolean that tracks whether the user has ever enabled the app launcher.
-const char kAppLauncherHasBeenEnabled[] =
-    "apps.app_launcher.has_been_enabled";
-
-// An enum indicating how the app launcher was enabled. E.g., via webstore, app
-// install, command line, etc. For UMA.
-const char kAppListEnableMethod[] = "app_list.how_enabled";
-
-// The time that the app launcher was enabled. Cleared when UMA is recorded.
-const char kAppListEnableTime[] = "app_list.when_enabled";
-
 // Keeps local state of app list while sync service is not available.
 const char kAppListLocalState[] = "app_list.local_state";
-
-// A dictionary that tracks the Drive app to Chrome app mapping. The key is
-// a Drive app id and the value is the corresponding Chrome app id. The pref
-// is unsynable and used to track local mappings only.
-const char kAppLauncherDriveAppMapping[] =
-    "apps.app_launcher.drive_app_mapping";
-
-// A list of Drive app ids that tracks the uninstallable Drive apps.
-const char kAppLauncherUninstalledDriveApps[] =
-    "apps.app_launcher.uninstalled_drive_apps";
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
+#endif
 
 #if defined(OS_WIN)
 // If set, the user requested to launch the app with this extension id while

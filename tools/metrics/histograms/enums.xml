@@ -1199,6 +1199,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AppListEnableSource">
+  <obsolete>
+    Deprecated 03/2018 with Mash AppList refactoring.
+  </obsolete>
   <int value="0" label="Not enabled (should never be recorded)"/>
   <int value="1" label="Packaged app installed from Web Store"/>
   <int value="2" label="Clicked app launcher link from the Web Store"/>

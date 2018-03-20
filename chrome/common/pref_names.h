@@ -754,17 +754,7 @@ extern const char kRLZDisabled[];
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-extern const char kAppListProfile[];
-extern const char kLastAppListLaunchPing[];
-extern const char kAppListLaunchCount[];
-extern const char kLastAppListAppLaunchPing[];
-extern const char kAppListAppLaunchCount[];
-extern const char kAppLauncherHasBeenEnabled[];
-extern const char kAppListEnableMethod[];
-extern const char kAppListEnableTime[];
 extern const char kAppListLocalState[];
-extern const char kAppLauncherDriveAppMapping[];
-extern const char kAppLauncherUninstalledDriveApps[];
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_WIN)

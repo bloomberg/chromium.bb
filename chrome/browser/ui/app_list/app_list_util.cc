@@ -5,18 +5,11 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 
 bool IsAppLauncherEnabled() {
-#if !BUILDFLAG(ENABLE_APP_LIST)
-  return false;
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   return true;
 #else
-  PrefService* prefs = g_browser_process->local_state();
-  // In some tests, the prefs aren't initialised.
-  return prefs && prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled);
+  return false;
 #endif
 }

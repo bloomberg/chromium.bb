@@ -1644,10 +1644,10 @@ test("browser_tests") {
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/mash_service_registry_browsertest.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
+        "../browser/ui/app_list/app_list_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
         "../browser/ui/app_list/crostini/crostini_installer_view_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
-        "../browser/ui/ash/app_list/app_list_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard_controller_browsertest.cc",
@@ -4300,7 +4300,6 @@ test("unit_tests") {
   if (enable_app_list) {
     sources += [
       "../browser/ui/app_list/app_context_menu_unittest.cc",
-      "../browser/ui/app_list/app_list_service_unittest.cc",
       "../browser/ui/app_list/app_list_syncable_service_unittest.cc",
       "../browser/ui/app_list/app_list_test_util.cc",
       "../browser/ui/app_list/app_list_test_util.h",
@@ -4310,7 +4309,6 @@ test("unit_tests") {
       "../browser/ui/app_list/arc/arc_app_utils_unittest.cc",
       "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
       "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/profile_loader_unittest.cc",
       "../browser/ui/app_list/search/answer_card/answer_card_result_unittest.cc",
       "../browser/ui/app_list/search/answer_card/answer_card_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_data_search_provider_unittest.cc",
@@ -4329,8 +4327,6 @@ test("unit_tests") {
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       "../browser/ui/app_list/test/fake_profile.cc",
       "../browser/ui/app_list/test/fake_profile.h",
-      "../browser/ui/app_list/test/fake_profile_store.cc",
-      "../browser/ui/app_list/test/fake_profile_store.h",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc",
     ]
     deps += [
@@ -4817,7 +4813,7 @@ if (!is_android) {
         "../browser/chromeos/login/test/oobe_base_test.cc",
         "../browser/chromeos/login/test/oobe_base_test.h",
         "../browser/download/notification/download_notification_interactive_uitest.cc",
-        "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
+        "../browser/ui/app_list/app_list_interactive_uitest.cc",
         "../browser/ui/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",

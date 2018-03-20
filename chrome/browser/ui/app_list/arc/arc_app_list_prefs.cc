@@ -1457,32 +1457,6 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
     observer.OnNotificationsEnabledChanged(package_name, enabled);
 }
 
-void ArcAppListPrefs::MaybeShowPackageInAppLauncher(
-    const arc::mojom::ArcPackageInfo& package_info) {
-  // Ignore system packages and auxiliary packages.
-  if (!package_info.sync || package_info.system)
-    return;
-
-  std::unordered_set<std::string> app_ids =
-      GetAppsForPackage(package_info.package_name);
-  for (const auto& app_id : app_ids) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = GetApp(app_id);
-    if (!app_info) {
-      NOTREACHED();
-      continue;
-    }
-    if (!app_info->showInLauncher)
-      continue;
-
-    AppListService* service = AppListService::Get();
-    CHECK(service);
-    service->ShowForAppInstall(profile_, app_id, false);
-    last_shown_batch_installation_revision_ =
-        current_batch_installation_revision_;
-    break;
-  }
-}
-
 bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
   return !GetPackage(package_name) && sync_service_ &&
          !sync_service_->IsPackageSyncing(package_name);
@@ -1492,18 +1466,9 @@ void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
 
-  // Ignore packages installed by internal sync.
-  const bool unknown_package = IsUnknownPackage(package_info->package_name);
-
   AddOrUpdatePackagePrefs(prefs_, *package_info);
   for (auto& observer : observer_list_)
     observer.OnPackageInstalled(*package_info);
-
-  if (unknown_package &&
-      current_batch_installation_revision_ !=
-          last_shown_batch_installation_revision_) {
-    MaybeShowPackageInAppLauncher(*package_info);
-  }
 }
 
 void ArcAppListPrefs::OnPackageModified(
@@ -1618,9 +1583,6 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
 
 void ArcAppListPrefs::OnInstallationStarted(
     const base::Optional<std::string>& package_name) {
-  // Start new batch installation group if this is first installation.
-  if (!installing_packages_count_)
-    ++current_batch_installation_revision_;
   ++installing_packages_count_;
 
   if (package_name.has_value() && default_apps_.HasPackage(*package_name))
