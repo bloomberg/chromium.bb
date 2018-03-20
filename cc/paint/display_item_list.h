@@ -68,14 +68,26 @@ class CC_PAINT_EXPORT DisplayItemList
 
   // Push functions construct a new op on the paint op buffer, while maintaining
   // bookkeeping information. Must be called after invoking StartPaint().
+  // Returns the id (which is an opaque value) of the operation that can be used
+  // in UpdateSaveLayerBounds().
   template <typename T, typename... Args>
-  void push(Args&&... args) {
+  size_t push(Args&&... args) {
 #if DCHECK_IS_ON()
     DCHECK(IsPainting());
 #endif
+    size_t offset = paint_op_buffer_.next_op_offset();
     if (usage_hint_ == kTopLevelDisplayItemList)
-      offsets_.push_back(paint_op_buffer_.next_op_offset());
+      offsets_.push_back(offset);
     paint_op_buffer_.push<T>(std::forward<Args>(args)...);
+    return offset;
+  }
+
+  // Called by blink::PaintChunksToCcLayer when an effect ends, to update the
+  // bounds of a SaveLayerOp which was emitted when the effect started. This is
+  // needed because blink doesn't know the bounds when an effect starts. Don't
+  // add other mutation methods like this if there is better alternative.
+  void UpdateSaveLayerBounds(size_t id, const SkRect& bounds) {
+    paint_op_buffer_.UpdateSaveLayerBounds(id, bounds);
   }
 
   void EndPaintOfUnpaired(const gfx::Rect& visual_rect) {
