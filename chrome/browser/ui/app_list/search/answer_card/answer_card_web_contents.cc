@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
@@ -263,6 +264,12 @@ void AnswerCardWebContents::DidGetUserInteraction(
 void AnswerCardWebContents::RenderViewCreated(content::RenderViewHost* host) {
   if (!host_)
     AttachToHost(host->GetWidget());
+
+  // Do not zoom for answer card web contents.
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetForWebContents(web_contents());
+  DCHECK(zoom_map);
+  zoom_map->SetZoomLevelForHost(web_contents()->GetURL().host(), 0);
 }
 
 void AnswerCardWebContents::RenderViewDeleted(content::RenderViewHost* host) {
