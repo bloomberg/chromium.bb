@@ -1099,7 +1099,6 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 }
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   struct loopfilter *lf = &cm->lf;
   if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->all_lossless) {
@@ -1111,6 +1110,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     lf->sharpness_level = -1;
     return;
   }
+  assert(!cm->all_lossless);
   if (cm->prev_frame) {
     // write deltas to frame buffer
     memcpy(lf->ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
@@ -3099,8 +3099,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Fully lossless frame cannot use super-resolution");
     }
-  } else {
-    setup_loopfilter(cm, rb);
+  }
+  setup_loopfilter(cm, rb);
+
+  if (!cm->all_lossless) {
     setup_cdef(cm, rb);
     decode_restoration_mode(cm, rb);
   }
