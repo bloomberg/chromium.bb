@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 
 import java.lang.ref.WeakReference;
@@ -48,10 +47,10 @@ public class AwAutofillManager {
 
     public AwAutofillManager(Context context) {
         if (DEBUG) Log.i(TAG, "constructor");
-        mDisabled = !BuildInfo.isAtLeastP() && AwContents.activityFromContext(context) == null;
+        mAutofillManager = context.getSystemService(AutofillManager.class);
+        mDisabled = mAutofillManager == null || !mAutofillManager.isEnabled();
         if (mDisabled) return;
 
-        mAutofillManager = context.getSystemService(AutofillManager.class);
         mMonitor = new AutofillInputUIMonitor(this);
         mAutofillManager.registerCallback(mMonitor);
     }
