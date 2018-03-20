@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/media_router/web_contents_display_observer_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -48,8 +49,9 @@ class WebContentsDisplayObserverViewTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    web_contents_.reset(CreateTestWebContents());
     display_observer_ = std::make_unique<TestWebContentsDisplayObserverView>(
-        CreateTestWebContents(),
+        web_contents_.get(),
         base::BindRepeating(&MockCallback::OnDisplayChanged,
                             base::Unretained(&callback_)),
         display1_);
@@ -57,10 +59,12 @@ class WebContentsDisplayObserverViewTest
 
   void TearDown() override {
     display_observer_.reset();
+    web_contents_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
+  std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<TestWebContentsDisplayObserverView> display_observer_;
   MockCallback callback_;
   const display::Display display1_;

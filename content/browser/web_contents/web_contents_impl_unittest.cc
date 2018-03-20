@@ -3566,8 +3566,8 @@ TEST_F(WebContentsImplTest, StartingSandboxFlags) {
       blink::WebSandboxFlags::kPopups | blink::WebSandboxFlags::kModals |
       blink::WebSandboxFlags::kTopNavigation;
   params.starting_sandbox_flags = expected_flags;
-  WebContentsImpl* new_contents =
-      WebContentsImpl::CreateWithOpener(params, nullptr);
+  std::unique_ptr<WebContentsImpl> new_contents(
+      WebContentsImpl::CreateWithOpener(params, nullptr));
   FrameTreeNode* root = new_contents->GetFrameTree()->root();
   blink::WebSandboxFlags pending_flags =
       root->pending_frame_policy().sandbox_flags;
