@@ -1987,6 +1987,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                                            controller);
   // Set the FullscreenController's WebStateList.
   controller->SetWebStateList(_model.webStateList);
+
+  // When starting the browser with an open tab, it is necessary to reset the
+  // clipsToBounds property of the WKWebView so the page can bleed behind the
+  // toolbar.
+  if (self.currentWebState && IsUIRefreshPhase1Enabled()) {
+    self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
+  }
 }
 
 - (void)installFakeStatusBar {
@@ -4853,7 +4860,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
   [self updateVoiceSearchBarVisibilityAnimated:NO];
 
-  self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
+  if (IsUIRefreshPhase1Enabled())
+    self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
 
   [_paymentRequestManager setActiveWebState:newTab.webState];
 
