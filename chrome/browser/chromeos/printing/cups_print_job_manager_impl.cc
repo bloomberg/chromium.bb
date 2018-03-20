@@ -39,11 +39,6 @@ namespace {
 // The rate in milliseconds at which we will poll CUPS for print job updates.
 const int kPollRate = 1000;
 
-// How long we'll wait to connect to a printer before declaring an error.
-// TODO(crbug.com/786182): Increase to 120s to give pipeline more time to
-// complete.
-const int kConnectingTimeout = 120;
-
 // Threshold for giving up on communicating with CUPS.
 const int kRetryMax = 6;
 
@@ -121,16 +116,6 @@ chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
   return State::STATE_NONE;
 }
 
-// Returns true if |printer_status|.reasons contains |reason|.
-bool ContainsReason(const printing::PrinterStatus printer_status,
-                    PrinterReason::Reason reason) {
-  return std::find_if(printer_status.reasons.begin(),
-                      printer_status.reasons.end(),
-                      [&reason](const PrinterReason& r) {
-                        return r.reason == reason;
-                      }) != printer_status.reasons.end();
-}
-
 // Returns true if |job|.state_reasons contains |reason|
 bool JobContainsReason(const ::printing::CupsJob& job,
                        base::StringPiece reason) {
@@ -156,15 +141,6 @@ chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
     }
   }
   return chromeos::CupsPrintJob::ErrorCode::NO_ERROR;
-}
-
-// Check if the job should timeout.  Returns true if the job has timed out.
-bool DidTimeout(const printing::CupsJob& job,
-                chromeos::CupsPrintJob* print_job) {
-  // Check to see if we should time out.
-  base::TimeDelta time_waiting =
-      base::Time::Now() - base::Time::FromTimeT(job.processing_started);
-  return time_waiting > base::TimeDelta::FromSeconds(kConnectingTimeout);
 }
 
 // Update the current printed page.  Returns true of the page has been updated.
@@ -195,17 +171,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
   bool pages_updated = false;
   switch (job.state) {
     case ::printing::CupsJob::PROCESSING:
-      if (ContainsReason(printer_status, PrinterReason::CONNECTING_TO_DEVICE)) {
-        if (DidTimeout(job, print_job)) {
-          LOG(WARNING) << "Connecting to printer timed out";
-          print_job->set_state(chromeos::CupsPrintJob::State::STATE_ERROR);
-          print_job->set_error_code(
-              chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE);
-          print_job->set_expired(true);
-        }
-      } else {
-        pages_updated = UpdateCurrentPage(job, print_job);
-      }
+      pages_updated = UpdateCurrentPage(job, print_job);
       break;
     case ::printing::CupsJob::COMPLETED:
       DCHECK_GE(job.current_pages, print_job->total_page_number());
@@ -476,12 +442,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
           NotifyJobStateUpdate(print_job);
         }
 
-        if (print_job->expired()) {
-          // Job needs to be forcibly cancelled.
-          RecordJobResult(TIMEOUT_CANCEL);
-          FinishPrintJob(print_job);
-          // Beware, print_job was removed from jobs_ and deleted.
-        } else if (print_job->PipelineDead()) {
+        if (print_job->PipelineDead()) {
           RecordJobResult(FILTER_FAILED);
           FinishPrintJob(print_job);
         } else if (print_job->IsJobFinished()) {

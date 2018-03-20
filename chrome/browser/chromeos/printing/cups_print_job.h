@@ -53,7 +53,6 @@ class CupsPrintJob {
   const std::string& document_title() const { return document_title_; }
   int total_page_number() const { return total_page_number_; }
   int printed_page_number() const { return printed_page_number_; }
-  bool expired() const { return expired_; }
   State state() const { return state_; }
   ErrorCode error_code() const { return error_code_; }
 
@@ -61,7 +60,6 @@ class CupsPrintJob {
   void set_printed_page_number(int page_number) {
     printed_page_number_ = page_number;
   }
-  void set_expired(bool expired) { expired_ = expired; }
   void set_state(State state) { state_ = state; }
   void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
 
@@ -78,9 +76,6 @@ class CupsPrintJob {
   std::string document_title_;
   int total_page_number_ = 0;
   int printed_page_number_ = 0;
-
-  // True if the job has expired due to timeout.
-  bool expired_ = false;
 
   State state_ = State::STATE_NONE;
   ErrorCode error_code_ = ErrorCode::NO_ERROR;
