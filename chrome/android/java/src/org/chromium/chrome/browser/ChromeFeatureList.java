@@ -164,8 +164,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME = "ChromeHome";
     public static final String CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL =
             "ChromeHomeDropAllButFirstThumbnail";
-    public static final String CHROME_HOME_INACTIVITY_SHEET_EXPANSION =
-            "ChromeHomeInactivitySheetExpansion";
     public static final String CHROME_HOME_MENU_ITEMS_EXPAND_SHEET =
             "ChromeHomeMenuItemsExpandSheet";
     public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
