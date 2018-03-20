@@ -87,10 +87,33 @@ describe('Dial Client Tests', function() {
     };
 
     it('Resolves', done => {
-      setMockXhrResponse('');
+      // Set up the mock response for the GET request.
+      setMockXhrResponse(VALID_GET_RESPONSE_);
       client.stopApp('YouTube').then(() => {
-        expect(mockXhrManager.send)
-            .toHaveBeenCalledWith(appUrl + '/YouTube', 'DELETE');
+        expect(mockXhrManager.send.calls.count()).toEqual(2);
+        expect(mockXhrManager.send.calls.argsFor(0)[0])
+            .toEqual(appUrl + '/YouTube');
+        expect(mockXhrManager.send.calls.argsFor(0)[1]).toEqual('GET');
+        expect(mockXhrManager.send.calls.argsFor(1)[0])
+            .toEqual(appUrl + '/YouTube/run');
+        expect(mockXhrManager.send.calls.argsFor(1)[1]).toEqual('DELETE');
+        done();
+      });
+    });
+
+    it('Resolves with fallback path', done => {
+      mockXhrManager.send.and.callFake((url, method) => {
+        if (method === 'GET') {
+          return Promise.reject(new Error('GET failed'));
+        } else {
+          return Promise.resolve({status: 200});
+        }
+      });
+      client.stopApp('YouTube').then(() => {
+        expect(mockXhrManager.send.calls.count()).toEqual(2);
+        expect(mockXhrManager.send.calls.argsFor(1)[0])
+            .toEqual(appUrl + '/YouTube/run');
+        expect(mockXhrManager.send.calls.argsFor(1)[1]).toEqual('DELETE');
         done();
       });
     });
@@ -125,10 +148,10 @@ describe('Dial Client Tests', function() {
 
   const VALID_GET_RESPONSE_EXTRA_DATA_ =
       '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<service xmlns="urn:dial-multiscreen-org:schemas:dial">' +
+      '<service xmlns="urn:dial-multiscreen-org:schemas:dial" xmlns:atom="http://www.w3.org/2005/Atom">' +
       '<name>YouTube</name>' +
       '<state>running</state>' +
-      '<link rel="run" href="run"/>' +
+      '<atom:link rel="run" href="run"/>' +
       '<port>8080</port>' +
       '<additionalData>' +
       '<screenId>e5n3112oskr42pg0td55b38nh4</screenId>' +

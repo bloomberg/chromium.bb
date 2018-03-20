@@ -34,6 +34,12 @@ const DialAppState = {
   ERROR: 'error'
 };
 
+/**
+ * The fallback path to use for DELETE requests in case the device does not
+ * provide one.
+ * @private @const {string}
+ */
+const DEFAULT_RESOURCE_PATH_ = 'run';
 
 /**
  * Holds data parsed from a DIAL GET response.
@@ -178,7 +184,31 @@ const Client = class {
    *     successfully. Rejected otherwise.
    */
   stopApp(appName) {
-    return this.xhrManager_.send(this.getAppUrl_(appName), 'DELETE')
+    return this.getAppInfo(appName)
+        .then(
+            appInfo => {
+              // The URL used for stop is obtained from appending resource path
+              // to the app URL. If the resource path is not available, then it
+              // means the app is not running. It could also be that the device
+              // is non-compliant. To account for this case, we will try to stop
+              // the app anyway with a fallback path.
+              if (!appInfo.resource) {
+                this.logger_.warning(
+                    'stopApp: Resource path for not available for app ' +
+                    appName + ': using fallback path.');
+                return DEFAULT_RESOURCE_PATH_;
+              }
+              return appInfo.resource;
+            },
+            e => {
+              // If getAppInfo fails, use a fallback path.
+              this.logger_.warning(
+                  'stopApp: getAppInfo failed: using fallback path.');
+              return DEFAULT_RESOURCE_PATH_;
+            })
+        .then(
+            path => this.xhrManager_.send(
+                this.getAppUrl_(appName) + '/' + path, 'DELETE'))
         .then(xhr => this.handleResponse_('stopApp', 'DELETE', xhr));
   }
 
@@ -231,7 +261,7 @@ const Client = class {
         appInfo.state = Client.parseDialAppState_(node.textContent);
       } else if (node.nodeName == 'name') {
         appInfo.name = node.textContent;
-      } else if (node.nodeName == 'link') {
+      } else if (node.localName == 'link') {
         appInfo.resource = node.getAttribute('href');
       } else if (node.nodeName == 'options') {
         // The default value for allowStop is true per DIAL spec.
