@@ -2003,10 +2003,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock {
-  // TODO(crbug.com/632772): Remove web usage disabling once
-  // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
-  if (IsRemoveDataMaskSet(removeMask,
-                          BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
+  // TODO(crbug.com/632772): https://bugs.webkit.org/show_bug.cgi?id=149079
+  // makes it necessary to disable web usage while clearing browsing data.
+  // It is however unnecessary for off-the-record BrowserState (as the code
+  // is not invoked) and has undesired side-effect (cause all regular tabs
+  // to reload, see http://crbug.com/821753 for details).
+
+  const BOOL disableWebUsageDuringRemoval =
+      !browserState->IsOffTheRecord() &&
+      IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
+
+  if (disableWebUsageDuringRemoval) {
     // Disables browsing and purges web views.
     // Must be called only on the main thread.
     DCHECK([NSThread isMainThread]);
