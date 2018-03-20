@@ -201,9 +201,9 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
   if (embedder_delegate_)
     embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
 
-  return DoesOriginMatchMaskAndURLs(origin_type_mask,
-                                    base::Callback<bool(const GURL&)>(),
-                                    embedder_matcher, origin, policy);
+  return DoesOriginMatchMaskAndURLs(
+      origin_type_mask, base::Callback<bool(const GURL&)>(),
+      std::move(embedder_matcher), origin, policy);
 }
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
@@ -451,8 +451,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
         base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
-                            filter, embedder_matcher),
-        cookie_matcher, delete_begin_, delete_end_,
+                            filter, std::move(embedder_matcher)),
+        std::move(cookie_matcher), delete_begin_, delete_end_,
         CreatePendingTaskCompletionClosure());
   }
 
@@ -480,7 +480,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition->ClearHttpAndMediaCaches(
         delete_begin, delete_end,
         filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
-                                          : filter,
+                                          : std::move(filter),
         CreatePendingTaskCompletionClosureForMojo());
 
     // When clearing cache, wipe accumulated network related data

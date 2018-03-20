@@ -152,7 +152,7 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
       // If it was handled synchronously, we must run the callback now;
       // proxy_resolution_service_ won't run it for us in this case.
       if (result != net::ERR_IO_PENDING)
-        callback.Run(result);
+        std::move(callback).Run(result);
     }
     unsent_requests_.pop();
   }

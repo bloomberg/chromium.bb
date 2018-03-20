@@ -1727,7 +1727,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
       storage_partition_impl_->GetPrefetchURLLoaderService(),
-      get_contexts_callback,
+      std::move(get_contexts_callback),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   AddFilter(resource_message_filter_.get());

@@ -127,7 +127,8 @@ ResourceRequesterInfo::CreateForNavigationPreload(
       RequesterType::NAVIGATION_PRELOAD, ChildProcessHost::kInvalidUniqueID,
       nullptr /* appcache_service */, nullptr /* blob_storage_context */,
       nullptr /* file_system_context */,
-      original_request_info->service_worker_context(), get_contexts_callback));
+      original_request_info->service_worker_context(),
+      std::move(get_contexts_callback)));
 }
 
 scoped_refptr<ResourceRequesterInfo>

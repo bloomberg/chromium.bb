@@ -76,14 +76,14 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
   // Take a reference to the callback as running the callback may lead to our
   // destruction.
   Callback callback = callback_;
-  callback.Run(this, bitmaps);
+  std::move(callback).Run(this, bitmaps);
 }
 
 void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
   // Take a reference to the callback as running the callback may lead to our
   // destruction.
   Callback callback = callback_;
-  callback.Run(this, std::vector<SkBitmap>());
+  std::move(callback).Run(this, std::vector<SkBitmap>());
 }
 
 }  // namespace content

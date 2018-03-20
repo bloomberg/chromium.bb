@@ -378,7 +378,8 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
   BrowserContext::StoragePartitionCallback remove_observer_cb =
       base::Bind(&ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
                  base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context, remove_observer_cb);
+  BrowserContext::ForEachStoragePartition(browser_context,
+                                          std::move(remove_observer_cb));
 }
 
 void ServiceWorkerInternalsUI::GetOptions(const ListValue* args) {
@@ -409,7 +410,8 @@ void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
   BrowserContext::StoragePartitionCallback add_context_cb =
       base::Bind(&ServiceWorkerInternalsUI::AddContextFromStoragePartition,
                  base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context, add_context_cb);
+  BrowserContext::ForEachStoragePartition(browser_context,
+                                          std::move(add_context_cb));
 }
 
 void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
@@ -473,7 +475,8 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
                  base::Unretained(this),
                  partition_id,
                  &result_partition);
-  BrowserContext::ForEachStoragePartition(browser_context, find_context_cb);
+  BrowserContext::ForEachStoragePartition(browser_context,
+                                          std::move(find_context_cb));
   if (!result_partition)
     return false;
   *context = static_cast<ServiceWorkerContextWrapper*>(
@@ -523,11 +526,11 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
           ->GetDevToolsAgentHostForWorker(process_host_id,
                                           devtools_agent_route_id));
   if (!agent_host.get()) {
-    callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
   agent_host->Inspect();
-  callback.Run(SERVICE_WORKER_OK);
+  std::move(callback).Run(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
@@ -547,7 +550,7 @@ void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
 
   base::Callback<void(ServiceWorkerStatusCode)> callback =
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  UnregisterWithScope(context, GURL(scope_string), callback);
+  UnregisterWithScope(context, GURL(scope_string), std::move(callback));
 }
 
 void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
@@ -566,7 +569,7 @@ void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
   }
   base::Callback<void(ServiceWorkerStatusCode)> callback =
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  context->StartServiceWorker(GURL(scope_string), callback);
+  context->StartServiceWorker(GURL(scope_string), std::move(callback));
 }
 
 void ServiceWorkerInternalsUI::StopWorkerWithId(

@@ -139,7 +139,7 @@ class PowerMonitorTest : public ContentBrowserTest {
  protected:
   void StartUtilityProcess(mojom::PowerMonitorTestPtr* power_monitor_test,
                            base::Closure utility_bound_closure) {
-    utility_bound_closure_ = utility_bound_closure;
+    utility_bound_closure_ = std::move(utility_bound_closure);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&StartUtilityProcessOnIOThread,
@@ -147,11 +147,11 @@ class PowerMonitorTest : public ContentBrowserTest {
   }
 
   void set_renderer_bound_closure(base::Closure closure) {
-    renderer_bound_closure_ = closure;
+    renderer_bound_closure_ = std::move(closure);
   }
 
   void set_gpu_bound_closure(base::Closure closure) {
-    gpu_bound_closure_ = closure;
+    gpu_bound_closure_ = std::move(closure);
   }
 
   int request_count_from_renderer() { return request_count_from_renderer_; }

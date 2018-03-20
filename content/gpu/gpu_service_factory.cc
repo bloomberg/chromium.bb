@@ -45,10 +45,10 @@ void GpuServiceFactory::RegisterServices(ServiceMap* services) {
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   service_manager::EmbeddedServiceInfo info;
-  info.factory =
-      base::BindRepeating(&media::CreateGpuMediaService, gpu_preferences_,
-                          task_runner_, media_gpu_channel_manager_,
-                          android_overlay_factory_cb_, cdm_proxy_factory_cb);
+  info.factory = base::BindRepeating(
+      &media::CreateGpuMediaService, gpu_preferences_, task_runner_,
+      media_gpu_channel_manager_, android_overlay_factory_cb_,
+      std::move(cdm_proxy_factory_cb));
   // This service will host audio/video decoders, and if these decoding
   // operations are blocked, user may hear audio glitch or see video freezing,
   // hence "user blocking".

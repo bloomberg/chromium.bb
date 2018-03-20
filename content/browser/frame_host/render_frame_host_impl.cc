@@ -2919,7 +2919,7 @@ void RenderFrameHostImpl::CreateNewWindow(
         },
         GlobalFrameRoutingId(render_process_id, main_frame_route_id));
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            block_requests_for_route);
+                            std::move(block_requests_for_route));
   }
 
   DCHECK(IsRenderFrameLive());

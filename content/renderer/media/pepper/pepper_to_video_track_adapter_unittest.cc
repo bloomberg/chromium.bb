@@ -89,7 +89,8 @@ TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
-    EXPECT_CALL(sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(sink, OnVideoFrame())
+        .WillOnce(RunClosure(std::move(quit_closure)));
     frame_writer->PutFrame(image.get(), 10);
     run_loop.Run();
     // Run all pending tasks to let the the test clean up before the test ends.

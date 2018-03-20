@@ -151,7 +151,7 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
                             kAudioTrackSamplesPerBuffer)),
              _))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(RunClosure(std::move(quit_closure)));
 
   std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
       kNumChannelsForTest, kAudioTrackSamplesPerBuffer);

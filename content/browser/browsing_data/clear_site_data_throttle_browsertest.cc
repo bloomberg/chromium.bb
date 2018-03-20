@@ -208,7 +208,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
       base::Closure callback) {
     cookie_store_ =
         request_context_getter->GetURLRequestContext()->cookie_store();
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Adds a cookie for the |url|. Used in the cookie integration tests.

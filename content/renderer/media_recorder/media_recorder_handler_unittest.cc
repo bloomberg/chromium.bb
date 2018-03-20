@@ -258,7 +258,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -275,7 +275,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -301,7 +301,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
           .Times(AtLeast(1));
       EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
           .Times(1)
-          .WillOnce(RunClosure(quit_closure));
+          .WillOnce(RunClosure(std::move(quit_closure)));
     }
 
     OnVideoFrameForTesting(alpha_frame);
@@ -354,7 +354,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus1);
@@ -371,7 +371,7 @@ TEST_P(MediaRecorderHandlerTest, OpusEncodeAudioFrames) {
         .Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     for (int i = 0; i < kRatioOpusToTestAudioBuffers; ++i)
       OnAudioBusForTesting(*audio_bus2);
@@ -410,7 +410,7 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(AtLeast(1));
     EXPECT_CALL(*this, WriteData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
-        .WillOnce(RunClosure(quit_closure));
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();
@@ -422,7 +422,9 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*this, WriteData(_, _, _, _)).Times(0);
-    EXPECT_CALL(*this, OnError(_)).Times(1).WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*this, OnError(_))
+        .Times(1)
+        .WillOnce(RunClosure(std::move(quit_closure)));
 
     OnVideoFrameForTesting(video_frame);
     run_loop.Run();

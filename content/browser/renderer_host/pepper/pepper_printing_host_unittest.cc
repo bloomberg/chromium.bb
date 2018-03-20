@@ -45,7 +45,7 @@ MockPepperPrintSettingsManager::MockPepperPrintSettingsManager(
 
 void MockPepperPrintSettingsManager::GetDefaultPrintSettings(
     PepperPrintSettingsManager::Callback callback) {
-  callback.Run(PepperPrintSettingsManager::Result(settings_, PP_OK));
+  std::move(callback).Run(PepperPrintSettingsManager::Result(settings_, PP_OK));
 }
 
 class PepperPrintingHostTest : public testing::Test,

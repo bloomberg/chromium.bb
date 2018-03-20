@@ -17,7 +17,7 @@ StartupTaskRunner::StartupTaskRunner(
 
 StartupTaskRunner::~StartupTaskRunner() {}
 
-void StartupTaskRunner::AddTask(StartupTask& callback) {
+void StartupTaskRunner::AddTask(StartupTask callback) {
   task_list_.push_back(callback);
 }
 
