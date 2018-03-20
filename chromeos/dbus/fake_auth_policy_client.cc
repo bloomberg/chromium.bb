@@ -23,9 +23,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
-#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/cloud_policy.pb.h"
-#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -60,11 +58,11 @@ void RunSignalCallback(const std::string& interface_name,
 }
 
 void StoreDevicePolicy(
+    const em::ChromeDeviceSettingsProto& device_policy,
     const std::string& machine_name,
     chromeos::AuthPolicyClient::RefreshPolicyCallback callback) {
-  em::ChromeDeviceSettingsProto policy;
   std::string payload;
-  CHECK(policy.SerializeToString(&payload));
+  CHECK(device_policy.SerializeToString(&payload));
 
   em::PolicyFetchResponse response;
   em::PolicyData policy_data;
@@ -215,7 +213,7 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
     return;
   }
 
-  StoreDevicePolicy(machine_name_, std::move(callback));
+  StoreDevicePolicy(device_policy_, machine_name_, std::move(callback));
 }
 
 void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
@@ -274,7 +272,7 @@ void FakeAuthPolicyClient::OnDevicePolicyRetrieved(
   policy_data.ParseFromString(response.policy_data());
   if (policy_data.has_device_id())
     machine_name_ = policy_data.device_id();
-  StoreDevicePolicy(machine_name_, std::move(callback));
+  StoreDevicePolicy(device_policy_, machine_name_, std::move(callback));
 }
 
 }  // namespace chromeos
