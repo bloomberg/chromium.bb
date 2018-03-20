@@ -327,73 +327,7 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
   std::vector<PartitionBucketMemoryStats> bucket_stats;
 };
 
-// Any number of bytes that can be allocated with no trouble.
-constexpr size_t kEasyAllocSize =
-    (1024 * 1024) & ~(kPageAllocationGranularity - 1);
-
-// A huge amount of memory, greater than or equal to the ASLR space.
-constexpr size_t kHugeMemoryAmount =
-    std::max(base::internal::kASLRMask,
-             std::size_t{2} * base::internal::kASLRMask);
-
-}  // anonymous namespace
-
-// Test that failed page allocations invoke base::ReleaseReservation().
-// We detect this by making a reservation and ensuring that after failure, we
-// can make a new reservation.
-TEST(PageAllocatorTest, AllocFailure) {
-  // Release any reservation made by another test.
-  base::ReleaseReservation();
-
-  // We can make a reservation.
-  EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize));
-
-  // We can't make another reservation until we trigger an allocation failure.
-  EXPECT_FALSE(base::ReserveAddressSpace(kEasyAllocSize));
-
-  size_t size = kHugeMemoryAmount;
-  // Skip the test for sanitizers and platforms with ASLR turned off.
-  if (size == 0)
-    return;
-
-  void* result = base::AllocPages(nullptr, size, kPageAllocationGranularity,
-                                  PageInaccessible, PageTag::kChromium, false);
-  if (result == nullptr) {
-    // We triggered allocation failure. Our reservation should have been
-    // released, and we should be able to make a new reservation.
-    EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize));
-    base::ReleaseReservation();
-    return;
-  }
-  // We couldn't fail. Make sure reservation is still there.
-  EXPECT_FALSE(base::ReserveAddressSpace(kEasyAllocSize));
-}
-
-// TODO(crbug.com/765801): Test failed on chromium.win/Win10 Tests x64.
-#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
-#define MAYBE_ReserveAddressSpace DISABLED_ReserveAddressSpace
-#else
-#define MAYBE_ReserveAddressSpace ReserveAddressSpace
-#endif  // defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
-
-// Test that reserving address space can fail.
-TEST(PageAllocatorTest, MAYBE_ReserveAddressSpace) {
-  // Release any reservation made by another test.
-  base::ReleaseReservation();
-
-  size_t size = kHugeMemoryAmount;
-  // Skip the test for sanitizers and platforms with ASLR turned off.
-  if (size == 0)
-    return;
-
-  bool success = base::ReserveAddressSpace(size);
-  if (!success) {
-    EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize));
-    return;
-  }
-  // We couldn't fail. Make sure reservation is still there.
-  EXPECT_FALSE(base::ReserveAddressSpace(kEasyAllocSize));
-}
+}  // namespace
 
 // Check that the most basic of allocate / free pairs work.
 TEST_F(PartitionAllocTest, Basic) {
