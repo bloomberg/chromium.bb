@@ -18,13 +18,15 @@ namespace test {
 // A FidoDiscovery that always vends a single |VirtualU2fDevice|.
 class VirtualU2fDeviceDiscovery : public FidoDiscovery {
  public:
-  VirtualU2fDeviceDiscovery()
-      : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice) {}
+  explicit VirtualU2fDeviceDiscovery(
+      scoped_refptr<VirtualU2fDevice::State> state)
+      : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice),
+        state_(std::move(state)) {}
   ~VirtualU2fDeviceDiscovery() override = default;
 
  protected:
   void StartInternal() override {
-    auto device = std::make_unique<VirtualU2fDevice>();
+    auto device = std::make_unique<VirtualU2fDevice>(state_);
     AddDevice(std::move(device));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -33,10 +35,12 @@ class VirtualU2fDeviceDiscovery : public FidoDiscovery {
   }
 
  private:
+  scoped_refptr<VirtualU2fDevice::State> state_;
   DISALLOW_COPY_AND_ASSIGN(VirtualU2fDeviceDiscovery);
 };
 
-ScopedVirtualU2fDevice::ScopedVirtualU2fDevice() = default;
+ScopedVirtualU2fDevice::ScopedVirtualU2fDevice()
+    : state_(new VirtualU2fDevice::State) {}
 ScopedVirtualU2fDevice::~ScopedVirtualU2fDevice() = default;
 
 std::unique_ptr<FidoDiscovery> ScopedVirtualU2fDevice::CreateFidoDiscovery(
@@ -45,7 +49,7 @@ std::unique_ptr<FidoDiscovery> ScopedVirtualU2fDevice::CreateFidoDiscovery(
   if (transport != U2fTransportProtocol::kUsbHumanInterfaceDevice) {
     return nullptr;
   }
-  return std::make_unique<VirtualU2fDeviceDiscovery>();
+  return std::make_unique<VirtualU2fDeviceDiscovery>(state_);
 }
 
 }  // namespace test

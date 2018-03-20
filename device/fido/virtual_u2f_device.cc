@@ -19,6 +19,34 @@
 
 namespace device {
 
+struct RegistrationData {
+  RegistrationData() = default;
+  RegistrationData(std::unique_ptr<crypto::ECPrivateKey> private_key,
+                   std::vector<uint8_t> application_parameter,
+                   uint32_t counter)
+      : private_key(std::move(private_key)),
+        application_parameter(std::move(application_parameter)),
+        counter(counter) {}
+  RegistrationData(RegistrationData&& data) = default;
+  ~RegistrationData() = default;
+
+  RegistrationData& operator=(RegistrationData&& other) = default;
+
+  std::unique_ptr<crypto::ECPrivateKey> private_key;
+  std::vector<uint8_t> application_parameter;
+  uint32_t counter = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(RegistrationData);
+};
+
+struct VirtualU2fDevice::State::Internal {
+  // Keyed on key handle (a.k.a. "credential ID").
+  std::map<std::vector<uint8_t>, RegistrationData> registrations;
+};
+
+VirtualU2fDevice::State::State() : internal_(new Internal) {}
+VirtualU2fDevice::State::~State() = default;
+
 namespace {
 
 // First byte of registration response is 0x05 for historical reasons
@@ -93,23 +121,10 @@ base::Optional<std::vector<uint8_t>> ErrorStatus(
 
 }  // namespace
 
-VirtualU2fDevice::RegistrationData::RegistrationData() = default;
+VirtualU2fDevice::VirtualU2fDevice() : state_(new State), weak_factory_(this) {}
 
-VirtualU2fDevice::RegistrationData::RegistrationData(
-    std::unique_ptr<crypto::ECPrivateKey> private_key,
-    std::vector<uint8_t> app_id_hash,
-    uint32_t counter)
-    : private_key(std::move(private_key)),
-      app_id_hash(std::move(app_id_hash)),
-      counter(counter) {}
-
-VirtualU2fDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
-    default;
-VirtualU2fDevice::RegistrationData& VirtualU2fDevice::RegistrationData::
-operator=(RegistrationData&& other) = default;
-VirtualU2fDevice::RegistrationData::~RegistrationData() = default;
-
-VirtualU2fDevice::VirtualU2fDevice() : weak_factory_(this) {}
+VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
+    : state_(std::move(state)), weak_factory_(this) {}
 
 VirtualU2fDevice::~VirtualU2fDevice() = default;
 
@@ -125,10 +140,10 @@ std::string VirtualU2fDevice::GetId() const {
 void VirtualU2fDevice::AddRegistration(
     std::vector<uint8_t> key_handle,
     std::unique_ptr<crypto::ECPrivateKey> private_key,
-    std::vector<uint8_t> app_id_hash,
+    std::vector<uint8_t> application_parameter,
     uint32_t counter) {
-  registrations_[std::move(key_handle)] =
-      RegistrationData(std::move(private_key), std::move(app_id_hash), counter);
+  state_->internal_->registrations[std::move(key_handle)] = RegistrationData(
+      std::move(private_key), std::move(application_parameter), counter);
 }
 
 void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
@@ -177,7 +192,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   // adds in the propietary request for an individual attestation cert.
 
   auto challenge_param = data.first(32);
-  auto app_id_hash = data.last(32);
+  auto application_parameter = data.last(32);
 
   // Create key to register.
   // Note: Non-deterministic, you need to mock this out if you rely on
@@ -195,10 +210,11 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
 
   // Data to be signed.
   std::vector<uint8_t> sign_buffer;
-  sign_buffer.reserve(1 + app_id_hash.size() + challenge_param.size() +
-                      key_handle.size() + public_key.size());
+  sign_buffer.reserve(1 + application_parameter.size() +
+                      challenge_param.size() + key_handle.size() +
+                      public_key.size());
   sign_buffer.push_back(0x00);
-  AppendTo(&sign_buffer, app_id_hash);
+  AppendTo(&sign_buffer, application_parameter);
   AppendTo(&sign_buffer, challenge_param);
   AppendTo(&sign_buffer, key_handle);
   AppendTo(&sign_buffer, public_key);
@@ -227,7 +243,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
 
   // Store the registration.
   AddRegistration(std::move(key_handle), std::move(private_key),
-                  std::vector<uint8_t>(app_id_hash.begin(), app_id_hash.end()),
+                  std::vector<uint8_t>(application_parameter.begin(),
+                                       application_parameter.end()),
                   1);
 
   return apdu::ApduResponse(std::move(response),
@@ -247,7 +264,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   }
 
   auto challenge_param = data.first(32);
-  auto app_id_hash = data.subspan(32, 32);
+  auto application_parameter = data.subspan(32, 32);
   size_t key_handle_length = data[64];
   if (key_handle_length != 32) {
     // Our own keyhandles are always 32 bytes long, if the request has something
@@ -260,16 +277,16 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   auto key_handle = data.last(key_handle_length);
 
   // Check if this is our key_handle and it's for this appId.
-  auto it = registrations_.find(
+  auto it = state_->internal_->registrations.find(
       std::vector<uint8_t>(key_handle.cbegin(), key_handle.cend()));
 
-  if (it == registrations_.end()) {
+  if (it == state_->internal_->registrations.end()) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 
   base::span<const uint8_t> registered_app_id_hash =
-      base::make_span(it->second.app_id_hash);
-  if (app_id_hash != registered_app_id_hash) {
+      base::make_span(it->second.application_parameter);
+  if (application_parameter != registered_app_id_hash) {
     // It's important this error looks identical to the previous one, as
     // tokens should not reveal the existence of keyHandles to unrelated appIds.
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
@@ -287,9 +304,9 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   response.push_back(registration.counter);
 
   std::vector<uint8_t> sign_buffer;
-  sign_buffer.reserve(app_id_hash.size() + response.size() +
+  sign_buffer.reserve(application_parameter.size() + response.size() +
                       challenge_param.size());
-  AppendTo(&sign_buffer, app_id_hash);
+  AppendTo(&sign_buffer, application_parameter);
   AppendTo(&sign_buffer, response);
   AppendTo(&sign_buffer, challenge_param);
 

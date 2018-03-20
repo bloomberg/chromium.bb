@@ -16,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "device/fido/fido_device.h"
 
 namespace crypto {
@@ -26,12 +27,35 @@ namespace device {
 
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
  public:
+  // Stores the state of the device. Since |U2fDevice| objects only persist for
+  // the lifetime of a single request, keeping state in an external object is
+  // neccessary in order to provide continuity between requests.
+  class COMPONENT_EXPORT(DEVICE_FIDO) State : public base::RefCounted<State> {
+   public:
+    State();
+
+   private:
+    friend class ::device::VirtualU2fDevice;
+    friend class base::RefCounted<State>;
+    ~State();
+
+    struct Internal;
+    std::unique_ptr<Internal> internal_;
+  };
+
+  // Constructs an object with ephemeral state. In order to have the state of
+  // the device persist between operations, use the constructor that takes a
+  // scoped_refptr<State>.
   VirtualU2fDevice();
+
+  // Constructs an object that will read from, and write to, |state|.
+  explicit VirtualU2fDevice(scoped_refptr<State> state);
+
   ~VirtualU2fDevice() override;
 
   void AddRegistration(std::vector<uint8_t> key_handle,
                        std::unique_ptr<crypto::ECPrivateKey> private_key,
-                       std::vector<uint8_t> app_id_hash,
+                       std::vector<uint8_t> application_parameter,
                        uint32_t counter);
 
  protected:
@@ -42,23 +66,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
-  struct RegistrationData {
-    RegistrationData();
-    RegistrationData(std::unique_ptr<crypto::ECPrivateKey> private_key,
-                     std::vector<uint8_t> app_id_hash,
-                     uint32_t counter);
-    RegistrationData(RegistrationData&& data);
-
-    RegistrationData& operator=(RegistrationData&& other);
-    ~RegistrationData();
-
-    std::unique_ptr<crypto::ECPrivateKey> private_key;
-    std::vector<uint8_t> app_id_hash;
-    uint32_t counter = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(RegistrationData);
-  };
-
   base::Optional<std::vector<uint8_t>> DoRegister(
       uint8_t ins,
       uint8_t p1,
@@ -70,11 +77,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
                                               uint8_t p2,
                                               base::span<const uint8_t> data);
 
-  // TODO(agl): this state is in the wrong place: U2fDevice objects are
-  // ephemeral so to maintain state across requests this will have to be kept
-  // elsewhere.
-  // Keyed on appId/rpId hash (aka "applicationParam")
-  std::map<std::vector<uint8_t>, RegistrationData> registrations_;
+  scoped_refptr<State> state_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualU2fDevice);
