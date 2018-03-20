@@ -25,10 +25,14 @@
   }
 
   async function dumpRequest(headers, data, opt_url) {
-    var win = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'win');
-    var unix = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'unix');
-    TestRunner.addResult(`Windows: ${win}`);
-    TestRunner.addResult(`Unix: ${unix}`);
+    var curlWin = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'win');
+    var curlUnix = await logView._generateCurlCommand(newRequest(headers, data, opt_url), 'unix');
+    var powershell = await logView._generatePowerShellCommand(newRequest(headers, data, opt_url));
+    var fetch = await logView._generateFetchCall(newRequest(headers, data, opt_url));
+    TestRunner.addResult(`cURL Windows: ${curlWin}`);
+    TestRunner.addResult(`cURL Unix: ${curlUnix}`);
+    TestRunner.addResult(`Powershell: ${powershell}`);
+    TestRunner.addResult(`fetch: ${fetch}`);
   }
 
   await dumpRequest({});
@@ -45,10 +49,11 @@
       '!@#$%^&*()_+~`1234567890-=[]{};\':",./\r<>?\r\nqwer\nt\n\nyuiopasdfghjklmnbvcxzQWERTYUIOPLKJHGFDSAZXCVBNM');
   await dumpRequest({'Content-Type': 'application/binary'}, '\x7F\x80\x90\xFF\u0009\u0700');
   await dumpRequest(
-      {}, '',
+      {}, null,
       'http://labs.ft.com/?querystring=[]{}');  // Character range symbols must be escaped (http://crbug.com/265449).
   await dumpRequest({'Content-Type': 'application/binary'}, '%PATH%$PATH');
   await dumpRequest({':host': 'h', 'version': 'v'});
+  await dumpRequest({'Cookie': '_x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117'});
 
   TestRunner.completeTest();
 })();
