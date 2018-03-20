@@ -7,8 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-// Collection view layout that displays items in a grid. Items are
-// square-shaped. Item sizes adapt to the size classes they are shown in.
+// Collection view flow layout that displays items in a grid. Items are
+// square-ish. Item sizes adapt to the size classes they are shown in. Item
+// deletions are animated.
 @interface GridLayout : UICollectionViewFlowLayout
 @end
 

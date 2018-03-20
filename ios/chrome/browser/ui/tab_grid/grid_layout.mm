@@ -4,43 +4,63 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
 
+#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const CGFloat kInterTabSpacing = 20.0f;
-}  // namespace
-
 @interface GridLayout ()
-@property(nonatomic, assign) CGFloat startingTabWidth;
-@property(nonatomic, assign) CGFloat maxTabWidth;
 @property(nonatomic, strong) NSArray<NSIndexPath*>* indexPathsOfDeletingItems;
 @end
 
 @implementation GridLayout
-@synthesize startingTabWidth = _startingTabWidth;
-@synthesize maxTabWidth = _maxTabWidth;
 @synthesize indexPathsOfDeletingItems = _indexPathsOfDeletingItems;
-
-- (instancetype)init {
-  if (self = [super init]) {
-    _startingTabWidth = 200.0f;
-    _maxTabWidth = 250.0f;
-  }
-  return self;
-}
 
 #pragma mark - UICollectionViewLayout
 
 // This is called whenever the layout is invalidated, including during rotation.
+// Resizes item, margins, and spacing to fit new size classes and width.
 - (void)prepareLayout {
   [super prepareLayout];
-  if (@available(iOS 11, *)) {
-    [self updateLayoutGivenWidth:self.collectionView.safeAreaLayoutGuide
-                                     .layoutFrame.size.width];
+
+  UIUserInterfaceSizeClass horizontalSizeClass =
+      self.collectionView.traitCollection.horizontalSizeClass;
+  UIUserInterfaceSizeClass verticalSizeClass =
+      self.collectionView.traitCollection.verticalSizeClass;
+  CGFloat width = CGRectGetWidth(self.collectionView.bounds);
+  if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+      verticalSizeClass == UIUserInterfaceSizeClassCompact) {
+    self.itemSize = kGridCellSizeSmall;
+    if (width < kGridLayoutCompactCompactLimitedWidth) {
+      self.sectionInset = kGridLayoutInsetsCompactCompactLimitedWidth;
+      self.minimumLineSpacing =
+          kGridLayoutLineSpacingCompactCompactLimitedWidth;
+    } else {
+      self.sectionInset = kGridLayoutInsetsCompactCompact;
+      self.minimumLineSpacing = kGridLayoutLineSpacingCompactCompact;
+    }
+  } else if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+             verticalSizeClass == UIUserInterfaceSizeClassRegular) {
+    if (width < kGridLayoutCompactRegularLimitedWidth) {
+      self.itemSize = kGridCellSizeSmall;
+      self.sectionInset = kGridLayoutInsetsCompactRegularLimitedWidth;
+      self.minimumLineSpacing =
+          kGridLayoutLineSpacingCompactRegularLimitedWidth;
+    } else {
+      self.itemSize = kGridCellSizeMedium;
+      self.sectionInset = kGridLayoutInsetsCompactRegular;
+      self.minimumLineSpacing = kGridLayoutLineSpacingCompactRegular;
+    }
+  } else if (horizontalSizeClass == UIUserInterfaceSizeClassRegular &&
+             verticalSizeClass == UIUserInterfaceSizeClassCompact) {
+    self.itemSize = kGridCellSizeSmall;
+    self.sectionInset = kGridLayoutInsetsRegularCompact;
+    self.minimumLineSpacing = kGridLayoutLineSpacingRegularCompact;
   } else {
-    [self updateLayoutGivenWidth:self.collectionView.bounds.size.width];
+    self.itemSize = kGridCellSizeLarge;
+    self.sectionInset = kGridLayoutInsetsRegularRegular;
+    self.minimumLineSpacing = kGridLayoutLineSpacingRegularRegular;
   }
 }
 
@@ -80,23 +100,6 @@ finalLayoutAttributesForDisappearingItemAtIndexPath:
 
 - (void)finalizeCollectionViewUpdates {
   self.indexPathsOfDeletingItems = @[];
-}
-
-#pragma mark - Private
-
-// This sets the appropriate itemSize given the width of the collection view.
-- (void)updateLayoutGivenWidth:(CGFloat)width {
-  int columns = static_cast<int>(floor(width - kInterTabSpacing) /
-                                 (self.startingTabWidth + kInterTabSpacing));
-  CGFloat tabWidth = (width - kInterTabSpacing * (columns + 1)) / columns;
-  while (columns < 2 || tabWidth > self.maxTabWidth) {
-    columns++;
-    tabWidth = (width - kInterTabSpacing * (columns + 1)) / columns;
-  }
-  self.itemSize = CGSizeMake(tabWidth, tabWidth);
-  self.sectionInset = UIEdgeInsetsMake(20.0f, 20.0f, 20.0f, 20.0f);
-  self.minimumLineSpacing = kInterTabSpacing;
-  self.minimumInteritemSpacing = kInterTabSpacing;
 }
 
 @end
