@@ -431,6 +431,11 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
   const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
   const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
+#if CONFIG_LOWPRECISION_BLEND
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+#endif
   (void)max_bits_horiz;
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
@@ -501,6 +506,28 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +
                            (j - p_col + l + 4)];
+#if CONFIG_LOWPRECISION_BLEND
+            sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert);
+            if (conv_params->do_average) {
+              uint16_t *dst16 =
+                  &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
+              int32_t tmp32 = *p;
+              if (conv_params->use_jnt_comp_avg) {
+                tmp32 = tmp32 * conv_params->fwd_offset +
+                        sum * conv_params->bck_offset;
+                tmp32 = tmp32 >> DIST_PRECISION_BITS;
+              } else {
+                tmp32 += sum;
+                tmp32 = tmp32 >> 1;
+              }
+              tmp32 = tmp32 - (1 << (offset_bits - conv_params->round_1)) -
+                      (1 << (offset_bits - conv_params->round_1 - 1));
+              *dst16 =
+                  clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp32, round_bits), bd);
+            } else {
+              *p = sum;
+            }
+#else   // CONFIG_LOWPRECISION_BLEND
             sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert) -
                   (1 << (offset_bits_horiz + FILTER_BITS - reduce_bits_horiz -
                          reduce_bits_vert)) -
@@ -523,6 +550,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                 *p = sum;
               }
             }
+#endif  // CONFIG_LOWPRECISION_BLEND
           } else {
             uint16_t *p =
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
@@ -716,6 +744,11 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
   const int max_bits_horiz = bd + FILTER_BITS + 1 - reduce_bits_horiz;
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
   const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
+#if CONFIG_LOWPRECISION_BLEND
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+#endif
   (void)max_bits_horiz;
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
 
@@ -792,6 +825,27 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                 &conv_params
                      ->dst[(i - p_row + k + 4) * conv_params->dst_stride +
                            (j - p_col + l + 4)];
+#if CONFIG_LOWPRECISION_BLEND
+            sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert);
+            if (conv_params->do_average) {
+              uint8_t *dst8 =
+                  &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
+              int32_t tmp32 = *p;
+              if (conv_params->use_jnt_comp_avg) {
+                tmp32 = tmp32 * conv_params->fwd_offset +
+                        sum * conv_params->bck_offset;
+                tmp32 = tmp32 >> DIST_PRECISION_BITS;
+              } else {
+                tmp32 += sum;
+                tmp32 = tmp32 >> 1;
+              }
+              tmp32 = tmp32 - (1 << (offset_bits - conv_params->round_1)) -
+                      (1 << (offset_bits - conv_params->round_1 - 1));
+              *dst8 = clip_pixel(ROUND_POWER_OF_TWO(tmp32, round_bits));
+            } else {
+              *p = sum;
+            }
+#else   // CONFIG_LOWPRECISION_BLEND
             sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert) -
                   (1 << (offset_bits_horiz + FILTER_BITS - reduce_bits_horiz -
                          reduce_bits_vert)) -
@@ -814,6 +868,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                 *p = sum;
               }
             }
+#endif  // CONFIG_LOWPRECISION_BLEND
           } else {
             uint8_t *p =
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];

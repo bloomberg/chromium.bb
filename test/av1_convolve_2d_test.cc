@@ -14,16 +14,18 @@
 
 using libaom_test::ACMRandom;
 using libaom_test::AV1Convolve2D::AV1Convolve2DSrTest;
-using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
-using libaom_test::AV1Convolve2D::AV1JntConvolve2DTest;
 using libaom_test::AV1HighbdConvolve2D::AV1HighbdConvolve2DSrTest;
-using libaom_test::AV1HighbdConvolve2D::AV1HighbdConvolve2DTest;
-using libaom_test::AV1HighbdConvolve2D::AV1HighbdJntConvolve2DTest;
 using std::tr1::make_tuple;
 using std::tr1::tuple;
-
+#if CONFIG_LOWPRECISION_BLEND
+using libaom_test::AV1Convolve2D::AV1JntConvolve2DTest;
+using libaom_test::AV1HighbdConvolve2D::AV1HighbdJntConvolve2DTest;
+#else
+using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
+using libaom_test::AV1HighbdConvolve2D::AV1HighbdConvolve2DTest;
+#endif
 namespace {
-
+#if !CONFIG_LOWPRECISION_BLEND
 TEST_P(AV1Convolve2DTest, DISABLED_Speed) { RunSpeedTest(GET_PARAM(0)); }
 
 TEST_P(AV1Convolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
@@ -64,7 +66,8 @@ INSTANTIATE_TEST_CASE_P(
     AVX2, AV1Convolve2DTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_avx2, 1, 1));
 #endif
-#endif
+#endif  // CONFIG_LOWPRECISION_BLEND
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 TEST_P(AV1Convolve2DSrTest, DISABLED_Speed) { RunSpeedTest(GET_PARAM(0)); }
 
@@ -108,7 +111,6 @@ INSTANTIATE_TEST_CASE_P(
     AVX2, AV1Convolve2DSrTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sr_avx2, 1, 1));
 #endif
-#endif
 
 TEST_P(AV1JntConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
 
@@ -123,22 +125,22 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     C_Y, AV1JntConvolve2DTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_c, 0, 1));
-#if CONFIG_LOWPRECISION_BLEND
+
 INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1JntConvolve2DTest,
                         libaom_test::AV1Convolve2D::BuildParams(
                             av1_jnt_convolve_2d_copy_sse2, 0, 0));
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1_X, AV1JntConvolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_x_sse4_1, 1, 0));
+    SSE2_X, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_x_sse2, 1, 0));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1_Y, AV1JntConvolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_sse4_1, 0, 1));
+    SSE2_Y, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_sse2, 0, 1));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1, AV1JntConvolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_sse4_1, 1, 1));
+    SSSE3, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_ssse3, 1, 1));
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(AVX2_COPY, AV1JntConvolve2DTest,
@@ -159,6 +161,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 #endif
 
+#if !CONFIG_LOWPRECISION_BLEND
 #if HAVE_SSSE3
 TEST_P(AV1HighbdConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(1)); }
 
@@ -173,6 +176,7 @@ INSTANTIATE_TEST_CASE_P(C_Y, AV1HighbdConvolve2DTest,
 INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_copy_c, 0, 0));
+
 #if CONFIG_LOWPRECISION_BLEND
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
@@ -182,7 +186,8 @@ INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_avx2, 1, 1));
 #endif
-#endif
+#endif  // CONFIG_LOWPRECISION_BLEND
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 TEST_P(AV1HighbdConvolve2DSrTest, CheckOutput) { RunCheckOutput(GET_PARAM(1)); }
 TEST_P(AV1HighbdConvolve2DSrTest, DISABLED_Speed) {
@@ -231,7 +236,6 @@ INSTANTIATE_TEST_CASE_P(AVX2_COPY, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_copy_sr_avx2, 0, 0));
 #endif
-#endif
 
 TEST_P(AV1HighbdJntConvolve2DTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(1));
@@ -252,7 +256,6 @@ INSTANTIATE_TEST_CASE_P(C_Y, AV1HighbdJntConvolve2DTest,
 INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_2d_copy_c, 0, 0));
-#if CONFIG_LOWPRECISION_BLEND
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(

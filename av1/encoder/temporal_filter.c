@@ -310,8 +310,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
   YV12_BUFFER_CONFIG *f = frames[alt_ref_index];
   uint8_t *dst1, *dst2;
-  DECLARE_ALIGNED(16, uint16_t, predictor16[16 * 16 * 3]);
-  DECLARE_ALIGNED(16, uint8_t, predictor8[16 * 16 * 3]);
+  DECLARE_ALIGNED(32, uint16_t, predictor16[16 * 16 * 3]);
+  DECLARE_ALIGNED(32, uint8_t, predictor8[16 * 16 * 3]);
   uint8_t *predictor;
   const int mb_uv_height = 16 >> mbd->plane[1].subsampling_y;
   const int mb_uv_width = 16 >> mbd->plane[1].subsampling_x;

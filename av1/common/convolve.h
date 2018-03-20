@@ -17,8 +17,11 @@
 extern "C" {
 #endif
 
+#if CONFIG_LOWPRECISION_BLEND
+typedef uint16_t CONV_BUF_TYPE;
+#else
 typedef int32_t CONV_BUF_TYPE;
-
+#endif
 typedef struct ConvolveParams {
   int ref;
   int do_average;

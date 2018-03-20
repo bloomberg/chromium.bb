@@ -76,6 +76,7 @@ void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
   }
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_rounding_c(const int32_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h, int bits) {
   for (int r = 0; r < h; ++r) {
@@ -257,6 +258,7 @@ void av1_convolve_2d_copy_c(const uint8_t *src, int src_stride, uint8_t *dst0,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_2d_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           int dst_stride, int w, int h,
@@ -296,6 +298,16 @@ void av1_convolve_2d_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      int16_t res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
+                    ((1 << (offset_bits - conv_params->round_1)) +
+                     (1 << (offset_bits - conv_params->round_1 - 1)));
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
@@ -304,6 +316,7 @@ void av1_convolve_2d_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
+#endif  // CONFIG_LOWPRECISION_BLEND
       dst[y * dst_stride + x] = clip_pixel(ROUND_POWER_OF_TWO(res, bits));
     }
   }
@@ -329,7 +342,11 @@ void av1_convolve_y_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+#else
       CONV_BUF_TYPE res = 0;
+#endif
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
@@ -360,7 +377,11 @@ void av1_convolve_x_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+#else
       CONV_BUF_TYPE res = 0;
+#endif
       for (int k = 0; k < filter_params_x->taps; ++k) {
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
       }
@@ -389,8 +410,8 @@ void av1_convolve_2d_copy_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
-void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
-                           int dst_stride0, int w, int h,
+void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst8,
+                           int dst8_stride, int w, int h,
                            InterpFilterParams *filter_params_x,
                            InterpFilterParams *filter_params_y,
                            const int subpel_x_q4, const int subpel_y_q4,
@@ -403,8 +424,13 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int bd = 8;
-  (void)dst0;
-  (void)dst_stride0;
+#if CONFIG_LOWPRECISION_BLEND
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+#else
+  (void)dst8;
+  (void)dst8_stride;
+#endif
 
   // horizontal filter
   const uint8_t *src_horiz = src - fo_vert * src_stride;
@@ -429,6 +455,30 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= (1 << (offset_bits - conv_params->round_1)) +
+               (1 << (offset_bits - conv_params->round_1 - 1));
+        dst8[y * dst8_stride + x] =
+            clip_pixel(ROUND_POWER_OF_TWO(tmp, round_bits));
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
@@ -454,12 +504,13 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst0,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
-void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
-                          int dst_stride0, int w, int h,
+void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst8,
+                          int dst8_stride, int w, int h,
                           InterpFilterParams *filter_params_x,
                           InterpFilterParams *filter_params_y,
                           const int subpel_x_q4, const int subpel_y_q4,
@@ -468,16 +519,50 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_0;
+#if CONFIG_LOWPRECISION_BLEND
+  const int bd = 8;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+#endif
   (void)filter_params_x;
   (void)subpel_x_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst8;
+  (void)dst8_stride;
+#endif
 
   // vertical filter
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
+      }
+      res *= (1 << bits);
+      res = ROUND_POWER_OF_TWO(res, conv_params->round_1) + round_offset;
+
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst8[y * dst8_stride + x] =
+            clip_pixel(ROUND_POWER_OF_TWO(tmp, round_bits));
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
@@ -501,12 +586,13 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst0,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
-void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst0,
-                          int dst_stride0, int w, int h,
+void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst8,
+                          int dst8_stride, int w, int h,
                           InterpFilterParams *filter_params_x,
                           InterpFilterParams *filter_params_y,
                           const int subpel_x_q4, const int subpel_y_q4,
@@ -515,16 +601,50 @@ void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst0,
   int dst_stride = conv_params->dst_stride;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_1;
+#if CONFIG_LOWPRECISION_BLEND
+  const int bd = 8;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+#endif
   (void)filter_params_y;
   (void)subpel_y_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst8;
+  (void)dst8_stride;
+#endif
 
   // horizontal filter
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+      for (int k = 0; k < filter_params_x->taps; ++k) {
+        res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
+      }
+      res = (1 << bits) * ROUND_POWER_OF_TWO(res, conv_params->round_0);
+      res += round_offset;
+
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst8[y * dst8_stride + x] =
+            clip_pixel(ROUND_POWER_OF_TWO(tmp, round_bits));
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_x->taps; ++k) {
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
@@ -547,12 +667,13 @@ void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst0,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
 void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
-                                uint8_t *dst0, int dst_stride0, int w, int h,
+                                uint8_t *dst8, int dst8_stride, int w, int h,
                                 InterpFilterParams *filter_params_x,
                                 InterpFilterParams *filter_params_y,
                                 const int subpel_x_q4, const int subpel_y_q4,
@@ -561,17 +682,42 @@ void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
   int dst_stride = conv_params->dst_stride;
   const int bits =
       FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
-
+#if CONFIG_LOWPRECISION_BLEND
+  const int bd = 8;
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+#endif
   (void)filter_params_x;
   (void)filter_params_y;
   (void)subpel_x_q4;
   (void)subpel_y_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst8;
+  (void)dst8_stride;
+#endif
 
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = src[y * src_stride + x] << bits;
+#if CONFIG_LOWPRECISION_BLEND
+      res += round_offset;
+
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst8[y * dst8_stride + x] = clip_pixel(ROUND_POWER_OF_TWO(tmp, bits));
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           int32_t tmp = dst[y * dst_stride + x];
@@ -589,20 +735,39 @@ void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
+#if CONFIG_LOWPRECISION_BLEND
+void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride, uint8_t *dst8,
+                             int dst8_stride, int w, int h,
+                             InterpFilterParams *filter_params_x,
+                             InterpFilterParams *filter_params_y,
+                             const int subpel_x_qn, const int x_step_qn,
+                             const int subpel_y_qn, const int y_step_qn,
+                             ConvolveParams *conv_params)
+#else
 void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
                              CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
                              InterpFilterParams *filter_params_x,
                              InterpFilterParams *filter_params_y,
                              const int subpel_x_qn, const int x_step_qn,
                              const int subpel_y_qn, const int y_step_qn,
-                             ConvolveParams *conv_params) {
+                             ConvolveParams *conv_params)
+#endif
+{
   int16_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
+#if CONFIG_LOWPRECISION_BLEND
+  CONV_BUF_TYPE *dst16 = conv_params->dst;
+  const int dst16_stride = conv_params->dst_stride;
+  const int bits =
+      FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
+  assert(bits >= 0);
+#endif
   int im_stride = w;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
@@ -640,6 +805,37 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
+      if (conv_params->is_compound) {
+        if (conv_params->do_average) {
+          int32_t tmp = dst16[y * dst16_stride + x];
+          if (conv_params->use_jnt_comp_avg) {
+            tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+            tmp = tmp >> DIST_PRECISION_BITS;
+          } else {
+            tmp += res;
+            tmp = tmp >> 1;
+          }
+          /* Subtract round offset and convolve round */
+          tmp = tmp - ((1 << (offset_bits - conv_params->round_1)) +
+                       (1 << (offset_bits - conv_params->round_1 - 1)));
+          dst8[y * dst8_stride + x] = clip_pixel(ROUND_POWER_OF_TWO(tmp, bits));
+        } else {
+          dst16[y * dst16_stride + x] = res;
+        }
+      } else {
+        /* Subtract round offset and convolve round */
+        int32_t tmp = res - ((1 << (offset_bits - conv_params->round_1)) +
+                             (1 << (offset_bits - conv_params->round_1 - 1)));
+        dst8[y * dst8_stride + x] = clip_pixel(ROUND_POWER_OF_TWO(tmp, bits));
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
@@ -665,6 +861,7 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
     src_vert++;
   }
@@ -676,6 +873,14 @@ static void convolve_2d_scale_wrapper(
     InterpFilterParams *filter_params_y, const int subpel_x_qn,
     const int x_step_qn, const int subpel_y_qn, const int y_step_qn,
     ConvolveParams *conv_params) {
+#if CONFIG_LOWPRECISION_BLEND
+  if (conv_params->is_compound) {
+    assert(conv_params->dst != NULL);
+  }
+  av1_convolve_2d_scale(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                        filter_params_y, subpel_x_qn, x_step_qn, subpel_y_qn,
+                        y_step_qn, conv_params);
+#else   // CONFIG_LOWPRECISION_BLEND
   if (conv_params->is_compound) {
     assert(conv_params->dst != NULL);
     av1_convolve_2d_scale(src, src_stride, conv_params->dst,
@@ -693,6 +898,7 @@ static void convolve_2d_scale_wrapper(
     av1_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_stride, w, h,
                           rbits);
   }
+#endif  // CONFIG_LOWPRECISION_BLEND
 }
 
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -725,6 +931,7 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
         &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_highbd_convolve_rounding_c(const int32_t *src, int src_stride,
                                     uint8_t *dst8, int dst_stride, int w, int h,
                                     int bits, int bd) {
@@ -907,6 +1114,7 @@ void av1_highbd_convolve_y_c(const uint16_t *src, int src_stride,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_highbd_convolve_2d_copy_sr_c(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
@@ -947,7 +1155,11 @@ void av1_highbd_convolve_x_sr_c(const uint16_t *src, int src_stride,
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+#else
       CONV_BUF_TYPE res = 0;
+#endif
       for (int k = 0; k < filter_params_x->taps; ++k) {
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
       }
@@ -977,7 +1189,11 @@ void av1_highbd_convolve_y_sr_c(const uint16_t *src, int src_stride,
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+#else
       CONV_BUF_TYPE res = 0;
+#endif
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
       }
@@ -1000,6 +1216,7 @@ void av1_highbd_convolve_2d_sr_c(const uint16_t *src, int src_stride,
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int bits =
       FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
+  assert(bits >= 0);
 
   // horizontal filter
   const uint16_t *src_horiz = src - fo_vert * src_stride;
@@ -1024,6 +1241,16 @@ void av1_highbd_convolve_2d_sr_c(const uint16_t *src, int src_stride,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      int32_t res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
+                    ((1 << (offset_bits - conv_params->round_1)) +
+                     (1 << (offset_bits - conv_params->round_1 - 1)));
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
@@ -1032,18 +1259,29 @@ void av1_highbd_convolve_2d_sr_c(const uint16_t *src, int src_stride,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) -
                           ((1 << (offset_bits - conv_params->round_1)) +
                            (1 << (offset_bits - conv_params->round_1 - 1)));
+#endif  // CONFIG_LOWPRECISION_BLEND
       dst[y * dst_stride + x] =
           clip_pixel_highbd(ROUND_POWER_OF_TWO(res, bits), bd);
     }
   }
 }
 
+#if CONFIG_LOWPRECISION_BLEND
+void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
+                                  uint16_t *dst16, int dst16_stride, int w,
+                                  int h, InterpFilterParams *filter_params_x,
+                                  InterpFilterParams *filter_params_y,
+                                  const int subpel_x_q4, const int subpel_y_q4,
+                                  ConvolveParams *conv_params, int bd)
+#else   // CONFIG_LOWPRECISION_BLEND
 void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
                                   uint16_t *dst0, int dst_stride0, int w, int h,
                                   InterpFilterParams *filter_params_x,
                                   InterpFilterParams *filter_params_y,
                                   const int subpel_x_q4, const int subpel_y_q4,
-                                  ConvolveParams *conv_params, int bd) {
+                                  ConvolveParams *conv_params, int bd)
+#endif  // CONFIG_LOWPRECISION_BLEND
+{
   int x, y, k;
   int16_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   CONV_BUF_TYPE *dst = conv_params->dst;
@@ -1052,8 +1290,14 @@ void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
   int im_stride = w;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
+#if CONFIG_LOWPRECISION_BLEND
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  assert(round_bits >= 0);
+#else
   (void)dst0;
   (void)dst_stride0;
+#endif
 
   // horizontal filter
   const uint16_t *src_horiz = src - fo_vert * src_stride;
@@ -1079,6 +1323,30 @@ void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   for (y = 0; y < h; ++y) {
     for (x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= (1 << (offset_bits - conv_params->round_1)) +
+               (1 << (offset_bits - conv_params->round_1 - 1));
+        dst16[y * dst16_stride + x] =
+            clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, round_bits), bd);
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
@@ -1104,13 +1372,14 @@ void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif
     }
   }
 }
 
 void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
-                                 uint16_t *dst0, int dst_stride0, int w, int h,
-                                 InterpFilterParams *filter_params_x,
+                                 uint16_t *dst16, int dst16_stride, int w,
+                                 int h, InterpFilterParams *filter_params_x,
                                  InterpFilterParams *filter_params_y,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params, int bd) {
@@ -1118,18 +1387,51 @@ void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
   int dst_stride = conv_params->dst_stride;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_1;
+#if CONFIG_LOWPRECISION_BLEND
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  assert(round_bits >= 0);
+#endif
   (void)filter_params_y;
   (void)subpel_y_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst16;
+  (void)dst16_stride;
   (void)bd;
-
+#endif
   assert(bits >= 0);
   // horizontal filter
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+      for (int k = 0; k < filter_params_x->taps; ++k) {
+        res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
+      }
+      res = (1 << bits) * ROUND_POWER_OF_TWO(res, conv_params->round_0);
+      res += round_offset;
+
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst16[y * dst16_stride + x] =
+            clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, round_bits), bd);
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_x->taps; ++k) {
         res += x_filter[k] * src[y * src_stride + x - fo_horiz + k];
@@ -1152,13 +1454,14 @@ void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
 void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
-                                 uint16_t *dst0, int dst_stride0, int w, int h,
-                                 InterpFilterParams *filter_params_x,
+                                 uint16_t *dst16, int dst16_stride, int w,
+                                 int h, InterpFilterParams *filter_params_x,
                                  InterpFilterParams *filter_params_y,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params, int bd) {
@@ -1166,18 +1469,51 @@ void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int bits = FILTER_BITS - conv_params->round_0;
+#if CONFIG_LOWPRECISION_BLEND
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  const int round_bits =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  assert(round_bits >= 0);
+#endif
   (void)filter_params_x;
   (void)subpel_x_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst16;
+  (void)dst16_stride;
   (void)bd;
-
+#endif
   assert(bits >= 0);
   // vertical filter
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t res = 0;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
+      }
+      res *= (1 << bits);
+      res = ROUND_POWER_OF_TWO(res, conv_params->round_1) + round_offset;
+
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst16[y * dst16_stride + x] =
+            clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, round_bits), bd);
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE res = 0;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         res += y_filter[k] * src[(y - fo_vert + k) * src_stride + x];
@@ -1201,31 +1537,57 @@ void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
 void av1_highbd_jnt_convolve_2d_copy_c(
-    const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
-    int h, InterpFilterParams *filter_params_x,
+    const uint16_t *src, int src_stride, uint16_t *dst16, int dst16_stride,
+    int w, int h, InterpFilterParams *filter_params_x,
     InterpFilterParams *filter_params_y, const int subpel_x_q4,
     const int subpel_y_q4, ConvolveParams *conv_params, int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int bits =
       FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
-
+#if CONFIG_LOWPRECISION_BLEND
+  const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
+  const int round_offset = (1 << (offset_bits - conv_params->round_1)) +
+                           (1 << (offset_bits - conv_params->round_1 - 1));
+  assert(bits >= 0);
+#endif
   (void)filter_params_x;
   (void)filter_params_y;
   (void)subpel_x_q4;
   (void)subpel_y_q4;
-  (void)dst0;
-  (void)dst_stride0;
+#if !CONFIG_LOWPRECISION_BLEND
+  (void)dst16;
+  (void)dst16_stride;
   (void)bd;
+#endif
 
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
       CONV_BUF_TYPE res = src[y * src_stride + x] << bits;
+#if CONFIG_LOWPRECISION_BLEND
+      res += round_offset;
+      if (conv_params->do_average) {
+        int32_t tmp = dst[y * dst_stride + x];
+        if (conv_params->use_jnt_comp_avg) {
+          tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+          tmp = tmp >> DIST_PRECISION_BITS;
+        } else {
+          tmp += res;
+          tmp = tmp >> 1;
+        }
+        tmp -= round_offset;
+        dst16[y * dst16_stride + x] =
+            clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, bits), bd);
+      } else {
+        dst[y * dst_stride + x] = res;
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           int32_t tmp = dst[y * dst_stride + x];
@@ -1243,24 +1605,42 @@ void av1_highbd_jnt_convolve_2d_copy_c(
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
   }
 }
 
+#if CONFIG_LOWPRECISION_BLEND
+void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
+                                    uint16_t *dst, int dst_stride, int w, int h,
+                                    InterpFilterParams *filter_params_x,
+                                    InterpFilterParams *filter_params_y,
+                                    const int subpel_x_qn, const int x_step_qn,
+                                    const int subpel_y_qn, const int y_step_qn,
+                                    ConvolveParams *conv_params, int bd)
+#else
 void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
                                     CONV_BUF_TYPE *dst, int dst_stride, int w,
                                     int h, InterpFilterParams *filter_params_x,
                                     InterpFilterParams *filter_params_y,
                                     const int subpel_x_qn, const int x_step_qn,
                                     const int subpel_y_qn, const int y_step_qn,
-                                    ConvolveParams *conv_params, int bd) {
+                                    ConvolveParams *conv_params, int bd)
+#endif  // CONFIG_LOWPRECISION_BLEND
+{
   int16_t im_block[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
   int im_stride = w;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
-
+#if CONFIG_LOWPRECISION_BLEND
+  CONV_BUF_TYPE *dst16 = conv_params->dst;
+  const int dst16_stride = conv_params->dst_stride;
+  const int bits =
+      FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
+  assert(bits >= 0);
+#endif
   // horizontal filter
   const uint16_t *src_horiz = src - fo_vert * src_stride;
   for (int y = 0; y < im_h; ++y) {
@@ -1293,6 +1673,39 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
       assert(y_filter_idx < SUBPEL_SHIFTS);
       const int16_t *y_filter =
           av1_get_interp_filter_subpel_kernel(*filter_params_y, y_filter_idx);
+#if CONFIG_LOWPRECISION_BLEND
+      int32_t sum = 1 << offset_bits;
+      for (int k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
+      }
+      assert(0 <= sum && sum < (1 << (offset_bits + 2)));
+      CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
+      if (conv_params->is_compound) {
+        if (conv_params->do_average) {
+          int32_t tmp = dst16[y * dst16_stride + x];
+          if (conv_params->use_jnt_comp_avg) {
+            tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
+            tmp = tmp >> DIST_PRECISION_BITS;
+          } else {
+            tmp += res;
+            tmp = tmp >> 1;
+          }
+          /* Subtract round offset and convolve round */
+          tmp = tmp - ((1 << (offset_bits - conv_params->round_1)) +
+                       (1 << (offset_bits - conv_params->round_1 - 1)));
+          dst[y * dst_stride + x] =
+              clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, bits), bd);
+        } else {
+          dst16[y * dst16_stride + x] = res;
+        }
+      } else {
+        /* Subtract round offset and convolve round */
+        int32_t tmp = res - ((1 << (offset_bits - conv_params->round_1)) +
+                             (1 << (offset_bits - conv_params->round_1 - 1)));
+        dst[y * dst_stride + x] =
+            clip_pixel_highbd(ROUND_POWER_OF_TWO(tmp, bits), bd);
+      }
+#else   // CONFIG_LOWPRECISION_BLEND
       CONV_BUF_TYPE sum = 1 << offset_bits;
       for (int k = 0; k < filter_params_y->taps; ++k) {
         sum += y_filter[k] * src_y[(k - fo_vert) * im_stride];
@@ -1318,6 +1731,7 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
           dst[y * dst_stride + x] = res;
         }
       }
+#endif  // CONFIG_LOWPRECISION_BLEND
     }
     src_vert++;
   }
@@ -1345,6 +1759,16 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 #endif
 
   if (scaled) {
+#if CONFIG_LOWPRECISION_BLEND
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
+    if (conv_params->is_compound) {
+      assert(conv_params->dst != NULL);
+    }
+    av1_highbd_convolve_2d_scale(src, src_stride, dst, dst_stride, w, h,
+                                 &filter_params_x, &filter_params_y,
+                                 subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4,
+                                 conv_params, bd);
+#else   // CONFIG_LOWPRECISION_BLEND
     if (conv_params->is_compound) {
       av1_highbd_convolve_2d_scale(
           src, src_stride, conv_params->dst, conv_params->dst_stride, w, h,
@@ -1365,6 +1789,7 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
       av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst8, dst_stride, w,
                                    h, rbits, bd);
     }
+#endif  // CONFIG_LOWPRECISION_BLEND
   } else {
     uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
 

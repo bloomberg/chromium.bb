@@ -7318,7 +7318,7 @@ static int64_t handle_inter_mode(
   const int bw = block_size_wide[bsize];
   int_mv single_newmv[TOTAL_REFS_PER_FRAME];
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(32, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *tmp_buf;
   int64_t rd = INT64_MAX;
   BUFFER_SET orig_dst, tmp_dst;

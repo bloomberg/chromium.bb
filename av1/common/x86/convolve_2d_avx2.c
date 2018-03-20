@@ -21,6 +21,7 @@
 #include "aom_dsp/x86/synonyms.h"
 #include "av1/common/convolve.h"
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
                           int dst_stride0, int w, int h,
                           InterpFilterParams *filter_params_x,
@@ -149,6 +150,7 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,

@@ -122,6 +122,7 @@ class TestImage {
     // Allocate image data
     src_data_.resize(2 * src_block_size());
     dst_data_.resize(2 * dst_block_size());
+    dst_16_data_.resize(2 * dst_block_size());
   }
 
   void Initialize(ACMRandom *rnd);
@@ -138,8 +139,13 @@ class TestImage {
     return borders ? block : block + kHPad + src_stride_ * kVPad;
   }
 
-  int32_t *GetDstData(bool ref, bool borders) {
-    int32_t *block = &dst_data_[ref ? 0 : dst_block_size()];
+  SrcPixel *GetDstData(bool ref, bool borders) {
+    SrcPixel *block = &dst_data_[ref ? 0 : dst_block_size()];
+    return borders ? block : block + kHPad + dst_stride_ * kVPad;
+  }
+
+  CONV_BUF_TYPE *GetDst16Data(bool ref, bool borders) {
+    CONV_BUF_TYPE *block = &dst_16_data_[ref ? 0 : dst_block_size()];
     return borders ? block : block + kHPad + dst_stride_ * kVPad;
   }
 
@@ -148,9 +154,11 @@ class TestImage {
   int src_stride_, dst_stride_;
 
   std::vector<SrcPixel> src_data_;
-  std::vector<int32_t> dst_data_;
+  std::vector<SrcPixel> dst_data_;
+  std::vector<CONV_BUF_TYPE> dst_16_data_;
 };
 
+#if CONFIG_LOWPRECISION_BLEND
 template <typename Pixel>
 void FillEdge(ACMRandom *rnd, int num_pixels, int bd, bool trash, Pixel *data) {
   if (!trash) {
@@ -192,17 +200,23 @@ template <typename SrcPixel>
 void TestImage<SrcPixel>::Initialize(ACMRandom *rnd) {
   PrepBuffers(rnd, w_, h_, src_stride_, bd_, false, &src_data_[0]);
   PrepBuffers(rnd, w_, h_, dst_stride_, bd_, true, &dst_data_[0]);
+  PrepBuffers(rnd, w_, h_, dst_stride_, bd_, true, &dst_16_data_[0]);
 }
 
 template <typename SrcPixel>
 void TestImage<SrcPixel>::Check() const {
   // If memcmp returns 0, there's nothing to do.
   const int num_pixels = dst_block_size();
-  const int32_t *ref_dst = &dst_data_[0];
-  const int32_t *tst_dst = &dst_data_[num_pixels];
+  const SrcPixel *ref_dst = &dst_data_[0];
+  const SrcPixel *tst_dst = &dst_data_[num_pixels];
 
-  if (0 == memcmp(ref_dst, tst_dst, sizeof(*ref_dst) * num_pixels)) return;
+  const CONV_BUF_TYPE *ref_16_dst = &dst_16_data_[0];
+  const CONV_BUF_TYPE *tst_16_dst = &dst_16_data_[num_pixels];
 
+  if (0 == memcmp(ref_dst, tst_dst, sizeof(*ref_dst) * num_pixels)) {
+    if (0 == memcmp(ref_16_dst, tst_16_dst, sizeof(*ref_16_dst) * num_pixels))
+      return;
+  }
   // Otherwise, iterate through the buffer looking for differences (including
   // the edges)
   const int stride = dst_stride_;
@@ -212,6 +226,17 @@ void TestImage<SrcPixel>::Check() const {
       const int32_t tst_value = tst_dst[r * stride + c];
 
       EXPECT_EQ(tst_value, ref_value)
+          << "Error at row: " << (r - kVPad) << ", col: " << (c - kHPad);
+    }
+  }
+
+  for (int r = 0; r < h_ + 2 * kVPad; ++r) {
+    for (int c = 0; c < w_ + 2 * kHPad; ++c) {
+      const int32_t ref_value = ref_16_dst[r * stride + c];
+      const int32_t tst_value = tst_16_dst[r * stride + c];
+
+      EXPECT_EQ(tst_value, ref_value)
+          << "Error in 16 bit buffer "
           << "Error at row: " << (r - kVPad) << ", col: " << (c - kHPad);
     }
   }
@@ -260,32 +285,45 @@ class ConvolveScaleTestBase : public ::testing::Test {
     image_ = new TestImage<SrcPixel>(width_, height_, bd_);
   }
 
-  void SetConvParamOffset(int i, int j) {
+  void SetConvParamOffset(int i, int j, int is_compound, int do_average,
+                          int use_jnt_comp_avg) {
     if (i == -1 && j == -1) {
-      convolve_params_.use_jnt_comp_avg = 0;
+      convolve_params_.use_jnt_comp_avg = use_jnt_comp_avg;
+      convolve_params_.is_compound = is_compound;
+      convolve_params_.do_average = do_average;
     } else {
-      convolve_params_.use_jnt_comp_avg = 1;
+      convolve_params_.use_jnt_comp_avg = use_jnt_comp_avg;
       convolve_params_.fwd_offset = quant_dist_lookup_table[i][j][0];
       convolve_params_.bck_offset = quant_dist_lookup_table[i][j][1];
+      convolve_params_.is_compound = is_compound;
+      convolve_params_.do_average = do_average;
     }
   }
 
   void Run() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     for (int i = 0; i < kTestIters; ++i) {
-      SetConvParamOffset(-1, -1);
+      int is_compound = 0;
+      SetConvParamOffset(-1, -1, is_compound, 0, 0);
       Prep(&rnd);
       RunOne(true);
       RunOne(false);
       image_->Check();
 
-      for (int j = 0; j < 2; ++j) {
-        for (int k = 0; k < 4; ++k) {
-          SetConvParamOffset(j, k);
-          Prep(&rnd);
-          RunOne(true);
-          RunOne(false);
-          image_->Check();
+      is_compound = 1;
+      for (int do_average = 0; do_average < 2; do_average++) {
+        for (int use_jnt_comp_avg = 0; use_jnt_comp_avg < 2;
+             use_jnt_comp_avg++) {
+          for (int j = 0; j < 2; ++j) {
+            for (int k = 0; k < 4; ++k) {
+              SetConvParamOffset(j, k, is_compound, do_average,
+                                 use_jnt_comp_avg);
+              Prep(&rnd);
+              RunOne(true);
+              RunOne(false);
+              image_->Check();
+            }
+          }
         }
       }
     }
@@ -351,7 +389,7 @@ class ConvolveScaleTestBase : public ::testing::Test {
 typedef tuple<int, int> BlockDimension;
 
 typedef void (*LowbdConvolveFunc)(const uint8_t *src, int src_stride,
-                                  int32_t *dst, int dst_stride, int w, int h,
+                                  uint8_t *dst, int dst_stride, int w, int h,
                                   InterpFilterParams *filter_params_x,
                                   InterpFilterParams *filter_params_y,
                                   const int subpel_x_qn, const int x_step_qn,
@@ -383,10 +421,10 @@ class LowBDConvolveScaleTest
 
   void RunOne(bool ref) {
     const uint8_t *src = image_->GetSrcData(ref, false);
-    CONV_BUF_TYPE *dst = image_->GetDstData(ref, false);
+    uint8_t *dst = image_->GetDstData(ref, false);
+    convolve_params_.dst = image_->GetDst16Data(ref, false);
     const int src_stride = image_->src_stride();
     const int dst_stride = image_->dst_stride();
-
     if (ref) {
       av1_convolve_2d_scale_c(src, src_stride, dst, dst_stride, width_, height_,
                               &filter_x_.params_, &filter_y_.params_, subpel_x_,
@@ -411,7 +449,7 @@ const BlockDimension kBlockDim[] = {
   make_tuple(64, 128), make_tuple(128, 64), make_tuple(128, 128),
 };
 
-const NTaps kNTaps[] = { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
+const NTaps kNTaps[] = { EIGHT_TAP };
 
 TEST_P(LowBDConvolveScaleTest, Check) { Run(); }
 TEST_P(LowBDConvolveScaleTest, DISABLED_Speed) { SpeedTest(); }
@@ -424,7 +462,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::Bool()));
 
 typedef void (*HighbdConvolveFunc)(const uint16_t *src, int src_stride,
-                                   int32_t *dst, int dst_stride, int w, int h,
+                                   uint16_t *dst, int dst_stride, int w, int h,
                                    InterpFilterParams *filter_params_x,
                                    InterpFilterParams *filter_params_y,
                                    const int subpel_x_qn, const int x_step_qn,
@@ -456,7 +494,8 @@ class HighBDConvolveScaleTest
 
   void RunOne(bool ref) {
     const uint16_t *src = image_->GetSrcData(ref, false);
-    CONV_BUF_TYPE *dst = image_->GetDstData(ref, false);
+    uint16_t *dst = image_->GetDstData(ref, false);
+    convolve_params_.dst = image_->GetDst16Data(ref, false);
     const int src_stride = image_->src_stride();
     const int dst_stride = image_->dst_stride();
 
@@ -487,4 +526,5 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kNTaps), ::testing::ValuesIn(kNTaps),
                        ::testing::Bool(), ::testing::ValuesIn(kBDs)));
+#endif
 }  // namespace

@@ -15,8 +15,10 @@
 #include "aom_dsp/aom_convolve.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
+#include "aom_dsp/x86/convolve_sse2.h"
 #include "av1/common/convolve.h"
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_2d_sse2(const uint8_t *src, int src_stride, uint8_t *dst0,
                           int dst_stride0, int w, int h,
                           InterpFilterParams *filter_params_x,
@@ -209,6 +211,7 @@ void av1_convolve_2d_sse2(const uint8_t *src, int src_stride, uint8_t *dst0,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
@@ -408,6 +411,7 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
                                uint8_t *dst0, int dst_stride0, int w, int h,
                                InterpFilterParams *filter_params_x,
@@ -537,6 +541,7 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 static INLINE void copy_128(const uint8_t *src, uint8_t *dst) {
   __m128i s[8];
@@ -680,6 +685,124 @@ void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
   }
 }
 
+#if CONFIG_LOWPRECISION_BLEND
+void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
+                                   uint8_t *dst0, int dst_stride0, int w, int h,
+                                   InterpFilterParams *filter_params_x,
+                                   InterpFilterParams *filter_params_y,
+                                   const int subpel_x_q4, const int subpel_y_q4,
+                                   ConvolveParams *conv_params) {
+  const int bd = 8;
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
+  (void)filter_params_x;
+  (void)filter_params_y;
+  (void)subpel_x_q4;
+  (void)subpel_y_q4;
+
+  const int bits =
+      FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
+  const int do_average = conv_params->do_average;
+  const int use_jnt_comp_avg = conv_params->use_jnt_comp_avg;
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i left_shift = _mm_cvtsi32_si128(bits);
+  int i, j;
+
+  const int w0 = conv_params->fwd_offset;
+  const int w1 = conv_params->bck_offset;
+  const __m128i wt0 = _mm_set1_epi16(w0);
+  const __m128i wt1 = _mm_set1_epi16(w1);
+  const __m128i wt = _mm_unpacklo_epi16(wt0, wt1);
+
+  const int offset_0 =
+      bd + 2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const int offset = (1 << offset_0) + (1 << (offset_0 - 1));
+  const __m128i offset_const = _mm_set1_epi16(offset);
+  const int rounding_shift =
+      2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
+  const __m128i rounding_const = _mm_set1_epi16((1 << rounding_shift) >> 1);
+
+  assert((w % 4) == 0);
+
+  if (!(w % 16)) {
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; j += 16) {
+        const __m128i d8 = _mm_loadu_si128((__m128i *)&src[j]);
+
+        const __m128i d16_lo = _mm_unpacklo_epi8(d8, zero);
+        const __m128i d16_hi = _mm_unpackhi_epi8(d8, zero);
+
+        const __m128i res_lo = _mm_sll_epi16(d16_lo, left_shift);
+        const __m128i res_unsigned_lo = _mm_add_epi16(res_lo, offset_const);
+
+        const __m128i res_hi = _mm_sll_epi16(d16_hi, left_shift);
+        const __m128i res_unsigned_hi = _mm_add_epi16(res_hi, offset_const);
+
+        if (do_average) {
+          const __m128i data_ref_0_lo = _mm_loadu_si128((__m128i *)(&dst[j]));
+          const __m128i data_ref_0_hi =
+              _mm_loadu_si128((__m128i *)(&dst[j + 8]));
+
+          const __m128i comp_avg_res_lo =
+              comp_avg(&data_ref_0_lo, &res_unsigned_lo, &wt, use_jnt_comp_avg);
+
+          const __m128i round_result_lo = convolve_rounding(
+              &comp_avg_res_lo, &offset_const, &rounding_const, rounding_shift);
+
+          const __m128i comp_avg_res_hi =
+              comp_avg(&data_ref_0_hi, &res_unsigned_hi, &wt, use_jnt_comp_avg);
+
+          const __m128i round_result_hi = convolve_rounding(
+              &comp_avg_res_hi, &offset_const, &rounding_const, rounding_shift);
+
+          const __m128i res_8 =
+              _mm_packus_epi16(round_result_lo, round_result_hi);
+
+          _mm_store_si128((__m128i *)(&dst0[j]), res_8);
+        } else {
+          _mm_store_si128((__m128i *)(&dst[j]), res_unsigned_lo);
+          _mm_store_si128((__m128i *)(&dst[j + 8]), res_unsigned_hi);
+        }
+      }
+      src += src_stride;
+      dst += dst_stride;
+      dst0 += dst_stride0;
+    }
+  } else {
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; j += 8) {
+        const __m128i d8 = _mm_loadl_epi64((__m128i *)&src[j]);
+        const __m128i d16_0 = _mm_unpacklo_epi8(d8, zero);
+
+        const __m128i res = _mm_sll_epi16(d16_0, left_shift);
+        const __m128i res_unsigned = _mm_add_epi16(res, offset_const);
+
+        if (do_average) {
+          const __m128i data_ref_0 = _mm_loadu_si128((__m128i *)(&dst[j]));
+
+          const __m128i comp_avg_res =
+              comp_avg(&data_ref_0, &res_unsigned, &wt, use_jnt_comp_avg);
+
+          const __m128i round_result = convolve_rounding(
+              &comp_avg_res, &offset_const, &rounding_const, rounding_shift);
+
+          const __m128i res_8 = _mm_packus_epi16(round_result, round_result);
+
+          if (w > 4)
+            _mm_storel_epi64((__m128i *)(&dst0[j]), res_8);
+          else
+            *(uint32_t *)(&dst0[j]) = _mm_cvtsi128_si32(res_8);
+        } else {
+          _mm_store_si128((__m128i *)(&dst[j]), res_unsigned);
+        }
+      }
+      src += src_stride;
+      dst += dst_stride;
+      dst0 += dst_stride0;
+    }
+  }
+}
+#else
 void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
                                    uint8_t *dst0, int dst_stride0, int w, int h,
                                    InterpFilterParams *filter_params_x,
@@ -903,3 +1026,4 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
     }
   }
 }
+#endif

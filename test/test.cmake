@@ -74,13 +74,6 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/accounting_test.cc")
   endif ()
 
-  if (HAVE_SSE2)
-    set(AOM_UNIT_TEST_COMMON_SOURCES
-        ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/warp_filter_test.cc"
-        "${AOM_ROOT}/test/warp_filter_test_util.cc"
-        "${AOM_ROOT}/test/warp_filter_test_util.h")
-  endif ()
 endif ()
 
 set(AOM_UNIT_TEST_DECODER_SOURCES
@@ -222,11 +215,6 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/sum_squares_test.cc"
         "${AOM_ROOT}/test/variance_test.cc")
 
-    if (CONFIG_LOWPRECISION_BLEND)
-      set(AOM_UNIT_TEST_ENCODER_SOURCES
-          ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/convolve_round_test.cc")
-    endif ()
     if (HAVE_SSE2)
       set(AOM_UNIT_TEST_ENCODER_SOURCES
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
@@ -239,7 +227,10 @@ if (CONFIG_AV1_ENCODER)
       if (CONFIG_LOWPRECISION_BLEND)
         set(AOM_UNIT_TEST_ENCODER_SOURCES
             ${AOM_UNIT_TEST_ENCODER_SOURCES}
-            "${AOM_ROOT}/test/av1_convolve_scale_test.cc")
+            "${AOM_ROOT}/test/av1_convolve_scale_test.cc"
+			"${AOM_ROOT}/test/warp_filter_test_util.cc"
+			"${AOM_ROOT}/test/warp_filter_test_util.h"
+			"${AOM_ROOT}/test/warp_filter_test.cc")
       endif ()
     endif ()
 

@@ -75,6 +75,7 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
   return convolve(ss, coeffs);
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
                          const uint8_t *dst0, int dst_stride0, int w, int h,
                          InterpFilterParams *filter_params_x,
@@ -318,6 +319,7 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
     } while (++i < h);
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride,
                             const uint8_t *dst, int dst_stride, int w, int h,

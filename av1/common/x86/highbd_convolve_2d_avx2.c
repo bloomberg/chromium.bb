@@ -186,6 +186,7 @@ void av1_highbd_convolve_2d_sr_avx2(const uint16_t *src, int src_stride,
   }
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_highbd_convolve_2d_avx2(const uint16_t *src, int src_stride,
                                  uint16_t *dst0, int dst_stride0, int w, int h,
                                  InterpFilterParams *filter_params_x,
@@ -416,6 +417,7 @@ void av1_highbd_convolve_2d_avx2(const uint16_t *src, int src_stride,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 static INLINE void copy_64(const uint16_t *src, uint16_t *dst) {
   __m256i s[4];

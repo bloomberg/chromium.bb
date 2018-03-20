@@ -137,6 +137,7 @@ static INLINE void cal_rounding_4_sse2(const int32_t *src, uint8_t *dst,
   *(uint32_t *)dst = _mm_cvtsi128_si32(x);
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_rounding_avx2(const int32_t *src, int src_stride,
                                 uint8_t *dst, int dst_stride, int w, int h,
                                 int bits) {
@@ -195,6 +196,7 @@ void av1_convolve_rounding_avx2(const int32_t *src, int src_stride,
     } while (h > 0);
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 static INLINE void cal_highbd_rounding_32xn_avx2(const int32_t *src,
                                                  uint16_t *dst,
@@ -279,6 +281,7 @@ static INLINE void cal_highbd_rounding_4_sse2(const int32_t *src, uint16_t *dst,
   _mm_storel_epi64((__m128i *)dst, x);
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_highbd_convolve_rounding_avx2(const int32_t *src, int src_stride,
                                        uint8_t *dst8, int dst_stride, int w,
                                        int h, int bits, int bd) {
@@ -497,6 +500,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
@@ -654,7 +658,7 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
     }
   }
 }
-
+#if !CONFIG_LOWPRECISION_BLEND
 void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
                          int dst_stride0, int w, int h,
                          InterpFilterParams *filter_params_x,
@@ -719,6 +723,7 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
     }
   }
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,

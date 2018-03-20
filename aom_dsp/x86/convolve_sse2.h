@@ -12,6 +12,9 @@
 #ifndef AOM_DSP_X86_CONVOLVE_SSE2_H_
 #define AOM_DSP_X86_CONVOLVE_SSE2_H_
 
+// Note:
+//  This header file should be put below any x86 intrinsics head file
+
 static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
                                   const int subpel_q4,
                                   __m128i *const coeffs /* [4] */) {
@@ -41,5 +44,70 @@ static INLINE __m128i convolve(const __m128i *const s,
 
   return res;
 }
+
+static INLINE __m128i convolve_lo_x(const __m128i *const s,
+                                    const __m128i *const coeffs) {
+  __m128i ss[4];
+  ss[0] = _mm_unpacklo_epi8(s[0], _mm_setzero_si128());
+  ss[1] = _mm_unpacklo_epi8(s[1], _mm_setzero_si128());
+  ss[2] = _mm_unpacklo_epi8(s[2], _mm_setzero_si128());
+  ss[3] = _mm_unpacklo_epi8(s[3], _mm_setzero_si128());
+  return convolve(ss, coeffs);
+}
+
+static INLINE __m128i convolve_lo_y(const __m128i *const s,
+                                    const __m128i *const coeffs) {
+  __m128i ss[4];
+  ss[0] = _mm_unpacklo_epi8(s[0], _mm_setzero_si128());
+  ss[1] = _mm_unpacklo_epi8(s[2], _mm_setzero_si128());
+  ss[2] = _mm_unpacklo_epi8(s[4], _mm_setzero_si128());
+  ss[3] = _mm_unpacklo_epi8(s[6], _mm_setzero_si128());
+  return convolve(ss, coeffs);
+}
+
+static INLINE __m128i convolve_hi_y(const __m128i *const s,
+                                    const __m128i *const coeffs) {
+  __m128i ss[4];
+  ss[0] = _mm_unpackhi_epi8(s[0], _mm_setzero_si128());
+  ss[1] = _mm_unpackhi_epi8(s[2], _mm_setzero_si128());
+  ss[2] = _mm_unpackhi_epi8(s[4], _mm_setzero_si128());
+  ss[3] = _mm_unpackhi_epi8(s[6], _mm_setzero_si128());
+  return convolve(ss, coeffs);
+}
+
+#if CONFIG_LOWPRECISION_BLEND
+static INLINE __m128i comp_avg(const __m128i *const data_ref_0,
+                               const __m128i *const res_unsigned,
+                               const __m128i *const wt,
+                               const int use_jnt_comp_avg) {
+  __m128i res;
+  if (use_jnt_comp_avg) {
+    const __m128i data_lo = _mm_unpacklo_epi16(*data_ref_0, *res_unsigned);
+    const __m128i data_hi = _mm_unpackhi_epi16(*data_ref_0, *res_unsigned);
+
+    const __m128i wt_res_lo = _mm_madd_epi16(data_lo, *wt);
+    const __m128i wt_res_hi = _mm_madd_epi16(data_hi, *wt);
+
+    const __m128i res_lo = _mm_srai_epi32(wt_res_lo, DIST_PRECISION_BITS);
+    const __m128i res_hi = _mm_srai_epi32(wt_res_hi, DIST_PRECISION_BITS);
+
+    res = _mm_packs_epi32(res_lo, res_hi);
+  } else {
+    const __m128i wt_res = _mm_add_epi16(*data_ref_0, *res_unsigned);
+    res = _mm_srai_epi16(wt_res, 1);
+  }
+  return res;
+}
+
+static INLINE __m128i convolve_rounding(const __m128i *const res_unsigned,
+                                        const __m128i *const offset_const,
+                                        const __m128i *const round_const,
+                                        const int round_shift) {
+  const __m128i res_signed = _mm_sub_epi16(*res_unsigned, *offset_const);
+  const __m128i res_round =
+      _mm_srai_epi16(_mm_add_epi16(res_signed, *round_const), round_shift);
+  return res_round;
+}
+#endif
 
 #endif

@@ -64,6 +64,7 @@ class AV1Convolve2DSrTest : public ::testing::TestWithParam<Convolve2DParam> {
   libaom_test::ACMRandom rnd_;
 };
 
+#if CONFIG_LOWPRECISION_BLEND
 class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
   virtual ~AV1JntConvolve2DTest();
@@ -76,7 +77,7 @@ class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
   libaom_test::ACMRandom rnd_;
 };
-
+#endif
 }  // namespace AV1Convolve2D
 
 namespace AV1HighbdConvolve2D {
@@ -121,6 +122,7 @@ class AV1HighbdConvolve2DSrTest
   libaom_test::ACMRandom rnd_;
 };
 
+#if CONFIG_LOWPRECISION_BLEND
 class AV1HighbdJntConvolve2DTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {
  public:
@@ -135,7 +137,7 @@ class AV1HighbdJntConvolve2DTest
 
   libaom_test::ACMRandom rnd_;
 };
-
+#endif
 }  // namespace AV1HighbdConvolve2D
 
 }  // namespace libaom_test

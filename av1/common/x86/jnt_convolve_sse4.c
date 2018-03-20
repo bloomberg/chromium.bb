@@ -20,6 +20,7 @@
 #include "aom_dsp/x86/convolve_sse4_1.h"
 #include "av1/common/convolve.h"
 
+#if !CONFIG_LOWPRECISION_BLEND
 static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
                                   const int subpel_q4,
                                   __m128i *const coeffs /* [4] */) {
@@ -76,7 +77,6 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
   ss[3] = _mm_unpackhi_epi8(s[6], _mm_setzero_si128());
   return convolve(ss, coeffs);
 }
-
 void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
                                const uint8_t *dst0, int dst_stride0, int w,
                                int h, InterpFilterParams *filter_params_x,
@@ -573,3 +573,4 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
     }
   }
 }
+#endif
