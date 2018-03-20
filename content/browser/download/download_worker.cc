@@ -8,9 +8,9 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/input_stream.h"
+#include "components/download/public/common/resource_downloader.h"
 #include "content/browser/download/download_utils.h"
-#include "content/browser/download/resource_downloader.h"
-#include "content/public/browser/web_contents.h"
+#include "content/browser/download/url_downloader.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -43,10 +43,10 @@ class CompletedInputStream : public download::InputStream {
   DISALLOW_COPY_AND_ASSIGN(CompletedInputStream);
 };
 
-std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
+std::unique_ptr<download::UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
 CreateUrlDownloadHandler(
     std::unique_ptr<download::DownloadUrlParameters> params,
-    base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
+    base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -54,8 +54,9 @@ CreateUrlDownloadHandler(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
-    return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(
-        ResourceDownloader::BeginDownload(
+    return std::unique_ptr<download::ResourceDownloader,
+                           BrowserThread::DeleteOnIOThread>(
+        download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
             url_loader_factory_getter->GetNetworkFactory(), GURL(), GURL(),
             GURL(), download::DownloadItem::kInvalidId, true, task_runner)
@@ -158,15 +159,16 @@ void DownloadWorker::OnUrlDownloadStarted(
   delegate_->OnInputStreamReady(this, std::move(input_stream));
 }
 
-void DownloadWorker::OnUrlDownloadStopped(UrlDownloadHandler* downloader) {
+void DownloadWorker::OnUrlDownloadStopped(
+    download::UrlDownloadHandler* downloader) {
   // Release the |url_download_handler_|, the object will be deleted on IO
   // thread.
   url_download_handler_.reset();
 }
 
 void DownloadWorker::AddUrlDownloadHandler(
-    std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
-        downloader) {
+    std::unique_ptr<download::UrlDownloadHandler,
+                    BrowserThread::DeleteOnIOThread> downloader) {
   url_download_handler_ = std::move(downloader);
 }
 

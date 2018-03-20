@@ -47,6 +47,7 @@ component("public") {
     "input_stream.h",
     "parallel_download_utils.h",
     "rate_estimator.h",
+    "resource_downloader.h",
     "resume_mode.h",
     "stream_handle_input_stream.h",
   ]

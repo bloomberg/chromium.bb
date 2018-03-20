@@ -33,6 +33,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/resource_downloader.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/byte_stream_input_stream.h"
@@ -40,7 +41,6 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
-#include "content/browser/download/resource_downloader.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -233,7 +233,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
-      ResourceDownloader::BeginDownload(
+      download::ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
           std::move(shared_url_loader_factory), site_url, tab_url,
           tab_referrer_url, download_id, false, task_runner)
@@ -1092,7 +1092,8 @@ void DownloadManagerImpl::OnUrlDownloadStarted(
   StartDownload(std::move(download_create_info), std::move(stream), callback);
 }
 
-void DownloadManagerImpl::OnUrlDownloadStopped(UrlDownloadHandler* downloader) {
+void DownloadManagerImpl::OnUrlDownloadStopped(
+    download::UrlDownloadHandler* downloader) {
   for (auto ptr = url_download_handlers_.begin();
        ptr != url_download_handlers_.end(); ++ptr) {
     if (ptr->get() == downloader) {
@@ -1193,8 +1194,8 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::unique_ptr<ResourceDownloader> resource_downloader =
-      ResourceDownloader::InterceptNavigationResponse(
+  std::unique_ptr<download::ResourceDownloader> resource_downloader =
+      download::ResourceDownloader::InterceptNavigationResponse(
           download_manager, std::move(resource_request), render_process_id,
           render_frame_id, site_url, tab_url, tab_referrer_url,
           std::move(url_chain), suggested_filename, std::move(response),

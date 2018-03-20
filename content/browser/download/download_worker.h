@@ -11,7 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/url_downloader.h"
+#include "components/download/public/common/url_download_handler.h"
+#include "content/browser/download/download_request_core.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,7 +23,8 @@ namespace content {
 // file after handling response of the original non-range request.
 // TODO(xingliu): we should consider to reuse this class for single connection
 // download.
-class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
+class CONTENT_EXPORT DownloadWorker
+    : public download::UrlDownloadHandler::Delegate {
  public:
   class Delegate {
    public:
@@ -59,11 +61,11 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
       std::unique_ptr<download::InputStream> input_stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
-  void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
+  void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
 
   void AddUrlDownloadHandler(
-      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
-          downloader);
+      std::unique_ptr<download::UrlDownloadHandler,
+                      BrowserThread::DeleteOnIOThread> downloader);
 
   DownloadWorker::Delegate* const delegate_;
 
@@ -82,7 +84,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
-  std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<download::UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
       url_download_handler_;
 
   base::WeakPtrFactory<DownloadWorker> weak_factory_;

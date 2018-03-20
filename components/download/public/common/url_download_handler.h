@@ -2,29 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOAD_HANDLER
-#define CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOAD_HANDLER
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_DOWNLOAD_HANDLER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_DOWNLOAD_HANDLER_H_
 
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/common/content_export.h"
 
 namespace download {
 struct DownloadCreateInfo;
 class InputStream;
-}  // namespace download
-
-namespace content {
 
 // Class for handling the download of a url. Implemented by child classes.
-class CONTENT_EXPORT UrlDownloadHandler {
+class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
  public:
   // Class to be notified when download starts/stops.
-  class CONTENT_EXPORT Delegate {
+  class COMPONENTS_DOWNLOAD_EXPORT Delegate {
    public:
     virtual void OnUrlDownloadStarted(
-        std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-        std::unique_ptr<download::InputStream> input_stream,
-        const download::DownloadUrlParameters::OnStartedCallback& callback) = 0;
+        std::unique_ptr<DownloadCreateInfo> download_create_info,
+        std::unique_ptr<InputStream> input_stream,
+        const DownloadUrlParameters::OnStartedCallback& callback) = 0;
     // Called after the connection is cancelled or finished.
     virtual void OnUrlDownloadStopped(UrlDownloadHandler* downloader) = 0;
   };
@@ -35,6 +32,6 @@ class CONTENT_EXPORT UrlDownloadHandler {
   DISALLOW_COPY_AND_ASSIGN(UrlDownloadHandler);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOAD_HANDLER
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_DOWNLOAD_HANDLER_H_

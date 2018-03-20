@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/resource_downloader.h"
+#include "components/download/public/common/resource_downloader.h"
 
 #include <memory>
 
@@ -14,7 +14,7 @@ namespace network {
 struct ResourceResponseHead;
 }
 
-namespace content {
+namespace download {
 
 // This object monitors the URLLoaderCompletionStatus change when
 // ResourceDownloader is asking |delegate_| whether download can proceed.
@@ -59,7 +59,7 @@ void URLLoaderStatusMonitor::OnComplete(
 // static
 std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     const GURL& site_url,
@@ -129,15 +129,15 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-    std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
+    std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
   guid_ = download_url_parameters->guid();
 
   // Set up the URLLoaderClient.
-  url_loader_client_ = std::make_unique<download::DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this,
-      std::make_unique<download::DownloadSaveInfo>(
+      std::make_unique<DownloadSaveInfo>(
           download_url_parameters->GetSaveInfo()),
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
@@ -174,13 +174,12 @@ void ResourceDownloader::InterceptResponse(
   url_loader_.Bind(std::move(endpoints->url_loader));
 
   // Create the new URLLoaderClient that will intercept the navigation.
-  auto save_info = std::make_unique<download::DownloadSaveInfo>();
+  auto save_info = std::make_unique<DownloadSaveInfo>();
   if (suggested_filename.has_value())
     save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
-  url_loader_client_ = std::make_unique<download::DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this, std::move(save_info), false, false, false,
-      std::string(), download::DownloadSource::NAVIGATION,
-      std::move(url_chain));
+      std::string(), DownloadSource::NAVIGATION, std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   net::SSLInfo info;
@@ -196,8 +195,8 @@ void ResourceDownloader::InterceptResponse(
 }
 
 void ResourceDownloader::OnResponseStarted(
-    std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-    download::mojom::DownloadStreamHandlePtr stream_handle) {
+    std::unique_ptr<DownloadCreateInfo> download_create_info,
+    mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
   download_create_info->site_url = site_url_;
@@ -208,15 +207,15 @@ void ResourceDownloader::OnResponseStarted(
 
   delegate_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
-                     delegate_, std::move(download_create_info),
-                     std::make_unique<download::StreamHandleInputStream>(
-                         std::move(stream_handle)),
-                     callback_));
+      base::BindOnce(
+          &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
+          std::move(download_create_info),
+          std::make_unique<StreamHandleInputStream>(std::move(stream_handle)),
+          callback_));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
   url_loader_->FollowRedirect();
 }
 
-}  // namespace content
+}  // namespace download
