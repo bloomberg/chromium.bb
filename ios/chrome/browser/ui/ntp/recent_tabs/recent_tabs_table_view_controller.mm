@@ -74,7 +74,7 @@ NSString* const kOtherDeviceCollapsedKey = @"OtherDevicesCollapsed";
 // Key for saving whether the Recently Closed section is collapsed.
 NSString* const kRecentlyClosedCollapsedKey = @"RecentlyClosedCollapsed";
 // There are 2 static sections before the first SessionSection.
-int const kNumberOfSectionsBeforeSessions = 2;
+int const kNumberOfSectionsBeforeSessions = 1;
 // Estimated Table Row height.
 const CGFloat kEstimatedRowHeight = 56;
 // The UI displays relative time for up to this number of hours and then
@@ -160,14 +160,11 @@ const int kRelativeTimeMaxHours = 4;
   [super loadModel];
   [self addRecentlyClosedSection];
 
-  // The other Devices header section is always present regardless if it has any
-  // items or not.
-  [self addOtherDevicesSectionHeader];
   if (self.sessionState ==
       SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
     [self addSessionSections];
   } else {
-    [self addOtherDevicesItemForState:self.sessionState];
+    [self addOtherDevicesSectionForState:self.sessionState];
   }
 }
 
@@ -257,14 +254,11 @@ const int kRelativeTimeMaxHours = 4;
   SessionsSyncUserState previousState = self.sessionState;
   if (previousState !=
       SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
-    // The previous state was one of the OtherDevices states, remove it to clean
-    // it up and re-add just the header.
+    // The previous state was one of the OtherDevices states, remove it.
+    [self.tableView deleteSections:[self otherDevicesSectionIndexSet]
+                  withRowAnimation:UITableViewRowAnimationNone];
     [self.tableViewModel
         removeSectionWithIdentifier:SectionIdentifierOtherDevices];
-    [self addOtherDevicesSectionHeader];
-    // Reload the TableViews section.
-    [self.tableView reloadSections:[self otherDevicesSectionIndexSet]
-                  withRowAnimation:UITableViewRowAnimationNone];
   }
 
   // Clean up any previously added SessionSections.
@@ -349,6 +343,8 @@ const int kRelativeTimeMaxHours = 4;
 // called inside a [UITableView beginUpdates] block on iOS10, or
 // performBatchUpdates on iOS11+.
 - (void)updateOtherDevicesSectionForState:(SessionsSyncUserState)newState {
+  DCHECK(newState !=
+         SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS);
   TableViewModel* model = self.tableViewModel;
   SessionsSyncUserState previousState = self.sessionState;
   switch (previousState) {
@@ -357,25 +353,22 @@ const int kRelativeTimeMaxHours = 4;
     case SessionsSyncUserState::USER_SIGNED_OUT:
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
       // The OtherDevices section will be updated, remove it in order to clean
-      // it up. After the clean up add just the header.
+      // it up.
       [model removeSectionWithIdentifier:SectionIdentifierOtherDevices];
-      [self addOtherDevicesSectionHeader];
       break;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
       // The Sessions Section exists, remove it.
       [self removeSessionSections];
       break;
   }
-  // Add updated OtherDevices Item.
-  [self addOtherDevicesItemForState:newState];
-
-  // Update OtherDevices TableView Section.
+  // Add an updated OtherDevices Section and then reload the TableView section.
+  [self addOtherDevicesSectionForState:newState];
   [self.tableView reloadSections:[self otherDevicesSectionIndexSet]
                 withRowAnimation:UITableViewRowAnimationNone];
 }
 
 // Adds Other Devices Section and its header.
-- (void)addOtherDevicesSectionHeader {
+- (void)addOtherDevicesSectionForState:(SessionsSyncUserState)state {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierOtherDevices];
   [model setSectionIdentifier:SectionIdentifierOtherDevices
@@ -385,11 +378,8 @@ const int kRelativeTimeMaxHours = 4;
   header.text = l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
   [model setHeader:header
       forSectionWithIdentifier:SectionIdentifierOtherDevices];
-}
 
-// Adds Other Devices item for |state|.
-- (void)addOtherDevicesItemForState:(SessionsSyncUserState)state {
-  // Add item depending on |state|.
+  // Adds Other Devices item for |state|.
   TableViewTextItem* dummyCell = nil;
   switch (state) {
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
@@ -666,6 +656,9 @@ const int kRelativeTimeMaxHours = 4;
 }
 
 - (synced_sessions::DistantSession const*)sessionForSection:(NSInteger)section {
+  NSInteger sectionIdentifer =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  DCHECK([self isSessionSectionIdentifier:sectionIdentifer]);
   return _syncedSessions->GetSession(section - kNumberOfSectionsBeforeSessions);
 }
 
@@ -893,15 +886,11 @@ const int kRelativeTimeMaxHours = 4;
       syncService->GetOpenTabsUIDelegate();
 
   [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-  _syncedSessions->EraseSession(sectionIdentifier -
-                                kFirstSessionSectionIdentifier);
+  _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
 
   void (^tableUpdates)(void) = ^{
-    [self.tableView
-          deleteSections:[NSIndexSet
-                             indexSetWithIndex:sectionIdentifier -
-                                               kSectionIdentifierEnumZero]
-        withRowAnimation:UITableViewRowAnimationLeft];
+    [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
+                  withRowAnimation:UITableViewRowAnimationLeft];
   };
 
   // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
