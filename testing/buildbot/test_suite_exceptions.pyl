@@ -187,6 +187,11 @@
         },
       },
       # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
+      },
       'Out of Process Profiling Mac': {
         'swarming': {
           'shards': 5,
@@ -1448,7 +1453,6 @@
       'Fuchsia': {
         'args': [
           '--use-new-test-runner',
-          '-v',  # Useful for getting debug info and SCP throughput stats.
         ],
       },
     },
@@ -2058,6 +2062,12 @@
           '600',
         ],
       },
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
+      },
     },
   },
   'jingle_unittests': {
@@ -2233,6 +2243,14 @@
       # chromium.fyi
       'Fuchsia ARM64',
     ],
+    'modifications': {
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
+      },
+    },
   },
   'message_center_unittests': {
     'remove_from': [
@@ -2391,6 +2409,16 @@
         'swarming': {
           'hard_timeout': 0,
         },
+      },
+    },
+  },
+  'mojo_unittests': {
+    'modifications': {
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
       },
     },
   },
