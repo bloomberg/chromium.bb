@@ -22,7 +22,9 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/favicon_size.h"
@@ -81,6 +83,14 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
 }
 
 // static
+void HostedAppBrowserController::SetAppPrefsForWebContents(
+    content::WebContents* web_contents) {
+  auto* rvh = web_contents->GetRenderViewHost();
+
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  rvh->SyncRendererPrefs();
+}
+
 base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
   return url_formatter::FormatUrl(
       url.GetOrigin(),
@@ -96,9 +106,13 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : SiteEngagementObserver(SiteEngagementService::Get(browser->profile())),
       browser_(browser),
       extension_id_(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {}
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {
+  browser_->tab_strip_model()->AddObserver(this);
+}
 
-HostedAppBrowserController::~HostedAppBrowserController() {}
+HostedAppBrowserController::~HostedAppBrowserController() {
+  browser_->tab_strip_model()->RemoveObserver(this);
+}
 
 bool HostedAppBrowserController::IsForInstalledPwa(
     content::WebContents* web_contents) const {
@@ -226,6 +240,21 @@ void HostedAppBrowserController::OnEngagementEvent(
 
   UMA_HISTOGRAM_ENUMERATION(kPwaWindowEngagementTypeHistogram, type,
                             SiteEngagementService::ENGAGEMENT_LAST);
+}
+
+void HostedAppBrowserController::TabInsertedAt(TabStripModel* tab_strip_model,
+                                               content::WebContents* contents,
+                                               int index,
+                                               bool foreground) {
+  HostedAppBrowserController::SetAppPrefsForWebContents(contents);
+}
+
+void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
+                                               int index) {
+  auto* rvh = contents->GetRenderViewHost();
+
+  contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
+  rvh->SyncRendererPrefs();
 }
 
 }  // namespace extensions

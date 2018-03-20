@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
@@ -26,13 +27,17 @@ extern const char kPwaWindowEngagementTypeHistogram[];
 class Extension;
 
 // Class to encapsulate logic to control the browser UI for hosted apps.
-class HostedAppBrowserController : public SiteEngagementObserver {
+class HostedAppBrowserController : public SiteEngagementObserver,
+                                   public TabStripModelObserver {
  public:
   // Indicates whether |browser| is a hosted app browser.
   static bool IsForHostedApp(const Browser* browser);
 
   // Returns whether |browser| uses the experimental hosted app experience.
   static bool IsForExperimentalHostedAppBrowser(const Browser* browser);
+
+  // Functions to set preferences that are unique to app windows.
+  static void SetAppPrefsForWebContents(content::WebContents* web_contents);
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
@@ -79,6 +84,13 @@ class HostedAppBrowserController : public SiteEngagementObserver {
                          const GURL& url,
                          double score,
                          SiteEngagementService::EngagementType type) override;
+
+  // TabStripModelObserver overrides.
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
+  void TabDetachedAt(content::WebContents* contents, int index) override;
 
  private:
   Browser* const browser_;
