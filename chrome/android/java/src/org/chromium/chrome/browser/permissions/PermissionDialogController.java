@@ -173,8 +173,7 @@ public class PermissionDialogController
                 @Override
                 public void onSheetClosed(int reason) {
                     bottomSheet.removeObserver(this);
-                    if (reason == BottomSheet.StateChangeReason.NAVIGATION
-                            || reason == BottomSheet.StateChangeReason.NEW_TAB) {
+                    if (reason == BottomSheet.StateChangeReason.NAVIGATION) {
                         // Dismiss the prompt as it would otherwise be dismissed momentarily once
                         // the navigation completes.
                         // TODO(timloh): This logs a dismiss (and we also already logged a show),

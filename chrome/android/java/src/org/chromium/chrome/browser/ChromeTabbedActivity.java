@@ -964,12 +964,6 @@ public class ChromeTabbedActivity
 
             if (isInOverviewMode()) return false;
 
-            boolean hasTabs = getCurrentTabModel().getCount() > 0
-                    || mTabModelSelectorImpl.getRestoredTabCount() > 0;
-            if (hasTabs) {
-                bottomSheet.setSheetState(
-                        BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
-            }
             return false;
         }
 

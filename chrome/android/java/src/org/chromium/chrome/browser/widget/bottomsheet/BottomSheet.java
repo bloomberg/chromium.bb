@@ -85,21 +85,15 @@ public class BottomSheet
     public static final int SHEET_STATE_SCROLLING = 4;
 
     /** The different reasons that the sheet's state can change. */
-    @IntDef({StateChangeReason.NONE, StateChangeReason.OMNIBOX_FOCUS, StateChangeReason.SWIPE,
-            StateChangeReason.NEW_TAB, StateChangeReason.EXPAND_BUTTON, StateChangeReason.STARTUP,
-            StateChangeReason.BACK_PRESS, StateChangeReason.TAP_SCRIM,
-            StateChangeReason.NAVIGATION})
+    @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
+            StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int NONE = 0;
-        int OMNIBOX_FOCUS = 1;
-        int SWIPE = 2;
-        int NEW_TAB = 3;
-        int EXPAND_BUTTON = 4;
-        int STARTUP = 5;
-        int BACK_PRESS = 6;
-        int TAP_SCRIM = 7;
-        int NAVIGATION = 8;
+        int SWIPE = 1;
+        int BACK_PRESS = 2;
+        int TAP_SCRIM = 3;
+        int NAVIGATION = 4;
     }
 
     /**
@@ -412,13 +406,6 @@ public class BottomSheet
      */
     public void setTouchEnabled(boolean enabled) {
         mIsTouchEnabled = enabled;
-    }
-
-    /**
-     * A notification that the "expand" button for the bottom sheet has been pressed.
-     */
-    public void onExpandButtonPressed() {
-        setSheetState(BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.EXPAND_BUTTON);
     }
 
     /** Immediately end all animations and null the animators. */
