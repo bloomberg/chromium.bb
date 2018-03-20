@@ -96,31 +96,35 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
       # Intentionally skips empty lines.
       if not line:
         continue
-      if line.startswith('__'):
-        match = re.match(r'^________ ([a-z]+) \'(.*)\' in \'(.*)\'$', line)
-        if not match:
-          match = re.match(r'^_____ (.*) is missing, synching instead$', line)
-          if match:
-            # Blah, it's when a dependency is deleted, we should probably not
-            # output this message.
-            results.append([line])
-          elif (
-              not re.match(
-                  r'_____ [^ ]+ : Attempting rebase onto [0-9a-f]+...',
-                  line) and
-              not re.match(r'_____ [^ ]+ at [^ ]+', line)):
-            # The two regexp above are a bit too broad, they are necessary only
-            # for git checkouts.
-            self.fail(line)
+      if not line.startswith('__'):
+        if results:
+          results[-1].append(line)
         else:
-          results.append([[match.group(1), match.group(2), match.group(3)]])
-      else:
-        if not results:
           # TODO(maruel): gclient's git stdout is inconsistent.
           # This should fail the test instead!!
           pass
-        else:
-          results[-1].append(line)
+        continue
+
+      match = re.match(r'^________ ([a-z]+) \'(.*)\' in \'(.*)\'$', line)
+      if match:
+        results.append([[match.group(1), match.group(2), match.group(3)]])
+        continue
+
+      match = re.match(r'^_____ (.*) is missing, synching instead$', line)
+      if match:
+        # Blah, it's when a dependency is deleted, we should probably not
+        # output this message.
+        results.append([line])
+        continue
+
+      # These two regexps are a bit too broad, they are necessary only for git
+      # checkouts.
+      if (re.match(r'_____ [^ ]+ at [^ ]+', line) or
+          re.match(r'_____ [^ ]+ : Attempting rebase onto [0-9a-f]+...', line)):
+        continue
+
+      # Fail for any unrecognized lines that start with '__'.
+      self.fail(line)
     return results
 
   def checkBlock(self, stdout, items):
