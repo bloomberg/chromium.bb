@@ -39,9 +39,12 @@ class AvSyncVideo : public AvSync {
 
  private:
   void UpkeepAvSync();
+  void StartAvSync();
   void StopAvSync();
+  void GatherPlaybackStatistics();
 
-  base::RepeatingTimer timer_;
+  base::RepeatingTimer upkeep_av_sync_timer_;
+  base::RepeatingTimer playback_statistics_timer_;
   bool setup_video_clock_ = false;
 
   // TODO(almasrymina): having a linear regression for the audio pts is
@@ -53,6 +56,10 @@ class AvSyncVideo : public AvSync {
   std::unique_ptr<WeightedMovingLinearRegression> video_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> error_;
   double current_video_playback_rate_ = 1.0;
+
+  int64_t last_gather_timestamp_us_ = 0;
+  int64_t last_repeated_frames_ = 0;
+  int64_t last_dropped_frames_ = 0;
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

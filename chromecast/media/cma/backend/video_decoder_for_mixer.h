@@ -52,7 +52,7 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // playback rate prior to pausing.
   virtual bool Resume() = 0;
 
-  // Get the current video PTS. This will typically be the pts of the last
+  // Returns the current video PTS. This will typically be the pts of the last
   // video frame displayed.
   virtual int64_t GetCurrentPts() const = 0;
 
@@ -72,6 +72,32 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // Implementation is encouraged to smooth out this transition, such that
   // minimal jitter in the video is shown, but that is not necessary.
   virtual bool SetCurrentPts(int64_t pts) = 0;
+
+  // Returns number of frames dropped since the last call to Start(). This is
+  // used to estimate video playback smoothness.
+  // This is different from VideoDecoder::Statistics::dropped_frames. That
+  // value is the number of *decoded* dropped frames. The value returned here
+  // must be the total number of dropped frames, whether the frames have been
+  // decoded or not.
+  virtual int64_t GetDroppedFrames() = 0;
+
+  // Returns number of frames repeated since the last call to Start(). This is
+  // used to estimate video playback smoothness. Note that repeated frames could
+  // be due to changes in the rate of playback, setting the PTS, or simply due
+  // to frame rate conversion. This number should be the sum of all of these
+  // factors.
+  //
+  // For example, if the current OutputRefreshRate is 60hz, and the current
+  // content frame rate is 24fps, it is expected to repeat 36fps.
+  virtual int64_t GetRepeatedFrames() = 0;
+
+  // Returns the output refresh rate on this platform, in mHz (millihertz). On
+  // display devices, this will be the display refresh rate. On HDMI devices,
+  // this will be the refresh rate of the HDMI connection.
+  virtual int64_t GetOutputRefreshRate() = 0;
+
+  // Returns the current content refresh rate in mHz (millihertz).
+  virtual int64_t GetCurrentContentRefreshRate() = 0;
 };
 
 }  // namespace media
