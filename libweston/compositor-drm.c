@@ -891,8 +891,6 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	fb->height = height;
 	fb->fd = b->drm.fd;
 
-	ret = -1;
-
 	handles[0] = fb->handle;
 	pitches[0] = fb->stride;
 	offsets[0] = 0;
