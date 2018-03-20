@@ -15,7 +15,7 @@ namespace content {
 scoped_refptr<GpuFeatureChecker> GpuFeatureChecker::Create(
     gpu::GpuFeatureType feature,
     FeatureAvailableCallback callback) {
-  return new GpuFeatureCheckerImpl(feature, callback);
+  return new GpuFeatureCheckerImpl(feature, std::move(callback));
 }
 
 GpuFeatureCheckerImpl::GpuFeatureCheckerImpl(gpu::GpuFeatureType feature,

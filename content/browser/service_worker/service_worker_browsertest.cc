@@ -138,8 +138,9 @@ void RunOnIOThread(
                  base::ThreadTaskRunnerHandle::Get().get(),
                  FROM_HERE,
                  run_loop.QuitClosure());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(closure, quit_on_original_thread));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(closure, std::move(quit_on_original_thread)));
   run_loop.Run();
 }
 
@@ -1609,7 +1610,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       content::ResourceContext* resource_context,
       OnHeaderProcessedCallback callback) {
     DCHECK_EQ(kNavigationPreloadHeaderName, header);
-    callback.Run(HeaderInterceptorResult::KILL);
+    std::move(callback).Run(HeaderInterceptorResult::KILL);
   }
 
   void SetupForNavigationPreloadTest(const GURL& scope,

@@ -90,7 +90,7 @@ void MouseWheelPhaseHandler::DispatchPendingWheelEndEvent() {
 
   base::Closure task = mouse_wheel_end_dispatch_timer_.user_task();
   mouse_wheel_end_dispatch_timer_.Stop();
-  task.Run();
+  std::move(task).Run();
 }
 
 void MouseWheelPhaseHandler::IgnorePendingWheelEndEvent() {

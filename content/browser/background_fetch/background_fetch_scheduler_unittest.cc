@@ -81,7 +81,7 @@ class BackgroundFetchSchedulerTest
   void PostQuitAfterRepeatingBarriers(base::Closure quit_closure,
                                       int number_of_barriers) {
     if (--number_of_barriers == 0) {
-      quit_closure.Run();
+      std::move(quit_closure).Run();
       return;
     }
 
@@ -89,7 +89,8 @@ class BackgroundFetchSchedulerTest
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &BackgroundFetchSchedulerTest::PostQuitAfterRepeatingBarriers,
-            base::Unretained(this), quit_closure, number_of_barriers));
+            base::Unretained(this), std::move(quit_closure),
+            number_of_barriers));
   }
 
   void PopNextRequest(

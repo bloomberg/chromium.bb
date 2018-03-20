@@ -45,7 +45,7 @@ class FileUpdateObserverMultiplexer : public FileUpdateObserver {
           storage::kFileSystemTypeTemporary, base::Unretained(this),
           base::RetainedRef(
               BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, std::move(task));
     }
 
     CHECK_EQ(context, context_) << "Multiprofile is not implemented";

@@ -52,14 +52,14 @@ void DidCreateRegistration(
     blink::mojom::BackgroundFetchError error,
     std::unique_ptr<BackgroundFetchRegistration> registration) {
   *out_error = error;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void DidGetError(base::Closure quit_closure,
                  blink::mojom::BackgroundFetchError* out_error,
                  blink::mojom::BackgroundFetchError error) {
   *out_error = error;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
@@ -69,7 +69,7 @@ void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
   DCHECK(out_data);
   DCHECK_EQ(SERVICE_WORKER_OK, status);
   *out_data = data;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace
@@ -217,7 +217,7 @@ class BackgroundFetchDataManagerTest
     *out_error = error;
     *out_registration = std::move(registration);
 
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   void DidGetDeveloperIds(base::Closure quit_closure,
@@ -228,7 +228,7 @@ class BackgroundFetchDataManagerTest
     *out_error = error;
     *out_ids = ids;
 
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   BackgroundFetchRegistrationStorage registration_storage_;

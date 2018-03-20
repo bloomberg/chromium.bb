@@ -99,7 +99,7 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
   BrowserContext::StoragePartitionCallback cb =
       base::Bind(&IndexedDBInternalsUI::AddContextFromStoragePartition,
                  base::Unretained(this));
-  BrowserContext::ForEachStoragePartition(browser_context, cb);
+  BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
 }
 
 void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
@@ -170,7 +170,7 @@ bool IndexedDBInternalsUI::GetOriginContext(
   StoragePartition* result_partition;
   BrowserContext::StoragePartitionCallback cb =
       base::Bind(&FindContext, path, &result_partition, context);
-  BrowserContext::ForEachStoragePartition(browser_context, cb);
+  BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
 
   if (!result_partition || !(context->get()))
     return false;

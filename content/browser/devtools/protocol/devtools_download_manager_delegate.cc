@@ -121,7 +121,7 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
       base::BindOnce(&DevToolsDownloadManagerDelegate::GenerateFilename,
                      item->GetURL(), item->GetContentDisposition(),
                      item->GetSuggestedFilename(), item->GetMimeType(),
-                     download_path, filename_determined_callback));
+                     download_path, std::move(filename_determined_callback)));
   return true;
 }
 

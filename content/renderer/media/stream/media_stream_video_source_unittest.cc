@@ -158,7 +158,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                                            MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
-    EXPECT_CALL(*sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*sink, OnVideoFrame())
+        .WillOnce(RunClosure(std::move(quit_closure)));
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
     mock_source()->DeliverVideoFrame(frame);
@@ -180,7 +181,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*sink1, OnVideoFrame());
-    EXPECT_CALL(*sink2, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*sink2, OnVideoFrame())
+        .WillOnce(RunClosure(std::move(quit_closure)));
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
     mock_source()->DeliverVideoFrame(frame);
@@ -419,7 +421,8 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   base::Closure quit_closure = run_loop.QuitClosure();
   bool muted_state = false;
   EXPECT_CALL(*mock_source(), DoSetMutedState(_))
-      .WillOnce(DoAll(SaveArg<0>(&muted_state), RunClosure(quit_closure)));
+      .WillOnce(
+          DoAll(SaveArg<0>(&muted_state), RunClosure(std::move(quit_closure))));
   run_loop.Run();
   EXPECT_EQ(muted_state, true);
 
@@ -429,7 +432,8 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   base::RunLoop run_loop2;
   base::Closure quit_closure2 = run_loop2.QuitClosure();
   EXPECT_CALL(*mock_source(), DoSetMutedState(_))
-      .WillOnce(DoAll(SaveArg<0>(&muted_state), RunClosure(quit_closure2)));
+      .WillOnce(DoAll(SaveArg<0>(&muted_state),
+                      RunClosure(std::move(quit_closure2))));
   DeliverVideoFrameAndWaitForRenderer(640, 480, &sink);
   run_loop2.Run();
 

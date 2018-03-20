@@ -614,7 +614,7 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
       });
   throttle_->set_will_start_request_callback(resume_callback);
   throttle_->set_will_redirect_request_callback(resume_callback);
-  throttle_->set_will_process_response_callback(resume_callback);
+  throttle_->set_will_process_response_callback(std::move(resume_callback));
 
   base::RunLoop run_loop;
   client_.set_on_complete_callback(base::Bind(

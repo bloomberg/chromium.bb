@@ -346,7 +346,7 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   // and just drop it if it fails again.
   if (IsTransientError(result)) {
     result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
-                             callback_binding);
+                             std::move(callback_binding));
   }
 
   if (result == net::ERR_IO_PENDING) {

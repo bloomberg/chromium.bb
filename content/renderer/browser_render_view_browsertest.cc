@@ -129,7 +129,7 @@ void ClearCache(net::URLRequestContextGetter* getter,
   // of scope.
   if (net::OK == cache->GetBackend(backend_ptr, backend_callback)) {
     // The call completed synchronously, so GetBackend didn't run the callback.
-    backend_callback.Run(net::OK);
+    std::move(backend_callback).Run(net::OK);
   }
 }
 

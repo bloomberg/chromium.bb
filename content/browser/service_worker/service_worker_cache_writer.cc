@@ -433,7 +433,7 @@ int ServiceWorkerCacheWriter::ReadInfoHelper(
   net::CompletionCallback run_callback = base::Bind(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(run_callback));
+      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
   reader->ReadInfo(
       buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
                           adaptor));
@@ -448,7 +448,7 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
   net::CompletionCallback run_callback = base::Bind(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(run_callback));
+      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
   reader->ReadData(
       buf, buf_len,
       base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
@@ -464,7 +464,7 @@ int ServiceWorkerCacheWriter::WriteInfoHelper(
   net::CompletionCallback run_callback = base::Bind(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(run_callback));
+      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
   writer->WriteInfo(
       buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
                           adaptor));
@@ -479,7 +479,7 @@ int ServiceWorkerCacheWriter::WriteDataHelper(
   net::CompletionCallback run_callback = base::Bind(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(run_callback));
+      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
   writer->WriteData(
       buf, buf_len,
       base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,

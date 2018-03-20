@@ -54,7 +54,7 @@ void ManifestFetcher::OnLoadComplete(const blink::WebURLResponse& response,
   completed_ = true;
 
   Callback callback = callback_;
-  callback.Run(response, data);
+  std::move(callback).Run(response, data);
 }
 
 }  // namespace content

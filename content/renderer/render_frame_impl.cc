@@ -1589,7 +1589,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // TODO(fsamuel): It's not clear if we should be passing in the
   // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
-      fullscreen_widget_routing_id, show_callback,
+      fullscreen_widget_routing_id, std::move(show_callback),
       GetRenderWidget()->compositor_deps(), plugin, active_url,
       GetRenderWidget()->GetWebScreenInfo(), std::move(widget_channel_request));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
@@ -6521,7 +6521,7 @@ void RenderFrameImpl::OnSetOverlayRoutingToken(
 void RenderFrameImpl::RequestOverlayRoutingToken(
     media::RoutingTokenCallback callback) {
   if (overlay_routing_token_.has_value()) {
-    callback.Run(overlay_routing_token_.value());
+    std::move(callback).Run(overlay_routing_token_.value());
     return;
   }
 
@@ -6529,7 +6529,7 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
   // arrives later.
   Send(new FrameHostMsg_RequestOverlayRoutingToken(routing_id_));
 
-  pending_routing_token_callbacks_.push_back(callback);
+  pending_routing_token_callbacks_.push_back(std::move(callback));
 }
 
 void RenderFrameImpl::OnNotifyUserActivation() {
@@ -7245,9 +7245,10 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     blink::WebSetSinkIdCallbacks* web_callbacks) {
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callbacks);
-  callback.Run(AudioDeviceFactory::GetOutputDeviceInfo(
-                   GetRoutingID(), 0, sink_id.Utf8(), security_origin)
-                   .device_status());
+  std::move(callback).Run(
+      AudioDeviceFactory::GetOutputDeviceInfo(GetRoutingID(), 0, sink_id.Utf8(),
+                                              security_origin)
+          .device_status());
 }
 
 blink::WebSpeechRecognizer* RenderFrameImpl::SpeechRecognizer() {

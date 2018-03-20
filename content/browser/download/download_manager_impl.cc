@@ -497,12 +497,13 @@ void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
     download::InProgressCache* in_progress_cache =
         delegate_->GetInProgressCache();
     if (in_progress_cache) {
-      in_progress_cache->Initialize(post_init_callback);
+      in_progress_cache->Initialize(std::move(post_init_callback));
       return;
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, post_init_callback);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          std::move(post_init_callback));
 }
 
 DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
@@ -583,9 +584,9 @@ void DownloadManagerImpl::StartDownload(
       &DownloadManagerImpl::StartDownloadWithId, weak_factory_.GetWeakPtr(),
       base::Passed(&info), base::Passed(&stream), on_started, new_download));
   if (new_download) {
-    GetNextId(got_id);
+    GetNextId(std::move(got_id));
   } else {
-    got_id.Run(download_id);
+    std::move(got_id).Run(download_id);
   }
 }
 
@@ -923,7 +924,7 @@ void DownloadManagerImpl::InterceptNavigation(
           std::move(response), cert_status,
           std::move(url_loader_client_endpoints));
 
-  delegate_->CheckDownloadAllowed(web_contents_getter, url, method,
+  delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url, method,
                                   std::move(on_download_checks_done));
 }
 
@@ -1167,7 +1168,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
   int render_process_id = -1;
   int render_frame_id = -1;
   GURL site_url, tab_url, tab_referrer_url;
-  WebContents* web_contents = web_contents_getter.Run();
+  WebContents* web_contents = std::move(web_contents_getter).Run();
   if (web_contents) {
     RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
     if (render_frame_host) {

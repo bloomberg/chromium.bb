@@ -61,7 +61,7 @@ void VideoInputDevicesEnumerated(base::Closure quit_closure,
         salt, security_origin, info.device_id);
     out->push_back(MediaDeviceInfo(device_id, info.label, std::string()));
   }
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace
@@ -294,7 +294,7 @@ class VideoCaptureTest : public testing::Test,
       opened_device_label_ = label;
       opened_session_id_ = opened_device.session_id;
     }
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   // |media_stream_manager_| needs to outlive |thread_bundle_| because it is a
