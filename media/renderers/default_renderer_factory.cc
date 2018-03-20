@@ -48,11 +48,19 @@
 
 namespace media {
 
+// TODO(dalecurtis): Remove this flag once committed to using either the
+// GpuMemoryBufferDecoderWrapper or VideoRendererImpl + DecoderStream prepare.
+// http://crbug.com/801245
+#define USE_VIDEO_RENDERER_GMB
+
 static std::unique_ptr<VideoDecoder> MaybeUseGpuMemoryBufferWrapper(
     GpuVideoAcceleratorFactories* gpu_factories,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::TaskRunner> worker_task_runner,
     std::unique_ptr<VideoDecoder> decoder) {
+#if defined(USE_VIDEO_RENDERER_GMB)
+  return decoder;
+#else
   if (!gpu_factories ||
       !gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
     return decoder;
@@ -63,6 +71,7 @@ static std::unique_ptr<VideoDecoder> MaybeUseGpuMemoryBufferWrapper(
           std::move(media_task_runner), std::move(worker_task_runner),
           gpu_factories),
       std::move(decoder));
+#endif
 }
 
 DefaultRendererFactory::DefaultRendererFactory(
@@ -187,6 +196,16 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   if (!get_gpu_factories_cb_.is_null())
     gpu_factories = get_gpu_factories_cb_.Run();
 
+  std::unique_ptr<GpuMemoryBufferVideoFramePool> gmb_pool;
+#if defined(USE_VIDEO_RENDERER_GMB)
+  if (gpu_factories &&
+      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+    gmb_pool = std::make_unique<GpuMemoryBufferVideoFramePool>(
+        std::move(media_task_runner), std::move(worker_task_runner),
+        gpu_factories);
+  }
+#endif
+
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, video_renderer_sink,
       // Unretained is safe here, because the RendererFactory is guaranteed to
@@ -198,7 +217,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       base::Bind(&DefaultRendererFactory::CreateVideoDecoders,
                  base::Unretained(this), media_task_runner, worker_task_runner,
                  request_overlay_info_cb, target_color_space, gpu_factories),
-      true, media_log_));
+      true, media_log_, std::move(gmb_pool)));
 
   return std::make_unique<RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));

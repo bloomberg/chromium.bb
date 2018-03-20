@@ -28,6 +28,7 @@
 #include "media/filters/decoder_stream.h"
 #include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -55,7 +56,8 @@ class MEDIA_EXPORT VideoRendererImpl
       VideoRendererSink* sink,
       const CreateVideoDecodersCB& create_video_decoders_cb,
       bool drop_frames,
-      MediaLog* media_log);
+      MediaLog* media_log,
+      std::unique_ptr<GpuMemoryBufferVideoFramePool> gmb_pool);
   ~VideoRendererImpl() override;
 
   // VideoRenderer implementation.
@@ -103,6 +105,15 @@ class MEDIA_EXPORT VideoRendererImpl
   // Called by the VideoFrameStream when a config change occurs. Will notify
   // RenderClient of the new config.
   void OnConfigChange(const VideoDecoderConfig& config);
+
+  // Callback for |video_frame_stream_| to deliver decoded video frames and
+  // report video decoding status. If a frame is available the planes will be
+  // copied asynchronously and FrameReady will be called once finished copying.
+  // |read_time| is the time at which this read was started.
+  void FrameReadyForCopyingToGpuMemoryBuffers(
+      base::TimeTicks read_time,
+      VideoFrameStream::Status status,
+      const scoped_refptr<VideoFrame>& frame);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. |read_time| is the time at which this read
@@ -212,6 +223,11 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
+  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
+  // Ensure this is destructed after |algorithm_| for optimal memory release
+  // when a frames are still held by the compositor.
+  std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+
   MediaLog* media_log_;
 
   // Flag indicating low-delay mode.
@@ -271,8 +287,8 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Algorithm for selecting which frame to render; manages frames and all
   // timing related information. Ensure this is destructed before
-  // |video_frame_stream_| for optimal memory release when a frames are still
-  // held by the compositor.
+  // |gpu_memory_buffer_pool_| for optimal memory release when a frames are
+  // still held by the compositor.
   std::unique_ptr<VideoRendererAlgorithm> algorithm_;
 
   // Indicates that Render() was called with |background_rendering| set to true,

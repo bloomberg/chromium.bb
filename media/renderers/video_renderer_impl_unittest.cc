@@ -36,6 +36,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/wall_clock_time_source.h"
 #include "media/renderers/video_renderer_impl.h"
+#include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +92,7 @@ class VideoRendererImplTest : public testing::Test {
         message_loop_.task_runner(), null_video_sink_.get(),
         base::Bind(&VideoRendererImplTest::CreateVideoDecodersForTest,
                    base::Unretained(this)),
-        true, &media_log_));
+        true, &media_log_, nullptr));
     renderer_->SetTickClockForTesting(&tick_clock_);
     null_video_sink_->set_tick_clock_for_testing(&tick_clock_);
     time_source_.set_tick_clock_for_testing(&tick_clock_);
@@ -1462,6 +1463,54 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
     event.RunAndWait();
   }
 
+  Destroy();
+}
+
+class VideoRendererImplAsyncAddFrameReadyTest : public VideoRendererImplTest {
+ public:
+  void InitializeWithMockGpuMemoryBufferVideoFramePool() {
+    renderer_.reset(new VideoRendererImpl(
+        message_loop_.task_runner(), null_video_sink_.get(),
+        base::BindRepeating(&VideoRendererImplAsyncAddFrameReadyTest::
+                                CreateVideoDecodersForTest,
+                            base::Unretained(this)),
+        true, &media_log_,
+        std::make_unique<MockGpuMemoryBufferVideoFramePool>(
+            &frame_ready_cbs_)));
+    VideoRendererImplTest::Initialize();
+  }
+
+ protected:
+  std::vector<base::OnceClosure> frame_ready_cbs_;
+};
+
+TEST_F(VideoRendererImplAsyncAddFrameReadyTest, InitializeAndStartPlayingFrom) {
+  InitializeWithMockGpuMemoryBufferVideoFramePool();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
+  EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
+  EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
+  StartPlayingFrom(0);
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+
+  uint32_t frame_ready_index = 0;
+  while (frame_ready_index < frame_ready_cbs_.size()) {
+    std::move(frame_ready_cbs_[frame_ready_index++]).Run();
+    base::RunLoop().RunUntilIdle();
+  }
+  Destroy();
+}
+
+TEST_F(VideoRendererImplAsyncAddFrameReadyTest, WeakFactoryDiscardsOneFrame) {
+  InitializeWithMockGpuMemoryBufferVideoFramePool();
+  QueueFrames("0 10 20 30");
+  StartPlayingFrom(0);
+  Flush();
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+  // This frame will be discarded.
+  std::move(frame_ready_cbs_.front()).Run();
   Destroy();
 }
 
