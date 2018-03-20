@@ -276,6 +276,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     cc::OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
         gfx::RectF(device_viewport_size.width(), device_viewport_size.height());
+    output_surface_plane.resource_size_in_pixels = device_viewport_size;
     output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
     output_surface_plane.use_output_surface_for_resource = true;
     output_surface_plane.overlay_handled = true;
