@@ -8,8 +8,8 @@
 var FEEDBACK_LANDING_PAGE =
     'https://support.google.com/chrome/go/feedback_confirmation';
 
-/**
- * The status of sending the feedback report as defined in feedback_private.idl.
- * @enum {string}
+/** @type {string}
+ * @const
  */
-var ReportStatus = {SUCCESS: 'success', DELAYED: 'delayed'};
+var FEEDBACK_LANDING_PAGE_TECHSTOP =
+    'https://support.google.com/pixelbook/answer/7659411';
