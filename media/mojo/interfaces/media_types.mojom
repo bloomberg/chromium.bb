@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/common/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -128,7 +128,7 @@ struct AudioDecoderConfig {
   ChannelLayout channel_layout;
   int32 samples_per_second;
   array<uint8> extra_data;
-  mojo.common.mojom.TimeDelta seek_preroll;
+  mojo_base.mojom.TimeDelta seek_preroll;
   int32 codec_delay;
   EncryptionScheme encryption_scheme;
 };
@@ -164,8 +164,8 @@ struct DecryptConfig {
 
 // This defines a mojo transport format for media::DecoderBuffer.
 struct DecoderBuffer {
-  mojo.common.mojom.TimeDelta timestamp;
-  mojo.common.mojom.TimeDelta duration;
+  mojo_base.mojom.TimeDelta timestamp;
+  mojo_base.mojom.TimeDelta duration;
 
   // Whether the buffer is an end-of-stream (EOS) buffer.
   bool is_end_of_stream;
@@ -186,8 +186,8 @@ struct DecoderBuffer {
   DecryptConfig? decrypt_config;
 
   // These fields indicate the amount of data to discard after decoding.
-  mojo.common.mojom.TimeDelta front_discard;
-  mojo.common.mojom.TimeDelta back_discard;
+  mojo_base.mojom.TimeDelta front_discard;
+  mojo_base.mojom.TimeDelta back_discard;
 };
 
 // This defines a mojo transport format for media::AudioBuffer.
@@ -211,7 +211,7 @@ struct AudioBuffer {
   bool end_of_stream;
 
   // Timestamp in microseconds of the first frame.
-  mojo.common.mojom.TimeDelta timestamp;
+  mojo_base.mojom.TimeDelta timestamp;
 
   // Channel data. Will be empty for EOS buffers.
   array<uint8> data;
@@ -232,7 +232,7 @@ struct VideoFrame {
   gfx.mojom.Size natural_size;
 
   // Timestamp in microseconds of the associated frame.
-  mojo.common.mojom.TimeDelta timestamp;
+  mojo_base.mojom.TimeDelta timestamp;
 
   // Contents of the video frame (or EOS marker).
   VideoFrameData data;

@@ -4,7 +4,7 @@
 
 #include "gpu/ipc/common/gpu_info_struct_traits.h"
 
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
 

@@ -18,7 +18,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/common/time.mojom.h"
+#include "mojo/public/mojom/base/time.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"

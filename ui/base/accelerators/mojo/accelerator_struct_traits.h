@@ -5,7 +5,7 @@
 #ifndef UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
 #define UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
 
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/mojo/accelerator.mojom.h"
 #include "ui/events/keycodes/keyboard_codes.h"

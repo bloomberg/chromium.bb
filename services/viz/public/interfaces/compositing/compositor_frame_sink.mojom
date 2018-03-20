@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
@@ -79,8 +79,8 @@ interface CompositorFrameSinkClient {
   // presentation time, |refresh| indicates the time till next refresh, |flags|
   // is a combination of |gfx::PresentationFlags|.
   DidPresentCompositorFrame(uint32 presentation_token,
-                            mojo.common.mojom.TimeTicks time,
-                            mojo.common.mojom.TimeDelta refresh,
+                            mojo_base.mojom.TimeTicks time,
+                            mojo_base.mojom.TimeDelta refresh,
                             uint32 flags);
 
   // Notification that a CompositorFrame with given presentation_token has been

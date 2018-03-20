@@ -4,9 +4,9 @@
 
 module blink.mojom;
 
-import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -67,7 +67,7 @@ interface BytesProvider {
   // modification time.
   RequestAsFile(uint64 source_offset, uint64 source_size,
                 mojo_base.mojom.File file, uint64 file_offset)
-      => (mojo.common.mojom.Time? time_file_modified);
+      => (mojo_base.mojom.Time? time_file_modified);
 };
 
 // A reference to a slice of a file on disk.
@@ -82,7 +82,7 @@ struct DataElementFile {
   uint64 length;
   // Expected modification time of the file being referenced. Can be null if the
   // modification time is unknown.
-  mojo.common.mojom.Time? expected_modification_time;
+  mojo_base.mojom.Time? expected_modification_time;
 };
 
 // A reference to a slice of a file as a filesystem URL.
@@ -97,7 +97,7 @@ struct DataElementFilesystemURL {
   uint64 length;
   // Expected modification time of the file being referenced. Can be null if the
   // modification time is unknown.
-  mojo.common.mojom.Time? expected_modification_time;
+  mojo_base.mojom.Time? expected_modification_time;
 };
 
 // A reference to a slice of another blob.

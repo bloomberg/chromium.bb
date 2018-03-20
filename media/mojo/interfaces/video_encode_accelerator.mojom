@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // This file is the Mojo version of the media::VideoEncodeAccelerator interface
@@ -70,7 +70,7 @@ interface VideoEncodeAcceleratorClient {
                           uint32 output_buffer_size);
 
   BitstreamBufferReady(int32 bitstream_buffer_id, uint32 payload_size,
-                       bool key_frame, mojo.common.mojom.TimeDelta timestamp);
+                       bool key_frame, mojo_base.mojom.TimeDelta timestamp);
 
   NotifyError(VideoEncodeAccelerator.Error error);
 };

@@ -12,7 +12,7 @@ if (!is_ios && !is_android) {
     ]
 
     public_deps = [
-      "//mojo/common:common_custom_types",
+      "//mojo/public/mojom/base",
     ]
   }
 }

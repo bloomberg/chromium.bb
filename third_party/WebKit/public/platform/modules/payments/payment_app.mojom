@@ -5,7 +5,7 @@
 module payments.mojom;
 
 import "components/payments/mojom/payment_request_data.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/WebKit/public/platform/modules/manifest/manifest.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_request.mojom";
 import "url/mojom/url.mojom";
@@ -90,9 +90,9 @@ struct PaymentHandlerResponse {
 // request event in renderer side to browser side by calling respondWith().
 interface PaymentHandlerResponseCallback {
   OnResponseForAbortPayment(bool payment_aborted,
-                            mojo.common.mojom.Time dispatch_event_time);
+                            mojo_base.mojom.Time dispatch_event_time);
   OnResponseForCanMakePayment(bool can_make_payment,
-                              mojo.common.mojom.Time dispatch_event_time);
+                              mojo_base.mojom.Time dispatch_event_time);
   OnResponseForPaymentRequest(PaymentHandlerResponse response,
-                              mojo.common.mojom.Time dispatch_event_time);
+                              mojo_base.mojom.Time dispatch_event_time);
 };

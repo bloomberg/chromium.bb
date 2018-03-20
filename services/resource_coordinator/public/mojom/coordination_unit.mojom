@@ -4,7 +4,7 @@
 
 module resource_coordinator.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/resource_coordinator/public/mojom/signals.mojom";
 
 // Any new type here needs to be mirrored between coordination_unit_types.h and
@@ -79,8 +79,8 @@ interface ProcessCoordinationUnit {
 
   // Property signals.
   SetCPUUsage(double cpu_usage);
-  SetExpectedTaskQueueingDuration(mojo.common.mojom.TimeDelta duration);
-  SetLaunchTime(mojo.common.mojom.Time launch_time);
+  SetExpectedTaskQueueingDuration(mojo_base.mojom.TimeDelta duration);
+  SetLaunchTime(mojo_base.mojom.Time launch_time);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
   SetPID(int64 pid);
 };

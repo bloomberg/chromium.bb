@@ -4,11 +4,11 @@
 
 module ash.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Used to test internal state of TimeToFirstPresentRecorder.
 interface TimeToFirstPresentRecorderTestApi {
   // Returns the time between process creation and the first pixels shown on
   // screen.
-  GetProcessCreationToFirstPresentTime() => (mojo.common.mojom.TimeDelta delta);
+  GetProcessCreationToFirstPresentTime() => (mojo_base.mojom.TimeDelta delta);
 };

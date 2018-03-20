@@ -323,8 +323,8 @@ enforce that the input data is valid. Common ones to watch out for:
 *   Nonces: use `mojo.common.mojom.UnguessableToken`, not `string`.
 *   Origins: use `url.mojom.Origin`, not `url.mojom.Url` and certainly not
     `string`.
-*   Time types: use `mojo.common.mojom.TimeDelta` /
-    `mojo.common.mojom.TimeTicks` / `mojo.common.mojom.Time`, not `int64` /
+*   Time types: use `mojo_base.mojom.TimeDelta` /
+    `mojo_base.mojom.TimeTicks` / `mojo_base.mojom.Time`, not `int64` /
     `uint64` / `double` / et cetera.
 *   URLs: use `url.mojom.Url`, not `string`.
 
@@ -332,7 +332,7 @@ enforce that the input data is valid. Common ones to watch out for:
 
 ```c++
 interface ReportingService {
-  ReportDeprecation(mojo.common.mojom.TimeTicks time,
+  ReportDeprecation(mojo_base.mojom.TimeTicks time,
                     url.mojom.Url resource,
                     uint32 line_number);
 };

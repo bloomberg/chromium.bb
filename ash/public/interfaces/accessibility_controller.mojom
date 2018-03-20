@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/accessibility/ax_enums.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -71,7 +71,7 @@ interface AccessibilityControllerClient {
 
   // Initiates play of shutdown sound and returns sound duration. This method
   // exists because the browser owns all media playback.
-  PlayShutdownSound() => (mojo.common.mojom.TimeDelta sound_duration);
+  PlayShutdownSound() => (mojo_base.mojom.TimeDelta sound_duration);
 
   // Forwards an accessibility gesture from the touch exploration controller to
   // ChromeVox.

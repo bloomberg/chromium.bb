@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -238,7 +238,7 @@ interface VRPresentationProvider {
   // The frameId maps a VSync to a frame arriving from the compositor. IDs will
   // be reused after the frame arrives from the compositor. Negative IDs imply
   // no mapping.
-  GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frame_id,
+  GetVSync() => (VRPose? pose, mojo_base.mojom.TimeDelta time, int16 frame_id,
                  VSyncStatus status);
 
   UpdateLayerBounds(int16 frame_id, gfx.mojom.RectF left_bounds,
@@ -246,7 +246,7 @@ interface VRPresentationProvider {
 
   // VRDisplayFrameTransportMethod SUBMIT_AS_MAILBOX_HOLDER
   SubmitFrame(int16 frame_id, gpu.mojom.MailboxHolder mailbox_holder,
-              mojo.common.mojom.TimeDelta time_waited);
+              mojo_base.mojom.TimeDelta time_waited);
 
   // VRDisplayFrameTransportMethod SUBMIT_AS_TEXTURE_HANDLE
   // TODO(https://crbug.com/676224): Support preprocessing of mojom files, since

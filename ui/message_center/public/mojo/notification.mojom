@@ -4,7 +4,7 @@
 
 module message_center.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "ui/message_center/public/mojo/notifier_id.mojom";
@@ -51,7 +51,7 @@ struct ButtonInfo {
 struct RichNotificationData {
   int32 priority;
   bool never_time_out;
-  mojo.common.mojom.Time timestamp;
+  mojo_base.mojom.Time timestamp;
   // |context_message| intentionally omitted. See https://crbug.com/797084
   gfx.mojom.ImageSkia? image;
   gfx.mojom.ImageSkia? small_image;

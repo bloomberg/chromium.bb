@@ -728,7 +728,7 @@ mojom("page_load_metrics_mojom") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//third_party/WebKit/public:web_feature_mojo_bindings",
   ]
 }
@@ -739,7 +739,7 @@ mojom("client_hints_mojom") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//third_party/WebKit/public:web_client_hints_types_mojo_bindings",
     "//url/mojom:url_mojom_origin",
   ]

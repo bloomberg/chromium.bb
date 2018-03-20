@@ -4,7 +4,7 @@
 
 module translate.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
 
@@ -24,7 +24,7 @@ enum TranslateError {
 };
 
 struct LanguageDetectionDetails {
-  mojo.common.mojom.Time time;
+  mojo_base.mojom.Time time;
   url.mojom.Url url;
   string content_language;
   string cld_language;

@@ -14,7 +14,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/referrer_struct_traits.h"
 #include "ipc/ipc_message_utils.h"
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {

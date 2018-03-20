@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_stream_handle.mojom";
 
@@ -18,24 +18,24 @@ struct ServiceWorkerResponse;
 interface ServiceWorkerFetchResponseCallback {
   // Responds to the request with |response|. The body is empty.
   OnResponse(ServiceWorkerResponse response,
-             mojo.common.mojom.Time dispatch_event_time);
+             mojo_base.mojom.Time dispatch_event_time);
   // Responds to the request with |response|. The body is returned as a blob.
   // TODO(kinuko): This should not be necessary once we properly support
   // transferring blob within |response|. See crbug.com/75523 for more details.
   OnResponseBlob(ServiceWorkerResponse response,
                  blink.mojom.Blob body_as_blob,
-                 mojo.common.mojom.Time dispatch_event_time);
+                 mojo_base.mojom.Time dispatch_event_time);
    // Responds to the request with |response|. The body is provided as a
    // non-Mojo Blob via |response.blob_uuid|. The callback is useful for Blob
    // lifetime management purposes and is called once the caller is done with
    // the Blob. TODO(kinuko): Remove this once MojoBlob is fully shipped.
   OnResponseLegacyBlob(ServiceWorkerResponse response,
-                       mojo.common.mojom.Time dispatch_event_time) => ();
+                       mojo_base.mojom.Time dispatch_event_time) => ();
   // Responds to the request with |response|. The body is returned as a stream.
   OnResponseStream(ServiceWorkerResponse response,
                    blink.mojom.ServiceWorkerStreamHandle body_as_stream,
-                   mojo.common.mojom.Time dispatch_event_time);
+                   mojo_base.mojom.Time dispatch_event_time);
   // Provides no response to the request. The callee should fall back to the
   // network.
-  OnFallback(mojo.common.mojom.Time dispatch_event_time);
+  OnFallback(mojo_base.mojom.Time dispatch_event_time);
 };

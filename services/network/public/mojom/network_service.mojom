@@ -4,8 +4,8 @@
 
 module network.mojom;
 
-import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
@@ -116,7 +116,7 @@ struct NetworkConditions {
 
   // Channel round-trip latency, i.e. minimum time between request sent and
   // response received.
-  mojo.common.mojom.TimeDelta latency;
+  mojo_base.mojom.TimeDelta latency;
 
   // Maximal aggregated download throughput (bytes/sec). 0 disables download throttling.
   double download_throughput;
@@ -167,13 +167,13 @@ interface NetworkContext {
   // only covers server properties and transport security state.
   //
   // The callback will be invoked once the data has been deleted.
-  ClearNetworkingHistorySince(mojo.common.mojom.Time start_time) => ();
+  ClearNetworkingHistorySince(mojo_base.mojom.Time start_time) => ();
 
   // Clears content from the HTTP cache. A specific range of time can be
   // specified with |start_time| and |end_time|. This supports unbounded deletes
   // in either direction by using null Time values for either argument.
-  ClearHttpCache(mojo.common.mojom.Time start_time,
-                 mojo.common.mojom.Time end_time,
+  ClearHttpCache(mojo_base.mojom.Time start_time,
+                 mojo_base.mojom.Time end_time,
                  ClearCacheUrlFilter? filter) => ();
 
   // Configures network conditions for the specified throttling profile.
@@ -237,7 +237,7 @@ interface NetworkContext {
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header.
   AddHSTSForTesting(string host,
-                    mojo.common.mojom.Time expiry,
+                    mojo_base.mojom.Time expiry,
                     bool include_subdomains) => ();
 };
 

@@ -80,7 +80,6 @@ mojom("mojom") {
     ":data_pipe_interfaces",
     ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
     "//net/interfaces",
     "//services/proxy_resolver/public/mojom",

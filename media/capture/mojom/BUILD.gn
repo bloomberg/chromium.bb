@@ -13,6 +13,7 @@ mojom("video_capture") {
   public_deps = [
     "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]
 }

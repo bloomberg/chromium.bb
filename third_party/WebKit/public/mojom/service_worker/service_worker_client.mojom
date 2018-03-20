@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/request_context_frame_type.mojom";
 import "third_party/WebKit/public/mojom/page/page_visibility_state.mojom";
 import "url/mojom/url.mojom";
@@ -58,8 +58,8 @@ struct ServiceWorkerClientInfo {
 
   // The time this window was last focused. Set to base::TimeTicks() if it's
   // a non-window client.
-  mojo.common.mojom.TimeTicks last_focus_time;
+  mojo_base.mojom.TimeTicks last_focus_time;
 
   // The time this client was created.
-  mojo.common.mojom.TimeTicks creation_time;
+  mojo_base.mojom.TimeTicks creation_time;
 };

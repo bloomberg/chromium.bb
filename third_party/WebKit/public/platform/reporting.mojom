@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 interface ReportingServiceProxy {
@@ -22,7 +22,7 @@ interface ReportingServiceProxy {
   // (See //third_party/WebKit/Source/core/frame/DeprecationReport.h.)
   QueueDeprecationReport(url.mojom.Url url,
                          string id,
-                         mojo.common.mojom.Time anticipatedRemoval,
+                         mojo_base.mojom.Time anticipatedRemoval,
                          string message,
                          string source_file,
                          int32 line_number,

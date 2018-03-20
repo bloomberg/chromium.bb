@@ -4,15 +4,15 @@
 
 module device_sync.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Used to generate rotating BLE advertisement data, which is necessary to
 // establish a BLE communication channel between two devices. To
 // create the BLE channel, both devices must possess the other's BeaconSeeds.
 struct BeaconSeed {
   string data;
-  mojo.common.mojom.TimeTicks start_time;
-  mojo.common.mojom.TimeTicks end_time;
+  mojo_base.mojom.TimeTicks start_time;
+  mojo_base.mojom.TimeTicks end_time;
 };
 
 // Metadata describing a remote device with which the current device can

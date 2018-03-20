@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 const int64 kAppCacheNoCacheId = 0;
@@ -22,9 +22,9 @@ enum AppCacheStatus {
 
 struct AppCacheInfo {
   url.mojom.Url manifest_url;
-  mojo.common.mojom.Time creation_time;
-  mojo.common.mojom.Time last_update_time;
-  mojo.common.mojom.Time last_access_time;
+  mojo_base.mojom.Time creation_time;
+  mojo_base.mojom.Time last_update_time;
+  mojo_base.mojom.Time last_access_time;
   int64 cache_id;
   int64 group_id;
   AppCacheStatus status;

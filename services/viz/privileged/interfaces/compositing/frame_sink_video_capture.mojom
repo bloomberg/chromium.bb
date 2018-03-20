@@ -6,7 +6,7 @@ module viz.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -84,7 +84,7 @@ interface FrameSinkVideoCapturer {
   // Default, if never called: a very conservative 1/5 second (for 5 FPS
   // max). Usually 30-60 FPS is desired for frame sinks that may contain video
   // content.
-  SetMinCapturePeriod(mojo.common.mojom.TimeDelta min_period);
+  SetMinCapturePeriod(mojo_base.mojom.TimeDelta min_period);
 
   // Specifies the minimum amount of time that must elapse between changing the
   // size of video frames. This can be set to zero to disable resize throttling,
@@ -93,7 +93,7 @@ interface FrameSinkVideoCapturer {
   // consider disabling auto-throttling in such cases.
   //
   // Default, if never called: 3 seconds.
-  SetMinSizeChangePeriod(mojo.common.mojom.TimeDelta min_period);
+  SetMinSizeChangePeriod(mojo_base.mojom.TimeDelta min_period);
 
   // Specifies the range (if any) of acceptable capture resolutions and whether
   // a fixed aspect ratio is required. When |min_size| is equal to |max_size|,

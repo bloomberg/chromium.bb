@@ -6,7 +6,7 @@
 module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/common/version.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -73,7 +73,7 @@ struct VideoEncodeAcceleratorSupportedProfile {
 
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
 struct GpuInfo {
-  mojo.common.mojom.TimeDelta initialization_time;
+  mojo_base.mojom.TimeDelta initialization_time;
   bool optimus;
   bool amd_switchable;
   GpuDevice gpu;

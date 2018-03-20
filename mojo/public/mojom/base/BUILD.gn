@@ -14,6 +14,7 @@ mojom_component("base") {
     "file_path.mojom",
     "ref_counted_memory.mojom",
     "string16.mojom",
+    "time.mojom",
   ]
 
   output_prefix = "mojo_base_mojom"

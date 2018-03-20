@@ -4,7 +4,7 @@
 
 module webauth.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 // This file describes the communication between the WebAuthentication renderer
@@ -118,7 +118,7 @@ struct PublicKeyCredentialRequestOptions {
 
   // Time to wait for an authenticator to complete an operation.
   // Adjusted to fall within a client-defined range.
-  mojo.common.mojom.TimeDelta adjusted_timeout;
+  mojo_base.mojom.TimeDelta adjusted_timeout;
 
   // An ASCII serialization of the origin claimed by the relying party.
   string relying_party_id;
@@ -181,7 +181,7 @@ struct PublicKeyCredentialCreationOptions {
 
   // Time to wait for an authenticator to complete an operation.
   // Adjusted to fall within a client-defined range.
-  mojo.common.mojom.TimeDelta adjusted_timeout;
+  mojo_base.mojom.TimeDelta adjusted_timeout;
 
   // A list of credentials the relying party knows about. If an
   // authenticator has one of these credentials, it should not

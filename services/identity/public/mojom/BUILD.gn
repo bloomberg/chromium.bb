@@ -16,7 +16,7 @@ mojom("mojom") {
 
   public_deps = [
     ":constants",
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]
 }

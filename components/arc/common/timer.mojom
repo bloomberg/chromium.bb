@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 [Extensible]
 enum ArcTimerResult {
@@ -37,7 +37,7 @@ interface Timer {
   // performed as an 8-byte write to the associated expiration fd. Returns
   // |ArcTimerResult::SUCCESS| if the timer can be started and
   // |ArcTimerResult::FAILURE| otherwise.
-  Start@0(mojo.common.mojom.TimeTicks absolute_expiration_time)
+  Start@0(mojo_base.mojom.TimeTicks absolute_expiration_time)
     => (ArcTimerResult result);
 };
 

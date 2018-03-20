@@ -7,7 +7,7 @@ module content.mojom;
 import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
@@ -226,8 +226,8 @@ interface Renderer {
   // unavailable, it will be set to net::nqe::internal::INVALID_RTT_THROUGHPUT.
   OnNetworkQualityChanged(
       network.mojom.EffectiveConnectionType effective_connection_type,
-      mojo.common.mojom.TimeDelta http_rtt,
-      mojo.common.mojom.TimeDelta transport_rtt,
+      mojo_base.mojom.TimeDelta http_rtt,
+      mojo_base.mojom.TimeDelta transport_rtt,
       double bandwidth_kbps);
 
   // Tells the renderer to suspend/resume the webkit timers. Only for use on

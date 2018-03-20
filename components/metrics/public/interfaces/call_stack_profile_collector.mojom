@@ -4,8 +4,8 @@
 
 module metrics.mojom;
 
-import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // These structs mirror the corresponding types in base::StackSamplingProfiler.
 
@@ -28,8 +28,8 @@ struct CallStackSample {
 struct CallStackProfile {
   array<CallStackModule> modules;
   array<CallStackSample> samples;
-  mojo.common.mojom.TimeDelta profile_duration;
-  mojo.common.mojom.TimeDelta sampling_period;
+  mojo_base.mojom.TimeDelta profile_duration;
+  mojo_base.mojom.TimeDelta sampling_period;
 };
 
 enum Process {
@@ -80,6 +80,6 @@ struct CallStackProfileParams {
 
 interface CallStackProfileCollector {
   Collect(CallStackProfileParams params,
-          mojo.common.mojom.TimeTicks start_timestamp,
+          mojo_base.mojom.TimeTicks start_timestamp,
           array<CallStackProfile> profiles);
 };

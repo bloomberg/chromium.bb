@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
@@ -30,7 +30,7 @@ struct SyncCompositorCommonRendererParams;
 // because input must be delivered in order with the compositing events.
 interface SynchronousCompositor {
   // Computes the scroll at given time.
-  ComputeScroll(mojo.common.mojom.TimeTicks time);
+  ComputeScroll(mojo_base.mojom.TimeTicks time);
 
   // Hardware draw asynchronously, ReturnFrame will return the result on
   // the associated SynchronousCompositorControlHost.

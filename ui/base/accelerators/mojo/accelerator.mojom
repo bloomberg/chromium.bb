@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/events/mojo/keyboard_codes.mojom";
 
@@ -21,5 +21,5 @@ struct Accelerator {
   int32 key_code;
   AcceleratorKeyState key_state;
   int32 modifiers;
-  mojo.common.mojom.TimeTicks time_stamp;
+  mojo_base.mojom.TimeTicks time_stamp;
 };

@@ -76,30 +76,6 @@ class TestUnguessableTokenImpl : public TestUnguessableToken {
   mojo::Binding<TestUnguessableToken> binding_;
 };
 
-class TestTimeImpl : public TestTime {
- public:
-  explicit TestTimeImpl(TestTimeRequest request)
-      : binding_(this, std::move(request)) {}
-
-  // TestTime implementation:
-  void BounceTime(base::Time in, BounceTimeCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceTimeDelta(base::TimeDelta in,
-                       BounceTimeDeltaCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  void BounceTimeTicks(base::TimeTicks in,
-                       BounceTimeTicksCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
- private:
-  mojo::Binding<TestTime> binding_;
-};
-
 class TestValueImpl : public TestValue {
  public:
   explicit TestValueImpl(TestValueRequest request)
@@ -173,45 +149,6 @@ TEST_F(CommonCustomTypesTest, ProcessId) {
   EXPECT_TRUE(mojom::ProcessId::Deserialize(mojom::ProcessId::Serialize(&pid),
                                             &out_pid));
   EXPECT_EQ(pid, out_pid);
-}
-
-TEST_F(CommonCustomTypesTest, Time) {
-  base::RunLoop run_loop;
-
-  TestTimePtr ptr;
-  TestTimeImpl impl(MakeRequest(&ptr));
-
-  base::Time t = base::Time::Now();
-
-  ptr->BounceTime(t, ExpectResponse(&t, run_loop.QuitClosure()));
-
-  run_loop.Run();
-}
-
-TEST_F(CommonCustomTypesTest, TimeDelta) {
-  base::RunLoop run_loop;
-
-  TestTimePtr ptr;
-  TestTimeImpl impl(MakeRequest(&ptr));
-
-  base::TimeDelta t = base::TimeDelta::FromDays(123);
-
-  ptr->BounceTimeDelta(t, ExpectResponse(&t, run_loop.QuitClosure()));
-
-  run_loop.Run();
-}
-
-TEST_F(CommonCustomTypesTest, TimeTicks) {
-  base::RunLoop run_loop;
-
-  TestTimePtr ptr;
-  TestTimeImpl impl(MakeRequest(&ptr));
-
-  base::TimeTicks t = base::TimeTicks::Now();
-
-  ptr->BounceTimeTicks(t, ExpectResponse(&t, run_loop.QuitClosure()));
-
-  run_loop.Run();
 }
 
 TEST_F(CommonCustomTypesTest, Value) {
