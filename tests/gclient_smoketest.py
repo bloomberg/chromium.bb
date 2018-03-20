@@ -123,6 +123,11 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
           re.match(r'_____ [^ ]+ : Attempting rebase onto [0-9a-f]+...', line)):
         continue
 
+      # TODO(thestig): Remove after debugging https://crbug.com/823586
+      match = re.match(r'^________ because \'.*\' is not in: \[.*\]$', line)
+      if match:
+        continue
+
       # Fail for any unrecognized lines that start with '__'.
       self.fail(line)
     return results

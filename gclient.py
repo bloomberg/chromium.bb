@@ -1736,6 +1736,10 @@ it or fix the checkout.
             # Delete the entry
             print('\n________ deleting \'%s\' in \'%s\'' % (
                 entry_fixed, self.root_dir))
+
+            # TOOO(thestig): Remove after debugging https://crbug.com/823586
+            print('\n________ because \'%s\' is not in: %s' % (
+                scm_root, full_entries))
             gclient_utils.rmtree(e_dir)
       # record the current list of entries for next time
       self._SaveEntries()
