@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 
 class OutdatedUpgradeBubbleTest : public DialogBrowserTest {
  public:
@@ -28,14 +29,28 @@ class OutdatedUpgradeBubbleTest : public DialogBrowserTest {
   }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
   DISALLOW_COPY_AND_ASSIGN(OutdatedUpgradeBubbleTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_Outdated) {
+#if defined(OS_MACOSX)
+// This bubble doesn't show on Mac right now: https://crbug.com/764111
+#define MAYBE_InvokeUi_Outdated DISABLED_InvokeUi_Outdated
+#else
+#define MAYBE_InvokeUi_Outdated InvokeUi_Outdated
+#endif
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, MAYBE_InvokeUi_Outdated) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_NoAutoUpdate) {
+#if defined(OS_MACOSX)
+// This bubble doesn't show on Mac right now: https://crbug.com/764111
+#define MAYBE_InvokeUi_NoAutoUpdate DISABLED_InvokeUi_NoAutoUpdate
+#else
+#define MAYBE_InvokeUi_NoAutoUpdate InvokeUi_NoAutoUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, MAYBE_InvokeUi_NoAutoUpdate) {
   ShowAndVerifyUi();
 }
 
