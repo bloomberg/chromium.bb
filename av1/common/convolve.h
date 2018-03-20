@@ -152,21 +152,6 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    int scaled, ConvolveParams *conv_params,
                                    const struct scale_factors *sf, int bd);
 
-void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
-                  int dst_stride, int w, int h, InterpFilters interp_filters,
-                  const int subpel_x, int xstep, const int subpel_y, int ystep,
-                  ConvolveParams *conv_params);
-
-void av1_convolve_c(const uint8_t *src, int src_stride, uint8_t *dst,
-                    int dst_stride, int w, int h, InterpFilters interp_filters,
-                    const int subpel_x, int xstep, const int subpel_y,
-                    int ystep, ConvolveParams *conv_params);
-
-void av1_highbd_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
-                         int dst_stride, int w, int h,
-                         InterpFilters interp_filters, const int subpel_x,
-                         int xstep, const int subpel_y, int ystep, int avg,
-                         int bd);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
