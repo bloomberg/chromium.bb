@@ -2049,7 +2049,7 @@ RECON_INTRA:
        blk_col + tx_size_wide_unit[tx_size] < mi_size_wide[plane_bsize])) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.
-    if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
+    if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
