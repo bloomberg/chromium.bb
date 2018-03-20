@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -31,6 +30,7 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -408,16 +408,37 @@ const int kRelativeTimeMaxHours = 4;
           l10n_util::GetNSString(IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS);
       break;
     case SessionsSyncUserState::USER_SIGNED_OUT:
-      dummyCell = [[TableViewTextItem alloc]
-          initWithType:ItemTypeOtherDevicesSigninPromo];
-      dummyCell.text = l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
-      break;
+      [self addSigninPromoViewItem];
+      return;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
       dummyCell = [[TableViewTextItem alloc]
           initWithType:ItemTypeOtherDevicesSyncInProgress];
       dummyCell.text = @"Sync in progress";
   }
   [self.tableViewModel addItem:dummyCell
+       toSectionWithIdentifier:SectionIdentifierOtherDevices];
+}
+
+- (void)addSigninPromoViewItem {
+  // Init|_signinPromoViewMediator| if nil.
+  if (!self.signinPromoViewMediator) {
+    self.signinPromoViewMediator = [[SigninPromoViewMediator alloc]
+        initWithBrowserState:self.browserState
+                 accessPoint:signin_metrics::AccessPoint::
+                                 ACCESS_POINT_RECENT_TABS
+                   presenter:self];
+    self.signinPromoViewMediator.consumer = self;
+  }
+
+  // Configure and add a TableViewSigninPromoItem to the model.
+  TableViewSigninPromoItem* signinPromoItem = [[TableViewSigninPromoItem alloc]
+      initWithType:ItemTypeOtherDevicesSigninPromo];
+  signinPromoItem.text =
+      l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
+  signinPromoItem.delegate = self.signinPromoViewMediator;
+  signinPromoItem.configurator =
+      [self.signinPromoViewMediator createConfigurator];
+  [self.tableViewModel addItem:signinPromoItem
        toSectionWithIdentifier:SectionIdentifierOtherDevices];
 }
 
@@ -566,6 +587,20 @@ const int kRelativeTimeMaxHours = 4;
     case ItemTypeOtherDevicesSyncInProgress:
       break;
   }
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_EQ(tableView, self.tableView);
+  NSInteger itemTypeSelected =
+      [self.tableViewModel itemTypeForIndexPath:indexPath];
+  // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
+  if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
+    [self.signinPromoViewMediator signinPromoViewVisible];
+  }
+  return [super tableView:tableView cellForRowAtIndexPath:indexPath];
 }
 
 #pragma mark - Recently closed tab helpers
