@@ -39,10 +39,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
   // doesn't need to explicitly sanitize the url, any sensitive data (like
   // embedded usernames and passwords), and local data (i.e. reference fragment)
   // will be sanitized by net::ProxyService::ResolveProxyHelper() before the url
-  // is disclosed to the proxy.
-  std::unique_ptr<ProxyResolvingClientSocket> CreateSocket(
-      const net::SSLConfig& ssl_config,
-      const GURL& url);
+  // is disclosed to the proxy. If |use_tls|, tls connect will be used in
+  // addition to tcp connect.
+  std::unique_ptr<ProxyResolvingClientSocket>
+  CreateSocket(const net::SSLConfig& ssl_config, const GURL& url, bool use_tls);
 
  private:
   std::unique_ptr<net::HttpNetworkSession> network_session_;

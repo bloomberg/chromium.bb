@@ -1212,6 +1212,7 @@ int MockSSLClientSocket::Write(
 
 int MockSSLClientSocket::Connect(const CompletionCallback& callback) {
   DCHECK(transport_->socket()->IsConnected());
+  data_->is_connect_data_consumed = true;
   if (data_->connect.result == OK)
     connected_ = true;
   if (data_->connect.mode == ASYNC) {

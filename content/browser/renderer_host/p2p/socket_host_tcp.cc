@@ -126,7 +126,8 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
   socket_ = proxy_resolving_socket_factory_->CreateSocket(
-      ssl_config, GURL("https://" + dest_host_port_pair.ToString()));
+      ssl_config, GURL("https://" + dest_host_port_pair.ToString()),
+      false /*use_tls*/);
 
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::OnConnected,

@@ -67,6 +67,7 @@ component("gcm") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
+    "//services/network:network_service",
     "//third_party/leveldatabase",
     "//url",
   ]
