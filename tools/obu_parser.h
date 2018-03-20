@@ -16,20 +16,6 @@
 
 namespace aom_tools {
 
-struct ObuExtensionHeader {
-  int temporal_id;
-  int spatial_id;
-  int quality_id;
-  bool reserved_flag;
-};
-
-struct ObuHeader {
-  int type;
-  int reserved;
-  bool has_extension;
-  ObuExtensionHeader ext_header;
-};
-
 // Print information obtained from OBU(s) in data until data is exhausted or an
 // error occurs. Returns true when all data is consumed successfully, and
 // optionally reports OBU storage overhead via obu_overhead_bytes when the

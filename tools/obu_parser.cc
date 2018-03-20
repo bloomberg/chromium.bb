@@ -20,12 +20,8 @@
 #include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
 #include "aom_ports/mem_ops.h"
+#include "av1/decoder/obu.h"
 #include "tools/obu_parser.h"
-
-namespace {
-const aom_tools::ObuExtensionHeader kEmptyObuExt = { 0, 0, 0, false };
-const aom_tools::ObuHeader kEmptyObu = { 0, 0, false, kEmptyObuExt };
-}  // namespace
 
 namespace aom_tools {
 
@@ -44,17 +40,10 @@ const uint32_t kObuForbiddenBitMask = 0x1;
 const uint32_t kObuForbiddenBitShift = 7;
 const uint32_t kObuTypeBitsMask = 0xF;
 const uint32_t kObuTypeBitsShift = 3;
-#if CONFIG_OBU_SIZE_AFTER_HEADER
-const uint32_t kObuReservedBitsMask = 0x1;
-const uint32_t kObuReservedBitsShift = 0;
 const uint32_t kObuExtensionFlagBitMask = 0x1;
 const uint32_t kObuExtensionFlagBitShift = 2;
-#else
-const uint32_t kObuReservedBitsMask = 0x3;
-const uint32_t kObuReservedBitsShift = 1;
-const uint32_t kObuExtensionFlagBitMask = 0x1;
-const uint32_t kObuExtensionFlagBitShift = 0;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
+const uint32_t kObuHasPayloadLengthFlagBitMask = 0x1;
+const uint32_t kObuHasPayloadLengthFlagBitShift = 1;
 
 // When extension bit is set:
 // 8 bits: extension header
@@ -70,9 +59,6 @@ const uint32_t kObuExtTemporalIdBitsMask = 0x7;
 const uint32_t kObuExtTemporalIdBitsShift = 5;
 const uint32_t kObuExtSpatialIdBitsMask = 0x3;
 const uint32_t kObuExtSpatialIdBitsShift = 3;
-const uint32_t kObuExtQualityIdBitsMask = 0x3;
-const uint32_t kObuExtQualityIdBitsShift = 1;
-const uint32_t kObuExtReservedFlagBit = 0x1;
 
 bool ValidObuType(int obu_type) {
   switch (obu_type) {
@@ -100,38 +86,27 @@ bool ParseObuHeader(uint8_t obu_header_byte, ObuHeader *obu_header) {
     return false;
   }
 
-  obu_header->type = (obu_header_byte >> kObuTypeBitsShift) & kObuTypeBitsMask;
+  obu_header->type = static_cast<OBU_TYPE>(
+      (obu_header_byte >> kObuTypeBitsShift) & kObuTypeBitsMask);
   if (!ValidObuType(obu_header->type)) {
     fprintf(stderr, "Invalid OBU type: %d.\n", obu_header->type);
     return false;
   }
 
-  obu_header->reserved =
-      (obu_header_byte >> kObuReservedBitsShift) & kObuReservedBitsMask;
-  if (obu_header->reserved != 0) {
-    fprintf(stderr, "Invalid OBU: reserved bit(s) set.\n");
-    return false;
-  }
-
   obu_header->has_extension =
       (obu_header_byte >> kObuExtensionFlagBitShift) & kObuExtensionFlagBitMask;
+  obu_header->has_length_field =
+      (obu_header_byte >> kObuHasPayloadLengthFlagBitShift) &
+      kObuHasPayloadLengthFlagBitMask;
   return true;
 }
 
-bool ParseObuExtensionHeader(uint8_t ext_header_byte,
-                             ObuExtensionHeader *ext_header) {
-  ext_header->temporal_id = (ext_header_byte >> kObuExtTemporalIdBitsShift) &
-                            kObuExtTemporalIdBitsMask;
-  ext_header->spatial_id =
+bool ParseObuExtensionHeader(uint8_t ext_header_byte, ObuHeader *obu_header) {
+  obu_header->temporal_layer_id =
+      (ext_header_byte >> kObuExtTemporalIdBitsShift) &
+      kObuExtTemporalIdBitsMask;
+  obu_header->enhancement_layer_id =
       (ext_header_byte >> kObuExtSpatialIdBitsShift) & kObuExtSpatialIdBitsMask;
-  ext_header->quality_id =
-      (ext_header_byte >> kObuExtQualityIdBitsShift) & kObuExtQualityIdBitsMask;
-  ext_header->reserved_flag = ext_header_byte & kObuExtReservedFlagBit;
-
-  if (ext_header->reserved_flag) {
-    fprintf(stderr, "Invalid OBU Extension: reserved flag set.\n");
-    return false;
-  }
 
   return true;
 }
@@ -145,10 +120,8 @@ void PrintObuHeader(const ObuHeader *header) {
   if (header->has_extension) {
     printf(
         "      temporal_id: %d\n"
-        "      spatial_id:  %d\n"
-        "      quality_id:  %d\n",
-        header->ext_header.temporal_id, header->ext_header.spatial_id,
-        header->ext_header.quality_id);
+        "      spatial_id:  %d\n",
+        header->temporal_layer_id, header->temporal_layer_id);
   }
 }
 
@@ -170,16 +143,9 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
       return false;
     }
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     size_t length_field_size = 0;
     int current_obu_length = 0;
     int obu_header_size = 0;
-#else
-    uint64_t obu_size = 0;
-    size_t length_field_size;
-    aom_uleb_decode(data + consumed, remaining, &obu_size, &length_field_size);
-    const int current_obu_length = static_cast<int>(obu_size);
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
     obu_overhead += (int)length_field_size;
 
@@ -192,7 +158,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     }
     consumed += (int)length_field_size;
 
-    obu_header = kEmptyObu;
+    memset(&obu_header, 0, sizeof(obu_header));
     const uint8_t obu_header_byte = *(data + consumed);
     if (!ParseObuHeader(obu_header_byte, &obu_header)) {
       fprintf(stderr, "OBU parsing failed at offset %d.\n", consumed);
@@ -200,41 +166,35 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     }
 
     ++obu_overhead;
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     ++obu_header_size;
-#endif
 
     if (obu_header.has_extension) {
       const uint8_t obu_ext_header_byte =
           *(data + consumed + kObuHeaderLengthSizeBytes);
-      if (!ParseObuExtensionHeader(obu_ext_header_byte,
-                                   &obu_header.ext_header)) {
+      if (!ParseObuExtensionHeader(obu_ext_header_byte, &obu_header)) {
         fprintf(stderr, "OBU extension parsing failed at offset %d.\n",
                 consumed);
         return false;
       }
 
       ++obu_overhead;
-#if CONFIG_OBU_SIZE_AFTER_HEADER
       ++obu_header_size;
-#endif
     }
 
     PrintObuHeader(&obu_header);
 
-#if CONFIG_OBU_SIZE_AFTER_HEADER
     uint64_t obu_size = 0;
     aom_uleb_decode(data + consumed + obu_header_size, remaining, &obu_size,
                     &length_field_size);
     current_obu_length = static_cast<int>(obu_size);
-    consumed += obu_header_size + length_field_size;
-#endif
-
-    // TODO(tomfinegan): Parse OBU payload. For now just consume it.
-    consumed += current_obu_length;
+    consumed += obu_header_size + length_field_size + current_obu_length;
+    printf("      length:      %d\n",
+           static_cast<int>(obu_header_size + length_field_size +
+                            current_obu_length));
   }
 
   if (obu_overhead_bytes != nullptr) *obu_overhead_bytes = obu_overhead;
+  printf("  TU size: %d\n", consumed);
 
   return true;
 }

@@ -20,6 +20,7 @@
 #include "av1/common/common.h"
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
+#include "av1/decoder/obu.h"
 
 #if CONFIG_SCALABILITY
 // Picture prediction structures (0-12 are predefined) in scalability metadata.
@@ -40,14 +41,6 @@ typedef enum {
   SCALABILITY_SS = 13
 } SCALABILITY_STRUCTURES;
 #endif
-
-typedef struct {
-  size_t size;
-  OBU_TYPE type;
-  int has_extension;
-  int temporal_layer_id;
-  int enhancement_layer_id;
-} ObuHeader;
 
 int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
   if (!obu_type) return -1;
@@ -106,14 +99,16 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
   if (!valid_obu_type(header->type)) return AOM_CODEC_CORRUPT_FRAME;
 
   header->has_extension = aom_rb_read_bit(rb);
-  if (!aom_rb_read_bit(rb)) {  // obu_has_payload_length_field
+  header->has_length_field = aom_rb_read_bit(rb);
+  if (!header->has_length_field) {
     // libaom does not support streams with this bit set to 0.
     return AOM_CODEC_UNSUP_BITSTREAM;
   }
 
   aom_rb_read_bit(rb);  // reserved
 
-  if (header->has_extension) {
+  const ptrdiff_t bit_buffer_byte_length = rb->bit_buffer_end - rb->bit_buffer;
+  if (header->has_extension && bit_buffer_byte_length > 1) {
     header->size += 1;
     header->temporal_layer_id = aom_rb_read_literal(rb, 3);
     header->enhancement_layer_id = aom_rb_read_literal(rb, 2);
@@ -121,6 +116,19 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
   }
 
   return AOM_CODEC_OK;
+}
+
+aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
+                                    size_t *consumed, ObuHeader *header) {
+  if (buffer_length < 1 || !consumed || !header) return AOM_CODEC_INVALID_PARAM;
+
+  // TODO(tomfinegan): Set the error handler here and throughout this file, and
+  // confirm parsing work done via aom_read_bit_buffer is successful.
+  struct aom_read_bit_buffer rb = { buffer, buffer + buffer_length, 0, NULL,
+                                    NULL };
+  aom_codec_err_t parse_result = read_obu_header(&rb, header);
+  if (parse_result == AOM_CODEC_OK) *consumed = header->size;
+  return parse_result;
 }
 
 #if CONFIG_TRAILING_BITS
