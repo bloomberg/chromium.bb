@@ -16,11 +16,5 @@
     "application/pdf"
   ],
   "content_security_policy": "script-src 'self' blob: filesystem: chrome://resources; object-src * blob: externalfile: file: filesystem: data:; plugin-types application/x-google-chrome-pdf",
-  "mime_types_handler": "index.html",
-  "web_accessible_resources": [
-    "*.js",
-    "*.html",
-    "*.css",
-    "*.png"
-  ]
+  "mime_types_handler": "index.html"
 }

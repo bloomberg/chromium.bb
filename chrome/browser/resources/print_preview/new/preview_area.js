@@ -445,7 +445,7 @@ Polymer({
     assert(!this.plugin_);
     const srcUrl = this.getPreviewUrl_(previewUid, index);
     this.plugin_ = /** @type {print_preview_new.PDFPlugin} */ (
-        PDFCreateOutOfProcessPlugin(srcUrl));
+        PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
     this.plugin_.classList.add('preview-area-plugin');
     this.plugin_.setAttribute('aria-live', 'polite');
     this.plugin_.setAttribute('aria-atomic', 'true');
