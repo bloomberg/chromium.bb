@@ -4,9 +4,43 @@
 
 #include "components/ukm/observers/sync_disable_observer.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/sync/engine/connection_status.h"
 
 namespace ukm {
+
+const base::Feature kUkmCheckAuthErrorFeature{"UkmCheckAuthError",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+namespace {
+
+enum DisableInfo {
+  DISABLED_BY_NONE,
+  DISABLED_BY_HISTORY,
+  DISABLED_BY_INITIALIZED,
+  DISABLED_BY_HISTORY_INITIALIZED,
+  DISABLED_BY_CONNECTED,
+  DISABLED_BY_HISTORY_CONNECTED,
+  DISABLED_BY_INITIALIZED_CONNECTED,
+  DISABLED_BY_HISTORY_INITIALIZED_CONNECTED,
+  DISABLED_BY_PASSPHRASE,
+  DISABLED_BY_HISTORY_PASSPHRASE,
+  DISABLED_BY_INITIALIZED_PASSPHRASE,
+  DISABLED_BY_HISTORY_INITIALIZED_PASSPHRASE,
+  DISABLED_BY_CONNECTED_PASSPHRASE,
+  DISABLED_BY_HISTORY_CONNECTED_PASSPHRASE,
+  DISABLED_BY_INITIALIZED_CONNECTED_PASSPHRASE,
+  DISABLED_BY_HISTORY_INITIALIZED_CONNECTED_PASSPHRASE,
+  MAX_DISABLE_INFO
+};
+
+void RecordDisableInfo(DisableInfo info) {
+  UMA_HISTOGRAM_ENUMERATION("UKM.SyncDisable.Info", info, MAX_DISABLE_INFO);
+}
+
+}  // namespace
 
 SyncDisableObserver::SyncDisableObserver()
     : sync_observer_(this),
@@ -18,12 +52,16 @@ SyncDisableObserver::~SyncDisableObserver() {}
 // static
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service) {
+  syncer::SyncService::SyncTokenStatus status =
+      sync_service->GetSyncTokenStatus();
   SyncState state;
   state.history_enabled = sync_service->GetPreferredDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES);
   state.extensions_enabled =
       sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS);
   state.initialized = sync_service->IsEngineInitialized();
+  state.connected = !base::FeatureList::IsEnabled(kUkmCheckAuthErrorFeature) ||
+                    status.connection_status == syncer::CONNECTION_OK;
   state.passphrase_protected =
       state.initialized && sync_service->IsUsingSecondaryPassphrase();
   return state;
@@ -55,10 +93,22 @@ bool SyncDisableObserver::CheckHistorySyncOnAllProfiles() {
     return false;
   for (const auto& kv : previous_states_) {
     const SyncDisableObserver::SyncState& state = kv.second;
-    if (!state.history_enabled || !state.initialized ||
-        state.passphrase_protected)
+    if (!state.history_enabled || !state.initialized || !state.connected ||
+        state.passphrase_protected) {
+      int disabled_by = 0;
+      if (!state.history_enabled)
+        disabled_by |= 1 << 0;
+      if (!state.initialized)
+        disabled_by |= 1 << 1;
+      if (!state.connected)
+        disabled_by |= 1 << 2;
+      if (state.passphrase_protected)
+        disabled_by |= 1 << 3;
+      RecordDisableInfo(DisableInfo(disabled_by));
       return false;
+    }
   }
+  RecordDisableInfo(DISABLED_BY_NONE);
   return true;
 }
 

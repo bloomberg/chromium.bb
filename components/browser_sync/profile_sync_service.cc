@@ -1061,6 +1061,9 @@ void ProfileSyncService::OnConnectionStatusChange(
           base::Bind(&ProfileSyncService::RequestAccessToken,
                      sync_enabled_weak_factory_.GetWeakPtr()));
     }
+    // Make observers aware of the change. This call is unnecessary in the
+    // block below because UpdateAuthErrorState() will notify observers.
+    NotifyObservers();
   } else {
     // Reset backoff time after successful connection.
     if (status == syncer::CONNECTION_OK) {
