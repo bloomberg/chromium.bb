@@ -9,7 +9,10 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
 
-schema_sources = [ "identity.idl" ]
+schema_sources = [
+  "bookmarks.json",
+  "identity.idl",
+]
 root_namespace = "extensions::cast::api::%(namespace)s"
 
 json_schema_api("api") {
@@ -45,6 +48,7 @@ json_features("cast_permission_features") {
   provider_class = "CastPermissionFeatureProvider"
   sources = [
     "../../../extensions/common/api/_permission_features.json",
+    "_permission_features.json",
   ]
 }
 

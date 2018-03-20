@@ -18,5 +18,16 @@
     "channel": "dev",
     "contexts": ["blessed_extension"],
     "extension_types": ["platform_app"]
-  }
+  },
+  "bookmarks": [{
+    "dependencies": ["permission:bookmarks"],
+    "contexts": ["blessed_extension"],
+    "default_parent": true
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }]
 }

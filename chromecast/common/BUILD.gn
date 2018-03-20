@@ -35,6 +35,7 @@ cast_source_set("common") {
     deps += [
       "//chromecast/common/extensions_api:api",
       "//chromecast/common/extensions_api:api_registration",
+      "//chromecast/common/extensions_api:api_schema_generator",
       "//chromecast/common/extensions_api:extensions_features",
       "//components/version_info",
       "//extensions:extensions_resources_grd_grit",
