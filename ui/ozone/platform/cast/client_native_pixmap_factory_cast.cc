@@ -39,7 +39,7 @@ class ClientNativePixmapFactoryCast : public gfx::ClientNativePixmapFactory {
   // ClientNativePixmapFactoryCast implementation:
   bool IsConfigurationSupported(gfx::BufferFormat format,
                                 gfx::BufferUsage usage) const override {
-    return format == gfx::BufferFormat::RGBA_8888 &&
+    return format == gfx::BufferFormat::BGRA_8888 &&
            usage == gfx::BufferUsage::SCANOUT;
   }
 
