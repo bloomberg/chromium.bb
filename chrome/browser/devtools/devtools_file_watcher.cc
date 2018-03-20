@@ -79,6 +79,10 @@ void DevToolsFileWatcher::SharedFileWatcher::RemoveListener(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = std::find(listeners_.begin(), listeners_.end(), watcher);
   listeners_.erase(it);
+  if (listeners_.empty()) {
+    file_path_times_.clear();
+    pending_paths_.clear();
+  }
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::AddWatch(
