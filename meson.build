@@ -31,7 +31,7 @@ pkg = import('pkgconfig')
 
 config = configuration_data()
 
-with_udev = get_option('udev')
+config.set10('UDEV', get_option('udev'))
 with_freedreno_kgsl = get_option('freedreno-kgsl')
 with_install_tests = get_option('install-test-programs')
 
@@ -165,7 +165,6 @@ if _libkms != 'false'
   with_libkms = _libkms == 'true' or ['linux', 'freebsd', 'dragonfly'].contains(host_machine.system())
 endif
 
-config.set10('UDEV', with_udev)
 # Among others FreeBSD does not have a separate dl library.
 if not cc.has_function('dlsym')
   dep_dl = cc.find_library('dl', required : with_nouveau)
