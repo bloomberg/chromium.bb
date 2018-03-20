@@ -4577,18 +4577,6 @@ confined_pointer_grab_pointer_cancel(struct weston_pointer_grab *grab)
 		container_of(grab, struct weston_pointer_constraint, grab);
 
 	disable_pointer_constraint(constraint);
-
-	/* If this is a persistent constraint, re-add the surface destroy signal
-	 * listener only if we are currently not destroying the surface. */
-	switch (constraint->lifetime) {
-	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT:
-		if (constraint->surface->resource)
-			wl_signal_add(&constraint->surface->destroy_signal,
-				      &constraint->surface_destroy_listener);
-		break;
-	case ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT:
-		break;
-	}
 }
 
 static const struct weston_pointer_grab_interface
