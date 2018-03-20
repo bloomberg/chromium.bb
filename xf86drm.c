@@ -2819,12 +2819,11 @@ static char *drmGetMinorNameForFD(int fd, int type)
 {
 #ifdef __linux__
     DIR *sysdir;
-    struct dirent *pent, *ent;
+    struct dirent *ent;
     struct stat sbuf;
     const char *name = drmGetMinorName(type);
     int len;
     char dev_name[64], buf[64];
-    long name_max;
     int maj, min;
 
     if (!name)
@@ -2847,30 +2846,16 @@ static char *drmGetMinorNameForFD(int fd, int type)
     if (!sysdir)
         return NULL;
 
-    name_max = fpathconf(dirfd(sysdir), _PC_NAME_MAX);
-    if (name_max == -1)
-        goto out_close_dir;
-
-    pent = malloc(offsetof(struct dirent, d_name) + name_max + 1);
-    if (pent == NULL)
-         goto out_close_dir;
-
-    while (readdir_r(sysdir, pent, &ent) == 0 && ent != NULL) {
+    while ((ent = readdir(sysdir))) {
         if (strncmp(ent->d_name, name, len) == 0) {
             snprintf(dev_name, sizeof(dev_name), DRM_DIR_NAME "/%s",
                  ent->d_name);
 
-            free(pent);
             closedir(sysdir);
-
             return strdup(dev_name);
         }
     }
-
-    free(pent);
-
-out_close_dir:
-    closedir(sysdir);
+    return NULL;
 #else
     struct stat sbuf;
     char buf[PATH_MAX + 1];
@@ -2911,7 +2896,6 @@ out_close_dir:
 
     return strdup(buf);
 #endif
-    return NULL;
 }
 
 char *drmGetPrimaryDeviceNameFromFd(int fd)
