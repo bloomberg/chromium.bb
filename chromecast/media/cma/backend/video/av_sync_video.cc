@@ -38,6 +38,10 @@ const int kLinearRegressionDataLifetimeUs = 500000;
 constexpr base::TimeDelta kAvSyncUpkeepInterval =
     base::TimeDelta::FromMilliseconds(10);
 
+// Time interval between checking playbacks statistics.
+constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
+    base::TimeDelta::FromSeconds(1);
+
 // When we're in sync (i.e. the apts and vpts difference is
 // < kSoftCorrectionThresholdUs), if the apts and vpts slopes are different by
 // this threshold, we'll reset the video playback rate to be equal to the apts
@@ -190,6 +194,48 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 }
 
+void AvSyncVideo::GatherPlaybackStatistics() {
+  int64_t frame_rate_difference =
+      (backend_->video_decoder()->GetCurrentContentRefreshRate() -
+       backend_->video_decoder()->GetOutputRefreshRate()) /
+      1000;
+
+  int64_t expected_dropped_frames_per_second =
+      std::max<int64_t>(frame_rate_difference, 0);
+
+  int64_t expected_repeated_frames_per_second =
+      std::max<int64_t>(-frame_rate_difference, 0);
+
+  int64_t current_time = backend_->MonotonicClockNow();
+  int64_t expected_dropped_frames =
+      std::round(expected_dropped_frames_per_second *
+                 (current_time - last_gather_timestamp_us_) / 1000000);
+
+  int64_t expected_repeated_frames =
+      std::round(expected_repeated_frames_per_second *
+                 (current_time - last_gather_timestamp_us_) / 1000000);
+
+  int64_t dropped_frames = backend_->video_decoder()->GetDroppedFrames();
+  int64_t repeated_frames = backend_->video_decoder()->GetRepeatedFrames();
+
+  int64_t unexpected_dropped_frames =
+      (dropped_frames - last_dropped_frames_) - expected_dropped_frames;
+  int64_t unexpected_repeated_frames =
+      (repeated_frames - last_repeated_frames_) - expected_repeated_frames;
+
+  VLOG_IF(2, unexpected_dropped_frames != 0 || unexpected_repeated_frames != 0)
+      << "Playback diagnostics:"
+      << " CurrentContentRefreshRate="
+      << backend_->video_decoder()->GetCurrentContentRefreshRate()
+      << " OutputRefreshRate="
+      << backend_->video_decoder()->GetOutputRefreshRate()
+      << " unexpected_dropped_frames=" << unexpected_dropped_frames
+      << " unexpected_repeated_frames=" << unexpected_repeated_frames;
+  last_gather_timestamp_us_ = current_time;
+  last_repeated_frames_ = repeated_frames;
+  last_dropped_frames_ = dropped_frames;
+}
+
 void AvSyncVideo::StopAvSync() {
   audio_pts_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
@@ -197,12 +243,12 @@ void AvSyncVideo::StopAvSync() {
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
   error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  timer_.Stop();
+  upkeep_av_sync_timer_.Stop();
+  playback_statistics_timer_.Stop();
 }
 
 void AvSyncVideo::NotifyStart() {
-  timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
-               &AvSyncVideo::UpkeepAvSync);
+  StartAvSync();
 }
 
 void AvSyncVideo::NotifyStop() {
@@ -215,8 +261,19 @@ void AvSyncVideo::NotifyPause() {
 }
 
 void AvSyncVideo::NotifyResume() {
-  timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
-               &AvSyncVideo::UpkeepAvSync);
+  StartAvSync();
+}
+
+void AvSyncVideo::StartAvSync() {
+  upkeep_av_sync_timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
+                              &AvSyncVideo::UpkeepAvSync);
+#if DCHECK_IS_ON()
+  // TODO(almasrymina): if this logic turns out to be useful for metrics
+  // recording, keep it and remove this TODO. Otherwise remove it.
+  playback_statistics_timer_.Start(FROM_HERE, kPlaybackStatisticsCheckInterval,
+                                   this,
+                                   &AvSyncVideo::GatherPlaybackStatistics);
+#endif
 }
 
 AvSyncVideo::~AvSyncVideo() = default;

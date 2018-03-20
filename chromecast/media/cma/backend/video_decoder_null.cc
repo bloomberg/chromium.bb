@@ -80,5 +80,21 @@ bool VideoDecoderNull::SetCurrentPts(int64_t pts) {
   return true;
 }
 
+int64_t VideoDecoderNull::GetDroppedFrames() {
+  return 0;
+}
+
+int64_t VideoDecoderNull::GetRepeatedFrames() {
+  return 0;
+}
+
+int64_t VideoDecoderNull::GetOutputRefreshRate() {
+  return 0;
+}
+
+int64_t VideoDecoderNull::GetCurrentContentRefreshRate() {
+  return 0;
+}
+
 }  // namespace media
 }  // namespace chromecast

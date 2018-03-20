@@ -34,6 +34,10 @@ class VideoDecoderNull : public VideoDecoderForMixer {
   int64_t GetCurrentPts() const override;
   bool SetPlaybackRate(float rate) override;
   bool SetCurrentPts(int64_t pts) override;
+  int64_t GetDroppedFrames() override;
+  int64_t GetRepeatedFrames() override;
+  int64_t GetOutputRefreshRate() override;
+  int64_t GetCurrentContentRefreshRate() override;
 
  private:
   void OnEndOfStream();
