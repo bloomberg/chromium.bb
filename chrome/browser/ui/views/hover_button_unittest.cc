@@ -153,3 +153,12 @@ TEST_F(HoverButtonTest, CustomTooltip) {
     EXPECT_EQ(expected, base::UTF8ToUTF16(accessible_name));
   }
 }
+
+// Tests that setting the style and the subtitle elide behavior don't lead to a
+// crash for a HoverButton with an empty subtitle.
+TEST_F(HoverButtonTest, SetStyleAndSubtitleElideBehavior) {
+  HoverButton button(nullptr, CreateIcon(), base::ASCIIToUTF16("Test title"),
+                     base::string16());
+  button.SetStyle(HoverButton::STYLE_PROMINENT);
+  button.SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
+}
