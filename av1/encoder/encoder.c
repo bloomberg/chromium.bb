@@ -2469,6 +2469,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->seq_params.enable_order_hint = oxcf->enable_order_hint;
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
   cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
+  cm->seq_params.enable_superres = oxcf->enable_superres;
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
@@ -3980,7 +3981,13 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   if (oxcf->pass == 1) return SCALE_NUMERATOR;
   uint8_t new_denom = SCALE_NUMERATOR;
-  int bottom_index, top_index, q, qthresh;
+
+  // Make sure that superres mode of the frame is consistent with the
+  // sequence-level flag.
+  assert(IMPLIES(oxcf->superres_mode != SUPERRES_NONE,
+                 cpi->common.seq_params.enable_superres));
+  assert(IMPLIES(!cpi->common.seq_params.enable_superres,
+                 oxcf->superres_mode == SUPERRES_NONE));
 
   switch (oxcf->superres_mode) {
     case SUPERRES_NONE: new_denom = SCALE_NUMERATOR; break;
@@ -3995,11 +4002,13 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
       const RATE_FACTOR_LEVEL rf_level = gf_group->rf_level[gf_group->index];
       const double rate_factor_delta = rate_factor_deltas[rf_level];
-      qthresh = (rate_factor_delta <= 1.0) ? oxcf->superres_qthresh
-                                           : oxcf->superres_kf_qthresh;
+      const int qthresh = (rate_factor_delta <= 1.0)
+                              ? oxcf->superres_qthresh
+                              : oxcf->superres_kf_qthresh;
       av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
-      q = av1_rc_pick_q_and_bounds(cpi, cpi->oxcf.width, cpi->oxcf.height,
-                                   &bottom_index, &top_index);
+      int bottom_index, top_index;
+      const int q = av1_rc_pick_q_and_bounds(
+          cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
       if (q < qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {

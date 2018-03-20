@@ -2422,6 +2422,12 @@ static void write_render_size(const AV1_COMMON *cm,
 
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  if (!seq_params->enable_superres) {
+    assert(cm->superres_scale_denominator == SCALE_NUMERATOR);
+    return;
+  }
+
   // First bit is whether to to scale or not
   if (cm->superres_scale_denominator == SCALE_NUMERATOR) {
     aom_wb_write_bit(wb, 0);  // no scaling
@@ -2773,6 +2779,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   if (seq_params->enable_order_hint)
     aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
 #endif
+  aom_wb_write_bit(wb, seq_params->enable_superres);
 }
 
 static void write_compound_tools(const AV1_COMMON *cm,

@@ -719,6 +719,13 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_JNT_COMP,
 
+  /*!\brief Codec control function to turn on / off frame superresolution.
+   *
+   * This will enable or disable frame superresolution. The default value is 1
+   * If AV1E_SET_ENABLE_SUPERRES is 0, then this flag is forced to 0.
+   */
+  AV1E_SET_ENABLE_SUPERRES,
+
   /*!\brief Codec control function to set loop_filter_across_tiles_v_enabled
    * and loop_filter_across_tiles_h_enabled.
    * In encoding and decoding, AV1 allows disabling loop filter across tile
@@ -998,6 +1005,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_JNT_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_JNT_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_FRAME_PARALLEL_DECODING

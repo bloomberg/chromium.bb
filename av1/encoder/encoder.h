@@ -301,6 +301,7 @@ typedef struct AV1EncoderConfig {
   const cfg_options_t *cfg;
   int enable_jnt_comp;
   int enable_order_hint;
+  int enable_superres;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

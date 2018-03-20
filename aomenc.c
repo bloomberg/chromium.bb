@@ -722,6 +722,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_DF,
                                         AV1E_SET_ENABLE_ORDER_HINT,
                                         AV1E_SET_ENABLE_JNT_COMP,
+                                        AV1E_SET_ENABLE_SUPERRES,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 

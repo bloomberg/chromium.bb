@@ -1263,6 +1263,10 @@ static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
                            int *width, int *height) {
   cm->superres_upscaled_width = *width;
   cm->superres_upscaled_height = *height;
+
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  if (!seq_params->enable_superres) return;
+
   if (aom_rb_read_bit(rb)) {
     cm->superres_scale_denominator =
         (uint8_t)aom_rb_read_literal(rb, SUPERRES_SCALE_BITS);
@@ -2285,6 +2289,7 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   seq_params->order_hint_bits_minus1 =
       seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
 #endif
+  seq_params->enable_superres = aom_rb_read_bit(rb);
 }
 
 static void read_compound_tools(AV1_COMMON *cm,

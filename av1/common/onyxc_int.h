@@ -214,6 +214,11 @@ typedef struct SequenceHeader {
                            // if 0, enable_jnt_comp must be set zs 0.
   int enable_jnt_comp;     // 0 - disable joint compound modes
                            // 1 - enable it
+  int enable_superres;     // 0 - Disable superres for the sequence, and disable
+                           //     transmitting per-frame superres enabled flag.
+                           // 1 - Enable superres for the sequence, and also
+                           //     enable per-frame flag to denote if superres is
+                           //     enabled for that frame.
 } SequenceHeader;
 
 typedef struct AV1Common {
