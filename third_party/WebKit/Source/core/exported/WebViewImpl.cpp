@@ -3827,4 +3827,8 @@ void WebViewImpl::FreezePage() {
   Scheduler()->SetPageFrozen(true);
 }
 
+void WebViewImpl::SetHasHighMediaEngagement(bool value) {
+  page_->SetHasHighMediaEngagement(value);
+}
+
 }  // namespace blink

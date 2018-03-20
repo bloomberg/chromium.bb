@@ -167,7 +167,8 @@ Page::Page(PageClients& page_clients)
       is_cursor_visible_(true),
       subframe_count_(0),
       next_related_page_(this),
-      prev_related_page_(this) {
+      prev_related_page_(this),
+      has_high_media_engagement_(false) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
@@ -813,6 +814,14 @@ void Page::SetPageFrozen(bool frozen) {
   SetLifecycleState(frozen ? PageLifecycleState::kFrozen
                            : IsPageVisible() ? PageLifecycleState::kActive
                                              : PageLifecycleState::kHidden);
+}
+
+void Page::SetHasHighMediaEngagement(bool value) {
+  has_high_media_engagement_ = value;
+}
+
+bool Page::HasHighMediaEngagement() const {
+  return has_high_media_engagement_;
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}

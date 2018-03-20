@@ -5730,8 +5730,10 @@ void RenderFrameImpl::UpdateStateForCommit(
   // origin so this will not be reused accidentally.
   if (url::Origin(frame_->GetSecurityOrigin()) ==
       high_media_engagement_origin_) {
-    frame_->SetHasHighMediaEngagement(true);
+    render_view_->webview()->SetHasHighMediaEngagement(true);
     high_media_engagement_origin_ = url::Origin();
+  } else {
+    render_view_->webview()->SetHasHighMediaEngagement(false);
   }
 }
 

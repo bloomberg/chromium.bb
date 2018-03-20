@@ -7,6 +7,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/media/HTMLAudioElement.h"
 #include "core/html/media/HTMLVideoElement.h"
+#include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,7 +151,7 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().SetHasHighMediaEngagement(false);
+  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(false);
   Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
 
   Media()->Play();
@@ -167,7 +168,7 @@ TEST_P(HTMLMediaElementTest,
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().SetHasHighMediaEngagement(true);
+  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(true);
   Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
 
   Media()->Play();
@@ -184,7 +185,7 @@ TEST_P(HTMLMediaElementTest,
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().SetHasHighMediaEngagement(true);
+  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(true);
 
   Media()->Play();
 

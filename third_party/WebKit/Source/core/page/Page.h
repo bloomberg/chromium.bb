@@ -313,6 +313,10 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetPageFrozen(bool frozen) override;
 
+  void SetHasHighMediaEngagement(bool value);
+
+  bool HasHighMediaEngagement() const;
+
  private:
   friend class ScopedPagePauser;
 
@@ -406,6 +410,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<Page> prev_related_page_;
 
   std::unique_ptr<PageScheduler> page_scheduler_;
+
+  bool has_high_media_engagement_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };
