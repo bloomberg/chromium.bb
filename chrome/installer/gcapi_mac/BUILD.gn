@@ -21,6 +21,7 @@ config("gcapi_config") {
 
 static_library("gcapi_lib") {
   complete_static_lib = true
+  configs -= [ "//build/config/compiler:thin_archive" ]
   sources = [
     "gcapi.h",
     "gcapi.mm",

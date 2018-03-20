@@ -546,6 +546,7 @@ if (is_linux && !is_chromeos) {
 
 static_library("cast_sender") {
   complete_static_lib = true
+  configs -= [ "//build/config/compiler:thin_archive" ]
   deps = [
     ":sender",
   ]
@@ -553,6 +554,7 @@ static_library("cast_sender") {
 
 static_library("cast_receiver") {
   complete_static_lib = true
+  configs -= [ "//build/config/compiler:thin_archive" ]
   deps = [
     ":receiver",
   ]
