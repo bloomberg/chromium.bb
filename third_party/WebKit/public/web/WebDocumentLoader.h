@@ -144,8 +144,6 @@ class BLINK_EXPORT WebDocumentLoader {
   // initiated loads that may have had a user activation from the browser UI.
   virtual void SetUserActivated() = 0;
 
-  // Sets if the document is an ad identified subframe.
-  virtual void SetIsAdSubframe(bool is_ad_subframe) = 0;
   virtual bool GetIsAdSubframe() const = 0;
 
  protected:

@@ -45,8 +45,7 @@ SubresourceFilter::SubresourceFilter(
     ExecutionContext* execution_context,
     std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter)
     : execution_context_(execution_context),
-      subresource_filter_(std::move(subresource_filter)),
-      is_ad_subframe_(false) {}
+      subresource_filter_(std::move(subresource_filter)) {}
 
 SubresourceFilter::~SubresourceFilter() = default;
 
@@ -88,6 +87,10 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
+bool SubresourceFilter::GetIsAssociatedWithAdSubframe() {
+  return subresource_filter_->GetIsAssociatedWithAdSubframe();
+}
+
 bool SubresourceFilter::IsAdResource(
     const KURL& resource_url,
     WebURLRequest::RequestContext request_context) {
@@ -102,7 +105,8 @@ bool SubresourceFilter::IsAdResource(
 
   // If the subresource cannot be identified as an ad via load_policy, check if
   // its frame is identified as an ad.
-  return load_policy != WebDocumentSubresourceFilter::kAllow || is_ad_subframe_;
+  return load_policy != WebDocumentSubresourceFilter::kAllow ||
+         subresource_filter_->GetIsAssociatedWithAdSubframe();
 }
 
 void SubresourceFilter::ReportLoad(

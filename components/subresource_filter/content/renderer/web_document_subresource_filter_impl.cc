@@ -106,11 +106,13 @@ WebDocumentSubresourceFilterImpl::WebDocumentSubresourceFilterImpl(
     url::Origin document_origin,
     ActivationState activation_state,
     scoped_refptr<const MemoryMappedRuleset> ruleset,
-    base::OnceClosure first_disallowed_load_callback)
+    base::OnceClosure first_disallowed_load_callback,
+    bool is_associated_with_ad_subframe)
     : activation_state_(activation_state),
       filter_(std::move(document_origin), activation_state, std::move(ruleset)),
       first_disallowed_load_callback_(
-          std::move(first_disallowed_load_callback)) {}
+          std::move(first_disallowed_load_callback)),
+      is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
 
 WebLoadPolicy WebDocumentSubresourceFilterImpl::GetLoadPolicy(
     const blink::WebURL& resourceUrl,
@@ -134,6 +136,10 @@ bool WebDocumentSubresourceFilterImpl::ShouldLogToConsole() {
   return activation_state().enable_logging;
 }
 
+bool WebDocumentSubresourceFilterImpl::GetIsAssociatedWithAdSubframe() const {
+  return is_associated_with_ad_subframe_;
+}
+
 WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
     const blink::WebURL& url,
     proto::ElementType element_type) {
@@ -151,13 +157,15 @@ WebDocumentSubresourceFilterImpl::BuilderImpl::BuilderImpl(
     url::Origin document_origin,
     ActivationState activation_state,
     base::File ruleset_file,
-    base::OnceClosure first_disallowed_load_callback)
+    base::OnceClosure first_disallowed_load_callback,
+    bool is_associated_with_ad_subframe)
     : document_origin_(std::move(document_origin)),
       activation_state_(std::move(activation_state)),
       ruleset_file_(std::move(ruleset_file)),
       first_disallowed_load_callback_(
           std::move(first_disallowed_load_callback)),
-      main_task_runner_(base::MessageLoop::current()->task_runner()) {}
+      main_task_runner_(base::MessageLoop::current()->task_runner()),
+      is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
 
 WebDocumentSubresourceFilterImpl::BuilderImpl::~BuilderImpl() {}
 
@@ -169,7 +177,8 @@ WebDocumentSubresourceFilterImpl::BuilderImpl::Build() {
       document_origin_, activation_state_,
       base::MakeRefCounted<MemoryMappedRuleset>(std::move(ruleset_file_)),
       base::BindOnce(&ProxyToTaskRunner, main_task_runner_,
-                     std::move(first_disallowed_load_callback_)));
+                     std::move(first_disallowed_load_callback_)),
+      is_associated_with_ad_subframe_);
 }
 
 }  // namespace subresource_filter

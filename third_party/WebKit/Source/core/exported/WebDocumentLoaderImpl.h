@@ -85,7 +85,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void SetSourceLocation(const WebSourceLocation&) override;
   void ResetSourceLocation() override;
   void SetUserActivated() override;
-  void SetIsAdSubframe(bool is_ad_subframe) override;
   bool GetIsAdSubframe() const override;
 
   static WebNavigationType ToWebNavigationType(NavigationType);
