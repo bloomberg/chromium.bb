@@ -75,6 +75,9 @@ include_rules = [
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/system",
 
+  # InputMethodManager lives in the browser process. Use ImeController.
+  "-ui/base/ime/chromeos/input_method_manager.h"
+
   # Ozone does not run in process in mus/mash.
   "-ui/events/ozone",
   "-ui/ozone",
