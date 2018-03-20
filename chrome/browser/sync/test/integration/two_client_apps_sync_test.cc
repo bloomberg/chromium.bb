@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -90,7 +91,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(StartWithSameApps)) {
 // Install some apps on both clients, some on only one client, some on only the
 // other, and sync.  Both clients should end up with all apps, and the app and
 // page ordinals should be identical.
-IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithDifferentApps) {
+// Flakily crashes on Windows, see crbug.com/434438.
+#if defined(OS_WIN)
+#define MAYBE_StartWithDifferentApps DISABLED_StartWithDifferentApps
+#else
+#define MAYBE_StartWithDifferentApps StartWithDifferentApps
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, MAYBE_StartWithDifferentApps) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
