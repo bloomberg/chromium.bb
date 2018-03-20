@@ -216,3 +216,9 @@ QUIC_FLAG(bool,
 
 // If true, stop sending a redundant PING every 20 acks.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_redundant_ping, false)
+
+// If true, when a stream is reset by peer with error, it should not be added to
+// zombie streams.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_reset_stream_is_not_zombie,
+          true)

@@ -1460,8 +1460,14 @@ TEST_P(QuicSpdySessionTestServer, ZombieStreams) {
   EXPECT_CALL(*connection_, SendControlFrame(_));
   EXPECT_CALL(*connection_, OnStreamReset(2, _));
   session_.CloseStream(2);
-  EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), 2));
-  EXPECT_TRUE(session_.closed_streams()->empty());
+  if (GetQuicReloadableFlag(quic_reset_stream_is_not_zombie)) {
+    EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
+    ASSERT_EQ(1u, session_.closed_streams()->size());
+    EXPECT_EQ(2u, session_.closed_streams()->front()->id());
+  } else {
+    EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), 2));
+    EXPECT_TRUE(session_.closed_streams()->empty());
+  }
   session_.OnStreamDoneWaitingForAcks(2);
   EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
   EXPECT_EQ(1u, session_.closed_streams()->size());

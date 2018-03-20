@@ -819,7 +819,7 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
-  // Stream stops waiting for acks as it has unacked data.
+  // Stream still waits for acks as it finishes sending and has unacked data.
   EXPECT_TRUE(stream_->IsWaitingForAcks());
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
 }
