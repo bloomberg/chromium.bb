@@ -65,6 +65,8 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         Callback<Boolean> wrappedCallback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean needsReschedule) {
+                if (mPendingTaskCounters.get(taskType) == null) return;
+
                 boolean noPendingCallbacks =
                         decrementPendingCallbackCount(taskType, needsReschedule);
                 if (noPendingCallbacks) {
