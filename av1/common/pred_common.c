@@ -148,15 +148,12 @@ int av1_get_intra_inter_context(const MACROBLOCKD *xd) {
 #define CHECK_GOLDEN_OR_LAST3(ref_frame) \
   (((ref_frame) == GOLDEN_FRAME) || ((ref_frame) == LAST3_FRAME))
 
-int av1_get_reference_mode_context(const AV1_COMMON *cm,
-                                   const MACROBLOCKD *xd) {
+int av1_get_reference_mode_context(const MACROBLOCKD *xd) {
   int ctx;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int has_above = xd->up_available;
   const int has_left = xd->left_available;
-
-  (void)cm;
 
   // Note:
   // The mode info data structure has a one element border above and to the

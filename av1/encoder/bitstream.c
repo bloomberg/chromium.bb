@@ -132,22 +132,19 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
   }
 }
 
-static void write_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      aom_writer *w, PREDICTION_MODE mode,
+static void write_inter_compound_mode(MACROBLOCKD *xd, aom_writer *w,
+                                      PREDICTION_MODE mode,
                                       const int16_t mode_ctx) {
   assert(is_inter_compound_mode(mode));
-  (void)cm;
   aom_write_symbol(w, INTER_COMPOUND_OFFSET(mode),
                    xd->tile_ctx->inter_compound_mode_cdf[mode_ctx],
                    INTER_COMPOUND_MODES);
 }
 
-static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                const MB_MODE_INFO *mbmi, TX_SIZE tx_size,
-                                int depth, int blk_row, int blk_col,
-                                aom_writer *w) {
+static void write_tx_size_vartx(MACROBLOCKD *xd, const MB_MODE_INFO *mbmi,
+                                TX_SIZE tx_size, int depth, int blk_row,
+                                int blk_col, aom_writer *w) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
 
@@ -190,18 +187,15 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
       for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
         int offsetr = blk_row + row;
         int offsetc = blk_col + col;
-        write_tx_size_vartx(cm, xd, mbmi, sub_txs, depth + 1, offsetr, offsetc,
-                            w);
+        write_tx_size_vartx(xd, mbmi, sub_txs, depth + 1, offsetr, offsetc, w);
       }
   }
 }
 
-static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                                   aom_writer *w) {
+static void write_selected_tx_size(const MACROBLOCKD *xd, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
   if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
@@ -287,14 +281,13 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static void write_delta_qindex(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                               int delta_qindex, aom_writer *w) {
+static void write_delta_qindex(const MACROBLOCKD *xd, int delta_qindex,
+                               aom_writer *w) {
   int sign = delta_qindex < 0;
   int abs = sign ? -delta_qindex : delta_qindex;
   int rem_bits, thr;
   int smallval = abs < DELTA_Q_SMALL ? 1 : 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
   aom_write_symbol(w, AOMMIN(abs, DELTA_Q_SMALL), ec_ctx->delta_q_cdf,
                    DELTA_Q_PROBS + 1);
@@ -318,7 +311,6 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int rem_bits, thr;
   int smallval = abs < DELTA_LF_SMALL ? 1 : 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
   if (cm->delta_lf_multi) {
     assert(lf_id >= 0 && lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
@@ -524,7 +516,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     // (if not specified at the frame/segment level)
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
       if (is_comp_ref_allowed(mbmi->sb_type))
-        aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(cm, xd), 2);
+        aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(xd), 2);
     } else {
       assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
     }
@@ -1020,7 +1012,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
-      write_delta_qindex(cm, xd, reduced_delta_qindex, w);
+      write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
 #if CONFIG_EXT_DELTA_Q
       if (cm->delta_lf_present_flag) {
@@ -1089,7 +1081,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
       if (is_inter_compound_mode(mode))
-        write_inter_compound_mode(cm, xd, w, mode, mode_ctx);
+        write_inter_compound_mode(xd, w, mode, mode_ctx);
       else if (is_inter_singleref_mode(mode))
         write_inter_mode(w, mode, ec_ctx, mode_ctx);
 
@@ -1207,10 +1199,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   }
 }
 
-static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
+static void write_intrabc_info(MACROBLOCKD *xd,
                                const MB_MODE_INFO_EXT *mbmi_ext,
                                aom_writer *w) {
-  (void)cm;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int use_intrabc = is_intrabc_block(mbmi);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -1264,7 +1255,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
-      write_delta_qindex(cm, xd, reduced_delta_qindex, w);
+      write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
 #if CONFIG_EXT_DELTA_Q
       if (cm->delta_lf_present_flag) {
@@ -1291,7 +1282,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   }
 
   if (av1_allow_intrabc(cm)) {
-    write_intrabc_info(cm, xd, mbmi_ext, w);
+    write_intrabc_info(xd, mbmi_ext, w);
     if (is_intrabc_block(mbmi)) return;
   }
 
@@ -1614,9 +1605,9 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       int idx, idy;
       for (idy = 0; idy < height; idy += txbh)
         for (idx = 0; idx < width; idx += txbw)
-          write_tx_size_vartx(cm, xd, mbmi, max_tx_size, 0, idy, idx, w);
+          write_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, w);
     } else {
-      write_selected_tx_size(cm, xd, w);
+      write_selected_tx_size(xd, w);
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, 0, xd);
     }
   } else {

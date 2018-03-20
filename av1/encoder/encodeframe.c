@@ -308,11 +308,8 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
   }
 }
 
-static void reset_intmv_filter_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                                    MB_MODE_INFO *mbmi) {
+static void reset_intmv_filter_type(MB_MODE_INFO *mbmi) {
   InterpFilter filters[2];
-  (void)cm;
-  (void)xd;
 
   for (int dir = 0; dir < 2; ++dir) {
     filters[dir] = av1_extract_interp_filter(mbmi->interp_filters, dir);
@@ -437,7 +434,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   *mi_addr = *mi;
   *x->mbmi_ext = ctx->mbmi_ext;
 
-  reset_intmv_filter_type(cm, xd, mbmi);
+  reset_intmv_filter_type(mbmi);
 
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1) {
@@ -1032,12 +1029,12 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             rdc->compound_ref_used_flag = 1;
           if (is_comp_ref_allowed(bsize)) {
 #if CONFIG_ENTROPY_STATS
-            counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
+            counts->comp_inter[av1_get_reference_mode_context(xd)]
                               [has_second_ref(mbmi)]++;
 #endif  // CONFIG_ENTROPY_STATS
             if (allow_update_cdf) {
-              update_cdf(av1_get_reference_mode_cdf(cm, xd),
-                         has_second_ref(mbmi), 2);
+              update_cdf(av1_get_reference_mode_cdf(xd), has_second_ref(mbmi),
+                         2);
             }
           }
         }
@@ -4393,7 +4390,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 }
 
 static void make_consistent_compound_tools(AV1_COMMON *cm) {
-  (void)cm;
   if (frame_is_intra_only(cm)) cm->allow_interintra_compound = 0;
   if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
     cm->allow_masked_compound = 0;

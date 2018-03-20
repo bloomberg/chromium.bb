@@ -850,7 +850,6 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
 
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  (void)cm;
   if (cpi->oxcf.large_scale_tile) {
     if (cpi->oxcf.superblock_size != AOM_SUPERBLOCK_SIZE_64X64) {
       cm->tile_width = clamp(cpi->oxcf.tile_columns, 1, 32);
@@ -887,7 +886,6 @@ static void set_tile_info(AV1_COMP *cpi) {
     }
   } else {
     set_tile_info_max_tile(cpi);
-    (void)cm;
   }
 }
 

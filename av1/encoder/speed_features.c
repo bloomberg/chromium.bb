@@ -382,7 +382,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   int i;
 
-  (void)cm;
   // best quality defaults
   sf->frame_parameter_update = 1;
   sf->mv.search_method = NSTEP;

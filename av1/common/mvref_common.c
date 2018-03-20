@@ -319,7 +319,7 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mi_pos.row = row_offset;
   mi_pos.col = col_offset;
 
-  if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos)) {
+  if (is_inside(tile, mi_col, mi_row, cm->mi_rows, &mi_pos)) {
     const MODE_INFO *const candidate_mi =
         xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
     const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
@@ -413,7 +413,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
 
-  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
+  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos))
     return coll_blk_count;
 
   const TPL_MV_REF *prev_frame_mvs =
@@ -574,7 +574,7 @@ static void setup_ref_mv_list(
       max_row_offset = -(2 << 1) + row_adj;
 
     max_row_offset =
-        find_valid_row_offset(tile, mi_row, cm->mi_rows, cm, max_row_offset);
+        find_valid_row_offset(tile, mi_row, cm->mi_rows, max_row_offset);
   }
 
   if (xd->left_available) {
@@ -1480,7 +1480,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n8_w, xd->n8_h))) {
     POSITION trb_pos = { -1, xd->n8_w };
 
-    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, &trb_pos)) {
+    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, &trb_pos)) {
       int mi_row_offset = -1;
       int mi_col_offset = xd->n8_w;
 

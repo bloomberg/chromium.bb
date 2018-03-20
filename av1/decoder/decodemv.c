@@ -933,7 +933,7 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
                                                 aom_reader *r) {
   if (!is_comp_ref_allowed(xd->mi[0]->mbmi.sb_type)) return SINGLE_REFERENCE;
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
-    const int ctx = av1_get_reference_mode_context(cm, xd);
+    const int ctx = av1_get_reference_mode_context(xd);
     const REFERENCE_MODE mode = (REFERENCE_MODE)aom_read_symbol(
         r, xd->tile_ctx->comp_inter_cdf[ctx], 2, ACCT_STR);
     return mode;  // SINGLE_REFERENCE or COMPOUND_REFERENCE

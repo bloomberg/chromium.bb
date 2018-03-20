@@ -904,8 +904,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     is_global[ref] = is_global_mv_block(mi, wm->wmtype);
   }
 
-  (void)cm;
-
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;

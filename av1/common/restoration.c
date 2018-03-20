@@ -1407,7 +1407,6 @@ static void save_deblock_boundary_lines(
   uint8_t *bdry_start = bdry_buf + (RESTORATION_EXTRA_HORZ << use_highbd);
   const int bdry_stride = boundaries->stripe_boundary_stride << use_highbd;
   uint8_t *bdry_rows = bdry_start + RESTORATION_CTX_VERT * stripe * bdry_stride;
-  (void)cm;
 
   // There is a rare case in which a processing stripe can end 1px above the
   // crop border. In this case, we do want to use deblocked pixels from below
