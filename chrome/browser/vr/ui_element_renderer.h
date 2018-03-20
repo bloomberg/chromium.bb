@@ -60,6 +60,7 @@ class UiElementRenderer {
 
   VIRTUAL_FOR_MOCKS void DrawTexturedQuad(
       int texture_data_handle,
+      int overlay_texture_data_handle,
       TextureLocation texture_location,
       const gfx::Transform& model_view_proj_matrix,
       const gfx::RectF& copy_rect,

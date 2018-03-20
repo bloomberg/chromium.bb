@@ -24,6 +24,7 @@ class TexturedQuadRenderer : public BaseRenderer {
   // Enqueues a textured quad for rendering. The GL will ultimately be issued
   // in |Flush|.
   void AddQuad(int texture_data_handle,
+               int overlay_texture_data_handle,
                const gfx::Transform& model_view_proj_matrix,
                const gfx::RectF& copy_rect,
                float opacity,
@@ -44,6 +45,7 @@ class TexturedQuadRenderer : public BaseRenderer {
  private:
   struct QuadData {
     int texture_data_handle;
+    int overlay_texture_data_handle;
     gfx::Transform model_view_proj_matrix;
     gfx::RectF copy_rect;
     float opacity;
@@ -58,7 +60,9 @@ class TexturedQuadRenderer : public BaseRenderer {
   GLuint model_view_proj_matrix_handle_;
   GLuint corner_offset_handle_;
   GLuint opacity_handle_;
+  GLuint overlay_opacity_handle_;
   GLuint texture_handle_;
+  GLuint overlay_texture_handle_;
   GLuint copy_rect_handler_;
 
   // Attributes

@@ -90,7 +90,7 @@ void TexturedElement::Render(UiElementRenderer* renderer,
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
   renderer->DrawTexturedQuad(
-      texture_handle_, UiElementRenderer::kTextureLocationLocal,
+      texture_handle_, 0, UiElementRenderer::kTextureLocationLocal,
       model.view_proj_matrix * world_space_transform(), copy_rect,
       computed_opacity(), size(), corner_radius());
 }
