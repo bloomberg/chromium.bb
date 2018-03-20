@@ -31,7 +31,8 @@ class WebDocumentSubresourceFilterImpl
     BuilderImpl(url::Origin document_origin,
                 ActivationState activation_state,
                 base::File ruleset_file,
-                base::OnceClosure first_disallowed_load_callback);
+                base::OnceClosure first_disallowed_load_callback,
+                bool is_associated_with_ad_subframe);
     ~BuilderImpl() override;
 
     std::unique_ptr<blink::WebDocumentSubresourceFilter> Build() override;
@@ -42,6 +43,7 @@ class WebDocumentSubresourceFilterImpl
     base::File ruleset_file_;
     base::OnceClosure first_disallowed_load_callback_;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+    bool is_associated_with_ad_subframe_;
 
     DISALLOW_COPY_AND_ASSIGN(BuilderImpl);
   };
@@ -54,7 +56,8 @@ class WebDocumentSubresourceFilterImpl
       url::Origin document_origin,
       ActivationState activation_state,
       scoped_refptr<const MemoryMappedRuleset> ruleset,
-      base::OnceClosure first_disallowed_load_callback);
+      base::OnceClosure first_disallowed_load_callback,
+      bool is_associated_with_ad_subframe);
 
   ~WebDocumentSubresourceFilterImpl() override;
 
@@ -67,6 +70,7 @@ class WebDocumentSubresourceFilterImpl
       const blink::WebURL& url) override;
   void ReportDisallowedLoad() override;
   bool ShouldLogToConsole() override;
+  bool GetIsAssociatedWithAdSubframe() const override;
 
   const ActivationState& activation_state() const {
     return filter_.activation_state();
@@ -80,6 +84,7 @@ class WebDocumentSubresourceFilterImpl
   ActivationState activation_state_;
   DocumentSubresourceFilter filter_;
   base::OnceClosure first_disallowed_load_callback_;
+  bool is_associated_with_ad_subframe_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDocumentSubresourceFilterImpl);
 };

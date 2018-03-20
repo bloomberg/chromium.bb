@@ -101,8 +101,12 @@ class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
 
 class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
  public:
-  FixedPolicySubresourceFilter(LoadPolicy policy, int* filtered_load_counter)
-      : policy_(policy), filtered_load_counter_(filtered_load_counter) {}
+  FixedPolicySubresourceFilter(LoadPolicy policy,
+                               int* filtered_load_counter,
+                               bool is_associated_with_ad_subframe)
+      : policy_(policy),
+        filtered_load_counter_(filtered_load_counter),
+        is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                            WebURLRequest::RequestContext) override {
@@ -117,9 +121,14 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
 
   bool ShouldLogToConsole() override { return false; }
 
+  bool GetIsAssociatedWithAdSubframe() const override {
+    return is_associated_with_ad_subframe_;
+  }
+
  private:
   const LoadPolicy policy_;
   int* filtered_load_counter_;
+  bool is_associated_with_ad_subframe_;
 };
 
 class FrameFetchContextTest : public ::testing::Test {
@@ -191,10 +200,12 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     return filtered_load_callback_counter_;
   }
 
-  void SetFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy) {
+  void SetFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy,
+                       bool is_associated_with_ad_subframe = false) {
     document->Loader()->SetSubresourceFilter(SubresourceFilter::Create(
         *document, std::make_unique<FixedPolicySubresourceFilter>(
-                       policy, &filtered_load_callback_counter_)));
+                       policy, &filtered_load_callback_counter_,
+                       is_associated_with_ad_subframe)));
   }
 
   ResourceRequestBlockedReason CanRequest() {
@@ -1255,8 +1266,8 @@ TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
 // is fetched from a frame that is tagged as an ad, then the subresource should
 // be tagged as well.
 TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
-  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow);
-  document->Loader()->GetSubresourceFilter()->SetIsAdSubframe(true);
+  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
+                  true /* is_associated_with_ad_subframe */);
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());

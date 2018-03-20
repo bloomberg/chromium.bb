@@ -52,9 +52,6 @@ class SubresourceFilterAgent
   virtual void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter);
 
-  // Sets in the underlying document, whether this is identified as an ad.
-  virtual void SetIsAdSubframeForDocument(bool is_ad_subframe);
-
   // Informs the browser that the first subresource load has been disallowed for
   // the most recently committed load. Not called if all resources are allowed.
   virtual void SignalFirstSubresourceDisallowedForCommittedLoad();

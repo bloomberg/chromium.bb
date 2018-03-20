@@ -36,11 +36,7 @@ class CORE_EXPORT SubresourceFilter final
                  SecurityViolationReportingPolicy);
   bool AllowWebSocketConnection(const KURL&);
 
-  void SetIsAdSubframe(bool is_ad_subframe) {
-    is_ad_subframe_ = is_ad_subframe;
-  }
-
-  bool GetIsAdSubframe() { return is_ad_subframe_; }
+  bool GetIsAssociatedWithAdSubframe();
 
   // Returns if |resource_url| is an ad resource.
   bool IsAdResource(const KURL& resource_url, WebURLRequest::RequestContext);
@@ -56,7 +52,6 @@ class CORE_EXPORT SubresourceFilter final
 
   Member<ExecutionContext> execution_context_;
   std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter_;
-  bool is_ad_subframe_;
 
   // Save the last resource check's result in the single element cache.
   std::pair<std::pair<KURL, WebURLRequest::RequestContext>,

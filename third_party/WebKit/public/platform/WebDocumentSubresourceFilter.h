@@ -35,6 +35,8 @@ class WebDocumentSubresourceFilter {
   // Returns true if disallowed resource loads should be logged to the devtools
   // console.
   virtual bool ShouldLogToConsole() = 0;
+
+  virtual bool GetIsAssociatedWithAdSubframe() const = 0;
 };
 
 }  // namespace blink

@@ -53,6 +53,8 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
     return queried_subresource_paths_;
   }
 
+  bool GetIsAssociatedWithAdSubframe() const override { return false; }
+
  private:
   std::vector<std::string> queried_subresource_paths_;
   bool allow_loads_;

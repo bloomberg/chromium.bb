@@ -59,11 +59,9 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
     OnSetSubresourceFilterForCommittedLoadCalled();
   }
 
-  void SetIsAdSubframeForDocument(bool is_ad_subframe) override {
-    is_ad_subframe_ = is_ad_subframe;
+  bool GetIsAssociatedWithAdSubframe() {
+    return last_injected_filter_->GetIsAssociatedWithAdSubframe();
   }
-
-  bool GetIsAdSubframe() { return is_ad_subframe_; }
 
   blink::WebDocumentSubresourceFilter* filter() {
     return last_injected_filter_.get();
@@ -74,7 +72,6 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   }
 
  private:
-  bool is_ad_subframe_ = false;
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
@@ -521,16 +518,21 @@ TEST_F(SubresourceFilterAgentTest,
   filter->ReportDisallowedLoad();
 }
 
-TEST_F(SubresourceFilterAgentTest, DryRun_DocumentIsAdSubframeTagging) {
-  base::HistogramTester histogram_tester;
+TEST_F(SubresourceFilterAgentTest,
+       DryRun_IsAssociatedWithAdSubframeforDocumentOrDedicatedWorker) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   ExpectSubresourceFilterGetsInjected();
   StartLoadAndSetActivationState(ActivationState(ActivationLevel::DRYRUN),
-                                 true /* is_ad_subframe */);
+                                 true /* is_associated_with_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
-  EXPECT_TRUE(agent()->GetIsAdSubframe());
+  // Test the ad subframe value that is set at the filter.
+  // This also represents the flag passed to a dedicated worker filter created.
+  // For testing the flag passed to the dedicated worker filter, the unit test
+  // is not able to test the implementation of WillCreateWorkerFetchContext as
+  // that will require setup of a WebWorkerFetchContextImpl.
+  EXPECT_TRUE(agent()->GetIsAssociatedWithAdSubframe());
 }
 
 }  // namespace subresource_filter
