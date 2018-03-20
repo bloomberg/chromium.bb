@@ -142,7 +142,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (scrollView.dragging) {
+  if (scrollView.dragging || scrollView.decelerating) {
     CGFloat offsetWidth =
         self.scrollView.contentSize.width - self.scrollView.frame.size.width;
     CGFloat offset = scrollView.contentOffset.x / offsetWidth;
