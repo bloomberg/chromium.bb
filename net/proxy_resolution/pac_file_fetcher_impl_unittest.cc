@@ -540,13 +540,13 @@ TEST_F(PacFileFetcherImplTest, DataURLs) {
   }
 }
 
-// Makes sure that a request gets through when the socket pool is full, so
-// PacFileFetcherImpl can use the same URLRequestContext as everything else.
-TEST_F(PacFileFetcherImplTest, Priority) {
-  // Enough requests to exceed the per-pool limit, which is also enough to
-  // exceed the per-group limit.
-  int num_requests = 10 + ClientSocketPoolManager::max_sockets_per_pool(
-                              HttpNetworkSession::NORMAL_SOCKET_POOL);
+// Makes sure that a request gets through when the socket group for the PAC URL
+// is full, so PacFileFetcherImpl can use the same URLRequestContext as
+// everything else.
+TEST_F(PacFileFetcherImplTest, IgnoresLimits) {
+  // Enough requests to exceed the per-group limit.
+  int num_requests = 2 + ClientSocketPoolManager::max_sockets_per_group(
+                             HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   net::test_server::SimpleConnectionListener connection_listener(
       num_requests, net::test_server::SimpleConnectionListener::
