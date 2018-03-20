@@ -740,6 +740,8 @@ v8::Local<v8::Context> ToV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
 
 v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
                                                  DOMWrapperWorld& world) {
+  // TODO(yukishiino): this method probably should not force context creation,
+  // but it does through WindowProxy() call.
   DCHECK(frame);
   return frame->WindowProxy(world)->ContextIfInitialized();
 }

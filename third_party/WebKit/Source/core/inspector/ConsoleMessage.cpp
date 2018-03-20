@@ -102,7 +102,10 @@ const String& ConsoleMessage::WorkerId() const {
 }
 
 LocalFrame* ConsoleMessage::Frame() const {
-  return frame_;
+  // Do not reference detached frames.
+  if (frame_ && frame_->Client())
+    return frame_;
+  return nullptr;
 }
 
 Vector<DOMNodeId>& ConsoleMessage::Nodes() {
