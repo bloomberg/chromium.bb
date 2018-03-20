@@ -538,7 +538,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             models_data[model] = {'main-readonly-firmware-version': main_ro,
                                   'main-readwrite-firmware-version': main_rw,
                                   'ec-firmware-version': ec,
-                                  'key-id': key_id}
+                                  'firmware-key-id': key_id}
         if models_data:
           self._run.attrs.metadata.UpdateBoardDictWithDict(
               self._current_board, {'models': models_data})

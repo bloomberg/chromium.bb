@@ -394,7 +394,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
                         reef['main-readwrite-firmware-version'])
       self.assertEquals('reef_v1.1.5909-bd1f0c9',
                         reef['ec-firmware-version'])
-      self.assertEquals('key-123', reef['key-id'])
+      self.assertEquals('key-123', reef['firmware-key-id'])
 
       self.assertIn('pyro', board_metadata['models'])
       self.assertIn('electro', board_metadata['models'])
