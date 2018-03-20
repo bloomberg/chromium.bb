@@ -65,15 +65,19 @@ bool IsPrivilegedCrosSetting(const std::string& pref_name) {
   // controlled or owner controlled.
   return true;
 }
+#endif
 
-bool IsCrosSettingReadOnly(const std::string& pref_name) {
-  if (chromeos::system::PerUserTimezoneEnabled()) {
-    // System timezone is never directly changable by user.
-    return pref_name == chromeos::kSystemTimezone;
-  }
+bool IsSettingReadOnly(const std::string& pref_name) {
+#if defined(OS_CHROMEOS)
+  // System timezone is never directly changable by the user.
+  if (pref_name == chromeos::kSystemTimezone)
+    return chromeos::system::PerUserTimezoneEnabled();
+  // enable_screen_lock must be changed through the quickUnlockPrivate API.
+  if (pref_name == ::prefs::kEnableAutoScreenLock)
+    return true;
+#endif
   return false;
 }
-#endif
 
 }  // namespace
 
@@ -254,6 +258,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAccountsPrefUsers] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  // kEnableAutoScreenLock is read-only.
   (*s_whitelist)[::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kEnableQuickUnlockFingerprint] =
@@ -804,10 +809,8 @@ bool PrefsUtil::IsPrefSupervisorControlled(const std::string& pref_name) {
 }
 
 bool PrefsUtil::IsPrefUserModifiable(const std::string& pref_name) {
-#if defined(OS_CHROMEOS)
-  if (IsCrosSettingReadOnly(pref_name))
+  if (IsSettingReadOnly(pref_name))
     return false;
-#endif
 
   const PrefService::Preference* profile_pref =
       profile_->GetPrefs()->FindPreference(pref_name);

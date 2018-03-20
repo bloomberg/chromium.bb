@@ -177,6 +177,25 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     return RunFunctionAndReturnError(func, std::move(params));
   }
 
+  // Wrapper for chrome.quickUnlockPrivate.setLockScreenEnabled.
+  void SetLockScreenEnabled(const std::string& token, bool enabled) {
+    auto params = std::make_unique<base::ListValue>();
+    params->AppendString(token);
+    params->AppendBoolean(enabled);
+    RunFunction(new QuickUnlockPrivateSetLockScreenEnabledFunction(),
+                std::move(params));
+  }
+
+  // Wrapper for chrome.quickUnlockPrivate.setLockScreenEnabled.
+  std::string SetLockScreenEnabledWithInvalidToken(bool enabled) {
+    auto params = std::make_unique<base::ListValue>();
+    params->AppendString(kInvalidToken);
+    params->AppendBoolean(enabled);
+    return RunFunctionAndReturnError(
+        new QuickUnlockPrivateSetLockScreenEnabledFunction(),
+        std::move(params));
+  }
+
   // Wrapper for chrome.quickUnlockPrivate.getAvailableModes.
   QuickUnlockModeList GetAvailableModes() {
     // Run the function.
@@ -338,6 +357,8 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     return api_test_utils::RunFunctionAndReturnError(func, args, profile());
   }
 
+  std::string token() { return token_; }
+
  private:
   // Runs the given |func| with the given |params|.
   std::unique_ptr<base::Value> RunFunction(
@@ -395,6 +416,33 @@ TEST_F(QuickUnlockPrivateUnitTest, GetAuthTokenValid) {
 TEST_F(QuickUnlockPrivateUnitTest, GetAuthTokenInvalid) {
   std::string error = RunAuthTokenWithInvalidPassword();
   EXPECT_FALSE(error.empty());
+}
+
+// Verifies that setting lock screen enabled modifies the setting.
+TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabled) {
+  PrefService* pref_service = profile()->GetPrefs();
+  bool lock_screen_enabled =
+      pref_service->GetBoolean(prefs::kEnableAutoScreenLock);
+
+  SetLockScreenEnabled(token(), !lock_screen_enabled);
+
+  EXPECT_EQ(!lock_screen_enabled,
+            pref_service->GetBoolean(prefs::kEnableAutoScreenLock));
+}
+
+// Verifies that setting lock screen enabled fails to modify the setting with
+// an invalid token.
+TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabledFailsWithInvalidToken) {
+  PrefService* pref_service = profile()->GetPrefs();
+  bool lock_screen_enabled =
+      pref_service->GetBoolean(prefs::kEnableAutoScreenLock);
+
+  std::string error =
+      SetLockScreenEnabledWithInvalidToken(!lock_screen_enabled);
+  EXPECT_FALSE(error.empty());
+
+  EXPECT_EQ(lock_screen_enabled,
+            pref_service->GetBoolean(prefs::kEnableAutoScreenLock));
 }
 
 // Verifies that this returns PIN for GetAvailableModes.

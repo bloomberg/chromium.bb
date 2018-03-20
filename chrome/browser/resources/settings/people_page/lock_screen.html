@@ -76,8 +76,9 @@
     </style>
 
     <div>
-      <settings-toggle-button id="screenLockDiv" class="first"
+      <settings-toggle-button id="enableLockScreen" class="first"
           pref="{{prefs.settings.enable_screen_lock}}"
+          on-settings-boolean-control-change="onScreenLockChange_" no-set-pref
           label="$i18n{enableScreenlock}">
       </settings-toggle-button>
 
@@ -198,7 +199,8 @@
 
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
         <settings-password-prompt-dialog id="passwordPrompt"
-            on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}">
+            on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}"
+            auth-token="{{authToken_}}">
         </settings-password-prompt-dialog>
       </template>
 

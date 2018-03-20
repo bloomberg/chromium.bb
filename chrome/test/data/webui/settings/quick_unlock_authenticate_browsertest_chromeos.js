@@ -266,6 +266,24 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals([], quickUnlockPrivateApi.activeModes);
       });
 
+      // Toggling the lock screen preference calls setLockScreenEnabled.
+      test('SetLockScreenEnabled', function() {
+        testElement.authToken_ = quickUnlockPrivateApi.getFakeToken();
+        let toggle = getFromElement('#enableLockScreen');
+        let lockScreenEnabled = toggle.checked;
+        quickUnlockPrivateApi.lockScreenEnabled = lockScreenEnabled;
+
+        MockInteractions.tap(toggle);
+        assertEquals(toggle.checked, !lockScreenEnabled);
+        assertEquals(
+            quickUnlockPrivateApi.lockScreenEnabled, !lockScreenEnabled);
+
+        MockInteractions.tap(toggle);
+        assertEquals(toggle.checked, lockScreenEnabled);
+        assertEquals(
+            quickUnlockPrivateApi.lockScreenEnabled, lockScreenEnabled);
+      });
+
       // The various radio buttons update internal state and do not modify
       // prefs.
       test('TappingButtonsChangesUnderlyingState', function() {

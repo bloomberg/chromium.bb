@@ -71,4 +71,9 @@ const LockStateBehavior = {
       }
     });
   },
+
+  /** Sets the lock screen enabled state. */
+  setLockScreenEnabled(authToken, enabled) {
+    this.quickUnlockPrivate_.setLockScreenEnabled(authToken, enabled);
+  },
 };
