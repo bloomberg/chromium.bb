@@ -462,7 +462,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       scoped_task_environment_.GetMainThreadTaskRunner(), video_sink_.get(),
       base::Bind(&CreateVideoDecodersForTest, &media_log_,
                  prepend_video_decoders_cb),
-      false, &media_log_));
+      false, &media_log_, nullptr));
 
   if (!clockless_playback_) {
     audio_sink_ =
