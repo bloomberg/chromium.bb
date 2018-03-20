@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -22,9 +23,15 @@ class AsyncDocumentSubresourceFilter;
 // NavigationThrottle responsible for determining the activation state of
 // subresource filtering for a given navigation (either in the main frame or in
 // a subframe); and for deferring that navigation at WillProcessResponse until
-// the activation state computation on the blocking pool thread is complete.
+// the activation state computation on the ruleset's task runner is complete.
+//
 // Interested parties can retrieve the activation state after this point (most
 // likely in ReadyToCommitNavigation).
+//
+// Note: for performance, activation computation for subframes is done
+// speculatively at navigation start and at every redirect. This is to reduce
+// the wait time (most likely to 0) by WillProcessResponse time.
+// TODO(crbug.com/809504): Implement speculation for main frames as well.
 class ActivationStateComputingNavigationThrottle
     : public content::NavigationThrottle {
  public:
@@ -47,8 +54,10 @@ class ActivationStateComputingNavigationThrottle
 
   // Notification for main frames when the page level activation is computed.
   // Must be called at most once before WillProcessResponse is called on this
-  // throttle. If it is never called, or it is called with a DISABLED state,
-  // this object will never delay the navigation.
+  // throttle. If it is never called, this object will never delay the
+  // navigation for main frames.
+  //
+  // Should never be called with DISABLED activation.
   void NotifyPageActivationWithRuleset(
       VerifiedRuleset::Handle* ruleset_handle,
       const ActivationState& page_activation_state);
@@ -58,6 +67,9 @@ class ActivationStateComputingNavigationThrottle
   }
 
   // content::NavigationThrottle:
+  content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
+  content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
+      override;
   content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
       override;
   const char* GetNameForLogging() override;
@@ -74,7 +86,10 @@ class ActivationStateComputingNavigationThrottle
   void WillSendActivationToRenderer();
 
  private:
+  void CheckActivationState();
   void OnActivationStateComputed(ActivationState state);
+
+  void LogDelayMetrics(base::TimeDelta delay) const;
 
   ActivationStateComputingNavigationThrottle(
       content::NavigationHandle* navigation_handle,
@@ -90,7 +105,9 @@ class ActivationStateComputingNavigationThrottle
   // nullptr until NotifyPageActivationWithRuleset is called.
   VerifiedRuleset::Handle* ruleset_handle_;
 
-  base::TimeTicks defer_timestamp_;
+  // Will be set when DEFER is called in WillProcessResponse. If nullptr, not
+  // deferred.
+  std::unique_ptr<base::ElapsedTimer> defer_timer_;
 
   // Callback to be run in the destructor.
   base::OnceClosure destruction_closure_;

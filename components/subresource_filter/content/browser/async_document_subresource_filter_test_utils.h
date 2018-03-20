@@ -25,6 +25,8 @@ class TestActivationStateCallbackReceiver {
   void WaitForActivationDecision();
   void ExpectReceivedOnce(const ActivationState& expected_state) const;
 
+  int callback_count() const { return callback_count_; }
+
  private:
   void Callback(ActivationState activation_state);
 
