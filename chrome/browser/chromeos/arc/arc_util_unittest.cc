@@ -392,6 +392,38 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_DemoAccount) {
   EXPECT_TRUE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 
+TEST_F(ChromeArcUtilTest, IsArcBlockedDueToIncompatibleFileSystem) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  SetArcBlockedDueToIncompatibleFileSystemForTesting(true);
+
+  const AccountId user_id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), kTestGaiaId));
+  const AccountId robot_id(
+      AccountId::FromUserEmail(profile()->GetProfileUserName()));
+
+  // Blocked for a regular user.
+  {
+    ScopedLogIn login(GetFakeUserManager(), user_id,
+                      user_manager::USER_TYPE_REGULAR);
+    EXPECT_TRUE(IsArcBlockedDueToIncompatibleFileSystem(profile()));
+  }
+
+  // Never blocked for an ARC kiosk.
+  {
+    ScopedLogIn login(GetFakeUserManager(), robot_id,
+                      user_manager::USER_TYPE_ARC_KIOSK_APP);
+    EXPECT_FALSE(IsArcBlockedDueToIncompatibleFileSystem(profile()));
+  }
+
+  // Never blocked for a public session.
+  {
+    ScopedLogIn login(GetFakeUserManager(), robot_id,
+                      user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    EXPECT_FALSE(IsArcBlockedDueToIncompatibleFileSystem(profile()));
+  }
+}
+
 TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--arc-availability=officially-supported"});
@@ -399,40 +431,42 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   const AccountId id(AccountId::FromUserEmailGaiaId(
       profile()->GetProfileUserName(), kTestGaiaId));
   ScopedLogIn login(GetFakeUserManager(), id);
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile());
 
   // Unconfirmed + Old ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // Unconfirmed + New ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
-  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // Old FS + Old ARC
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen, kFileSystemIncompatible);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // Old FS + New ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
-  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_FALSE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // New FS + Old ARC
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen, kFileSystemCompatible);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // New FS + New ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // New FS (User notified) + Old ARC
   user_manager::known_user::SetIntegerPref(
@@ -440,12 +474,12 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
       kFileSystemCompatibleAndNotified);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
   // New FS (User notified) + New ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 }
 
 TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile) {

@@ -58,8 +58,8 @@ base::LazyInstance<std::map<base::FilePath, bool>>::DestructorAtExit
 bool g_disallow_for_testing = false;
 
 // Let IsArcBlockedDueToIncompatibleFileSystem() return the specified value
-// during test runs.
-bool g_arc_blocked_due_to_incomaptible_filesystem_for_testing = false;
+// during test runs. Doesn't affect ARC kiosk and public session.
+bool g_arc_blocked_due_to_incompatible_filesystem_for_testing = false;
 
 // TODO(kinaba): Temporary workaround for crbug.com/729034.
 //
@@ -290,23 +290,32 @@ bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile) {
 }
 
 bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
-  // Test runs on Linux workstation does not have expected /etc/lsb-release
-  // field nor profile creation step. Hence it returns a dummy test value.
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return g_arc_blocked_due_to_incomaptible_filesystem_for_testing;
-
-  // Conducts the actual check, only when running on a real Chrome OS device.
-  return !IsArcCompatibleFileSystemUsedForProfile(profile);
-}
-
-void SetArcBlockedDueToIncompatibleFileSystemForTesting(bool block) {
-  g_arc_blocked_due_to_incomaptible_filesystem_for_testing = block;
-}
-
-bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
 
+  // Return true for public accounts as they only have ext4 and
+  // for ARC kiosk as migration to ext4 should always be triggered.
+  // Without this check it fails to start after browser crash as
+  // compatibility info is stored in RAM.
+  if (user && (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
+               user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP)) {
+    return false;
+  }
+
+  // Test runs on Linux workstation does not have expected /etc/lsb-release
+  // field nor profile creation step. Hence it returns a dummy test value.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return g_arc_blocked_due_to_incompatible_filesystem_for_testing;
+
+  // Conducts the actual check, only when running on a real Chrome OS device.
+  return !IsArcCompatibleFileSystemUsedForUser(user);
+}
+
+void SetArcBlockedDueToIncompatibleFileSystemForTesting(bool block) {
+  g_arc_blocked_due_to_incompatible_filesystem_for_testing = block;
+}
+
+bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user) {
   // Returns false for profiles not associated with users (like sign-in profile)
   if (!user)
     return false;
