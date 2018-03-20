@@ -46,8 +46,6 @@ include_rules = [
     "+gpu/GLES2",
     "+mojo/public",
     "+mozilla",
-    "+platform",
-    "+public/platform",
     #TODO(nverne): remove this
     "+public/web/WebKit.h",
     "+services/metrics/public/cpp/ukm_entry_builder.h",

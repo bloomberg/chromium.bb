@@ -12,11 +12,17 @@ include_rules = [
     "+base/thread_annotations.h",
     "+base/time/time.h",
     "+build",
+    "+platform",
+    "+public/platform",
     "+services/service_manager/public/cpp/connector.h",
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
     "+v8",
+
+    # We are moving from WTF_MAKE_NONCOPYABLE to DISALLOW_COPY_AND_ASSIGN. Stop
+    # new dependencies on WTF_MAKE_NONCOPYABLE.
+    "!platform/wtf/Noncopyable.h",
 ]
 
 skip_child_includes = [

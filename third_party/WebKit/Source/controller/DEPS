@@ -5,8 +5,6 @@ include_rules = [
     "+modules",
     "+mojo/public",
     "+controller",
-    "+platform",
     "+web",
-    "+public/platform",
     "+public/web",
 ]
