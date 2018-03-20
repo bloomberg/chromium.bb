@@ -41,6 +41,16 @@ enum RemoteInvocationError {
   EXCEPTION_THROWN,
 };
 
+union RemoteInvocationResultValue {
+  double number_value;
+  bool boolean_value;
+  mojo_base.mojom.String16 string_value;
+  SingletonJavaScriptValue singleton_value;
+};
+
 struct RemoteInvocationResult {
   RemoteInvocationError error = OK;
+
+  // Must be set if |error == OK|.
+  RemoteInvocationResultValue? value;
 };

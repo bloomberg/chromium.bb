@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.remoteobjects;
 
+import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -22,6 +23,7 @@ import org.mockito.InOrder;
 import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
+import org.chromium.blink.mojom.RemoteInvocationResultValue;
 import org.chromium.blink.mojom.RemoteObject;
 import org.chromium.blink.mojom.SingletonJavaScriptValue;
 import org.chromium.mojo_base.mojom.String16;
@@ -295,7 +297,7 @@ public final class RemoteObjectImplTest {
         RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
         remoteObject.invokeMethod("returnsIntArray", new RemoteInvocationArgument[] {}, response);
 
-        verify(response).call(resultIsOk());
+        verify(response).call(resultIsUndefined());
     }
 
     @Test
@@ -627,12 +629,148 @@ public final class RemoteObjectImplTest {
         verify(consumer, times(2)).accept(null);
     }
 
+    @Test
+    public void testResultConversionVoid() {
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public void returnsVoid() {}
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("returnsVoid", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultIsUndefined());
+    }
+
+    @Test
+    public void testConversionResultNumber() {
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public int returnsInt() {
+                return 42;
+            }
+
+            @TestJavascriptInterface
+            public float returnsFloat() {
+                return -1.5f;
+            }
+
+            @TestJavascriptInterface
+            public char returnsChar() {
+                return '\ufeed';
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("returnsInt", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("returnsFloat", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("returnsChar", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultIsNumber(42));
+        verify(response).call(resultIsNumber(-1.5f));
+        verify(response).call(resultIsNumber(0xfeed));
+    }
+
+    @Test
+    public void testConversionResultBoolean() {
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public boolean returnsTrue() {
+                return true;
+            }
+
+            @TestJavascriptInterface
+            public boolean returnsFalse() {
+                return false;
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("returnsTrue", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("returnsFalse", new RemoteInvocationArgument[] {}, response);
+
+        InOrder inOrder = inOrder(response);
+        inOrder.verify(response).call(resultIsBoolean(true));
+        inOrder.verify(response).call(resultIsBoolean(false));
+    }
+
+    @Test
+    public void testConversionResultString() {
+        final String stringWithNonAsciiCharacterAndUnpairedSurrogate = "caf\u00e9\ud800";
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public String returnsHello() {
+                return "Hello";
+            }
+
+            @TestJavascriptInterface
+            public String returnsExoticString() {
+                return stringWithNonAsciiCharacterAndUnpairedSurrogate;
+            }
+
+            @TestJavascriptInterface
+            public String returnsNull() {
+                return null;
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("returnsHello", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod(
+                "returnsExoticString", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("returnsNull", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultIsString("Hello"));
+        verify(response).call(resultIsString(stringWithNonAsciiCharacterAndUnpairedSurrogate));
+        verify(response).call(resultIsUndefined());
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
 
     private RemoteInvocationResult resultIsOk() {
         return resultHasError(RemoteInvocationError.OK);
+    }
+
+    private RemoteInvocationResult resultIsUndefined() {
+        return and(resultIsOk(), ArgumentMatchers.argThat(result -> {
+            return result.value != null
+                    && result.value.which() == RemoteInvocationResultValue.Tag.SingletonValue
+                    && result.value.getSingletonValue() == SingletonJavaScriptValue.UNDEFINED;
+        }));
+    }
+
+    private RemoteInvocationResult resultIsNumber(final double numberValue) {
+        return and(resultIsOk(), ArgumentMatchers.argThat(result -> {
+            return result.value != null
+                    && result.value.which() == RemoteInvocationResultValue.Tag.NumberValue
+                    && result.value.getNumberValue() == numberValue;
+        }));
+    }
+
+    private RemoteInvocationResult resultIsBoolean(final boolean booleanValue) {
+        return and(resultIsOk(), ArgumentMatchers.argThat(result -> {
+            return result.value != null
+                    && result.value.which() == RemoteInvocationResultValue.Tag.BooleanValue
+                    && result.value.getBooleanValue() == booleanValue;
+        }));
+    }
+
+    private RemoteInvocationResult resultIsString(String stringValue) {
+        final short[] expectedData = new short[stringValue.length()];
+        for (int i = 0; i < expectedData.length; i++) {
+            expectedData[i] = (short) stringValue.charAt(i);
+        }
+        return and(resultIsOk(), ArgumentMatchers.argThat(result -> {
+            return result.value != null
+                    && result.value.which() == RemoteInvocationResultValue.Tag.StringValue
+                    && Arrays.equals(result.value.getStringValue().data, expectedData);
+        }));
     }
 
     private RemoteInvocationArgument numberArgument(double numberValue) {
