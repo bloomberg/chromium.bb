@@ -2193,6 +2193,7 @@
         "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke",
         "visibleFill", "visiblePainted", "bounding-box", "all"
       ],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
