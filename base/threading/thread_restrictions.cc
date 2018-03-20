@@ -118,6 +118,13 @@ void ResetThreadRestrictionsForTesting() {
 
 }  // namespace internal
 
+ThreadRestrictions::ScopedAllowIO::ScopedAllowIO()
+    : was_allowed_(SetIOAllowed(true)) {}
+
+ThreadRestrictions::ScopedAllowIO::~ScopedAllowIO() {
+  SetIOAllowed(was_allowed_);
+}
+
 // static
 bool ThreadRestrictions::SetIOAllowed(bool allowed) {
   bool previous_disallowed = g_blocking_disallowed.Get().Get();
@@ -155,6 +162,13 @@ bool ThreadRestrictions::SetWaitAllowed(bool allowed) {
   bool previous_disallowed = g_base_sync_primitives_disallowed.Get().Get();
   g_base_sync_primitives_disallowed.Get().Set(!allowed);
   return !previous_disallowed;
+}
+
+ThreadRestrictions::ScopedAllowWait::ScopedAllowWait()
+    : was_allowed_(SetWaitAllowed(true)) {}
+
+ThreadRestrictions::ScopedAllowWait::~ScopedAllowWait() {
+  SetWaitAllowed(was_allowed_);
 }
 
 }  // namespace base
