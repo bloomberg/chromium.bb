@@ -23,6 +23,10 @@ namespace base {
 class FilePath;
 }
 
+namespace user_manager {
+class User;
+}
+
 namespace arc {
 
 // Values to be stored in the local state preference to keep track of the
@@ -65,11 +69,11 @@ bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile);
 // Sets the result of IsArcBlockedDueToIncompatibleFileSystem for testing.
 void SetArcBlockedDueToIncompatibleFileSystemForTesting(bool block);
 
-// Returns true if the profile is already marked to be on a filesystem
+// Returns true if the user is already marked to be on a filesystem
 // compatible to the currently installed ARC version. The check almost never
 // is meaningful on test workstation. Usually it should be checked only when
 // running on the real Chrome OS.
-bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile);
+bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user);
 
 // Disallows ARC for all profiles for testing.
 // In most cases, disabling ARC should be done via commandline. However,
