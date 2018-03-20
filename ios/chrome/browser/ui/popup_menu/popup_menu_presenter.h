@@ -10,13 +10,13 @@
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
-@protocol BrowserCommands;
+@protocol PopupMenuCommands;
 
 // Presenter for the popup menu. It handles showing/dismissing a popup menu.
 @interface PopupMenuPresenter : NSObject<ContainedPresenter>
 
-// Dispatcher.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// CommandHandler.
+@property(nonatomic, weak) id<PopupMenuCommands> commandHandler;
 // Guide name used for the presentation.
 @property(nonatomic, strong) GuideName* guideName;
 

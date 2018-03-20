@@ -19,8 +19,8 @@
 @implementation PopupMenuPresenter
 
 @synthesize baseViewController = _baseViewController;
+@synthesize commandHandler = _commandHandler;
 @synthesize delegate = _delegate;
-@synthesize dispatcher = _dispatcher;
 @synthesize guideName = _guideName;
 @synthesize popupViewController = _popupViewController;
 @synthesize presentedViewController = _presentedViewController;
@@ -33,7 +33,7 @@
     return;
 
   self.popupViewController = [[PopupMenuViewController alloc] init];
-  self.popupViewController.dispatcher = self.dispatcher;
+  self.popupViewController.commandHandler = self.commandHandler;
   [self.popupViewController addContent:self.presentedViewController];
 
   [self.baseViewController addChildViewController:self.popupViewController];

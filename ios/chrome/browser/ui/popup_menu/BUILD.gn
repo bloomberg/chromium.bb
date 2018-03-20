@@ -5,6 +5,22 @@
 source_set("popup_menu") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "popup_menu_coordinator.h",
+    "popup_menu_coordinator.mm",
+  ]
+  deps = [
+    ":popup_menu_ui",
+    "//base",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/util",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("popup_menu_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
     "popup_menu_controller.h",
     "popup_menu_controller.mm",
     "popup_menu_presenter.h",

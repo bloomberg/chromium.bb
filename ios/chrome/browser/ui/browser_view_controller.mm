@@ -132,6 +132,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
@@ -174,6 +175,8 @@
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_flags.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
@@ -687,6 +690,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // ones that cannot be scrolled off screen by full screen.
 @property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
 
+// Coordinator for the popup menus.
+@property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
+
 // Used to display the new tab tip in-product help promotion bubble. |nil| if
 // the new tab tip bubble has not yet been presented. Once the bubble is
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
@@ -956,6 +962,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
+@synthesize popupMenuCoordinator = _popupMenuCoordinator;
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
@@ -1074,13 +1081,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (id<ApplicationCommands,
       BrowserCommands,
       OmniboxFocuser,
+      PopupMenuCommands,
       FakeboxFocuser,
       SnackbarCommands,
       ToolbarCommands,
       UrlLoader>)dispatcher {
-  return static_cast<
-      id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser,
-         SnackbarCommands, ToolbarCommands, UrlLoader>>(_dispatcher);
+  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+                        PopupMenuCommands, FakeboxFocuser, SnackbarCommands,
+                        ToolbarCommands, UrlLoader>>(_dispatcher);
 }
 
 - (void)setActive:(BOOL)active {
@@ -1403,6 +1411,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_activityServiceCoordinator disconnect];
   [_qrScannerCoordinator disconnect];
   [_tabHistoryCoordinator disconnect];
+  [self.popupMenuCoordinator stop];
   [_pageInfoCoordinator disconnect];
   [_externalSearchCoordinator disconnect];
   [self.tabStripCoordinator stop];
@@ -1498,8 +1507,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_paymentRequestManager cancelRequest];
   [_printController dismissAnimated:YES];
   _printController = nil;
-  [self.dispatcher dismissToolsMenu];
-  [self.dispatcher dismissHistoryPopup];
+  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+    [self.dispatcher dismissPopupMenu];
+  } else {
+    [self.dispatcher dismissToolsMenu];
+    [_tabHistoryCoordinator dismissHistoryPopup];
+  }
   [_contextMenuCoordinator stop];
   [self dismissRateThisAppDialog];
 
@@ -2222,14 +2235,22 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [self.primaryToolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
-  _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:_browserState];
-  _tabHistoryCoordinator.dispatcher = _dispatcher;
-  _tabHistoryCoordinator.tabModel = _model;
-  _tabHistoryCoordinator.presentationProvider = self;
-  _tabHistoryCoordinator.tabHistoryUIUpdater =
-      [self.toolbarInterface tabHistoryUIUpdater];
+  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+    self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
+        initWithBaseViewController:self
+                      browserState:self.browserState];
+    self.popupMenuCoordinator.dispatcher = _dispatcher;
+    [self.popupMenuCoordinator start];
+  } else {
+    _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
+        initWithBaseViewController:self
+                      browserState:_browserState];
+    _tabHistoryCoordinator.dispatcher = _dispatcher;
+    _tabHistoryCoordinator.tabModel = _model;
+    _tabHistoryCoordinator.presentationProvider = self;
+    _tabHistoryCoordinator.tabHistoryUIUpdater =
+        [self.toolbarInterface tabHistoryUIUpdater];
+  }
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
   _sadTabCoordinator.baseViewController = self;
@@ -2442,9 +2463,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)dismissPopups {
-  [self.dispatcher dismissToolsMenu];
   [self.dispatcher hidePageInfo];
-  [_tabHistoryCoordinator dismissHistoryPopup];
+  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+    [self.dispatcher dismissPopupMenu];
+  } else {
+    [self.dispatcher dismissToolsMenu];
+    [_tabHistoryCoordinator dismissHistoryPopup];
+  }
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
 }

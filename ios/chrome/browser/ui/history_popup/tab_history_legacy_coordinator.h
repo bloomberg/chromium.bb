@@ -16,6 +16,7 @@
 // The coordinator in charge of displaying and dismissing the TabHistoryPopup.
 // The TabHistoryPopup is presented when the user long presses the back or
 // forward Toolbar button.
+// TODO(crbug.com/800266): Remove this coordinator once Phase 1 is enabled.
 @interface LegacyTabHistoryCoordinator : ChromeCoordinator
 
 // The dispatcher for this Coordinator.

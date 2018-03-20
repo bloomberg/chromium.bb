@@ -9,6 +9,7 @@
 
 // Protocol that describes the commands that may trigger the presentation
 // and dismissal of the Tools menu.
+// TODO(crbug.com/800266): Remove this protocol once Phase 1 is enabled.
 @protocol ToolsMenuCommands
 // Display the tools menu.
 - (void)showToolsMenu;
