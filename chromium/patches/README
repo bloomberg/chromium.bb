@@ -95,3 +95,8 @@ Current patches:
 
   libavformat/oggparseflac.c
     flac_header(): Free extradata before reallocating. https://crbug.com/789835
+
+  libavformat/mov.c
+    Check STSC and remove invalid entries. Applied from a patch currently in
+    upstream review at https://patchwork.ffmpeg.org/patch/8051/
+    See https://crbug.com/822547, https://crbug.com/822666, https://crbug.com/823009.
