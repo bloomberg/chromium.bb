@@ -84,8 +84,8 @@ Custom property | Description | Default
   <template>
     <style>
       :host {
-        @apply(--layout-inline);
-        @apply(--layout-center-center);
+        @apply --layout-inline;
+        @apply --layout-center-center;
         position: relative;
 
         vertical-align: middle;
@@ -95,7 +95,11 @@ Custom property | Description | Default
 
         width: var(--iron-icon-width, 24px);
         height: var(--iron-icon-height, 24px);
-        @apply(--iron-icon);
+        @apply --iron-icon;
+      }
+
+      :host([hidden]) {
+        display: none;
       }
     </style>
   </template>
