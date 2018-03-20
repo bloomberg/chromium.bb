@@ -1886,8 +1886,9 @@ class SitePerProcessMouseWheelHitTestBrowserTest
   RenderWidgetHostViewAura* rwhv_root_;
 };
 
+// Disabled because of data races, see https://crbug.com/823713.
 IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
-                       SubframeWheelEventsOnMainThread) {
+                       DISABLED_SubframeWheelEventsOnMainThread) {
   feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
   GURL main_url(embedded_test_server()->GetURL(
@@ -1920,8 +1921,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
 // the same page loaded in the mainframe.
+// Disabled because of data races, see https://crbug.com/823713.
 IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
-                       MainframeWheelEventsOnMainThread) {
+                       DISABLED_MainframeWheelEventsOnMainThread) {
   feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
   GURL main_url(
