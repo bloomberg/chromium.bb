@@ -22,6 +22,15 @@ void ComputeQuaternionFromEulerAngles(double alpha_in_degrees,
                                       double* y,
                                       double* z,
                                       double* w) {
+  if (std::isnan(alpha_in_degrees)) {
+    // The RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer
+    // algorithm cannot measure rotation around the z-axis because it only
+    // measures the direction of Earth's gravitational field through the
+    // accelerometer. It sets |alpha| to NaN to reflect that. There is no
+    // analogue in the world of quaternions so we set |alpha| to 0 to choose
+    // an arbitrary fixed orientation around the z-axis.
+    alpha_in_degrees = 0.0;
+  }
   double alpha_in_radians = gfx::DegToRad(alpha_in_degrees);
   double beta_in_radians = gfx::DegToRad(beta_in_degrees);
   double gamma_in_radians = gfx::DegToRad(gamma_in_degrees);
