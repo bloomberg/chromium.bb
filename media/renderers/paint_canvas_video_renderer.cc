@@ -215,11 +215,17 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
   source_texture_info.fTarget = GL_TEXTURE_2D;
+  // TODO(bsalomon): GrGLTextureInfo::fFormat and SkColorType passed to SkImage
+  // factory should reflect video_frame->format(). Update once Skia supports
+  // GL_RGB.
+  // skbug.com/7533
+  source_texture_info.fFormat = GL_RGBA8_OES;
   GrBackendTexture source_backend_texture(
       video_frame->coded_size().width(), video_frame->coded_size().height(),
-      kRGBA_8888_GrPixelConfig, source_texture_info);
+      GrMipMapped::kNo, source_texture_info);
   return SkImage::MakeFromAdoptedTexture(
-      context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin);
+      context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin,
+      kRGBA_8888_SkColorType);
 }
 
 }  // anonymous namespace
