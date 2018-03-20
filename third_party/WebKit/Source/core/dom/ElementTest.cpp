@@ -344,4 +344,50 @@ TEST_F(ElementTest, GetBoundingClientRectForSVG) {
   EXPECT_EQ(IntRect(10, 100, 100, 71), svg_stroke->BoundsInViewport());
 }
 
+TEST_F(ElementTest, PartAttribute) {
+  Document& document = GetDocument();
+  SetBodyContent(R"HTML(
+    <span id='has_one_part' part='partname'></span>
+    <span id='has_two_parts' part='partname1 partname2'></span>
+    <span id='has_no_part'></span>
+  )HTML");
+
+  Element* has_one_part = document.getElementById("has_one_part");
+  Element* has_two_parts = document.getElementById("has_two_parts");
+  Element* has_no_part = document.getElementById("has_no_part");
+
+  ASSERT_TRUE(has_no_part);
+  ASSERT_TRUE(has_one_part);
+  ASSERT_TRUE(has_two_parts);
+
+  {
+    EXPECT_TRUE(has_one_part->HasPartName());
+    const SpaceSplitString* part_names = has_one_part->PartNames();
+    ASSERT_TRUE(part_names);
+    ASSERT_EQ(1UL, part_names->size());
+    ASSERT_EQ("partname", (*part_names)[0].Ascii());
+  }
+
+  {
+    EXPECT_TRUE(has_two_parts->HasPartName());
+    const SpaceSplitString* part_names = has_two_parts->PartNames();
+    ASSERT_TRUE(part_names);
+    ASSERT_EQ(2UL, part_names->size());
+    ASSERT_EQ("partname1", (*part_names)[0].Ascii());
+    ASSERT_EQ("partname2", (*part_names)[1].Ascii());
+  }
+
+  {
+    EXPECT_FALSE(has_no_part->HasPartName());
+    EXPECT_FALSE(has_no_part->PartNames());
+
+    // Now update the attribute value and make sure it's reflected.
+    has_no_part->setAttribute("part", "partname");
+    const SpaceSplitString* part_names = has_no_part->PartNames();
+    ASSERT_TRUE(part_names);
+    ASSERT_EQ(1UL, part_names->size());
+    ASSERT_EQ("partname", (*part_names)[0].Ascii());
+  }
+}
+
 }  // namespace blink
