@@ -40,10 +40,9 @@ scoped_refptr<TransformOperation> TranslateTransformOperation::Blend(
         blink::Blend(z_, 0., progress), type_);
   }
 
-  const TranslateTransformOperation* from_op =
-      static_cast<const TranslateTransformOperation*>(from);
-  Length from_x = from_op ? from_op->x_ : zero_length;
-  Length from_y = from_op ? from_op->y_ : zero_length;
+  const auto* from_op = ToTranslateTransformOperation(from);
+  const Length& from_x = from_op ? from_op->x_ : zero_length;
+  const Length& from_y = from_op ? from_op->y_ : zero_length;
   double from_z = from_op ? from_op->z_ : 0;
   return TranslateTransformOperation::Create(
       x_.Blend(from_x, progress, kValueRangeAll),
