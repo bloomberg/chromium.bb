@@ -178,17 +178,23 @@ class FeedbackRequest {
 
     /** @const */ var ID = this.id_;
     /** @const */ var FLOW = this.feedbackInfo_.flow;
-    chrome.feedbackPrivate.sendFeedback(this.feedbackInfo_, function(result) {
-      if (result == ReportStatus.SUCCESS) {
-        console.log('Feedback: Report sent for request with ID ' + ID);
-        if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN)
-          window.open(FEEDBACK_LANDING_PAGE, '_blank');
-      } else {
-        console.log(
-            'Feedback: Report for request with ID ' + ID +
-            ' will be sent later.');
-      }
-    });
+    chrome.feedbackPrivate.sendFeedback(
+        this.feedbackInfo_, function(result, landingPageType) {
+          if (result == chrome.feedbackPrivate.Status.SUCCESS) {
+            console.log('Feedback: Report sent for request with ID ' + ID);
+            if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+              var landingPage = landingPageType ==
+                      chrome.feedbackPrivate.LandingPageType.NORMAL ?
+                  FEEDBACK_LANDING_PAGE :
+                  FEEDBACK_LANDING_PAGE_TECHSTOP;
+              window.open(landingPage, '_blank');
+            }
+          } else {
+            console.log(
+                'Feedback: Report for request with ID ' + ID +
+                ' will be sent later.');
+          }
+        });
   }
 
   /**
