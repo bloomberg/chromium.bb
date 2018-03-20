@@ -95,8 +95,5 @@ ChromeBrowsingDataRemoverDelegateFactory::GetBrowserContextToUse(
 
 KeyedService* ChromeBrowsingDataRemoverDelegateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* history_service = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
-  return new ChromeBrowsingDataRemoverDelegate(context, history_service);
+  return new ChromeBrowsingDataRemoverDelegate(context);
 }

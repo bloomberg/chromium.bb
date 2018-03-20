@@ -43,9 +43,6 @@ BrowsingHistoryBridge::BrowsingHistoryBridge(JNIEnv* env,
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
-  // Make sure BrowsingDataRemoverDelegate is initialized and listening
-  // for history deletions.
-  profile_->GetBrowsingDataRemoverDelegate();
 
   j_history_service_obj_.Reset(env, obj);
 }

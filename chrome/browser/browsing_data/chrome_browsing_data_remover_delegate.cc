@@ -327,8 +327,7 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 }  // namespace
 
 ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
-    BrowserContext* browser_context,
-    history::HistoryService* history_service)
+    BrowserContext* browser_context)
     : profile_(Profile::FromBrowserContext(browser_context)),
 #if BUILDFLAG(ENABLE_PLUGINS)
       flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
@@ -336,11 +335,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
 #if defined(OS_ANDROID)
       webapp_registry_(new WebappRegistry()),
 #endif
-      history_observer_(this),
       weak_ptr_factory_(this) {
-  if (history_service) {
-    history_observer_.Add(history_service);
-  }
 }
 
 ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {}
@@ -355,15 +350,6 @@ ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() const {
   return base::BindRepeating(&DoesOriginMatchEmbedderMask);
 }
 
-void ChromeBrowsingDataRemoverDelegate::OnURLsDeleted(
-    history::HistoryService* history_service,
-    const history::DeletionTimeRange& time_range,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  if (!expired && !profile_->IsGuestSession())
-    browsing_data::RemoveNavigationEntries(profile_, time_range, deleted_rows);
-}
 
 bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);

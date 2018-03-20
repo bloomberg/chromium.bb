@@ -170,6 +170,8 @@ jumbo_split_static_library("browser") {
     "browsing_data/browsing_data_file_system_helper.h",
     "browsing_data/browsing_data_helper.cc",
     "browsing_data/browsing_data_helper.h",
+    "browsing_data/browsing_data_history_observer_service.cc",
+    "browsing_data/browsing_data_history_observer_service.h",
     "browsing_data/browsing_data_important_sites_util.cc",
     "browsing_data/browsing_data_important_sites_util.h",
     "browsing_data/browsing_data_indexed_db_helper.cc",

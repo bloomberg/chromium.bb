@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browsing_data/browsing_data_history_observer_service.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -215,6 +216,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   BookmarkModelFactory::GetInstance();
   BookmarkUndoServiceFactory::GetInstance();
+  BrowsingDataHistoryObserverService::Factory::GetInstance();
   browser_sync::UserEventServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();

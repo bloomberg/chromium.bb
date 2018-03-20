@@ -243,9 +243,6 @@ void BrowsingHistoryHandler::RegisterMessages() {
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
       this, local_history, sync_service);
-  // Make sure BrowsingDataRemoverDelegate is initialized and listening
-  // for history deletions.
-  profile->GetBrowsingDataRemoverDelegate();
 
   // Create our favicon data source.
   content::URLDataSource::Add(profile, new FaviconSource(profile));
