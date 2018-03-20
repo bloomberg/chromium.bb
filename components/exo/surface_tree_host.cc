@@ -19,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
@@ -104,6 +105,11 @@ SurfaceTreeHost::~SurfaceTreeHost() {
 void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
   if (root_surface == root_surface_)
     return;
+
+  // This method applies multiple changes to the window tree. Use
+  // ScopedPauseOcclusionTracking to ensure that occlusion isn't recomputed
+  // before all changes have been applied.
+  aura::WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion;
 
   if (root_surface_) {
     root_surface_->window()->Hide();
@@ -320,12 +326,18 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
 // SurfaceTreeHost, private:
 
 void SurfaceTreeHost::UpdateHostWindowBounds() {
+  // This method applies multiple changes to the window tree. Use
+  // ScopedPauseOcclusionTracking to ensure that occlusion isn't recomputed
+  // before all changes have been applied.
+  aura::WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion;
+
   gfx::Rect bounds = root_surface_->surface_hierarchy_content_bounds();
   host_window_->SetBounds(
       gfx::Rect(host_window_->bounds().origin(), bounds.size()));
-  host_window_->layer()->SetFillsBoundsOpaquely(
+  const bool fills_bounds_opaquely =
       bounds.size() == root_surface_->content_size() &&
-      root_surface_->FillsBoundsOpaquely());
+      root_surface_->FillsBoundsOpaquely();
+  host_window_->SetTransparent(!fills_bounds_opaquely);
 
   root_surface_origin_ = gfx::Point() - bounds.OffsetFromOrigin();
   root_surface_->window()->SetBounds(gfx::Rect(
