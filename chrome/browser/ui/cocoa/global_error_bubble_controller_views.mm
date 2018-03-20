@@ -22,8 +22,9 @@ GlobalErrorBubbleViewBase* ShowViewsGlobalErrorBubbleOnCocoaBrowser(
       platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
   DCHECK(parent);
 
-  GlobalErrorBubbleView* bubble_view = new GlobalErrorBubbleView(
-      nullptr, anchor_point, views::BubbleBorder::TOP_RIGHT, browser, error);
+  GlobalErrorBubbleView* bubble_view =
+      new GlobalErrorBubbleView(nullptr, gfx::Rect(anchor_point, gfx::Size()),
+                                views::BubbleBorder::TOP_RIGHT, browser, error);
   bubble_view->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->GetWidget()->Show();
