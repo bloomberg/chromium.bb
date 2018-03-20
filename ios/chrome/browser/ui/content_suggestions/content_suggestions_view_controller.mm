@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
@@ -35,9 +36,12 @@ namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 const CGFloat kMaxCardWidth = 416;
 const CGFloat kStandardSpacing = 8;
+const CGFloat kMostVisitedBottomMargin = 13;
 
 // Returns whether the cells should be displayed using the full width.
 BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
+  if (IsUIRefreshPhase1Enabled())
+    return NO;
   return collection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
          collection.verticalSizeClass != UIUserInterfaceSizeClassCompact;
 }
@@ -373,9 +377,16 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if ([self.collectionUpdater isMostVisitedSection:indexPath.section]) {
     return [ContentSuggestionsMostVisitedCell defaultSize];
   }
-  return [super collectionView:collectionView
-                        layout:collectionViewLayout
-        sizeForItemAtIndexPath:indexPath];
+  CGSize size = [super collectionView:collectionView
+                               layout:collectionViewLayout
+               sizeForItemAtIndexPath:indexPath];
+  // Special case for last item to add extra spacing before the footer.
+  if ([self.collectionUpdater isContentSuggestionsSection:indexPath.section] &&
+      indexPath.row ==
+          [self.collectionView numberOfItemsInSection:indexPath.section] - 1)
+    size.height += [ContentSuggestionsCell standardSpacing];
+
+  return size;
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView*)collectionView
@@ -395,50 +406,60 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     parentInset.left = margin;
     parentInset.right = margin;
     if ([self.collectionUpdater isMostVisitedSection:section]) {
-      // Make sure the Content Suggestions is displayed at a reasonnable
-      // distance from the Most Visited tiles.
-      CGFloat maximumMargin = IsIPadIdiom()
-                                  ? ntp_home::kMostVisitedBottomMarginIPad
-                                  : ntp_home::kMostVisitedBottomMarginIPhone;
+      if (IsUIRefreshPhase1Enabled()) {
+        parentInset.bottom = kMostVisitedBottomMargin;
+      } else {
+        // Make sure the Content Suggestions is displayed at a reasonnable
+        // distance from the Most Visited tiles.
+        CGFloat maximumMargin = IsIPadIdiom()
+                                    ? ntp_home::kMostVisitedBottomMarginIPad
+                                    : ntp_home::kMostVisitedBottomMarginIPhone;
 
-      NSInteger promoSection = -1;
-      for (NSInteger i = 0; i < [self.collectionViewModel numberOfSections];
-           i++) {
-        if ([self.collectionUpdater isPromoSection:i]) {
-          promoSection = i;
+        NSInteger promoSection = -1;
+        for (NSInteger i = 0; i < [self.collectionViewModel numberOfSections];
+             i++) {
+          if ([self.collectionUpdater isPromoSection:i]) {
+            promoSection = i;
+          }
         }
-      }
 
-      // Height for the displayed content.
-      CGFloat contentHeight =
-          [self collectionView:collectionView
-                                       layout:collectionViewLayout
-              referenceSizeForHeaderInSection:0]
-              .height;
-      contentHeight += kStandardSpacing;
-      if (promoSection >= 0) {
-        contentHeight += [self
-                   collectionView:collectionView
-            cellHeightAtIndexPath:[NSIndexPath indexPathForItem:0
-                                                      inSection:promoSection]];
+        // Height for the displayed content.
+        CGFloat contentHeight =
+            [self collectionView:collectionView
+                                         layout:collectionViewLayout
+                referenceSizeForHeaderInSection:0]
+                .height;
         contentHeight += kStandardSpacing;
-      }
-      contentHeight +=
-          2 * [ContentSuggestionsMostVisitedCell defaultSize].height;
-      contentHeight += content_suggestions::verticalSpacingBetweenTiles();
+        if (promoSection >= 0) {
+          contentHeight +=
+              [self collectionView:collectionView
+                  cellHeightAtIndexPath:[NSIndexPath
+                                            indexPathForItem:0
+                                                   inSection:promoSection]];
+          contentHeight += kStandardSpacing;
+        }
+        contentHeight +=
+            2 * [ContentSuggestionsMostVisitedCell defaultSize].height;
+        contentHeight += content_suggestions::verticalSpacingBetweenTiles();
 
-      // The Content Suggestions should idealy be displayed such as only part of
-      // the first suggestion is displayed. The distance should be capped to not
-      // push the suggestions too far.
-      CGFloat collectionHeight = collectionView.bounds.size.height;
-      CGFloat idealMargin =
-          collectionHeight - contentHeight - ntp_home::kSuggestionPeekingHeight;
-      CGFloat margin = MIN(MAX(kStandardSpacing, idealMargin), maximumMargin);
-      parentInset.bottom = margin;
+        // The Content Suggestions should idealy be displayed such as only part
+        // of the first suggestion is displayed. The distance should be capped
+        // to not push the suggestions too far.
+        CGFloat collectionHeight = collectionView.bounds.size.height;
+        CGFloat idealMargin = collectionHeight - contentHeight -
+                              ntp_home::kSuggestionPeekingHeight;
+        CGFloat margin = MIN(MAX(kStandardSpacing, idealMargin), maximumMargin);
+        parentInset.bottom = margin;
+      }
     }
   } else if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
+    CGFloat collectionWidth = collectionView.bounds.size.width;
+    CGFloat maxCardWidth =
+        IsUIRefreshPhase1Enabled()
+            ? content_suggestions::searchFieldWidth(collectionWidth)
+            : kMaxCardWidth;
     CGFloat margin =
-        MAX(0, (collectionView.frame.size.width - kMaxCardWidth) / 2);
+        MAX(0, (collectionView.frame.size.width - maxCardWidth) / 2);
     parentInset.left = margin;
     parentInset.right = margin;
   }
@@ -497,6 +518,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldHideHeaderBackgroundForSection:(NSInteger)section {
+  if (IsUIRefreshPhase1Enabled()) {
+    return [self.collectionUpdater shouldUseCustomStyleForSection:section];
+  }
   return YES;
 }
 
@@ -515,13 +539,30 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldHideItemSeparatorAtIndexPath:(NSIndexPath*)indexPath {
-  return [self collectionView:collectionView
-      shouldHideItemBackgroundAtIndexPath:indexPath];
+  if (IsUIRefreshPhase1Enabled()) {
+    // Special case, show a seperator between the last regular item and the
+    // footer.
+    if (![self.collectionUpdater
+            shouldUseCustomStyleForSection:indexPath.section] &&
+        indexPath.row ==
+            [self.collectionView numberOfItemsInSection:indexPath.section] -
+                1) {
+      return NO;
+    }
+    return YES;
+  } else {
+    return [self collectionView:collectionView
+        shouldHideItemBackgroundAtIndexPath:indexPath];
+  }
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldHideHeaderSeparatorForSection:(NSInteger)section {
-  return YES;
+  if (IsUIRefreshPhase1Enabled()) {
+    return [self.collectionUpdater shouldUseCustomStyleForSection:section];
+  } else {
+    return YES;
+  }
 }
 
 #pragma mark - MDCCollectionViewEditingDelegate
