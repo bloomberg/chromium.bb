@@ -141,14 +141,16 @@ GetAdditionalNavigationRequestClientHintsHeaders(
 
   if (web_client_hints.IsEnabled(
           blink::mojom::WebClientHintsType::kViewportWidth)) {
-// TODO: https://crbug.com/821974: Viewport width client hint should be sent
-// on non-Android main frame navigations as well.
+    // The default value on Android. See
+    // https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/viewportAndroid.css.
+    double viewport_width = 980;
 #if !defined(OS_ANDROID)
-    double viewport_width = (display::Screen::GetScreen()
-                                 ->GetPrimaryDisplay()
-                                 .GetSizeInPixel()
-                                 .width()) /
-                            GetZoomFactor(context, url);
+    viewport_width = (display::Screen::GetScreen()
+                          ->GetPrimaryDisplay()
+                          .GetSizeInPixel()
+                          .width()) /
+                     GetZoomFactor(context, url);
+#endif  // !OS_ANDROID
     DCHECK_LT(0, viewport_width);
     if (viewport_width > 0) {
       additional_headers->SetHeader(
@@ -156,11 +158,10 @@ GetAdditionalNavigationRequestClientHintsHeaders(
               blink::mojom::WebClientHintsType::kViewportWidth)],
           base::NumberToString(std::round(viewport_width)));
     }
-#endif  // !OS_ANDROID
   }
 
-  // Static assert that triggers if a new client hint header is added. If a new
-  // client hint header is added, the following assertion should be updated.
+  // Static assert that triggers if a new client hint header is added. If a
+  // new client hint header is added, the following assertion should be updated.
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
