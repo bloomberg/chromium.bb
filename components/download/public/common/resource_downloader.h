@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_RESOURCE_DOWNLOADER_
-#define CONTENT_BROWSER_DOWNLOAD_RESOURCE_DOWNLOADER_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_
 
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_response_handler.h"
-#include "content/browser/download/url_download_handler.h"
+#include "components/download/public/common/url_download_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -16,15 +17,16 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-namespace content {
+namespace download {
 
 // Class for handing the download of a url.
-class ResourceDownloader : public UrlDownloadHandler,
-                           public download::DownloadResponseHandler::Delegate {
+class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
+    : public download::UrlDownloadHandler,
+      public download::DownloadResponseHandler::Delegate {
  public:
   // Called to start a download, must be called on IO thread.
   static std::unique_ptr<ResourceDownloader> BeginDownload(
-      base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
+      base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
@@ -86,7 +88,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
-  base::WeakPtr<UrlDownloadHandler::Delegate> delegate_;
+  base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate_;
 
   // The ResourceRequest for this object.
   std::unique_ptr<network::ResourceRequest> resource_request_;
@@ -135,6 +137,6 @@ class ResourceDownloader : public UrlDownloadHandler,
   DISALLOW_COPY_AND_ASSIGN(ResourceDownloader);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_RESOURCE_DOWNLOADER_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_RESOURCE_DOWNLOADER_H_

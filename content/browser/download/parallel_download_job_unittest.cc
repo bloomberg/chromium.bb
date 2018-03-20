@@ -167,8 +167,8 @@ class ParallelDownloadJobTest : public testing::Test {
   void MakeWorkerReady(
       DownloadWorker* worker,
       std::unique_ptr<MockDownloadRequestHandle> request_handle) {
-    UrlDownloadHandler::Delegate* delegate =
-        static_cast<UrlDownloadHandler::Delegate*>(worker);
+    download::UrlDownloadHandler::Delegate* delegate =
+        static_cast<download::UrlDownloadHandler::Delegate*>(worker);
     std::unique_ptr<download::DownloadCreateInfo> create_info =
         std::make_unique<download::DownloadCreateInfo>();
     create_info->request_handle = std::move(request_handle);

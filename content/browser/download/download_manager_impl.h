@@ -21,8 +21,8 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/url_download_handler.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/url_download_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,13 +42,15 @@ class DownloadItemFactory;
 class DownloadItemImpl;
 class ResourceContext;
 
-class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
-                                           public UrlDownloadHandler::Delegate,
-                                           private DownloadItemImplDelegate {
+class CONTENT_EXPORT DownloadManagerImpl
+    : public DownloadManager,
+      public download::UrlDownloadHandler::Delegate,
+      private DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated = base::Callback<void(DownloadItemImpl*)>;
   using UniqueUrlDownloadHandlerPtr =
-      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>;
+      std::unique_ptr<download::UrlDownloadHandler,
+                      BrowserThread::DeleteOnIOThread>;
 
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
@@ -133,7 +135,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       std::unique_ptr<download::InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
-  void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
+  void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(

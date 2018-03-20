@@ -27,6 +27,7 @@ source_set("internal") {
     "download_utils.cc",
     "parallel_download_utils.cc",
     "rate_estimator.cc",
+    "resource_downloader.cc",
     "stream_handle_input_stream.cc",
   ]
 
