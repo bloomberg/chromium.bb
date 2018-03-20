@@ -49,6 +49,11 @@ LOCAL_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
 endif
 
+ifneq ($(filter virgl, $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_VIRGL
+LOCAL_CFLAGS += -DDRV_VIRGL
+endif
+
 LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
 # The preferred path for vendor HALs is /vendor/lib/hw
