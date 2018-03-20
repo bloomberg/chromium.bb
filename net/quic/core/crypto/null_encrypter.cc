@@ -39,7 +39,7 @@ bool NullEncrypter::EncryptPacket(QuicTransportVersion version,
   if (max_output_length < len) {
     return false;
   }
-  uint128 hash;
+  QuicUint128 hash;
   if (version > QUIC_VERSION_35) {
     if (perspective_ == Perspective::IS_SERVER) {
       hash =

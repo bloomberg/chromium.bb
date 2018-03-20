@@ -6,10 +6,10 @@
 
 #include <cstdint>
 
-#include "net/base/int128.h"
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_uint128.h"
 
 using std::string;
 
@@ -49,7 +49,7 @@ bool NullDecrypter::DecryptPacket(QuicTransportVersion version,
                                   size_t max_output_length) {
   QuicDataReader reader(ciphertext.data(), ciphertext.length(),
                         HOST_BYTE_ORDER);
-  uint128 hash;
+  QuicUint128 hash;
 
   if (!ReadHash(&reader, &hash)) {
     return false;
@@ -89,20 +89,20 @@ uint32_t NullDecrypter::cipher_id() const {
   return 0;
 }
 
-bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
+bool NullDecrypter::ReadHash(QuicDataReader* reader, QuicUint128* hash) {
   uint64_t lo;
   uint32_t hi;
   if (!reader->ReadUInt64(&lo) || !reader->ReadUInt32(&hi)) {
     return false;
   }
-  *hash = MakeUint128(hi, lo);
+  *hash = MakeQuicUint128(hi, lo);
   return true;
 }
 
-uint128 NullDecrypter::ComputeHash(QuicTransportVersion version,
-                                   const QuicStringPiece data1,
-                                   const QuicStringPiece data2) const {
-  uint128 correct_hash;
+QuicUint128 NullDecrypter::ComputeHash(QuicTransportVersion version,
+                                       const QuicStringPiece data1,
+                                       const QuicStringPiece data2) const {
+  QuicUint128 correct_hash;
   if (version > QUIC_VERSION_35) {
     if (perspective_ == Perspective::IS_CLIENT) {
       // Peer is a server.
@@ -115,7 +115,7 @@ uint128 NullDecrypter::ComputeHash(QuicTransportVersion version,
   } else {
     correct_hash = QuicUtils::FNV1a_128_Hash_Two(data1, data2);
   }
-  uint128 mask = MakeUint128(UINT64_C(0x0), UINT64_C(0xffffffff));
+  QuicUint128 mask = MakeQuicUint128(UINT64_C(0x0), UINT64_C(0xffffffff));
   mask <<= 96;
   correct_hash &= ~mask;
   return correct_hash;

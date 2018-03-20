@@ -73,17 +73,17 @@ TEST_F(QuicUtilsTest, DetermineAddressChangeType) {
             QuicUtils::DetermineAddressChangeType(old_address, new_address));
 }
 
-uint128 IncrementalHashReference(const void* data, size_t len) {
+QuicUint128 IncrementalHashReference(const void* data, size_t len) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
   // hash = 144066263297769815596495629667062367629
-  uint128 hash =
-      MakeUint128(UINT64_C(7809847782465536322), UINT64_C(7113472399480571277));
+  QuicUint128 hash = MakeQuicUint128(UINT64_C(7809847782465536322),
+                                     UINT64_C(7113472399480571277));
   // kPrime = 309485009821345068724781371
-  const uint128 kPrime = MakeUint128(16777216, 315);
+  const QuicUint128 kPrime = MakeQuicUint128(16777216, 315);
   const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
   for (size_t i = 0; i < len; ++i) {
-    hash = hash ^ MakeUint128(0, octets[i]);
+    hash = hash ^ MakeQuicUint128(0, octets[i]);
     hash = hash * kPrime;
   }
   return hash;
