@@ -4,13 +4,28 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "base/macros.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 
 using views::FocusManager;
 
-typedef InProcessBrowserTest BrowserViewTest;
+namespace {
+
+class BrowserViewTest : public InProcessBrowserTest {
+ public:
+  BrowserViewTest() = default;
+  ~BrowserViewTest() override = default;
+
+ private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
+};
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenClearsFocus) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
