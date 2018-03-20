@@ -53,6 +53,7 @@ void UiElementRenderer::Init() {
 
 void UiElementRenderer::DrawTexturedQuad(
     int texture_data_handle,
+    int overlay_texture_data_handle,
     TextureLocation texture_location,
     const gfx::Transform& model_view_proj_matrix,
     const gfx::RectF& copy_rect,
@@ -69,8 +70,9 @@ void UiElementRenderer::DrawTexturedQuad(
                                        ? external_textured_quad_renderer_.get()
                                        : textured_quad_renderer_.get();
   FlushIfNecessary(renderer);
-  renderer->AddQuad(texture_data_handle, model_view_proj_matrix, copy_rect,
-                    opacity, element_size, corner_radius);
+  renderer->AddQuad(texture_data_handle, overlay_texture_data_handle,
+                    model_view_proj_matrix, copy_rect, opacity, element_size,
+                    corner_radius);
 }
 
 void UiElementRenderer::DrawGradientQuad(

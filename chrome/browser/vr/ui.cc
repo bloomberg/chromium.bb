@@ -387,7 +387,12 @@ void Ui::Dump(bool include_bindings) {
   os << std::endl;
   scene_->root_element().DumpHierarchy(std::vector<size_t>(), &os,
                                        include_bindings);
-  LOG(ERROR) << os.str();
+
+  std::stringstream ss(os.str());
+  std::string line;
+  while (std::getline(ss, line, '\n')) {
+    LOG(ERROR) << line;
+  }
 #endif
 }
 

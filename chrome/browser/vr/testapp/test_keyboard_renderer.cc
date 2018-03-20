@@ -51,7 +51,7 @@ void TestKeyboardRenderer::Initialize(SkiaSurfaceProvider* provider,
 void TestKeyboardRenderer::Draw(const CameraModel& model,
                                 const gfx::Transform& world_space_transform) {
   renderer_->DrawTexturedQuad(
-      texture_handle_, UiElementRenderer::kTextureLocationLocal,
+      texture_handle_, 0, UiElementRenderer::kTextureLocationLocal,
       model.view_proj_matrix * world_space_transform, gfx::RectF(0, 0, 1, 1), 1,
       {drawn_size_.width(), drawn_size_.height()}, 0);
 }

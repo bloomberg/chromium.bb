@@ -19,6 +19,7 @@ class FakeUiElementRenderer : public UiElementRenderer {
   float opacity() const { return opacity_; }
 
   void DrawTexturedQuad(int texture_data_handle,
+                        int overlay_texture_data_handle,
                         TextureLocation texture_location,
                         const gfx::Transform& view_proj_matrix,
                         const gfx::RectF& copy_rect,

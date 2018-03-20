@@ -140,10 +140,12 @@ static constexpr char const* kVertexShader = SHADER(
 static constexpr char const* kFragmentShader = SHADER(
   precision highp float;
   uniform sampler2D u_Texture;
+  uniform sampler2D u_OverlayTexture;
   uniform vec4 u_CopyRect;
   varying vec2 v_TexCoordinate;
   varying vec2 v_CornerPosition;
   uniform mediump float u_Opacity;
+  uniform mediump float u_OverlayOpacity;
   void main() {
     vec2 scaledTex =
         vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
@@ -174,12 +176,17 @@ TexturedQuadRenderer::TexturedQuadRenderer(const char* vertex_src,
   copy_rect_handler_ = glGetUniformLocation(program_handle_, "u_CopyRect");
 
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
+  overlay_opacity_handle_ =
+      glGetUniformLocation(program_handle_, "u_OverlayOpacity");
   texture_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  overlay_texture_handle_ =
+      glGetUniformLocation(program_handle_, "u_OverlayTexture");
 }
 
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 void TexturedQuadRenderer::AddQuad(int texture_data_handle,
+                                   int overlay_texture_data_handle,
                                    const gfx::Transform& model_view_proj_matrix,
                                    const gfx::RectF& copy_rect,
                                    float opacity,
@@ -187,6 +194,7 @@ void TexturedQuadRenderer::AddQuad(int texture_data_handle,
                                    float corner_radius) {
   QuadData quad;
   quad.texture_data_handle = texture_data_handle;
+  quad.overlay_texture_data_handle = overlay_texture_data_handle;
   quad.model_view_proj_matrix = model_view_proj_matrix;
   quad.copy_rect = copy_rect;
   quad.opacity = opacity;
@@ -200,6 +208,7 @@ void TexturedQuadRenderer::Flush() {
     return;
 
   int last_texture = 0;
+  int last_overlay_texture = -1;
   float last_opacity = -1.0f;
   gfx::SizeF last_element_size;
   float last_corner_radius = -1.0f;
@@ -212,8 +221,9 @@ void TexturedQuadRenderer::Flush() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
 
   // Link texture data with texture unit.
-  glActiveTexture(GL_TEXTURE0);
   glUniform1i(texture_handle_, 0);
+
+  glUniform1i(overlay_texture_handle_, 1);
 
   // Set up position attribute.
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
@@ -241,8 +251,17 @@ void TexturedQuadRenderer::Flush() {
     // Only change texture ID or opacity when they differ between quads.
     if (last_texture != quad.texture_data_handle) {
       last_texture = quad.texture_data_handle;
+      glActiveTexture(GL_TEXTURE0);
       glBindTexture(TextureType(), last_texture);
       SetTexParameters(TextureType());
+    }
+
+    if (last_overlay_texture != quad.overlay_texture_data_handle) {
+      last_overlay_texture = quad.overlay_texture_data_handle;
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(TextureType(), last_overlay_texture);
+      SetTexParameters(TextureType());
+      glUniform1f(overlay_opacity_handle_, last_overlay_texture ? 1.0f : 0.0f);
     }
 
     if (last_opacity != quad.opacity) {
