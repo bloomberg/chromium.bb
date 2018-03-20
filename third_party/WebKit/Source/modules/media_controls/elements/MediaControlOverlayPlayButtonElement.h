@@ -29,6 +29,8 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   // MediaControlInputElement overrides.
   void UpdateDisplayType() override;
 
+  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
+
   WebSize GetSizeOrDefault() const final;
 
   void Trace(blink::Visitor*) override;

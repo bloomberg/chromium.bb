@@ -1279,7 +1279,11 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
     const String& key = ToKeyboardEvent(event)->key();
     if (key == "Enter" || ToKeyboardEvent(event)->keyCode() == ' ') {
-      play_button_->OnMediaKeyboardEvent(event);
+      if (IsModern()) {
+        overlay_play_button_->OnMediaKeyboardEvent(event);
+      } else {
+        play_button_->OnMediaKeyboardEvent(event);
+      }
       return;
     }
     if (key == "ArrowLeft" || key == "ArrowRight" || key == "Home" ||
@@ -1287,7 +1291,8 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
       timeline_->OnMediaKeyboardEvent(event);
       return;
     }
-    if (key == "ArrowDown" || key == "ArrowUp") {
+    // We don't allow the user to change the volume on modern media controls.
+    if (!IsModern() && (key == "ArrowDown" || key == "ArrowUp")) {
       for (int i = 0; i < 5; i++)
         volume_slider_->OnMediaKeyboardEvent(event);
       return;
