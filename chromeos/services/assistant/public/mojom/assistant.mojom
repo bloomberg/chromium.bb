@@ -34,7 +34,13 @@ interface AssistantEventSubscriber {
 interface AssistantPlatform {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
-  Init(AudioInput audio_input_interface);
+  Init(Client assistant_client_interface, AudioInput audio_input_interface);
+};
+
+// Interface for assistant to call into client.
+interface Client {
+  // Notifies assistant client that assistant running status has changed.
+  OnAssistantStatusChanged(bool running);
 };
 
 // Interface for assistant to call into browser for audio input related

@@ -18,20 +18,26 @@ namespace chromeos {
 namespace assistant {
 
 // Class to handle all assistant in-browser-process functionalities.
-class AssistantClient {
+class AssistantClient : mojom::Client {
  public:
   static AssistantClient* Get();
 
   AssistantClient();
-  ~AssistantClient();
+  ~AssistantClient() override;
 
   void Start(service_manager::Connector* connector);
 
+  // assistant::mojom::Client overrides:
+  void OnAssistantStatusChanged(bool running) override;
+
  private:
+  mojo::Binding<mojom::Client> client_binding_;
+
   mojom::AssistantPlatformPtr assistant_connection_;
   mojo::Binding<mojom::AudioInput> audio_input_binding_;
 
   PlatformAudioInputHost audio_input_;
+  bool running_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClient);
 };

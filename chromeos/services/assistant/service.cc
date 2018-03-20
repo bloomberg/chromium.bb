@@ -83,6 +83,8 @@ void Service::BindAssistantPlatformConnection(
 }
 
 void Service::OnSessionActivated(bool activated) {
+  DCHECK(client_);
+  client_->OnAssistantStatusChanged(activated);
   assistant_manager_service_->EnableListening(activated);
 }
 
@@ -99,7 +101,8 @@ identity::mojom::IdentityManager* Service::GetIdentityManager() {
   return identity_manager_.get();
 }
 
-void Service::Init(mojom::AudioInputPtr audio_input) {
+void Service::Init(mojom::ClientPtr client, mojom::AudioInputPtr audio_input) {
+  client_ = std::move(client);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   assistant_manager_service_ =
       std::make_unique<AssistantManagerServiceImpl>(std::move(audio_input));
@@ -141,6 +144,7 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
     AddAshSessionObserver();
     registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
         &Service::BindAssistantConnection, base::Unretained(this)));
+    client_->OnAssistantStatusChanged(true);
     DVLOG(1) << "Assistant started";
   } else {
     assistant_manager_service_->SetAccessToken(token.value());
