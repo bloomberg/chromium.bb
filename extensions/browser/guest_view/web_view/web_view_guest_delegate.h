@@ -20,6 +20,10 @@ class WebViewGuestDelegate {
 
   // Shows the context menu for the guest.
   virtual void OnShowContextMenu(int request_id) = 0;
+
+  // Returns true if the WebViewGuest should handle find requests for its
+  // embedder.
+  virtual bool ShouldHandleFindRequestsForEmbedder() const = 0;
 };
 
 }  // namespace extensions
