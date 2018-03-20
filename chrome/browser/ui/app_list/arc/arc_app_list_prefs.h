@@ -402,12 +402,6 @@ class ArcAppListPrefs : public KeyedService,
                          const std::string& package_name,
                          const std::string& activity);
 
-  // Reveals first app from provided package in app launcher if package is newly
-  // installed by user. If all apps in package are hidden then app list is not
-  // shown.
-  void MaybeShowPackageInAppLauncher(
-      const arc::mojom::ArcPackageInfo& package_info);
-
   // Returns true is specified package is new in the system, was not installed
   // and it is not scheduled to install by sync.
   bool IsUnknownPackage(const std::string& package_name) const;
@@ -490,7 +484,6 @@ class ArcAppListPrefs : public KeyedService,
   bool default_apps_ready_ = false;
   ArcDefaultAppList default_apps_;
   base::Closure default_apps_ready_callback_;
-  int last_shown_batch_installation_revision_ = -1;
   int current_batch_installation_revision_ = 0;
 
   // TODO (b/70566216): Remove this once fixed.

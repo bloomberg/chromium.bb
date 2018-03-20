@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -28,7 +28,7 @@ AppListClientImpl::AppListClientImpl() : binding_(this) {
   ash::mojom::AppListClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   app_list_controller_->SetClient(std::move(client));
-  AppListServiceAsh::GetInstance()->SetAppListControllerAndClient(
+  AppListServiceImpl::GetInstance()->SetAppListControllerAndClient(
       app_list_controller_.get(), this);
 }
 
@@ -81,11 +81,11 @@ void AppListClientImpl::ContextMenuItemSelected(const std::string& id,
 }
 
 void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
-  AppListServiceAsh::GetInstance()->set_app_list_target_visible(visible);
+  AppListServiceImpl::GetInstance()->set_app_list_target_visible(visible);
 }
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
-  AppListServiceAsh::GetInstance()->set_app_list_visible(visible);
+  AppListServiceImpl::GetInstance()->set_app_list_visible(visible);
 }
 
 void AppListClientImpl::StartVoiceInteractionSession() {
@@ -121,7 +121,7 @@ void AppListClientImpl::OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) {
 }
 
 AppListViewDelegate* AppListClientImpl::GetViewDelegate() {
-  return AppListServiceAsh::GetInstance()->GetViewDelegate();
+  return AppListServiceImpl::GetInstance()->GetViewDelegate();
 }
 
 void AppListClientImpl::FlushMojoForTesting() {

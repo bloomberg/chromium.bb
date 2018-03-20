@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   const std::string title = extension->name();
 
   // Show the app list first, otherwise we won't have a search box to update.
-  service->ShowForProfile(browser()->profile());
+  service->Show();
   service->FlushForTesting();
 
   // Currently the search box is empty, so we have no result.
@@ -125,6 +125,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerGuestModeBrowserTest, Incognito) {
   AppListService* service = AppListService::Get();
   EXPECT_TRUE(service->GetCurrentAppListProfile());
 
-  service->ShowForProfile(browser()->profile());
+  service->Show();
   EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
 }

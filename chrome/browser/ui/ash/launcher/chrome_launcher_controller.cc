@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include <algorithm>
+#include <set>
+#include <utility>
+
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
@@ -26,11 +30,11 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
-#include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
@@ -514,7 +518,7 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   }
 
   if (window->IsActive() && allow_minimize &&
-      !AppListServiceAsh::GetInstance()->GetTargetVisibility()) {
+      !AppListServiceImpl::GetInstance()->GetTargetVisibility()) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
   }

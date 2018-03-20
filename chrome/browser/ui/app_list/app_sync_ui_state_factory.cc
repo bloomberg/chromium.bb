@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
+#include "chrome/browser/ui/app_list/app_sync_ui_state_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/ash/app_sync_ui_state.h"
+#include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry_factory.h"
 

@@ -27,7 +27,6 @@ class AppListServiceImplTestApi {
  public:
   explicit AppListServiceImplTestApi(AppListServiceImpl* impl) : impl_(impl) {}
 
-  ProfileLoader* profile_loader() { return impl_->profile_loader_.get(); }
   AppListViewDelegate* view_delegate() { return impl_->view_delegate_.get(); }
 
  private:
@@ -58,40 +57,6 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImplBrowserTest);
 };
 
-// Test that showing a loaded profile for the first time is lazy and
-// synchronous. Then tests that showing a second loaded profile without
-// dismissing correctly switches profiles.
-// crbug.com/459649
-IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
-                       DISABLED_ShowLoadedProfiles) {
-  PrefService* local_state = g_browser_process->local_state();
-  EXPECT_FALSE(local_state->HasPrefPath(prefs::kAppListProfile));
-
-  // When never shown, profile path should match the last used profile.
-  base::FilePath user_data_dir =
-      g_browser_process->profile_manager()->user_data_dir();
-  EXPECT_EQ(service_->GetProfilePath(user_data_dir),
-            browser()->profile()->GetPath());
-
-  // Just requesting the profile path shouldn't set it.
-  EXPECT_FALSE(local_state->HasPrefPath(prefs::kAppListProfile));
-
-  // The app list service is bound to ChromeLauncherController, which should
-  // always have a profile.
-  EXPECT_TRUE(service_->GetCurrentAppListProfile());
-
-  // Showing the app list for an unspecified profile, uses the loaded profile.
-  service_->Show();
-
-  // Load should be synchronous.
-  EXPECT_FALSE(test_api_->profile_loader()->IsAnyProfileLoading());
-  EXPECT_EQ(service_->GetCurrentAppListProfile(), browser()->profile());
-
-  // ChromeOS doesn't record the app list profile pref, and doesn't do profile
-  // switching.
-  EXPECT_FALSE(local_state->HasPrefPath(prefs::kAppListProfile));
-}
-
 // Tests that the AppListViewDelegate is created lazily.
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
   EXPECT_FALSE(test_api_->view_delegate());
@@ -106,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(service);
 
   // Show the app list to ensure it has loaded a profile.
-  service_->ShowForProfile(browser()->profile());
+  service_->Show();
   AppListModelUpdater* model_updater = test::GetModelUpdater(service);
   EXPECT_TRUE(model_updater);
 

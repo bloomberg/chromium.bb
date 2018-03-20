@@ -18,7 +18,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, ShowAndDismiss) {
   AppListClientImpl app_list_client;
   AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
-  service->ShowForProfile(browser()->profile());
+  service->Show();
   app_list_client.FlushMojoForTesting();
   ASSERT_TRUE(service->IsAppListVisible());
   service->DismissAppList();

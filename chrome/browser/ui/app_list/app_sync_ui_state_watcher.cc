@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
+#include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
 
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/ash/app_sync_ui_state.h"
+#include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 
 AppSyncUIStateWatcher::AppSyncUIStateWatcher(Profile* profile,
                                              AppListModelUpdater* model_updater)

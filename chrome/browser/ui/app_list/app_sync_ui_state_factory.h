@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_SYNC_UI_STATE_FACTORY_H_
-#define CHROME_BROWSER_UI_ASH_APP_SYNC_UI_STATE_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_SYNC_UI_STATE_FACTORY_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_SYNC_UI_STATE_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -33,4 +33,4 @@ class AppSyncUIStateFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(AppSyncUIStateFactory);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_SYNC_UI_STATE_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_SYNC_UI_STATE_FACTORY_H_
