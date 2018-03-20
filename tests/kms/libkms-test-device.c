@@ -67,7 +67,7 @@ static void kms_device_probe_screens(struct kms_device *device)
 
 	device->screens = calloc(res->count_connectors, sizeof(screen));
 	if (!device->screens)
-		return;
+		goto err_free_resources;
 
 	for (i = 0; i < res->count_connectors; i++) {
 		unsigned int *count;
@@ -97,6 +97,7 @@ static void kms_device_probe_screens(struct kms_device *device)
 		device->num_screens++;
 	}
 
+err_free_resources:
 	drmModeFreeResources(res);
 }
 
@@ -112,7 +113,7 @@ static void kms_device_probe_crtcs(struct kms_device *device)
 
 	device->crtcs = calloc(res->count_crtcs, sizeof(crtc));
 	if (!device->crtcs)
-		return;
+		goto err_free_resources;
 
 	for (i = 0; i < res->count_crtcs; i++) {
 		crtc = kms_crtc_create(device, res->crtcs[i]);
@@ -123,6 +124,7 @@ static void kms_device_probe_crtcs(struct kms_device *device)
 		device->num_crtcs++;
 	}
 
+err_free_resources:
 	drmModeFreeResources(res);
 }
 
@@ -138,7 +140,7 @@ static void kms_device_probe_planes(struct kms_device *device)
 
 	device->planes = calloc(res->count_planes, sizeof(plane));
 	if (!device->planes)
-		return;
+		goto err_free_resources;
 
 	for (i = 0; i < res->count_planes; i++) {
 		plane = kms_plane_create(device, res->planes[i]);
@@ -149,6 +151,7 @@ static void kms_device_probe_planes(struct kms_device *device)
 		device->num_planes++;
 	}
 
+err_free_resources:
 	drmModeFreePlaneResources(res);
 }
 
