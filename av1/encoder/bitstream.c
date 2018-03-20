@@ -244,11 +244,8 @@ static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, aom_writer *w, const int is_inter) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
-    if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)
-#if CONFIG_SEGMENT_GLOBALMV
-        || segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)
-#endif
-    )
+    if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP) ||
+        segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV))
       if (!av1_is_valid_scale(&cm->frame_refs[0].sf))
         return;  // LAST_FRAME not valid for reference
 
@@ -501,14 +498,8 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     assert(!is_compound);
     assert(mbmi->ref_frame[0] ==
            get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME));
-  }
-#if CONFIG_SEGMENT_GLOBALMV
-  else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP) ||
-           segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV))
-#else
-  else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP))
-#endif
-  {
+  } else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP) ||
+             segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)) {
     assert(!is_compound);
     assert(mbmi->ref_frame[0] == LAST_FRAME);
   } else {

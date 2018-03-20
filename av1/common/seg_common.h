@@ -34,9 +34,7 @@ typedef enum {
   SEG_LVL_ALT_LF_V,    // Use alternate loop filter value on v plane
   SEG_LVL_REF_FRAME,   // Optional Segment reference frame
   SEG_LVL_SKIP,        // Optional Segment (0,0) + skip mode
-#if CONFIG_SEGMENT_GLOBALMV
   SEG_LVL_GLOBALMV,
-#endif
   SEG_LVL_MAX
 } SEG_LVL_FEATURES;
 
