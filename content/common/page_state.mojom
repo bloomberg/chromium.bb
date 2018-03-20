@@ -5,7 +5,7 @@
 module content.history.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "url/mojom/url.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -37,7 +37,7 @@ struct DEPRECATED_FileSystemFile {
   url.mojom.Url filesystem_url@0;
   uint64 offset@1;
   uint64 length@2;
-  mojo.common.mojom.Time modification_time@3;
+  mojo_base.mojom.Time modification_time@3;
 };
 
 // Next Ordinal: 4
@@ -45,7 +45,7 @@ struct File {
   mojo_base.mojom.String16 path@0;
   uint64 offset@1;
   uint64 length@2;
-  mojo.common.mojom.Time modification_time@3;
+  mojo_base.mojom.Time modification_time@3;
 };
 
 // Next Ordinal: 4

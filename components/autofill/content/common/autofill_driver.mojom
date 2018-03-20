@@ -7,7 +7,7 @@ module autofill.mojom;
 import "components/autofill/content/common/autofill_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/text_direction.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
@@ -16,7 +16,7 @@ import "url/mojom/url.mojom";
 interface AutofillDriver {
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutofillManager.
-  FormsSeen(array<FormData> forms, mojo.common.mojom.TimeTicks timestamp);
+  FormsSeen(array<FormData> forms, mojo_base.mojom.TimeTicks timestamp);
 
   // Notification that a form has been submitted. The |known_success| indicates
   // whether the submission succeeded or not. Currently, we assume submission
@@ -24,13 +24,13 @@ interface AutofillDriver {
   FormSubmitted(FormData form,
                 bool known_success,
                 SubmissionSource source,
-                mojo.common.mojom.TimeTicks timestamp);
+                mojo_base.mojom.TimeTicks timestamp);
 
   // Notification that a form field's value has changed.
   TextFieldDidChange(FormData form,
                      FormFieldData field,
                      gfx.mojom.RectF bounding_box,
-                     mojo.common.mojom.TimeTicks timestamp);
+                     mojo_base.mojom.TimeTicks timestamp);
 
   // Notification that a form field has scrolled.
   TextFieldDidScroll(FormData form,
@@ -61,7 +61,7 @@ interface AutofillDriver {
                    gfx.mojom.RectF bounding_box);
 
   // Sent when a form is filled with Autofill suggestions.
-  DidFillAutofillFormData(FormData form, mojo.common.mojom.TimeTicks timestamp);
+  DidFillAutofillFormData(FormData form, mojo_base.mojom.TimeTicks timestamp);
 
   // Sent when a form is previewed with Autofill suggestions.
   DidPreviewAutofillFormData();

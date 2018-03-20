@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum LatencyComponentType {
@@ -104,13 +104,13 @@ struct LatencyComponent {
   // component.
   int64 sequence_number;
   // Average time of events that happened in this component.
-  mojo.common.mojom.TimeTicks event_time;
+  mojo_base.mojom.TimeTicks event_time;
   // Count of events that happened in this component
   uint32 event_count;
   // Time of the oldest event that happened in this component.
-  mojo.common.mojom.TimeTicks first_event_time;
+  mojo_base.mojom.TimeTicks first_event_time;
   // Time of the most recent event that happened in this component.
-  mojo.common.mojom.TimeTicks last_event_time;
+  mojo_base.mojom.TimeTicks last_event_time;
 };
 
 struct LatencyComponentPair {
@@ -128,5 +128,5 @@ struct LatencyInfo {
   bool began;
   bool terminated;
   SourceEventType source_event_type;
-  mojo.common.mojom.TimeDelta expected_queueing_time_on_dispatch;
+  mojo_base.mojom.TimeDelta expected_queueing_time_on_dispatch;
 };

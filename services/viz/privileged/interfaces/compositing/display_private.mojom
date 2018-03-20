@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -26,13 +26,13 @@ interface DisplayPrivate {
   // Locks the vsync interval used to generate BeginFrames for this display to
   // |interval|. Changes to vsync interval from other sources will be ignored.
   // This will do nothing if the display is using an external BeginFrame source.
-  SetAuthoritativeVSyncInterval(mojo.common.mojom.TimeDelta interval);
+  SetAuthoritativeVSyncInterval(mojo_base.mojom.TimeDelta interval);
 
   // Updates vsync parameters used to generate BeginFrames for this display.
   // This will do nothing if the display is using an external BeginFrame source.
   SetDisplayVSyncParameters(
-    mojo.common.mojom.TimeTicks timebase,
-    mojo.common.mojom.TimeDelta interval);
+    mojo_base.mojom.TimeTicks timebase,
+    mojo_base.mojom.TimeDelta interval);
 };
 
 interface DisplayClient {

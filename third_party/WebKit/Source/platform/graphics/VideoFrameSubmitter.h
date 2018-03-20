@@ -59,7 +59,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void DidReceiveCompositorFrameAck(
       const WTF::Vector<viz::ReturnedResource>& resources) override;
   void DidPresentCompositorFrame(uint32_t presentation_token,
-                                 ::mojo::common::mojom::blink::TimeTicksPtr,
+                                 mojo_base::mojom::blink::TimeTicksPtr,
                                  WTF::TimeDelta refresh,
                                  uint32_t flags) final;
   void DidDiscardCompositorFrame(uint32_t presentation_token) final;

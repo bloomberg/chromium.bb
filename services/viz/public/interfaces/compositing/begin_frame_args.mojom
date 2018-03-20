@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 enum BeginFrameArgsType {
   INVALID,
@@ -15,9 +15,9 @@ enum BeginFrameArgsType {
 
 // See cc/output/begin_frame_args.h.
 struct BeginFrameArgs {
-  mojo.common.mojom.TimeTicks frame_time;
-  mojo.common.mojom.TimeTicks deadline;
-  mojo.common.mojom.TimeDelta interval;
+  mojo_base.mojom.TimeTicks frame_time;
+  mojo_base.mojom.TimeTicks deadline;
+  mojo_base.mojom.TimeDelta interval;
   uint64 source_id;
   uint64 sequence_number;
   BeginFrameArgsType type;

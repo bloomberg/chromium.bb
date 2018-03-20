@@ -4,7 +4,7 @@
 
 module identity.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/identity/public/mojom/account.mojom";
 import "services/identity/public/mojom/account_info.mojom";
 import "services/identity/public/mojom/account_state.mojom";
@@ -50,6 +50,6 @@ interface IdentityManager {
   // NOTE: |account_id| corresponds to that used by OAuth2TokenService.
   GetAccessToken(string account_id, ScopeSet scopes, string consumer_id) =>
      (string? token,
-      mojo.common.mojom.Time expiration_time,
+      mojo_base.mojom.Time expiration_time,
       GoogleServiceAuthError error);
 };

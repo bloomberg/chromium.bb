@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/ipc/media_param_traits_macros.h"
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {

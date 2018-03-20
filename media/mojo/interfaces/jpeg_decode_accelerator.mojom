@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Decode errors (see media/video/jpeg_decode_accelerator.h).
@@ -25,7 +25,7 @@ struct BitstreamBuffer {
   handle<shared_buffer> memory_handle;
   uint32 size;
   int64 offset;
-  mojo.common.mojom.TimeDelta timestamp;
+  mojo_base.mojom.TimeDelta timestamp;
   string key_id;
   string iv;
   array<SubsampleEntry> subsamples;

@@ -18,7 +18,6 @@ mojom("common_custom_types") {
     "process_id.mojom",
     "text_direction.mojom",
     "thread_priority.mojom",
-    "time.mojom",
     "unguessable_token.mojom",
     "values.mojom",
     "version.mojom",
@@ -95,7 +94,6 @@ source_set("struct_traits") {
   sources = [
     "common_custom_types_struct_traits.cc",
     "common_custom_types_struct_traits.h",
-    "time_struct_traits.h",
   ]
   deps = [
     ":common_custom_types_shared_cpp_sources",

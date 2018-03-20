@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/events/mojo/keyboard_codes.mojom";
 import "ui/latency/mojo/latency_info.mojom";
@@ -151,7 +151,7 @@ struct Event {
   // This value accurately orders events w.r.t. to each other but does not
   // position them at an absolute time since the TimeTicks origin is only
   // guaranteed to be fixed during one instance of the application.
-  mojo.common.mojom.TimeTicks time_stamp;
+  mojo_base.mojom.TimeTicks time_stamp;
   LatencyInfo latency;
   KeyData? key_data;
   PointerData? pointer_data;

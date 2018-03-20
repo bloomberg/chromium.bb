@@ -4,7 +4,7 @@
 
 module tracing.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/common/values.mojom";
 
 // The JSON type of data coming from a tracing agents.
@@ -37,12 +37,12 @@ interface AgentRegistry {
 // close the recorder connection to signal the tracing service that no more data
 // will be sent.
 interface Agent {
-  StartTracing(string config, mojo.common.mojom.TimeTicks coordinator_time) => (
+  StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time) => (
       bool success);
   StopAndFlush(Recorder recorder);
   RequestClockSyncMarker(string sync_id) => (
-      mojo.common.mojom.TimeTicks issue_ts,
-      mojo.common.mojom.TimeTicks issue_end_ts);
+      mojo_base.mojom.TimeTicks issue_ts,
+      mojo_base.mojom.TimeTicks issue_end_ts);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
   GetCategories() => (string categories);
 };

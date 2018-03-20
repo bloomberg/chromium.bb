@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -26,7 +26,7 @@ interface Renderer {
   Flush() => ();
 
   // Starts rendering from |time|.
-  StartPlayingFrom(mojo.common.mojom.TimeDelta time);
+  StartPlayingFrom(mojo_base.mojom.TimeDelta time);
 
   // Updates the current playback rate. The default playback rate should be 1.
   SetPlaybackRate(double playback_rate);
@@ -57,9 +57,9 @@ interface RendererClient {
   //     buffered by the audio hardware.
   // |capture_time| is monotonic clock time at which the times were captured.
   // |max_time| must be greater or equal to |time|.
-  OnTimeUpdate(mojo.common.mojom.TimeDelta time,
-               mojo.common.mojom.TimeDelta max_time,
-               mojo.common.mojom.TimeTicks capture_time);
+  OnTimeUpdate(mojo_base.mojom.TimeDelta time,
+               mojo_base.mojom.TimeDelta max_time,
+               mojo_base.mojom.TimeTicks capture_time);
 
   // Called to report buffering state changes, see media_types.mojom.
   OnBufferingStateChange(BufferingState state);
@@ -93,5 +93,5 @@ interface RendererClient {
 
   // Executed the first time the metadata is updated, and whenever the duration
   // changes.
-  OnDurationChange(mojo.common.mojom.TimeDelta duration);
+  OnDurationChange(mojo_base.mojom.TimeDelta duration);
 };

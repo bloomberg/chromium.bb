@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 enum CookiePriority {
@@ -35,7 +35,7 @@ struct CookieOptions {
   bool update_access_time = true;
   // TODO(rdsmith): Remove this element from the mojo structure?  It's only
   // used in the underlying net:: structure in CanonicalCookie::Create().
-  mojo.common.mojom.Time? server_time;
+  mojo_base.mojom.Time? server_time;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -45,9 +45,9 @@ struct CanonicalCookie {
   string value;
   string domain;
   string path;
-  mojo.common.mojom.Time? creation;
-  mojo.common.mojom.Time? expiry;
-  mojo.common.mojom.Time? last_access;
+  mojo_base.mojom.Time? creation;
+  mojo_base.mojom.Time? expiry;
+  mojo_base.mojom.Time? last_access;
   bool secure = false;
   bool httponly = false;
   CookieSameSite site_restrictions = NO_RESTRICTION;
@@ -106,10 +106,10 @@ enum CookieDeletionSessionControl {
 //        address or private hostname) is used.
 struct CookieDeletionFilter {
   // Delete cookies created after a date.
-  mojo.common.mojom.Time? created_after_time;
+  mojo_base.mojom.Time? created_after_time;
 
   // Delete cookies created before a date.
-  mojo.common.mojom.Time? created_before_time;
+  mojo_base.mojom.Time? created_before_time;
 
   // Delete cookies whose domains are not listed.
   array<string>? excluding_domains;

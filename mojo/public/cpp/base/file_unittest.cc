@@ -20,9 +20,8 @@ TEST(FileTest, File) {
       base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_READ);
   const base::StringPiece test_content =
       "A test string to be stored in a test file";
-  file.WriteAtCurrentPos(
-      test_content.data(),
-      base::checked_cast<int>(test_content.size()));
+  file.WriteAtCurrentPos(test_content.data(),
+                         base::checked_cast<int>(test_content.size()));
 
   base::File file_out;
   ASSERT_TRUE(
@@ -30,9 +29,8 @@ TEST(FileTest, File) {
   std::vector<char> content(test_content.size());
   ASSERT_TRUE(file_out.IsValid());
   ASSERT_EQ(static_cast<int>(test_content.size()),
-            file_out.Read(
-                0, content.data(),
-                base::checked_cast<int>(test_content.size())));
+            file_out.Read(0, content.data(),
+                          base::checked_cast<int>(test_content.size())));
   EXPECT_EQ(test_content,
             base::StringPiece(content.data(), test_content.size()));
 }

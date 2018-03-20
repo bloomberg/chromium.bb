@@ -15,7 +15,7 @@ loadScript('chrome/common/media_router/mojo/media_status.mojom');
 loadScript('extensions/common/mojo/keep_alive.mojom');
 loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
 loadScript('media/mojo/interfaces/remoting_common.mojom');
-loadScript('mojo/common/time.mojom');
+loadScript('mojo/public/mojom/base/time.mojom');
 loadScript('net/interfaces/ip_address.mojom');
 loadScript('net/interfaces/ip_endpoint.mojom');
 loadScript('url/mojom/origin.mojom');
@@ -761,7 +761,7 @@ MediaRouter.prototype.getMojoExports = function() {
     Origin: url.mojom.Origin,
     Sink: MediaSinkAdapter,
     SinkExtraData: MediaSinkExtraDataAdapter,
-    TimeDelta: mojo.common.mojom.TimeDelta,
+    TimeDelta: mojoBase.mojom.TimeDelta,
     Url: url.mojom.Url,
     interfaceControl: mojo.interfaceControl,
     makeRequest: mojo.makeRequest,
@@ -1168,7 +1168,7 @@ MediaRouteProvider.prototype.stopObservingMediaSinks =
  *     requesting presentation. TODO(mfoltz): Remove.
  * @param {!url.mojom.Origin} origin Origin of site requesting presentation.
  * @param {!number} tabId ID of tab requesting presentation.
- * @param {!mojo.common.mojom.TimeDelta} timeout If positive, the timeout
+ * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
  * @param {!boolean} incognito If true, the route is being requested by
  *     an incognito profile.
@@ -1199,7 +1199,7 @@ MediaRouteProvider.prototype.createRoute =
  * @param {!string} presentationId Presentation ID to join.
  * @param {!url.mojom.Origin} origin Origin of site requesting join.
  * @param {!number} tabId ID of tab requesting join.
- * @param {!mojo.common.mojom.TimeDelta} timeout If positive, the timeout
+ * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
  * @param {!boolean} incognito If true, the route is being requested by
  *     an incognito profile.
@@ -1231,7 +1231,7 @@ MediaRouteProvider.prototype.joinRoute =
  * @param {!string} presentationId Presentation ID to join.
  * @param {!url.mojom.Origin} origin Origin of site requesting join.
  * @param {!number} tabId ID of tab requesting join.
- * @param {!mojo.common.mojom.TimeDelta} timeout If positive, the timeout
+ * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
  * @param {!boolean} incognito If true, the route is being requested by
  *     an incognito profile.

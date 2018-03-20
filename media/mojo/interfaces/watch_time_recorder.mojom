@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 
@@ -44,7 +44,7 @@ interface WatchTimeRecorder {
   // not a delta since the last call. Any necessary relative processing should
   // be handled prior to calling this method. As described in WatchTimeReporter,
   // |watch_time| is the elapsed media (not wall clock) time for |key|.
-  RecordWatchTime(WatchTimeKey key, mojo.common.mojom.TimeDelta watch_time);
+  RecordWatchTime(WatchTimeKey key, mojo_base.mojom.TimeDelta watch_time);
 
   // Request finalization (recording to UMA) for the given keys. If no keys are
   // specified, all currently held keys will be finalized.

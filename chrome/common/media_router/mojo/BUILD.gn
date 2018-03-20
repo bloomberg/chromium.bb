@@ -11,7 +11,7 @@ mojom("media_controller") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
   ]
 }
 
@@ -23,7 +23,7 @@ mojom("media_router") {
   public_deps = [
     ":media_controller",
     "//media/mojo/interfaces:mirror_service_remoting",
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//net/interfaces:interfaces",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

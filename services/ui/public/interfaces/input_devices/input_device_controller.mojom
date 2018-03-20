@@ -4,8 +4,8 @@
 
 module ui.mojom;
 
-import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/events/devices/mojo/input_devices.mojom";
 
 struct KeyboardDeviceState {
@@ -31,8 +31,8 @@ interface InputDeviceController {
   SetCapsLockEnabled(bool enabled);
   SetNumLockEnabled(bool enabled);
   SetAutoRepeatEnabled(bool enabled);
-  SetAutoRepeatRate(mojo.common.mojom.TimeDelta auto_repeat_delay,
-                    mojo.common.mojom.TimeDelta auto_repeat_interval);
+  SetAutoRepeatRate(mojo_base.mojom.TimeDelta auto_repeat_delay,
+                    mojo_base.mojom.TimeDelta auto_repeat_interval);
   SetKeyboardLayoutByName(string name);
 
   // Touchpad settings.

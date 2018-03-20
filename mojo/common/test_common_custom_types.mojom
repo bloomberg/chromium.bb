@@ -5,21 +5,12 @@
 module mojo.common.test;
 
 import "mojo/common/text_direction.mojom";
-import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "mojo/common/values.mojom";
 
 interface TestUnguessableToken {
   BounceNonce(mojo.common.mojom.UnguessableToken in)
       => (mojo.common.mojom.UnguessableToken out);
-};
-
-interface TestTime {
-  BounceTime(mojo.common.mojom.Time time) => (mojo.common.mojom.Time time);
-  BounceTimeDelta(mojo.common.mojom.TimeDelta time_delta)
-      => (mojo.common.mojom.TimeDelta time_delta);
-  BounceTimeTicks(mojo.common.mojom.TimeTicks time_ticks)
-      => (mojo.common.mojom.TimeTicks time_ticks);
 };
 
 interface TestValue {

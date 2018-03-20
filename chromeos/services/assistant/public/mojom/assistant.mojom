@@ -5,7 +5,7 @@
 module chromeos.assistant.mojom;
 
 import "url/mojom/url.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Interface to communicate with assistant backend.
 interface Assistant {
@@ -52,7 +52,7 @@ interface AudioInputObserver {
   // Notifies that audio frames are available.
   // TODO(muyuanli): Use data pipe.
   OnAudioInputFramesAvailable(array<int32> buffer, uint32 frame_count,
-                              mojo.common.mojom.TimeTicks timestamp);
+                              mojo_base.mojom.TimeTicks timestamp);
   // Notifies that audio input stream is closed.
   OnAudioInputClosed();
 };

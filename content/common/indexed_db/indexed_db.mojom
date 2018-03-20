@@ -8,9 +8,10 @@
 
 module indexed_db.mojom;
 
-import "mojo/common/time.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "url/mojom/origin.mojom";
 
@@ -133,7 +134,7 @@ struct IndexKeys {
 struct FileInfo {
   mojo_base.mojom.FilePath path;
   mojo_base.mojom.String16 name;
-  mojo.common.mojom.Time last_modified;
+  mojo_base.mojom.Time last_modified;
 };
 
 struct BlobInfo {

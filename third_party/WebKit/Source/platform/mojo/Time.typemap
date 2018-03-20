@@ -2,18 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//mojo/common/time.mojom"
+mojom = "//mojo/public/mojom/base/time.mojom"
 public_headers = [ "//third_party/WebKit/Source/platform/wtf/Time.h" ]
 traits_headers = [
   "//ipc/ipc_message_utils.h",
-  "//mojo/common/time_struct_traits.h",
+  "//mojo/public/cpp/base/time_mojom_traits.h",
 ]
 public_deps = [
   "//ipc",
-  "//mojo/common:struct_traits",
+  "//mojo/public/mojom/base",
 ]
 
 type_mappings = [
-  "mojo.common.mojom.Time=WTF::Time[copyable_pass_by_value]",
-  "mojo.common.mojom.TimeDelta=WTF::TimeDelta[copyable_pass_by_value]",
+  "mojo_base.mojom.Time=WTF::Time[copyable_pass_by_value]",
+  "mojo_base.mojom.TimeDelta=WTF::TimeDelta[copyable_pass_by_value]",
 ]

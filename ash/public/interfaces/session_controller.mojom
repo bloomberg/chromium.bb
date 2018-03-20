@@ -6,7 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Matches session_manager::SessionState.
 enum SessionState {
@@ -158,8 +158,8 @@ interface SessionController {
   // NOTE: Chrome enforces the limit, not ash. Ash could enforce it if local
   // state prefs and user activity monitoring were available under mustash.
   // http://crbug.com/729808
-  SetSessionLengthLimit(mojo.common.mojom.TimeDelta length_limit,
-                        mojo.common.mojom.TimeTicks start_time);
+  SetSessionLengthLimit(mojo_base.mojom.TimeDelta length_limit,
+                        mojo_base.mojom.TimeTicks start_time);
 
   // Returns whether it's ok to switch the active multiprofile user. May affect
   // or be affected by system state such as window overview mode and screen

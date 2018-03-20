@@ -83,7 +83,7 @@
         <include name="IDR_MEDIA_ROUTER_MOJOM_JS" file="${mojom_root}\chrome\common\media_router\mojo\media_router.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_BINDINGS_JS" file="extensions\media_router_bindings.js" type="BINDATA" />
         <include name="IDR_MEDIA_STATUS_MOJOM_JS" file="${mojom_root}\chrome\common\media_router\mojo\media_status.mojom.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MOJO_TIME_MOJOM_JS" file="${mojom_root}\mojo\common\time.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_MOJO_TIME_MOJOM_JS" file="${mojom_root}\mojo\public\mojom\base\time.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MOJO_IP_ADDRESS_MOJOM_JS" file="${mojom_root}\net\interfaces\ip_address.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MOJO_IP_ENDPOINT_MOJOM_JS" file="${mojom_root}\net\interfaces\ip_endpoint.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_ORIGIN_MOJOM_JS" file="${mojom_root}\url\mojom\origin.mojom.js" use_base_dir="false" type="BINDATA" />

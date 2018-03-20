@@ -4,9 +4,9 @@
 
 module ash.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 interface ProcessCreationTimeRecorder {
   // Sets the time the main process was created at, used for logging metrics.
-  SetMainProcessCreationTime(mojo.common.mojom.TimeTicks start_time);
+  SetMainProcessCreationTime(mojo_base.mojom.TimeTicks start_time);
 };

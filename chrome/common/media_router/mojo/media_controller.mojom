@@ -5,7 +5,7 @@
 module media_router.mojom;
 
 import "chrome/common/media_router/mojo/media_status.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Interface for a controller to change the current state of a media content.
 // This interface should be kept free of details specific to Media Router, so
@@ -31,7 +31,7 @@ interface MediaController {
 
   // Sets the current playback position. |time| must be less than or equal to
   // the duration of the media. Is a no-op if the media doesn't support seeking.
-  Seek(mojo.common.mojom.TimeDelta time);
+  Seek(mojo_base.mojom.TimeDelta time);
 
   // Requests additional interface for commands used only for Hangouts routes.
   // TODO(crbug.com/684642): Moving this method to the MediaRouteProvider

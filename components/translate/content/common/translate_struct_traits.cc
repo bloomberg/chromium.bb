@@ -4,8 +4,8 @@
 
 #include "components/translate/content/common/translate_struct_traits.h"
 
-#include "mojo/common/time_struct_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {

@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"

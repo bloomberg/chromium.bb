@@ -4,7 +4,7 @@
 
 #include "ui/events/mojo/event_struct_traits.h"
 
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"

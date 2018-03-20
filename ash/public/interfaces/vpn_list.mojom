@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Describes a third-party VPN provided by an extension (e.g. Cisco AnyConnect).
 struct ThirdPartyVpnProvider {
@@ -22,7 +22,7 @@ struct ArcVpnProvider {
   // Unique app id for launching the app. e.g. pbmkokpdlpfmapoiccpblbmjjhhabjaa
   string app_id;
   // Last launch time of the Arc VPN provider.
-  mojo.common.mojom.Time last_launch_time;
+  mojo_base.mojom.Time last_launch_time;
 };
 
 // Manages the VPN provider list in ash. Allows extension-backed VPN providers

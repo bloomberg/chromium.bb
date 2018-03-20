@@ -4,9 +4,9 @@
 
 module startup_metric_utils.mojom;
 
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 interface StartupMetricHost {
   RecordRendererMainEntryTime(
-      mojo.common.mojom.TimeTicks renderer_main_entry_time);
+      mojo_base.mojom.TimeTicks renderer_main_entry_time);
 };

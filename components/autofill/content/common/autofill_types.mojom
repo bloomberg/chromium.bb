@@ -5,7 +5,7 @@
 module autofill.mojom;
 
 import "mojo/common/text_direction.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -212,8 +212,8 @@ struct PasswordForm {
   bool new_password_marked_by_site;
   mojo_base.mojom.String16 confirmation_password_element;
   bool preferred;
-  mojo.common.mojom.Time date_created;
-  mojo.common.mojom.Time date_synced;
+  mojo_base.mojom.Time date_created;
+  mojo_base.mojom.Time date_synced;
   bool blacklisted_by_user;
   PasswordFormType type;
   int32 times_used;

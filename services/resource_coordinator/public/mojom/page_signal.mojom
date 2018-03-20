@@ -5,7 +5,7 @@
 module resource_coordinator.mojom;
 
 import "services/resource_coordinator/public/mojom/coordination_unit.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // A PageSignalReceiver implementation receives page-scoped signal from
 // PageSignalGenerator.
@@ -16,7 +16,7 @@ import "mojo/common/time.mojom";
 interface PageSignalReceiver {
   NotifyPageAlmostIdle(CoordinationUnitID cu_id);
   SetExpectedTaskQueueingDuration(CoordinationUnitID cu_id,
-                                  mojo.common.mojom.TimeDelta duration);
+                                  mojo_base.mojom.TimeDelta duration);
 };
 
 // A PageSignalGenerator implementation will be implemented inside GRC to receive

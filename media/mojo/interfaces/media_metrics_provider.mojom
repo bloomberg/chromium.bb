@@ -7,7 +7,7 @@ module media.mojom;
 import "media/mojo/interfaces/media_types.mojom";
 import "media/mojo/interfaces/video_decode_stats_recorder.mojom";
 import "media/mojo/interfaces/watch_time_recorder.mojom";
-import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 
@@ -28,9 +28,9 @@ interface MediaMetricsProvider {
 
   // Setters for various one-time lazily generated metrics or properties.
   SetIsEME();
-  SetTimeToMetadata(mojo.common.mojom.TimeDelta elapsed);
-  SetTimeToFirstFrame(mojo.common.mojom.TimeDelta elapsed);
-  SetTimeToPlayReady(mojo.common.mojom.TimeDelta elapsed);
+  SetTimeToMetadata(mojo_base.mojom.TimeDelta elapsed);
+  SetTimeToFirstFrame(mojo_base.mojom.TimeDelta elapsed);
+  SetTimeToPlayReady(mojo_base.mojom.TimeDelta elapsed);
 
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.

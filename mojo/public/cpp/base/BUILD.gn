@@ -50,6 +50,7 @@ source_set("tests") {
     "file_unittest.cc",
     "ref_counted_memory_unittest.cc",
     "string16_unittest.cc",
+    "time_unittest.cc",
   ]
 
   public_deps = [

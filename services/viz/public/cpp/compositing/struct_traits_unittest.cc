@@ -23,7 +23,7 @@
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
 #include "ipc/ipc_message_utils.h"
-#include "mojo/common/time_struct_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h"
