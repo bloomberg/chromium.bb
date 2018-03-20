@@ -4,6 +4,7 @@
 
 #include "components/download/public/common/download_task_runner.h"
 
+#include "base/lazy_instance.h"
 #include "base/task_scheduler/lazy_task_runner.h"
 #include "build/build_config.h"
 
@@ -24,10 +25,22 @@ base::LazySequencedTaskRunner g_download_task_runner =
         base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE));
 #endif
 
+base::LazyInstance<scoped_refptr<base::SingleThreadTaskRunner>>::Leaky
+    g_io_task_runner = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 scoped_refptr<base::SequencedTaskRunner> GetDownloadTaskRunner() {
   return g_download_task_runner.Get();
+}
+
+void SetIOTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  g_io_task_runner.Get() = task_runner;
+}
+
+scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() {
+  return g_io_task_runner.Get();
 }
 
 }  // namespace download

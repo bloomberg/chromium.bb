@@ -15,6 +15,8 @@ class InputStream;
 // Class for handling the download of a url. Implemented by child classes.
 class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
  public:
+  using UniqueUrlDownloadHandlerPtr =
+      std::unique_ptr<UrlDownloadHandler, base::OnTaskRunnerDeleter>;
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
    public:
@@ -22,8 +24,13 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<InputStream> input_stream,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
+
     // Called after the connection is cancelled or finished.
     virtual void OnUrlDownloadStopped(UrlDownloadHandler* downloader) = 0;
+
+    // Called when a UrlDownloadHandler is created.
+    virtual void OnUrlDownloadHandlerCreated(
+        UniqueUrlDownloadHandlerPtr downloader) {}
   };
 
   UrlDownloadHandler() = default;

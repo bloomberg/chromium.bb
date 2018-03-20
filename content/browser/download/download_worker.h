@@ -15,7 +15,6 @@
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -62,10 +61,9 @@ class CONTENT_EXPORT DownloadWorker
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
   void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
-
-  void AddUrlDownloadHandler(
-      std::unique_ptr<download::UrlDownloadHandler,
-                      BrowserThread::DeleteOnIOThread> downloader);
+  void OnUrlDownloadHandlerCreated(
+      download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader)
+      override;
 
   DownloadWorker::Delegate* const delegate_;
 
@@ -84,7 +82,7 @@ class CONTENT_EXPORT DownloadWorker
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
-  std::unique_ptr<download::UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
+  download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
       url_download_handler_;
 
   base::WeakPtrFactory<DownloadWorker> weak_factory_;

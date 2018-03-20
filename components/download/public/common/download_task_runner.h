@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_TASK_RUNNER_H_
 
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "components/download/public/common/download_export.h"
 
 namespace download {
@@ -13,6 +14,14 @@ namespace download {
 // Returns the task runner used to save files and do other blocking operations.
 COMPONENTS_DOWNLOAD_EXPORT scoped_refptr<base::SequencedTaskRunner>
 GetDownloadTaskRunner();
+
+// Sets the task runner used to perform network IO.
+COMPONENTS_DOWNLOAD_EXPORT void SetIOTaskRunner(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+// Returns the task runner used to save files and do other blocking operations.
+COMPONENTS_DOWNLOAD_EXPORT scoped_refptr<base::SequencedTaskRunner>
+GetIOTaskRunner();
 
 }  // namespace download
 
