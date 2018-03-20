@@ -32,7 +32,6 @@
 #ifndef ClipboardCommands_h
 #define ClipboardCommands_h
 
-#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/Forward.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
@@ -45,6 +44,7 @@ class Event;
 class LocalFrame;
 class Pasteboard;
 
+enum class DataTransferAccessPolicy;
 enum class EditorCommandSource;
 enum class PasteMode;
 
@@ -114,6 +114,10 @@ class ClipboardCommands {
   static void PasteWithPasteboard(LocalFrame&,
                                   Pasteboard*,
                                   EditorCommandSource);
+
+  using FragmentAndPlainText = std::pair<DocumentFragment*, const bool>;
+  static FragmentAndPlainText GetFragmentFromClipboard(LocalFrame&,
+                                                       Pasteboard*);
 };
 
 }  // namespace blink

@@ -28,8 +28,6 @@
 #include "core/editing/Editor.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/clipboard/DataTransferAccessPolicy.h"
-#include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPropertyValueSet.h"
@@ -63,16 +61,11 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/events/ClipboardEvent.h"
-#include "core/events/TextEvent.h"
-#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/forms/TextControlElement.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
@@ -80,8 +73,6 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
-#include "platform/PasteMode.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -736,132 +727,9 @@ static bool ExecuteBackColor(LocalFrame& frame,
                            CSSPropertyBackgroundColor, value);
 }
 
-bool ClipboardCommands::CanWriteClipboard(LocalFrame& frame,
-                                          EditorCommandSource source) {
-  if (source == EditorCommandSource::kMenuOrKeyBinding)
-    return true;
-  Settings* settings = frame.GetSettings();
-  bool default_value =
-      (settings && settings->GetJavaScriptCanAccessClipboard()) ||
-      Frame::HasTransientUserActivation(&frame);
-  if (!frame.GetContentSettingsClient())
-    return default_value;
-  return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
-}
-
-Element* ClipboardCommands::FindEventTargetForClipboardEvent(
-    LocalFrame& frame,
-    EditorCommandSource source) {
-  // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
-  //  "Set target to be the element that contains the start of the selection in
-  //   document order, or the body element if there is no selection or cursor."
-  // We treat hidden selections as "no selection or cursor".
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      frame.Selection().IsHidden())
-    return frame.Selection().GetDocument().body();
-
-  return FindEventTargetFrom(
-      frame, frame.Selection().ComputeVisibleSelectionInDOMTree());
-}
-
-// Returns true if Editor should continue with default processing.
-bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
-                                               const AtomicString& event_type,
-                                               DataTransferAccessPolicy policy,
-                                               EditorCommandSource source,
-                                               PasteMode paste_mode) {
-  Element* const target = FindEventTargetForClipboardEvent(frame, source);
-  if (!target)
-    return true;
-
-  DataTransfer* const data_transfer =
-      DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
-                           policy == DataTransferAccessPolicy::kWritable
-                               ? DataObject::Create()
-                               : DataObject::CreateFromPasteboard(paste_mode));
-
-  Event* const evt = ClipboardEvent::Create(event_type, data_transfer);
-  target->DispatchEvent(evt);
-  const bool no_default_processing = evt->defaultPrevented();
-  if (no_default_processing && policy == DataTransferAccessPolicy::kWritable) {
-    Pasteboard::GeneralPasteboard()->WriteDataObject(
-        data_transfer->GetDataObject());
-  }
-
-  // Invalidate clipboard here for security.
-  data_transfer->SetAccessPolicy(DataTransferAccessPolicy::kNumb);
-  return !no_default_processing;
-}
-
-bool ClipboardCommands::DispatchCopyOrCutEvent(LocalFrame& frame,
-                                               EditorCommandSource source,
-                                               const AtomicString& event_type) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (IsInPasswordField(
-          frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
-    return true;
-
-  return DispatchClipboardEvent(frame, event_type,
-                                DataTransferAccessPolicy::kWritable, source,
-                                PasteMode::kAllMimeTypes);
-}
-
 static bool CanSmartCopyOrDelete(LocalFrame& frame) {
   return frame.GetEditor().SmartInsertDeleteEnabled() &&
          frame.Selection().Granularity() == TextGranularity::kWord;
-}
-
-void ClipboardCommands::WriteSelectionToPasteboard(LocalFrame& frame) {
-  const KURL& url = frame.GetDocument()->Url();
-  const String html = frame.Selection().SelectedHTMLForClipboard();
-  const String plain_text = frame.SelectedTextForClipboard();
-  Pasteboard::GeneralPasteboard()->WriteHTML(
-      html, url, plain_text,
-      CanSmartCopyOrDelete(frame) ? Pasteboard::kCanSmartReplace
-                                  : Pasteboard::kCannotSmartReplace);
-}
-
-bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
-                                    Event*,
-                                    EditorCommandSource source,
-                                    const String&) {
-  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::copy))
-    return true;
-  if (!frame.GetEditor().CanCopy())
-    return true;
-
-  // Since copy is a read-only operation it succeeds anytime a selection
-  // is *visible*. In contrast to cut or paste, the selection does not
-  // need to be focused - being visible is enough.
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      frame.Selection().IsHidden())
-    return true;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'copy' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (EnclosingTextControl(
-          frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
-    Pasteboard::GeneralPasteboard()->WritePlainText(
-        frame.SelectedTextForClipboard(),
-        CanSmartCopyOrDelete(frame) ? Pasteboard::kCanSmartReplace
-                                    : Pasteboard::kCannotSmartReplace);
-    return true;
-  }
-  const Document* const document = frame.GetDocument();
-  if (HTMLImageElement* image_element =
-          ImageElementFromImageDocument(document)) {
-    WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(), *image_element,
-                               document->title());
-    return true;
-  }
-  WriteSelectionToPasteboard(frame);
-  return true;
 }
 
 static bool ExecuteCreateLink(LocalFrame& frame,
@@ -872,68 +740,6 @@ static bool ExecuteCreateLink(LocalFrame& frame,
     return false;
   DCHECK(frame.GetDocument());
   return CreateLinkCommand::Create(*frame.GetDocument(), value)->Apply();
-}
-
-bool ClipboardCommands::CanDeleteRange(const EphemeralRange& range) {
-  if (range.IsCollapsed())
-    return false;
-
-  const Node* const start_container =
-      range.StartPosition().ComputeContainerNode();
-  const Node* const end_container = range.EndPosition().ComputeContainerNode();
-  if (!start_container || !end_container)
-    return false;
-
-  return HasEditableStyle(*start_container) && HasEditableStyle(*end_container);
-}
-
-bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
-                                   Event*,
-                                   EditorCommandSource source,
-                                   const String&) {
-  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::cut))
-    return true;
-  if (!frame.GetEditor().CanCut())
-    return true;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'cut' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      !frame.Selection().SelectionHasFocus())
-    return true;
-
-  if (!CanDeleteRange(frame.GetEditor().SelectedRange()))
-    return true;
-  if (EnclosingTextControl(
-          frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
-    const String plain_text = frame.SelectedTextForClipboard();
-    Pasteboard::GeneralPasteboard()->WritePlainText(
-        plain_text, CanSmartCopyOrDelete(frame)
-                        ? Pasteboard::kCanSmartReplace
-                        : Pasteboard::kCannotSmartReplace);
-  } else {
-    WriteSelectionToPasteboard(frame);
-  }
-
-  if (source == EditorCommandSource::kMenuOrKeyBinding) {
-    if (DispatchBeforeInputDataTransfer(
-            FindEventTargetForClipboardEvent(frame, source),
-            InputEvent::InputType::kDeleteByCut,
-            nullptr) != DispatchEventResult::kNotCanceled)
-      return true;
-    // 'beforeinput' event handler may destroy target frame.
-    if (frame.GetDocument()->GetFrame() != frame)
-      return true;
-  }
-  frame.GetEditor().DeleteSelectionWithSmartDelete(
-      CanSmartCopyOrDelete(frame) ? DeleteMode::kSmart : DeleteMode::kSimple,
-      InputEvent::InputType::kDeleteByCut);
-
-  return true;
 }
 
 static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
@@ -2015,196 +1821,6 @@ static bool ExecuteToggleOverwrite(LocalFrame& frame,
   return true;
 }
 
-bool ClipboardCommands::CanReadClipboard(LocalFrame& frame,
-                                         EditorCommandSource source) {
-  if (source == EditorCommandSource::kMenuOrKeyBinding)
-    return true;
-  Settings* settings = frame.GetSettings();
-  bool default_value = settings &&
-                       settings->GetJavaScriptCanAccessClipboard() &&
-                       settings->GetDOMPasteAllowed();
-  if (!frame.GetContentSettingsClient())
-    return default_value;
-  return frame.GetContentSettingsClient()->AllowReadFromClipboard(
-      default_value);
-}
-
-bool ClipboardCommands::CanSmartReplaceWithPasteboard(LocalFrame& frame,
-                                                      Pasteboard* pasteboard) {
-  return frame.GetEditor().SmartInsertDeleteEnabled() &&
-         pasteboard->CanSmartReplace();
-}
-
-void ClipboardCommands::PasteAsPlainTextWithPasteboard(
-    LocalFrame& frame,
-    Pasteboard* pasteboard,
-    EditorCommandSource source) {
-  Element* const target = FindEventTargetForClipboardEvent(frame, source);
-  if (!target)
-    return;
-  target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
-      frame.DomWindow(), pasteboard->PlainText(),
-      CanSmartReplaceWithPasteboard(frame, pasteboard)));
-}
-
-bool ClipboardCommands::DispatchPasteEvent(LocalFrame& frame,
-                                           PasteMode paste_mode,
-                                           EditorCommandSource source) {
-  return DispatchClipboardEvent(frame, EventTypeNames::paste,
-                                DataTransferAccessPolicy::kReadable, source,
-                                paste_mode);
-}
-
-void ClipboardCommands::PasteAsFragment(LocalFrame& frame,
-                                        DocumentFragment* pasting_fragment,
-                                        bool smart_replace,
-                                        bool match_style,
-                                        EditorCommandSource source) {
-  Element* const target = FindEventTargetForClipboardEvent(frame, source);
-  if (!target)
-    return;
-  target->DispatchEvent(TextEvent::CreateForFragmentPaste(
-      frame.DomWindow(), pasting_fragment, smart_replace, match_style));
-}
-
-void ClipboardCommands::PasteWithPasteboard(LocalFrame& frame,
-                                            Pasteboard* pasteboard,
-                                            EditorCommandSource source) {
-  DocumentFragment* fragment = nullptr;
-  bool chose_plain_text = false;
-
-  if (pasteboard->IsHTMLAvailable()) {
-    unsigned fragment_start = 0;
-    unsigned fragment_end = 0;
-    KURL url;
-    const String markup =
-        pasteboard->ReadHTML(url, fragment_start, fragment_end);
-    if (!markup.IsEmpty()) {
-      DCHECK(frame.GetDocument());
-      fragment = CreateFragmentFromMarkupWithContext(
-          *frame.GetDocument(), markup, fragment_start, fragment_end, url,
-          kDisallowScriptingAndPluginContent);
-    }
-  }
-
-  if (!fragment) {
-    const String text = pasteboard->PlainText();
-    if (!text.IsEmpty()) {
-      chose_plain_text = true;
-
-      // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
-      // |SelectedRange| requires clean layout for visible selection
-      // normalization.
-      frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-      fragment =
-          CreateFragmentFromText(frame.GetEditor().SelectedRange(), text);
-    }
-  }
-
-  if (!fragment)
-    return;
-
-  PasteAsFragment(frame, fragment,
-                  CanSmartReplaceWithPasteboard(frame, pasteboard),
-                  chose_plain_text, source);
-}
-
-void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
-  DCHECK(frame.GetDocument());
-  if (!DispatchPasteEvent(frame, PasteMode::kAllMimeTypes, source))
-    return;
-  if (!frame.GetEditor().CanPaste())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'paste' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      !frame.Selection().SelectionHasFocus())
-    return;
-
-  ResourceFetcher* const loader = frame.GetDocument()->Fetcher();
-  ResourceCacheValidationSuppressor validation_suppressor(loader);
-
-  const PasteMode paste_mode = frame.GetEditor().CanEditRichly()
-                                   ? PasteMode::kAllMimeTypes
-                                   : PasteMode::kPlainTextOnly;
-
-  if (source == EditorCommandSource::kMenuOrKeyBinding) {
-    DataTransfer* data_transfer = DataTransfer::Create(
-        DataTransfer::kCopyAndPaste, DataTransferAccessPolicy::kReadable,
-        DataObject::CreateFromPasteboard(paste_mode));
-
-    if (DispatchBeforeInputDataTransfer(
-            FindEventTargetForClipboardEvent(frame, source),
-            InputEvent::InputType::kInsertFromPaste,
-            data_transfer) != DispatchEventResult::kNotCanceled)
-      return;
-    // 'beforeinput' event handler may destroy target frame.
-    if (frame.GetDocument()->GetFrame() != frame)
-      return;
-  }
-
-  if (paste_mode == PasteMode::kAllMimeTypes) {
-    PasteWithPasteboard(frame, Pasteboard::GeneralPasteboard(), source);
-    return;
-  }
-  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
-                                 source);
-}
-
-bool ClipboardCommands::ExecutePaste(LocalFrame& frame,
-                                     Event*,
-                                     EditorCommandSource source,
-                                     const String&) {
-  Paste(frame, source);
-  return true;
-}
-
-bool ClipboardCommands::ExecutePasteGlobalSelection(LocalFrame& frame,
-                                                    Event*,
-                                                    EditorCommandSource source,
-                                                    const String&) {
-  if (!frame.GetEditor().Behavior().SupportsGlobalSelection())
-    return false;
-  DCHECK_EQ(source, EditorCommandSource::kMenuOrKeyBinding);
-
-  bool old_selection_mode = Pasteboard::GeneralPasteboard()->IsSelectionMode();
-  Pasteboard::GeneralPasteboard()->SetSelectionMode(true);
-  Paste(frame, source);
-  Pasteboard::GeneralPasteboard()->SetSelectionMode(old_selection_mode);
-  return true;
-}
-
-bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
-                                                  Event*,
-                                                  EditorCommandSource source,
-                                                  const String&) {
-  if (!DispatchPasteEvent(frame, PasteMode::kPlainTextOnly, source))
-    return false;
-  if (!frame.GetEditor().CanPaste())
-    return false;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'paste' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      !frame.Selection().SelectionHasFocus())
-    return false;
-
-  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
-                                 source);
-  return true;
-}
-
 static bool ExecutePrint(LocalFrame& frame,
                          Event*,
                          EditorCommandSource,
@@ -2591,17 +2207,6 @@ static bool Supported(LocalFrame*) {
   return true;
 }
 
-bool ClipboardCommands::PasteSupported(LocalFrame* frame) {
-  const Settings* const settings = frame->GetSettings();
-  const bool default_value = settings &&
-                             settings->GetJavaScriptCanAccessClipboard() &&
-                             settings->GetDOMPasteAllowed();
-  if (!frame->GetContentSettingsClient())
-    return default_value;
-  return frame->GetContentSettingsClient()->AllowReadFromClipboard(
-      default_value);
-}
-
 static bool SupportedFromMenuOrKeyBinding(LocalFrame*) {
   return false;
 }
@@ -2658,33 +2263,6 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
   return selection.IsCaret() && selection.IsContentEditable();
 }
 
-// WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu
-// items. They also send onbeforecopy, apparently for symmetry, but it doesn't
-// affect the menu items. We need to use onbeforecopy as a real menu enabler
-// because we allow elements that are not normally selectable to implement
-// copy/paste (like divs, or a document body).
-
-bool ClipboardCommands::EnabledCopy(LocalFrame& frame,
-                                    Event*,
-                                    EditorCommandSource source) {
-  if (!CanWriteClipboard(frame, source))
-    return false;
-  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecopy) ||
-         frame.GetEditor().CanCopy();
-}
-
-bool ClipboardCommands::EnabledCut(LocalFrame& frame,
-                                   Event*,
-                                   EditorCommandSource source) {
-  if (!CanWriteClipboard(frame, source))
-    return false;
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      !frame.Selection().SelectionHasFocus())
-    return false;
-  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecut) ||
-         frame.GetEditor().CanCut();
-}
-
 static bool EnabledInEditableText(LocalFrame& frame,
                                   Event* event,
                                   EditorCommandSource source) {
@@ -2725,17 +2303,6 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
       frame.Selection().ComputeVisibleSelectionInDOMTree();
   return !selection.IsNone() && IsRichlyEditablePosition(selection.Base()) &&
          selection.RootEditableElement();
-}
-
-bool ClipboardCommands::EnabledPaste(LocalFrame& frame,
-                                     Event*,
-                                     EditorCommandSource source) {
-  if (!CanReadClipboard(frame, source))
-    return false;
-  if (source == EditorCommandSource::kMenuOrKeyBinding &&
-      !frame.Selection().SelectionHasFocus())
-    return false;
-  return frame.GetEditor().CanPaste();
 }
 
 static bool EnabledRangeInEditableText(LocalFrame& frame,
