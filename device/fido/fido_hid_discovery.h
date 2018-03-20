@@ -32,12 +32,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
   explicit FidoHidDiscovery(::service_manager::Connector* connector);
   ~FidoHidDiscovery() override;
 
-  // FidoDiscovery:
-  U2fTransportProtocol GetTransportProtocol() const override;
-  void Start() override;
-  void Stop() override;
-
  private:
+  // FidoDiscovery:
+  void StartInternal() override;
+
   // device::mojom::HidManagerClient implementation:
   void DeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
   void DeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/fido/fido_discovery.h"
+
 #include <utility>
 
 #include "base/macros.h"
-#include "device/fido/fido_discovery.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,20 +23,18 @@ using ::testing::UnorderedElementsAre;
 // A minimal implementation of FidoDiscovery that is no longer abstract.
 class ConcreteFidoDiscovery : public FidoDiscovery {
  public:
-  ConcreteFidoDiscovery() = default;
+  explicit ConcreteFidoDiscovery(U2fTransportProtocol transport)
+      : FidoDiscovery(transport) {}
   ~ConcreteFidoDiscovery() override = default;
+
+  MOCK_METHOD0(StartInternal, void());
 
   using FidoDiscovery::AddDevice;
   using FidoDiscovery::RemoveDevice;
 
-  const base::ObserverList<Observer>& observers() const { return observers_; }
-
- protected:
-  U2fTransportProtocol GetTransportProtocol() const override {
-    return U2fTransportProtocol::kUsbHumanInterfaceDevice;
-  }
-  void Start() override {}
-  void Stop() override {}
+  using FidoDiscovery::NotifyDiscoveryStarted;
+  using FidoDiscovery::NotifyDeviceAdded;
+  using FidoDiscovery::NotifyDeviceRemoved;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConcreteFidoDiscovery);
@@ -44,46 +43,57 @@ class ConcreteFidoDiscovery : public FidoDiscovery {
 }  // namespace
 
 TEST(FidoDiscoveryTest, TestAddAndRemoveObserver) {
-  ConcreteFidoDiscovery discovery;
+  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
-  EXPECT_FALSE(discovery.observers().HasObserver(&observer));
-  discovery.AddObserver(&observer);
+  EXPECT_EQ(nullptr, discovery.observer());
 
-  EXPECT_TRUE(discovery.observers().HasObserver(&observer));
+  discovery.set_observer(&observer);
+  EXPECT_EQ(&observer, discovery.observer());
 
-  discovery.RemoveObserver(&observer);
-  EXPECT_FALSE(discovery.observers().HasObserver(&observer));
+  discovery.set_observer(nullptr);
+  EXPECT_EQ(nullptr, discovery.observer());
 }
 
-TEST(FidoDiscoveryTest, TestNotifications) {
-  ConcreteFidoDiscovery discovery;
+TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
+  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
+
+  EXPECT_FALSE(discovery.is_start_requested());
+  EXPECT_FALSE(discovery.is_running());
+
+  EXPECT_CALL(discovery, StartInternal());
+  discovery.Start();
+  EXPECT_TRUE(discovery.is_start_requested());
+  EXPECT_FALSE(discovery.is_running());
+  ::testing::Mock::VerifyAndClearExpectations(&discovery);
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
   discovery.NotifyDiscoveryStarted(true);
+  EXPECT_TRUE(discovery.is_start_requested());
+  EXPECT_TRUE(discovery.is_running());
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+}
+
+TEST(FidoDiscoveryTest, TestNotificationsOnFailedStart) {
+  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+
+  discovery.Start();
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
   discovery.NotifyDiscoveryStarted(false);
-
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, true));
-  discovery.NotifyDiscoveryStopped(true);
-
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, false));
-  discovery.NotifyDiscoveryStopped(false);
-
-  MockFidoDevice device;
-  EXPECT_CALL(observer, DeviceAdded(&discovery, &device));
-  discovery.NotifyDeviceAdded(&device);
-
-  EXPECT_CALL(observer, DeviceRemoved(&discovery, &device));
-  discovery.NotifyDeviceRemoved(&device);
+  EXPECT_TRUE(discovery.is_start_requested());
+  EXPECT_FALSE(discovery.is_running());
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
 TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
-  ConcreteFidoDiscovery discovery;
+  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
+  discovery.Start();
 
   // Expect successful insertion.
   auto device0 = std::make_unique<MockFidoDevice>();
@@ -91,6 +101,7 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_CALL(observer, DeviceAdded(&discovery, device0_raw));
   EXPECT_CALL(*device0, GetId()).WillOnce(Return("device0"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device0)));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // // Expect successful insertion.
   auto device1 = std::make_unique<MockFidoDevice>();
@@ -98,12 +109,14 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_CALL(observer, DeviceAdded(&discovery, device1_raw));
   EXPECT_CALL(*device1, GetId()).WillOnce(Return("device1"));
   EXPECT_TRUE(discovery.AddDevice(std::move(device1)));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Inserting a device with an already present id should be prevented.
   auto device1_dup = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(observer, DeviceAdded(_, _)).Times(0);
   EXPECT_CALL(*device1_dup, GetId()).WillOnce(Return("device1"));
   EXPECT_FALSE(discovery.AddDevice(std::move(device1_dup)));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_EQ(device0_raw, discovery.GetDevice("device0"));
   EXPECT_EQ(device1_raw, discovery.GetDevice("device1"));
@@ -119,12 +132,15 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   // Trying to remove a non-present device should fail.
   EXPECT_CALL(observer, DeviceRemoved(_, _)).Times(0);
   EXPECT_FALSE(discovery.RemoveDevice("device2"));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, DeviceRemoved(&discovery, device1_raw));
   EXPECT_TRUE(discovery.RemoveDevice("device1"));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, DeviceRemoved(&discovery, device0_raw));
   EXPECT_TRUE(discovery.RemoveDevice("device0"));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
 }  // namespace device

@@ -45,9 +45,8 @@ TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {
 
   // We don't expect any calls to the notification methods.
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
   EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);
 }
@@ -63,8 +62,9 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
   SimulateLowEnergyDevice(7);
 
   FidoBleDiscovery discovery;
+
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   {
     base::RunLoop run_loop;
@@ -78,19 +78,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsKnownDevice) {
     discovery.Start();
     run_loop.Run();
   }
-
-  // TODO(crbug/763303): Delete device and check OnDeviceDeleted invocation.
-
-  {
-    base::RunLoop run_loop;
-    auto quit = run_loop.QuitClosure();
-
-    EXPECT_CALL(observer, DiscoveryStopped(&discovery, true))
-        .WillOnce(ReturnFromAsyncCall(quit));
-
-    discovery.Stop();
-    run_loop.Run();
-  }
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
@@ -102,7 +89,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
 
   FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   {
     base::RunLoop run_loop;
@@ -127,17 +114,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsNewDevice) {
 
     run_loop.Run();
   }
-
-  // TODO(crbug/763303): Delete device and check OnDeviceDeleted invocation.
-
-  {
-    base::RunLoop run_loop;
-    auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStopped(&discovery, true))
-        .WillOnce(ReturnFromAsyncCall(quit));
-    discovery.Stop();
-    run_loop.Run();
-  }
 }
 
 // Simulate the scenario where the BLE device is already known at start-up time,
@@ -156,7 +132,7 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
 
   FidoBleDiscovery discovery;
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   {
     base::RunLoop run_loop;
@@ -187,17 +163,6 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
     ASSERT_THAT(devices, ::testing::SizeIs(1u));
     EXPECT_EQ(FidoBleDevice::GetId(BluetoothTestBase::kTestDeviceAddress1),
               devices[0]->GetId());
-  }
-
-  // TODO(crbug/763303): Delete device and check OnDeviceDeleted invocation.
-
-  {
-    base::RunLoop run_loop;
-    auto quit = run_loop.QuitClosure();
-    EXPECT_CALL(observer, DiscoveryStopped(&discovery, true))
-        .WillOnce(ReturnFromAsyncCall(quit));
-    discovery.Stop();
-    run_loop.Run();
   }
 }
 

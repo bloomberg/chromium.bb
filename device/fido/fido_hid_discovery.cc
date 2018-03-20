@@ -14,18 +14,17 @@
 namespace device {
 
 FidoHidDiscovery::FidoHidDiscovery(::service_manager::Connector* connector)
-    : connector_(connector), binding_(this), weak_factory_(this) {
+    : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice),
+      connector_(connector),
+      binding_(this),
+      weak_factory_(this) {
   // TODO(piperc@): Give this constant a name.
   filter_.SetUsagePage(0xf1d0);
 }
 
 FidoHidDiscovery::~FidoHidDiscovery() = default;
 
-U2fTransportProtocol FidoHidDiscovery::GetTransportProtocol() const {
-  return U2fTransportProtocol::kUsbHumanInterfaceDevice;
-}
-
-void FidoHidDiscovery::Start() {
+void FidoHidDiscovery::StartInternal() {
   DCHECK(connector_);
   connector_->BindInterface(device::mojom::kServiceName,
                             mojo::MakeRequest(&hid_manager_));
@@ -35,10 +34,6 @@ void FidoHidDiscovery::Start() {
   hid_manager_->GetDevicesAndSetClient(
       std::move(client), base::BindOnce(&FidoHidDiscovery::OnGetDevices,
                                         weak_factory_.GetWeakPtr()));
-}
-void FidoHidDiscovery::Stop() {
-  binding_.Unbind();
-  NotifyDiscoveryStopped(true);
 }
 
 void FidoHidDiscovery::DeviceAdded(

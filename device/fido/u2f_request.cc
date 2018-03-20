@@ -35,15 +35,12 @@ U2fRequest::U2fRequest(service_manager::Connector* connector,
       // non-HID transports are configured.
       continue;
     }
-    discovery->AddObserver(this);
+    discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
   }
 }
 
-U2fRequest::~U2fRequest() {
-  for (auto& discovery : discoveries_)
-    discovery->RemoveObserver(this);
-}
+U2fRequest::~U2fRequest() = default;
 
 void U2fRequest::Start() {
   if (state_ == State::INIT) {
@@ -178,38 +175,34 @@ void U2fRequest::OnDeviceVersionRequest(
 }
 
 void U2fRequest::DiscoveryStarted(FidoDiscovery* discovery, bool success) {
+#if DCHECK_IS_ON()
   if (success) {
-    // The discovery might know about devices that have already been added to
-    // the system. Add them to the |devices_| list if we don't already know
-    // about them. This case could happen if a DeviceAdded() event is emitted
-    // before DiscoveryStarted() is invoked. In that case both the U2fRequest
-    // and the FidoDiscovery already know about the just added device.
-    std::set<std::string> current_device_ids;
+    // FidoDiscovery::Observer::DeviceAdded should have been already dispatched
+    // for each of devices already known by |discovery|, so we should never
+    // learn anything new here.
+    std::set<std::string> device_ids_known_to_request;
     for (const auto* device : attempted_devices_)
-      current_device_ids.insert(device->GetId());
+      device_ids_known_to_request.insert(device->GetId());
     if (current_device_)
-      current_device_ids.insert(current_device_->GetId());
+      device_ids_known_to_request.insert(current_device_->GetId());
     for (const auto* device : devices_)
-      current_device_ids.insert(device->GetId());
+      device_ids_known_to_request.insert(device->GetId());
 
-    auto new_devices = discovery->GetDevices();
-    std::copy_if(
-        new_devices.begin(), new_devices.end(), std::back_inserter(devices_),
-        [&current_device_ids](FidoDevice* device) {
-          return !base::ContainsKey(current_device_ids, device->GetId());
-        });
+    std::set<std::string> device_ids_from_newly_started_discovery;
+    for (const auto* device : discovery->GetDevices())
+      device_ids_from_newly_started_discovery.insert(device->GetId());
+    DCHECK(base::STLIncludes(device_ids_known_to_request,
+                             device_ids_from_newly_started_discovery));
   }
+#endif
 
   started_count_++;
-
   if ((state_ == State::IDLE || state_ == State::OFF) &&
       (success || started_count_ == discoveries_.size())) {
     state_ = State::IDLE;
     Transition();
   }
 }
-
-void U2fRequest::DiscoveryStopped(FidoDiscovery* discovery, bool success) {}
 
 void U2fRequest::DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) {
   devices_.push_back(device);

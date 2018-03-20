@@ -86,7 +86,7 @@ TEST_F(FidoHidDiscoveryTest, TestAddRemoveDevice) {
   fake_hid_manager_->AddDevice(MakeFidoHidDevice("known"));
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
   discovery.Start();
 
   // Devices initially known to the service before discovery started should be

@@ -8,8 +8,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
@@ -20,37 +23,14 @@
 
 namespace device {
 
-FidoBleDiscovery::FidoBleDiscovery() : weak_factory_(this) {}
-
+FidoBleDiscovery::FidoBleDiscovery()
+    : FidoDiscovery(U2fTransportProtocol::kBluetoothLowEnergy),
+      weak_factory_(this) {}
 FidoBleDiscovery::~FidoBleDiscovery() {
   if (adapter_)
     adapter_->RemoveObserver(this);
 
-  // Pretend we are able to successfully stop a discovery session in case it is
-  // still present.
-  if (discovery_session_)
-    OnStopped(true);
-}
-
-U2fTransportProtocol FidoBleDiscovery::GetTransportProtocol() const {
-  return U2fTransportProtocol::kBluetoothLowEnergy;
-}
-
-void FidoBleDiscovery::Start() {
-  auto& factory = BluetoothAdapterFactory::Get();
-  factory.GetAdapter(
-      base::Bind(&FidoBleDiscovery::OnGetAdapter, weak_factory_.GetWeakPtr()));
-}
-
-void FidoBleDiscovery::Stop() {
-  DCHECK(adapter_);
-  adapter_->RemoveObserver(this);
-
-  DCHECK(discovery_session_);
-  discovery_session_->Stop(base::Bind(&FidoBleDiscovery::OnStopped,
-                                      weak_factory_.GetWeakPtr(), true),
-                           base::Bind(&FidoBleDiscovery::OnStopped,
-                                      weak_factory_.GetWeakPtr(), false));
+  // Destroying |discovery_session_| will best-effort-stop discovering.
 }
 
 // static
@@ -117,6 +97,26 @@ void FidoBleDiscovery::OnStartDiscoverySessionWithFilterError() {
   NotifyDiscoveryStarted(false);
 }
 
+void FidoBleDiscovery::StartInternal() {
+  auto& factory = BluetoothAdapterFactory::Get();
+  auto callback = base::BindRepeating(&FidoBleDiscovery::OnGetAdapter,
+                                      weak_factory_.GetWeakPtr());
+#if defined(OS_MACOSX)
+  // BluetoothAdapter may invoke the callback synchronously on Mac, but
+  // StartInternal() never wants to invoke to NotifyDiscoveryStarted()
+  // immediately, so ensure there is at least post-task at this bottleneck.
+  // See: https://crbug.com/823686.
+  callback = base::BindRepeating(
+      [](BluetoothAdapterFactory::AdapterCallback callback,
+         scoped_refptr<BluetoothAdapter> adapter) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindRepeating(callback, adapter));
+      },
+      std::move(callback));
+#endif  // defined(OS_MACOSX)
+  factory.GetAdapter(std::move(callback));
+}
+
 void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                    BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
@@ -141,11 +141,6 @@ void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
     VLOG(2) << "U2F BLE device removed: " << device->GetAddress();
     RemoveDevice(FidoBleDevice::GetId(device->GetAddress()));
   }
-}
-
-void FidoBleDiscovery::OnStopped(bool success) {
-  discovery_session_.reset();
-  NotifyDiscoveryStopped(success);
 }
 
 }  // namespace device

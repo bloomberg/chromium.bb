@@ -27,11 +27,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
   FidoBleDiscovery();
   ~FidoBleDiscovery() override;
 
-  // FidoDiscovery:
-  U2fTransportProtocol GetTransportProtocol() const override;
-  void Start() override;
-  void Stop() override;
-
  private:
   static const BluetoothUUID& FidoServiceUUID();
 
@@ -42,13 +37,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
       std::unique_ptr<BluetoothDiscoverySession>);
   void OnStartDiscoverySessionWithFilterError();
 
+  // FidoDiscovery:
+  void StartInternal() override;
+
   // BluetoothAdapter::Observer:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
   void DeviceChanged(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
-  void OnStopped(bool success);
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::unique_ptr<BluetoothDiscoverySession> discovery_session_;

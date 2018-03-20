@@ -4,6 +4,8 @@
 
 #include "device/fido/fake_fido_discovery.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -34,12 +36,12 @@ using ScopedFakeFidoDiscoveryFactoryTest = FakeFidoDiscoveryTest;
 TEST_F(FakeFidoDiscoveryTest, Transport) {
   FakeFidoDiscovery discovery_ble(U2fTransportProtocol::kBluetoothLowEnergy);
   EXPECT_EQ(U2fTransportProtocol::kBluetoothLowEnergy,
-            discovery_ble.GetTransportProtocol());
+            discovery_ble.transport());
 
   FakeFidoDiscovery discovery_hid(
       U2fTransportProtocol::kUsbHumanInterfaceDevice);
   EXPECT_EQ(U2fTransportProtocol::kUsbHumanInterfaceDevice,
-            discovery_hid.GetTransportProtocol());
+            discovery_hid.transport());
 }
 
 TEST_F(FakeFidoDiscoveryTest, InitialState) {
@@ -47,49 +49,30 @@ TEST_F(FakeFidoDiscoveryTest, InitialState) {
 
   ASSERT_FALSE(discovery.is_running());
   ASSERT_FALSE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
 }
 
-TEST_F(FakeFidoDiscoveryTest, StartStopDiscovery) {
+TEST_F(FakeFidoDiscoveryTest, StartDiscovery) {
   FakeFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
 
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   discovery.Start();
 
-  ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
+  ASSERT_FALSE(discovery.is_running());
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
   discovery.WaitForCallToStartAndSimulateSuccess();
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
   ASSERT_TRUE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
-
-  discovery.Stop();
-
-  ASSERT_TRUE(discovery.is_running());
-  ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_TRUE(discovery.is_stop_requested());
-
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, true));
-  discovery.WaitForCallToStopAndSimulateSuccess();
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
-  ASSERT_FALSE(discovery.is_running());
-  ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_TRUE(discovery.is_stop_requested());
 }
 
 TEST_F(FakeFidoDiscoveryTest, WaitThenStartStopDiscovery) {
   FakeFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
 
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() { discovery.Start(); }));
@@ -98,32 +81,11 @@ TEST_F(FakeFidoDiscoveryTest, WaitThenStartStopDiscovery) {
 
   ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
   discovery.SimulateStarted(true);
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
   ASSERT_TRUE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() { discovery.Stop(); }));
-
-  discovery.WaitForCallToStop();
-
-  ASSERT_TRUE(discovery.is_running());
-  ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_TRUE(discovery.is_stop_requested());
-
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, true));
-  discovery.SimulateStopped(true);
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
-  ASSERT_FALSE(discovery.is_running());
-  ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_TRUE(discovery.is_stop_requested());
 }
 
 // Starting discovery and failing: instance stays in "not running" state
@@ -131,45 +93,17 @@ TEST_F(FakeFidoDiscoveryTest, StartFail) {
   FakeFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
 
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   discovery.Start();
-
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
-  discovery.SimulateStarted(false);
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
-}
 
-// Stopping discovery and failing: instance stays in a "running" state.
-TEST_F(FakeFidoDiscoveryTest, StopFail) {
-  FakeFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
-
-  MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
-
-  discovery.Start();
-
-  EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
-  discovery.SimulateStarted(true);
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
-  ASSERT_TRUE(discovery.is_running());
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
+  discovery.SimulateStarted(false);
+  ASSERT_FALSE(discovery.is_running());
   ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_FALSE(discovery.is_stop_requested());
-
-  discovery.Stop();
-
-  EXPECT_CALL(observer, DiscoveryStopped(&discovery, false));
-  discovery.SimulateStopped(false);
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
-
-  ASSERT_TRUE(discovery.is_running());
-  ASSERT_TRUE(discovery.is_start_requested());
-  ASSERT_TRUE(discovery.is_stop_requested());
 }
 
 // Adding device is possible both before and after discovery actually starts.
@@ -177,7 +111,7 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
   FakeFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
 
   MockFidoDiscoveryObserver observer;
-  discovery.AddObserver(&observer);
+  discovery.set_observer(&observer);
 
   discovery.Start();
 
@@ -204,7 +138,7 @@ TEST_F(ScopedFakeFidoDiscoveryFactoryTest,
   ScopedFakeFidoDiscoveryFactory factory;
   auto* injected_fake_discovery = factory.ForgeNextHidDiscovery();
   ASSERT_EQ(U2fTransportProtocol::kUsbHumanInterfaceDevice,
-            injected_fake_discovery->GetTransportProtocol());
+            injected_fake_discovery->transport());
   auto produced_discovery = FidoDiscovery::Create(
       U2fTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
   EXPECT_TRUE(produced_discovery);
@@ -218,14 +152,14 @@ TEST_F(ScopedFakeFidoDiscoveryFactoryTest,
 
   auto* injected_fake_discovery_1 = factory.ForgeNextBleDiscovery();
   ASSERT_EQ(U2fTransportProtocol::kBluetoothLowEnergy,
-            injected_fake_discovery_1->GetTransportProtocol());
+            injected_fake_discovery_1->transport());
   auto produced_discovery_1 =
       FidoDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy, nullptr);
   EXPECT_EQ(injected_fake_discovery_1, produced_discovery_1.get());
 
   auto* injected_fake_discovery_2 = factory.ForgeNextBleDiscovery();
   ASSERT_EQ(U2fTransportProtocol::kBluetoothLowEnergy,
-            injected_fake_discovery_2->GetTransportProtocol());
+            injected_fake_discovery_2->transport());
   auto produced_discovery_2 =
       FidoDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy, nullptr);
   EXPECT_EQ(injected_fake_discovery_2, produced_discovery_2.get());

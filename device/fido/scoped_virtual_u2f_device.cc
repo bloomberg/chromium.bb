@@ -4,7 +4,13 @@
 
 #include "device/fido/scoped_virtual_u2f_device.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace device {
 namespace test {
@@ -12,19 +18,22 @@ namespace test {
 // A FidoDiscovery that always vends a single |VirtualU2fDevice|.
 class VirtualU2fDeviceDiscovery : public FidoDiscovery {
  public:
+  VirtualU2fDeviceDiscovery()
+      : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice) {}
   ~VirtualU2fDeviceDiscovery() override = default;
 
-  U2fTransportProtocol GetTransportProtocol() const override {
-    return U2fTransportProtocol::kUsbHumanInterfaceDevice;
-  }
-
-  void Start() override {
+ protected:
+  void StartInternal() override {
     auto device = std::make_unique<VirtualU2fDevice>();
     AddDevice(std::move(device));
-    NotifyDiscoveryStarted(true);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VirtualU2fDeviceDiscovery::NotifyDiscoveryStarted,
+                       base::Unretained(this), true /* success */));
   }
 
-  void Stop() override { NotifyDiscoveryStopped(true); }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VirtualU2fDeviceDiscovery);
 };
 
 ScopedVirtualU2fDevice::ScopedVirtualU2fDevice() = default;
