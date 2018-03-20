@@ -49,10 +49,8 @@ if (enable_nacl) {
 
 # The widevine BUILD.gn only produces shared libraries for x86 and x64
 if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
-  packaging_files_shlibs += [
-    "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
-    "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
-  ]
+  packaging_files_shlibs +=
+      [ "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so" ]
 }
 
 if (!libcpp_is_static && use_custom_libcxx) {
@@ -370,10 +368,7 @@ group("installer_deps") {
     ]
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
-    public_deps += [
-      "//third_party/widevine/cdm:widevinecdm",
-      "//third_party/widevine/cdm:widevinecdmadapter",
-    ]
+    public_deps += [ "//third_party/widevine/cdm" ]
   }
   if (!is_chromeos) {
     public_deps += [ ":rpm_packaging_files" ]

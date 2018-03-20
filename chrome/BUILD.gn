@@ -315,7 +315,7 @@ if (!is_android && !is_mac) {
 
       data_deps += [
         "//chrome/browser/resources/media/mei_preload:component",
-        "//third_party/widevine/cdm:widevinecdmadapter",
+        "//third_party/widevine/cdm",
       ]
 
       if (is_multi_dll_chrome) {
@@ -766,9 +766,7 @@ if (is_win) {
       ":verify_chrome_framework_order",
     ]
 
-    # Only official builds that include Widevine need the widevine
-    # signature file.
-    if (is_chrome_branded && enable_library_cdms) {
+    if (enable_widevine_cdm_host_verification) {
       sources += [ "$root_out_dir/Widevine Resources.bundle" ]
       public_deps += [ ":widevine_resources_bundle" ]
     }
@@ -1046,52 +1044,20 @@ if (is_win) {
     }
   }
 
-  _should_bundle_widevine =
-      (is_chrome_branded || enable_widevine) && enable_library_cdms
-  if (_should_bundle_widevine) {
-    # The Widevine CDM and manifest are either the actual Widevine CDM and
-    # manifest or stubs used for testing only. The choice is made within the
-    # corresponding Widevine targets based on branding.
+  if (should_bundle_widevine_cdm) {
     bundle_data("widevine_cdm_library_binaries") {
-      sources = [
-        "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin",
-        "$root_out_dir/libwidevinecdm.dylib",
-      ]
-      outputs = [
-        "{{bundle_contents_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
-      ]
-      public_deps = [
-        # Need this intermediate dependency because "widevinecdm" is a
-        # shared_library if !is_chrome_branded, and then depending on
-        # "widevinecdm" directly would cause it to be linked into the Chromium
-        # Framework, which we don't want.
-        ":widevine_cdm_library_copy",
-        "//third_party/widevine/cdm:widevinecdmadapter",
-      ]
-
-      # Signatures are only generated for official chrome.
-      if (is_chrome_branded) {
-        sources += [
-          "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin.sig",
-          "$root_out_dir/libwidevinecdm.dylib.sig",
-        ]
-        public_deps += [ ":sign_cdm_adapter_for_widevine" ]
-      }
-    }
-
-    copy("widevine_cdm_library_copy") {
       sources = [
         "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
       ]
-      if (is_chrome_branded) {
+      if (enable_widevine_cdm_host_verification) {
         sources +=
             [ "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib.sig" ]
       }
       outputs = [
-        "$root_out_dir/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
       ]
-      deps = [
-        "//third_party/widevine/cdm:widevinecdm",
+      public_deps = [
+        "//third_party/widevine/cdm",
       ]
     }
 
@@ -1103,18 +1069,21 @@ if (is_win) {
         "{{bundle_contents_dir}}/Libraries/WidevineCdm/{{source_file_part}}",
       ]
       public_deps = [
-        "//third_party/widevine/cdm:widevine_cdm_manifest",
+        "//third_party/widevine/cdm",
       ]
     }
+  }
 
-    widevine_sign_file("sign_cdm_adapter_for_widevine") {
-      file = "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin"
-      flags = 0
+  group("widevine_cdm_library") {
+    if (should_bundle_widevine_cdm) {
       deps = [
-        "//third_party/widevine/cdm:widevinecdmadapter",
+        ":widevine_cdm_library_binaries",
+        ":widevine_cdm_library_manifest",
       ]
     }
+  }
 
+  if (enable_widevine_cdm_host_verification) {
     widevine_sign_file("sign_chrome_framework_for_widevine") {
       file = "$root_out_dir/$chrome_framework_name.framework/"
       if (defined(chrome_framework_version)) {
@@ -1170,15 +1139,6 @@ if (is_win) {
       deps = [
         ":framework_widevine_signature",
         ":widevine_resources_plist_bundle_data",
-      ]
-    }
-  }
-
-  group("widevine_cdm_library") {
-    if (_should_bundle_widevine) {
-      deps = [
-        ":widevine_cdm_library_binaries",
-        ":widevine_cdm_library_manifest",
       ]
     }
   }

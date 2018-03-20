@@ -4,9 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
-import("//chrome/process_version_rc_template.gni")
 import("//media/cdm/library_cdm/cdm_paths.gni")
-import("//media/cdm/library_cdm/ppapi_cdm_adapter.gni")
 import("//media/media_options.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
@@ -55,8 +53,9 @@ if (is_android) {
     widevine_cdm_version_h_file = "widevine_cdm_version.h"
   }
 } else if (enable_widevine) {
+  # TODO(crbug.com/349182): Remove after we replace WIDEVINE_CDM_AVAILABLE with
+  # ENABLE_WIDEVINE build flag.
   widevine_cdm_version_h_file = "stub/widevine_cdm_version.h"
-  widevine_cdm_manifest_file = [ "stub/manifest.json" ]
 } else {
   # No branding, use the default one.
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
@@ -84,50 +83,7 @@ source_set("headers") {
   public_deps = [
     ":version_h",  # Forward permission to use version header.
     "//media:media_features",
-    "//ppapi/features",
   ]
-}
-
-if (widevine_cdm_binary_files != []) {
-  copy("widevinecdm") {
-    sources = widevine_cdm_binary_files
-    outputs = [
-      "$root_out_dir/$widevine_cdm_path/{{source_file_part}}",
-    ]
-
-    # TODO(jrummell)
-    # 'COPY_PHASE_STRIP': 'NO',
-  }
-} else if (enable_widevine && enable_library_cdms) {
-  assert(!is_chrome_branded, "Branded Chrome should have binary files to copy.")
-  assert(!is_android, "Android should not have enable_library_cdms.")
-  shared_library("widevinecdm") {
-    output_dir = "$root_out_dir/$widevine_cdm_path"
-    sources = [
-      "//media/cdm/stub/stub_cdm.cc",
-      "//media/cdm/stub/stub_cdm.h",
-    ]
-
-    defines = [ "CDM_IMPLEMENTATION" ]
-
-    deps = [
-      ":version_h",
-      "//base",
-      "//build/config:exe_and_shlib_deps",
-    ]
-
-    if (is_posix && !is_mac) {
-      cflags = [ "-fvisibility=hidden" ]
-    }
-
-    if (is_mac) {
-      ldflags = [ "-Wl,-install_name,@loader_path/libwidevinecdm.dylib" ]
-    }
-  }
-} else {
-  group("widevinecdm") {
-    # NOP
-  }
 }
 
 if (widevine_cdm_manifest_file != []) {
@@ -143,48 +99,27 @@ if (widevine_cdm_manifest_file != []) {
   }
 }
 
-if ((is_chrome_branded || enable_widevine) && enable_library_cdms) {
-  # Produce and compile the .rc file.
-  process_version_rc_template("widevinecdmadapter_resources") {
-    visibility = [ ":*" ]
-    sources = [
-      "BRANDING",
-      "widevinecdmadapter.ver",
-    ]
-    output = "$target_gen_dir/widevinecdmadapter_version.rc"
-  }
-
-  ppapi_cdm_adapter("widevinecdmadapter") {
-    defines = []
-    output_dir = "$root_out_dir/$widevine_cdm_path"
-    deps = [
-      ":version_h",
-      ":widevinecdm",
-      ":widevinecdmadapter_resources",
-    ]
-    data_deps = [
-      ":widevine_cdm_manifest",
-      ":widevinecdm",
+if (widevine_cdm_binary_files != []) {
+  copy("widevine_cdm_binary") {
+    sources = widevine_cdm_binary_files
+    outputs = [
+      "$root_out_dir/$widevine_cdm_path/{{source_file_part}}",
     ]
 
-    if (is_linux) {
-      ldflags =
-          [ rebase_path("$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
-                        root_build_dir) ]
-    } else if (is_win) {
-      ldflags =
-          [ rebase_path("$root_out_dir/$widevine_cdm_path/widevinecdm.dll.lib",
-                        root_build_dir) ]
-    } else if (is_mac) {
-      ldflags =
-          [ rebase_path("$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
-                        root_build_dir) ]
-    }
+    # TODO(jrummell)
+    # 'COPY_PHASE_STRIP': 'NO',
   }
 } else {
-  # Placeholder when we're not compiling the adapter.
-  group("widevinecdmadapter") {
+  group("widevine_cdm_binary") {
+    # NOP
   }
+}
+
+group("cdm") {
+  public_deps = [
+    ":widevine_cdm_binary",
+    ":widevine_cdm_manifest",
+  ]
 }
 
 # This target exists for tests to depend on that pulls in a runtime dependency

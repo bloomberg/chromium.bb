@@ -91,7 +91,6 @@ crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
-widevine_plugin="${framework}/Libraries/WidevineCdm/_platform_specific/mac_x64/widevinecdmadapter.plugin"
 
 codesign_with_options "${crashpad_handler}" \
                       "${enforcement_flags_helpers}" \
@@ -120,22 +119,12 @@ codesign_with_options "${notification_service}" \
                       "${enforcement_flags_helpers}" \
                       "${xpc_bundle_id}"
 
-# Only sign widevine plugin if it is present in the bundle.
-# ${enforcement_flags*} are meaningless for dynamic libraries.
-if [[ -f "${widevine_plugin}" ]]; then
-  codesign_with_options "${widevine_plugin}" "" "widevinecdmadapter"
-fi
-
 # The framework is a dylib, so ${enforcement_flags_helpers} are meaningless.
 codesign_with_options "${framework}" "" "com.google.Chrome.framework"
 
 codesign_with_options "${helper_app}" \
                       "${enforcement_flags_app}" \
                       "com.google.Chrome.helper"
-
-if [[ -f "${widevine_plugin}" ]]; then
-  codesign_display_and_verify "${widevine_plugin}"
-fi
 
 codesign_display_and_verify "${crashpad_handler}" --deep
 codesign_display_and_verify "${app_mode_loader}" --ignore-resources
