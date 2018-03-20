@@ -4,7 +4,6 @@
 
 #include "net/quic/core/quic_data_reader.h"
 
-#include "net/base/int128.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"

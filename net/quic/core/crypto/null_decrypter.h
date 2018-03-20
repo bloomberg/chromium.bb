@@ -8,13 +8,12 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/int128.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_uint128.h"
 
 namespace net {
 
@@ -49,10 +48,10 @@ class QUIC_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   uint32_t cipher_id() const override;
 
  private:
-  bool ReadHash(QuicDataReader* reader, uint128* hash);
-  uint128 ComputeHash(QuicTransportVersion version,
-                      QuicStringPiece data1,
-                      QuicStringPiece data2) const;
+  bool ReadHash(QuicDataReader* reader, QuicUint128* hash);
+  QuicUint128 ComputeHash(QuicTransportVersion version,
+                          QuicStringPiece data1,
+                          QuicStringPiece data2) const;
 
   Perspective perspective_;
 

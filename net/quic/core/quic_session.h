@@ -14,7 +14,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/base/int128.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_control_frame_manager.h"
 #include "net/quic/core/quic_crypto_stream.h"
@@ -433,7 +432,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Returns a stateless reset token which will be included in the public reset
   // packet.
-  virtual uint128 GetStatelessResetToken() const;
+  virtual QuicUint128 GetStatelessResetToken() const;
 
   QuicControlFrameManager& control_frame_manager() {
     return control_frame_manager_;

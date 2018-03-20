@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_uint128.h"
 
 namespace net {
 

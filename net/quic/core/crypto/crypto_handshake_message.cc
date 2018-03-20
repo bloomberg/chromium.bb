@@ -213,8 +213,8 @@ QuicErrorCode CryptoHandshakeMessage::GetUint64(QuicTag tag,
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetUint128(QuicTag tag,
-                                                 uint128* out) const {
-  return GetPOD(tag, out, sizeof(uint128));
+                                                 QuicUint128* out) const {
+  return GetPOD(tag, out, sizeof(QuicUint128));
 }
 
 size_t CryptoHandshakeMessage::size() const {

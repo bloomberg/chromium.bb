@@ -25,7 +25,7 @@ namespace {
 
 // Stateless reset token used in IETF public reset packet.
 // TODO(fayang): use a real stateless reset token instead of a hard code one.
-const uint128 kStatelessResetToken = 1010101;
+const QuicUint128 kStatelessResetToken = 1010101;
 
 }  // namespace
 
@@ -1155,7 +1155,7 @@ bool QuicSession::WriteStreamData(QuicStreamId id,
   return stream->WriteStreamData(offset, data_length, writer);
 }
 
-uint128 QuicSession::GetStatelessResetToken() const {
+QuicUint128 QuicSession::GetStatelessResetToken() const {
   return kStatelessResetToken;
 }
 
