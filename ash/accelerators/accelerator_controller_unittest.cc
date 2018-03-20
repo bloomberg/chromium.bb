@@ -44,8 +44,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -53,8 +51,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
-
-using chromeos::input_method::InputMethodManager;
 
 namespace ash {
 
@@ -138,23 +134,6 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
 };
 
-class TestInputMethodManager
-    : public chromeos::input_method::MockInputMethodManager {
- public:
-  TestInputMethodManager() = default;
-  ~TestInputMethodManager() override = default;
-
-  // MockInputMethodManager:
-  chromeos::input_method::ImeKeyboard* GetImeKeyboard() override {
-    return &keyboard_;
-  }
-
-  chromeos::input_method::FakeImeKeyboard keyboard_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
-};
-
 class DummyKeyboardBrightnessControlDelegate
     : public KeyboardBrightnessControlDelegate {
  public:
@@ -210,18 +189,6 @@ class AcceleratorControllerTest : public AshTestBase {
  public:
   AcceleratorControllerTest() = default;
   ~AcceleratorControllerTest() override = default;
-
-  void SetUp() override {
-    AshTestBase::SetUp();
-    test_input_method_manager_ = new TestInputMethodManager;
-    // Takes ownership.
-    InputMethodManager::Initialize(test_input_method_manager_);
-  }
-
-  void TearDown() override {
-    InputMethodManager::Shutdown();
-    AshTestBase::TearDown();
-  }
 
  protected:
   static AcceleratorController* GetController();
@@ -290,9 +257,6 @@ class AcceleratorControllerTest : public AshTestBase {
       std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
     Shell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
   }
-
-  // Owned by InputMethodManager.
-  TestInputMethodManager* test_input_method_manager_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
