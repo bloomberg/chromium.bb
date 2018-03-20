@@ -102,6 +102,12 @@ class FakeArticleProvider : public ContentSuggestionsProvider {
     std::move(callback).Run(gfx::Image());
   }
 
+  void FetchSuggestionImageData(
+      const ContentSuggestion::ID& suggestion_id,
+      ntp_snippets::ImageDataFetchedCallback callback) override {
+    std::move(callback).Run(std::string());
+  }
+
   void DismissSuggestion(const ContentSuggestion::ID& id) override {
     NOTIMPLEMENTED();
   }

@@ -145,6 +145,14 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   }
   MOCK_METHOD2(FetchSuggestionImage,
                void(const ContentSuggestion::ID&, ImageFetchedCallback*));
+
+  void FetchSuggestionImageData(const ContentSuggestion::ID& suggestion_id,
+                                ImageDataFetchedCallback callback) override {
+    FetchSuggestionImageData(suggestion_id, &callback);
+  }
+  MOCK_METHOD2(FetchSuggestionImageData,
+               void(const ContentSuggestion::ID&, ImageDataFetchedCallback*));
+
   void GetDismissedSuggestionsForDebugging(
       Category category,
       DismissedSuggestionsCallback callback) override {

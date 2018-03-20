@@ -95,6 +95,15 @@ class ContentSuggestionsProvider {
   virtual void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                                     ImageFetchedCallback callback) = 0;
 
+  // Fetches the image data for the suggestion with the given ID and returns it
+  // through the callback. This fetch may occur locally or from the internet.
+  // If that suggestion doesn't exist, doesn't have an image or if the fetch
+  // fails, the callback gets empty data. The callback will not be called
+  // synchronously.
+  virtual void FetchSuggestionImageData(
+      const ContentSuggestion::ID& suggestion_id,
+      ImageDataFetchedCallback callback) = 0;
+
   // Fetches more suggestions for the given category. The new suggestions
   // will not include any suggestion of the |known_suggestion_ids| sets.
   // As a result of this call, the provider:

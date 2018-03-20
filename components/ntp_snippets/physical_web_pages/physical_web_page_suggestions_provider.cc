@@ -145,6 +145,13 @@ void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
               raw_data.size())));
 }
 
+void PhysicalWebPageSuggestionsProvider::FetchSuggestionImageData(
+    const ContentSuggestion::ID& suggestion_id,
+    ImageDataFetchedCallback callback) {
+  // Not implemented for this provider.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+}
 void PhysicalWebPageSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,

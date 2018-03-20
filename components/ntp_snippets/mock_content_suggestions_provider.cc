@@ -64,6 +64,12 @@ void MockContentSuggestionsProvider::FetchSuggestionImage(
   FetchSuggestionImageMock(id, callback);
 }
 
+void MockContentSuggestionsProvider::FetchSuggestionImageData(
+    const ContentSuggestion::ID& id,
+    ImageDataFetchedCallback callback) {
+  FetchSuggestionImageDataMock(id, callback);
+}
+
 void MockContentSuggestionsProvider::FireSuggestionsChanged(
     Category category,
     std::vector<ContentSuggestion> suggestions) {
