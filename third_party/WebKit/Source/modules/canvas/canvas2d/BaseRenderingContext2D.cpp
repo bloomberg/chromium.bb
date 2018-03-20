@@ -618,6 +618,9 @@ void BaseRenderingContext2D::DrawPathInternal(
 
   SkPath sk_path = path.GetSkPath();
   FloatRect bounds = path.BoundingRect();
+  if (isnan(bounds.X()) || isnan(bounds.Y()) || isnan(bounds.Width()) ||
+      isnan(bounds.Height()))
+    return;
   sk_path.setFillType(fill_type);
 
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
