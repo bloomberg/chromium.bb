@@ -67,6 +67,18 @@ ProfileNetworkContextService::CreateMainNetworkContext() {
   return network_context;
 }
 
+network::mojom::NetworkContextPtr
+ProfileNetworkContextService::CreateNetworkContextForPartition(
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  network::mojom::NetworkContextPtr network_context;
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context),
+      CreateNetworkContextParams(in_memory, relative_partition_path));
+  return network_context;
+}
+
 void ProfileNetworkContextService::SetUpProfileIODataMainContext(
     network::mojom::NetworkContextRequest* network_context_request,
     network::mojom::NetworkContextParamsPtr* network_context_params) {
@@ -125,6 +137,14 @@ void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
 
 network::mojom::NetworkContextParamsPtr
 ProfileNetworkContextService::CreateMainNetworkContextParams() {
+  return CreateNetworkContextParams(profile_->IsOffTheRecord(),
+                                    base::FilePath());
+}
+
+network::mojom::NetworkContextParamsPtr
+ProfileNetworkContextService::CreateNetworkContextParams(
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
   // TODO(mmenke): Set up parameters here.
   network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
@@ -136,13 +156,17 @@ ProfileNetworkContextService::CreateMainNetworkContextParams() {
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
 
+  base::FilePath path = profile_->GetPath();
+  if (!relative_partition_path.empty())
+    path = path.Append(relative_partition_path);
+
   // Configure on-disk storage for non-OTR profiles. OTR profiles just use
   // default behavior (in memory storage, default sizes).
   PrefService* prefs = profile_->GetPrefs();
-  if (!profile_->IsOffTheRecord()) {
+  if (!in_memory) {
     // Configure the HTTP cache path and size.
     base::FilePath base_cache_path;
-    chrome::GetUserCacheDirectory(profile_->GetPath(), &base_cache_path);
+    chrome::GetUserCacheDirectory(path, &base_cache_path);
     base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
     if (!disk_cache_dir.empty())
       base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
@@ -154,20 +178,26 @@ ProfileNetworkContextService::CreateMainNetworkContextParams() {
     // Currently this just contains HttpServerProperties, but that will likely
     // change.
     network_context_params->http_server_properties_path =
-        profile_->GetPath().Append(chrome::kNetworkPersistentStateFilename);
+        path.Append(chrome::kNetworkPersistentStateFilename);
 
-    base::FilePath cookie_path = profile_->GetPath();
+    base::FilePath cookie_path = path;
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
     network_context_params->cookie_path = cookie_path;
 
-    base::FilePath channel_id_path = profile_->GetPath();
+    base::FilePath channel_id_path = path;
     channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
     network_context_params->channel_id_path = channel_id_path;
 
-    network_context_params->restore_old_session_cookies =
-        profile_->ShouldRestoreOldSessionCookies();
-    network_context_params->persist_session_cookies =
-        profile_->ShouldPersistSessionCookies();
+    if (relative_partition_path.empty()) {
+      network_context_params->restore_old_session_cookies =
+          profile_->ShouldRestoreOldSessionCookies();
+      network_context_params->persist_session_cookies =
+          profile_->ShouldPersistSessionCookies();
+    } else {
+      // Copy behavior of ProfileImplIOData::InitializeAppRequestContext.
+      network_context_params->restore_old_session_cookies = false;
+      network_context_params->persist_session_cookies = false;
+    }
   }
 
   // NOTE(mmenke): Keep these protocol handlers and

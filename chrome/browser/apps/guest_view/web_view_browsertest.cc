@@ -2138,6 +2138,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_StoragePersistence) {
       "platform_apps/web_view/storage_persistence", "PRE_StoragePersistence",
       kFlagEnableFileAccess))
       << message_;
+  content::EnsureCookiesFlushed(profile());
 }
 
 // This is the post-reset portion of the StoragePersistence test.  See
@@ -3071,6 +3072,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   // Leak the temporary download directory. We'll retake ownership in the next
   // browser session.
   temporary_download_dir.Take();
+
+  content::EnsureCookiesFlushed(profile());
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {

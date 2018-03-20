@@ -468,6 +468,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionCookies) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   StoreDataWithPage("session_cookies.html");
+  content::EnsureCookiesFlushed(browser()->profile());
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookies) {
@@ -696,6 +697,7 @@ class RestartTest : public BetterSessionRestoreTest {
 
 IN_PROC_BROWSER_TEST_F(RestartTest, PRE_SessionCookies) {
   StoreDataWithPage("session_cookies.html");
+  content::EnsureCookiesFlushed(browser()->profile());
   Restart();
 }
 
@@ -725,6 +727,7 @@ IN_PROC_BROWSER_TEST_F(RestartTest, LocalStorageClearedOnExit) {
 
 IN_PROC_BROWSER_TEST_F(RestartTest, PRE_CookiesClearedOnExit) {
   StoreDataWithPage("cookies.html");
+  content::EnsureCookiesFlushed(browser()->profile());
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   Restart();
@@ -826,6 +829,7 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_PRE_CookiesClearedOnExit) {
   StoreDataWithPage("cookies.html");
+  content::EnsureCookiesFlushed(browser()->profile());
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_CookiesClearedOnExit) {
