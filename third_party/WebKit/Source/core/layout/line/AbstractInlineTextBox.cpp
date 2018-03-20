@@ -95,7 +95,8 @@ scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox()
   if (!inline_text_box_)
     return nullptr;
 
-  return GetOrCreate(line_layout_item_, inline_text_box_->NextTextBox());
+  return GetOrCreate(line_layout_item_,
+                     inline_text_box_->NextForSameLayoutObject());
 }
 
 LayoutRect AbstractInlineTextBox::LocalBounds() const {
@@ -181,8 +182,9 @@ String AbstractInlineTextBox::GetText() const {
   String result = line_layout_item_.GetText()
                       .Substring(start, len)
                       .SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);
-  if (inline_text_box_->NextTextBox() &&
-      inline_text_box_->NextTextBox()->Start() > inline_text_box_->end() &&
+  if (inline_text_box_->NextForSameLayoutObject() &&
+      inline_text_box_->NextForSameLayoutObject()->Start() >
+          inline_text_box_->end() &&
       result.length() && !result.Right(1).ContainsOnlyWhitespace())
     return result + " ";
   return result;
@@ -191,13 +193,13 @@ String AbstractInlineTextBox::GetText() const {
 bool AbstractInlineTextBox::IsFirst() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
-  return !inline_text_box_ || !inline_text_box_->PrevTextBox();
+  return !inline_text_box_ || !inline_text_box_->PrevForSameLayoutObject();
 }
 
 bool AbstractInlineTextBox::IsLast() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
-  return !inline_text_box_ || !inline_text_box_->NextTextBox();
+  return !inline_text_box_ || !inline_text_box_->NextForSameLayoutObject();
 }
 
 scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {

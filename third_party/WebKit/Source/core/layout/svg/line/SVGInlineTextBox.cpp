@@ -52,7 +52,7 @@ void SVGInlineTextBox::DirtyLineBoxes() {
 
   // And clear any following text fragments as the text on which they depend may
   // now no longer exist, or glyph positions may be wrong.
-  InlineTextBox* next_box = NextTextBox();
+  InlineTextBox* next_box = NextForSameLayoutObject();
   if (next_box)
     next_box->DirtyLineBoxes();
 }

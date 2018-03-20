@@ -29,6 +29,7 @@
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/layout/line/LineBoxList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/wtf/Forward.h"
 
@@ -58,7 +59,7 @@ enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
 //
 //
 // ***** LINE BOXES OWNERSHIP *****
-// m_firstTextBox and m_lastTextBox are not owned by LayoutText
+// InlineTextBox in text_boxes_ are not owned by LayoutText
 // but are pointers into the enclosing inline / block (see LayoutInline's
 // and LayoutBlockFlow's m_lineBoxes).
 //
@@ -76,9 +77,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // not the content of the Text node, updating text-transform property
   // doesn't re-transform the string.
   LayoutText(Node*, scoped_refptr<StringImpl>);
-#if DCHECK_IS_ON()
-  ~LayoutText() override;
-#endif
 
   static LayoutText* CreateEmptyAnonymous(Document&);
 
@@ -195,8 +193,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
 
-  InlineTextBox* FirstTextBox() const { return first_text_box_; }
-  InlineTextBox* LastTextBox() const { return last_text_box_; }
+  const InlineTextBoxList& TextBoxes() const { return text_boxes_; }
+
+  InlineTextBox* FirstTextBox() const { return text_boxes_.First(); }
+  InlineTextBox* LastTextBox() const { return text_boxes_.Last(); }
 
   // Returns upper left corner point in local coordinate if this object has
   // rendered text.
@@ -370,8 +370,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   // The line boxes associated with this object.
   // Read the LINE BOXES OWNERSHIP section in the class header comment.
-  InlineTextBox* first_text_box_;
-  InlineTextBox* last_text_box_;
+  InlineTextBoxList text_boxes_;
 };
 
 inline UChar LayoutText::UncheckedCharacterAt(unsigned i) const {
@@ -408,39 +407,6 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, IsText());
 inline LayoutText* Text::GetLayoutObject() const {
   return ToLayoutText(CharacterData::GetLayoutObject());
 }
-
-// Represents list of |InlineTextBox| objects associated to |LayoutText| in
-// layout order.
-class InlineTextBoxRange {
- public:
-  class Iterator
-      : public std::iterator<std::input_iterator_tag, InlineTextBox*> {
-   public:
-    explicit Iterator(InlineTextBox*);
-    Iterator(const Iterator&) = default;
-
-    Iterator& operator++();
-    InlineTextBox* operator*() const;
-
-    bool operator==(const Iterator& other) const {
-      return current_ == other.current_;
-    }
-    bool operator!=(const Iterator& other) const { return !operator==(other); }
-
-   private:
-    InlineTextBox* current_;
-  };
-
-  explicit InlineTextBoxRange(const LayoutText&);
-
-  Iterator begin() const { return Iterator(layout_text_->FirstTextBox()); }
-  Iterator end() const { return Iterator(nullptr); }
-
- private:
-  const LayoutText* layout_text_;
-};
-
-InlineTextBoxRange InlineTextBoxesOf(const LayoutText&);
 
 void ApplyTextTransform(const ComputedStyle*, String&, UChar);
 

@@ -406,8 +406,7 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
               protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
-      for (const InlineTextBox* text_box = layout_text->FirstTextBox();
-           text_box; text_box = text_box->NextTextBox()) {
+      for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
         FloatRect local_coords_text_box_rect(text_box->FrameRect());
         FloatRect absolute_coords_text_box_rect =
             layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)

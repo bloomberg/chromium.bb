@@ -29,6 +29,7 @@
 #ifndef LineBoxList_h
 #define LineBoxList_h
 
+#include "core/CoreExport.h"
 #include "core/layout/api/HitTestAction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -39,32 +40,108 @@ class CullRect;
 class HitTestLocation;
 class HitTestResult;
 class InlineFlowBox;
+class InlineTextBox;
 class LayoutPoint;
 class LayoutUnit;
 class LineLayoutBoxModel;
 class LineLayoutItem;
 
-class LineBoxList {
+template <typename InlineBoxType>
+class CORE_TEMPLATE_CLASS_EXPORT InlineBoxList {
   DISALLOW_NEW();
 
  public:
-  LineBoxList() : first_line_box_(nullptr), last_line_box_(nullptr) {}
+  InlineBoxList() : first_(nullptr), last_(nullptr) {}
 
 #if DCHECK_IS_ON()
-  ~LineBoxList();
+  ~InlineBoxList();
 #endif
 
-  InlineFlowBox* FirstLineBox() const { return first_line_box_; }
-  InlineFlowBox* LastLineBox() const { return last_line_box_; }
+  InlineBoxType* First() const { return first_; }
+  InlineBoxType* Last() const { return last_; }
 
-  void AppendLineBox(InlineFlowBox*);
+  void AppendLineBox(InlineBoxType*);
 
-  void DeleteLineBoxTree();
   void DeleteLineBoxes();
 
-  void ExtractLineBox(InlineFlowBox*);
-  void AttachLineBox(InlineFlowBox*);
-  void RemoveLineBox(InlineFlowBox*);
+  void ExtractLineBox(InlineBoxType*);
+  void AttachLineBox(InlineBoxType*);
+  void RemoveLineBox(InlineBoxType*);
+
+  class BaseIterator {
+    STACK_ALLOCATED();
+
+   public:
+    explicit BaseIterator(InlineBoxType* first) : current_(first) {}
+
+    InlineBoxType* operator*() const {
+      DCHECK(current_);
+      return current_;
+    }
+    InlineBoxType* operator->() const { return operator*(); }
+
+    bool operator==(const BaseIterator& other) const {
+      return current_ == other.current_;
+    }
+    bool operator!=(const BaseIterator& other) const {
+      return !operator==(other);
+    }
+
+   protected:
+    InlineBoxType* current_;
+  };
+
+  class Iterator final : public BaseIterator {
+   public:
+    using BaseIterator::BaseIterator;
+    using BaseIterator::current_;
+    void operator++() {
+      DCHECK(current_);
+      current_ = current_->NextForSameLayoutObject();
+    }
+  };
+
+  class ReverseIterator final : public BaseIterator {
+   public:
+    using BaseIterator::BaseIterator;
+    using BaseIterator::current_;
+    void operator++() {
+      DCHECK(current_);
+      current_ = current_->PrevForSameLayoutObject();
+    }
+  };
+
+  Iterator begin() const { return Iterator(first_); }
+  Iterator end() const { return Iterator(nullptr); }
+
+  class ReverseRange final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ReverseRange(InlineBoxType* last) : last_(last){};
+    ReverseIterator begin() const { return ReverseIterator(last_); }
+    ReverseIterator end() const { return ReverseIterator(nullptr); }
+
+   private:
+    InlineBoxType* last_;
+  };
+
+  ReverseRange InReverseOrder() const { return ReverseRange(last_); }
+
+ protected:
+  // For block flows, each box represents the root inline box for a line in the
+  // paragraph.
+  // For inline flows, each box represents a portion of that inline.
+  InlineBoxType* first_;
+  InlineBoxType* last_;
+};
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT InlineBoxList<InlineFlowBox>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT InlineBoxList<InlineTextBox>;
+
+class LineBoxList : public InlineBoxList<InlineFlowBox> {
+ public:
+  void DeleteLineBoxTree();
 
   void DirtyLineBoxes();
   void DirtyLinesFromChangedChild(LineLayoutItem parent,
@@ -90,13 +167,9 @@ class LineBoxList {
                            LayoutUnit logical_bottom,
                            const CullRect&,
                            const LayoutPoint&) const;
-
-  // For block flows, each box represents the root inline box for a line in the
-  // paragraph.
-  // For inline flows, each box represents a portion of that inline.
-  InlineFlowBox* first_line_box_;
-  InlineFlowBox* last_line_box_;
 };
+
+class InlineTextBoxList : public InlineBoxList<InlineTextBox> {};
 
 }  // namespace blink
 

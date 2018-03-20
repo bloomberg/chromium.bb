@@ -99,8 +99,7 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
     }
   } else if (layout_object->IsText()) {
     // TODO(skobes): Use first and last InlineTextBox only?
-    for (InlineTextBox* box = ToLayoutText(layout_object)->FirstTextBox(); box;
-         box = box->NextTextBox())
+    for (InlineTextBox* box : ToLayoutText(layout_object)->TextBoxes())
       local_bounds.Unite(box->FrameRect());
   } else {
     // Only LayoutBox and LayoutText are supported.

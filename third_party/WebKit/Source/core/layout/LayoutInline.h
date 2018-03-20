@@ -158,8 +158,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LineBoxList* LineBoxes() { return &line_boxes_; }
   const LineBoxList* LineBoxes() const { return &line_boxes_; }
 
-  InlineFlowBox* FirstLineBox() const { return line_boxes_.FirstLineBox(); }
-  InlineFlowBox* LastLineBox() const { return line_boxes_.LastLineBox(); }
+  InlineFlowBox* FirstLineBox() const { return line_boxes_.First(); }
+  InlineFlowBox* LastLineBox() const { return line_boxes_.Last(); }
   InlineBox* FirstLineBoxIncludingCulling() const {
     return AlwaysCreateLineBoxes() ? FirstLineBox()
                                    : CulledInlineFirstLineBox();

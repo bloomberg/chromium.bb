@@ -359,18 +359,18 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
     // Check to see if all initial lines are unconstructed.  If so, then
     // we know the inline began on this line (unless we are a continuation).
     LineBoxList* line_box_list = LineBoxes();
-    if (!line_box_list->FirstLineBox()->IsConstructed() &&
+    if (!line_box_list->First()->IsConstructed() &&
         !GetLineLayoutItem().IsInlineElementContinuation()) {
       if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
           EBoxDecorationBreak::kClone)
         include_left_edge = include_right_edge = true;
-      else if (ltr && line_box_list->FirstLineBox() == this)
+      else if (ltr && line_box_list->First() == this)
         include_left_edge = true;
-      else if (!ltr && line_box_list->LastLineBox() == this)
+      else if (!ltr && line_box_list->Last() == this)
         include_right_edge = true;
     }
 
-    if (!line_box_list->LastLineBox()->IsConstructed()) {
+    if (!line_box_list->Last()->IsConstructed()) {
       LineLayoutInline inline_flow = LineLayoutInline(GetLineLayoutItem());
       LineLayoutItem logically_last_run_layout_item(
           logically_last_run_layout_object);
@@ -394,11 +394,13 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
           EBoxDecorationBreak::kClone) {
         include_left_edge = include_right_edge = true;
       } else if (ltr) {
-        if (!NextLineBox() && ((last_line || is_last_object_on_line) &&
-                               !inline_flow.Continuation()))
+        if (!NextForSameLayoutObject() &&
+            ((last_line || is_last_object_on_line) &&
+             !inline_flow.Continuation()))
           include_right_edge = true;
       } else {
-        if ((!PrevLineBox() || PrevLineBox()->IsConstructed()) &&
+        if ((!PrevForSameLayoutObject() ||
+             PrevForSameLayoutObject()->IsConstructed()) &&
             ((last_line || is_last_object_on_line) &&
              !inline_flow.Continuation()))
           include_left_edge = true;
@@ -1399,7 +1401,8 @@ bool InlineFlowBox::BoxShadowCanBeAppliedToBackground(
   StyleImage* image = last_background_layer.GetImage();
   bool has_fill_image = image && image->CanRender();
   return (!has_fill_image && !GetLineLayoutItem().Style()->HasBorderRadius()) ||
-         (!PrevLineBox() && !NextLineBox()) || !Parent();
+         (!PrevForSameLayoutObject() && !NextForSameLayoutObject()) ||
+         !Parent();
 }
 
 InlineBox* InlineFlowBox::FirstLeafChild() const {

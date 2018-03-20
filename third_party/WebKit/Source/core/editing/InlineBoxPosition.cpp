@@ -66,7 +66,7 @@ InlineTextBox* SearchAheadForBetterMatch(const LayoutText* layout_object) {
     if (next->IsText()) {
       InlineTextBox* match = nullptr;
       int min_offset = INT_MAX;
-      for (InlineTextBox* box : InlineTextBoxesOf(*ToLayoutText(next))) {
+      for (InlineTextBox* box : ToLayoutText(next)->TextBoxes()) {
         int caret_min_offset = box->CaretMinOffset();
         if (caret_min_offset < min_offset) {
           match = box;
@@ -233,7 +233,7 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
   InlineBox* inline_box = nullptr;
   InlineTextBox* candidate = nullptr;
 
-  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
+  for (InlineTextBox* box : text_layout_object->TextBoxes()) {
     int caret_min_offset = box->CaretMinOffset();
     int caret_max_offset = box->CaretMaxOffset();
 

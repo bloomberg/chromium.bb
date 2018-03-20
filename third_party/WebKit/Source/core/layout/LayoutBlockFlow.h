@@ -186,8 +186,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   const LineBoxList& LineBoxes() const { return line_boxes_; }
   LineBoxList* LineBoxes() { return &line_boxes_; }
-  InlineFlowBox* FirstLineBox() const { return line_boxes_.FirstLineBox(); }
-  InlineFlowBox* LastLineBox() const { return line_boxes_.LastLineBox(); }
+  InlineFlowBox* FirstLineBox() const { return line_boxes_.First(); }
+  InlineFlowBox* LastLineBox() const { return line_boxes_.Last(); }
   RootInlineBox* FirstRootBox() const {
     return static_cast<RootInlineBox*>(FirstLineBox());
   }

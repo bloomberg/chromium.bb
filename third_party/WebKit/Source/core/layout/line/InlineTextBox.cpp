@@ -258,7 +258,7 @@ bool InlineTextBox::HasWrappedSelectionNewline() const {
   // If we're the last inline text box in containing block, our containing block
   // is inline, and the selection continues into that block, then rely on the
   // next inline text box (if any) to paint a wrapped new line as needed.
-  if (NextTextBox())
+  if (NextForSameLayoutObject())
     return true;
   auto root_block = Root().Block();
   if (root_block.IsInline() &&

@@ -1167,7 +1167,7 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
-  for (InlineTextBox* box : InlineTextBoxesOf(*layout_text)) {
+  for (InlineTextBox* box : layout_text->TextBoxes()) {
     const ComputedStyle& style = layout_text->StyleRef(box->IsFirstLineStyle());
     const Font& font = style.GetFont();
     TextRun run = box->ConstructTextRunForInspector(style);
