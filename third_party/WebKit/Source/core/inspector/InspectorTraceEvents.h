@@ -458,7 +458,7 @@ std::unique_ptr<TracedValue> Data(const String& session_id, LocalFrame*);
 }
 
 namespace InspectorSetLayerTreeId {
-std::unique_ptr<TracedValue> Data(const String& session_id, int layer_tree_id);
+std::unique_ptr<TracedValue> Data(LocalFrame* local_root);
 }
 
 namespace InspectorAnimationEvent {

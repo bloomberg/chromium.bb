@@ -28,7 +28,9 @@
       'ts': 0
     },
     {
-      'args': {'sessionId': sessionId},
+      'args': {'data': {'sessionId': sessionId, 'frames': [
+        {'frame': 'frame1', 'url': 'frameurl', 'name': 'frame-name'}
+      ]}},
       'cat': 'disabled-by-default-devtools.timeline',
       'name': 'TracingStartedInPage',
       'ph': 'I',

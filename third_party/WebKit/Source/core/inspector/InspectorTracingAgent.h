@@ -56,7 +56,6 @@ class CORE_EXPORT InspectorTracingAgent final
   void end(std::unique_ptr<EndCallback>) override;
 
   // Methods for other agents to use.
-  void SetLayerTreeId(int);
   void RootLayerCleared();
 
  private:
@@ -65,7 +64,6 @@ class CORE_EXPORT InspectorTracingAgent final
   bool IsStarted() const;
   void WriteTimelineStartedEventForWorker(WorkerThread*);
 
-  int layer_tree_id_;
   Client* client_;
   String session_id_;
   Member<InspectedFrames> inspected_frames_;

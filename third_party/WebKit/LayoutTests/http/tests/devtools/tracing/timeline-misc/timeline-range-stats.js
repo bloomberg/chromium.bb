@@ -19,7 +19,9 @@
       'pid': pid,
       'tid': mainThread,
       'ts': 100,
-      'args': {'sessionId': sessionId}
+      'args': {'data': {'sessionId': sessionId, 'frames': [
+        {'frame': 'frame1', 'url': 'frameurl', 'name': 'frame-name'}
+      ]}},
     },
     {
       'cat': 'disabled-by-default-devtools.timeline',
@@ -28,7 +30,7 @@
       'pid': pid,
       'tid': mainThread,
       'ts': 101,
-      'args': {'sessionId': sessionId, 'layerTreeId': 17}
+      'args': {'data': {'frame': 'frame1', 'layerTreeId': 17}}
     },
 
     {

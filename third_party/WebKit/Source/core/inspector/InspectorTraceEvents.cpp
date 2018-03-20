@@ -1285,12 +1285,13 @@ std::unique_ptr<TracedValue> InspectorTracingStartedInFrame::Data(
   return value;
 }
 
-std::unique_ptr<TracedValue> InspectorSetLayerTreeId::Data(
-    const String& session_id,
-    int layer_tree_id) {
+std::unique_ptr<TracedValue> InspectorSetLayerTreeId::Data(LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("sessionId", session_id);
-  value->SetInteger("layerTreeId", layer_tree_id);
+  value->SetString("frame", IdentifiersFactory::FrameId(frame));
+  WebLayerTreeView* layerTreeView =
+      frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
+  value->SetInteger("layerTreeId",
+                    layerTreeView ? layerTreeView->LayerTreeId() : 0);
   return value;
 }
 

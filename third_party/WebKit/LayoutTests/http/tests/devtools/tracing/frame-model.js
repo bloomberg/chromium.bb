@@ -15,7 +15,9 @@
 
   var commonMetadata = [
     {
-      'args': {'sessionId': sessionId},
+      'args': {'data': {'sessionId': sessionId, 'frames': [
+        {'frame': 'frame1', 'url': 'frameurl', 'name': 'frame-name'}
+      ]}},
       'cat': 'disabled-by-default-devtools.timeline',
       'name': 'TracingStartedInPage',
       'ph': 'I',
@@ -24,7 +26,7 @@
       'ts': 100,
     },
     {
-      'args': {'sessionId': sessionId, 'layerTreeId': 17},
+      'args': {'data': {'frame': 'frame1', 'layerTreeId': 17}},
       'cat': 'disabled-by-default-devtools.timeline',
       'name': 'SetLayerTreeId',
       'ph': 'I',
