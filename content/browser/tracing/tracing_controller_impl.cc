@@ -146,8 +146,8 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
 
-  auto chrome_agent =
-      std::make_unique<tracing::ChromeTraceEventAgent>(connector);
+  auto chrome_agent = std::make_unique<tracing::ChromeTraceEventAgent>(
+      connector, true /* request_clock_sync_marker_on_android */);
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
   chrome_agent->AddMetadataGeneratorFunction(base::BindRepeating(

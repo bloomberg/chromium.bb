@@ -34,7 +34,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
 
   static ChromeTraceEventAgent* GetInstance();
 
-  explicit ChromeTraceEventAgent(service_manager::Connector* connector);
+  explicit ChromeTraceEventAgent(service_manager::Connector* connector,
+                                 bool request_clock_sync_marker_on_android);
 
   void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
 
@@ -49,6 +50,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
                     base::TimeTicks coordinator_time,
                     const StartTracingCallback& callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
+  void RequestClockSyncMarker(
+      const std::string& sync_id,
+      const Agent::RequestClockSyncMarkerCallback& callback) override;
   void RequestBufferStatus(
       const RequestBufferStatusCallback& callback) override;
   void GetCategories(const GetCategoriesCallback& callback) override;

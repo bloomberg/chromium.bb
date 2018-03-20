@@ -603,8 +603,8 @@ void ChildThreadImpl::InitTracing() {
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_task_runner()));
 
-  chrome_trace_event_agent_ =
-      std::make_unique<tracing::ChromeTraceEventAgent>(GetConnector());
+  chrome_trace_event_agent_ = std::make_unique<tracing::ChromeTraceEventAgent>(
+      GetConnector(), false /* request_clock_sync_marker_on_android */);
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
