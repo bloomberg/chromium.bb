@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_empty_state_view.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -50,9 +51,9 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 // Clang does not allow property getters to start with the reserved word "new",
 // but provides a workaround. The getter must be set before the property is
 // declared.
-- (UIButton*)newTabButton __attribute__((objc_method_family(none)));
-@property(nonatomic, weak) UIButton* newTabButton;
-@property(nonatomic, weak) UIButton* floatingButton;
+- (TabGridNewTabButton*)newTabButton __attribute__((objc_method_family(none)));
+@property(nonatomic, weak) TabGridNewTabButton* newTabButton;
+@property(nonatomic, weak) TabGridNewTabButton* floatingButton;
 @property(nonatomic, assign) TabGridConfiguration configuration;
 
 @end
@@ -455,7 +456,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 
 // Adds floating button and constraints.
 - (void)setupFloatingButton {
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+  TabGridNewTabButton* button = [TabGridNewTabButton
+      buttonWithSizeClass:TabGridNewTabButtonSizeClassLarge];
   button.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:button];
   self.floatingButton = button;
@@ -538,6 +540,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 
 - (void)configureButtonsForCurrentPage {
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
+  self.newTabButton.page = self.currentPage;
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
@@ -550,52 +553,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
     case TabGridPageRemoteTabs:
       self.doneButton.enabled = YES;
       self.closeAllButton.enabled = NO;
-      break;
-  }
-  switch (self.configuration) {
-    case TabGridConfigurationBottomToolbar:
-      [self updateNewTabButtonWithIncognitoImageName:
-                @"new_tab_toolbar_button_incognito"
-                                    regularImageName:@"new_tab_toolbar_button"];
-      break;
-    case TabGridConfigurationFloatingButton:
-      [self
-          updateNewTabButtonWithIncognitoImageName:
-              @"new_tab_floating_button_incognito"
-                                  regularImageName:@"new_tab_floating_button"];
-      break;
-  }
-}
-
-- (void)updateNewTabButtonWithIncognitoImageName:(NSString*)incognitoName
-                                regularImageName:(NSString*)regularName {
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      self.newTabButton.enabled = YES;
-      [self.newTabButton setImage:[[UIImage imageNamed:incognitoName]
-                                      imageWithRenderingMode:
-                                          UIImageRenderingModeAlwaysOriginal]
-                         forState:UIControlStateNormal];
-      self.newTabButton.accessibilityLabel =
-          l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_INCOGNITO_TAB);
-      break;
-    case TabGridPageRegularTabs:
-      self.newTabButton.enabled = YES;
-      [self.newTabButton setImage:[[UIImage imageNamed:regularName]
-                                      imageWithRenderingMode:
-                                          UIImageRenderingModeAlwaysOriginal]
-                         forState:UIControlStateNormal];
-      self.newTabButton.accessibilityLabel =
-          l10n_util::GetNSString(IDS_IOS_TAB_GRID_CREATE_NEW_TAB);
-      break;
-    case TabGridPageRemoteTabs:
-      self.newTabButton.enabled = NO;
-      // The incognito new tab button image was made so that it can be a
-      // template image. A template image becomes greyed out when disabled.
-      [self.newTabButton setImage:[[UIImage imageNamed:incognitoName]
-                                      imageWithRenderingMode:
-                                          UIImageRenderingModeAlwaysTemplate]
-                         forState:UIControlStateNormal];
       break;
   }
 }

@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class TabGridNewTabButton;
+
 // Toolbar view with three buttons. The contents have a fixed height and are
 // pinned to the top of this view, therefore it is intended to be used as a
 // bottom toolbar.
@@ -15,7 +17,7 @@
 // contents, visibility and actions.
 @property(nonatomic, weak, readonly) UIButton* leadingButton;
 @property(nonatomic, weak, readonly) UIButton* trailingButton;
-@property(nonatomic, weak, readonly) UIButton* centerButton;
+@property(nonatomic, weak, readonly) TabGridNewTabButton* centerButton;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_BOTTOM_TOOLBAR_H_
