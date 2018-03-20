@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <string>
-
 #include "base/json/json_reader.h"
 #include "base/values.h"
 
@@ -15,7 +10,7 @@ std::string error_message;
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < 1)
+  if (size < 2)
     return 0;
 
   // Create a copy of input buffer, as otherwise we don't catch

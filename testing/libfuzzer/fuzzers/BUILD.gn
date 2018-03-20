@@ -130,15 +130,6 @@ fuzzer_test("libsrtp_fuzzer") {
   libfuzzer_options = [ "max_len=1500" ]
 }
 
-fuzzer_test("base_json_reader_fuzzer") {
-  sources = [
-    "base_json_reader_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 libpng_seed_corpuses = [
   "//components/viz/test/data",
   "//third_party/WebKit/LayoutTests/images/png-suite/samples",

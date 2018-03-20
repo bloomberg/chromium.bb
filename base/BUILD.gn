@@ -2976,9 +2976,29 @@ fuzzer_test("base64_encode_fuzzer") {
 
 fuzzer_test("base_json_correctness_fuzzer") {
   sources = [
-    "json/correctness_fuzzer.cc",
+    "json/json_correctness_fuzzer.cc",
   ]
   deps = [
     ":base",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+}
+
+fuzzer_test("base_json_reader_fuzzer") {
+  sources = [
+    "json/json_reader_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+}
+
+fuzzer_test("base_json_string_escape_fuzzer") {
+  sources = [
+    "json/string_escape_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
   ]
 }
