@@ -61,6 +61,10 @@ class AdaptCallbackForRepeatingHelper final {
 // Wraps the given OnceCallback into a RepeatingCallback that relays its
 // invocation to the original OnceCallback on the first invocation. The
 // following invocations are just ignored.
+//
+// Note that this deliberately subverts the Once/Repeating paradigm of Callbacks
+// but helps ease the migration from old-style Callbacks. Avoid if possible; use
+// if necessary for migration. TODO(tzik): Remove it. https://crbug.com/730593
 template <typename... Args>
 RepeatingCallback<void(Args...)> AdaptCallbackForRepeating(
     OnceCallback<void(Args...)> callback) {
