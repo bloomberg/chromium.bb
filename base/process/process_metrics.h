@@ -135,11 +135,6 @@ class BASE_EXPORT ProcessMetrics {
   // convenience wrapper for CreateProcessMetrics().
   static std::unique_ptr<ProcessMetrics> CreateCurrentProcessMetrics();
 
-  // Returns private and sharedusage, in bytes. Private bytes is the amount of
-  // memory currently allocated to a process that cannot be shared. Returns
-  // false on platform specific error conditions.  Note: |private_bytes|
-  // returns 0 on unsupported OSes: prior to XP SP2.
-  bool GetMemoryBytes(size_t* private_bytes, size_t* shared_bytes) const;
   // Fills a CommittedKBytes with both resident and paged
   // memory usage as per definition of CommittedBytes.
   void GetCommittedKBytes(CommittedKBytes* usage) const;
@@ -175,14 +170,6 @@ class BASE_EXPORT ProcessMetrics {
     uint64_t compressed = 0;
   };
   TaskVMInfo GetTaskVMInfo() const;
-
-  // Returns private, shared, and total resident bytes. |locked_bytes| refers to
-  // bytes that must stay resident. |locked_bytes| only counts bytes locked by
-  // this task, not bytes locked by the kernel.
-  bool GetMemoryBytes(size_t* private_bytes,
-                      size_t* shared_bytes,
-                      size_t* resident_bytes,
-                      size_t* locked_bytes) const;
 #endif
 
   // Returns the percentage of time spent executing, across all threads of the

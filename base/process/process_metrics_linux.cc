@@ -216,21 +216,6 @@ size_t ProcessMetrics::GetResidentSetSize() const {
       getpagesize();
 }
 
-bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
-                                    size_t* shared_bytes) const {
-  WorkingSetKBytes ws_usage;
-  if (!GetWorkingSetKBytes(&ws_usage))
-    return false;
-
-  if (private_bytes)
-    *private_bytes = ws_usage.priv * 1024;
-
-  if (shared_bytes)
-    *shared_bytes = ws_usage.shared * 1024;
-
-  return true;
-}
-
 bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
 #if defined(OS_CHROMEOS)
   if (GetWorkingSetKBytesTotmaps(ws_usage))
