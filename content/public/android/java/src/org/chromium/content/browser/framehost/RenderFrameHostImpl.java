@@ -92,8 +92,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public void setHasReceivedUserGesture() {
-        nativeSetHasReceivedUserGesture(mNativeRenderFrameHostAndroid);
+    public void notifyUserActivation() {
+        nativeNotifyUserActivation(mNativeRenderFrameHostAndroid);
     }
 
     /**
@@ -109,5 +109,5 @@ public class RenderFrameHostImpl implements RenderFrameHost {
             long nativeRenderFrameHostAndroid, Callback<String> callback);
     private native UnguessableToken nativeGetAndroidOverlayRoutingToken(
             long nativeRenderFrameHostAndroid);
-    private native void nativeSetHasReceivedUserGesture(long nativeRenderFrameHostAndroid);
+    private native void nativeNotifyUserActivation(long nativeRenderFrameHostAndroid);
 }

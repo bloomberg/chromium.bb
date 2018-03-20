@@ -698,13 +698,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return active_sandbox_flags_;
   }
 
-  // Call |FlushForTesting()| on Network Service and FrameNavigationControl
+  // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
   // related interfaces to make sure all in-flight mojo messages have been
   // received by the other end. For test use only.
   void FlushNetworkAndNavigationInterfacesForTesting();
 
-  // Notifies the render frame that a user gesture was received.
-  void SetHasReceivedUserGesture();
+  // Notifies the render frame about a user activation from the browser side.
+  void NotifyUserActivation();
 
   // Returns the current size for this frame.
   const base::Optional<gfx::Size>& frame_size() const { return frame_size_; }

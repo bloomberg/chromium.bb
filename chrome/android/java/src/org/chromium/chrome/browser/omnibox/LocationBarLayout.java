@@ -291,7 +291,7 @@ public class LocationBarLayout extends FrameLayout
             if (renderFrameHost == null) return;
             if (TemplateUrlService.getInstance().isSearchResultsPageFromDefaultSearchProvider(
                         url)) {
-                renderFrameHost.setHasReceivedUserGesture();
+                renderFrameHost.notifyUserActivation();
             }
         }
 

@@ -12195,7 +12195,8 @@ TEST_P(ParameterizedWebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   // Simulate an input element focus leading to Element::focus() call with a
   // user gesture.
-  local_frame->SetHasReceivedUserGesture();
+  Frame::NotifyUserActivation(local_frame->GetFrame(),
+                              UserGestureToken::kNewGesture);
   local_frame->ExecuteScript(
       WebScriptSource("window.focus();"
                       "document.querySelector('input').focus();"));

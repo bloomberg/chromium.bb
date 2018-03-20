@@ -140,7 +140,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual void DidChangeVisibilityState();
 
-  void UpdateUserActivationInFrameTree();
+  // This should never be called from outside Frame or WebFrame.
+  void NotifyUserActivationInLocalTree();
 
   bool HasBeenActivated() const {
     return user_activation_state_.HasBeenActive();
@@ -159,8 +160,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Creates a |UserGestureIndicator| that contains a |UserGestureToken| with
   // the given status.  Also activates the user activation state of the
   // |LocalFrame| (provided it's non-null) and all its ancestors.
+  //
+  // TODO(mustaq): Move the user activation entry-points to LocalFrame.
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
-      Frame*,
+      LocalFrame*,
       UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
 
   // Returns the transient user activation state of the |LocalFrame|, provided
@@ -171,7 +174,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   //
   // TODO(mustaq): clarify/enforce the relation between the two params after
   // null-frame main-thread cases (crbug.com/730690) have been removed.
-  static bool HasTransientUserActivation(Frame*,
+  static bool HasTransientUserActivation(LocalFrame*,
                                          bool checkIfMainThread = false);
 
   // Consumes the transient user activation state of the |LocalFrame|, provided
@@ -180,7 +183,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   //
   // The |checkIfMainThread| parameter determines if the token based gestures
   // (legacy code) must be used in a thread-safe manner.
-  static bool ConsumeTransientUserActivation(Frame*,
+  static bool ConsumeTransientUserActivation(LocalFrame*,
                                              bool checkIfMainThread = false);
 
   bool IsAttached() const {
@@ -211,7 +214,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
+  // A LocalFrame is the primary "owner" of the activation state.  The state in
+  // a RemoteFrame serves as a cache for the corresponding LocalFrame state (to
+  // avoid double hops through the browser during reading).
   UserActivationState user_activation_state_;
+
   bool has_received_user_gesture_before_nav_ = false;
 
   FrameLifecycle lifecycle_;
@@ -223,6 +230,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
  private:
   // Activates the user activation state of this frame and all its ancestors.
+  //
+  // TODO(mustaq): Move the user activation (private) entry-points to
+  // LocalFrame.
   void NotifyUserActivation();
 
   bool HasTransientUserActivation() {

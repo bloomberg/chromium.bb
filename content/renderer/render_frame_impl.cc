@@ -1823,8 +1823,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
-                        OnSetHasReceivedUserGesture)
+    IPC_MESSAGE_HANDLER(FrameMsg_NotifyUserActivation, OnNotifyUserActivation)
+
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -6516,10 +6516,6 @@ void RenderFrameImpl::OnSetOverlayRoutingToken(
   pending_routing_token_callbacks_.clear();
 }
 
-void RenderFrameImpl::OnSetHasReceivedUserGesture() {
-  frame_->SetHasReceivedUserGesture();
-}
-
 void RenderFrameImpl::RequestOverlayRoutingToken(
     media::RoutingTokenCallback callback) {
   if (overlay_routing_token_.has_value()) {
@@ -6532,6 +6528,10 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
   Send(new FrameHostMsg_RequestOverlayRoutingToken(routing_id_));
 
   pending_routing_token_callbacks_.push_back(std::move(callback));
+}
+
+void RenderFrameImpl::OnNotifyUserActivation() {
+  frame_->NotifyUserActivation();
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
