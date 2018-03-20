@@ -1420,9 +1420,15 @@ bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
 }
 
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
-  VisitWeakPersistents(current_gc_data_.visitor.get());
-  Heap().PostMarkingProcessing(current_gc_data_.visitor.get());
-  Heap().WeakProcessing(current_gc_data_.visitor.get());
+  Visitor* visitor = current_gc_data_.visitor.get();
+  // Finish marking of not-fully-constructed objects.
+  Heap().MarkNotFullyConstructedObjects(visitor);
+  CHECK(Heap().AdvanceMarkingStackProcessing(
+      visitor, std::numeric_limits<double>::infinity()));
+
+  VisitWeakPersistents(visitor);
+  Heap().PostMarkingProcessing(visitor);
+  Heap().WeakProcessing(visitor);
   Heap().DecommitCallbackStacks();
 
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)

@@ -225,6 +225,9 @@ class PLATFORM_EXPORT ThreadHeap {
 
   ThreadHeapStats& HeapStats() { return stats_; }
   CallbackStack* MarkingStack() const { return marking_stack_.get(); }
+  CallbackStack* NotFullyConstructedMarkingStack() const {
+    return not_fully_constructed_marking_stack_.get();
+  }
   CallbackStack* PostMarkingCallbackStack() const {
     return post_marking_callback_stack_.get();
   }
@@ -274,6 +277,9 @@ class PLATFORM_EXPORT ThreadHeap {
   // Push a trace callback on the marking stack.
   void PushTraceCallback(void* container_object, TraceCallback);
 
+  // Push a trace callback for not-fully-constructed objects.
+  void PushNotFullyConstructedTraceCallback(void* container_object);
+
   // Push a trace callback on the post-marking callback stack.  These
   // callbacks are called after normal marking (including ephemeron
   // iteration).
@@ -286,6 +292,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // Pop the top of a marking stack and call the callback with the visitor
   // and the object.  Returns false when there is nothing more to do.
   bool PopAndInvokeTraceCallback(Visitor*);
+
+  // Pop the top of the not-yet-fully-constructed objects marking stack and call
+  // the callback with the visitor and the object. Returns false when there is
+  // nothing more to do. Can only be called during the atomic pause.
+  bool PopAndInvokeNotFullyConstructedTraceCallback(Visitor*);
 
   // Remove an item from the post-marking callback stack and call
   // the callback with the visitor and the object pointer.  Returns
@@ -355,6 +366,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void ProcessMarkingStack(Visitor*);
   void PostMarkingProcessing(Visitor*);
   void WeakProcessing(Visitor*);
+  void MarkNotFullyConstructedObjects(Visitor*);
   bool AdvanceMarkingStackProcessing(Visitor*, double deadline_seconds);
   void VerifyMarking();
 
@@ -521,6 +533,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<HeapDoesNotContainCache> heap_does_not_contain_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<CallbackStack> marking_stack_;
+  std::unique_ptr<CallbackStack> not_fully_constructed_marking_stack_;
   std::unique_ptr<CallbackStack> post_marking_callback_stack_;
   std::unique_ptr<CallbackStack> weak_callback_stack_;
   std::unique_ptr<CallbackStack> ephemeron_stack_;

@@ -48,6 +48,7 @@ struct IsGarbageCollectedMixin {
 };
 
 struct TraceDescriptor {
+  STACK_ALLOCATED();
   void* base_object_payload;
   TraceCallback callback;
   bool can_trace_eagerly;
@@ -86,9 +87,36 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
   virtual void Trace(Visitor*) {}
-  virtual HeapObjectHeader* GetHeapObjectHeader() const = 0;
-  virtual TraceDescriptor GetTraceDescriptor() const = 0;
-  virtual TraceWrapperDescriptor GetTraceWrapperDescriptor() const = 0;
+  // Provide default implementations that indicate that the vtable is not yet
+  // set up properly. This way it is possible to get infos about mixins so that
+  // these objects can processed later on. This is necessary as
+  // not-fully-constructed mixin objects potentially require being processed
+  // as part emitting a write barrier for incremental marking. See
+  // IncrementalMarkingTest::WriteBarrierDuringMixinConstruction as an example.
+  //
+  // The not-fully-constructed objects are handled as follows:
+  //   1. Write barrier or marking of not fully constructed mixin gets called.
+  //   2. Default implementation of GetTraceDescriptor (and friends) returns
+  //      kNotFullyConstructedObject as object base payload.
+  //   3. Visitor (e.g. MarkingVisitor) can intercept that value and delay
+  //      processing that object until the atomic pause.
+  //   4. In the atomic phase, mark all not-fully-constructed objects that have
+  //      found in the step 1.-3. conservatively.
+  //
+  // In general, delaying is required as write barriers are omitted in certain
+  // scenarios, e.g., initializing stores. As a result, we cannot depend on the
+  // write barriers for catching writes to member fields and thus have to
+  // process the object (instead of just marking only the header).
+  virtual HeapObjectHeader* GetHeapObjectHeader() const {
+    return reinterpret_cast<HeapObjectHeader*>(
+        BlinkGC::kNotFullyConstructedObject);
+  }
+  virtual TraceDescriptor GetTraceDescriptor() const {
+    return {BlinkGC::kNotFullyConstructedObject, nullptr, false};
+  }
+  virtual TraceWrapperDescriptor GetTraceWrapperDescriptor() const {
+    return {BlinkGC::kNotFullyConstructedObject, nullptr, nullptr, nullptr};
+  }
 };
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                         \
