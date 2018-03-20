@@ -1482,9 +1482,3 @@ std::unique_ptr<net::NetworkDelegate> ProfileIOData::ConfigureNetworkDelegate(
   return base::WrapUnique<net::NetworkDelegate>(
       chrome_network_delegate.release());
 }
-
-void ProfileIOData::SetCookieSettingsForTesting(
-    content_settings::CookieSettings* cookie_settings) {
-  DCHECK(!cookie_settings_.get());
-  cookie_settings_ = cookie_settings;
-}

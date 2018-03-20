@@ -427,12 +427,6 @@ IOThread::Globals* IOThread::globals() {
   return globals_;
 }
 
-void IOThread::SetGlobalsForTesting(Globals* globals) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!globals || !globals_);
-  globals_ = globals;
-}
-
 net_log::ChromeNetLog* IOThread::net_log() {
   return net_log_;
 }
