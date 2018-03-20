@@ -89,6 +89,14 @@ def ParseArgsAndAssertValid():
                            'syncing. This has the potential to accidentally '
                            'delete any uncommitted changes, but can help avoid '
                            'random bisect failures.')
+  parser.add_argument('--num-attempts-before-marking-good', type=int, default=1,
+                      help='The number of times the test will be run before '
+                           'a revision can be marked as good. If all runs are '
+                           'found to be good, then the revision is good, '
+                           'otherwise bad. Overriding this can help when '
+                           'bisecting flaky metrics that fluctuate between '
+                           'good/bad values, but can significantly increase '
+                           'bisect time.')
 
   parser.add_argument_group('swarming arguments')
   parser.add_argument('--swarming-server', required=True,
@@ -129,6 +137,12 @@ def ParseArgsAndAssertValid():
   if len(args.dimensions) == 0:
     raise RuntimeError('No swarming dimensions provided')
 
+  # Make sure we're set to run at least one attempt per revision
+  if args.num_attempts_before_marking_good < 1:
+    raise RuntimeError(
+        '--num-attempts-before-marking-good set to invalid value %d' %
+        args.num_attempts_before_marking_good)
+
   return (args, unknown_args)
 
 
@@ -161,6 +175,9 @@ def VerifyInput(args, unknown_args):
     for pair in args.checkout_overrides:
       for key, val in pair.iteritems():
         print '%s will be synced to revision %s' % (key, val)
+  if args.num_attempts_before_marking_good > 1:
+    print ('Each revision must be found to be good %d times before actually '
+           'being marked as good' % args.num_attempts_before_marking_good)
   print '======'
   print 'The test target %s will be built to %s' % (args.build_target,
                                                     args.build_output_dir)
@@ -320,30 +337,42 @@ def RunBisectStep(args, unknown_args, revision, output_dir):
     revision: The git revision to sync to and test
     output_dir: The directory to save swarming results to
   """
-  result = GetValueAtRevision(args, unknown_args, revision, output_dir)
+  revision_good = True
+  for attempt in xrange(1, args.num_attempts_before_marking_good + 1):
+    # Only bother syncing and building if this is our first attempt on this
+    # revision.
+    result = GetValueAtRevision(args, unknown_args, revision, output_dir,
+        sync=(attempt == 1))
+    # Regression was an increased value.
+    if args.bad_value > args.good_value:
+      # If we're greater than the provided bad value or between good and bad,
+      # but closer to bad, we're still bad.
+      if (result > args.bad_value or
+          abs(args.bad_value - result) < abs(args.good_value - result)):
+        print '=== Attempt %d found revision that is BAD ===' % attempt
+        revision_good = False
+        break
+      else:
+        print '=== Attempt %d found that revision is GOOD ===' % attempt
+    # Regression was a decreased value.
+    else:
+      # If we're smaller than the provided bad value or between good and bad,
+      # but closer to bad, we're still bad.
+      if (result < args.bad_value or
+          abs(args.bad_value - result) < abs(args.good_value - result)):
+        print '=== Attempt %d found that revision is BAD ===' % attempt
+        revision_good = False
+        break
+      else:
+        print '=== Attempt %d found that revision is GOOD ===' % attempt
+
   output = ""
-  # Regression was an increased value
-  if args.bad_value > args.good_value:
-    # If we're greater than the provided bad value or between good and bad, but
-    # closer to bad, we're still bad
-    if (result > args.bad_value or
-        abs(args.bad_value - result) < abs(args.good_value - result)):
-      print '=== Current revision is BAD ==='
-      output = subprocess.check_output(['git', 'bisect', 'bad'])
-    else:
-      print '=== Current revision is GOOD ==='
-      output = subprocess.check_output(['git', 'bisect', 'good'])
-  # Regression was a decreased value
+  if revision_good:
+    print '=== Current revision is GOOD ==='
+    output = subprocess.check_output(['git', 'bisect', 'good'])
   else:
-    # If we're smaller than the provided bad value or between good and bad, but
-    # closer to bad, we're still bad
-    if (result < args.bad_value or
-        abs(args.bad_value - result) < abs(args.good_value - result)):
-      print '=== Current revision is BAD ==='
-      output = subprocess.check_output(['git', 'bisect', 'bad'])
-    else:
-      print '=== Current revision is GOOD ==='
-      output = subprocess.check_output(['git', 'bisect', 'good'])
+    print '=== Current revision is BAD ==='
+    output = subprocess.check_output(['git', 'bisect', 'bad'])
 
   print output
   if output.startswith('Bisecting:'):
@@ -373,6 +402,16 @@ def SyncAndBuild(args, unknown_args, revision):
         'If these changes are actually yours, please commit or stash them. If '
         'they are not, remove them and try again. If the issue persists, try '
         'running with --reset-before-sync')
+
+  # Ensure that the VR assets are synced to the current revision since it isn't
+  # guaranteed that gclient will handle it properly
+  # TODO(https://crbug.com/823882): Remove this once asset downloading is more
+  # robust in gclient.
+  subprocess.check_output([
+      'python', 'third_party/depot_tools/download_from_google_storage.py',
+      '--bucket', 'chrome-vr-assets',
+      '--recursive',
+      '--directory', 'chrome/browser/resources/vr/assets/google_chrome'])
 
   # Checkout any specified revisions.
   cwd = os.getcwd()
@@ -414,7 +453,7 @@ def BisectRegression(args, unknown_args):
       subprocess.check_output(['git', 'bisect', 'reset'])
 
 
-def GetValueAtRevision(args, unknown_args, revision, output_dir):
+def GetValueAtRevision(args, unknown_args, revision, output_dir, sync=True):
   """Builds and runs the test at a particular revision.
 
   Args:
@@ -426,7 +465,8 @@ def GetValueAtRevision(args, unknown_args, revision, output_dir):
   Returns:
     The value of the story/metric combo at the given revision
   """
-  SyncAndBuild(args, unknown_args, revision)
+  if sync:
+    SyncAndBuild(args, unknown_args, revision)
   RunTestOnSwarming(args, unknown_args, output_dir)
   return GetSwarmingResult(args, unknown_args, output_dir)
 
