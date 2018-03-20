@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/browser/conflicts/module_info_win.h"
@@ -96,7 +95,6 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
-    scoped_feature_list_.InitAndEnableFeature(kIncompatibleApplicationsWarning);
   }
 
   enum class Option {
@@ -130,15 +128,10 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   ScopedTestingLocalState scoped_testing_local_state_;
-
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   MockModuleListFilter module_list_filter_;
-
   MockInstalledPrograms installed_programs_;
 
   DISALLOW_COPY_AND_ASSIGN(ProblematicProgramsUpdaterTest);
@@ -154,8 +147,9 @@ TEST_F(ProblematicProgramsUpdaterTest, EmptyCache) {
 // ProblematicProgramsUpdater doesn't do anything when there is no registered
 // installed programs.
 TEST_F(ProblematicProgramsUpdaterTest, NoProblematicPrograms) {
-  auto problematic_programs_updater = ProblematicProgramsUpdater::MaybeCreate(
-      module_list_filter(), installed_programs());
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
+                                                   installed_programs());
 
   // Simulate some arbitrary module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -169,8 +163,9 @@ TEST_F(ProblematicProgramsUpdaterTest, NoProblematicPrograms) {
 TEST_F(ProblematicProgramsUpdaterTest, OneConflict) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
-  auto problematic_programs_updater = ProblematicProgramsUpdater::MaybeCreate(
-      module_list_filter(), installed_programs());
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
+                                                   installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -187,8 +182,9 @@ TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddProblematicProgram(dll2_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
-  auto problematic_programs_updater = ProblematicProgramsUpdater::MaybeCreate(
-      module_list_filter(), installed_programs());
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
+                                                   installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -214,8 +210,9 @@ TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {
 TEST_F(ProblematicProgramsUpdaterTest, PersistsThroughRestarts) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
-  auto problematic_programs_updater = ProblematicProgramsUpdater::MaybeCreate(
-      module_list_filter(), installed_programs());
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
+                                                   installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -235,8 +232,9 @@ TEST_F(ProblematicProgramsUpdaterTest, StaleEntriesRemoved) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddProblematicProgram(dll2_, L"Bar", Option::NO_REGISTRY_ENTRY);
 
-  auto problematic_programs_updater = ProblematicProgramsUpdater::MaybeCreate(
-      module_list_filter(), installed_programs());
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
+                                                   installed_programs());
 
   // Simulate the modules loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
