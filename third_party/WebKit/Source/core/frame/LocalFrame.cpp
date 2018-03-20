@@ -141,6 +141,46 @@ bool ShouldUseClientLoFiForRequest(
   return true;
 }
 
+class EmptyFrameScheduler final : public WebFrameScheduler {
+ public:
+  EmptyFrameScheduler() { DCHECK(IsMainThread()); }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      TaskType type) override {
+    return Platform::Current()->MainThread()->GetTaskRunner();
+  }
+
+  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
+      ObserverType,
+      Observer*) override {
+    return nullptr;
+  }
+  void SetFrameVisible(bool) override {}
+  bool IsFrameVisible() const override { return false; }
+  bool IsPageVisible() const override { return false; }
+  void SetPaused(bool) override {}
+  void SetCrossOrigin(bool) override {}
+  bool IsCrossOrigin() const override { return false; }
+  void TraceUrlChange(const String& override) {}
+  WebFrameScheduler::FrameType GetFrameType() const override {
+    return WebFrameScheduler::FrameType::kSubframe;
+  }
+  PageScheduler* GetPageScheduler() const override { return nullptr; }
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration) {
+    return WebScopedVirtualTimePauser();
+  }
+  void DidStartProvisionalLoad(bool is_main_frame) override {}
+  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
+                                bool is_reload,
+                                bool is_main_frame) override {}
+  void OnFirstMeaningfulPaint() override {}
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
+    return nullptr;
+  }
+  bool IsExemptFromBudgetBasedThrottling() const override { return false; }
+};
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -799,10 +839,13 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               FrameOwner* owner,
                               InterfaceRegistry* interface_registry)
     : Frame(client, page, owner, LocalWindowProxyManager::Create(*this)),
-      frame_scheduler_(page.GetChromeClient().CreateFrameScheduler(
-          client->GetFrameBlameContext(),
-          IsMainFrame() ? WebFrameScheduler::FrameType::kMainFrame
-                        : WebFrameScheduler::FrameType::kSubframe)),
+      frame_scheduler_(page.GetPageScheduler()
+                           ? page.GetPageScheduler()->CreateFrameScheduler(
+                                 client->GetFrameBlameContext(),
+                                 IsMainFrame()
+                                     ? WebFrameScheduler::FrameType::kMainFrame
+                                     : WebFrameScheduler::FrameType::kSubframe)
+                           : std::make_unique<EmptyFrameScheduler>()),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
       script_controller_(ScriptController::Create(
