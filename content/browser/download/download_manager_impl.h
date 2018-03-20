@@ -48,9 +48,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       private DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated = base::Callback<void(DownloadItemImpl*)>;
-  using UniqueUrlDownloadHandlerPtr =
-      std::unique_ptr<download::UrlDownloadHandler,
-                      BrowserThread::DeleteOnIOThread>;
 
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
@@ -136,6 +133,9 @@ class CONTENT_EXPORT DownloadManagerImpl
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
   void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
+  void OnUrlDownloadHandlerCreated(
+      download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader)
+      override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -230,8 +230,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
 
-  void AddUrlDownloadHandler(UniqueUrlDownloadHandlerPtr downloader);
-
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
@@ -310,7 +308,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;
 
-  std::vector<UniqueUrlDownloadHandlerPtr> url_download_handlers_;
+  std::vector<download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
+      url_download_handlers_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 
