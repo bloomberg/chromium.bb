@@ -19,7 +19,7 @@ ATTRIBUTE_ORDER = {
     'details': [],
     'enum': ['name'],
     'enums': [],
-    'histogram': ['base', 'name', 'enum', 'units', 'expiry_date'],
+    'histogram': ['base', 'name', 'enum', 'units', 'expires_after'],
     'histogram-configuration': ['logsource'],
     'histogram_suffixes': ['name', 'separator', 'ordering'],
     'histogram_suffixes_list': [],

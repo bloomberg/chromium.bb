@@ -14,7 +14,9 @@ import sys
 import extract_histograms
 import merge_xml
 
-_DATE_FILE_PATTERN = r".*MAJOR_BRANCH_DATE=(.+).*"
+_DATE_FILE_RE = re.compile(r".*MAJOR_BRANCH_DATE=(.+).*")
+_CURRENT_MILESTONE_RE = re.compile(r"MAJOR=([0-9]{2,3})\n")
+_MILESTONE_EXPIRY_RE = re.compile(r"\AM([0-9]{2,3})")
 
 _SCRIPT_NAME = "generate_expired_histograms_array.py"
 _HASH_DATATYPE = "uint64_t"
@@ -39,13 +41,15 @@ const size_t kNumExpiredHistograms = {hashes_size};
 #endif  // {include_guard}
 """
 
+_DATE_FORMAT_ERROR = "Unable to parse expiry {date} in histogram {name}."
+
 
 class Error(Exception):
   pass
 
 
-def _GetExpiredHistograms(histograms, base_date):
-  """Filters histograms to find expired ones.
+def _GetExpiredHistograms(histograms, base_date, current_milestone):
+  """Filters histograms to find expired ones if date format is used.
 
   Args:
     histograms(Dict[str, Dict]): Histogram descriptions in the form
@@ -60,39 +64,53 @@ def _GetExpiredHistograms(histograms, base_date):
   """
   expired_histograms_names = []
   for name, content in histograms.items():
-    if "obsolete" in content or "expiry_date" not in content:
+    if "obsolete" in content or "expires_after" not in content:
       continue
-    expiry_date_str = content["expiry_date"]
-    try:
-      expiry_date = datetime.datetime.strptime(
-          expiry_date_str, extract_histograms.EXPIRY_DATE_PATTERN).date()
-    except ValueError:
-      raise Error("Unable to parse expiry date {date} in histogram {name}.".
-                  format(date=expiry_date_str, name=name))
-    if expiry_date < base_date:
-      expired_histograms_names.append(name)
+    expiry_str = content["expires_after"]
+
+    match = _MILESTONE_EXPIRY_RE.search(expiry_str)
+    if match:
+      # if there is match then expiry is in Chrome milsetone format.
+      if int(match.group(1)) < current_milestone:
+        expired_histograms_names.append(name)
+    else:
+      # if no match then we try the date format.
+      try:
+        expiry_date = datetime.datetime.strptime(
+            expiry_str, extract_histograms.EXPIRY_DATE_PATTERN).date()
+      except ValueError:
+        raise Error(_DATE_FORMAT_ERROR.
+                    format(date=expiry_str, name=name))
+      if expiry_date < base_date:
+        expired_histograms_names.append(name)
   return expired_histograms_names
 
 
-def _GetBaseDate(content, pattern):
+def _FindMatch(content, regex, group_num):
+  match_result = regex.search(content)
+  if not match_result:
+    raise Error("Unable to match {pattern} with provided content: {content}".
+                format(pattern=regex.pattern, content=content))
+  return match_result.group(group_num)
+
+
+def _GetBaseDate(content, regex):
   """Fetches base date from |content| to compare expiry dates with.
 
   Args:
    content: A string with the base date.
-   pattern(str): A regular expression that matches the base date.
+   regex: A regular expression object that matches the base date.
 
   Returns:
    A base date as datetime.date object.
 
   Raises:
-    Error if |content| doesn't match |pattern| or the matched date has invalid
+    Error if |content| doesn't match |regex| or the matched date has invalid
     format.
   """
-  match_result = re.search(pattern, content)
-  if not match_result:
-    raise Error("Unable to match {pattern} with provided content: {content}".
-                format(pattern=pattern, content=content))
-  base_date_str = match_result.group(1)
+  base_date_str = _FindMatch(content, regex, 1)
+  if not base_date_str:
+    return None
   try:
     base_date = datetime.datetime.strptime(
         base_date_str, extract_histograms.EXPIRY_DATE_PATTERN).date()
@@ -100,6 +118,22 @@ def _GetBaseDate(content, pattern):
   except ValueError:
     raise Error("Unable to parse base date {date} from {content}.".
                 format(date=base_date_str, content=content))
+
+
+def _GetCurrentMilestone(content, regex):
+  """Extracts current milestone from |content|.
+
+  Args:
+   content: A string with the version information.
+   regex: A regular expression object that matches milestone.
+
+  Returns:
+   A milestone  as int.
+
+  Raises:
+    Error if |content| doesn't match |regex|.
+  """
+  return int(_FindMatch(content, regex, 1))
 
 
 def _HashName(name):
@@ -122,7 +156,6 @@ def _GenerateHeaderFileContent(header_filename, namespace,
   Args:
     header_filename: A filename of the generated header file.
     namespace: A namespace to contain generated array.
-    hash_datatype: Datatype of histogram names' hash.
     histograms_map(Dict[str, str]): A dictionary {hash: histogram_name}.
 
   Returns:
@@ -153,8 +186,9 @@ def _GenerateFile(arguments):
       arguments.inputs: A list of xml files with histogram descriptions.
       arguments.header_filename: A filename of the generated header file.
       arguments.namespace: A namespace to contain generated array.
-      arguments.hash_datatype: Datatype of histogram names' hash.
       arguments.output_dir: A directory to put the generated file.
+      arguments.major_branch_date_filepath: File path for base date.
+      arguments.milestone_filepath: File path for milestone information.
 
   Raises:
     Error if there is an error in input xml files.
@@ -166,8 +200,13 @@ def _GenerateFile(arguments):
     raise Error("Error parsing inputs.")
   with open(arguments.major_branch_date_filepath, "r") as date_file:
     file_content = date_file.read()
-  base_date = _GetBaseDate(file_content, _DATE_FILE_PATTERN)
-  expired_histograms_names = _GetExpiredHistograms(histograms, base_date)
+  base_date = _GetBaseDate(file_content, _DATE_FILE_RE)
+  with open(arguments.milestone_filepath, "r") as milestone_file:
+    file_content = milestone_file.read()
+  current_milestone = _GetCurrentMilestone(file_content, _CURRENT_MILESTONE_RE)
+
+  expired_histograms_names = _GetExpiredHistograms(
+      histograms, base_date, current_milestone)
   expired_histograms_map = _GetHashToNameMap(expired_histograms_names)
   header_file_content = _GenerateHeaderFileContent(
       arguments.header_filename, arguments.namespace,
@@ -200,8 +239,13 @@ def _ParseArguments():
   arg_parser.add_argument(
       "--major_branch_date_filepath",
       "-d",
-      default="",
+      required=True,
       help="A path to the file with the base date.")
+  arg_parser.add_argument(
+      "--milestone_filepath",
+      "-m",
+      required=True,
+      help="A path to the file with the milestone information.")
   arg_parser.add_argument(
       "inputs",
       nargs="+",

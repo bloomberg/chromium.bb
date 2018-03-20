@@ -54,9 +54,10 @@ XML below will generate the following five histograms:
 """
 
 import bisect
-import datetime
 import copy
+import datetime
 import logging
+import re
 import xml.dom.minidom
 
 OWNER_FIELD_PLACEHOLDER = (
@@ -67,8 +68,8 @@ MAX_HISTOGRAM_SUFFIX_DEPENDENCY_DEPTH = 5
 DEFAULT_BASE_HISTOGRAM_OBSOLETE_REASON = (
     'Base histogram. Use suffixes of this histogram instead.')
 
-EXPIRY_DATE_PATTERN = "%Y/%m/%d"
-
+EXPIRY_DATE_PATTERN = "%Y-%m-%d"
+EXPIRY_MILESTONE_RE = re.compile(r'M[0-9]{2,3}\Z')
 
 class Error(Exception):
   pass
@@ -253,13 +254,13 @@ def _ExtractOwners(xml_node):
 
 
 def _ValidateDateString(date_str):
-  """Check if |date_str| matches 'YYYY/MM/DD'.
+  """Check if |date_str| matches 'YYYY-MM-DD'.
 
   Args:
     date_str: string
 
   Returns:
-    True iff |date_str| matches 'YYYY/MM/DD' format.
+    True iff |date_str| matches 'YYYY-MM-DD' format.
   """
   try:
     _ = datetime.datetime.strptime(date_str, EXPIRY_DATE_PATTERN).date()
@@ -267,6 +268,9 @@ def _ValidateDateString(date_str):
     return False
   return True
 
+def _ValidateMilestoneString(milestone_str):
+  """Check if |milestone_str| matches 'M*'."""
+  return EXPIRY_MILESTONE_RE.match(milestone_str) is not None
 
 def _ProcessBaseHistogramAttribute(node, histogram_entry):
   if node.hasAttribute('base'):
@@ -296,15 +300,17 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
       continue
     histograms[name] = histogram_entry = {}
 
-    # Handle expiry dates.
-    if histogram.hasAttribute('expiry_date'):
-      expiry_date_str = histogram.getAttribute('expiry_date')
-      if _ValidateDateString(expiry_date_str):
-        histogram_entry['expiry_date'] = expiry_date_str
+    # Handle expiry attribute.
+    if histogram.hasAttribute('expires_after'):
+      expiry_str = histogram.getAttribute('expires_after')
+      if _ValidateMilestoneString(expiry_str) or _ValidateDateString(
+          expiry_str):
+        histogram_entry['expires_after'] = expiry_str
       else:
         logging.error(
-            'Expiry date of histogram %s does not match expected format: "%s",'
-            ' found %s.', name, EXPIRY_DATE_PATTERN, expiry_date_str)
+            'Expiry of histogram %s does not match expected date format: "%s"'
+            ' or milestone format: M* found %s.', name, EXPIRY_DATE_PATTERN,
+            expiry_str)
         have_errors = True
 
     # Find <owner> tag.
