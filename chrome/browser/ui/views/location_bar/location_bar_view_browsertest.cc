@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model_impl.h"
@@ -45,6 +46,7 @@ class LocationBarViewBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewBrowserTest);
 };
 
@@ -265,6 +267,7 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
 
  private:
   scoped_refptr<net::X509Certificate> cert_;
+  test::ScopedMacViewsBrowserMode views_mode_{true};
 
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 
