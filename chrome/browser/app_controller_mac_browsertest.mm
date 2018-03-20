@@ -10,6 +10,7 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -620,8 +621,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
                                            ServiceAccessType::EXPLICIT_ACCESS));
 
   // Delete profile2.
-  profile_manager->ScheduleProfileForDeletion(
-      profile2->GetPath(), ProfileManager::CreateCallback());
+  profile_manager->ScheduleProfileForDeletion(profile2->GetPath(),
+                                              base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Verify the controller's history is back to profile1.

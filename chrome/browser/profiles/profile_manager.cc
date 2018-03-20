@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
@@ -309,11 +310,10 @@ size_t GetEnabledAppCount(Profile* profile) {
 // It might get called more than once with different values of
 // |status| but only once the profile is fully initialized will
 // |client_callback| be run.
-void OnProfileLoaded(
-    const ProfileManager::ProfileLoadedCallback& client_callback,
-    bool incognito,
-    Profile* profile,
-    Profile::CreateStatus status) {
+void OnProfileLoaded(ProfileManager::ProfileLoadedCallback client_callback,
+                     bool incognito,
+                     Profile* profile,
+                     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_CREATED) {
     // This is an intermediate state where the profile has been created, but is
     // not yet initialized. Ignore this and wait for the next state change.
@@ -321,11 +321,12 @@ void OnProfileLoaded(
   }
   if (status != Profile::CREATE_STATUS_INITIALIZED) {
     LOG(WARNING) << "Profile not loaded correctly";
-    client_callback.Run(nullptr);
+    std::move(client_callback).Run(nullptr);
     return;
   }
   DCHECK(profile);
-  client_callback.Run(incognito ? profile->GetOffTheRecordProfile() : profile);
+  std::move(client_callback)
+      .Run(incognito ? profile->GetOffTheRecordProfile() : profile);
 }
 
 #if !defined(OS_ANDROID)
@@ -517,25 +518,30 @@ size_t ProfileManager::GetNumberOfProfiles() {
 
 bool ProfileManager::LoadProfile(const std::string& profile_name,
                                  bool incognito,
-                                 const ProfileLoadedCallback& callback) {
+                                 ProfileLoadedCallback callback) {
   const base::FilePath profile_path = user_data_dir().AppendASCII(profile_name);
-  return LoadProfileByPath(profile_path, incognito, callback);
+  return LoadProfileByPath(profile_path, incognito, std::move(callback));
 }
 
 bool ProfileManager::LoadProfileByPath(const base::FilePath& profile_path,
                                        bool incognito,
-                                       const ProfileLoadedCallback& callback) {
+                                       ProfileLoadedCallback callback) {
   ProfileAttributesEntry* entry = nullptr;
   if (!GetProfileAttributesStorage().GetProfileAttributesWithPath(profile_path,
                                                                   &entry)) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     LOG(ERROR) << "Loading a profile path that does not exist";
     return false;
   }
-  CreateProfileAsync(profile_path,
-                     base::Bind(&OnProfileLoaded, callback, incognito),
-                     base::string16() /* name */, std::string() /* icon_url */,
-                     std::string() /* supervided_user_id */);
+  CreateProfileAsync(
+      profile_path,
+      base::BindRepeating(&OnProfileLoaded,
+                          // OnProfileLoaded may be called multiple times, but
+                          // |callback| will be called only once.
+                          base::AdaptCallbackForRepeating(std::move(callback)),
+                          incognito),
+      base::string16() /* name */, std::string() /* icon_url */,
+      std::string() /* supervided_user_id */);
   return true;
 }
 
@@ -816,16 +822,17 @@ ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
 #if !defined(OS_ANDROID)
 void ProfileManager::MaybeScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
-    const CreateCallback& callback,
+    ProfileLoadedCallback callback,
     ProfileMetrics::ProfileDelete deletion_source) {
   if (!ScheduleProfileDirectoryForDeletion(profile_dir))
     return;
   ProfileMetrics::LogProfileDeleteUser(deletion_source);
-  ScheduleProfileForDeletion(profile_dir, callback);
+  ScheduleProfileForDeletion(profile_dir, std::move(callback));
 }
 
 void ProfileManager::ScheduleProfileForDeletion(
-    const base::FilePath& profile_dir, const CreateCallback& callback) {
+    const base::FilePath& profile_dir,
+    ProfileLoadedCallback callback) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
   DCHECK(!IsProfileDirectoryMarkedForDeletion(profile_dir));
 
@@ -845,10 +852,10 @@ void ProfileManager::ScheduleProfileForDeletion(
     BrowserList::CloseAllBrowsersWithProfile(
         profile,
         base::Bind(&ProfileManager::EnsureActiveProfileExistsBeforeDeletion,
-                   base::Unretained(this), callback),
+                   base::Unretained(this), base::Passed(std::move(callback))),
         base::Bind(&CancelProfileDeletion), false);
   } else {
-    EnsureActiveProfileExistsBeforeDeletion(callback, profile_dir);
+    EnsureActiveProfileExistsBeforeDeletion(std::move(callback), profile_dir);
   }
 }
 #endif  // !defined(OS_ANDROID)
@@ -1438,7 +1445,8 @@ Profile* ProfileManager::CreateAndInitializeProfile(
 
 #if !defined(OS_ANDROID)
 void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
-    const CreateCallback& callback, const base::FilePath& profile_dir) {
+    ProfileLoadedCallback callback,
+    const base::FilePath& profile_dir) {
   // In case we delete non-active profile and current profile is valid, proceed.
   const base::FilePath last_used_profile_path =
       GetLastUsedProfileDir(user_data_dir_);
@@ -1460,8 +1468,8 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
         cur_path != guest_profile_path &&
         !profile->IsLegacySupervised() &&
         !IsProfileDirectoryMarkedForDeletion(cur_path)) {
-      OnNewActiveProfileLoaded(profile_dir, cur_path, callback, profile,
-                               Profile::CREATE_STATUS_INITIALIZED);
+      OnNewActiveProfileLoaded(profile_dir, cur_path, std::move(callback),
+                               profile, Profile::CREATE_STATUS_INITIALIZED);
       return;
     }
   }
@@ -1501,11 +1509,15 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
   }
 
   // Create and/or load fallback profile.
-  CreateProfileAsync(fallback_profile_path,
-                     base::Bind(&ProfileManager::OnNewActiveProfileLoaded,
-                                base::Unretained(this), profile_dir,
-                                fallback_profile_path, callback),
-                     new_profile_name, new_avatar_url, std::string());
+  CreateProfileAsync(
+      fallback_profile_path,
+      base::BindRepeating(
+          &ProfileManager::OnNewActiveProfileLoaded, base::Unretained(this),
+          profile_dir, fallback_profile_path,
+          // OnNewActiveProfileLoaded may be called several times, but
+          // only once with CREATE_STATUS_INITIALIZED.
+          base::AdaptCallbackForRepeating(std::move(callback))),
+      new_profile_name, new_avatar_url, std::string());
 }
 
 void ProfileManager::OnLoadProfileForProfileDeletion(
@@ -1582,9 +1594,10 @@ void ProfileManager::FinishDeletingProfile(
 
   // Attempt to load the profile before deleting it to properly clean up
   // profile-specific data stored outside the profile directory.
-  LoadProfileByPath(profile_dir, false,
-                    base::Bind(&ProfileManager::OnLoadProfileForProfileDeletion,
-                               base::Unretained(this), profile_dir));
+  LoadProfileByPath(
+      profile_dir, false,
+      base::BindOnce(&ProfileManager::OnLoadProfileForProfileDeletion,
+                     base::Unretained(this), profile_dir));
 
   // Prevents CreateProfileAsync from re-creating the profile.
   MarkProfileDirectoryForDeletion(profile_dir);
@@ -1788,7 +1801,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 void ProfileManager::OnNewActiveProfileLoaded(
     const base::FilePath& profile_to_delete_path,
     const base::FilePath& new_active_profile_path,
-    const CreateCallback& original_callback,
+    ProfileLoadedCallback callback,
     Profile* loaded_profile,
     Profile::CreateStatus status) {
   DCHECK(status != Profile::CREATE_STATUS_LOCAL_FAIL &&
@@ -1802,14 +1815,13 @@ void ProfileManager::OnNewActiveProfileLoaded(
     // If the profile we tried to load as the next active profile has been
     // deleted, then retry deleting this profile to redo the logic to load
     // the next available profile.
-    EnsureActiveProfileExistsBeforeDeletion(original_callback,
+    EnsureActiveProfileExistsBeforeDeletion(std::move(callback),
                                             profile_to_delete_path);
     return;
   }
 
   FinishDeletingProfile(profile_to_delete_path, new_active_profile_path);
-  if (!original_callback.is_null())
-    original_callback.Run(loaded_profile, status);
+  std::move(callback).Run(loaded_profile);
 }
 
 void ProfileManager::ScheduleForcedEphemeralProfileForDeletion(
