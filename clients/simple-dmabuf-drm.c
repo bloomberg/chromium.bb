@@ -244,10 +244,7 @@ static int
 fd_bo_export_to_prime(struct buffer *buf)
 {
 	buf->dmabuf_fd = fd_bo_dmabuf(buf->fd_bo);
-	if (buf->dmabuf_fd > 0)
-		return 0;
-
-	return 1;
+	return buf->dmabuf_fd < 0;
 }
 
 static int
