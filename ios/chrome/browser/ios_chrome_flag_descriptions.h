@@ -71,6 +71,10 @@ extern const char kMarkHttpAsDescription[];
 extern const char kMemexTabSwitcherName[];
 extern const char kMemexTabSwitcherDescription[];
 
+// Title and description for the flag to enable new tools menu.
+extern const char kNewToolsMenuName[];
+extern const char kNewToolsMenuDescription[];
+
 // Title and description for the flag to enable elision of the URL path, query,
 // and ref in omnibox URL suggestions.
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];

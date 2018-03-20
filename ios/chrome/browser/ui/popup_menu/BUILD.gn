@@ -7,19 +7,38 @@ source_set("popup_menu") {
   sources = [
     "popup_menu_controller.h",
     "popup_menu_controller.mm",
+    "popup_menu_presenter.h",
+    "popup_menu_presenter.mm",
     "popup_menu_view.h",
     "popup_menu_view.mm",
+    "popup_menu_view_controller.h",
+    "popup_menu_view_controller.mm",
   ]
   deps = [
+    ":flags",
     "resources:popup_background",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/presenters",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ui/base",
   ]
   libs = [
     "QuartzCore.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "popup_menu_flags.h",
+    "popup_menu_flags.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }

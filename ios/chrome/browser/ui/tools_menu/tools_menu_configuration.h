@@ -28,8 +28,6 @@ class Tracker;
 @property(nonatomic, getter=hasNoOpenedTabs) BOOL noOpenedTabs;
 // Indicates that the menu is being shown while in incognito mode.
 @property(nonatomic, getter=isInIncognito) BOOL inIncognito;
-// Indicates that the menu is being shown while in the New Tab Page.
-@property(nonatomic, getter=isInNewTabPage) BOOL inNewTabPage;
 // Indicates that the menu should show a "NEW" badge on the reading list item.
 @property(nonatomic, assign) BOOL showReadingListNewBadge;
 // Indicates that the New Incognito Tab cell should be highlighted in blue.
