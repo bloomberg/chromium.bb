@@ -1050,7 +1050,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     // The following call can cause one or more copy requests to be added to the
     // Surface. Therefore, no code before this point should have assumed
     // anything about the presence or absence of copy requests after this point.
-    surface->NotifyAggregatedDamage(damage_rect);
+    surface->NotifyAggregatedDamage(damage_rect, expected_display_time_);
   }
 
   // If any CopyOutputRequests were made at FrameSink level, make sure we grab
@@ -1150,7 +1150,11 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
   }
 }
 
-CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
+CompositorFrame SurfaceAggregator::Aggregate(
+    const SurfaceId& surface_id,
+    base::TimeTicks expected_display_time) {
+  DCHECK(!expected_display_time.is_null());
+
   uma_stats_.Reset();
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -1169,6 +1173,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   CompositorFrame frame;
 
   dest_pass_list_ = &frame.render_pass_list;
+  expected_display_time_ = expected_display_time;
 
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
@@ -1208,6 +1213,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
     return {};
 
   dest_pass_list_ = nullptr;
+  expected_display_time_ = base::TimeTicks();
   ProcessAddedAndRemovedSurfaces();
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();

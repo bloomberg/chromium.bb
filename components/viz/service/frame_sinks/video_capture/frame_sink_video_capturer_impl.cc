@@ -45,10 +45,6 @@ constexpr media::VideoPixelFormat
 // static
 constexpr media::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 
-// static
-constexpr base::TimeDelta
-    FrameSinkVideoCapturerImpl::kDisplayTimeCacheKeepAliveInterval;
-
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager,
     mojom::FrameSinkVideoCapturerRequest request)
@@ -317,63 +313,15 @@ void FrameSinkVideoCapturerImpl::RefreshSoon() {
                     gfx::Rect(oracle_.source_size()), clock_->NowTicks());
 }
 
-void FrameSinkVideoCapturerImpl::OnBeginFrame(const BeginFrameArgs& args) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(args.IsValid());
-  DCHECK(resolved_target_);
-
-  // Note: It's possible that there are multiple BeginFrameSources that may call
-  // this method. It's not possible to know which one will be associated with a
-  // later OnFrameDamaged() call, so all recent timestamps must be cached.
-
-  const size_t prior_source_count = frame_display_times_.size();
-  TimeRingBuffer& ring_buffer = frame_display_times_[args.source_id];
-  const base::TimeTicks display_time = args.frame_time + args.interval;
-  DCHECK(!display_time.is_null());
-  ring_buffer[args.sequence_number % ring_buffer.size()] = display_time;
-
-  // Garbage-collect |frame_display_times_| entries that are no longer being
-  // actively updated. This only runs when this method is being called with an
-  // as-yet-unseen |args.source_id|. An entry is pruned only if all of its
-  // timestamps are older than a reasonable threshold.
-  if (frame_display_times_.size() != prior_source_count) {
-    const base::TimeTicks threshold =
-        display_time - kDisplayTimeCacheKeepAliveInterval;
-    using KeyValuePair = decltype(frame_display_times_)::value_type;
-    base::EraseIf(frame_display_times_, [&threshold](const KeyValuePair& p) {
-      const TimeRingBuffer& ring_buffer = p.second;
-      return std::all_of(ring_buffer.begin(), ring_buffer.end(),
-                         [&threshold](base::TimeTicks t) {
-                           return t.is_null() || t < threshold;
-                         });
-    });
-  }
-}
-
-void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
-                                                const gfx::Size& frame_size,
-                                                const gfx::Rect& damage_rect) {
+void FrameSinkVideoCapturerImpl::OnFrameDamaged(
+    const gfx::Size& frame_size,
+    const gfx::Rect& damage_rect,
+    base::TimeTicks expected_display_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!frame_size.IsEmpty());
   DCHECK(!damage_rect.IsEmpty());
+  DCHECK(!expected_display_time.is_null());
   DCHECK(resolved_target_);
-
-  base::TimeTicks display_time;
-  const auto it = frame_display_times_.find(ack.source_id);
-  if (it != frame_display_times_.end()) {
-    const TimeRingBuffer& ring_buffer = it->second;
-    display_time = ring_buffer[ack.sequence_number % ring_buffer.size()];
-  }
-  if (display_time.is_null()) {
-    // This can sometimes occur for the first few frames when capture starts,
-    // or whenever Surfaces are changed; but should not otherwise happen. If
-    // this is too frequent, the oracle will be making suboptimal decisions.
-    VLOG(1)
-        << "OnFrameDamaged() called without prior OnBeginFrame() for source_id="
-        << ack.source_id << " and sequence_number=" << ack.sequence_number
-        << ". Using NOW as a substitute display time.";
-    display_time = clock_->NowTicks();
-  }
 
   if (frame_size == oracle_.source_size()) {
     dirty_rect_.Union(damage_rect);
@@ -383,7 +331,7 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
   }
 
   MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
-                    display_time);
+                    expected_display_time);
 }
 
 void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(

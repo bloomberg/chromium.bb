@@ -7,10 +7,8 @@
 
 #include <stdint.h>
 
-#include <array>
 #include <queue>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -19,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/in_flight_frame_delivery.h"
@@ -130,7 +127,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
  private:
   friend class FrameSinkVideoCapturerTest;
 
-  using BeginFrameSourceId = decltype(BeginFrameArgs::source_id);
   using OracleFrameNumber =
       decltype(std::declval<media::VideoCaptureOracle>().next_frame_number());
 
@@ -158,10 +154,9 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void RefreshSoon();
 
   // CapturableFrameSink::Client implementation:
-  void OnBeginFrame(const BeginFrameArgs& args) final;
-  void OnFrameDamaged(const BeginFrameAck& ack,
-                      const gfx::Size& frame_size,
-                      const gfx::Rect& damage_rect) final;
+  void OnFrameDamaged(const gfx::Size& frame_size,
+                      const gfx::Rect& damage_rect,
+                      base::TimeTicks target_display_time) final;
 
   // Consults the VideoCaptureOracle to decide whether to capture a frame,
   // then ensures prerequisites are met before initiating the capture: that
@@ -234,13 +229,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // cleared when Stop() is called.
   mojom::FrameSinkVideoConsumerPtr consumer_;
 
-  // A cache of recently-recorded future frame display times, according to the
-  // BeginFrameArgs passed to OnBeginFrame() calls. There is one TimeRingBuffer
-  // per BeginFrameSource. TimeRingBuffer is an array mapping
-  // BeginFrameArgs::sequence_number to the expected display time.
-  using TimeRingBuffer = std::array<base::TimeTicks, kDesignLimitMaxFrames>;
-  base::flat_map<BeginFrameSourceId, TimeRingBuffer> frame_display_times_;
-
   // The portion of the source content that has changed, but has not yet been
   // captured.
   gfx::Rect dirty_rect_;
@@ -296,11 +284,6 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // A weak pointer factory used for cancelling the results from any in-flight
   // copy output requests.
   base::WeakPtrFactory<FrameSinkVideoCapturerImpl> capture_weak_factory_;
-
-  // Retain entries in |frame_display_times_| that contain timestamps newer than
-  // this long ago.
-  static constexpr base::TimeDelta kDisplayTimeCacheKeepAliveInterval =
-      base::TimeDelta::FromMilliseconds(500);
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkVideoCapturerImpl);
 };

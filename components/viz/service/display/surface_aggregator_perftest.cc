@@ -6,6 +6,7 @@
 #include "cc/resources/display_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -106,6 +107,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     auto root_support = std::make_unique<CompositorFrameSinkSupport>(
         nullptr, &manager_, FrameSinkId(1, num_surfaces + 1), kIsRoot,
         kNeedsSyncPoints);
+    base::TimeTicks next_fake_display_time =
+        base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     timer_.Reset();
     do {
       auto pass = RenderPass::Create();
@@ -133,7 +136,9 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
       CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
-                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
+                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)),
+          next_fake_display_time);
+      next_fake_display_time += BeginFrameArgs::DefaultInterval();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

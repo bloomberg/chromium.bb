@@ -81,7 +81,9 @@ class VideoDetectorTest : public testing::Test {
   ~VideoDetectorTest() override {}
 
   void SetUp() override {
-    mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time() + base::TimeDelta::FromSeconds(1),
+        base::TimeTicks() + base::TimeDelta::FromSeconds(1));
 
     detector_ = frame_sink_manager_.CreateVideoDetectorForTesting(
         mock_task_runner_->DeprecatedGetMockTickClock(), mock_task_runner_);
@@ -112,8 +114,8 @@ class VideoDetectorTest : public testing::Test {
   }
 
   void CreateDisplayFrame() {
-    surface_aggregator_.Aggregate(
-        root_frame_sink_->last_activated_surface_id());
+    surface_aggregator_.Aggregate(root_frame_sink_->last_activated_surface_id(),
+                                  mock_task_runner_->NowTicks());
   }
 
   void EmbedClient(CompositorFrameSinkSupport* frame_sink) {

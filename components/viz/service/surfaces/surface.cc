@@ -485,13 +485,16 @@ void Surface::RunDrawCallback() {
     std::move(active_frame_data_->draw_callback).Run();
 }
 
-void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect) {
+void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
+                                     base::TimeTicks expected_display_time) {
   if (!active_frame_data_ ||
       active_frame_data_->aggregated_damage_callback.is_null())
     return;
 
   active_frame_data_->aggregated_damage_callback.Run(
-      surface_id().local_surface_id(), damage_rect, active_frame_data_->frame);
+      surface_id().local_surface_id(),
+      active_frame_data_->frame.size_in_pixels(), damage_rect,
+      expected_display_time);
 }
 
 void Surface::OnDeadline(base::TimeDelta duration) {

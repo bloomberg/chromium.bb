@@ -271,7 +271,9 @@ bool Display::DrawAndSwap() {
   }
 
   base::ElapsedTimer aggregate_timer;
-  CompositorFrame frame = aggregator_->Aggregate(current_surface_id_);
+  CompositorFrame frame = aggregator_->Aggregate(
+      current_surface_id_, scheduler_ ? scheduler_->current_frame_display_time()
+                                      : base::TimeTicks::Now());
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -372,7 +374,7 @@ bool Display::DrawAndSwap() {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT, 0, 0,
-          scheduler_->CurrentFrameTime(), 1);
+          scheduler_->current_frame_time(), 1);
     }
 
     DLOG_IF(WARNING, !presented_callbacks_.empty())
