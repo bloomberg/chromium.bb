@@ -454,8 +454,7 @@
           "-v",
           "--upload-results",
           "--output-format=chartjson",
-          "--browser=release",
-          "--xvfb"
+          "--browser=release"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop.network_service",
