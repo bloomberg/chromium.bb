@@ -13,7 +13,7 @@ import sys
 import tarfile
 import tempfile
 
-SDK_HASH = '6e46feb3b26db267c65ea0923426a16f4da835bb'
+SDK_HASH = '62b7da622853d3517d79ff76607522f7092989a6'
 
 REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
