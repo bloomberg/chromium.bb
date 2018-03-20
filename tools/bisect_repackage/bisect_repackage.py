@@ -47,7 +47,6 @@ CHROME_REQUIRED_FILES = {
         'icudtl.dat',
         'libclearkeycdm.so',
         'libwidevinecdm.so',
-        'libwidevinecdmadapter.so',
         'locales/',
         'nacl_helper',
         'nacl_helper_bootstrap',

@@ -194,8 +194,7 @@ stage_install_common() {
   fi
 
   # Widevine CDM.
-  if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
-    install -m ${SHLIB_PERMS} -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
+  if [ -f "${BUILDDIR}/libwidevinecdm.so" ]; then
     # No need to strip; libwidevinecdm.so starts out stripped.
     install -m ${SHLIB_PERMS} "${BUILDDIR}/libwidevinecdm.so" "${STAGEDIR}/${INSTALLDIR}/"
   fi
