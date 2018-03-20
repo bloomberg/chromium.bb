@@ -1968,17 +1968,29 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   bool IsEnabled() const override { return true; }
 
   void CreateURLAccessRequest(const GURL& url_requested,
-                              const SuccessCallback& callback) override {
+                              SuccessCallback callback) override {
     FAIL();
   }
 
-  MOCK_METHOD2(CreateExtensionInstallRequest,
-               void(const std::string& id,
-                    const SupervisedUserService::SuccessCallback& callback));
+  void CreateExtensionInstallRequest(
+      const std::string& id,
+      SupervisedUserService::SuccessCallback callback) override {
+    CreateExtensionInstallRequestInternal(id);
+  }
 
-  MOCK_METHOD2(CreateExtensionUpdateRequest,
-               void(const std::string& id,
-                    const SupervisedUserService::SuccessCallback& callback));
+  void CreateExtensionUpdateRequest(
+      const std::string& id,
+      SupervisedUserService::SuccessCallback callback) override {
+    CreateExtensionUpdateRequestInternal(id);
+  }
+
+  // TODO(crbug.com/729950): These two mock methods can be set to direct calls
+  // once gtest supports move-only objects, since SuccessCallback is move only.
+  MOCK_METHOD1(CreateExtensionInstallRequestInternal,
+               void(const std::string& id));
+
+  MOCK_METHOD1(CreateExtensionUpdateRequestInternal,
+               void(const std::string& id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
@@ -2119,8 +2131,8 @@ TEST_F(ExtensionServiceTestSupervised,
       base::WrapUnique(creator));
   const std::string version("1.0.0.0");
 
-  EXPECT_CALL(*creator, CreateExtensionInstallRequest(
-                            RequestId(good_crx, version), testing::_));
+  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(
+                            RequestId(good_crx, version)));
 
   // Now make the profile supervised.
   profile()->AsTestingProfile()->SetSupervisedUserId(
@@ -2153,7 +2165,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // No request should be sent because supervised user initiated installs
   // are disabled.
-  EXPECT_CALL(*creator, CreateExtensionInstallRequest(testing::_, testing::_))
+  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(testing::_))
       .Times(0);
 
   // Now make the profile supervised.
@@ -2186,7 +2198,7 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
   InstallCRX(path, INSTALL_NEW);
 
   // No approval request should be sent.
-  EXPECT_CALL(*creator, CreateExtensionInstallRequest(testing::_, testing::_))
+  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(testing::_))
       .Times(0);
 
   // Make sure it's enabled.
@@ -2226,8 +2238,8 @@ TEST_F(ExtensionServiceTestSupervised,
   std::string id = InstallPermissionsTestExtension(true /* by_custodian */);
 
   // Update to a new version with increased permissions.
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(
-                            RequestId(id, version2), testing::_));
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
   Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(id));
@@ -2245,8 +2257,8 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Attempting to re-enable an old version should result in a permission
   // request for the current version.
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(
-                            RequestId(id, version2), testing::_));
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
 
   SyncChangeList list =
       MakeSyncChangeList(id, specifics, SyncChange::ACTION_UPDATE);
@@ -2274,8 +2286,8 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(
-                            RequestId(id, version2), testing::_));
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
   Mock::VerifyAndClearExpectations(creator);
   EXPECT_TRUE(IsPendingCustodianApproval(id));
@@ -2311,8 +2323,8 @@ TEST_F(ExtensionServiceTestSupervised,
 
   // Update to a new version with increased permissions.
   const std::string version2("2");
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(
-                            RequestId(id, version2), testing::_));
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequestInternal(RequestId(id, version2)));
   UpdatePermissionsTestExtension(id, version2, DISABLED);
   Mock::VerifyAndClearExpectations(creator);
 
@@ -2328,8 +2340,8 @@ TEST_F(ExtensionServiceTestSupervised,
   ext_specifics->set_version(version3);
 
   // This should *not* result in a new permission request.
-  EXPECT_CALL(*creator, CreateExtensionUpdateRequest(
-                            RequestId(id, version3), testing::_))
+  EXPECT_CALL(*creator,
+              CreateExtensionUpdateRequestInternal(RequestId(id, version3)))
       .Times(0);
 
   SyncChangeList list =
@@ -2358,8 +2370,8 @@ TEST_F(ExtensionServiceTestSupervised, SupervisedUserInitiatedInstalls) {
   base::FilePath path = data_dir().AppendASCII("good.crx");
   std::string version("1.0.0.0");
 
-  EXPECT_CALL(*creator, CreateExtensionInstallRequest(
-                            RequestId(good_crx, version), testing::_));
+  EXPECT_CALL(*creator, CreateExtensionInstallRequestInternal(
+                            RequestId(good_crx, version)));
 
   // Should be installed but disabled, a request for approval should be sent.
   const Extension* extension = InstallCRX(path, INSTALL_WITHOUT_LOAD);

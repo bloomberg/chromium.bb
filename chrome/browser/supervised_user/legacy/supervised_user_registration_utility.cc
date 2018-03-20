@@ -69,7 +69,7 @@ class SupervisedUserRegistrationUtilityImpl
   // OS the profile of the supervised user does not yet exist.
   void Register(const std::string& supervised_user_id,
                 const SupervisedUserRegistrationInfo& info,
-                const RegistrationCallback& callback) override;
+                RegistrationCallback callback) override;
 
   // SupervisedUserSyncServiceObserver:
   void OnSupervisedUserAcknowledged(
@@ -237,9 +237,9 @@ SupervisedUserRegistrationUtilityImpl::
 void SupervisedUserRegistrationUtilityImpl::Register(
     const std::string& supervised_user_id,
     const SupervisedUserRegistrationInfo& info,
-    const RegistrationCallback& callback) {
+    RegistrationCallback callback) {
   DCHECK(pending_supervised_user_id_.empty());
-  callback_ = callback;
+  callback_ = std::move(callback);
   pending_supervised_user_id_ = supervised_user_id;
 
   bool need_password_update = !info.password_data.empty();
@@ -415,7 +415,7 @@ void SupervisedUserRegistrationUtilityImpl::CompleteRegistration(
   }
 
   if (run_callback)
-    callback_.Run(error, pending_supervised_user_token_);
+    std::move(callback_).Run(error, pending_supervised_user_token_);
   callback_.Reset();
 }
 

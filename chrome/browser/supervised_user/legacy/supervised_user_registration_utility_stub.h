@@ -21,7 +21,7 @@ class SupervisedUserRegistrationUtilityStub
 
   void Register(const std::string& supervised_user_id,
                 const SupervisedUserRegistrationInfo& info,
-                const RegistrationCallback& callback) override;
+                RegistrationCallback callback) override;
 
   bool register_was_called() { return register_was_called_; }
 

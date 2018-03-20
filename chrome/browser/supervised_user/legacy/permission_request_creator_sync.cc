@@ -53,28 +53,28 @@ bool PermissionRequestCreatorSync::IsEnabled() const {
 
 void PermissionRequestCreatorSync::CreateURLAccessRequest(
     const GURL& url_requested,
-    const SuccessCallback& callback) {
+    SuccessCallback callback) {
   CreateRequest(kSupervisedUserAccessRequestKeyPrefix,
                 net::EscapeQueryParamValue(url_requested.spec(), true),
-                callback);
+                std::move(callback));
 }
 
 void PermissionRequestCreatorSync::CreateExtensionInstallRequest(
     const std::string& id,
-    const SuccessCallback& callback) {
-  CreateRequest(kSupervisedUserInstallRequestKeyPrefix, id, callback);
+    SuccessCallback callback) {
+  CreateRequest(kSupervisedUserInstallRequestKeyPrefix, id,
+                std::move(callback));
 }
 
 void PermissionRequestCreatorSync::CreateExtensionUpdateRequest(
     const std::string& id,
-    const SuccessCallback& callback) {
-  CreateRequest(kSupervisedUserUpdateRequestKeyPrefix, id, callback);
+    SuccessCallback callback) {
+  CreateRequest(kSupervisedUserUpdateRequestKeyPrefix, id, std::move(callback));
 }
 
-void PermissionRequestCreatorSync::CreateRequest(
-    const std::string& prefix,
-    const std::string& data,
-    const SuccessCallback& callback) {
+void PermissionRequestCreatorSync::CreateRequest(const std::string& prefix,
+                                                 const std::string& data,
+                                                 SuccessCallback callback) {
   // Add the prefix.
   std::string key =
       SupervisedUserSettingsService::MakeSplitSettingKey(prefix, data);
@@ -97,5 +97,5 @@ void PermissionRequestCreatorSync::CreateRequest(
 
   settings_service_->UploadItem(key, std::move(dict));
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }

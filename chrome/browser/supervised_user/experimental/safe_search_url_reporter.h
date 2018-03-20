@@ -23,8 +23,8 @@ class URLFetcher;
 class SafeSearchURLReporter : public OAuth2TokenService::Consumer,
                               public net::URLFetcherDelegate {
  public:
-  using SuccessCallback = base::Callback<void(bool)>;
-  
+  using SuccessCallback = base::OnceCallback<void(bool)>;
+
   SafeSearchURLReporter(OAuth2TokenService* oauth2_token_service,
                         const std::string& account_id,
                         net::URLRequestContextGetter* context);
@@ -33,7 +33,7 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer,
   static std::unique_ptr<SafeSearchURLReporter> CreateWithProfile(
       Profile* profile);
 
-  void ReportUrl(const GURL& url, const SuccessCallback& callback);
+  void ReportUrl(const GURL& url, SuccessCallback callback);
 
   void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
 

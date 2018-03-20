@@ -46,8 +46,8 @@ class SafeSearchURLReporterTest : public testing::Test {
   void CreateRequest(int url_fetcher_id, const GURL& url) {
     report_url_.set_url_fetcher_id_for_testing(url_fetcher_id);
     report_url_.ReportUrl(
-        url, base::Bind(&SafeSearchURLReporterTest::OnRequestCreated,
-                        base::Unretained(this)));
+        url, base::BindOnce(&SafeSearchURLReporterTest::OnRequestCreated,
+                            base::Unretained(this)));
   }
 
   net::TestURLFetcher* GetURLFetcher(int id) {

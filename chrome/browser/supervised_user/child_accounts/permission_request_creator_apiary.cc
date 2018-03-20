@@ -57,7 +57,7 @@ const char kIdKey[] = "id";
 struct PermissionRequestCreatorApiary::Request {
   Request(const std::string& request_type,
           const std::string& object_ref,
-          const SuccessCallback& callback,
+          SuccessCallback callback,
           int url_fetcher_id);
   ~Request();
 
@@ -74,14 +74,13 @@ struct PermissionRequestCreatorApiary::Request {
 PermissionRequestCreatorApiary::Request::Request(
     const std::string& request_type,
     const std::string& object_ref,
-    const SuccessCallback& callback,
+    SuccessCallback callback,
     int url_fetcher_id)
     : request_type(request_type),
       object_ref(object_ref),
-      callback(callback),
+      callback(std::move(callback)),
       access_token_expired(false),
-      url_fetcher_id(url_fetcher_id) {
-}
+      url_fetcher_id(url_fetcher_id) {}
 
 PermissionRequestCreatorApiary::Request::~Request() {}
 
@@ -115,20 +114,21 @@ bool PermissionRequestCreatorApiary::IsEnabled() const {
 
 void PermissionRequestCreatorApiary::CreateURLAccessRequest(
     const GURL& url_requested,
-    const SuccessCallback& callback) {
-  CreateRequest(kEventTypeURLRequest, url_requested.spec(), callback);
+    SuccessCallback callback) {
+  CreateRequest(kEventTypeURLRequest, url_requested.spec(),
+                std::move(callback));
 }
 
 void PermissionRequestCreatorApiary::CreateExtensionInstallRequest(
     const std::string& id,
-    const SuccessCallback& callback) {
-  CreateRequest(kEventTypeInstallRequest, id, callback);
+    SuccessCallback callback) {
+  CreateRequest(kEventTypeInstallRequest, id, std::move(callback));
 }
 
 void PermissionRequestCreatorApiary::CreateExtensionUpdateRequest(
     const std::string& id,
-    const SuccessCallback& callback) {
-  CreateRequest(kEventTypeUpdateRequest, id, callback);
+    SuccessCallback callback) {
+  CreateRequest(kEventTypeUpdateRequest, id, std::move(callback));
 }
 
 GURL PermissionRequestCreatorApiary::GetApiUrl() const {
@@ -157,9 +157,9 @@ std::string PermissionRequestCreatorApiary::GetApiScope() const {
 void PermissionRequestCreatorApiary::CreateRequest(
     const std::string& request_type,
     const std::string& object_ref,
-    const SuccessCallback& callback) {
-  requests_.push_back(std::make_unique<Request>(request_type, object_ref,
-                                                callback, url_fetcher_id_));
+    SuccessCallback callback) {
+  requests_.push_back(std::make_unique<Request>(
+      request_type, object_ref, std::move(callback), url_fetcher_id_));
   StartFetching(requests_.back().get());
 }
 
@@ -310,6 +310,6 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
 
 void PermissionRequestCreatorApiary::DispatchResult(RequestIterator it,
                                                     bool success) {
-  (*it)->callback.Run(success);
+  std::move((*it)->callback).Run(success);
   requests_.erase(it);
 }
