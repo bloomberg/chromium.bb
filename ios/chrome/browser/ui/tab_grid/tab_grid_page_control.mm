@@ -29,17 +29,14 @@
 //
 //  * The background view, a grey roundrect with vertical transparent bars.
 //  * The background image views.
-//  * The numeric labels on the incognito and regular tab icons.
+//  * The numeric label on the regular tab icon.
 //  * The "slider" view -- a white roundrect that's taller and wider than each
 //    of the background segments. It clips its subview to its bounds, and it
 //    adjusts its subview's frame so that it (the subview) remains fixed
 //    relative to the background.
 //     * The selected image view, which contains the selected images and labels
 //       and is a subview of the slider.
-//        * The selected images and labels.
-//
-// (Note that currently only labels are used; images will be added once assets
-// are available).
+//        * The selected images and label.
 
 // Notes on layout:
 // This control has an intrinsic size, and generally ignores frame changes. It's
@@ -126,13 +123,15 @@ NSString* StringForItemCount(long count) {
 @property(nonatomic, weak) UIView* selectedImageView;
 // The labels for the incognito and regular sections, in regular and selected
 // variants.
-@property(nonatomic, weak) UILabel* incognitoLabel;
-@property(nonatomic, weak) UILabel* incognitoSelectedLabel;
+@property(nonatomic, weak) UIView* incognitoIcon;
+@property(nonatomic, weak) UIView* incognitoSelectedIcon;
+@property(nonatomic, weak) UIView* regularIcon;
+@property(nonatomic, weak) UIView* regularSelectedIcon;
 @property(nonatomic, weak) UILabel* regularLabel;
 @property(nonatomic, weak) UILabel* regularSelectedLabel;
-// Temporary labels for the remote tabs section, to be replaced by image assets.
-@property(nonatomic, weak) UILabel* remoteLabel;
-@property(nonatomic, weak) UILabel* remoteSelectedLabel;
+
+@property(nonatomic, weak) UIView* remoteIcon;
+@property(nonatomic, weak) UIView* remoteSelectedIcon;
 // The center point for the slider corresponding to a |sliderPosition| of 0.
 @property(nonatomic) CGFloat sliderOrigin;
 // The (signed) x-coordinate distance the slider moves over. The slider's
@@ -147,7 +146,6 @@ NSString* StringForItemCount(long count) {
 // Public properties
 @synthesize selectedPage = _selectedPage;
 @synthesize sliderPosition = _sliderPosition;
-@synthesize incognitoTabCount = _incognitoTabCount;
 @synthesize regularTabCount = _regularTabCount;
 // Private properties
 @synthesize incognitoGuide = _incognitoGuide;
@@ -155,12 +153,14 @@ NSString* StringForItemCount(long count) {
 @synthesize remoteGuide = _remoteGuide;
 @synthesize sliderView = _sliderView;
 @synthesize selectedImageView = _selectedImageView;
-@synthesize incognitoLabel = _incognitoLabel;
-@synthesize incognitoSelectedLabel = _incognitoSelectedLabel;
+@synthesize incognitoIcon = _incognitoIcon;
+@synthesize incognitoSelectedIcon = _incognitoSelectedIconl;
+@synthesize regularIcon = _regularIcon;
+@synthesize regularSelectedIcon = _regularSelectedIcon;
 @synthesize regularLabel = _regularLabel;
 @synthesize regularSelectedLabel = _regularSelectedLabel;
-@synthesize remoteLabel = _remoteLabel;
-@synthesize remoteSelectedLabel = _remoteSelectedLabel;
+@synthesize remoteIcon = _remoteIcon;
+@synthesize remoteSelectedIcon = _remoteSelectedIcon;
 @synthesize sliderOrigin = _sliderOrigin;
 @synthesize sliderRange = _sliderRange;
 
@@ -201,13 +201,6 @@ NSString* StringForItemCount(long count) {
 // the text in both labels (the regular and the  "selected" versions that's
 // visible when the slider is over a segment), and an ivar to store values that
 // are set before the labels are created.
-- (void)setIncognitoTabCount:(NSUInteger)incognitoTabCount {
-  NSString* incognitoText = StringForItemCount(incognitoTabCount);
-  self.incognitoLabel.text = incognitoText;
-  self.incognitoSelectedLabel.text = incognitoText;
-  _incognitoTabCount = incognitoTabCount;
-}
-
 - (void)setRegularTabCount:(NSUInteger)regularTabCount {
   NSString* regularText = StringForItemCount(regularTabCount);
   self.regularLabel.text = regularText;
@@ -269,17 +262,19 @@ NSString* StringForItemCount(long count) {
   // guides can be set correctly.
   [super layoutSubviews];
   // Position the section images and labels, which depend on the layout guides.
-  self.incognitoLabel.center = [self centerOfSegment:TabGridPageIncognitoTabs];
-  self.incognitoSelectedLabel.center =
+  self.incognitoIcon.center = [self centerOfSegment:TabGridPageIncognitoTabs];
+  self.incognitoSelectedIcon.center =
       [self centerOfSegment:TabGridPageIncognitoTabs];
 
+  self.regularIcon.center = [self centerOfSegment:TabGridPageRegularTabs];
+  self.regularSelectedIcon.center =
+      [self centerOfSegment:TabGridPageRegularTabs];
   self.regularLabel.center = [self centerOfSegment:TabGridPageRegularTabs];
   self.regularSelectedLabel.center =
       [self centerOfSegment:TabGridPageRegularTabs];
 
-  self.remoteLabel.center = [self centerOfSegment:TabGridPageRemoteTabs];
-  self.remoteSelectedLabel.center =
-      [self centerOfSegment:TabGridPageRemoteTabs];
+  self.remoteIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
+  self.remoteSelectedIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
 
   // Determine the slider origin and range; this is based on the layout guides
   // and can't be computed until they are determined.
@@ -338,15 +333,6 @@ NSString* StringForItemCount(long count) {
         constraintEqualToAnchor:regularGuide.trailingAnchor]
   ]];
 
-  // Create the section images and labels and add them below the slider.
-  UILabel* incognitoLabel = [self labelSelected:NO incognito:YES];
-  [self addSubview:incognitoLabel];
-  self.incognitoLabel = incognitoLabel;
-
-  UILabel* regularLabel = [self labelSelected:NO incognito:NO];
-  [self addSubview:regularLabel];
-  self.regularLabel = regularLabel;
-
   // Add the slider above the section images and labels.
   CGRect sliderFrame = CGRectMake(0, 0, kSliderWidth, kSliderHeight);
   UIView* slider = [[UIView alloc] initWithFrame:sliderFrame];
@@ -357,36 +343,62 @@ NSString* StringForItemCount(long count) {
   [self addSubview:slider];
   self.sliderView = slider;
 
+  // Selected images and labels are added to the selected image view so they
+  // will be clipped by the slider.
   UIView* selectedImageView = [[UIView alloc]
       initWithFrame:(CGRectMake(0, 0, kOverallWidth, kOverallHeight))];
   [self.sliderView addSubview:selectedImageView];
   self.selectedImageView = selectedImageView;
 
-  // Add the selected images and labels to the selected image view so they
-  // will be clipped by it.
-  UILabel* incognitoSelectedLabel = [self labelSelected:YES incognito:YES];
-  [self.selectedImageView addSubview:incognitoSelectedLabel];
-  self.incognitoSelectedLabel = incognitoSelectedLabel;
+  // Scale the selected images, since the current assets don't have a larger
+  // size for the selected state.
+  // TODO(crbug.com/804500): Remove this once the correct assets are available.
+  CGFloat scale = kSelectedLabelSize / kLabelSize;
+  CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
 
-  UILabel* regularSelectedLabel = [self labelSelected:YES incognito:NO];
+  // Icons and labels for the regular tabs.
+  UIImageView* regularIcon = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"page_control_regular_tabs"]];
+  [self insertSubview:regularIcon belowSubview:self.sliderView];
+  self.regularIcon = regularIcon;
+  UIImageView* regularSelectedIcon = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"page_control_regular_tabs_selected"]];
+  regularSelectedIcon.transform = scaleTransform;
+  [self.selectedImageView addSubview:regularSelectedIcon];
+  self.regularSelectedIcon = regularSelectedIcon;
+  UILabel* regularLabel = [self labelSelected:NO];
+  [self insertSubview:regularLabel belowSubview:self.sliderView];
+  self.regularLabel = regularLabel;
+  UILabel* regularSelectedLabel = [self labelSelected:YES];
   [self.selectedImageView addSubview:regularSelectedLabel];
   self.regularSelectedLabel = regularSelectedLabel;
 
-  // Create a temporary label for the remote tabs section.
-  // TODO(crbug.com/804500): Remove this when assets are available.
-  UILabel* remoteLabel = [self labelSelected:NO incognito:NO];
-  [self insertSubview:remoteLabel belowSubview:self.sliderView];
-  self.remoteLabel = remoteLabel;
-  UILabel* remoteSelectedLabel = [self labelSelected:YES incognito:NO];
-  [self.selectedImageView addSubview:remoteSelectedLabel];
-  self.remoteSelectedLabel = remoteSelectedLabel;
-  remoteLabel.text = @"R";
-  remoteSelectedLabel.text = @"R";
+  // Icons for the incognito tabs section.
+  UIImageView* incognitoIcon = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"page_control_incognito_tabs"]];
+  [self insertSubview:incognitoIcon belowSubview:self.sliderView];
+  self.incognitoIcon = incognitoIcon;
+  UIImageView* incognitoSelectedIcon = [[UIImageView alloc]
+      initWithImage:[UIImage
+                        imageNamed:@"page_control_incognito_tabs_selected"]];
+  incognitoSelectedIcon.transform = scaleTransform;
+  [self.selectedImageView addSubview:incognitoSelectedIcon];
+  self.incognitoSelectedIcon = incognitoSelectedIcon;
+
+  // Icons for the remote tabs section.
+  UIImageView* remoteIcon = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"page_control_remote_tabs"]];
+  [self insertSubview:remoteIcon belowSubview:self.sliderView];
+  self.remoteIcon = remoteIcon;
+  UIImageView* remoteSelectedIcon = [[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"page_control_remote_tabs_selected"]];
+  remoteSelectedIcon.transform = scaleTransform;
+  [self.selectedImageView addSubview:remoteSelectedIcon];
+  self.remoteSelectedIcon = remoteSelectedIcon;
 
   // Update the label text, in case these properties have been set before the
   // views were set up.
   self.regularTabCount = _regularTabCount;
-  self.incognitoTabCount = _incognitoTabCount;
 
   // Mark the control's layout as dirty so the the guides will be computed, then
   // force a layout now so it won't be triggered later (perhaps during an
@@ -403,22 +415,14 @@ NSString* StringForItemCount(long count) {
 
 // Creates a label for use in this control.
 // Selected labels use a different size and are black.
-// Incognito labels have a solid background and use inverted text.
-- (UILabel*)labelSelected:(BOOL)selected incognito:(BOOL)incognito {
+- (UILabel*)labelSelected:(BOOL)selected {
   CGFloat size = selected ? kSelectedLabelSize : kLabelSize;
-  UIColor* color = selected ? UIColor.blackColor : UIColor.lightGrayColor;
+  UIColor* color = selected ? UIColor.blackColor : UIColorFromRGB(kSliderColor);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, size, size)];
-  label.backgroundColor = incognito ? color : UIColor.clearColor;
-  label.layer.borderWidth = 2.5;
-  label.layer.borderColor = color.CGColor;
-  label.layer.masksToBounds = YES;
-  label.layer.cornerRadius = 6.0;
+  label.backgroundColor = UIColor.clearColor;
   label.textAlignment = NSTextAlignmentCenter;
-  label.textColor = incognito ? (selected ? UIColorFromRGB(kSliderColor)
-                                          : UIColorFromRGB(kBackgroundColor))
-                              : color;
-  label.font =
-      [UIFont systemFontOfSize:size * .6 weight:UIFontWeightBold];  // ?
+  label.textColor = color;
+  label.font = [UIFont systemFontOfSize:size * .6 weight:UIFontWeightBold];
   return label;
 }
 

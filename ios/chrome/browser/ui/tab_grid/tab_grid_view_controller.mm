@@ -622,8 +622,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self configureButtonsForCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
-  } else if (gridViewController == self.incognitoTabsViewController) {
-    self.topToolbar.pageControl.incognitoTabCount = count;
   }
 }
 

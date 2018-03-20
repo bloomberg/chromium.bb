@@ -65,6 +65,7 @@ source_set("tab_grid_ui") {
     "resources:new_tab_floating_button_incognito",
     "resources:new_tab_toolbar_button",
     "resources:new_tab_toolbar_button_incognito",
+    "resources:page_control_assets",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
