@@ -262,7 +262,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
         mNativeContentViewCore =
                 nativeInit(mWebContents, mViewAndroidDelegate, windowAndroid, dipScale);
-        mWebContents = (WebContentsImpl) nativeGetWebContentsAndroid(mNativeContentViewCore);
         ViewGroup containerView = viewDelegate.getContainerView();
         SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
                 mContext, windowAndroid, mWebContents, containerView);
@@ -856,7 +855,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             WindowAndroid window, float dipScale);
     private native void nativeUpdateWindowAndroid(long nativeContentViewCore, WindowAndroid window);
-    private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCore);
     private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCore);
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
     private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
