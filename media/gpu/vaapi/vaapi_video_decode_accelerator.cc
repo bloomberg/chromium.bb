@@ -55,12 +55,22 @@ unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
   return VA_RT_FORMAT_YUV420;
 }
 
-}  // namespace
-
-static void ReportToUMA(VAVDADecoderFailure failure) {
+void ReportToUMA(VAVDADecoderFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAVDA.DecoderFailure", failure,
                             VAVDA_DECODER_FAILURES_MAX + 1);
 }
+
+#if defined(USE_OZONE)
+void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
+  for (const auto& fd : handle.native_pixmap_handle.fds) {
+    // Close the fd by wrapping it in a ScopedFD and letting
+    // it fall out of scope.
+    base::ScopedFD scoped_fd(fd.fd);
+  }
+}
+#endif
+
+}  // namespace
 
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
   do {                                                             \
@@ -610,15 +620,6 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 #if defined(USE_OZONE)
-static void CloseGpuMemoryBufferHandle(
-    const gfx::GpuMemoryBufferHandle& handle) {
-  for (const auto& fd : handle.native_pixmap_handle.fds) {
-    // Close the fd by wrapping it in a ScopedFD and letting
-    // it fall out of scope.
-    base::ScopedFD scoped_fd(fd.fd);
-  }
-}
-
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
