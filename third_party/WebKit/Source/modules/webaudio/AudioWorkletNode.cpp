@@ -80,7 +80,10 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   // Render and update the node state when the processor is ready with no error.
-  if (processor_ && !processor_->hasErrorOccured()) {
+  // We also need to check if the global scope is valid before we request
+  // the rendering in the AudioWorkletGlobalScope.
+  if (processor_ && !processor_->hasErrorOccured() &&
+      Context()->CheckWorkletGlobalScopeOnRenderingThread()) {
     Vector<AudioBus*> input_buses;
     Vector<AudioBus*> output_buses;
     for (unsigned i = 0; i < NumberOfInputs(); ++i) {

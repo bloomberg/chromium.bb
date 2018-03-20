@@ -346,6 +346,17 @@ class MODULES_EXPORT BaseAudioContext
   // does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
+  // In the shut-down process, the AudioWorkletGlobalScope can already be gone
+  // while the backing worker thread is still running. This is called by
+  // AudioWorkletHandler before it requests the render task to the processor
+  // which lives on the AudioWorkletGlobalScope. Returns true if there is a
+  // valid WorkletGloblaScope for the worklet-related task.
+  //
+  // TODO(hongchan): This is a short-term fix for https://crbug.com/822725.
+  // The lifetime of the render task should be managed by not the explicit
+  // context check but per-global-scope task queues.
+  bool CheckWorkletGlobalScopeOnRenderingThread();
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
