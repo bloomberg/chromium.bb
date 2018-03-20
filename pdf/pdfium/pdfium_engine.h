@@ -464,6 +464,10 @@ class PDFiumEngine : public PDFEngine,
 
   bool PageIndexInBounds(int index) const;
 
+  // Gets the height of the top toolbar in screen coordinates. This is
+  // independent of whether it is hidden or not at the moment.
+  float GetToolbarHeightInScreenCoords();
+
   void ScheduleTouchTimer(const pp::TouchInputEvent& event);
   void KillTouchTimer(int timer_id);
   void HandleLongPress(const pp::TouchInputEvent& event);

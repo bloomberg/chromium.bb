@@ -906,13 +906,58 @@ void PDFiumEngine::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
                                         double* right,
                                         double* bottom) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  int page_index = engine->GetMostVisiblePage();
+  int page_index = engine->GetVisiblePageIndex(page);
+  if (!engine->PageIndexInBounds(page_index)) {
+    *left = 0;
+    *right = 0;
+    *top = 0;
+    *bottom = 0;
+    return;
+  }
+
   pp::Rect page_view_rect = engine->GetPageContentsRect(page_index);
 
-  *left = page_view_rect.x();
-  *right = page_view_rect.right();
-  *top = page_view_rect.y();
-  *bottom = page_view_rect.bottom();
+  float toolbar_height_in_screen_coords =
+      engine->GetToolbarHeightInScreenCoords();
+
+  float page_width = FPDF_GetPageWidth(page);
+  float page_height = FPDF_GetPageHeight(page);
+
+  // To convert from a screen scale to a page scale, we multiply by
+  // (page_height / page_view_rect.height()) and
+  // (page_width / page_view_rect.width()),
+  // The base point of the page in screen coords is (page_view_rect.x(),
+  // page_view_rect.y()).
+  // Therefore, to convert an x position from screen to page
+  // coords, we use (page_width * (x - base_x) / page_view_rect.width()).
+  // For y positions, (page_height * (y - base_y) / page_view_rect.height()).
+
+  // The top-most y position that can be relied to be visible on the screen is
+  // the bottom of the toolbar, which is y = toolbar_height_in_screen_coords.
+  float screen_top_in_page_coords =
+      page_height * (toolbar_height_in_screen_coords - page_view_rect.y()) /
+      page_view_rect.height();
+  // The bottom-most y position that is visible on the screen is the bottom of
+  // the plugin area, which is y = engine->plugin_size_.height().
+  float screen_bottom_in_page_coords =
+      page_height * (engine->plugin_size_.height() - page_view_rect.y()) /
+      page_view_rect.height();
+  // The left-most x position that is visible on the screen is the left of the
+  // plugin area, which is x = 0.
+  float screen_left_in_page_coords =
+      page_width * (0 - page_view_rect.x()) / page_view_rect.width();
+  // The right-most x position that is visible on the screen is the right of the
+  // plugin area, which is x = engine->plugin_size_.width().
+  float screen_right_in_page_coords =
+      page_width * (engine->plugin_size_.width() - page_view_rect.x()) /
+      page_view_rect.width();
+
+  // Return the edge of the screen or of the page, since we're restricted to
+  // both.
+  *left = std::max(screen_left_in_page_coords, 0.0f);
+  *right = std::min(screen_right_in_page_coords, page_width);
+  *top = std::max(screen_top_in_page_coords, 0.0f);
+  *bottom = std::min(screen_bottom_in_page_coords, page_height);
 }
 
 int PDFiumEngine::Form_GetPlatform(FPDF_FORMFILLINFO* param,
@@ -4037,6 +4082,10 @@ void PDFiumEngine::KillTouchTimer(int timer_id) {
 
 bool PDFiumEngine::PageIndexInBounds(int index) const {
   return index >= 0 && index < static_cast<int>(pages_.size());
+}
+
+float PDFiumEngine::GetToolbarHeightInScreenCoords() {
+  return client_->GetToolbarHeightInScreenCoords();
 }
 
 void PDFiumEngine::Form_Invalidate(FPDF_FORMFILLINFO* param,

@@ -167,6 +167,10 @@ bool PreviewModeClient::IsPrintPreview() {
 
 void PreviewModeClient::CancelBrowserDownload() {}
 
+float PreviewModeClient::GetToolbarHeightInScreenCoords() {
+  return 0.0f;
+}
+
 uint32_t PreviewModeClient::GetBackgroundColor() {
   NOTREACHED();
   return 0;
