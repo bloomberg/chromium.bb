@@ -72,7 +72,8 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
 
   OfflinePageModelTaskified* model = new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), background_task_runner, std::move(clock));
+      std::move(download_manager), background_task_runner,
+      base::DefaultClock::GetInstance());
 
   CctOriginObserver::AttachToOfflinePageModel(model);
 

@@ -50,11 +50,10 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
   std::unique_ptr<SystemDownloadManager> stub_download_manager(
       new SystemDownloadManagerStub(kDownloadId, true));
 
-  std::unique_ptr<base::Clock> clock(new base::DefaultClock);
-
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(stub_download_manager), task_runner, std::move(clock)));
+      std::move(stub_download_manager), task_runner,
+      base::DefaultClock::GetInstance()));
 }
 
 }  // namespace offline_pages

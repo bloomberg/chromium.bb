@@ -133,12 +133,12 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
     std::unique_ptr<ArchiveManager> archive_manager,
     std::unique_ptr<SystemDownloadManager> download_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    std::unique_ptr<base::Clock> clock)
+    base::Clock* clock)
     : store_(std::move(store)),
       archive_manager_(std::move(archive_manager)),
       download_manager_(std::move(download_manager)),
       policy_controller_(new ClientPolicyController()),
-      clock_(std::move(clock)),
+      clock_(clock),
       task_queue_(this),
       skip_clearing_original_url_for_testing_(false),
       skip_maintenance_tasks_for_testing_(false),

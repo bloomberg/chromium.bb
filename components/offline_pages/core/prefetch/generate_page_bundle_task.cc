@@ -131,7 +131,7 @@ GeneratePageBundleTask::GeneratePageBundleTask(
     PrefetchGCMHandler* gcm_handler,
     PrefetchNetworkRequestFactory* request_factory,
     const PrefetchRequestFinishedCallback& callback)
-    : clock_(new base::DefaultClock()),
+    : clock_(base::DefaultClock::GetInstance()),
       prefetch_store_(prefetch_store),
       gcm_handler_(gcm_handler),
       request_factory_(request_factory),
@@ -142,14 +142,13 @@ GeneratePageBundleTask::~GeneratePageBundleTask() {}
 
 void GeneratePageBundleTask::Run() {
   prefetch_store_->Execute(
-      base::BindOnce(&SelectUrlsToPrefetchSync, clock_.get()),
+      base::BindOnce(&SelectUrlsToPrefetchSync, clock_),
       base::BindOnce(&GeneratePageBundleTask::StartGeneratePageBundle,
                      weak_factory_.GetWeakPtr()));
 }
 
-void GeneratePageBundleTask::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void GeneratePageBundleTask::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void GeneratePageBundleTask::StartGeneratePageBundle(

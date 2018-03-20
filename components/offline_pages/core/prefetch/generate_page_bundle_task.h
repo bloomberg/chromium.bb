@@ -33,7 +33,7 @@ class GeneratePageBundleTask : public Task {
   // Task implementation.
   void Run() override;
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
  private:
   void StartGeneratePageBundle(std::unique_ptr<std::vector<std::string>> urls);
@@ -41,7 +41,7 @@ class GeneratePageBundleTask : public Task {
                          const std::string& id,
                          instance_id::InstanceID::Result result);
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   PrefetchStore* prefetch_store_;
   PrefetchGCMHandler* gcm_handler_;
