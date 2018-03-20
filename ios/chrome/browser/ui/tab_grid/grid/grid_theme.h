@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_THEME_H_
-#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_THEME_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_THEME_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_THEME_H_
 
 // Theme describing the look of the grid.
 typedef NS_ENUM(NSUInteger, GridTheme) {
@@ -11,4 +11,4 @@ typedef NS_ENUM(NSUInteger, GridTheme) {
   GridThemeDark,
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_THEME_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_THEME_H_

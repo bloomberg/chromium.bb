@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_COMMANDS_H_
-#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_COMMANDS_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_COMMANDS_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_COMMANDS_H_
 
 // Commands issued to a model backing a grid UI.
 @protocol GridCommands
@@ -22,4 +22,4 @@
 - (void)closeAllItems;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_COMMANDS_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_COMMANDS_H_

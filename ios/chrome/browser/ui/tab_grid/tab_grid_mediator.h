@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
 
 @protocol GridConsumer;
 @class TabModel;

@@ -4,9 +4,9 @@
 
 #import "ios/showcase/tab_grid/sc_tab_grid_coordinator.h"
 
-#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 

@@ -4,9 +4,9 @@
 
 #import "ios/showcase/tab_grid/sc_grid_coordinator.h"
 
-#import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_item.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

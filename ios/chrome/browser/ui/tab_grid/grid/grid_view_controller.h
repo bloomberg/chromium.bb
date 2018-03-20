@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_theme.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_theme.h"
 
 @protocol GridImageDataSource;
 @class GridTransitionLayout;
@@ -53,4 +53,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_VIEW_CONTROLLER_H_

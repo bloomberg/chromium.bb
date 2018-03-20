@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TOP_ALIGNED_IMAGE_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_TAB_GRID_TOP_ALIGNED_IMAGE_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_TOP_ALIGNED_IMAGE_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_TOP_ALIGNED_IMAGE_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -19,4 +19,4 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TOP_ALIGNED_IMAGE_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_TOP_ALIGNED_IMAGE_VIEW_H_

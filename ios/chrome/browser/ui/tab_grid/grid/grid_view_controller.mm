@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_item.h"
-#import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
