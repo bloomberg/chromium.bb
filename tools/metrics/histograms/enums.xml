@@ -23396,6 +23396,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="61" label="SETUP_SINGLETON_RELEASED"/>
   <int value="62" label="DELETE_OLD_VERSIONS_SUCCESS"/>
   <int value="63" label="DELETE_OLD_VERSIONS_TOO_MANY_ATTEMPTS"/>
+  <int value="64" label="SAVE_DMTOKEN_FAILED"/>
+  <int value="65" label="SAVE_DMTOKEN_SUCCESS"/>
 </enum>
 
 <enum name="InstanceIDResult">

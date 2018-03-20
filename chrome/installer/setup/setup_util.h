@@ -14,6 +14,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -161,6 +162,16 @@ base::Time GetConsoleSessionStartTime();
 // Returns true if the current OS vesion suppors drawing dark text on Start Menu
 // tiles.
 bool OsSupportsDarkTextTiles();
+
+// Returns a DM token decoded from the base-64 |encoded_token|, or null in case
+// of a decoding error.  The returned DM token is an opaque binary blob and
+// should not be treated as an ASCII or UTF-8 string.
+base::Optional<std::string> DecodeDMTokenSwitchValue(
+    const base::string16& encoded_token);
+
+// Saves a DM token to a global location on the machine accessible to all
+// install modes of the browser (i.e., stable and all three side-by-side modes).
+bool StoreDMToken(const std::string& token);
 
 }  // namespace installer
 

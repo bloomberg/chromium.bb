@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -18,6 +19,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
@@ -26,12 +28,15 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -451,6 +456,44 @@ TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
 TEST(SetupUtilTest, GetConsoleSessionStartTime) {
   base::Time start_time = installer::GetConsoleSessionStartTime();
   EXPECT_FALSE(start_time.is_null());
+}
+
+TEST(SetupUtilTest, DecodeDMTokenSwitchValue) {
+  // Expect false with empty or badly formed base64-encoded string.
+  EXPECT_FALSE(installer::DecodeDMTokenSwitchValue(L""));
+  EXPECT_FALSE(installer::DecodeDMTokenSwitchValue(L"not-ascii\xff"));
+  EXPECT_FALSE(installer::DecodeDMTokenSwitchValue(L"not-base64-string"));
+
+  std::string token("this is a token");
+  std::string encoded;
+  base::Base64Encode(token, &encoded);
+  EXPECT_EQ(token,
+            *installer::DecodeDMTokenSwitchValue(base::UTF8ToUTF16(encoded)));
+}
+
+TEST(SetupUtilTest, StoreDMTokenToRegistry) {
+  install_static::ScopedInstallDetails scoped_install_details(true);
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  std::string token("tokens are \0 binary data");
+  EXPECT_TRUE(installer::StoreDMToken(token));
+
+  std::wstring path;
+  std::wstring name;
+  InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(&path, &name);
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, path.c_str(),
+                                    KEY_QUERY_VALUE | KEY_WOW64_64KEY));
+
+  DWORD size = 64;
+  std::vector<char> raw_value(size);
+  DWORD dtype;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+  EXPECT_EQ(REG_BINARY, dtype);
+  ASSERT_EQ(token.length(), size);
+  EXPECT_EQ(0, memcmp(token.data(), raw_value.data(), size));
 }
 
 namespace installer {
