@@ -4300,8 +4300,8 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
 }
 
 // Used to set proper context for early termination with skip = 1.
-static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
-                          RD_STATS *rd_stats, int bsize, int64_t dist) {
+static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
+                          int64_t dist) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int n4 = bsize_to_num_blk(bsize);
@@ -4311,8 +4311,6 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   mbmi->tx_size = tx_size;
   memset(x->blk_skip[0], 1, sizeof(uint8_t) * n4);
   rd_stats->skip = 1;
-
-  (void)cpi;
 
   // Rate.
   const int tx_size_ctx = get_txsize_entropy_ctx(tx_size);
@@ -4381,7 +4379,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   int64_t dist;
   if (is_inter && cpi->sf.tx_type_search.use_skip_flag_prediction &&
       predict_skip_flag(x, bsize, &dist, cm->reduced_tx_set_used)) {
-    set_skip_flag(cpi, x, rd_stats, bsize, dist);
+    set_skip_flag(x, rd_stats, bsize, dist);
     // Save the RD search results into tx_rd_record.
     if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
     return;
@@ -5112,16 +5110,11 @@ static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
 static int check_best_zero_mv(
     const AV1_COMP *const cpi, const MACROBLOCK *const x,
     const int16_t mode_context[TOTAL_REFS_PER_FRAME],
-    const int16_t compound_mode_context[TOTAL_REFS_PER_FRAME],
     int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
     const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int mi_row,
     int mi_col) {
   int_mv zeromv[2] = { { .as_int = 0 } };
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
-  (void)mi_row;
-  (void)mi_col;
-  (void)cpi;
-  (void)compound_mode_context;
   if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
     for (int cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
       zeromv[cur_frm].as_int =
@@ -8164,7 +8157,6 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   int plane_block_width, plane_block_height, rows, cols;
   av1_get_block_dimensions(bsize, 1, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
-  (void)cpi;
 
   for (r = 0; r < rows; ++r) {
     for (c = 0; c < cols; ++c) {
@@ -8787,8 +8779,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                (!comp_pred ||
                 cm->global_motion[second_ref_frame].wmtype == IDENTITY)) {
       const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
-      if (!check_best_zero_mv(cpi, x, mbmi_ext->mode_context,
-                              mbmi_ext->compound_mode_context, frame_mv,
+      if (!check_best_zero_mv(cpi, x, mbmi_ext->mode_context, frame_mv,
                               this_mode, ref_frames, bsize, mi_row, mi_col))
         continue;
     }

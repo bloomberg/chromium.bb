@@ -87,7 +87,6 @@ static int kf_low = 400;
 // How many times less pixels there are to encode given the current scaling.
 // Temporary replacement for rcf_mult and rate_thresh_mult.
 static double resize_rate_factor(const AV1_COMP *cpi, int width, int height) {
-  (void)cpi;
   return (double)(cpi->oxcf.width * cpi->oxcf.height) / (width * height);
 }
 
