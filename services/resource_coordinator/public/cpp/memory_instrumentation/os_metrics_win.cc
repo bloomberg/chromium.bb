@@ -12,7 +12,6 @@
 #include <base/strings/sys_string_conversions.h>
 #include <base/win/pe_image.h>
 #include <base/win/win_util.h>
-#include "base/process/process_metrics.h"
 
 namespace memory_instrumentation {
 
@@ -22,14 +21,12 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
   // Creating process metrics for child processes in mac or windows requires
   // additional information like ProcessHandle or port provider.
   DCHECK_EQ(base::kNullProcessId, pid);
-  auto process_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
 
-  size_t private_bytes = 0;
-  process_metrics->GetMemoryBytes(&private_bytes, nullptr);
-  dump->platform_private_footprint->private_bytes = private_bytes;
-
-  PROCESS_MEMORY_COUNTERS pmc;
-  if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+  PROCESS_MEMORY_COUNTERS_EX pmc;
+  if (::GetProcessMemoryInfo(::GetCurrentProcess(),
+                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+                             sizeof(pmc))) {
+    dump->platform_private_footprint->private_bytes = pmc.PrivateUsage;
     dump->resident_set_kb = pmc.WorkingSetSize / 1024;
   }
   return true;
