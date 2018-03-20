@@ -29,6 +29,7 @@ class ScopedVirtualU2fDevice
       ::service_manager::Connector* connector) override;
 
  private:
+  scoped_refptr<VirtualU2fDevice::State> state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedVirtualU2fDevice);
 };
 
