@@ -5,6 +5,7 @@
 #include "core/editing/Editor.h"
 
 #include "core/clipboard/Pasteboard.h"
+#include "core/editing/commands/EditorCommand.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/forms/HTMLInputElement.h"
 

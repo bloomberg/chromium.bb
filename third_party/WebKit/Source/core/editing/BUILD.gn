@@ -123,6 +123,7 @@ blink_core_sources("editing") {
     "commands/EditingState.cpp",
     "commands/EditingState.h",
     "commands/EditorCommand.cpp",
+    "commands/EditorCommand.h",
     "commands/EditorCommandNames.h",
     "commands/FormatBlockCommand.cpp",
     "commands/FormatBlockCommand.h",

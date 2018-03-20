@@ -33,6 +33,7 @@
 #include "core/editing/EditingTriState.h"
 #include "core/editing/Editor.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
+#include "core/editing/commands/EditorCommand.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -44,10 +45,10 @@ namespace blink {
 
 namespace {
 
-Editor::Command GetCommand(Document* document, const String& command_name) {
+EditorCommand GetCommand(Document* document, const String& command_name) {
   LocalFrame* frame = document->GetFrame();
   if (!frame || frame->GetDocument() != document)
-    return Editor::Command();
+    return EditorCommand();
 
   document->UpdateStyleAndLayoutTree();
   return frame->GetEditor().CreateCommand(command_name,
@@ -87,7 +88,7 @@ bool Document::execCommand(const String& command_name,
   // DOM tree against implementation assumption.
   EventQueueScope event_queue_scope;
   TidyUpHTMLStructure(*this);
-  Editor::Command editor_command = GetCommand(this, command_name);
+  const EditorCommand editor_command = GetCommand(this, command_name);
 
   DEFINE_STATIC_LOCAL(SparseHistogram, editor_command_histogram,
                       ("WebCore.Document.execCommand"));

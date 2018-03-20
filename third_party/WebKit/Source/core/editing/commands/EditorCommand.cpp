@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/Editor.h"
+#include "core/editing/commands/EditorCommand.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -40,6 +40,7 @@
 #include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingTriState.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
@@ -3033,14 +3034,14 @@ static const EditorInternalCommand* InternalCommand(
   return &kEditorCommands[command_index];
 }
 
-Editor::Command Editor::CreateCommand(const String& command_name) const {
-  return Command(InternalCommand(command_name),
-                 EditorCommandSource::kMenuOrKeyBinding, frame_);
+EditorCommand Editor::CreateCommand(const String& command_name) const {
+  return EditorCommand(InternalCommand(command_name),
+                       EditorCommandSource::kMenuOrKeyBinding, frame_);
 }
 
-Editor::Command Editor::CreateCommand(const String& command_name,
-                                      EditorCommandSource source) const {
-  return Command(InternalCommand(command_name), source, frame_);
+EditorCommand Editor::CreateCommand(const String& command_name,
+                                    EditorCommandSource source) const {
+  return EditorCommand(InternalCommand(command_name), source, frame_);
 }
 
 bool Editor::ExecuteCommand(const String& command_name) {
@@ -3110,11 +3111,12 @@ bool Editor::IsCommandEnabled(const String& command_name) const {
   return CreateCommand(command_name).IsEnabled();
 }
 
-Editor::Command::Command() : command_(nullptr) {}
+EditorCommand::EditorCommand()
+    : command_(nullptr), source_(EditorCommandSource::kMenuOrKeyBinding) {}
 
-Editor::Command::Command(const EditorInternalCommand* command,
-                         EditorCommandSource source,
-                         LocalFrame* frame)
+EditorCommand::EditorCommand(const EditorInternalCommand* command,
+                             EditorCommandSource source,
+                             LocalFrame* frame)
     : command_(command), source_(source), frame_(command ? frame : nullptr) {
   // Use separate assertions so we can tell which bad thing happened.
   if (!command)
@@ -3123,8 +3125,13 @@ Editor::Command::Command(const EditorInternalCommand* command,
     DCHECK(frame_);
 }
 
-bool Editor::Command::Execute(const String& parameter,
-                              Event* triggering_event) const {
+LocalFrame& EditorCommand::GetFrame() const {
+  DCHECK(frame_);
+  return *frame_;
+}
+
+bool EditorCommand::Execute(const String& parameter,
+                            Event* triggering_event) const {
   if (!CanExecute(triggering_event))
     return false;
 
@@ -3149,17 +3156,17 @@ bool Editor::Command::Execute(const String& parameter,
   return command_->execute(*frame_, triggering_event, source_, parameter);
 }
 
-bool Editor::Command::Execute(Event* triggering_event) const {
+bool EditorCommand::Execute(Event* triggering_event) const {
   return Execute(String(), triggering_event);
 }
 
-bool Editor::Command::CanExecute(Event* triggering_event) const {
+bool EditorCommand::CanExecute(Event* triggering_event) const {
   if (IsEnabled(triggering_event))
     return true;
   return IsSupported() && frame_ && command_->can_execute(*frame_, source_);
 }
 
-bool Editor::Command::IsSupported() const {
+bool EditorCommand::IsSupported() const {
   if (!command_)
     return false;
   switch (source_) {
@@ -3172,33 +3179,33 @@ bool Editor::Command::IsSupported() const {
   return false;
 }
 
-bool Editor::Command::IsEnabled(Event* triggering_event) const {
+bool EditorCommand::IsEnabled(Event* triggering_event) const {
   if (!IsSupported() || !frame_)
     return false;
   return command_->is_enabled(*frame_, triggering_event, source_);
 }
 
-EditingTriState Editor::Command::GetState(Event* triggering_event) const {
+EditingTriState EditorCommand::GetState(Event* triggering_event) const {
   if (!IsSupported() || !frame_)
     return EditingTriState::kFalse;
   return command_->state(*frame_, triggering_event);
 }
 
-String Editor::Command::Value(Event* triggering_event) const {
+String EditorCommand::Value(Event* triggering_event) const {
   if (!IsSupported() || !frame_)
     return String();
   return command_->value(*command_, *frame_, triggering_event);
 }
 
-bool Editor::Command::IsTextInsertion() const {
+bool EditorCommand::IsTextInsertion() const {
   return command_ && command_->is_text_insertion;
 }
 
-int Editor::Command::IdForHistogram() const {
+int EditorCommand::IdForHistogram() const {
   return IsSupported() ? static_cast<int>(command_->command_type) : 0;
 }
 
-const StaticRangeVector* Editor::Command::GetTargetRanges() const {
+const StaticRangeVector* EditorCommand::GetTargetRanges() const {
   const Node* target = EventTargetNodeForDocument(frame_->GetDocument());
   if (!IsSupported() || !frame_ || !target || !HasRichlyEditableStyle(*target))
     return nullptr;

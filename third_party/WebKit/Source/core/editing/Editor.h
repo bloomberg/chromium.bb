@@ -44,7 +44,7 @@ namespace blink {
 
 class CompositeEditCommand;
 class DragData;
-class EditorInternalCommand;
+class EditorCommand;
 class FrameSelection;
 class LocalFrame;
 class HitTestResult;
@@ -101,46 +101,10 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void SetShouldStyleWithCSS(bool flag) { should_style_with_css_ = flag; }
   bool ShouldStyleWithCSS() const { return should_style_with_css_; }
 
-  class CORE_EXPORT Command {
-    STACK_ALLOCATED();
-
-   public:
-    Command();
-    Command(const EditorInternalCommand*, EditorCommandSource, LocalFrame*);
-
-    bool Execute(const String& parameter = String(),
-                 Event* triggering_event = nullptr) const;
-    bool Execute(Event* triggering_event) const;
-
-    bool CanExecute(Event* triggering_event = nullptr) const;
-    bool IsSupported() const;
-    bool IsEnabled(Event* triggering_event = nullptr) const;
-
-    EditingTriState GetState(Event* triggering_event = nullptr) const;
-    String Value(Event* triggering_event = nullptr) const;
-
-    bool IsTextInsertion() const;
-
-    // Returns 0 if this Command is not supported.
-    int IdForHistogram() const;
-
-   private:
-    LocalFrame& GetFrame() const {
-      DCHECK(frame_);
-      return *frame_;
-    }
-
-    // Returns target ranges for the command, currently only supports delete
-    // related commands. Used by InputEvent.
-    const StaticRangeVector* GetTargetRanges() const;
-
-    const EditorInternalCommand* command_;
-    EditorCommandSource source_;
-    Member<LocalFrame> frame_;
-  };
-  Command CreateCommand(const String& command_name)
+  EditorCommand CreateCommand(const String& command_name)
       const;  // Command source is CommandFromMenuOrKeyBinding.
-  Command CreateCommand(const String& command_name, EditorCommandSource) const;
+  EditorCommand CreateCommand(const String& command_name,
+                              EditorCommandSource) const;
 
   // |Editor::executeCommand| is implementation of |WebFrame::executeCommand|
   // rather than |Document::execCommand|.

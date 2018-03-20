@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/editing/Editor.h"
+#include "core/editing/commands/EditorCommand.h"
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrame.h"
@@ -45,7 +46,7 @@ TEST_F(EditingCommandTest, EditorCommandOrder) {
 TEST_F(EditingCommandTest, CreateCommandFromString) {
   Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& entry : kCommandNameEntries) {
-    Editor::Command command = dummy_editor.CreateCommand(entry.name);
+    const EditorCommand command = dummy_editor.CreateCommand(entry.name);
     EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
   }
@@ -54,12 +55,13 @@ TEST_F(EditingCommandTest, CreateCommandFromString) {
 TEST_F(EditingCommandTest, CreateCommandFromStringCaseFolding) {
   Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& entry : kCommandNameEntries) {
-    Editor::Command command =
+    const EditorCommand lower_name_command =
         dummy_editor.CreateCommand(String(entry.name).DeprecatedLower());
-    EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
+    EXPECT_EQ(static_cast<int>(entry.type), lower_name_command.IdForHistogram())
         << entry.name;
-    command = dummy_editor.CreateCommand(String(entry.name).UpperASCII());
-    EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
+    const EditorCommand upper_name_command =
+        dummy_editor.CreateCommand(String(entry.name).UpperASCII());
+    EXPECT_EQ(static_cast<int>(entry.type), upper_name_command.IdForHistogram())
         << entry.name;
   }
 }
@@ -70,7 +72,7 @@ TEST_F(EditingCommandTest, CreateCommandFromInvalidString) {
   };
   Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& command_name : kInvalidCommandName) {
-    Editor::Command command = dummy_editor.CreateCommand(command_name);
+    const EditorCommand command = dummy_editor.CreateCommand(command_name);
     EXPECT_EQ(0, command.IdForHistogram());
   }
 }
