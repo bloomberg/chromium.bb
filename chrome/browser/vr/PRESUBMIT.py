@@ -58,7 +58,7 @@ def PostUploadHook(cl, change, output_api):
     cl,
     [
       'luci.chromium.try:linux_optional_gpu_tests_rel',
-      'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+      'luci.chromium.try:mac_optional_gpu_tests_rel',
       'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
       'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
       'master.tryserver.chromium.linux:linux_vr',

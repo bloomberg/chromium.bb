@@ -18,11 +18,11 @@ extra_trybots = [
     "buildernames": ["win_optional_gpu_tests_rel"]
   },
   {
-    "mastername": "master.tryserver.chromium.mac",
+    "mastername": "luci.chromium.try",
     "buildernames": ["mac_optional_gpu_tests_rel"]
   },
   {
-    "mastername": "master.tryserver.chromium.linux",
+    "mastername": "luci.chromium.try",
     "buildernames": ["linux_optional_gpu_tests_rel"]
   },
   {
@@ -32,7 +32,7 @@ extra_trybots = [
   # Include the ANGLE tryservers which run the WebGL conformance tests
   # in some non-default configurations.
   {
-    "mastername": "master.tryserver.chromium.angle",
+    "mastername": "luci.chromium.try",
     "buildernames": ["linux_angle_rel_ng"]
   },
   {
