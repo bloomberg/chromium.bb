@@ -553,3 +553,30 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
 
   DestroyDataReductionProxySettings();
 }
+
+// Verify that the suggested file name is propagated to web contents when save a
+// media file in context menu.
+TEST_F(RenderViewContextMenuPrefsTest, SaveMediaSuggestedFileName) {
+  const base::string16 kTestSuggestedFileName = base::ASCIIToUTF16("test_file");
+  content::ContextMenuParams params = CreateParams(MenuItem::VIDEO);
+  params.suggested_filename = kTestSuggestedFileName;
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEAVAS, 0 /* event_flags */);
+
+  // Video item should have suggested file name.
+  base::string16 suggested_filename =
+      content::WebContentsTester::For(web_contents())->GetSuggestedFileName();
+  EXPECT_EQ(kTestSuggestedFileName, suggested_filename);
+
+  params = CreateParams(MenuItem::AUDIO);
+  params.suggested_filename = kTestSuggestedFileName;
+  menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEAVAS, 0 /* event_flags */);
+
+  // Audio item should have suggested file name.
+  suggested_filename =
+      content::WebContentsTester::For(web_contents())->GetSuggestedFileName();
+  EXPECT_EQ(kTestSuggestedFileName, suggested_filename);
+}

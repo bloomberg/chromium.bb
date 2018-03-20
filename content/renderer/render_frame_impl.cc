@@ -3981,6 +3981,8 @@ void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request) {
   params.url = request.Url();
   params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
   params.initiator_origin = request.RequestorOrigin();
+  if (request.GetSuggestedFilename().has_value())
+    params.suggested_name = request.GetSuggestedFilename()->Utf16();
 
   Send(new FrameHostMsg_DownloadUrl(params));
 }
