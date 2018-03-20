@@ -39,6 +39,7 @@ TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
 ROTATIONS_URL = 'https://build.chromium.org/deprecated/chromium/all_rotations.js'
+TBR_FALLBACK = 'qyearsley'
 
 _log = logging.getLogger(__file__)
 
@@ -524,7 +525,7 @@ class TestImporter(object):
             username = self._fetch_ecosystem_infra_sheriff_username()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
-        return username or 'qyearsley'  # Fallback in case of failure.
+        return username or TBR_FALLBACK
 
     def _fetch_ecosystem_infra_sheriff_username(self):
         content = self.host.web.get_binary(ROTATIONS_URL)
@@ -535,8 +536,10 @@ class TestImporter(object):
         for entry in calendar:
             if entry['date'] == today:
                 if not entry['participants'][index]:
+                    _log.info('No sheriff today.')
                     return ''
                 return entry['participants'][index][0]
+        _log.error('No entry found for date %s in rotations table.', today)
         return ''
 
     def fetch_new_expectations_and_baselines(self):

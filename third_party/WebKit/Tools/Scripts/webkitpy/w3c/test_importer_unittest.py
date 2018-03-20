@@ -18,7 +18,7 @@ from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.local_wpt_mock import MockLocalWPT
-from webkitpy.w3c.test_importer import TestImporter, ROTATIONS_URL
+from webkitpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
 
 
@@ -326,13 +326,13 @@ class TestImporterTest(LoggingTestCase):
     def test_tbr_reviewer_no_response_uses_backup(self):
         host = MockHost()
         importer = TestImporter(host)
-        self.assertEqual('qyearsley', importer.tbr_reviewer())
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
         self.assertLog([
             'ERROR: Exception while fetching current sheriff: '
             'No JSON object could be decoded\n'
         ])
 
-    def test_tbr_reviewer_nobody_on_rotation(self):
+    def test_tbr_reviewer_date_not_found(self):
         host = MockHost()
         yesterday = (datetime.date.fromtimestamp(host.time()) -
                      datetime.timedelta(days=1)).isoformat()
@@ -340,27 +340,34 @@ class TestImporterTest(LoggingTestCase):
             'calendar': [
                 {
                     'date': yesterday,
-                    'participants': [['some-sheriff']],
+                    'participants': [['some-sheriff'], ['other-sheriff']],
                 },
             ],
-            'rotations': ['ecosystem_infra']
+            'rotations': ['ecosystem_infra', 'other_rotation']
         })
         importer = TestImporter(host)
-        self.assertEqual('qyearsley', importer.tbr_reviewer())
-        self.assertLog([])
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        self.assertLog([
+            'ERROR: No entry found for date 1969-12-31 in rotations table.\n'
+        ])
 
+    def test_tbr_reviewer_nobody_on_rotation(self):
+        host = MockHost()
         today = datetime.date.fromtimestamp(host.time()).isoformat()
         host.web.urls[ROTATIONS_URL] = json.dumps({
             'calendar': [
                 {
                     'date': today,
-                    'participants': [[''], ['some-sheriff']],
+                    'participants': [[], ['some-sheriff']],
                 },
             ],
             'rotations': ['ecosystem_infra', 'other-rotation']
         })
-        self.assertEqual('qyearsley', importer.tbr_reviewer())
-        self.assertLog([])
+        importer = TestImporter(host)
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        self.assertLog([
+            'INFO: No sheriff today.\n'
+        ])
 
     def test_tbr_reviewer(self):
         host = MockHost()
