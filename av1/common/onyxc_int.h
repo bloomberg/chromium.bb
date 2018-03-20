@@ -160,8 +160,6 @@ typedef struct {
 
   // 0 = ZERO_MV, MV
   int8_t mode_deltas[MAX_MODE_LF_DELTAS];
-
-  int sharpness_level;
 } RefCntBuffer;
 
 typedef struct BufferPool {

@@ -4223,13 +4223,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->last_frame_seg_map = NULL;
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
   if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->all_lossless) {
-    cm->lf.sharpness_level = -1;
     av1_set_default_ref_deltas(cm->lf.ref_deltas);
     av1_set_default_mode_deltas(cm->lf.mode_deltas);
     cm->lf.mode_ref_delta_enabled = 1;
     cm->lf.mode_ref_delta_update = 1;
   } else if (cm->prev_frame) {
-    cm->lf.sharpness_level = cm->prev_frame->sharpness_level;
     memcpy(cm->lf.ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
     memcpy(cm->lf.mode_deltas, cm->prev_frame->mode_deltas, MAX_MODE_LF_DELTAS);
     cm->lf.mode_ref_delta_enabled = 1;
@@ -4238,7 +4236,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->lf.mode_ref_delta_enabled = 0;
     cm->lf.mode_ref_delta_update = 0;
   }
-  cm->cur_frame->sharpness_level = cm->lf.sharpness_level;
   memcpy(cm->cur_frame->ref_deltas, cm->lf.ref_deltas, TOTAL_REFS_PER_FRAME);
   memcpy(cm->cur_frame->mode_deltas, cm->lf.mode_deltas, MAX_MODE_LF_DELTAS);
 

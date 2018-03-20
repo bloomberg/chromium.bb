@@ -1194,8 +1194,6 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   // reset mode ref deltas
   av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
   av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
-  cm->cur_frame->sharpness_level = -1;
-  cm->lf.sharpness_level = -1;
   set_default_lf_deltas(&cm->lf);
 
   av1_default_coef_probs(cm);

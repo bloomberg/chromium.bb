@@ -1108,7 +1108,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     av1_set_default_mode_deltas(lf->mode_deltas);
     av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
     av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
-    cm->cur_frame->sharpness_level = -1;
     lf->sharpness_level = -1;
     return;
   }
@@ -1116,7 +1115,9 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     // write deltas to frame buffer
     memcpy(lf->ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
     memcpy(lf->mode_deltas, cm->prev_frame->mode_deltas, MAX_MODE_LF_DELTAS);
-    lf->sharpness_level = cm->prev_frame->sharpness_level;
+  } else {
+    av1_set_default_ref_deltas(lf->ref_deltas);
+    av1_set_default_mode_deltas(lf->mode_deltas);
   }
   lf->filter_level[0] = aom_rb_read_literal(rb, 6);
   lf->filter_level[1] = aom_rb_read_literal(rb, 6);
@@ -1147,7 +1148,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   }
 
   // write deltas to frame buffer
-  cm->cur_frame->sharpness_level = lf->sharpness_level;
   memcpy(cm->cur_frame->ref_deltas, lf->ref_deltas, TOTAL_REFS_PER_FRAME);
   memcpy(cm->cur_frame->mode_deltas, lf->mode_deltas, MAX_MODE_LF_DELTAS);
 }
