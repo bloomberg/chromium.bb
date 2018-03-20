@@ -20,7 +20,6 @@ mojom("common_custom_types") {
     "thread_priority.mojom",
     "unguessable_token.mojom",
     "values.mojom",
-    "version.mojom",
   ]
 
   if (is_win) {
@@ -60,7 +59,6 @@ component("common_base") {
 mojom("test_common_custom_types") {
   sources = [
     "test_common_custom_types.mojom",
-    "traits_test_service.mojom",
   ]
   public_deps = [
     ":common_custom_types",
@@ -86,7 +84,6 @@ test("mojo_common_unittests") {
   sources = [
     "common_custom_types_unittest.cc",
     "data_pipe_drainer_unittest.cc",
-    "struct_traits_unittest.cc",
   ]
 }
 
