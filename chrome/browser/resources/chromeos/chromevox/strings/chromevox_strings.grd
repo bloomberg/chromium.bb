@@ -276,6 +276,18 @@
       <message desc="The description of the skipToColEnd key. Displayed in the Options page." name="IDS_CHROMEVOX_SKIP_TO_COL_END">
         Go to end of the current column
       </message>
+      <message desc="Describes the command to move to the previous row. Displayed in a help menu." name="IDS_CHROMEVOX_SKIP_TO_PREV_ROW">
+        Go to the previous row
+      </message>
+      <message desc="Describes the command to move to the next row. Displayed in a help menu." name="IDS_CHROMEVOX_SKIP_TO_NEXT_ROW">
+        Go to the next row
+      </message>
+      <message desc="Describes the command to move to the previous column. Displayed in a help menu." name="IDS_CHROMEVOX_SKIP_TO_PREV_COL">
+        Go to the previous column
+      </message>
+      <message desc="Describes the command to move to the next column. Displayed in a help menu." name="IDS_CHROMEVOX_SKIP_TO_NEXT_COL">
+        Go to the next column
+      </message>
       <message desc='The description of the nextHeading1 key. In most cases, "level 1 heading" is a H1 HTML tag.  ChromeVox will search, from the current focus, for the next heading on the page.  If a heading is found, ChromeVox will focus on the heading. Displayed in the Options page.' name="IDS_CHROMEVOX_NEXT_HEADING1">
         Next level 1 heading
       </message>
