@@ -87,6 +87,7 @@ class VASurface : public base::RefCountedThreadSafe<VASurface> {
  public:
   // Provided by user, will be called when all references to the surface
   // are released.
+  // TODO(mcasas): make this a OnceCallback, https://crbug.com/822346.
   using ReleaseCB = base::Callback<void(VASurfaceID)>;
 
   VASurface(VASurfaceID va_surface_id,
