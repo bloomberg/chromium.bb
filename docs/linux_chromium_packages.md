@@ -18,6 +18,7 @@ TODO: Move away from tables.
 | Mageia     | Dexter Morgan `dmorgan@mageia.org` | http://svnweb.mageia.org/packages/cauldron/chromium-browser-stable/current/SPECS/ | http://svnweb.mageia.org/packages/cauldron/chromium-browser-stable/current/SOURCES/ |
 | NixOS      | aszlig `"^[0-9]+$"@regexmail.net` | http://hydra.nixos.org/search?query=pkgs.chromium | https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/networking/browsers/chromium |
 | Fedora     | Tom Callaway `tcallawa@redhat.com` | https://src.fedoraproject.org/rpms/chromium/ | https://src.fedoraproject.org/rpms/chromium/tree/master |
+| Yocto      | Raphael Kubo da Costa `raphael.kubo.da.costa@intel.com` | https://github.com/OSSystems/meta-browser | https://github.com/OSSystems/meta-browser/tree/master/recipes-browser/chromium/files |
 
 ## Unofficial packages
 
