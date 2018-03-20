@@ -1,281 +1,552 @@
-<h1>Getting Started: Building a Chrome Extension</h1>
+<h1>Getting Started Tutorial</h1>
 
 <p>
-  Extensions allow you to add functionality to Chrome without diving deeply
-  into native code. You can create new extensions for Chrome with those core
-  technologies that you're already familiar with from web development: HTML,
-  CSS, and JavaScript. If you've ever built a web page, you should feel right at
-  home with extensions pretty quickly; we'll put that to the test right now by
-  walking through the construction of a simple extension that will allow the
-  user to change the background color of the current webpage.
+  Extensions are made of different, but cohesive, components.
+  Components can include
+  <a href="/background_pages.html">background scripts</a>,
+  <a href="/content_scripts.html">content scripts</a>,
+  an <a href="/optionsV2">options page</a>,
+  <a href="/user_interface.html">UI elements</a>
+  and various logic files.
+  Extension components are created with web development technologies:
+  HTML, CSS, and JavaScript.
+  An extension's components will depend on its functionality
+  and may not require every option.
 </p>
-
 <p>
-  We'll do so by implementing a UI element we call a
-  <a href="browserAction">browser action</a>, which allows us to place a
-  clickable icon right next to Chrome's Omnibox for easy access. Clicking that
-  icon will open a popup window that will allow the user to choose the
-  background color of the current page. If the user had selected a background
-  color for the page earlier, the extension will remember the user's choice and
-  use it as the default, once the popup is clicked. Here is how it will look:
+  This tutorial will build an extension that allows the user
+  to change the background color of any page on
+  <a href="https://developer.chrome.com/">developer.chrome.com</a>.
+  It will use many core components to give an
+  introductory demonstration of their relationships.
 </p>
-
-<img src="{{static}}/images/gettingstarted-preview"
-     width="614"
-     height="390"
-     alt="Chrome with an extension's popup open.">
-
 <p>
-  If you'd like to follow along at home (and you should!), create a shiny new
-  directory on your computer, and pop open your favourite text editor. Let's get
-  going!
+  To start, create a new directory to hold the extension's files.
 </p>
-
-<h2 id="declaration">Something to Declare</h2>
-
 <p>
-  The very first thing we'll need to create is a <dfn>manifest file</dfn> named
-  <code>manifest.json</code>. This manifest is nothing more than a metadata file
-  in JSON format that contains properties like your extension's name,
-  description, version number and so on. At a high level, we will use it to
-  declare to Chrome what the extension is going to do, and what permissions it
-  requires in order to do those things. To learn more about the manifest, read
-  the <a href="manifest">Manifest File Format documentation</a>.
+  The completed extension can be downloaded
+  <a href="examples/tutorials/get_started_complete.zip"
+  download="get_started_complete.zip">here</a>.
 </p>
-
+<h2 id="manifest">Create the Manifest</h2>
 <p>
-  In our example's manifest,
-  we will declare a <a href="browserAction">browser action</a>,
-  the <a href="activeTab">activeTab permission</a> to see the URL of the current
-  tab and the <a href="storage">storage permission</a> to remember the user's
-  choice of background color for a page.
+  Extensions start with their <a href="/manifest">manifest</a>.
+  Create a file called <code>manifest.json</code>
+  and include the following code,
+  or download the file
+  <a href="examples/tutorials/get_started/manifest.json"
+  download="manifest.json">here</a>.
 </p>
-
 <pre data-filename="manifest.json">
-{
-  "manifest_version": 2,
-
-  "name": "Getting started example",
-  "description": "This extension allows the user to change the background color of the current page.",
-  "version": "1.0",
-
-  "browser_action": {
-    "default_icon": "icon.png",
-    "default_popup": "popup.html"
-  },
-  "permissions": [
-    "activeTab",
-    "storage"
-  ]
-}
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "manifest_version": 2
+  }
 </pre>
-
 <p>
-  Go ahead and save that data to a file named <code>manifest.json</code> in the
-  directory you created, or
-  <a href="examples/tutorials/getstarted/manifest.json" download="manifest.json">
-    download a copy of <code>manifest.json</code> from our sample repository
-  </a>.
+  The directory holding the manifest file
+  can be added as an extension in developer mode in its current state.
 </p>
-
-<h2 id="resources">Resources</h2>
-
-<p>
-  You probably noticed that <code>manifest.json</code> pointed at two resource
-  files when defining the browser action: <code>icon.png</code> and
-  <code>popup.html</code>. Both resources must exist inside the extension
-  package, so let's create them now:
-</p>
-
-<ul class="imaged">
-  <li>
-    <p>
-      <img src="{{static}}/images/gettingstarted-icon.png"
-           width="127"
-           height="127"
-           style="float:right"
-           alt="The popup's icon will be displayed right next to the Omnibox.">
-      <code>icon.png</code> will be displayed next to the Omnibox, waiting for
-      user interaction.
-      <a href="examples/tutorials/getstarted/icon.png" download="icon.png">
-        Download a copy of <code>icon.png</code> from our sample repository
-      </a>, and save it into the directory you're working in. You could also
-      create your own if you're so inclined; it's just a 19px-square PNG file.
-    </p>
-  </li>
-  <li>
-    <p>
-      <code>popup.html</code> will be rendered inside the popup window that's
-      created in response to a user's click on the browser action. It's a
-      standard HTML file, just like you're used to from web development, giving
-      you more or less free reign over what the popup displays.
-      <a href="examples/tutorials/getstarted/popup.html" download="popup.html">
-        Download a copy of <code>popup.html</code> from our sample repository
-      </a>, and save it into the directory you're working in.
-    </p>
-    <p>
-      The actual logic of rendering the content of the popup is implemented by
-      <a href="examples/tutorials/getstarted/popup.js">popup.js</a>. You are
-      encouraged to read the comments in this file to learn more about the
-      logic.<br>
-      <a href="examples/tutorials/getstarted/popup.js" download="popup.js">
-        Download a copy of <code>popup.js</code> from our sample repository
-      </a>, and save it into the directory you're working in.
-    </p>
-  </li>
-</ul>
-
-<p>
-  You should now have four files in your working directory:
-  <a href="examples/tutorials/getstarted/icon.png" download="icon.png"><code>icon.png</code></a>,
-  <a href="examples/tutorials/getstarted/manifest.json" download="manifest.json"><code>manifest.json</code></a>,
-  <a href="examples/tutorials/getstarted/popup.html" download="popup.html"><code>popup.html</code></a>,
-  <a href="examples/tutorials/getstarted/popup.js" download="popup.js"><code>popup.js</code></a>.
-  The next step is to load those files into Chrome.
-</p>
-
-<h2 id="unpacked">Load the extension</h2>
-
-<p>
-  Extensions that you download from the Chrome Web Store are packaged up as
-  <code>.crx</code> files, which is great for distribution, but not so great for
-  development. Recognizing this, Chrome gives you a quick way of loading up your
-  working directory for testing. Let's do that now.
-</p>
-
 <ol>
   <li>
-    <p>
-      Visit <code>chrome://extensions</code> in your browser (or open up the
-      Chrome menu by clicking the icon to the far right of the Omnibox:
-      <img src="{{static}}/images/hotdogmenu.png"
-           height="29"
-           width="29"
-           alt="The menu's icon is three horizontal bars."> and
-      select <strong>Extensions</strong> under the <strong>More Tools</strong>
-      menu to get to the same place).
-    </p>
+    Open the Extension Management page by
+    navigating to
+    <code>chrome://extensions</code>.
+    <ul>
+      <li>
+      The Extension Management page can also be opened by
+      clicking on the Chrome menu,
+      hovering over <strong>More Tools</strong>
+      then selecting <strong>Extensions</strong>.
+      </li>
+    </ul>
   </li>
   <li>
-    <p>
-      Ensure that the <strong>Developer mode</strong> checkbox in the top
-      right-hand corner is checked.
-    </p>
+    Enable Developer Mode by checking the box next to <strong>Developer mode</strong>.
   </li>
   <li>
-    <p>
-      Click <strong>Load unpacked extension&hellip;</strong> to pop up a
-      file-selection dialog.
-    </p>
-  </li>
-  <li>
-    <p>
-      Navigate to the directory in which your extension files live, and select
-      it.
-    </p>
+    Click the <strong>Load unpacked extension...</strong> button
+    and select the extension directory.
   </li>
 </ol>
-
+<img src="{{static}}/images/get_started/load_extension.png"
+  height="200"
+  alt="Load Extension" />
 <p>
-  Alternatively, you can drag and drop the directory where your extension files
-  live onto <code>chrome://extensions</code> in your browser to load it.
+  Ta-da!
+  The extension has been successfully installed.
+  Because no icons were included in the manifest,
+  a generic toolbar icon will be created for the extension.
 </p>
-
+<h2 id="background">Add Instruction</h2>
 <p>
-  If the extension is valid, it'll be loaded up and active right away! If it's
-  invalid, an error message will be displayed at the top of the page. Correct
-  the error, and try again.
-</p>
-
-<h2 id="update-code">Fiddle with Code</h2>
-
-<p>
-  Now that you've got your first extension up and running, let's fiddle with
-  things so that you have an idea what your development process might look like.
-  For example, let's set a tooltip on the browser action button.
+  Although the extension has been installed,
+  it has no instruction.
+  Introduce a <a href="/background_page.html">background script</a>
+  by creating a file titled <code>background.js</code>,
+  or downloading it
+  <a href="examples/tutorials/get_started/background.js"
+  download="background.js">here</a>,
+  and placing it inside the extension directory.
 </p>
 <p>
-  According to the browserAction documentation, tooltips can be set by
-  specifying the <code>default_title</code> key in the manifest file. Open
-  <code>manifest.json</code>, and add the <code>default_title</code> key to the
-  <code>browser_action</code>.
-  Make sure that the JSON is valid, so quote the key and add a comma where necessary.
+  Background scripts,
+  and many other important components,
+  must be registered in the manifest.
+  Registering a background script in the manifest
+  tells the extension which file to reference,
+  and how that file should behave.
 </p>
-
 <pre data-filename="manifest.json">
-{
-  ...
-  "browser_action": {
-    "default_icon": "icon.png",
-    "default_popup": "popup.html",
-    "default_title": "Click here!"
-  },
-  ...
-}
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    <b>"background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },</b>
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  The extension is now aware that it includes a non-persistent background script
+  and will scan the registered file for important events it needs to listen for.
+</p>
+<p>
+  This extension will need information from a persistent variable
+  as soon as its installed.
+  Start by including a listening event for
+  <a href="/runtime#event-onInstalled"><code>runtime.onInstalled</code></a>
+  in the background script.
+  Inside the <code>onInstalled</code> listener,
+  the extension will set a value using the
+  <a href="/storage">storage</a> API.
+  This will allow multiple extension components to access that value
+  and update it.
+</p>
+<pre data-filename="background.js">
+  chrome.runtime.onInstalled.addListener(function() {
+    chrome.storage.sync.set({color: '#3aa757'}, function() {
+      console.log("The color is green.");
+    });
+  });
 </pre>
 
 <p>
-  The manifest file is only parsed when the extension is loaded. If you want to
-  see the previous changes in action, the extension has to be reloaded.
-  Visit the extensions page (go to <strong>chrome://extensions</strong>, or
-  <strong>More Tools &gt; Extensions</strong> under the Chrome menu), and click
-  <strong>Reload</strong> under your extension.
-  All extensions are also reloaded when the extensions page is reloaded, e.g.
-  after hitting <kbd>F5<kbd> or <kbd>Ctrl</kbd>-<kbd>R</kbd>.
+  Most APIs,
+  including the <a href="/storage">storage</a> API,
+  must be registered under the <code>"permissions"</code> field in the manifest
+  for the extension to use them.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    <b>"permissions": ["storage"],</b>
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  Navigate back to the extension management page and click the
+  <strong>Reload</strong> link.
+  A new field, <strong>Inspect views</strong>, becomes available
+  with a blue link, <strong>background page</strong>.
+</p>
+<img src="{{static}}/images/get_started/view_background.png"
+  height="200"
+  alt="Inspect Views" />
+<p>
+  Click the link to view the background script's console log,
+  "<code>The color is green.</code>"
+</p>
+<h2 id="user_interface">Introduce a User Interface</h2>
+<p>
+  Extensions can have many forms of a
+  <a href="/user_interface">user interface</a>,
+  but this one will use a
+  <a href="/user_interface#popup">popup</a>.
+  Create and add a file titled <code>popup.html</code> to the directory,
+  or download it
+  <a href="examples/tutorials/get_started/popup.html"
+  download="popup.html">here</a>.
+  This extension uses a button to change the background color.
+</p>
+<pre data-filename="popup.html">
+  &lt;!DOCTYPE html&gt;
+  &lt;html&gt;
+    &lt;head&gt;
+      &lt;style&gt;
+        button {
+          height: 30px;
+          width: 30px;
+          outline: none;
+        }
+      &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      <b>&lt;button id="changeColor"&gt;&lt;/button&gt;</b>
+    &lt;/body&gt;
+  &lt;/html&gt;
+</pre>
+<p>
+  Like the background script,
+  this file needs to be designated as a popup in the manifest under
+  <a href="/pageAction"><code>page_action</code></a>.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "permissions": ["storage"],
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    <b>"page_action": {
+      "default_popup": "popup.html",
+    },</b>
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  Designation for toolbar icons is also included under <code>page_action</code>
+  in the <code>default_icons</code> field.
+  Download the images folder
+  <a href="examples/tutorials/get_started/images.zip"
+  download="images.zip">
+  here</a>,
+  unzip it,
+  and place it in the extension's directory.
+  Update the manifest so the extension knows how to use the images.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "permissions": ["storage"],
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "page_action": {
+      "default_popup": "popup.html",
+      <b>"default_icon": {
+        "16": "images/get_started16.png",
+        "32": "images/get_started32.png",
+        "48": "images/get_started48.png",
+        "128": "images/get_started128.png"
+      }</b>
+    },
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  Extensions also display images on the extension management page,
+  the permissions warning,
+  and favicon.
+  These images are designated in the manifest under
+  <a href="/user_interface#icons"><code>icons</code></a>.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+    "version": "1.0",
+    "description": "Build an Extension!",
+    "permissions": ["storage"],
+    "background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "page_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/get_started16.png",
+        "32": "images/get_started32.png",
+        "48": "images/get_started48.png",
+        "128": "images/get_started128.png"
+      }
+    },
+    <b>"icons": {
+      "16": "images/get_started16.png",
+      "32": "images/get_started32.png",
+      "48": "images/get_started48.png",
+      "128": "images/get_started128.png"
+    },</b>
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  If the extension is reloaded at this stage,
+  it will include a grey-scale icon,
+  but will not contain any functionality differences.
+  Because <code>page_action</code> is declared in the manifest,
+  it is up to the extension to tell the browser when the user can interact
+  with <code>popup.html</code>.
+</p>
+<p>
+  Add declared rules to the backgroud script with the
+  <a href="/declarativeContent"><code>declarativeContent</code></a>
+  API within the
+  <code>runtime.onInstalled</code> listener event.
+</p>
+<pre data-filename="background.js">
+  chrome.runtime.onInstalled.addListener(function() {
+    chrome.storage.sync.set({color: '#3aa757'}, function() {
+      console.log('The color is green.');
+    });
+    <b>chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+      chrome.declarativeContent.onPageChanged.addRules([{
+        conditions: [new chrome.declarativeContent.PageStateMatcher({
+          pageUrl: {hostEquals: 'developer.chrome.com'},
+        })
+        ],
+            actions: [new chrome.declarativeContent.ShowPageAction()]
+      }]);
+    });</b>
+  });
+</pre>
+<p>
+  The extension will need permission to access the
+  <a href="/declarativeContent"><code>declarativeContent</code></a> API
+  in its manifest.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+  ...
+    "permissions": [<b>"declarativeContent"</b>, "storage"],
+  ...
+  }
+</pre>
+<img src="{{static}}/images/get_started/popup_grey.png"
+  align="right"
+  style="margin-left:3px; margin-right:3px"
+  alt="Popup" />
+<p>
+  The browser will now show a full-color page action icon in the browser
+  toolbar when users navigate to a URL that contains
+  <code>"developer.chrome.com"</code>.
+  When the icon is full-color, users can click it to view popup.html.
+</p>
+<p>
+  The last step for the popup UI is adding color to the button.
+  Create and add a file called
+  <code>popup.js</code> with the following code to the extension directory,
+  or downloaded
+  <a href="examples/tutorials/get_started/popup.js"
+  download="popup.js">here</a>.
+</p>
+<pre data-filename="popup.js">
+  let changeColor = document.getElementById('changeColor');
+
+  chrome.storage.sync.get('color', function(data) {
+    changeColor.style.backgroundColor = data.color;
+    changeColor.setAttribute('value', data.color);
+  });
+</pre>
+<p>
+  This code grabs the button from <code>popup.html</code>
+  and requests the color value from storage.
+  It then applies the color as the background of the button.
+  Include a script tag to <code>popup.js</code> in <code>popup.html</code>.
+</p>
+<pre data-filename="popup.html">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+...
+  &lt;body&gt;
+    &lt;button id="changeColor"&gt;&lt;/button&gt;
+    <b>&lt;script src="popup.js"&gt;&lt;/script&gt;</b>
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<p>
+  Reload the extension to view the green button.
 </p>
 
+<h2 id="logic">Layer Logic</h2>
 <p>
-  Once you've reloaded the extension, hover over the browser action badge to see
-  the new tooltip!<br>
-  <img src="{{static}}/images/gettingstarted-tooltip-before.png"
-       width="169"
-       height="120"
-       alt="&quot;Getting started example&quot; tooltip.">
-
-  <img src="{{static}}/images/gettingstarted-tooltip-after.png"
-       width="169"
-       height="120"
-       alt="&quot;Click here!&quot; tooltip, after modifying manifest.json and reloading the extension.">
+  The extension now knows the popup should be available to users on
+  <a href="https://developer.chrome.com/">developer.chrome.com</a>
+  and displays a colored button,
+  but needs logic for further user interaction.
+  Update <code>popup.js</code> to include the following code.
+</p>
+<pre data-filename="popup.js">
+  let changeColor = document.getElementById('changeColor');
+  ...
+  <b>changeColor.onclick = function(element) {
+    let color = element.target.value;
+      chrome.tabs.executeScript(
+          tabs[0].id,
+          {code: 'document.body.style.backgroundColor = "' + color + '";'});
+  };</b>
+</pre>
+<p>
+  The updated code adds an onclick event the button,
+  which triggers a
+  <a href="/content_scripts#pi">programatically injected content script</a>.
+  This turns the background color of the page the same color as the button.
+  Using programmatic injection allows for user-invoked content scripts,
+  instead of auto inserting unwanted code into web pages.
+</p>
+<p>
+  The manifest will need the <a href="activeTab"><code>activeTab</code></a>
+  permission to allow the extension temporary access to the
+  <a href="/tabs"><code>tabs</code></a> API.
+  This enables the extension to call
+  <a href="/tabs#method-executeScript"><code>tabs.executeScript</code></a>.
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+  ...
+    "permissions": [<b>"activeTab"</b>, "declarativeContent", "storage"],
+  ...
+  }
+</pre>
+<p>
+  The extension is now fully functional!
+  Reload the extension, refresh this page,
+  open the popup and click the button to turn it green!
+  However, some users may want to change the background to a different color.
+</p>
+<h2 id="options">Give Users Options</h2>
+<p>
+  The extension currently only allows users to change the background to green.
+  Including an options page gives users more control
+  over the extension's functionality,
+  further customizing their browsing experience.
+</p>
+<p>
+  Start by creating a file in the directory called <code>options.html</code>
+  and include the following code, or download it
+  <a href="examples/tutorials/get_started/options.html"
+  download="options.html">here</a>.
+</p>
+<pre data-filename="options.html">
+  &lt;!DOCTYPE html&gt;
+  &lt;html&gt;
+    &lt;head&gt;
+      &lt;style&gt;
+        button {
+          height: 30px;
+          width: 30px;
+          outline: none;
+          margin: 10px;
+        }
+      &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      &lt;div id="buttonDiv"&gt;
+      &lt;/div&gt;
+    &lt;/body&gt;
+    &lt;script src="options.js"&gt;&lt;/script&gt;
+  &lt;/html&gt;
+</pre>
+<p>
+  Then register the options page in the manifest,
+</p>
+<pre data-filename="manifest.json">
+  {
+    "name": "Getting Started Example",
+    ...
+    <b>"options_page": "options.html",</b>
+    ...
+    "manifest_version": 2
+  }
+</pre>
+<p>
+  Reload the extension then select the new options link to view the page,
+  although it will currently appear blank.
+</p>
+<img src="{{static}}/images/get_started/options.png"
+  height="200"
+  alt="Inspect Views" />
+<p>
+ Last step is to add the options logic.
+ Create a file called <code>options.js</code> in the extension directory
+ with the following code,
+ or download it
+ <a href="examples/tutorials/get_started/options.js"
+ download="options.js">here</a>.
+</p>
+<pre data-filename="options.js">
+  const kButtonColors = ['#3aa757', '#e8453c', '#f9bb2d', '#4688f1']
+  function constructOptions(kButtonColors) {
+    for (let item of kButtonColors) {
+      let button = document.createElement('button');
+      button.style.backgroundColor = item;
+      button.addEventListener('click', function() {
+        chrome.storage.sync.set({color: item}, function() {
+          console.log('color is ' + item);
+        })
+      });
+      page.appendChild(button);
+    }
+  }
+  constructOptions(kButtonColors);
+</pre>
+<p>
+  Four color options are provided then generated as buttons on
+  the options page with onclick event listeners.
+  When the user clicks a button,
+  it updates the color value in the extension's global storage.
+  Since all of the extension's files
+  pull the color information from global storage
+  no other values need to be updated.
 </p>
 
-<h2 id="next-steps">What next?</h2>
+<h2 id="next-steps">Take the Next Step</h2>
 
 <p>
-  You now know about the manifest file's central role in bringing things
-  together, and you've mastered the basics of declaring a browser action.
-  That's a great start, and has hopefully gotten you interested enough to
-  explore further. There's a lot more out there to play around with.
+  Congratulations!
+  The directory now holds a fully-functional,
+  albeit simplistic,
+  Chrome Extension.
+</p>
+<p>
+  What's next?
 </p>
 
 <ul>
   <li>
     <p>
-      The <a href="overview">Chrome Extension Overview</a> backs up a bit,
+      The <a href="/overview">Chrome Extension Overview</a> backs up a bit,
       and fills in a lot of detail about extensions' architecture in general,
-      and some specific concepts you'll want to be familiar with going forward.
-      It's the best next step on your journey towards extension mastery.
+      and some specific concepts
+      extension developers will want to be familiar with.
     </p>
   </li>
   <li>
     <p>
-      No one writes perfect code on the first try, which means that you'll need
-      to learn about the options available for debugging your creations. Our
-      <a href="tut_debugging">debugging tutorial</a> is perfect for that,
-      and is well worth carefully reading.
+      Learn about the options available for debugging extension in the
+      <a href="/tut_debugging">debugging tutorial</a>.
     </p>
   </li>
   <li>
     <p>
       Chrome extensions have access to powerful APIs above and beyond what's
-      available on the open web: browser actions are just the tip of the
-      iceberg. Our <a href="api_index">chrome.* APIs documentation</a> will
-      walk you through each API in turn.
+      available on the open web.
+      The <a href="/api_index">chrome.* APIs documentation</a> will
+      walk through each API.
     </p>
   </li>
   <li>
     <p>
-      Finally, the <a href="devguide">developer's guide</a> has dozens of
-      additional links to pieces of documentation you might be interested in.
+      The <a href="/devguide">developer's guide</a> has dozens of
+      additional links to pieces of documentation
+      relevant to advanced extension creation.
     </p>
   </li>
 </ul>
