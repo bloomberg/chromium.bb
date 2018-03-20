@@ -83,7 +83,7 @@ class GlobalErrorBubbleViewTest : public testing::Test {
         button_(&mock_button_listener_, base::string16()),
         view_(std::make_unique<GlobalErrorBubbleView>(
             &arg_view_,
-            anchor_point_,
+            gfx::Rect(anchor_point_, gfx::Size()),
             arrow_,
             nullptr,
             mock_global_error_with_standard_bubble_->AsWeakPtr())) {}
