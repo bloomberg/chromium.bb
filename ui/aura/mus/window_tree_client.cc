@@ -202,6 +202,34 @@ ui::Id GetServerIdForWindow(Window* window) {
   return window ? WindowMus::Get(window)->server_id() : kInvalidServerId;
 }
 
+// The server operates in pixels. Adjust translations for device scale factors.
+gfx::Transform ConvertTransformFromServer(WindowMus* window,
+                                          const gfx::Transform& transform) {
+  const float scale = window->GetDeviceScaleFactor();
+  if (scale == 1.0f)
+    return transform;
+
+  gfx::Transform dip_transform = transform;
+  dip_transform.matrix().set(0, 3, dip_transform.matrix().get(0, 3) / scale);
+  dip_transform.matrix().set(1, 3, dip_transform.matrix().get(1, 3) / scale);
+  dip_transform.matrix().set(2, 3, dip_transform.matrix().get(2, 3) / scale);
+  return dip_transform;
+}
+
+// See the comment for ConvertTransformFromServer().
+gfx::Transform ConvertTransformToServer(WindowMus* window,
+                                        const gfx::Transform& transform) {
+  const float scale = window->GetDeviceScaleFactor();
+  if (scale == 1.0f)
+    return transform;
+
+  gfx::Transform pixel_transform = transform;
+  pixel_transform.matrix().set(0, 3, transform.matrix().get(0, 3) * scale);
+  pixel_transform.matrix().set(1, 3, transform.matrix().get(1, 3) * scale);
+  pixel_transform.matrix().set(2, 3, transform.matrix().get(2, 3) * scale);
+  return pixel_transform;
+}
+
 }  // namespace
 
 // static
@@ -893,7 +921,7 @@ void WindowTreeClient::SetWindowBoundsFromServer(
 void WindowTreeClient::SetWindowTransformFromServer(
     WindowMus* window,
     const gfx::Transform& transform) {
-  window->SetTransformFromServer(transform);
+  window->SetTransformFromServer(ConvertTransformFromServer(window, transform));
 }
 
 void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
@@ -1066,7 +1094,7 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
     return;
   }
 
-  float device_scale_factor = window->GetDeviceScaleFactor();
+  const float device_scale_factor = window->GetDeviceScaleFactor();
   ScheduleInFlightBoundsChange(
       window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),
       gfx::ConvertRectToPixel(device_scale_factor, new_bounds));
@@ -1078,7 +1106,8 @@ void WindowTreeClient::OnWindowMusTransformChanged(
     const gfx::Transform& new_transform) {
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<InFlightTransformChange>(this, window, old_transform));
-  tree_->SetWindowTransform(change_id, window->server_id(), new_transform);
+  tree_->SetWindowTransform(change_id, window->server_id(),
+                            ConvertTransformToServer(window, new_transform));
 }
 
 void WindowTreeClient::OnWindowMusAddChild(WindowMus* parent,
