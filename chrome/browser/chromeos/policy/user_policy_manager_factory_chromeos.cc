@@ -375,7 +375,6 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
             base::BindOnce(&chrome::AttemptUserExit) /* fatal_error_callback */,
             account_id, base::ThreadTaskRunnerHandle::Get(), io_task_runner);
 
-    // TODO(tnagel): Enable whitelist for Active Directory.
     bool wildcard_match = false;
     if (connector->IsEnterpriseManaged() &&
         chromeos::CrosSettings::Get()->IsUserWhitelisted(

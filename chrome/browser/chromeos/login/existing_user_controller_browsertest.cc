@@ -37,6 +37,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/key.h"
@@ -80,6 +81,8 @@ namespace {
 
 const char kGaiaID[] = "12345";
 const char kUsername[] = "test_user@gmail.com";
+const char kUserWhitelist[] = "*@gmail.com";
+const char kUserNotMatchingWhitelist[] = "user@another_mail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
 const char kActiveDirectoryRealm[] = "active.directory.realm";
@@ -773,9 +776,45 @@ class ExistingUserControllerActiveDirectoryTest
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
 
+  void ExpectLoginWhitelistFailure() {
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
+    EXPECT_CALL(*mock_login_display_, ShowWhitelistCheckFailedError()).Times(1);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
+  }
+
   void ExpectLoginSuccess() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
+  }
+};
+
+class ExistingUserControllerActiveDirectoryUserWhitelistTest
+    : public ExistingUserControllerActiveDirectoryTest {
+ public:
+  ExistingUserControllerActiveDirectoryUserWhitelistTest() = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ExistingUserControllerActiveDirectoryTest::
+        SetUpInProcessBrowserTestFixture();
+    chromeos::FakeAuthPolicyClient* fake_authpolicy_client =
+        static_cast<chromeos::FakeAuthPolicyClient*>(
+            chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
+    em::ChromeDeviceSettingsProto device_policy;
+    device_policy.mutable_user_whitelist()->add_user_whitelist()->assign(
+        kUserWhitelist);
+    fake_authpolicy_client->set_device_policy(device_policy);
+  }
+
+  void SetUpLoginDisplay() override {
+    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
+        .Times(1)
+        .WillOnce(Return(mock_login_display_));
+    EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
+        .Times(1)
+        .WillOnce(ReturnNull());
+    EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
+        .Times(1);
+    EXPECT_CALL(*mock_login_display_, Init(_, false, true, false)).Times(1);
   }
 };
 
@@ -821,6 +860,37 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
   UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
+  existing_user_controller()->CompleteLogin(user_context);
+}
+
+// Tests that authentication succeeds if user email matches whitelist.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
+                       Success) {
+  ExpectLoginSuccess();
+  UserContext user_context(ad_account_id_);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+  content::WindowedNotificationObserver profile_prepared_observer(
+      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+      content::NotificationService::AllSources());
+  existing_user_controller()->CompleteLogin(user_context);
+
+  profile_prepared_observer.Wait();
+}
+
+// Tests that authentication fails if user email does not match whitelist.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryUserWhitelistTest,
+                       Fail) {
+  ExpectLoginWhitelistFailure();
+  AccountId account_id =
+      AccountId::AdFromUserEmailObjGuid(kUserNotMatchingWhitelist, kGaiaID);
+  UserContext user_context(account_id);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(account_id.GetUserEmail());
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+  user_context.SetUserType(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
   existing_user_controller()->CompleteLogin(user_context);
 }
 
