@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/manifest_icon_selector.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/manifest.h"
@@ -100,11 +103,25 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     bool all_origins_supported) {
   number_of_payment_method_manifest_to_parse_--;
 
+  if (web_contents() == nullptr)
+    return;
+  content::PermissionManager* permission_manager =
+      web_contents()->GetBrowserContext()->GetPermissionManager();
+  if (permission_manager == nullptr)
+    return;
+
   for (const auto& url : default_applications) {
     if (downloaded_web_app_manifests_.find(url) !=
         downloaded_web_app_manifests_.end()) {
       // Do not download the same web app manifest again since a web app could
       // be the default application of multiple payment methods.
+      continue;
+    }
+
+    if (permission_manager->GetPermissionStatus(
+            content::PermissionType::PAYMENT_HANDLER, url.GetOrigin(),
+            url.GetOrigin()) != blink::mojom::PermissionStatus::GRANTED) {
+      // Do not download the web app manifest if it is blocked.
       continue;
     }
 

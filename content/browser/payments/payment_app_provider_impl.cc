@@ -339,11 +339,6 @@ void CheckPermissionForPaymentApps(
     PaymentAppProvider::PaymentApps apps) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!browser_context) {
-    std::move(callback).Run(PaymentAppProvider::PaymentApps());
-    return;
-  }
-
   PermissionManager* permission_manager =
       browser_context->GetPermissionManager();
   if (!permission_manager) {
