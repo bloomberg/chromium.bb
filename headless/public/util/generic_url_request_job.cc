@@ -339,6 +339,12 @@ bool GenericURLRequestJob::IsBrowserSideFetch() const {
   return request_resource_info_->GetFrameTreeNodeId() != -1;
 }
 
+bool GenericURLRequestJob::HasUserGesture() const {
+  if (!request_resource_info_)
+    return false;
+  return request_resource_info_->HasUserGesture();
+}
+
 namespace {
 void CompletionCallback(int* dest, base::Closure* quit_closure, int value) {
   *dest = value;
