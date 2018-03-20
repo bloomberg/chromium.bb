@@ -201,7 +201,8 @@
         "chrome://chrome-signin/*",
         "chrome://media-router/*",
         "chrome://mobilesetup/*",
-        "chrome://oobe/*"
+        "chrome://oobe/*",
+        "chrome://assistant-optin/*"
       ]
     }
   ],
@@ -558,7 +559,8 @@
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
-      "chrome://oobe/*"
+      "chrome://oobe/*",
+      "chrome://assistant-optin/*"
     ]
   }],
   "webViewInternal": [{
@@ -573,7 +575,8 @@
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
-      "chrome://oobe/*"
+      "chrome://oobe/*",
+      "chrome://assistant-optin/*"
     ]
   }],
   "webViewRequest": [{
@@ -586,7 +589,8 @@
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
-      "chrome://oobe/*"
+      "chrome://oobe/*",
+      "chrome://assistant-optin/*"
     ]
   }]
 }

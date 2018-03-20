@@ -134,6 +134,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
@@ -466,6 +467,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISysInternalsHost &&
       SysInternalsUI::IsEnabled())
     return &NewWebUI<SysInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
+    return &NewWebUI<chromeos::AssistantOptInUI>;
 #if !defined(OFFICIAL_BUILD)
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (url.host_piece() == chrome::kChromeUIDeviceEmulatorHost)
