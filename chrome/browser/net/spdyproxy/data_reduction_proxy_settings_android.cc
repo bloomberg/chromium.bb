@@ -169,6 +169,7 @@ DataReductionProxySettingsAndroid::MaybeRewriteWebliteUrl(
     const base::android::JavaRef<jstring>& url) {
   if (url.is_null() || !Settings()->IsDataReductionProxyEnabled() ||
       !previews::params::ArePreviewsAllowed() ||
+      data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
       !base::FeatureList::IsEnabled(data_reduction_proxy::features::
                                         kDataReductionProxyDecidesTransform)) {
     return ScopedJavaLocalRef<jstring>(url);

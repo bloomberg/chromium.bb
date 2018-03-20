@@ -292,6 +292,20 @@ TEST_F(DataReductionProxySettingsAndroidTest,
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,
+       MaybeRewriteWebliteUrlWithHoldbackEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
+
+  Init();
+  drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+
+  EXPECT_EQ("http://googleweblight.com/i?u=http://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "http://googleweblight.com/i?u=http://example.com/"));
+}
+
+TEST_F(DataReductionProxySettingsAndroidTest,
        MaybeRewriteWebliteUrlWithCustomParams) {
   base::test::ScopedFeatureList scoped_list;
   std::map<std::string, std::string> params;
