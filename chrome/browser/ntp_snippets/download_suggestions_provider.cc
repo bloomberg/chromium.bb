@@ -238,6 +238,13 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
 }
 
+void DownloadSuggestionsProvider::FetchSuggestionImageData(
+    const ContentSuggestion::ID& suggestion_id,
+    ntp_snippets::ImageDataFetchedCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+}
+
 void DownloadSuggestionsProvider::Fetch(
     const ntp_snippets::Category& category,
     const std::set<std::string>& known_suggestion_ids,

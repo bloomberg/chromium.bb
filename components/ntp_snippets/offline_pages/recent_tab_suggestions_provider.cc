@@ -113,6 +113,15 @@ void RecentTabSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
 }
 
+void RecentTabSuggestionsProvider::FetchSuggestionImageData(
+    const ContentSuggestion::ID& suggestion_id,
+    ImageDataFetchedCallback callback) {
+  // TODO(vitaliii): Fetch proper thumbnail from OfflinePageModel once it's
+  // available there.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+}
+
 void RecentTabSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,

@@ -116,6 +116,13 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
 }
 
+void BookmarkSuggestionsProvider::FetchSuggestionImageData(
+    const ContentSuggestion::ID& suggestion_id,
+    ImageDataFetchedCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+}
+
 void BookmarkSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,

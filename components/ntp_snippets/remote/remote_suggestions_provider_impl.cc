@@ -1448,6 +1448,23 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
                                       std::move(callback));
 }
 
+void RemoteSuggestionsProviderImpl::FetchSuggestionImageData(
+    const ContentSuggestion::ID& suggestion_id,
+    ImageDataFetchedCallback callback) {
+  GURL image_url = GetImageURLToFetch(suggestion_id);
+  if (image_url.is_empty()) {
+    // As we don't know the corresponding suggestion anymore, we don't expect to
+    // find it in the database (and also can't fetch it remotely). Cut the
+    // lookup short and return directly.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+    return;
+  }
+  image_fetcher_.FetchSuggestionImage(suggestion_id, image_url,
+                                      std::move(callback),
+                                      ntp_snippets::ImageFetchedCallback());
+}
+
 void RemoteSuggestionsProviderImpl::
     UpdatePushedSuggestionsSubscriptionDueToStatusChange(
         RemoteSuggestionsStatus new_status) {
