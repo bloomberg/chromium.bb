@@ -1536,10 +1536,10 @@ CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserv
       """A change to GPU-related code.""",
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+        'luci.chromium.try:mac_optional_gpu_tests_rel',
       ],
       """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
+CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
 """)
 
     # All pre-existing bots are already in output set.
@@ -1564,11 +1564,11 @@ CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserv
 Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+        'luci.chromium.try:mac_optional_gpu_tests_rel',
       ],
       """A change to GPU-related code.
 
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
 Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
 
     self._testIncludingCQTrybots(
