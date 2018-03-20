@@ -455,7 +455,7 @@ if (is_win) {
       ]
     }
 
-    if (is_clang && is_official_build && !use_lld) {
+    if (is_clang && is_official_build) {
       orderfile = "build/chrome.$target_cpu.orderfile"
       rebased_orderfile = rebase_path(orderfile, root_build_dir)
       inputs = [
@@ -517,7 +517,7 @@ if (is_win) {
         "/DELAYLOAD:wininet.dll",
       ]
 
-      if (is_clang && is_official_build && !use_lld) {
+      if (is_clang && is_official_build) {
         orderfile = "build/chrome_child.$target_cpu.orderfile"
         rebased_orderfile = rebase_path(orderfile, root_build_dir)
         inputs = [
