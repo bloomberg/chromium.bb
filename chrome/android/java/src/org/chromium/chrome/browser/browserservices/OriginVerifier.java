@@ -14,6 +14,7 @@ import android.support.customtabs.CustomTabsService.Relation;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -21,6 +22,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -166,15 +168,29 @@ public class OriginVerifier {
     public void start(@NonNull Origin origin) {
         ThreadUtils.assertOnUiThread();
         mOrigin = origin;
+
+        // Website to app Digital Asset Link verification can be skipped for a specific URL by
+        // passing a command line flag to ease development.
+        String disableDalUrl = CommandLine.getInstance().getSwitchValue(
+                ChromeSwitches.DISABLE_DIGITAL_ASSET_LINK_VERIFICATION);
+        if (!TextUtils.isEmpty(disableDalUrl)
+                && mOrigin.equals(new Origin(disableDalUrl))) {
+            Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
+            ThreadUtils.runOnUiThread(new VerifiedCallback(true));
+            return;
+        }
+
         String scheme = mOrigin.uri().getScheme();
         if (TextUtils.isEmpty(scheme)
                 || !UrlConstants.HTTPS_SCHEME.equals(scheme.toLowerCase(Locale.US))) {
+            Log.i(TAG, "Verification failed for %s as not https.", origin);
             ThreadUtils.runOnUiThread(new VerifiedCallback(false));
             return;
         }
 
         // If this origin is cached as verified already, use that.
         if (isValidOrigin(mPackageName, origin, mRelation)) {
+            Log.i(TAG, "Verification succeeded for %s, it was cached.", origin);
             ThreadUtils.runOnUiThread(new VerifiedCallback(true));
             return;
         }
@@ -271,6 +287,7 @@ public class OriginVerifier {
 
     @CalledByNative
     private void originVerified(boolean originVerified) {
+        Log.i(TAG, "Verification %s.", (originVerified ? "succeeded" : "failed"));
         if (originVerified) {
             addVerifiedOriginForPackage(mPackageName, mOrigin, mRelation);
         }
