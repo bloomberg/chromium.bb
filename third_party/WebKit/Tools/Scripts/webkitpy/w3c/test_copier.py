@@ -39,24 +39,22 @@ from webkitpy.w3c.common import is_basename_skipped
 
 _log = logging.getLogger(__name__)
 
+# Directory for imported tests relative to the layout tests base directory.
+DEST_DIR_NAME = 'external'
 
 class TestCopier(object):
 
-    def __init__(self, host, source_repo_path, dest_dir_name='external'):
+    def __init__(self, host, source_repo_path):
         """Initializes variables to prepare for copying and converting files.
 
         Args:
             host: An instance of Host.
             source_repo_path: Path to the local checkout of web-platform-tests.
-            dest_dir_name: The name of the directory under the layout tests
-                directory where imported tests should be copied to.
-                TODO(qyearsley): This can be made into a constant.
         """
         self.host = host
 
         assert self.host.filesystem.exists(source_repo_path)
         self.source_repo_path = source_repo_path
-        self.dest_dir_name = dest_dir_name
 
         self.filesystem = self.host.filesystem
         self.path_finder = PathFinder(self.filesystem)
@@ -64,7 +62,7 @@ class TestCopier(object):
         self.destination_directory = self.filesystem.normpath(
             self.filesystem.join(
                 self.layout_tests_dir,
-                dest_dir_name,
+                DEST_DIR_NAME,
                 self.filesystem.basename(self.source_repo_path)))
         self.import_in_place = (self.source_repo_path == self.destination_directory)
         self.dir_above_repo = self.filesystem.dirname(self.source_repo_path)
@@ -100,7 +98,7 @@ class TestCopier(object):
                         dirs.remove(name)
 
                 for path in paths_to_skip:
-                    path_base = path.replace(self.dest_dir_name + '/', '')
+                    path_base = path.replace(DEST_DIR_NAME + '/', '')
                     path_base = path_base.replace(cur_dir, '')
                     path_full = self.filesystem.join(root, path_base)
                     if path_base in dirs:

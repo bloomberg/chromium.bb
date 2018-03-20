@@ -51,7 +51,7 @@ class TestCopierTest(LoggingTestCase):
         host = MockHost()
         host.executive = MockExecutive(exception=ScriptError('error'))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
-        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR, 'destination')
+        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
         copier.do_import()  # No exception raised.
 
     def test_does_not_import_owner_files(self):
