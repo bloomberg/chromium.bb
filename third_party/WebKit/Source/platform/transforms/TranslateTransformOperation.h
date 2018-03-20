@@ -63,8 +63,8 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     return FloatValueForLength(y_, border_box_size.Height());
   }
 
-  Length X() const { return x_; }
-  Length Y() const { return y_; }
+  const Length& X() const { return x_; }
+  const Length& Y() const { return y_; }
   double Z() const { return z_; }
 
   void Apply(TransformationMatrix& transform,
