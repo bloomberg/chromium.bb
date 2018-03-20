@@ -47,8 +47,8 @@ class SupervisedUserRegistrationUtility {
   // contain an OAuth2 refresh token for the newly registered supervised user,
   // otherwise |token| will be empty and |error| will contain the authentication
   // error for the custodian.
-  typedef base::Callback<void(const GoogleServiceAuthError& /* error */,
-                              const std::string& /* token */)>
+  typedef base::OnceCallback<void(const GoogleServiceAuthError& /* error */,
+                                  const std::string& /* token */)>
       RegistrationCallback;
 
   virtual ~SupervisedUserRegistrationUtility() {}
@@ -69,7 +69,7 @@ class SupervisedUserRegistrationUtility {
   // OS the profile of the supervised user does not yet exist.
   virtual void Register(const std::string& supervised_user_id,
                         const SupervisedUserRegistrationInfo& info,
-                        const RegistrationCallback& callback) = 0;
+                        RegistrationCallback callback) = 0;
 
  protected:
   SupervisedUserRegistrationUtility() {}

@@ -737,9 +737,9 @@ void SigninCreateProfileHandler::RegisterSupervisedUser(
     supervised_user_service->RegisterAndInitSync(
         supervised_user_registration_utility_.get(), custodian_profile,
         supervised_user_id,
-        base::Bind(&SigninCreateProfileHandler::OnSupervisedUserRegistered,
-                   weak_ptr_factory_.GetWeakPtr(), create_shortcut,
-                   custodian_profile, new_profile));
+        base::BindOnce(&SigninCreateProfileHandler::OnSupervisedUserRegistered,
+                       weak_ptr_factory_.GetWeakPtr(), create_shortcut,
+                       custodian_profile, new_profile));
   }
 }
 

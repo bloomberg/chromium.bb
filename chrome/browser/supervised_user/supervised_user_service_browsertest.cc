@@ -69,16 +69,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
   // A registration error does not clear the flag (the profile should be deleted
   // anyway).
   supervised_user_service->OnSupervisedUserRegistered(
-      base::Bind(&TestAuthErrorCallback),
-      profile,
+      base::BindOnce(&TestAuthErrorCallback), profile,
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED),
       std::string());
   ASSERT_TRUE(entry->IsOmitted());
 
   // Successfully completing registration clears the flag.
   supervised_user_service->OnSupervisedUserRegistered(
-      base::Bind(&TestAuthErrorCallback),
-      profile,
+      base::BindOnce(&TestAuthErrorCallback), profile,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       std::string("abcdef"));
   EXPECT_FALSE(entry->IsOmitted());

@@ -42,11 +42,11 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // PermissionRequestCreator implementation:
   bool IsEnabled() const override;
   void CreateURLAccessRequest(const GURL& url_requested,
-                              const SuccessCallback& callback) override;
+                              SuccessCallback callback) override;
   void CreateExtensionInstallRequest(const std::string& id,
-                                     const SuccessCallback& callback) override;
+                                     SuccessCallback callback) override;
   void CreateExtensionUpdateRequest(const std::string& id,
-                                    const SuccessCallback& callback) override;
+                                    SuccessCallback callback) override;
 
   void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
 
@@ -69,7 +69,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
 
   void CreateRequest(const std::string& request_type,
                      const std::string& object_ref,
-                     const SuccessCallback& callback);
+                     SuccessCallback callback);
 
   // Requests an access token, which is the first thing we need. This is where
   // we restart when the returned access token has expired.

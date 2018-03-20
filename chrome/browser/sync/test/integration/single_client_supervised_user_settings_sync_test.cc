@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSupervisedUserSettingsSyncTest, Sanity) {
   // This call triggers a separate, supervised user-specific codepath
   // that does not normally execute for sync.
   supervised_user_service->OnSupervisedUserRegistered(
-      base::Bind(&TestAuthErrorCallback),
+      base::BindOnce(&TestAuthErrorCallback),
       // Use the Browser's main profile as the custodian.
       browser()->profile(),
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),

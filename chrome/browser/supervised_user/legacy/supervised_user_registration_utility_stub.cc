@@ -22,10 +22,10 @@ SupervisedUserRegistrationUtilityStub::
 void SupervisedUserRegistrationUtilityStub::Register(
     const std::string& supervised_user_id,
     const SupervisedUserRegistrationInfo& info,
-    const RegistrationCallback& callback) {
+    RegistrationCallback callback) {
   DCHECK(!register_was_called_);
   register_was_called_ = true;
-  callback_ = callback;
+  callback_ = std::move(callback);
   supervised_user_id_ = supervised_user_id;
   display_name_ = info.name;
   master_key_ = info.master_key;
@@ -35,7 +35,8 @@ void SupervisedUserRegistrationUtilityStub::RunSuccessCallback(
     const std::string& token) {
   if (callback_.is_null())
     return;
-  callback_.Run(GoogleServiceAuthError(GoogleServiceAuthError::NONE), token);
+  std::move(callback_).Run(GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+                           token);
   callback_.Reset();
 }
 
@@ -44,6 +45,6 @@ void SupervisedUserRegistrationUtilityStub::RunFailureCallback(
   if (callback_.is_null())
     return;
   GoogleServiceAuthError error(state);
-  callback_.Run(error, std::string());
+  std::move(callback_).Run(error, std::string());
   callback_.Reset();
 }

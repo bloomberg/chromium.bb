@@ -251,7 +251,7 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
 
   void AnswerRequest(size_t index, bool result) {
     ASSERT_LT(index, requested_urls_.size());
-    callbacks_[index].Run(result);
+    std::move(callbacks_[index]).Run(result);
     callbacks_.erase(callbacks_.begin() + index);
     requested_urls_.erase(requested_urls_.begin() + index);
   }
@@ -261,19 +261,19 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   bool IsEnabled() const override { return enabled_; }
 
   void CreateURLAccessRequest(const GURL& url_requested,
-                              const SuccessCallback& callback) override {
+                              SuccessCallback callback) override {
     ASSERT_TRUE(enabled_);
     requested_urls_.push_back(url_requested);
-    callbacks_.push_back(callback);
+    callbacks_.push_back(std::move(callback));
   }
 
   void CreateExtensionInstallRequest(const std::string& extension_id,
-                                     const SuccessCallback& callback) override {
+                                     SuccessCallback callback) override {
     FAIL();
   }
 
   void CreateExtensionUpdateRequest(const std::string& id,
-                                    const SuccessCallback& callback) override {
+                                    SuccessCallback callback) override {
     FAIL();
   }
 

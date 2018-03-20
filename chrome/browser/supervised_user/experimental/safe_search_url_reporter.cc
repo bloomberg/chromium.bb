@@ -35,7 +35,7 @@ const char kSafeSearchReportApiScope[] =
 const int kNumSafeSearchReportRetries = 1;
 
 struct SafeSearchURLReporter::Report {
-  Report(const GURL& url, const SuccessCallback& callback, int url_fetcher_id);
+  Report(const GURL& url, SuccessCallback callback, int url_fetcher_id);
   ~Report();
 
   GURL url;
@@ -48,10 +48,10 @@ struct SafeSearchURLReporter::Report {
 };
 
 SafeSearchURLReporter::Report::Report(const GURL& url,
-                                      const SuccessCallback& callback,
+                                      SuccessCallback callback,
                                       int url_fetcher_id)
     : url(url),
-      callback(callback),
+      callback(std::move(callback)),
       access_token_expired(false),
       url_fetcher_id(url_fetcher_id) {}
 
@@ -81,8 +81,9 @@ std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
 }
 
 void SafeSearchURLReporter::ReportUrl(const GURL& url,
-                                      const SuccessCallback& callback) {
-  reports_.push_back(std::make_unique<Report>(url, callback, url_fetcher_id_));
+                                      SuccessCallback callback) {
+  reports_.push_back(
+      std::make_unique<Report>(url, std::move(callback), url_fetcher_id_));
   StartFetching(reports_.back().get());
 }
 
@@ -208,6 +209,6 @@ void SafeSearchURLReporter::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void SafeSearchURLReporter::DispatchResult(ReportIterator it, bool success) {
-  (*it)->callback.Run(success);
+  std::move((*it)->callback).Run(success);
   reports_.erase(it);
 }

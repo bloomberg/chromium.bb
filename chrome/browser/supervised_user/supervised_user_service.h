@@ -84,9 +84,11 @@ class SupervisedUserService : public KeyedService,
 #endif
                               public SupervisedUserURLFilter::Observer {
  public:
-  using NavigationBlockedCallback = base::Callback<void(content::WebContents*)>;
-  using AuthErrorCallback = base::Callback<void(const GoogleServiceAuthError&)>;
-  using SuccessCallback = base::Callback<void(bool)>;
+  using NavigationBlockedCallback =
+      base::RepeatingCallback<void(content::WebContents*)>;
+  using AuthErrorCallback =
+      base::OnceCallback<void(const GoogleServiceAuthError&)>;
+  using SuccessCallback = base::OnceCallback<void(bool)>;
 
   class Delegate {
    public:
@@ -122,16 +124,16 @@ class SupervisedUserService : public KeyedService,
   bool AccessRequestsEnabled();
 
   // Adds an access request for the given URL.
-  void AddURLAccessRequest(const GURL& url, const SuccessCallback& callback);
+  void AddURLAccessRequest(const GURL& url, SuccessCallback callback);
 
   // Reports |url| to the SafeSearch API, because the user thinks this is an
   // inappropriate URL.
-  void ReportURL(const GURL& url, const SuccessCallback& callback);
+  void ReportURL(const GURL& url, SuccessCallback callback);
 
   // Adds an install request for the given WebStore item (App/Extension).
   void AddExtensionInstallRequest(const std::string& extension_id,
                                   const base::Version& version,
-                                  const SuccessCallback& callback);
+                                  SuccessCallback callback);
 
   // Same as above, but without a callback, just logging errors on failure.
   void AddExtensionInstallRequest(const std::string& extension_id,
@@ -140,7 +142,7 @@ class SupervisedUserService : public KeyedService,
   // Adds an update request for the given WebStore item (App/Extension).
   void AddExtensionUpdateRequest(const std::string& extension_id,
                                  const base::Version& version,
-                                 const SuccessCallback& callback);
+                                 SuccessCallback callback);
 
   // Same as above, but without a callback, just logging errors on failure.
   void AddExtensionUpdateRequest(const std::string& extension_id,
@@ -184,7 +186,7 @@ class SupervisedUserService : public KeyedService,
       SupervisedUserRegistrationUtility* registration_utility,
       Profile* custodian_profile,
       const std::string& supervised_user_id,
-      const AuthErrorCallback& callback);
+      AuthErrorCallback callback);
 #endif
 
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
@@ -233,7 +235,7 @@ class SupervisedUserService : public KeyedService,
       ExtensionManagementPolicyProviderWithSUInitiatedInstalls);
 
   using CreatePermissionRequestCallback =
-      base::Callback<void(PermissionRequestCreator*, const SuccessCallback&)>;
+      base::RepeatingCallback<void(PermissionRequestCreator*, SuccessCallback)>;
 
   // Use |SupervisedUserServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -244,7 +246,7 @@ class SupervisedUserService : public KeyedService,
 #if !defined(OS_ANDROID)
   void OnCustodianProfileDownloaded(const base::string16& full_name);
 
-  void OnSupervisedUserRegistered(const AuthErrorCallback& callback,
+  void OnSupervisedUserRegistered(AuthErrorCallback callback,
                                   Profile* custodian_profile,
                                   const GoogleServiceAuthError& auth_error,
                                   const std::string& token);
@@ -311,11 +313,11 @@ class SupervisedUserService : public KeyedService,
   size_t FindEnabledPermissionRequestCreator(size_t start);
   void AddPermissionRequestInternal(
       const CreatePermissionRequestCallback& create_request,
-      const SuccessCallback& callback,
+      SuccessCallback callback,
       size_t index);
   void OnPermissionRequestIssued(
       const CreatePermissionRequestCallback& create_request,
-      const SuccessCallback& callback,
+      SuccessCallback callback,
       size_t index,
       bool success);
 

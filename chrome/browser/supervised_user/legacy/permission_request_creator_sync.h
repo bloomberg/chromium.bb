@@ -33,17 +33,17 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
   // PermissionRequestCreator implementation:
   bool IsEnabled() const override;
   void CreateURLAccessRequest(const GURL& url_requested,
-                              const SuccessCallback& callback) override;
+                              SuccessCallback callback) override;
   void CreateExtensionInstallRequest(const std::string& id,
-                                     const SuccessCallback& callback) override;
+                                     SuccessCallback callback) override;
   void CreateExtensionUpdateRequest(const std::string& id,
-                                    const SuccessCallback& callback) override;
+                                    SuccessCallback callback) override;
 
  private:
   // Note: Doesn't escape |data|. If you need it escaped, do it yourself!
   void CreateRequest(const std::string& prefix,
                      const std::string& data,
-                     const SuccessCallback& callback);
+                     SuccessCallback callback);
   SupervisedUserSettingsService* settings_service_;
   SupervisedUserSharedSettingsService* shared_settings_service_;
   browser_sync::ProfileSyncService* sync_service_;
