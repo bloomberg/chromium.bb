@@ -17,6 +17,10 @@ piman@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file BUILD.gn=*
 
+# For threading (BrowserThread, BrowserMainLoop, TaskScheduler, etc.)
+per-file *browser_main_loop*=gab@chromium.org
+per-file *browser_thread*=gab@chromium.org
+
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
