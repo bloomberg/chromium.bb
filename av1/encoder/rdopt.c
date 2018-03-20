@@ -2374,36 +2374,6 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return rd;
 }
 
-static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
-                            TX_TYPE tx_type, TX_SIZE tx_size) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int is_inter = is_inter_block(mbmi);
-  (void)bs;
-
-  if (x->cb_partition_scan && tx_type != DCT_DCT) return 1;
-
-  if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
-  if (!is_inter && x->use_default_intra_tx_type &&
-      tx_type != get_default_tx_type(0, xd, tx_size))
-    return 1;
-  if (is_inter && x->use_default_inter_tx_type &&
-      tx_type != get_default_tx_type(0, xd, tx_size))
-    return 1;
-  const AV1_COMMON *const cm = &cpi->common;
-  const TxSetType tx_set_type =
-      get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
-  if (!av1_ext_tx_used[tx_set_type][tx_type]) return 1;
-  if (is_inter) {
-    if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
-      if (!do_tx_type_search(tx_type, x->tx_search_prune[tx_set_type],
-                             cpi->sf.tx_type_search.prune_mode))
-        return 1;
-    }
-  }
-  return 0;
-}
-
 static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                                    MACROBLOCK *x, int *r, int64_t *d, int *s,
                                    int64_t *sse, int64_t ref_best_rd) {

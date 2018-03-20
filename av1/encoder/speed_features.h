@@ -518,10 +518,6 @@ typedef struct SPEED_FEATURES {
   // default interp filter choice
   InterpFilter default_interp_filter;
 
-  // Early termination in transform size search, which only applies while
-  // tx_size_search_method is USE_FULL_RD.
-  int tx_size_search_breakout;
-
   // adaptive interp_filter search to allow skip of certain filter types.
   int adaptive_interp_filter_search;
 

@@ -193,7 +193,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
 
-    sf->tx_size_search_breakout = 1;
     sf->partition_search_breakout_rate_thr = 80;
 
     // Use transform domain distortion.
@@ -474,7 +473,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
   sf->default_interp_filter = SWITCHABLE;
-  sf->tx_size_search_breakout = 0;
   sf->partition_search_breakout_dist_thr = 0;
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
