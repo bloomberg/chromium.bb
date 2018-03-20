@@ -2457,7 +2457,7 @@ output_repaint_timer_handler(void *data)
 	struct weston_output *output;
 	struct timespec now;
 	void *repaint_data = NULL;
-	int ret;
+	int ret = 0;
 
 	weston_compositor_read_presentation_clock(compositor, &now);
 
