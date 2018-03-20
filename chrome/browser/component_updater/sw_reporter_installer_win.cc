@@ -93,7 +93,7 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   int current_failure_run = 0;
   bool last_result = false;
   while (tokenizer.GetNext()) {
-    if (tokenizer.token() == L"0") {
+    if (tokenizer.token_piece() == L"0") {
       ++failure_count;
       ++current_failure_run;
       last_result = false;
