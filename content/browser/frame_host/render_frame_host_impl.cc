@@ -191,10 +191,6 @@ int g_next_javascript_callback_id = 1;
 // Whether to allow injecting javascript into any kind of frame (for Android
 // WebView).
 bool g_allow_injecting_javascript = false;
-
-// Whether to allow data URL navigations for Android WebView.
-// TODO(meacer): Remove after PlzNavigate ships.
-bool g_allow_data_url_navigation = false;
 #endif
 
 // The (process id, routing id) pair that identifies one RenderFrame.
@@ -388,16 +384,6 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
 // static
 void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
   g_allow_injecting_javascript = true;
-}
-
-// static
-void RenderFrameHost::AllowDataUrlNavigationForAndroidWebView() {
-  g_allow_data_url_navigation = true;
-}
-
-// static
-bool RenderFrameHost::IsDataUrlNavigationAllowedForAndroidWebView() {
-  return g_allow_data_url_navigation;
 }
 #endif  // defined(OS_ANDROID)
 
