@@ -77,6 +77,8 @@ class Index {
                           const Time& time);
   vector<FilePath> Search(const string& query);
   void NormalizeVectors();
+  void Reset();
+  void EnsureInitialized();
 
  private:
   FileId GetFileId(const FilePath& file_path);
@@ -148,6 +150,20 @@ Trigram TrigramAtIndex(const vector<TrigramChar>& trigram_chars, size_t index) {
 }
 
 Index::Index() : last_file_id_(0) {
+  Reset();
+}
+
+void Index::Reset() {
+  file_ids_.clear();
+  index_.clear();
+  index_times_.clear();
+  is_normalized_.clear();
+  last_file_id_ = 0;
+}
+
+void Index::EnsureInitialized() {
+  if (index_.size() != 0)
+    return;
   index_.resize(kTrigramCount);
   is_normalized_.resize(kTrigramCount);
   std::fill(is_normalized_.begin(), is_normalized_.end(), true);
@@ -155,6 +171,7 @@ Index::Index() : last_file_id_(0) {
 
 Time Index::LastModifiedTimeForFile(const FilePath& file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   Time last_modified_time;
   if (index_times_.find(file_path) != index_times_.end())
     last_modified_time = index_times_[file_path];
@@ -165,6 +182,7 @@ void Index::SetTrigramsForFile(const FilePath& file_path,
                                const vector<Trigram>& index,
                                const Time& time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   FileId file_id = GetFileId(file_path);
   vector<Trigram>::const_iterator it = index.begin();
   for (; it != index.end(); ++it) {
@@ -177,6 +195,7 @@ void Index::SetTrigramsForFile(const FilePath& file_path,
 
 vector<FilePath> Index::Search(const string& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   const char* data = query.c_str();
   vector<TrigramChar> trigram_chars;
   trigram_chars.reserve(query.size());
@@ -221,6 +240,7 @@ vector<FilePath> Index::Search(const string& query) {
 
 FileId Index::GetFileId(const FilePath& file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   string file_path_str = file_path.AsUTF8Unsafe();
   if (file_ids_.find(file_path) != file_ids_.end())
     return file_ids_[file_path];
@@ -230,6 +250,7 @@ FileId Index::GetFileId(const FilePath& file_path) {
 
 void Index::NormalizeVectors() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   for (size_t i = 0; i < kTrigramCount; ++i) {
     if (!is_normalized_[i]) {
       std::sort(index_[i].begin(), index_[i].end());
@@ -409,9 +430,19 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReportWorked() {
   }
 }
 
-DevToolsFileSystemIndexer::DevToolsFileSystemIndexer() {}
+static int g_instance_count = 0;
 
-DevToolsFileSystemIndexer::~DevToolsFileSystemIndexer() {}
+DevToolsFileSystemIndexer::DevToolsFileSystemIndexer() {
+  ++g_instance_count;
+}
+
+DevToolsFileSystemIndexer::~DevToolsFileSystemIndexer() {
+  --g_instance_count;
+  if (!g_instance_count) {
+    impl_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce([]() { g_trigram_index.Get().Reset(); }));
+  }
+}
 
 scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>
 DevToolsFileSystemIndexer::IndexPath(
