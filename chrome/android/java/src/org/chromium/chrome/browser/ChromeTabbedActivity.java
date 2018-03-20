@@ -946,27 +946,6 @@ public class ChromeTabbedActivity
 
         if (!mIntentHandler.isIntentUserVisible()) return false;
 
-        if (FeatureUtilities.isChromeHomeEnabled()
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CHROME_HOME_INACTIVITY_SHEET_EXPANSION)) {
-            BottomSheet bottomSheet = getBottomSheet();
-            assert bottomSheet != null;
-
-            int timeoutMinsFieldTrialValue = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.CHROME_HOME_INACTIVITY_SHEET_EXPANSION,
-                    TIME_SINCE_BACKGROUNDED_IN_MINS_PARAM,
-                    TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MINS);
-            long timeoutExpandBottomSheet = TimeUnit.MINUTES.toMillis(timeoutMinsFieldTrialValue);
-            if (bottomSheet.isSheetOpen()
-                    || (getTimeSinceLastBackgroundedMs() < timeoutExpandBottomSheet)) {
-                return false;
-            }
-
-            if (isInOverviewMode()) return false;
-
-            return false;
-        }
-
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
             return false;
         }
