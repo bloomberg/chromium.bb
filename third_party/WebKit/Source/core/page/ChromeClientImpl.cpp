@@ -82,7 +82,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/renderer/page_scheduler.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/text/CString.h"
@@ -1105,13 +1104,6 @@ void ChromeClientImpl::NotifyPopupOpeningObservers() const {
 
 FloatSize ChromeClientImpl::ElasticOverscroll() const {
   return web_view_->ElasticOverscroll();
-}
-
-std::unique_ptr<WebFrameScheduler> ChromeClientImpl::CreateFrameScheduler(
-    BlameContext* blame_context,
-    WebFrameScheduler::FrameType frame_type) {
-  return web_view_->Scheduler()->CreateFrameScheduler(blame_context,
-                                                      frame_type);
 }
 
 WebAutofillClient* ChromeClientImpl::AutofillClientFromFrame(

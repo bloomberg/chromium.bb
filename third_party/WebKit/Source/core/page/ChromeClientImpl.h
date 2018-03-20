@@ -219,10 +219,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   FloatSize ElasticOverscroll() const override;
 
-  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext*,
-      WebFrameScheduler::FrameType) override;
-
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void NotifyPopupOpeningObservers() const override;

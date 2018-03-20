@@ -39,7 +39,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
@@ -221,10 +220,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
-
-  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext*,
-      WebFrameScheduler::FrameType) override;
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {

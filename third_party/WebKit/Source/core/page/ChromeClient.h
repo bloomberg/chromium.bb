@@ -36,7 +36,6 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformChromeClient.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -334,10 +333,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void NotifyPopupOpeningObservers() const = 0;
 
   virtual FloatSize ElasticOverscroll() const { return FloatSize(); }
-
-  virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext*,
-      WebFrameScheduler::FrameType) = 0;
 
   virtual void InstallSupplements(LocalFrame&);
 
