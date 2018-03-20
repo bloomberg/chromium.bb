@@ -30,6 +30,8 @@ component("shared_typemap_traits") {
   sources = [
     "big_buffer_mojom_traits.cc",
     "big_buffer_mojom_traits.h",
+    "values_mojom_traits.cc",
+    "values_mojom_traits.h",
   ]
 
   defines = [ "IS_MOJO_BASE_SHARED_TRAITS_IMPL" ]
@@ -51,12 +53,14 @@ source_set("tests") {
     "ref_counted_memory_unittest.cc",
     "string16_unittest.cc",
     "time_unittest.cc",
+    "values_unittest.cc",
   ]
 
   public_deps = [
     ":base",
     ":shared_typemap_traits",
     "//base",
+    "//base/test:test_support",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/mojom/base",
     "//testing/gtest",
