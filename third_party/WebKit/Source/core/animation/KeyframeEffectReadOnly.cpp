@@ -345,7 +345,7 @@ Vector<ScriptValue> KeyframeEffectReadOnly::getKeyframes(
   // consists of the normal keyframe data combined with the computed offset for
   // the given keyframe.
   //
-  // https://w3c.github.io/web-animations/#dom-keyframeeffectreadonly-getkeyframes
+  // https://drafts.csswg.org/web-animations/#dom-keyframeeffectreadonly-getkeyframes
   const KeyframeVector& keyframes = model_->GetFrames();
   Vector<double> computed_offsets =
       KeyframeEffectModelBase::GetComputedOffsets(keyframes);

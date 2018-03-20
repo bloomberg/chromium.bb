@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/web-animations/#the-animatable-interface
-// https://w3c.github.io/web-animations/#extensions-to-the-element-interface
+// https://drafts.csswg.org/web-animations/#the-animatable-interface
+// https://drafts.csswg.org/web-animations/#extensions-to-the-element-interface
 
 // TODO(dstockwell): This should be an Animatable interface, where Element
 // implements Animatable.

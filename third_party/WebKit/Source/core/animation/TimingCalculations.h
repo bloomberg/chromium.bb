@@ -175,7 +175,7 @@ static inline double CalculateIterationTime(
   double iteration_time = fmod(scaled_active_time, iteration_duration);
 
   // This implements step 3 of
-  // http://w3c.github.io/web-animations/#calculating-the-simple-iteration-progress
+  // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
   if (iteration_time == 0 && phase == AnimationEffectReadOnly::kPhaseAfter &&
       repeated_duration != 0 && scaled_active_time != 0)
     return iteration_duration;

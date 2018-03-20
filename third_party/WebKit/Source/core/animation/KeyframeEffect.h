@@ -43,7 +43,7 @@ class ExceptionState;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 // Represents the effect of an Animation on an Element's properties.
-// http://w3c.github.io/web-animations/#keyframe-effect
+// https://drafts.csswg.org/web-animations/#keyframe-effect
 class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 

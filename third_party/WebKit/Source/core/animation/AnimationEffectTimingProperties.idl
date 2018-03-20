@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-animations/#the-animationeffecttimingproperties-dictionary
+// https://drafts.csswg.org/web-animations/#the-animationeffecttimingproperties-dictionary
 
 enum FillMode { "none", "forwards", "backwards", "both", "auto" };
 enum PlaybackDirection { "normal", "reverse", "alternate", "alternate-reverse" };
