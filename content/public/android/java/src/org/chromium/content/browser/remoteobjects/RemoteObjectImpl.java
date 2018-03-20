@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
+import org.chromium.blink.mojom.RemoteInvocationResultValue;
 import org.chromium.blink.mojom.RemoteObject;
 import org.chromium.blink.mojom.SingletonJavaScriptValue;
 import org.chromium.mojo.system.MojoException;
@@ -141,6 +142,8 @@ class RemoteObjectImpl implements RemoteObject {
             // return arrays. Spec requires calling the method and converting the
             // result to a JavaScript array.
             RemoteInvocationResult result = new RemoteInvocationResult();
+            result.value = new RemoteInvocationResultValue();
+            result.value.setSingletonValue(SingletonJavaScriptValue.UNDEFINED);
             callback.call(result);
             return;
         }
@@ -356,8 +359,37 @@ class RemoteObjectImpl implements RemoteObject {
     }
 
     private RemoteInvocationResult convertResult(Object result, Class<?> returnType) {
-        // TODO(jbroman): Convert result.
-        return new RemoteInvocationResult();
+        // Methods returning arrays should not be called (for legacy reasons).
+        assert !returnType.isArray();
+
+        // LIVECONNECT_COMPLIANCE: The specification suggests that the conversion should happen
+        // based on the type of the result value. Existing behavior is to rely on the declared
+        // return type of the method. This means, for instance, that a java.lang.String returned
+        // from a method declared as returning java.lang.Object will not be converted to a
+        // JavaScript string.
+        RemoteInvocationResultValue resultValue = new RemoteInvocationResultValue();
+        if (returnType == void.class) {
+            resultValue.setSingletonValue(SingletonJavaScriptValue.UNDEFINED);
+        } else if (returnType == boolean.class) {
+            resultValue.setBooleanValue((Boolean) result);
+        } else if (returnType == char.class) {
+            resultValue.setNumberValue((Character) result);
+        } else if (returnType.isPrimitive()) {
+            resultValue.setNumberValue(((Number) result).doubleValue());
+        } else if (returnType == String.class) {
+            if (result == null) {
+                // LIVECONNECT_COMPLIANCE: Existing behavior is to return undefined.
+                // Spec requires returning a null string.
+                resultValue.setSingletonValue(SingletonJavaScriptValue.UNDEFINED);
+            } else {
+                resultValue.setStringValue(javaStringToMojoString((String) result));
+            }
+        } else {
+            // TODO(jbroman): Implement handling for other objects.
+        }
+        RemoteInvocationResult mojoResult = new RemoteInvocationResult();
+        mojoResult.value = resultValue;
+        return mojoResult;
     }
 
     private static RemoteInvocationResult makeErrorResult(int error) {
@@ -436,5 +468,15 @@ class RemoteObjectImpl implements RemoteObject {
             chars[i] = (char) data[i];
         }
         return String.valueOf(chars);
+    }
+
+    private static String16 javaStringToMojoString(String string) {
+        short[] data = new short[string.length()];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = (short) string.charAt(i);
+        }
+        String16 mojoString = new String16();
+        mojoString.data = data;
+        return mojoString;
     }
 }
