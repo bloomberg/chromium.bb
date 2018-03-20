@@ -321,13 +321,16 @@ void Surface::ActivateFrame(FrameData frame_data,
 
   UnrefFrameResourcesAndRunCallbacks(std::move(previous_frame_data));
 
+  // This should happen before calling SurfaceManager::FirstSurfaceActivation(),
+  // as that notifies observers which may have side effects for
+  // |surface_client_|. See https://crbug.com/821855.
+  if (surface_client_)
+    surface_client_->OnSurfaceActivated(this);
+
   if (!seen_first_frame_activation_) {
     seen_first_frame_activation_ = true;
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
-
-  if (surface_client_)
-    surface_client_->OnSurfaceActivated(this);
 
   surface_manager_->SurfaceActivated(this, duration);
 }
