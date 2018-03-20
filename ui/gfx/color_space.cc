@@ -835,18 +835,16 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
     }
 
     // BT2020_CL is a special case.
-    // Basically we return a matrix that transforms RGB values
-    // to RYB values. (We replace the green component with the
-    // the luminance.) Later steps will compute the Cb & Cr values.
+    // Basically we return a matrix that transforms RYB values
+    // to YUV values. (Note that the green component have been replaced
+    // with the luminance.)
     case ColorSpace::MatrixID::BT2020_CL: {
       Kr = 0.2627f;
       Kb = 0.0593f;
-      float data[16] = {
-          1.0f,           0.0f, 0.0f, 0.0f,  // R
-            Kr, 1.0f - Kr - Kb,   Kb, 0.0f,  // Y
-          0.0f,           0.0f, 1.0f, 0.0f,  // B
-          0.0f,           0.0f, 0.0f, 1.0f
-      };
+      float data[16] = {1.0f, 0.0f,           0.0f, 0.0f,  // R
+                        Kr,   1.0f - Kr - Kb, Kb,   0.0f,  // Y
+                        0.0f, 0.0f,           1.0f, 0.0f,  // B
+                        0.0f, 0.0f,           0.0f, 1.0f};
       matrix->setRowMajorf(data);
       return;
     }
