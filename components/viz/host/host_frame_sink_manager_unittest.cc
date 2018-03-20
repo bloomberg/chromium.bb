@@ -28,7 +28,6 @@
 using testing::_;
 
 namespace viz {
-namespace test {
 namespace {
 
 constexpr FrameSinkId kFrameSinkParent1(1, 1);
@@ -666,6 +665,28 @@ TEST_F(HostFrameSinkManagerRemoteTest, AssignTemporaryReference) {
   run_loop.Run();
 }
 
+TEST_F(HostFrameSinkManagerRemoteTest, DropTemporaryReference) {
+  FakeHostFrameSinkClient host_client;
+
+  const SurfaceId surface_id = MakeSurfaceId(kFrameSinkChild1, 1);
+  host().RegisterFrameSinkId(surface_id.frame_sink_id(), &host_client);
+  MockCompositorFrameSinkClient compositor_frame_sink_client;
+  mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  host().CreateCompositorFrameSink(
+      kFrameSinkChild1, MakeRequest(&compositor_frame_sink),
+      compositor_frame_sink_client.BindInterfacePtr());
+
+  // When HostFrameSinkManager gets OnSuraceCreated() it should find that
+  // kFrameSinkChild1 isn't embedded by anything and drop the temporary
+  // reference.
+  GetFrameSinkManagerClient()->OnSurfaceCreated(surface_id);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(impl(), DropTemporaryReference(surface_id))
+      .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
 // Verify that on lost context a RootCompositorFrameSink can be recreated.
 TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateRoot) {
   FakeHostFrameSinkClient host_client;
@@ -724,5 +745,4 @@ TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateNonRoot) {
   compositor_frame_sink2.FlushForTesting();
 }
 
-}  // namespace test
 }  // namespace viz

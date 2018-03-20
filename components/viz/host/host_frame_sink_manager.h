@@ -30,13 +30,9 @@ class SingleThreadTaskRunner;
 
 namespace viz {
 
-namespace test {
-class HostFrameSinkManagerTestBase;
-}  // namespace test
 class CompositorFrameSinkSupport;
 class FrameSinkManagerImpl;
 class SurfaceInfo;
-
 
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace all usage of
@@ -158,7 +154,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
                            uint32_t frame_token) override;
 
  private:
-  friend class test::HostFrameSinkManagerTestBase;
+  friend class HostFrameSinkManagerTestBase;
 
   struct FrameSinkData {
     FrameSinkData();
