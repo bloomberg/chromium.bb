@@ -76,6 +76,7 @@
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
@@ -1611,6 +1612,17 @@ int PaintLayerScrollableArea::HorizontalScrollbarHeight(
     return 0;
   }
   return HorizontalScrollbar()->ScrollbarThickness();
+}
+
+void PaintLayerScrollableArea::SnapAfterScrollbarDragging(
+    ScrollbarOrientation orientation) {
+  SnapCoordinator* snap_coordinator =
+      GetLayoutBox()->GetDocument().GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+  snap_coordinator->PerformSnapping(*GetLayoutBox(),
+                                    orientation == kHorizontalScrollbar,
+                                    orientation == kVerticalScrollbar);
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {

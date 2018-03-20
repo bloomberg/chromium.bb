@@ -156,6 +156,8 @@ class CORE_EXPORT LocalFrameView final
 
   Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
 
+  void SnapAfterScrollbarDragging(ScrollbarOrientation) override;
+
   void SetLayoutOverflowSize(const IntSize&);
 
   void UpdateLayout();

@@ -508,6 +508,17 @@ Scrollbar* LocalFrameView::ScrollbarManager::CreateScrollbar(
                            &box->GetFrame()->GetPage()->GetChromeClient());
 }
 
+void LocalFrameView::SnapAfterScrollbarDragging(
+    ScrollbarOrientation orientation) {
+  SnapCoordinator* snap_coordinator =
+      frame_->GetDocument()->GetSnapCoordinator();
+  if (!snap_coordinator)
+    return;
+  snap_coordinator->PerformSnapping(*GetLayoutBox(),
+                                    orientation == kHorizontalScrollbar,
+                                    orientation == kVerticalScrollbar);
+}
+
 void LocalFrameView::ScrollbarManager::DestroyScrollbar(
     ScrollbarOrientation orientation) {
   Member<Scrollbar>& scrollbar =
