@@ -126,7 +126,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Returns true if sync is fully initialized and active. This implies that
   // an initial configuration has successfully completed, although there may
   // be datatype specific, auth, or other transient errors. To see which
-  // datetypes are actually syncing, see GetActiveTypes() below.
+  // datatypes are actually syncing, see GetActiveDataTypes() below.
   virtual bool IsSyncActive() const = 0;
 
   // Returns true if the local sync backend server has been enabled through a
