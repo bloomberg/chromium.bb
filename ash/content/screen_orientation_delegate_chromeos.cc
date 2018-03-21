@@ -54,8 +54,8 @@ void ScreenOrientationDelegateChromeos::Lock(
     content::WebContents* web_contents,
     blink::WebScreenOrientationLockType orientation_lock) {
   Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
-      web_contents->GetNativeView(), ToAshOrientationLockType(orientation_lock),
-      ScreenOrientationController::LockCompletionBehavior::None);
+      web_contents->GetNativeView(),
+      ToAshOrientationLockType(orientation_lock));
 }
 
 bool ScreenOrientationDelegateChromeos::ScreenOrientationProviderSupported() {

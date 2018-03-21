@@ -3733,12 +3733,16 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
                           0.f, 0.f);
     portrait_secondary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, kMeanGravity,
                             0.f, 0.f);
+    landscape_primary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0,
+                           -kMeanGravity, 0.f);
   }
 
  protected:
   scoped_refptr<chromeos::AccelerometerUpdate> portrait_primary =
       new chromeos::AccelerometerUpdate();
   scoped_refptr<chromeos::AccelerometerUpdate> portrait_secondary =
+      new chromeos::AccelerometerUpdate();
+  scoped_refptr<chromeos::AccelerometerUpdate> landscape_primary =
       new chromeos::AccelerometerUpdate();
 
  private:
@@ -3780,25 +3784,22 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   {
     window_a->SetProperty(aura::client::kAppType,
                           static_cast<int>(AppType::CHROME_APP));
-    orientation_controller->LockOrientationForWindow(
-        window_a, OrientationLockType::kAny,
-        ScreenOrientationController::LockCompletionBehavior::None);
+    orientation_controller->LockOrientationForWindow(window_a,
+                                                     OrientationLockType::kAny);
   }
   aura::Window* window_p = CreateTestWindowInShellWithId(0);
   {
     window_p->SetProperty(aura::client::kAppType,
                           static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        window_p, OrientationLockType::kPortrait,
-        ScreenOrientationController::LockCompletionBehavior::None);
+        window_p, OrientationLockType::kPortrait);
   }
   aura::Window* window_l = CreateTestWindowInShellWithId(0);
   {
     window_l->SetProperty(aura::client::kAppType,
                           static_cast<int>(AppType::CHROME_APP));
     orientation_controller->LockOrientationForWindow(
-        window_l, OrientationLockType::kLandscape,
-        ScreenOrientationController::LockCompletionBehavior::None);
+        window_l, OrientationLockType::kLandscape);
   }
 
   DisplayConfigurationController* configuration_controller =
@@ -3911,8 +3912,7 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
   orientation_controller->LockOrientationForWindow(
-      window, OrientationLockType::kPortrait,
-      ScreenOrientationController::LockCompletionBehavior::None);
+      window, OrientationLockType::kPortrait);
   EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
 
@@ -3950,9 +3950,8 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
   {
     window_a->SetProperty(aura::client::kAppType,
                           static_cast<int>(AppType::CHROME_APP));
-    orientation_controller->LockOrientationForWindow(
-        window_a, OrientationLockType::kAny,
-        ScreenOrientationController::LockCompletionBehavior::None);
+    orientation_controller->LockOrientationForWindow(window_a,
+                                                     OrientationLockType::kAny);
   }
   wm::ActivateWindow(window_a);
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -3964,15 +3963,24 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   orientation_controller->OnAccelerometerUpdated(portrait_secondary);
 
-  aura::Window* window_ps = CreateTestWindowInShellWithId(1);
-  {
-    window_ps->SetProperty(aura::client::kAppType,
-                           static_cast<int>(AppType::CHROME_APP));
-    orientation_controller->LockOrientationForWindow(
-        window_ps, OrientationLockType::kPortrait,
-        ScreenOrientationController::LockCompletionBehavior::DisableSensor);
-    wm::ActivateWindow(window_ps);
-  }
+  aura::Window* window_lsc = CreateTestWindowInShellWithId(1);
+  window_lsc->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
+
+  aura::Window* window_psc = CreateTestWindowInShellWithId(1);
+  window_psc->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::CHROME_APP));
+
+  orientation_controller->LockOrientationForWindow(
+      window_psc, OrientationLockType::kPortraitSecondary);
+  orientation_controller->LockOrientationForWindow(
+      window_psc, OrientationLockType::kCurrent);
+  wm::ActivateWindow(window_psc);
+
+  orientation_controller->LockOrientationForWindow(
+      window_lsc, OrientationLockType::kLandscapeSecondary);
+  orientation_controller->LockOrientationForWindow(
+      window_lsc, OrientationLockType::kCurrent);
 
   EXPECT_EQ(OrientationLockType::kPortraitSecondary,
             test_api.GetCurrentOrientation());
@@ -3980,6 +3988,15 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
   // The orientation should stay portrait secondary.
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
   EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+            test_api.GetCurrentOrientation());
+  wm::ActivateWindow(window_lsc);
+
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
+            test_api.GetCurrentOrientation());
+
+  // The orientation should stay landscape secondary.
+  orientation_controller->OnAccelerometerUpdated(landscape_primary);
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
             test_api.GetCurrentOrientation());
 
   wm::ActivateWindow(window_a);
@@ -3991,7 +4008,7 @@ TEST_F(DisplayManagerOrientationTest, LockToSpecificOrientation) {
 
   // The orientation has alraedy been locked to secondary once, so
   // it should swtich back to the portrait secondary.
-  wm::ActivateWindow(window_ps);
+  wm::ActivateWindow(window_psc);
   EXPECT_EQ(OrientationLockType::kPortraitSecondary,
             test_api.GetCurrentOrientation());
 }
