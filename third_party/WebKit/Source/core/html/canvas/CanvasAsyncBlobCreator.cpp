@@ -216,6 +216,7 @@ void CanvasAsyncBlobCreator::Dispose() {
   parent_frame_task_runner_.Clear();
   callback_.Clear();
   script_promise_resolver_.Clear();
+  image_ = nullptr;
 }
 
 bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
