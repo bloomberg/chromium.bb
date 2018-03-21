@@ -40,6 +40,7 @@ class IntentPickerView;
 class KeywordHintView;
 class LocationIconView;
 class ManagePasswordsIconViews;
+enum class OmniboxPart;
 enum class OmniboxTint;
 class Profile;
 class SelectedKeywordView;
@@ -92,14 +93,6 @@ class LocationBarView : public LocationBar,
     virtual ~Delegate() {}
   };
 
-  enum ColorKind {
-    BACKGROUND = 0,
-    TEXT,
-    SELECTED_TEXT,
-    DEEMPHASIZED_TEXT,
-    SECURITY_CHIP_TEXT,
-  };
-
   // The location bar view's class name.
   static const char kViewClassName[];
 
@@ -118,9 +111,8 @@ class LocationBarView : public LocationBar,
   // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
-  // Returns the appropriate color for the desired kind, based on the user's
-  // system theme.
-  SkColor GetColor(ColorKind kind) const;
+  // Helper to get the color for |part| using the current tint().
+  SkColor GetColor(OmniboxPart part) const;
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.

@@ -67,7 +67,8 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return location_bar_->GetColor(LocationBarView::SECURITY_CHIP_TEXT);
+  return location_bar_->GetSecurityChipColor(
+      location_bar_->GetToolbarModel()->GetSecurityLevel(false));
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {

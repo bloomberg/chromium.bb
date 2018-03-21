@@ -43,32 +43,32 @@ struct TextStyle {
 TextStyle GetTextStyle(int type) {
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
               gfx::SUPERIOR};
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_NEGATIVE,
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_NEGATIVE,
               gfx::INFERIOR};
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_POSITIVE,
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_POSITIVE,
               gfx::INFERIOR};
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DEFAULT,
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DEFAULT,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DIMMED,
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::TEXT_DIMMED,
+      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
               gfx::INFERIOR};
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DIMMED,
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DIMMED,
               gfx::NORMAL_BASELINE};
     case SuggestionAnswer::SUGGESTION:  // Fall through.
     default:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::TEXT_DEFAULT,
+      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DEFAULT,
               gfx::NORMAL_BASELINE};
   }
 }
@@ -138,14 +138,14 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateClassifiedRenderText(
     if (classifications[i].style & ACMatchClassification::MATCH)
       render_text->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
 
-    OmniboxPart part = OmniboxPart::TEXT_DEFAULT;
+    OmniboxPart part = OmniboxPart::RESULTS_TEXT_DEFAULT;
     if (classifications[i].style & ACMatchClassification::URL) {
-      part = OmniboxPart::TEXT_URL;
+      part = OmniboxPart::RESULTS_TEXT_URL;
       render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
     } else if (classifications[i].style & ACMatchClassification::DIM) {
-      part = OmniboxPart::TEXT_DIMMED;
+      part = OmniboxPart::RESULTS_TEXT_DIMMED;
     } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      part = OmniboxPart::TEXT_INVISIBLE;
+      part = OmniboxPart::RESULTS_TEXT_INVISIBLE;
     }
     render_text->ApplyColor(result_view_->GetColor(part), current_range);
   }
@@ -160,7 +160,8 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OmniboxTextView::Dim() {
-  render_text_->SetColor(result_view_->GetColor(OmniboxPart::TEXT_DIMMED));
+  render_text_->SetColor(
+      result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED));
 }
 
 void OmniboxTextView::SetText(const base::string16& text,

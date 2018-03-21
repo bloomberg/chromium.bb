@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
@@ -17,11 +18,13 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
 
-SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
+SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
+                                         const gfx::FontList& font_list,
                                          Profile* profile)
-    : IconLabelBubbleView(font_list), profile_(profile) {
+    : IconLabelBubbleView(font_list),
+      location_bar_(location_bar),
+      profile_(profile) {
   full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);
@@ -39,10 +42,7 @@ void SelectedKeywordView::ResetImage() {
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      color_utils::IsDark(GetParentBackgroundColor())
-          ? ui::NativeTheme::kColorId_TextfieldDefaultColor
-          : ui::NativeTheme::kColorId_LinkEnabled);
+  return location_bar_->GetColor(OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD);
 }
 
 gfx::Size SelectedKeywordView::CalculatePreferredSize() const {

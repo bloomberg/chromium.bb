@@ -86,15 +86,12 @@
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
@@ -140,16 +137,6 @@ OmniboxTint GetTintForProfile(Profile* profile) {
 
   // TODO(tapted): Infer a tint from theme colors?
   return OmniboxTint::LIGHT;
-}
-
-// Returns the color of the security chip if the security level is secure.
-SkColor SecurityChipSecureColor(bool in_dark_mode) {
-  return in_dark_mode ? SK_ColorWHITE : gfx::kGoogleGreen700;
-}
-
-// Returns the color of the security chip if the security level is dangerous.
-SkColor SecurityChipDangerousColor(bool in_dark_mode) {
-  return in_dark_mode ? SK_ColorWHITE : gfx::kGoogleRed700;
 }
 
 }  // namespace
@@ -219,7 +206,8 @@ void LocationBarView::Init() {
       GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
   const int bubble_height = location_height - (bubble_padding * 2);
 
-  const SkColor background_color = GetColor(BACKGROUND);
+  const SkColor background_color =
+      GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
   location_icon_view_ = new LocationIconView(font_list, this);
   location_icon_view_->set_drag_controller(this);
   AddChildView(location_icon_view_);
@@ -237,23 +225,21 @@ void LocationBarView::Init() {
       new views::Label(base::string16(), {font_list});
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
-  ime_inline_autocomplete_view_->SetBackground(
-      views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
+  ime_inline_autocomplete_view_->SetBackground(views::CreateSolidBackground(
+      GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND)));
   ime_inline_autocomplete_view_->SetEnabledColor(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor));
+      GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_TEXT));
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
-  selected_keyword_view_ = new SelectedKeywordView(font_list, profile());
+  selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
   keyword_hint_view_ = new KeywordHintView(
       this, profile(), font_list, bubble_font_list,
-      GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
+      GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED), background_color);
   AddChildView(keyword_hint_view_);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
@@ -316,30 +302,8 @@ bool LocationBarView::IsInitialized() const {
   return omnibox_view_ != nullptr;
 }
 
-SkColor LocationBarView::GetColor(
-    ColorKind kind) const {
-  const ui::NativeTheme* native_theme = GetNativeTheme();
-  switch (kind) {
-    case BACKGROUND:
-      return native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-
-    case TEXT:
-      return native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldDefaultColor);
-
-    case SELECTED_TEXT:
-      return native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_TextfieldSelectionColor);
-
-    case DEEMPHASIZED_TEXT:
-      return color_utils::AlphaBlend(GetColor(TEXT), GetColor(BACKGROUND), 128);
-
-    case SECURITY_CHIP_TEXT:
-      return GetSecurityChipColor(GetToolbarModel()->GetSecurityLevel(false));
-  }
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+SkColor LocationBarView::GetColor(OmniboxPart part) const {
+  return GetOmniboxColor(part, tint());
 }
 
 SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
@@ -352,18 +316,18 @@ SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
   // Only used in ChromeOS.
   if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
-    return GetColor(DEEMPHASIZED_TEXT);
+    return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
 
-  SkColor chip_color = color_utils::DeriveDefaultIconColor(GetColor(TEXT));
-  bool is_dark = color_utils::IsDark(GetColor(BACKGROUND));
+  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
   if (security_level == security_state::EV_SECURE ||
       security_level == security_state::SECURE) {
-    chip_color = SecurityChipSecureColor(is_dark);
+    state = OmniboxPartState::CHIP_SECURE;
   } else if (security_level == security_state::DANGEROUS) {
-    chip_color = SecurityChipDangerousColor(is_dark);
+    state = OmniboxPartState::CHIP_DANGEROUS;
   }
 
-  return color_utils::GetReadableColor(chip_color, GetColor(BACKGROUND));
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
+                         state);
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -657,12 +621,13 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   RefreshLocationIcon();
   RefreshClearAllButtonIcon();
   if (is_popup_mode_) {
-    SetBackground(views::CreateSolidBackground(GetColor(BACKGROUND)));
+    SetBackground(views::CreateSolidBackground(
+        GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND)));
   } else {
     // This border color will be blended on top of the toolbar (which may use an
     // image in the case of themes).
     SetBackground(std::make_unique<BackgroundWith1PxBorder>(
-        GetColor(BACKGROUND), GetBorderColor()));
+        GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND), GetBorderColor()));
   }
   SchedulePaint();
 }
@@ -878,8 +843,7 @@ void LocationBarView::RefreshClearAllButtonIcon() {
   const gfx::VectorIcon& icon =
       InTouchableMode() ? omnibox::kTouchableClearIcon : kTabCloseNormalIcon;
   SetImageFromVectorIcon(clear_all_button_, icon,
-                         GetNativeTheme()->GetSystemColor(
-                             ui::NativeTheme::kColorId_TextfieldDefaultColor));
+                         GetColor(OmniboxPart::LOCATION_BAR_CLEAR_ALL));
 }
 
 base::string16 LocationBarView::GetLocationIconText() const {

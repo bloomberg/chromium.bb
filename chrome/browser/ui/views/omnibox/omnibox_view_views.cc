@@ -18,6 +18,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -300,7 +301,7 @@ void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   views::Textfield::OnNativeThemeChanged(theme);
   if (location_bar_view_) {
     SetBackgroundColor(
-        location_bar_view_->GetColor(LocationBarView::BACKGROUND));
+        location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND));
   }
   EmphasizeURLComponents();
 }
@@ -636,7 +637,8 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
 
 void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
   SkColor color = location_bar_view_->GetColor(
-      emphasize ? LocationBarView::TEXT : LocationBarView::DEEMPHASIZED_TEXT);
+      emphasize ? OmniboxPart::LOCATION_BAR_TEXT_DEFAULT
+                : OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   if (range.IsValid())
     ApplyColor(color, range);
   else
