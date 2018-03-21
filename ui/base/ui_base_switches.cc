@@ -14,6 +14,9 @@ const char kDisableAVFoundationOverlays[] = "disable-avfoundation-overlays";
 // based overlay display path.
 const char kDisableMacOverlays[] = "disable-mac-overlays";
 
+// Disable animations for showing and hiding modal dialogs.
+const char kDisableModalAnimations[] = "disable-modal-animations";
+
 // Disable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
