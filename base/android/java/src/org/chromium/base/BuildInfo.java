@@ -63,6 +63,10 @@ public class BuildInfo {
         };
     }
 
+    private static String nullToEmpty(CharSequence seq) {
+        return seq == null ? "" : seq.toString();
+    }
+
     /**
      * @param packageInfo Package for Chrome/WebView (as opposed to host app).
      */
@@ -86,19 +90,16 @@ public class BuildInfo {
             if (sBrowserPackageInfo != null) {
                 packageName = sBrowserPackageInfo.packageName;
                 versionCode = sBrowserPackageInfo.versionCode;
-                versionName = sBrowserPackageInfo.versionName;
+                versionName = nullToEmpty(sBrowserPackageInfo.versionName);
                 sBrowserPackageInfo = null;
             } else {
                 packageName = hostPackageName;
                 versionCode = hostVersionCode;
-                versionName = pi.versionName;
+                versionName = nullToEmpty(pi.versionName);
             }
 
-            CharSequence label = pm.getApplicationLabel(pi.applicationInfo);
-            hostPackageLabel = label == null ? "" : label.toString();
-
-            String value = pm.getInstallerPackageName(packageName);
-            installerPackageName = value == null ? "" : value;
+            hostPackageLabel = nullToEmpty(pm.getApplicationLabel(pi.applicationInfo));
+            installerPackageName = nullToEmpty(pm.getInstallerPackageName(packageName));
 
             PackageInfo gmsPackageInfo = null;
             try {
