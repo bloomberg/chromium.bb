@@ -177,6 +177,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void StartObserving(aura::Window* window);
   void StopObserving(aura::Window* window);
 
+  // Update split view state and notify its observer about the change.
+  void UpdateSplitViewStateAndNotifyObservers();
+
   // Notifies observers that the split view state has been changed.
   void NotifySplitViewStateChanged(State previous_state, State state);
 
