@@ -871,6 +871,15 @@ void ThreadHeap::WriteBarrierInternal(BasePage* page, const void* value) {
                     ThreadHeap::GcInfo(header->GcInfoIndex())->trace_);
 }
 
+void ThreadHeap::CheckObjectNotInCallbackStacks(const void* object) {
+#if DCHECK_IS_ON()
+  DCHECK(!MarkingStack()->HasCallbackForObject(object));
+  DCHECK(!PostMarkingCallbackStack()->HasCallbackForObject(object));
+  DCHECK(!WeakCallbackStack()->HasCallbackForObject(object));
+  DCHECK(!EphemeronStack()->HasCallbackForObject(object));
+#endif
+}
+
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;
 
 }  // namespace blink

@@ -344,8 +344,6 @@ class PLATFORM_EXPORT ThreadState {
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
 
-  void CheckObjectNotInCallbackStacks(const void*);
-
   class MainThreadGCForbiddenScope final {
     STACK_ALLOCATED();
 
