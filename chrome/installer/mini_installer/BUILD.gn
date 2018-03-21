@@ -6,7 +6,6 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/process_version_rc_template.gni")
-import("//chrome/test/mini_installer/mini_installer_test.gni")
 import("//components/nacl/features.gni")
 import("//third_party/icu/config.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -54,15 +53,6 @@ source_set("lib") {
   }
 
   configs += [ ":mini_installer_compiler_flags" ]
-
-  # This input dependency on the mini installer test Python files will force a
-  # recompilation when any of the Python files have changed. This will then
-  # invalidate the build and trigger running the test on the bots even when
-  # no other Chrome files have changed. These have to be inputs rather than a
-  # dependency because a dependency won't actually trigger recompiles in
-  # incremental build cases unless a source file actually references one of the
-  # dependency outputs.
-  inputs = mini_installer_test_files
 }
 
 process_version_rc_template("version") {

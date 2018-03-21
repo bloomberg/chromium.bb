@@ -593,8 +593,7 @@ group("gn_all") {
     # TODO(thakis): Enable this in cross builds, https://crbug.com/799827
     if (!(is_component_build && is_debug && target_cpu == "x86") &&
         host_os == "win") {
-      deps +=
-          [ "//chrome/installer/mini_installer:next_version_mini_installer" ]
+      deps += [ "//chrome/test/mini_installer:mini_installer_tests" ]
     }
   } else if (!is_android && !is_ios && !is_fuchsia) {
     deps += [ "//third_party/breakpad:symupload($host_toolchain)" ]

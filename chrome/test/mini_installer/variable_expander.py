@@ -64,7 +64,8 @@ def _GetUserSpecificRegistrySuffix():
 class VariableExpander:
   """Expands variables in strings."""
 
-  def __init__(self, mini_installer_path, next_version_mini_installer_path):
+  def __init__(self, mini_installer_path, next_version_mini_installer_path,
+               chromedriver_path, quiet):
     """Constructor.
 
     The constructor initializes a variable dictionary that maps variables to
@@ -92,6 +93,8 @@ class VariableExpander:
             root key, of Chrome Beta for Google Update.
         * $CHROME_UPDATE_REGISTRY_SUBKEY_SXS: the registry key, excluding the
             root key, of Chrome SxS for Google Update.
+        * $CHROMEDRIVER_PATH: Path to chromedriver.
+        * $QUIET: Supress output
         * $LAUNCHER_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
             key, of the app launcher for Google Update if $BRAND is 'Google
         *   Chrome'.
@@ -129,6 +132,8 @@ class VariableExpander:
         next_version_mini_installer_path)
     windows_major_ver, windows_minor_ver, _, _, _ = win32api.GetVersionEx()
     self._variable_mapping = {
+        'CHROMEDRIVER_PATH': chromedriver_path,
+        'QUIET': '-q' if quiet else '',
         'LOCAL_APPDATA': shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA,
                                                None, 0),
         'MINI_INSTALLER': mini_installer_abspath,
