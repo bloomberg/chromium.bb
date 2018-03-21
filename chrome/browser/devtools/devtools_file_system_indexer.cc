@@ -267,10 +267,12 @@ typedef Callback<void(bool, const vector<bool>&)> IndexerCallback;
 
 DevToolsFileSystemIndexer::FileSystemIndexingJob::FileSystemIndexingJob(
     const FilePath& file_system_path,
+    const std::vector<base::FilePath>& excluded_folders,
     const TotalWorkCallback& total_work_callback,
     const WorkedCallback& worked_callback,
     const DoneCallback& done_callback)
     : file_system_path_(file_system_path),
+      excluded_folders_(excluded_folders),
       total_work_callback_(total_work_callback),
       worked_callback_(worked_callback),
       done_callback_(done_callback),
@@ -278,6 +280,7 @@ DevToolsFileSystemIndexer::FileSystemIndexingJob::FileSystemIndexingJob(
       stopped_(false) {
   current_trigrams_set_.resize(kTrigramCount);
   current_trigrams_.reserve(kTrigramCount);
+  pending_folders_.push_back(file_system_path);
 }
 
 DevToolsFileSystemIndexer::FileSystemIndexingJob::~FileSystemIndexingJob() {}
@@ -303,10 +306,22 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::CollectFilesToIndex() {
   if (stopped_)
     return;
   if (!file_enumerator_) {
-    file_enumerator_.reset(
-        new FileEnumerator(file_system_path_, true, FileEnumerator::FILES));
+    file_enumerator_.reset(new FileEnumerator(
+        pending_folders_.back(), false,
+        FileEnumerator::FILES | FileEnumerator::DIRECTORIES));
+    pending_folders_.pop_back();
   }
   FilePath file_path = file_enumerator_->Next();
+  if (file_path.empty() && !pending_folders_.empty()) {
+    file_enumerator_.reset(new FileEnumerator(
+        pending_folders_.back(), false,
+        FileEnumerator::FILES | FileEnumerator::DIRECTORIES));
+    pending_folders_.pop_back();
+    impl_task_runner()->PostTask(
+        FROM_HERE, BindOnce(&FileSystemIndexingJob::CollectFilesToIndex, this));
+    return;
+  }
+
   if (file_path.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -315,6 +330,20 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::CollectFilesToIndex() {
     IndexFiles();
     return;
   }
+  if (file_enumerator_->GetInfo().IsDirectory()) {
+    bool excluded = false;
+    for (const FilePath& excluded_folder : excluded_folders_) {
+      excluded = excluded_folder.IsParent(file_path);
+      if (excluded)
+        break;
+    }
+    if (!excluded)
+      pending_folders_.push_back(file_path);
+    impl_task_runner()->PostTask(
+        FROM_HERE, BindOnce(&FileSystemIndexingJob::CollectFilesToIndex, this));
+    return;
+  }
+
   Time saved_last_modified_time =
       g_trigram_index.Get().LastModifiedTimeForFile(file_path);
   FileEnumerator::FileInfo file_info = file_enumerator_->GetInfo();
@@ -447,15 +476,18 @@ DevToolsFileSystemIndexer::~DevToolsFileSystemIndexer() {
 scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>
 DevToolsFileSystemIndexer::IndexPath(
     const string& file_system_path,
+    const vector<string>& excluded_folders,
     const TotalWorkCallback& total_work_callback,
     const WorkedCallback& worked_callback,
     const DoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_refptr<FileSystemIndexingJob> indexing_job =
-      new FileSystemIndexingJob(FilePath::FromUTF8Unsafe(file_system_path),
-                                total_work_callback,
-                                worked_callback,
-                                done_callback);
+  vector<base::FilePath> paths;
+  for (const string& path : excluded_folders) {
+    paths.push_back(FilePath::FromUTF8Unsafe(path));
+  }
+  scoped_refptr<FileSystemIndexingJob> indexing_job = new FileSystemIndexingJob(
+      FilePath::FromUTF8Unsafe(file_system_path), paths, total_work_callback,
+      worked_callback, done_callback);
   indexing_job->Start();
   return indexing_job;
 }
