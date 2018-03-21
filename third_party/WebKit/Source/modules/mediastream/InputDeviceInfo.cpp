@@ -72,6 +72,11 @@ void InputDeviceInfo::SetVideoInputCapabilities(
 }
 
 void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {
+  // If label is null, permissions have not been given and no capabilities
+  // should be returned.
+  if (label().IsEmpty())
+    return;
+
   capabilities.setDeviceId(deviceId());
   capabilities.setGroupId(groupId());
 
