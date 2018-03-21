@@ -663,7 +663,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
       "receivedConstants",
       net_log::ChromeNetLog::GetConstants(
           base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-          chrome::GetChannelString()));
+          chrome::GetChannelName()));
 
   PrePopulateEventList();
 

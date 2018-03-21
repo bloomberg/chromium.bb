@@ -51,17 +51,6 @@ extern NSString* const kAutoupdateStatusStatus;
 extern NSString* const kAutoupdateStatusVersion;
 extern NSString* const kAutoupdateStatusErrorMessages;
 
-namespace {
-
-enum BrandFileType {
-  kBrandFileTypeNotDetermined = 0,
-  kBrandFileTypeNone,
-  kBrandFileTypeUser,
-  kBrandFileTypeSystem,
-};
-
-} // namespace
-
 // KeystoneGlue is an adapter around the KSRegistration class, allowing it to
 // be used without linking directly against its containing KeystoneRegistration
 // framework.  This is used in an environment where most builds (such as
@@ -84,8 +73,8 @@ enum BrandFileType {
   NSString* appPath_;
   NSString* url_;
   NSString* version_;
-  NSString* channel_;  // Logically: Dev, Beta, or Stable.
-  BrandFileType brandFileType_;
+  std::string channel_;  // Logically: dev, beta, or stable.
+  NSString* brandFile_;  // Cached location of the brand file.
 
   // And the Keystone registration itself, with the active timer
   KSRegistration* registration_;  // strong

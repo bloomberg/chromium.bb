@@ -11,7 +11,7 @@
 
 namespace chrome {
 
-std::string GetChannelString() {
+std::string GetChannelName() {
 #if defined(GOOGLE_CHROME_BUILD)
   base::string16 channel(install_static::GetChromeChannelName());
 #if defined(SYZYASAN)

@@ -283,7 +283,7 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
           l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
                                         ? IDS_VERSION_UI_OFFICIAL
                                         : IDS_VERSION_UI_UNOFFICIAL),
-          base::UTF8ToUTF16(chrome::GetChannelString()),
+          base::UTF8ToUTF16(chrome::GetChannelName()),
 #if defined(ARCH_CPU_64_BITS)
           l10n_util::GetStringUTF16(IDS_VERSION_UI_64BIT)));
 #else

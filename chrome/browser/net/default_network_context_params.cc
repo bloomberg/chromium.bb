@@ -33,7 +33,7 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
 
   network_context_params->user_agent = GetUserAgent();
 
-  std::string quic_user_agent_id = chrome::GetChannelString();
+  std::string quic_user_agent_id = chrome::GetChannelName();
   if (!quic_user_agent_id.empty())
     quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(

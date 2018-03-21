@@ -331,7 +331,7 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
 
   std::unique_ptr<base::Value> constants(net_log::ChromeNetLog::GetConstants(
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-      chrome::GetChannelString()));
+      chrome::GetChannelName()));
 
   std::unique_ptr<net::FileNetLogObserver> net_log_logger =
       net::FileNetLogObserver::CreateUnbounded(state->log_path,

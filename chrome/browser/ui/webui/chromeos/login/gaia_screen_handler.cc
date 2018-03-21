@@ -397,7 +397,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("clientVersion", version_info::GetVersionNumber());
   if (!platform_version->empty())
     params.SetString("platformVersion", *platform_version);
-  params.SetString("releaseChannel", chrome::GetChannelString());
+  params.SetString("releaseChannel", chrome::GetChannelName());
   params.SetString("endpointGen", kEndpointGen);
 
   std::string email_domain;

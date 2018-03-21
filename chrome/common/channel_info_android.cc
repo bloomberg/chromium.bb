@@ -12,7 +12,7 @@
 
 namespace chrome {
 
-std::string GetChannelString() {
+std::string GetChannelName() {
   switch (GetChannel()) {
     case version_info::Channel::UNKNOWN: return "unknown";
     case version_info::Channel::CANARY: return "canary";

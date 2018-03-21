@@ -1102,7 +1102,7 @@ void BrowserProcessImpl::PreCreateThreads(
     }
     net_log_->StartWritingToFile(
         log_file, GetNetCaptureModeFromCommandLine(command_line),
-        command_line.GetCommandLineString(), chrome::GetChannelString());
+        command_line.GetCommandLineString(), chrome::GetChannelName());
   }
 
   // Must be created before the IOThread.

@@ -53,7 +53,7 @@ version_info::Channel GetChannelImpl(std::string* modifier_out,
 
 }  // namespace
 
-std::string GetChannelString() {
+std::string GetChannelName() {
   std::string modifier;
   GetChannelImpl(&modifier, nullptr);
   return modifier;
