@@ -415,8 +415,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsGpuRasterizationForced();
 
   settings.can_use_lcd_text = compositor_deps->IsLcdTextEnabled();
-  settings.use_distance_field_text =
-      compositor_deps->IsDistanceFieldTextEnabled();
   settings.use_zero_copy = compositor_deps->IsZeroCopyEnabled();
   settings.use_partial_raster = compositor_deps->IsPartialRasterEnabled();
   settings.enable_elastic_overscroll =

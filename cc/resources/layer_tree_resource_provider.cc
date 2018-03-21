@@ -988,7 +988,6 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GLenum texture_target,
     const gfx::Size& size,
     viz::ResourceFormat format,
-    bool use_distance_field_text,
     bool can_use_lcd_text,
     int msaa_sample_count) {
   GrGLTextureInfo texture_info;
@@ -997,8 +996,7 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
   texture_info.fFormat = TextureStorageFormat(format);
   GrBackendTexture backend_texture(size.width(), size.height(),
                                    GrMipMapped::kNo, texture_info);
-  SkSurfaceProps surface_props =
-      ComputeSurfaceProps(use_distance_field_text, can_use_lcd_text);
+  SkSurfaceProps surface_props = ComputeSurfaceProps(can_use_lcd_text);
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
       ResourceFormatToClosestSkColorType(format), nullptr, &surface_props);
@@ -1010,10 +1008,8 @@ LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
 }
 
 SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
-    bool use_distance_field_text,
     bool can_use_lcd_text) {
-  uint32_t flags =
-      use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
+  uint32_t flags = 0;
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
   if (can_use_lcd_text) {

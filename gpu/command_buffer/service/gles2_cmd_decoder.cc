@@ -2020,7 +2020,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLuint sk_color,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
-                             GLboolean use_distance_field_text,
                              GLint color_type,
                              GLuint color_space_transfer_cache_id);
   void DoRasterCHROMIUM(GLsizeiptr size, const void* list);
@@ -20384,7 +20383,6 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLboolean use_distance_field_text,
     GLint color_type,
     GLuint color_space_transfer_cache_id) {
   if (!gr_context_) {
@@ -20477,8 +20475,8 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(
 
   GrBackendTexture gr_texture(width, height, GrMipMapped::kNo, texture_info);
 
-  uint32_t flags =
-      use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
+  uint32_t flags = 0;
+
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
   if (can_use_lcd_text) {

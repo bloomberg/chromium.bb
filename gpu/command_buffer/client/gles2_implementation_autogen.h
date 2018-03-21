@@ -1241,7 +1241,6 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLuint sk_color,
                          GLuint msaa_sample_count,
                          GLboolean can_use_lcd_text,
-                         GLboolean use_distance_field_text,
                          GLint color_type,
                          GLuint color_space_transfer_cache_id) override;
 

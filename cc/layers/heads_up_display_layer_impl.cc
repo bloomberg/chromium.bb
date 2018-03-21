@@ -278,8 +278,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
           context_provider->GrContext(), backing->texture_id,
           backing->texture_target, pool_resource.size(), pool_resource.format(),
-          false /* use_distance_field_text */, false /* can_use_lcd_text */,
-          0 /* msaa_sample_count */);
+          false /* can_use_lcd_text */, 0 /* msaa_sample_count */);
       SkSurface* surface = scoped_surface.surface();
       if (!surface) {
         pool_->ReleaseResource(std::move(pool_resource));

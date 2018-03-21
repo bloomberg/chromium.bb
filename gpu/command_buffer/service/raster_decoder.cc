@@ -303,7 +303,6 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                              GLuint sk_color,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
-                             GLboolean use_distance_field_text,
                              GLint color_type) {
     NOTIMPLEMENTED();
   }

@@ -82,7 +82,6 @@ class OopPixelTest : public testing::Test {
     SkColor background_color = SK_ColorBLACK;
     int msaa_sample_count = 0;
     bool use_lcd_text = false;
-    bool use_distance_field_text = false;
     SkColorType color_type = kRGBA_8888_SkColorType;
     gfx::Size resource_size;
     gfx::Size content_size;
@@ -133,8 +132,7 @@ class OopPixelTest : public testing::Test {
     if (options.preclear) {
       raster_implementation->BeginRasterCHROMIUM(
           raster_texture_id, options.preclear_color, options.msaa_sample_count,
-          options.use_lcd_text, options.use_distance_field_text,
-          options.color_type, color_space);
+          options.use_lcd_text, options.color_type, color_space);
       raster_implementation->EndRasterCHROMIUM();
     }
 
@@ -142,8 +140,7 @@ class OopPixelTest : public testing::Test {
 
     raster_implementation->BeginRasterCHROMIUM(
         raster_texture_id, options.background_color, options.msaa_sample_count,
-        options.use_lcd_text, options.use_distance_field_text,
-        options.color_type, color_space);
+        options.use_lcd_text, options.color_type, color_space);
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
@@ -237,9 +234,7 @@ class OopPixelTest : public testing::Test {
     settings.use_lcd_text = options.use_lcd_text;
     settings.image_provider = &image_provider;
 
-    uint32_t flags = options.use_distance_field_text
-                         ? SkSurfaceProps::kUseDistanceFieldFonts_Flag
-                         : 0;
+    uint32_t flags = 0;
     SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
     if (options.use_lcd_text) {
       surface_props =

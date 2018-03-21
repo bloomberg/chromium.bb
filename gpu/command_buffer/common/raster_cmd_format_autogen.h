@@ -754,14 +754,12 @@ struct BeginRasterCHROMIUM {
             GLuint _sk_color,
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
-            GLboolean _use_distance_field_text,
             GLint _color_type) {
     SetHeader();
     texture_id = _texture_id;
     sk_color = _sk_color;
     msaa_sample_count = _msaa_sample_count;
     can_use_lcd_text = _can_use_lcd_text;
-    use_distance_field_text = _use_distance_field_text;
     color_type = _color_type;
   }
 
@@ -770,11 +768,10 @@ struct BeginRasterCHROMIUM {
             GLuint _sk_color,
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
-            GLboolean _use_distance_field_text,
             GLint _color_type) {
     static_cast<ValueType*>(cmd)->Init(_texture_id, _sk_color,
                                        _msaa_sample_count, _can_use_lcd_text,
-                                       _use_distance_field_text, _color_type);
+                                       _color_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -783,12 +780,11 @@ struct BeginRasterCHROMIUM {
   uint32_t sk_color;
   uint32_t msaa_sample_count;
   uint32_t can_use_lcd_text;
-  uint32_t use_distance_field_text;
   int32_t color_type;
 };
 
-static_assert(sizeof(BeginRasterCHROMIUM) == 28,
-              "size of BeginRasterCHROMIUM should be 28");
+static_assert(sizeof(BeginRasterCHROMIUM) == 24,
+              "size of BeginRasterCHROMIUM should be 24");
 static_assert(offsetof(BeginRasterCHROMIUM, header) == 0,
               "offset of BeginRasterCHROMIUM header should be 0");
 static_assert(offsetof(BeginRasterCHROMIUM, texture_id) == 4,
@@ -799,11 +795,8 @@ static_assert(offsetof(BeginRasterCHROMIUM, msaa_sample_count) == 12,
               "offset of BeginRasterCHROMIUM msaa_sample_count should be 12");
 static_assert(offsetof(BeginRasterCHROMIUM, can_use_lcd_text) == 16,
               "offset of BeginRasterCHROMIUM can_use_lcd_text should be 16");
-static_assert(
-    offsetof(BeginRasterCHROMIUM, use_distance_field_text) == 20,
-    "offset of BeginRasterCHROMIUM use_distance_field_text should be 20");
-static_assert(offsetof(BeginRasterCHROMIUM, color_type) == 24,
-              "offset of BeginRasterCHROMIUM color_type should be 24");
+static_assert(offsetof(BeginRasterCHROMIUM, color_type) == 20,
+              "offset of BeginRasterCHROMIUM color_type should be 20");
 
 struct RasterCHROMIUM {
   typedef RasterCHROMIUM ValueType;

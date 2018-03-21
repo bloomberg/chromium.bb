@@ -1008,14 +1008,6 @@ void RenderThreadImpl::Init(
     gpu_rasterization_msaa_sample_count_ = -1;
   }
 
-  if (command_line.HasSwitch(switches::kDisableDistanceFieldText)) {
-    is_distance_field_text_enabled_ = false;
-  } else if (command_line.HasSwitch(switches::kEnableDistanceFieldText)) {
-    is_distance_field_text_enabled_ = true;
-  } else {
-    is_distance_field_text_enabled_ = false;
-  }
-
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
   media::InitializeMediaLibrary();
@@ -1718,10 +1710,6 @@ int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
 
 bool RenderThreadImpl::IsLcdTextEnabled() {
   return is_lcd_text_enabled_;
-}
-
-bool RenderThreadImpl::IsDistanceFieldTextEnabled() {
-  return is_distance_field_text_enabled_;
 }
 
 bool RenderThreadImpl::IsZeroCopyEnabled() {

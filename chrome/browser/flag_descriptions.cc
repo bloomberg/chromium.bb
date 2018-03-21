@@ -232,11 +232,6 @@ const char kDisallowDocWrittenScriptsUiDescription[] =
     "Disallows fetches for third-party parser-blocking scripts inserted into "
     "the main frame via document.write.";
 
-const char kDistanceFieldTextName[] = "Distance field text";
-const char kDistanceFieldTextDescription[] =
-    "Text is rendered with signed distance fields rather than bitmap alpha "
-    "masks.";
-
 const char kDriveSearchInChromeLauncherName[] =
     "Drive Search in Chrome App Launcher";
 const char kDriveSearchInChromeLauncherDescription[] =

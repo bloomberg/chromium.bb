@@ -2568,13 +2568,12 @@ void GLES2TraceImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLboolean use_distance_field_text,
     GLint color_type,
     GLuint color_space_transfer_cache_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BeginRasterCHROMIUM");
   gl_->BeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                           can_use_lcd_text, use_distance_field_text,
-                           color_type, color_space_transfer_cache_id);
+                           can_use_lcd_text, color_type,
+                           color_space_transfer_cache_id);
 }
 
 void* GLES2TraceImplementation::MapRasterCHROMIUM(GLsizeiptr size) {

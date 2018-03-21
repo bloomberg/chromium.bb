@@ -24,7 +24,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   GpuRasterBufferProvider(viz::ContextProvider* compositor_context_provider,
                           viz::RasterContextProvider* worker_context_provider,
                           LayerTreeResourceProvider* resource_provider,
-                          bool use_distance_field_text,
                           bool use_gpu_memory_buffer_resources,
                           int gpu_rasterization_msaa_sample_count,
                           viz::ResourceFormat preferred_tile_format,
@@ -114,7 +113,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;
   LayerTreeResourceProvider* const resource_provider_;
-  const bool use_distance_field_text_;
   const bool use_gpu_memory_buffer_resources_;
   const int msaa_sample_count_;
   const viz::ResourceFormat preferred_tile_format_;

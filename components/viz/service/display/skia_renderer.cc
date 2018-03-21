@@ -204,9 +204,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
       gr_context, render_target, kTopLeft_GrSurfaceOrigin, nullptr,
       &surface_props);
 #else
-  // TODO(weiliangc): Set up correct can_use_lcd_text and
-  // use_distance_field_text for SkSurfaceProps flags. How to setup is in
-  // ResourceProvider. (crbug.com/644851)
+  // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
+  // How to setup is in ResourceProvider. (http://crbug.com/644851)
 
   GrContext* gr_context = output_surface_->context_provider()->GrContext();
   if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
