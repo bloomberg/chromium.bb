@@ -68,9 +68,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
-  // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup();
-
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
@@ -83,9 +80,26 @@ class PeopleHandler : public SettingsPageUIHandler,
                            DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
+      DisplayConfigureWithEngineDisabledAndCancelAfterSigninSuccess);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DisplayConfigureWithEngineDisabledAndSigninFailed);
+  FRIEND_TEST_ALL_PREFIXES(
+      PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SelectCustomEncryption);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           ShowSetupCustomPassphraseRequired);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupEncryptAll);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupEncryptAllDisallowed);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupManuallySyncAll);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           ShowSetupOldGaiaPassphraseRequired);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupSyncEverything);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           ShowSetupSyncForAllTypesIndividually);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSigninOnAuthError);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetup);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SuccessfullySetPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
