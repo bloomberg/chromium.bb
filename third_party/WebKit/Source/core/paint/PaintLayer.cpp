@@ -119,11 +119,6 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
               "PaintLayer should stay small");
 
-bool IsReferenceClipPath(const ClipPathOperation* clip_operation) {
-  return clip_operation &&
-         clip_operation->GetType() == ClipPathOperation::REFERENCE;
-}
-
 }  // namespace
 
 using namespace HTMLNames;
@@ -191,10 +186,9 @@ PaintLayer::~PaintLayer() {
     const ComputedStyle& style = GetLayoutObject().StyleRef();
     if (style.HasFilter())
       style.Filter().RemoveClient(*rare_data_->resource_info);
-    if (IsReferenceClipPath(style.ClipPath())) {
-      ToReferenceClipPathOperation(style.ClipPath())
-          ->RemoveClient(*rare_data_->resource_info);
-    }
+    if (auto* reference_clip =
+            ToReferenceClipPathOperationOrNull(style.ClipPath()))
+      reference_clip->RemoveClient(*rare_data_->resource_info);
     rare_data_->resource_info->ClearLayer();
   }
   if (GetLayoutObject().GetFrame()) {
@@ -2935,19 +2929,16 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
 
 void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
                                 const ComputedStyle& new_style) {
-  ClipPathOperation* new_clip_operation = new_style.ClipPath();
-  ClipPathOperation* old_clip_operation =
-      old_style ? old_style->ClipPath() : nullptr;
-  if (!new_clip_operation && !old_clip_operation)
+  ClipPathOperation* new_clip = new_style.ClipPath();
+  ClipPathOperation* old_clip = old_style ? old_style->ClipPath() : nullptr;
+  if (!new_clip && !old_clip)
     return;
   const bool had_resource_info = ResourceInfo();
-  if (IsReferenceClipPath(new_clip_operation)) {
-    ToReferenceClipPathOperation(new_clip_operation)
-        ->AddClient(EnsureResourceInfo());
-  }
-  if (had_resource_info && IsReferenceClipPath(old_clip_operation)) {
-    ToReferenceClipPathOperation(old_clip_operation)
-        ->RemoveClient(*ResourceInfo());
+  if (auto* reference_clip = ToReferenceClipPathOperationOrNull(new_clip))
+    reference_clip->AddClient(EnsureResourceInfo());
+  if (had_resource_info) {
+    if (auto* old_reference_clip = ToReferenceClipPathOperationOrNull(old_clip))
+      old_reference_clip->RemoveClient(*ResourceInfo());
   }
 }
 
