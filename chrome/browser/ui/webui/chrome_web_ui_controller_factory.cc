@@ -80,6 +80,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "components/security_interstitials/content/connection_help_ui.h"
+#include "components/security_interstitials/content/urls.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
@@ -280,10 +282,6 @@ WebUIController* NewWebUI<WelcomeWin10UI>(WebUI* web_ui, const GURL& url) {
 #endif  // defined(OS_WIN)
 
 bool IsAboutUI(const GURL& url) {
-  if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature) &&
-      url.host_piece() == chrome::kChromeUIConnectionHelpHost) {
-    return true;
-  }
   return (url.host_piece() == chrome::kChromeUIChromeURLsHost ||
           url.host_piece() == chrome::kChromeUICreditsHost ||
           url.host_piece() == chrome::kChromeUIDNSHost
@@ -404,6 +402,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIBookmarksHost) {
     return MdBookmarksUI::IsEnabled() ? &NewWebUI<MdBookmarksUI>
                                       : &NewWebUI<BookmarksUI>;
+  }
+  if (base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature) &&
+      url.host_piece() == security_interstitials::kChromeUIConnectionHelpHost) {
+    return &NewWebUI<security_interstitials::ConnectionHelpUI>;
   }
   // Downloads list on Android uses the built-in download manager.
   if (url.host_piece() == chrome::kChromeUIDownloadsHost)
