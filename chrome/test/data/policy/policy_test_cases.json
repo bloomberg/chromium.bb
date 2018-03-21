@@ -3633,6 +3633,18 @@
     ]
   },
 
+  "AutoplayWhitelist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "AutoplayWhitelist": [
+        "https://mydomain.com", "https://test.mydomain.com"
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "media.autoplay_whitelist" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
