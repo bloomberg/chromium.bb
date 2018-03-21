@@ -91,6 +91,13 @@ void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
                                            const std::set<std::string>& scopes,
                                            AccessTokenCallback callback) {}
 
+void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
+                                           const std::string& client_id,
+                                           const std::set<std::string>& scopes,
+                                           AccessTokenCallback callback) {
+  GetAccessToken(identity, client_id, "", scopes, callback);
+}
+
 void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity,
                                                  GetAvatarCallback callback) {}
 
