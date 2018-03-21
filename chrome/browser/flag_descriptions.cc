@@ -151,17 +151,10 @@ const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "
     "layer compositing.";
 
-const char kContextualSuggestionsAboveArticlesName[] =
-    "Enable Contextual Suggestions Above Articles";
-const char kContextualSuggestionsAboveArticlesDescription[] =
-    "If enabled, shows contextual suggestions in a linear list above "
-    "article suggestions.";
-
-const char kContextualSuggestionsCarouselName[] =
-    "Enable Contextual Suggestions Carousel";
-const char kContextualSuggestionsCarouselDescription[] =
-    "If enabled, shows contextual suggestions in a horizontal carousel in "
-    "bottom sheet content.";
+const char kContextualSuggestionsBottomSheetName[] =
+    "Enable Contextual Suggestions Bottom Sheet";
+const char kContextualSuggestionsBottomSheetDescription[] =
+    "If enabled, shows contextual suggestions in the bottom sheet.";
 
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =

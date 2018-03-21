@@ -1344,7 +1344,7 @@ public class NewTabPageAdapterTest {
         mSource.removeObservers();
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */ null,
                 makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
-                /* tileGroupDelegate = */ null, /* suggestionsCarousel = */ null);
+                /* tileGroupDelegate = */ null);
         mAdapter.refreshSuggestions();
     }
 

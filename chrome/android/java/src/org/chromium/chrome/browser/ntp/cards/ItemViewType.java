@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.support.annotation.IntDef;
 import android.support.v7.widget.RecyclerView.Adapter;
 
-import org.chromium.chrome.browser.suggestions.SuggestionsCarousel;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -20,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 @IntDef({ItemViewType.ABOVE_THE_FOLD, ItemViewType.LOGO, ItemViewType.SITE_SECTION,
         ItemViewType.HEADER, ItemViewType.SNIPPET, ItemViewType.SPACING, ItemViewType.STATUS,
         ItemViewType.PROGRESS, ItemViewType.ACTION, ItemViewType.FOOTER, ItemViewType.PROMO,
-        ItemViewType.ALL_DISMISSED, ItemViewType.CAROUSEL})
+        ItemViewType.ALL_DISMISSED})
 @Retention(RetentionPolicy.SOURCE)
 public @interface ItemViewType {
     /**
@@ -95,11 +93,4 @@ public @interface ItemViewType {
      * @see Adapter#getItemViewType(int)
      */
     int ALL_DISMISSED = 12;
-
-    /**
-     * View type for a {@link SuggestionsCarousel}.
-     *
-     * @see Adapter#getItemViewType(int)
-     */
-    int CAROUSEL = 13;
 }
