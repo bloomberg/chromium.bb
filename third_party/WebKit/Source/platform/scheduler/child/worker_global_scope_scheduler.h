@@ -30,7 +30,7 @@ class PLATFORM_EXPORT WorkerGlobalScopeScheduler {
   // Returns a task runner that is suitable with the given task type. This can
   // be called from any thread.
   //
-  // This must be called only from TaskRunnerHelper::Get().
+  // This must be called only from WorkerThread::GetTaskRunner().
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) const;
 
   // TODO(nhiroki): Add mechanism to throttle/suspend tasks in response to the
