@@ -28,6 +28,9 @@
 
 namespace blink {
 
+using RelationType = CSSSelector::RelationType;
+using PseudoType = CSSSelector::PseudoType;
+
 CSSParserSelector::CSSParserSelector()
     : selector_(std::make_unique<CSSSelector>()) {}
 
@@ -110,6 +113,25 @@ void CSSParserSelector::PrependTagSelector(const QualifiedName& tag_q_name,
 bool CSSParserSelector::IsHostPseudoSelector() const {
   return GetPseudoType() == CSSSelector::kPseudoHost ||
          GetPseudoType() == CSSSelector::kPseudoHostContext;
+}
+
+RelationType CSSParserSelector::GetImplicitShadowCombinatorForMatching() const {
+  switch (GetPseudoType()) {
+    case PseudoType::kPseudoSlotted:
+      return RelationType::kShadowSlot;
+    case PseudoType::kPseudoWebKitCustomElement:
+    case PseudoType::kPseudoBlinkInternalElement:
+    case PseudoType::kPseudoCue:
+    case PseudoType::kPseudoPlaceholder:
+    case PseudoType::kPseudoShadow:
+      return RelationType::kShadowPseudo;
+    default:
+      return RelationType::kSubSelector;
+  }
+}
+
+bool CSSParserSelector::NeedsImplicitShadowCombinatorForMatching() const {
+  return GetImplicitShadowCombinatorForMatching() != RelationType::kSubSelector;
 }
 
 }  // namespace blink

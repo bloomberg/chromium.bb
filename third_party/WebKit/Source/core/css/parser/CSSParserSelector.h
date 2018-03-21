@@ -100,14 +100,12 @@ class CORE_EXPORT CSSParserSelector {
     return selector_->SelectorList();
   }
 
-  bool NeedsImplicitShadowCombinatorForMatching() const {
-    return GetPseudoType() == CSSSelector::kPseudoWebKitCustomElement ||
-           GetPseudoType() == CSSSelector::kPseudoBlinkInternalElement ||
-           GetPseudoType() == CSSSelector::kPseudoCue ||
-           GetPseudoType() == CSSSelector::kPseudoPlaceholder ||
-           GetPseudoType() == CSSSelector::kPseudoShadow ||
-           GetPseudoType() == CSSSelector::kPseudoSlotted;
-  }
+  // Some pseudo elements behave as if they have an implicit combinator to their
+  // left even though they are written without one. This method returns the
+  // correct implicit combinator. If no new combinator should be used, it
+  // returns RelationType::kSubSelector.
+  CSSSelector::RelationType GetImplicitShadowCombinatorForMatching() const;
+  bool NeedsImplicitShadowCombinatorForMatching() const;
 
   bool IsSimple() const;
 

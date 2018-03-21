@@ -919,9 +919,7 @@ CSSSelectorParser::SplitCompoundAtImplicitShadowCrossingCombinator(
   std::unique_ptr<CSSParserSelector> second_compound =
       split_after->ReleaseTagHistory();
   second_compound->AppendTagHistory(
-      second_compound->GetPseudoType() == CSSSelector::kPseudoSlotted
-          ? CSSSelector::kShadowSlot
-          : CSSSelector::kShadowPseudo,
+      second_compound->GetImplicitShadowCombinatorForMatching(),
       std::move(compound_selector));
   return second_compound;
 }
