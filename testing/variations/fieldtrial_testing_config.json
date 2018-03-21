@@ -1757,25 +1757,6 @@
             ]
         }
     ],
-    "LazyParseCSS": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "win",
-                "android",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LazyParseCSS"
-                    ]
-                }
-            ]
-        }
-    ],
     "LocalScreenCasting": [
         {
             "platforms": [
