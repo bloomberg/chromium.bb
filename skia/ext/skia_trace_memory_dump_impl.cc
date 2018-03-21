@@ -75,4 +75,10 @@ SkTraceMemoryDump::LevelOfDetail SkiaTraceMemoryDumpImpl::getRequestedDetails()
   return request_level_;
 }
 
+bool SkiaTraceMemoryDumpImpl::shouldDumpWrappedObjects() const {
+  // Chrome already dumps objects it imports into Skia. Avoid duplicate dumps
+  // by asking Skia not to dump them.
+  return false;
+}
+
 }  // namespace skia

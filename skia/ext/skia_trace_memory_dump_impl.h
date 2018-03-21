@@ -50,6 +50,7 @@ class SK_API SkiaTraceMemoryDumpImpl : public SkTraceMemoryDump {
       const char* dumpName,
       const SkDiscardableMemory& discardableMemoryObject) override;
   LevelOfDetail getRequestedDetails() const override;
+  bool shouldDumpWrappedObjects() const override;
 
  protected:
   base::trace_event::ProcessMemoryDump* process_memory_dump() {
