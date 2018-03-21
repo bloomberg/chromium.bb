@@ -32,6 +32,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -577,6 +578,70 @@ TEST_F(BidirectionalStreamTest,
   delegate.reset();
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
+  scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
+  cert_request->host_and_port = host_port_pair_;
+
+  // First attempt receives client auth request.
+  SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+  ssl_data1.next_proto = kProtoHTTP2;
+  ssl_data1.cert_request_info = cert_request.get();
+
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
+  StaticSocketDataProvider socket_data1(nullptr, 0, nullptr, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&socket_data1);
+
+  // Second attempt succeeds.
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(kDefaultUrl, 1, LOWEST));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0),
+  };
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body_frame(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(resp, 1), CreateMockRead(body_frame, 2),
+      MockRead(SYNCHRONOUS, net::OK, 3),
+  };
+
+  SSLSocketDataProvider ssl_data2(ASYNC, OK);
+  ssl_data2.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
+  SequencedSocketData socket_data2(reads, arraysize(reads), writes,
+                                   arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&socket_data2);
+
+  http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED, SocketTag());
+  std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
+      new BidirectionalStreamRequestInfo);
+  request_info->method = "GET";
+  request_info->url = default_url_;
+  request_info->end_stream_on_headers = true;
+  request_info->priority = LOWEST;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  std::unique_ptr<TestDelegateBase> delegate(
+      new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+
+  delegate->SetRunUntilCompletion(true);
+  delegate->Start(std::move(request_info), http_session_.get());
+
+  // Ensure the certificate was added to the client auth cache.
+  scoped_refptr<X509Certificate> client_cert;
+  scoped_refptr<SSLPrivateKey> client_private_key;
+  ASSERT_TRUE(http_session_->ssl_client_auth_cache()->Lookup(
+      host_port_pair_, &client_cert, &client_private_key));
+  ASSERT_FALSE(client_cert);
+  ASSERT_FALSE(client_private_key);
+
+  const SpdyHeaderBlock& response_headers = delegate->response_headers();
+  EXPECT_EQ("200", response_headers.find(":status")->second);
+  EXPECT_EQ(1, delegate->on_data_read_count());
+  EXPECT_EQ(0, delegate->on_data_sent_count());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
 }
 
 // Simulates user calling ReadData after END_STREAM has been received in

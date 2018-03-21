@@ -104,10 +104,6 @@ BidirectionalStream::BidirectionalStream(
                    base::Unretained(&request_info_->extra_headers)));
   }
 
-  SSLConfig server_ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&server_ssl_config);
-  session->GetAlpnProtos(&server_ssl_config.alpn_protos);
-
   if (!request_info_->url.SchemeIs(url::kHttpsScheme)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -116,22 +112,11 @@ BidirectionalStream::BidirectionalStream(
     return;
   }
 
-  HttpRequestInfo http_request_info;
-  http_request_info.url = request_info_->url;
-  http_request_info.method = request_info_->method;
-  http_request_info.extra_headers = request_info_->extra_headers;
-  http_request_info.socket_tag = request_info_->socket_tag;
-  stream_request_ =
-      session->http_stream_factory()->RequestBidirectionalStreamImpl(
-          http_request_info, request_info_->priority, server_ssl_config,
-          server_ssl_config, this,
-          /* enable_ip_based_pooling = */ true,
-          /* enable_alternative_services = */ true, net_log_);
-  // Check that this call cannot fail to set a non-NULL |stream_request_|.
-  DCHECK(stream_request_);
-  // Check that HttpStreamFactory does not invoke OnBidirectionalStreamImplReady
-  // synchronously.
-  DCHECK(!stream_impl_);
+  SSLConfig ssl_config;
+  session->ssl_config_service()->GetSSLConfig(&ssl_config);
+  session->GetAlpnProtos(&ssl_config.alpn_protos);
+
+  StartRequest(ssl_config);
 }
 
 BidirectionalStream::~BidirectionalStream() {
@@ -218,6 +203,26 @@ void BidirectionalStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   DCHECK(details);
   if (stream_impl_)
     stream_impl_->PopulateNetErrorDetails(details);
+}
+
+void BidirectionalStream::StartRequest(const SSLConfig& ssl_config) {
+  DCHECK(!stream_request_);
+  HttpRequestInfo http_request_info;
+  http_request_info.url = request_info_->url;
+  http_request_info.method = request_info_->method;
+  http_request_info.extra_headers = request_info_->extra_headers;
+  http_request_info.socket_tag = request_info_->socket_tag;
+  stream_request_ =
+      session_->http_stream_factory()->RequestBidirectionalStreamImpl(
+          http_request_info, request_info_->priority, ssl_config, ssl_config,
+          this,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, net_log_);
+  // Check that this call does not fail.
+  DCHECK(stream_request_);
+  // Check that HttpStreamFactory does not invoke OnBidirectionalStreamImplReady
+  // synchronously.
+  DCHECK(!stream_impl_);
 }
 
 void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
@@ -402,7 +407,16 @@ void BidirectionalStream::OnNeedsClientAuth(const SSLConfig& used_ssl_config,
                                             SSLCertRequestInfo* cert_info) {
   DCHECK(stream_request_);
 
-  NotifyFailed(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+  // BidirectionalStream doesn't support client auth. It ignores client auth
+  // requests with null client cert and key.
+  SSLConfig ssl_config = used_ssl_config;
+  ssl_config.send_client_cert = true;
+  ssl_config.client_cert = nullptr;
+  ssl_config.client_private_key = nullptr;
+  session_->ssl_client_auth_cache()->Add(cert_info->host_and_port, nullptr,
+                                         nullptr);
+  stream_request_ = nullptr;
+  StartRequest(ssl_config);
 }
 
 void BidirectionalStream::OnHttpsProxyTunnelResponse(
