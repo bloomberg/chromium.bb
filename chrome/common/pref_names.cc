@@ -2538,6 +2538,9 @@ const char kWebDriverOverridesIncompatiblePolicies[] =
 #if !defined(OS_ANDROID)
 // Boolean that specifies whether media (audio/video) autoplay is allowed.
 const char kAutoplayAllowed[] = "media.autoplay_allowed";
+
+// Holds URL patterns that specify URLs that will be allowed to autoplay.
+const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace prefs

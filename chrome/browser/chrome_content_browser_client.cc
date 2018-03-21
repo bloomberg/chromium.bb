@@ -597,6 +597,49 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
   return false;
 }
 
+#if !defined(OS_ANDROID)
+// Check if the current url is whitelisted based on a list of whitelisted urls.
+bool IsURLWhitelisted(const GURL& current_url,
+                      const base::Value::ListStorage& whitelisted_urls) {
+  // Only check on HTTP and HTTPS pages.
+  if (!current_url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  for (auto const& value : whitelisted_urls) {
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString(value.GetString());
+    if (pattern == ContentSettingsPattern::Wildcard() || !pattern.IsValid())
+      continue;
+    if (pattern.Matches(current_url))
+      return true;
+  }
+
+  return false;
+}
+
+// Check if autoplay is allowed by policy configuration.
+bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
+                               PrefService* prefs) {
+  DCHECK(prefs);
+
+  // Check if we have globally allowed autoplay by policy.
+  if (prefs->GetBoolean(prefs::kAutoplayAllowed) &&
+      prefs->IsManagedPreference(prefs::kAutoplayAllowed)) {
+    return true;
+  }
+
+  if (!contents)
+    return false;
+
+  // Check if the current URL matches a URL pattern on the whitelist.
+  const base::ListValue* autoplay_whitelist =
+      prefs->GetList(prefs::kAutoplayWhitelist);
+  return autoplay_whitelist &&
+         prefs->IsManagedPreference(prefs::kAutoplayWhitelist) &&
+         IsURLWhitelisted(contents->GetURL(), autoplay_whitelist->GetList());
+}
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
@@ -942,6 +985,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
+  registry->RegisterListPref(prefs::kAutoplayWhitelist);
 #endif
 }
 
@@ -2810,8 +2854,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
 #if !defined(OS_ANDROID)
-  if (prefs->GetBoolean(prefs::kAutoplayAllowed) &&
-      prefs->IsManagedPreference(prefs::kAutoplayAllowed)) {
+  // If autoplay is allowed by policy then update the autoplay policy in web
+  // preferences.
+  if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     web_prefs->autoplay_policy =
         content::AutoplayPolicy::kNoUserGestureRequired;
   }

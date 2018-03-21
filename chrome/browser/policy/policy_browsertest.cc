@@ -293,6 +293,8 @@ const base::FilePath::CharType kGoodUnpackedExt[] =
 const base::FilePath::CharType kAppUnpackedExt[] =
     FILE_PATH_LITERAL("app");
 
+const char kAutoplayTestPageURL[] = "/media/autoplay_iframe.html";
+
 #if !defined(OS_MACOSX)
 const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
@@ -5120,15 +5122,69 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
 
 #if !defined(OS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, AutoplayAllowedByPolicy) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+class AutoplayPolicyTest : public PolicyTest {
+ public:
+  AutoplayPolicyTest() {
+    // Start two embedded test servers on different ports. This will ensure
+    // the test works correctly with cross origin iframes and site-per-process.
+    embedded_test_server2()->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    EXPECT_TRUE(embedded_test_server()->Start());
+    EXPECT_TRUE(embedded_test_server2()->Start());
+  }
+
+  void NavigateToTestPage() {
+    GURL origin = embedded_test_server()->GetURL(kAutoplayTestPageURL);
+    ui_test_utils::NavigateToURL(browser(), origin);
+
+    // Navigate the subframe to the test page but on the second origin.
+    GURL origin2 = embedded_test_server2()->GetURL(kAutoplayTestPageURL);
+    std::string script = base::StringPrintf(
+        "setTimeout(\""
+        "document.getElementById('subframe').src='%s';"
+        "\",0)",
+        origin2.spec().c_str());
+    content::TestNavigationObserver load_observer(GetWebContents());
+    EXPECT_TRUE(ExecuteScriptWithoutUserGesture(GetWebContents(), script));
+    load_observer.Wait();
+  }
+
+  net::EmbeddedTestServer* embedded_test_server2() {
+    return &embedded_test_server2_;
+  }
+
+  bool TryAutoplay(content::RenderFrameHost* rfh) {
+    bool result = false;
+
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+        rfh, "tryPlayback();", &result));
+
+    return result;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::RenderFrameHost* GetMainFrame() {
+    return GetWebContents()->GetMainFrame();
+  }
+
+  content::RenderFrameHost* GetChildFrame() {
+    return GetWebContents()->GetAllFrames()[1];
+  }
+
+ private:
+  // Second instance of embedded test server to provide a second test origin.
+  net::EmbeddedTestServer embedded_test_server2_;
+};
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedByPolicy) {
+  NavigateToTestPage();
 
   // Check that autoplay was not allowed.
-  EXPECT_EQ(
-      web_contents->GetRenderViewHost()->GetWebkitPreferences().autoplay_policy,
-      content::AutoplayPolicy::kDocumentUserActivationRequired);
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
 
   // Update policy to allow autoplay.
   PolicyMap policies;
@@ -5137,10 +5193,177 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AutoplayAllowedByPolicy) {
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
-  web_contents->GetRenderViewHost()->OnWebkitPreferencesChanged();
-  EXPECT_EQ(
-      web_contents->GetRenderViewHost()->GetWebkitPreferences().autoplay_policy,
-      content::AutoplayPolicy::kNoUserGestureRequired);
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
+  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Allowed) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with our origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
+
+  // Update policy to allow autoplay for our test origin.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
+  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_PatternAllowed) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with our origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value("127.0.0.1:*"));
+
+  // Update policy to allow autoplay for our test origin.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
+  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Missing) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with a random origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value("https://www.example.com"));
+
+  // Update policy to allow autoplay for a random origin.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was not allowed.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedByPolicy) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Update policy to forbid autoplay.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayAllowed,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was not allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with a random origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value("https://www.example.com"));
+
+  // Update policy to allow autoplay for a random origin.
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was not allowed.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Update policy to forbid autoplay.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayAllowed,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was not allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with our test origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
+
+  // Update policy to allow autoplay for our test origin.
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
+  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
+  NavigateToTestPage();
+
+  // Check that autoplay was not allowed.
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Update policy to forbid autoplay.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayAllowed,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was not allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_FALSE(TryAutoplay(GetMainFrame()));
+  EXPECT_FALSE(TryAutoplay(GetChildFrame()));
+
+  // Create a test whitelist with our test origin.
+  std::vector<base::Value> whitelist;
+  whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
+
+  // Update policy to allow autoplay for our test origin.
+  SetPolicy(&policies, key::kAutoplayWhitelist,
+            std::make_unique<base::ListValue>(whitelist));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was allowed by policy.
+  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_TRUE(TryAutoplay(GetMainFrame()));
+  EXPECT_TRUE(TryAutoplay(GetChildFrame()));
 }
 
 #endif  // !defined(OS_ANDROID)

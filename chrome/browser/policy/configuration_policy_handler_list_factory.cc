@@ -779,6 +779,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAutoplayAllowed,
     prefs::kAutoplayAllowed,
     base::Value::Type::BOOLEAN },
+
+  { key::kAutoplayWhitelist,
+    prefs::kAutoplayWhitelist,
+    base::Value::Type::LIST },
 #endif  // !defined(OS_ANDROID)
 };
 // clang-format on
