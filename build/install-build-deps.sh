@@ -365,6 +365,9 @@ fi
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
 lib32_list="linux-libc-dev:i386 libpci3:i386"
 
+# 32-bit libraries needed for a 32-bit build
+lib32_list="$lib32_list libx11-xcb1:i386"
+
 # arm cross toolchain packages needed to build chrome on armhf
 EM_REPO="deb http://emdebian.org/tools/debian/ jessie main"
 EM_SOURCE=$(cat <<EOF
@@ -569,9 +572,9 @@ else
 fi
 
 if test "$do_inst_lib32" = "1" ; then
-  echo "Including 32-bit libraries for ARM/Android."
+  echo "Including 32-bit libraries."
 else
-  echo "Skipping 32-bit libraries for ARM/Android."
+  echo "Skipping 32-bit libraries."
   lib32_list=
 fi
 
