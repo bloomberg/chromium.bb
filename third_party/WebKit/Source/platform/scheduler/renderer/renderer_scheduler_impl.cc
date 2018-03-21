@@ -702,9 +702,13 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
   if (task_queue->CanBeThrottled())
     AddQueueToWakeUpBudgetPool(task_queue.get());
 
-  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer) {
-    if (main_thread_only().virtual_time_stopped)
-      task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
+  // If this is a timer queue, and virtual time is enabled and paused, it should
+  // be suspended by adding a fence to prevent immediate tasks from running when
+  // they're not supposed to.
+  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer &&
+      main_thread_only().virtual_time_stopped &&
+      main_thread_only().use_virtual_time) {
+    task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   }
 
   return task_queue;

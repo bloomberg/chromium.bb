@@ -3729,6 +3729,15 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   EXPECT_EQ(500u, unthrottled_count);
 }
 
+TEST_F(RendererSchedulerImplTest,
+       VirtualTimePolicyDoesNotAffectNewTimerTaskQueueIfVirtualTimeNotEnabled) {
+  scheduler_->SetVirtualTimePolicy(
+      PageSchedulerImpl::VirtualTimePolicy::kPause);
+  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
+      MainThreadTaskQueue::QueueType::kFrameThrottleable);
+  EXPECT_FALSE(timer_tq->HasActiveFence());
+}
+
 TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
   scheduler_->EnableVirtualTime(
