@@ -68,6 +68,10 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   std::string guid() const { return guid_; }
   bool is_transient() const { return transient_; }
   bool fetch_error_body() const { return fetch_error_body_; }
+  const download::DownloadUrlParameters::RequestHeadersType& request_headers()
+      const {
+    return request_headers_;
+  }
   const download::DownloadUrlParameters::OnStartedCallback& callback() const {
     return on_started_callback_;
   }
@@ -80,6 +84,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   uint32_t download_id_ = download::DownloadItem::kInvalidId;
   std::string guid_;
   bool fetch_error_body_ = false;
+  download::DownloadUrlParameters::RequestHeadersType request_headers_;
   bool transient_ = false;
   download::DownloadUrlParameters::OnStartedCallback on_started_callback_;
   std::string request_origin_;
@@ -98,6 +103,7 @@ void DownloadRequestData::Attach(net::URLRequest* request,
   request_data->download_id_ = download_id;
   request_data->guid_ = parameters->guid();
   request_data->fetch_error_body_ = parameters->fetch_error_body();
+  request_data->request_headers_ = parameters->request_headers();
   request_data->transient_ = parameters->is_transient();
   request_data->on_started_callback_ = parameters->callback();
   request_data->request_origin_ = parameters->request_origin();
@@ -191,6 +197,7 @@ DownloadRequestCore::DownloadRequestCore(
     download_id_ = request_data->download_id();
     guid_ = request_data->guid();
     fetch_error_body_ = request_data->fetch_error_body();
+    request_headers_ = request_data->request_headers();
     transient_ = request_data->is_transient();
     on_started_callback_ = request_data->callback();
     DownloadRequestData::Detach(request_);
@@ -235,6 +242,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(
   create_info->response_headers = request()->response_headers();
   create_info->offset = create_info->save_info->offset;
   create_info->fetch_error_body = fetch_error_body_;
+  create_info->request_headers = request_headers_;
   create_info->request_origin = request_origin_;
   create_info->download_source = download_source_;
   return create_info;

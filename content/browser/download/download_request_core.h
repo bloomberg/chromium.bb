@@ -132,6 +132,7 @@ class CONTENT_EXPORT DownloadRequestCore
   uint32_t download_id_;
   std::string guid_;
   bool fetch_error_body_;
+  download::DownloadUrlParameters::RequestHeadersType request_headers_;
   bool transient_;
   download::DownloadUrlParameters::OnStartedCallback on_started_callback_;
 

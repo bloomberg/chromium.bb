@@ -53,6 +53,7 @@ DownloadResponseHandler::DownloadResponseHandler(
     bool is_parallel_request,
     bool is_transient,
     bool fetch_error_body,
+    const DownloadUrlParameters::RequestHeadersType& request_headers,
     const std::string& request_origin,
     DownloadSource download_source,
     std::vector<GURL> url_chain)
@@ -64,6 +65,7 @@ DownloadResponseHandler::DownloadResponseHandler(
       referrer_(resource_request->referrer),
       is_transient_(is_transient),
       fetch_error_body_(fetch_error_body),
+      request_headers_(request_headers),
       request_origin_(request_origin),
       download_source_(download_source),
       has_strong_validators_(false),
@@ -136,6 +138,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->offset = create_info->save_info->offset;
   create_info->mime_type = head.mime_type;
   create_info->fetch_error_body = fetch_error_body_;
+  create_info->request_headers = request_headers_;
   create_info->request_origin = request_origin_;
   create_info->download_source = download_source_;
 

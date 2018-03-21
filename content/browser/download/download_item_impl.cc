@@ -393,6 +393,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       etag_(info.etag),
       is_updating_observers_(false),
       fetch_error_body_(info.fetch_error_body),
+      request_headers_(info.request_headers),
       download_source_(info.download_source),
       weak_ptr_factory_(this) {
   delegate_->Attach();
@@ -1401,8 +1402,11 @@ void DownloadItemImpl::Init(
 
     // Read data from in-progress cache.
     auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
-    if (in_progress_entry)
+    if (in_progress_entry) {
       download_source_ = in_progress_entry->download_source;
+      fetch_error_body_ = in_progress_entry->fetch_error_body;
+      request_headers_ = in_progress_entry->request_headers;
+    }
   }
 
   DVLOG(20) << __func__ << "() " << DebugString(true);
@@ -2403,11 +2407,18 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_etag(GetETag());
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
+
+  // TODO(xingliu): Read |fetch_error_body| and |request_headers_| from the
+  // cache, and don't copy them into DownloadItemImpl.
   download_params->set_fetch_error_body(fetch_error_body_);
+  for (const auto& header : request_headers_) {
+    download_params->add_request_header(header.first, header.second);
+  }
 
   auto entry = GetInProgressEntry(GetGuid(), GetBrowserContext());
-  if (entry)
+  if (entry) {
     download_params->set_request_origin(entry.value().request_origin);
+  }
 
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)

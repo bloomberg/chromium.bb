@@ -31,6 +31,12 @@ class InProgressConversions {
 
   static metadata_pb::DownloadEntries DownloadEntriesToProto(
       const std::vector<DownloadEntry>& entries);
+
+  static metadata_pb::HttpRequestHeader HttpRequestHeaderToProto(
+      const std::pair<std::string, std::string>& header);
+
+  static std::pair<std::string, std::string> HttpRequestHeaderFromProto(
+      const metadata_pb::HttpRequestHeader& proto);
 };
 
 }  // namespace download

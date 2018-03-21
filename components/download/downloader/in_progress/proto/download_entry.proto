@@ -10,6 +10,11 @@ package metadata_pb;
 
 import "download_source.proto";
 
+message HttpRequestHeader {
+  optional string key = 1;
+  optional string value = 2;
+}
+
 // Stores various in-progress metadata related to a download.
 message DownloadEntry {
   optional string guid = 1;
@@ -17,6 +22,8 @@ message DownloadEntry {
   optional DownloadSource download_source = 3;
   optional int64 ukm_download_id = 4;
   optional int64 bytes_wasted = 5;
+  optional bool fetch_error_body = 6;
+  repeated HttpRequestHeader request_headers = 7;
 }
 
 // Contains a list of entries.

@@ -22,6 +22,7 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -766,6 +767,10 @@ class CONTENT_EXPORT DownloadItemImpl
   // Whether the download should fetch the response body for non successful HTTP
   // response.
   bool fetch_error_body_ = false;
+
+  // Request header key/value pairs that will be added to the download HTTP
+  // request.
+  download::DownloadUrlParameters::RequestHeadersType request_headers_;
 
   // Source of the download, used in metrics.
   download::DownloadSource download_source_ = download::DownloadSource::UNKNOWN;

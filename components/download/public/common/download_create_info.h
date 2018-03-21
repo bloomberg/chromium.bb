@@ -21,6 +21,7 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
@@ -150,6 +151,9 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
   // Whether the download should fetch the response body for non successful HTTP
   // response.
   bool fetch_error_body = false;
+
+  // The request headers that has been sent in the download request.
+  DownloadUrlParameters::RequestHeadersType request_headers;
 
   // Source ID generated for UKM.
   ukm::SourceId ukm_source_id;
