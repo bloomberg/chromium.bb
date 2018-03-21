@@ -54,7 +54,7 @@ TEST(ScopedRasterFlagsTest, KeepsDecodesAlive) {
   auto record_shader = PaintShader::MakePaintRecord(
       record, SkRect::MakeWH(100, 100), SkShader::TileMode::kClamp_TileMode,
       SkShader::TileMode::kClamp_TileMode, &SkMatrix::I());
-  record_shader->set_has_animated_images();
+  record_shader->set_has_animated_images(true);
 
   MockImageProvider provider;
   PaintFlags flags;

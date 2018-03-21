@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "cc/paint/image_analysis_state.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -106,8 +107,16 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   ~PaintShader() override;
 
-  void set_has_animated_images() { has_animated_images_ = true; }
-  bool has_animated_images() const { return has_animated_images_; }
+  void set_has_animated_images(bool has_animated_images) {
+    image_analysis_state_ = has_animated_images
+                                ? ImageAnalysisState::kAnimatedImages
+                                : ImageAnalysisState::kNoAnimatedImages;
+  }
+  ImageAnalysisState image_analysis_state() const {
+    return image_analysis_state_;
+  }
+
+  bool has_discardable_images() const;
 
   SkMatrix GetLocalMatrix() const {
     return local_matrix_ ? *local_matrix_ : SkMatrix::I();
@@ -200,7 +209,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   // accesses to it are thread-safe.
   sk_sp<SkShader> cached_shader_;
 
-  bool has_animated_images_ = false;
+  ImageAnalysisState image_analysis_state_ = ImageAnalysisState::kNoAnalysis;
 
   DISALLOW_COPY_AND_ASSIGN(PaintShader);
 };

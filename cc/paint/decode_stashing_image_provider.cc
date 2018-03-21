@@ -15,8 +15,8 @@ DecodeStashingImageProvider::~DecodeStashingImageProvider() = default;
 ImageProvider::ScopedDecodedDrawImage
 DecodeStashingImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
   auto decode = source_provider_->GetDecodedDrawImage(draw_image);
-  if (!decode)
-    return ScopedDecodedDrawImage();
+  if (!decode.needs_unlock())
+    return decode;
 
   // No need to add any destruction callback to the returned image. The images
   // decoded here match the lifetime of this provider.

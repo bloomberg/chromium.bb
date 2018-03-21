@@ -756,9 +756,11 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   display_list->EndPaintOfUnpaired(visible_rect);
   display_list->Finalize();
 
-  EXPECT_FALSE(flags.getShader()->has_animated_images());
+  EXPECT_EQ(flags.getShader()->image_analysis_state(),
+            ImageAnalysisState::kNoAnalysis);
   display_list->GenerateDiscardableImagesMetadata();
-  EXPECT_TRUE(flags.getShader()->has_animated_images());
+  EXPECT_EQ(flags.getShader()->image_analysis_state(),
+            ImageAnalysisState::kAnimatedImages);
   const auto& image_map = display_list->discardable_image_map();
 
   // The image rect is set to the rect for the DrawRectOp, and only animated
@@ -774,6 +776,75 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   // The scale of the image includes the scale at which the shader record is
   // rasterized.
   EXPECT_EQ(SkSize::Make(4.f, 4.f), draw_images[0].scale);
+}
+
+TEST_F(DiscardableImageMapTest, CapturesImagesInPaintFilters) {
+  // Create the record to use in the filter.
+  auto filter_record = sk_make_sp<PaintOpBuffer>();
+
+  PaintImage static_image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  filter_record->push<DrawImageOp>(static_image, 0.f, 0.f, nullptr);
+
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1))};
+  PaintImage animated_image = CreateAnimatedImage(gfx::Size(100, 100), frames);
+  filter_record->push<DrawImageOp>(animated_image, 0.f, 0.f, nullptr);
+
+  gfx::Rect visible_rect(500, 500);
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
+  display_list->StartPaint();
+  PaintFlags flags;
+  flags.setImageFilter(sk_make_sp<RecordPaintFilter>(
+      filter_record, SkRect::MakeWH(100.f, 100.f)));
+  display_list->push<DrawRectOp>(SkRect::MakeWH(200, 200), flags);
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
+
+  EXPECT_EQ(flags.getImageFilter()->image_analysis_state(),
+            ImageAnalysisState::kNoAnalysis);
+  display_list->GenerateDiscardableImagesMetadata();
+  EXPECT_EQ(flags.getImageFilter()->image_analysis_state(),
+            ImageAnalysisState::kAnimatedImages);
+  const auto& image_map = display_list->discardable_image_map();
+
+  // The image rect is set to the rect for the DrawRectOp, and only animated
+  // images in a filter are tracked.
+  std::vector<PositionScaleDrawImage> draw_images =
+      GetDiscardableImagesInRect(image_map, visible_rect);
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(draw_images);
+  ASSERT_EQ(draw_images.size(), 1u);
+  EXPECT_EQ(draw_images[0].image, animated_image);
+  // The position of the image is the position of the DrawRectOp that uses the
+  // filter.
+  EXPECT_EQ(gfx::Rect(200, 200), inset_rects[0]);
+  // Images in a filter are decoded at the original size.
+  EXPECT_EQ(SkSize::Make(1.f, 1.f), draw_images[0].scale);
+}
+
+TEST_F(DiscardableImageMapTest, CapturesImagesInSaveLayers) {
+  PaintFlags flags;
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  flags.setShader(PaintShader::MakeImage(image, SkShader::kClamp_TileMode,
+                                         SkShader::kClamp_TileMode, nullptr));
+
+  gfx::Rect visible_rect(500, 500);
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
+  display_list->StartPaint();
+  display_list->push<SaveLayerOp>(nullptr, &flags);
+  display_list->push<DrawColorOp>(SK_ColorBLUE, SkBlendMode::kSrc);
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
+
+  display_list->GenerateDiscardableImagesMetadata();
+  const auto& image_map = display_list->discardable_image_map();
+  std::vector<PositionScaleDrawImage> draw_images =
+      GetDiscardableImagesInRect(image_map, visible_rect);
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(draw_images);
+  ASSERT_EQ(draw_images.size(), 1u);
+  EXPECT_EQ(draw_images[0].image, image);
+  EXPECT_EQ(gfx::Rect(500, 500), inset_rects[0]);
+  EXPECT_EQ(SkSize::Make(1.f, 1.f), draw_images[0].scale);
 }
 
 TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
@@ -806,8 +877,10 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
   display_list->EndPaintOfUnpaired(visible_rect);
   display_list->Finalize();
   display_list->GenerateDiscardableImagesMetadata();
-  EXPECT_TRUE(shader_with_image->has_animated_images());
-  EXPECT_TRUE(shader_with_shader_with_image->has_animated_images());
+  EXPECT_EQ(shader_with_image->image_analysis_state(),
+            ImageAnalysisState::kAnimatedImages);
+  EXPECT_EQ(shader_with_shader_with_image->image_analysis_state(),
+            ImageAnalysisState::kAnimatedImages);
 }
 
 TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {

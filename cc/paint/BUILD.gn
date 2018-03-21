@@ -24,6 +24,7 @@ cc_component("paint") {
     "filter_operation.h",
     "filter_operations.cc",
     "filter_operations.h",
+    "image_analysis_state.h",
     "image_animation_count.h",
     "image_id.h",
     "image_provider.cc",
