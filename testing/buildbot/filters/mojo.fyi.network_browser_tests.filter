@@ -2,8 +2,6 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
--AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
@@ -25,10 +23,6 @@
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
--PageLoadMetricsBrowserTest.LoadingMetrics
--PageLoadMetricsBrowserTest.LoadingMetricsFailed
--PageLoadMetricsBrowserTest.PayloadSize
--PageLoadMetricsBrowserTest.PayloadSizeChildFrame
 -PKPModelClientTest.PKPBypass
 -PKPModelClientTest.PKPEnforced
 -PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
@@ -44,12 +38,7 @@
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
--TaskManagerBrowserTest.SentDataObserved
--TaskManagerBrowserTest.TotalSentDataObserved
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
--WebSocketBrowserTest.WebSocketAppliesHSTS
--WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
--WebSocketBrowserTest.WebSocketBasicAuthInHTTPURL
 -WebstoreInstallerBrowserTest.SimultaneousInstall
 -WebViewTests/WebViewTest.ClearData/0
 -WebViewTests/WebViewTest.ClearData/1
@@ -57,6 +46,7 @@
 -WebViewTests/WebViewTest.ClearDataCache/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
+
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
@@ -65,6 +55,18 @@
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 
+# http://crbug.com/816684 Track Page Load Metrics.
+-AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
+-AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
+-PageLoadMetricsBrowserTest.LoadingMetrics
+-PageLoadMetricsBrowserTest.LoadingMetricsFailed
+-PageLoadMetricsBrowserTest.PayloadSize
+-PageLoadMetricsBrowserTest.PayloadSizeChildFrame
+
+# http://crbug.com/822415 Plumb metrics from network process to browser.
+-TaskManagerBrowserTest.SentDataObserved
+-TaskManagerBrowserTest.TotalSentDataObserved
+
 # http://crbug.com/823297 StoragePartition::ClearData needs to use
 # CookieManager.
 -BrowsingDataRemoverBrowserTest.CookieDeletion
@@ -72,6 +74,12 @@
 -WebViewTests/WebViewTest.ClearPersistentCookies/1
 -WebViewTests/WebViewTest.ClearSessionCookies/0
 -WebViewTests/WebViewTest.ClearSessionCookies/1
+
+# http://crbug.com/721400 support WebSockets.
+-WebSocketBrowserTest.WebSocketAppliesHSTS
+-WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
+-WebSocketBrowserTest.WebSocketBasicAuthInHTTPURL
+-WebSocketBrowserTest.ReuseMainPageBasicAuthCredentialsForWebSocket
 
 # Accessing cookies after they were set in onload handler is flaky:
 # https://crbug.com/820969.
@@ -145,7 +153,6 @@
 -LoginPromptBrowserTest.NoLoginPromptForFavicon
 -LoginPromptBrowserTest.NoLoginPromptForXHRWithBadCredentials
 -LoginPromptBrowserTest.TestCancelAuth_OnForward
--WebSocketBrowserTest.ReuseMainPageBasicAuthCredentialsForWebSocket
 
 # These rely on proxy configuration and PAC execution being configured on the
 # legacy in-process URLRequestContext. They should be removed or updated to
