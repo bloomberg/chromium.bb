@@ -52,8 +52,17 @@ TEST_F(DisplayUtilTest, DisplayZooms) {
     ManagedDisplayMode mode(gfx::Size(size, size), 60, false, true, 1.f, 1.f);
     const std::vector<double> zoom_values = GetDisplayZoomFactors(mode);
     EXPECT_EQ(zoom_values.size(), kNumOfZoomFactors);
-    for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
+    for (std::size_t j = 0; j < kNumOfZoomFactors; j++) {
       EXPECT_NEAR(zoom_values[j], pair.second[j], 0.001);
+
+      // Display pref stores the zoom value only upto 2 decimal places. This
+      // check ensures that the expected precision is only upto 2 decimal
+      // points. Before changing this line please ensure that you have updated
+      // chromeos/display/display_prefs.cc
+      int percentage_value = std::round(zoom_values[j] * 100.f);
+      float fractional_value = static_cast<float>(percentage_value) / 100.f;
+      EXPECT_NEAR(zoom_values[j], fractional_value, 0.0001f);
+    }
 
     const int effective_minimum_width_possible = size / zoom_values.back();
     const int effective_maximum_width_possible = size * zoom_values.front();
