@@ -40,7 +40,7 @@
               "device_type": "marlin"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1800
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -150,7 +150,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1800
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -186,7 +186,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1800
         },
         "test": "chrome_public_test_vr_apk"
       },
@@ -222,7 +222,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1800
         },
         "test": "chrome_public_test_vr_apk"
       },
