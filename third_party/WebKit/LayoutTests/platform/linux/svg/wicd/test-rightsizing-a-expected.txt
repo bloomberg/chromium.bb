@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x550
-  LayoutBlockFlow {html} at (0,0) size 800x549.86
-    LayoutBlockFlow {body} at (48,30.72) size 752x511.14
-      LayoutBlockFlow {div} at (0,0) size 752x511.14
+layer at (0,0) size 800x558
+  LayoutBlockFlow {html} at (0,0) size 800x557.86
+    LayoutBlockFlow {body} at (48,30.72) size 752x519.14
+      LayoutBlockFlow {div} at (0,0) size 752x519.14
         LayoutBlockFlow {h1} at (0,0) size 691.83x31
           LayoutText {#text} at (0,0) size 216x30
             text run at (0,0) width 216: "rightsizing to box"
@@ -17,30 +17,30 @@ layer at (0,0) size 800x550
           LayoutBR {br} at (0,0) size 0x18
         LayoutBlockFlow {div} at (0,147.14) size 176x62 [bgcolor=#FF0000]
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {p} at (0,212.02) size 691.83x34
-          LayoutText {#text} at (0,0) size 684x34
+        LayoutBlockFlow {p} at (0,212.02) size 691.83x36
+          LayoutText {#text} at (0,0) size 684x36
             text run at (0,0) width 684: "Above there must be a GIF- and a SVG-image visible. Both are referenced by an object element (width:100%, no"
-            text run at (0,17) width 481: "defined height) and each nested into a div element (width:176px, height:62px)."
-        LayoutBlockFlow {div} at (0,251.77) size 176x62 [bgcolor=#FF0000]
+            text run at (0,18) width 480: "defined height) and each nested into a div element (width:176px, height:62px)."
+        LayoutBlockFlow {div} at (0,253.77) size 176x62 [bgcolor=#FF0000]
           LayoutImage {object} at (0,0) size 176x62
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow (anonymous) at (0,313.77) size 752x19
+        LayoutBlockFlow (anonymous) at (0,315.77) size 752x19
           LayoutBR {br} at (0,0) size 0x18
-        LayoutBlockFlow {div} at (0,332.77) size 176x62 [bgcolor=#FF0000]
+        LayoutBlockFlow {div} at (0,334.77) size 176x62 [bgcolor=#FF0000]
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {p} at (0,397.64) size 691.83x34
-          LayoutText {#text} at (0,0) size 653x34
-            text run at (0,0) width 653: "Above there must be a GIF- and a SVG-image visible. Both are referenced by an object element (no defined"
-            text run at (0,17) width 512: "width, height:100%) and each nested into a div element (width:176px, height:62px)."
-        LayoutBlockFlow {p} at (0,437.39) size 691.83x34
-          LayoutText {#text} at (0,0) size 668x34
+        LayoutBlockFlow {p} at (0,399.64) size 691.83x36
+          LayoutText {#text} at (0,0) size 652x36
+            text run at (0,0) width 652: "Above there must be a GIF- and a SVG-image visible. Both are referenced by an object element (no defined"
+            text run at (0,18) width 512: "width, height:100%) and each nested into a div element (width:176px, height:62px)."
+        LayoutBlockFlow {p} at (0,441.39) size 691.83x36
+          LayoutText {#text} at (0,0) size 668x36
             text run at (0,0) width 668: "This tests have succeeded, if in both cases, the look (dimensions) of the SVG and the GIF are exactly the same"
-            text run at (0,17) width 411: "(except the text apparently) and no red background color is visible."
-        LayoutBlockFlow {p} at (0,477.14) size 691.83x34
-          LayoutBR {br} at (0,0) size 0x17
-          LayoutInline {a} at (0,0) size 30x17 [color=#000066]
-            LayoutText {#text} at (0,17) size 30x17
-              text run at (0,17) width 30: "Back"
+            text run at (0,18) width 411: "(except the text apparently) and no red background color is visible."
+        LayoutBlockFlow {p} at (0,483.14) size 691.83x36
+          LayoutBR {br} at (0,0) size 0x18
+          LayoutInline {a} at (0,0) size 30x18 [color=#000066]
+            LayoutText {#text} at (0,18) size 30x18
+              text run at (0,18) width 30: "Back"
 layer at (48,178) size 176x62
   LayoutEmbeddedObject {object} at (0,0) size 176x62
     layer at (0,0) size 176x62
@@ -54,7 +54,7 @@ layer at (48,178) size 176x62
         LayoutSVGText {text} at (46,10) size 80x46 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (46,10) size 80x46
             chunk 1 (middle anchor) text run 1 at (46.00,46.00) startOffset 0 endOffset 3 width 80.00: "SVG"
-layer at (48,363) size 176x62
+layer at (48,365) size 176x62
   LayoutEmbeddedObject {object} at (0,0) size 176x62
     layer at (0,0) size 176x62
       LayoutView at (0,0) size 176x62

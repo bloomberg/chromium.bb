@@ -249,29 +249,29 @@ cols=1000 clientWidth=8017
 Georgia
 input
 size=1 clientWidth=18
-size=2 clientWidth=24
-size=3 clientWidth=30
-size=4 clientWidth=36
-size=5 clientWidth=42
-size=10 clientWidth=72
-size=20 clientWidth=132
-size=50 clientWidth=312
-size=100 clientWidth=612
-size=500 clientWidth=3012
-size=1000 clientWidth=6012
+size=2 clientWidth=26
+size=3 clientWidth=34
+size=4 clientWidth=42
+size=5 clientWidth=50
+size=10 clientWidth=90
+size=20 clientWidth=170
+size=50 clientWidth=410
+size=100 clientWidth=810
+size=500 clientWidth=4010
+size=1000 clientWidth=8010
 
 textarea
-cols=1 clientWidth=23
-cols=2 clientWidth=29
-cols=3 clientWidth=35
-cols=4 clientWidth=41
-cols=5 clientWidth=47
-cols=10 clientWidth=77
-cols=20 clientWidth=137
-cols=50 clientWidth=317
-cols=100 clientWidth=617
-cols=500 clientWidth=3017
-cols=1000 clientWidth=6017
+cols=1 clientWidth=25
+cols=2 clientWidth=33
+cols=3 clientWidth=41
+cols=4 clientWidth=49
+cols=5 clientWidth=57
+cols=10 clientWidth=97
+cols=20 clientWidth=177
+cols=50 clientWidth=417
+cols=100 clientWidth=817
+cols=500 clientWidth=4017
+cols=1000 clientWidth=8017
 
 Times New Roman
 input
