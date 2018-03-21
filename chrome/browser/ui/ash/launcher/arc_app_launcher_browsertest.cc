@@ -35,7 +35,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -75,8 +74,6 @@ constexpr char kTestAppName2[] = "Test ARC App 2";
 constexpr char kTestShortcutName[] = "Test Shortcut";
 constexpr char kTestShortcutName2[] = "Test Shortcut 2";
 constexpr char kTestAppPackage[] = "test.arc.app.package";
-constexpr char kTestAppPackage2[] = "test.arc.app.package2";
-constexpr char kTestAppPackage3[] = "test.arc.app.package3";
 constexpr char kTestAppActivity[] = "test.arc.app.package.activity";
 constexpr char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
 constexpr char kTestShelfGroup[] = "shelf_group";
@@ -485,52 +482,6 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   // No pin is expected.
   EXPECT_FALSE(controller->GetItem(shelf_id1));
   EXPECT_FALSE(controller->GetItem(shelf_id2));
-}
-
-// This test validates that app list is shown on new package and not shown
-// on package update.
-IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
-
-  StartInstance();
-  AppListService* app_list_service = AppListService::Get();
-  ASSERT_TRUE(app_list_service);
-
-  EXPECT_FALSE(app_list_service->IsAppListVisible());
-
-  SendInstallationStarted(kTestAppPackage);
-  SendInstallationStarted(kTestAppPackage2);
-
-  // New package is available. Show app list.
-  SendInstallationFinished(kTestAppPackage, true);
-  InstallTestApps(kTestAppPackage, false);
-  SendPackageAdded(kTestAppPackage, true);
-  EXPECT_TRUE(app_list_service->IsAppListVisible());
-
-  app_list_service->DismissAppList();
-  EXPECT_FALSE(app_list_service->IsAppListVisible());
-
-  // Send package update event. App list is not shown.
-  SendPackageAdded(kTestAppPackage, true);
-  EXPECT_FALSE(app_list_service->IsAppListVisible());
-
-  // Install next package from batch. Next new package is available.
-  // Don't show app list.
-  SendInstallationFinished(kTestAppPackage2, true);
-  InstallTestApps(kTestAppPackage2, false);
-  SendPackageAdded(kTestAppPackage2, true);
-  EXPECT_FALSE(app_list_service->IsAppListVisible());
-
-  // Run next installation batch. App list should be shown again.
-  SendInstallationStarted(kTestAppPackage3);
-  SendInstallationFinished(kTestAppPackage3, true);
-  InstallTestApps(kTestAppPackage3, false);
-  SendPackageAdded(kTestAppPackage3, true);
-  EXPECT_TRUE(app_list_service->IsAppListVisible());
-  app_list_service->DismissAppList();
 }
 
 // Test AppListControllerDelegate::IsAppOpen for ARC apps.

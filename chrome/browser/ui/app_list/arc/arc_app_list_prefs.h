@@ -484,7 +484,6 @@ class ArcAppListPrefs : public KeyedService,
   bool default_apps_ready_ = false;
   ArcDefaultAppList default_apps_;
   base::Closure default_apps_ready_callback_;
-  int current_batch_installation_revision_ = 0;
 
   // TODO (b/70566216): Remove this once fixed.
   base::OnceClosure app_list_refreshed_callback_;

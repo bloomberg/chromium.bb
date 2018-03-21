@@ -22,7 +22,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -1669,58 +1668,6 @@ TEST_F(AppListViewTest, DisplayTest) {
   EXPECT_EQ(expected, delegate_->GetModel()->state());
 }
 
-// Tests that the start page view operates correctly.
-TEST_F(AppListViewTest, StartPageTest) {
-  Initialize(0, false, false);
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-#if 0
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-  AppListTestModel* model = delegate_->GetTestModel();
-  model->PopulateApps(3);
-
-  Show();
-
-  AppListMainView* main_view = view_->app_list_main_view();
-  StartPageView* start_page_view =
-      main_view->contents_view()->start_page_view();
-  // Checks on the main view.
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
-  EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
-
-  // Show the start page view.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateStart));
-  gfx::Size view_size(view_->GetPreferredSize());
-
-  // Hiding and showing the search box should not affect the app list's
-  // preferred size. This is a regression test for http://crbug.com/386912.
-  EXPECT_EQ(view_size.ToString(), view_->GetPreferredSize().ToString());
-
-  // Check tiles hide and show on deletion and addition.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateStart));
-  model->results()->Add(std::make_unique<TestStartPageSearchResult>());
-  start_page_view->UpdateForTesting();
-  EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
-  model->results()->DeleteAll();
-  start_page_view->UpdateForTesting();
-  EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
-
-  // Tiles should not update when the start page is not active but should be
-  // correct once the start page is shown.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
-  model->results()->Add(std::make_unique<TestStartPageSearchResult>());
-  start_page_view->UpdateForTesting();
-  EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateStart));
-  EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
-#endif
-}
-
 // Tests switching rapidly between multiple pages of the launcher.
 TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
   Initialize(0, false, false);
@@ -1751,13 +1698,10 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
 }
 
 // Tests that the correct views are displayed for showing search results.
-TEST_F(AppListViewTest, SearchResultsTest) {
+TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   AppListTestModel* model = delegate_->GetTestModel();
@@ -1819,13 +1763,10 @@ TEST_F(AppListViewTest, SearchResultsTest) {
 }
 
 // Tests that the back button navigates through the app list correctly.
-TEST_F(AppListViewTest, BackTest) {
+TEST_F(AppListViewTest, DISABLED_BackTest) {
   Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
 
@@ -1876,13 +1817,10 @@ TEST_F(AppListViewTest, BackTest) {
 }
 
 // Tests that the correct views are displayed for showing search results.
-TEST_F(AppListViewTest, AppListOverlayTest) {
+TEST_F(AppListViewTest, DISABLED_AppListOverlayTest) {
   Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   Show();
 
   AppListMainView* main_view = view_->app_list_main_view();
@@ -1901,13 +1839,10 @@ TEST_F(AppListViewTest, AppListOverlayTest) {
 
 // Tests that even if initialize is called again with a different initial page,
 // that different initial page is respected.
-TEST_F(AppListViewTest, MultiplePagesReinitializeOnInputPage) {
+TEST_F(AppListViewTest, DISABLED_MultiplePagesReinitializeOnInputPage) {
   Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   // Show and close the widget once.

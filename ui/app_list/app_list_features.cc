@@ -29,10 +29,6 @@ bool IsBackgroundBlurEnabled() {
   return enabled;
 }
 
-bool IsFullscreenAppListEnabled() {
-  return true;
-}
-
 bool IsPlayStoreAppSearchEnabled() {
   // Not using local static variable to allow tests to change this value.
   return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);

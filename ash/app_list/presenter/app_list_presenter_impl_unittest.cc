@@ -9,7 +9,6 @@
 #include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ash/app_list/presenter/test/app_list_presenter_impl_test_api.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
@@ -148,12 +147,9 @@ void AppListPresenterImplTest::TearDown() {
 // not app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown and then when the app launcher is
 // dismissed.
-TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
+TEST_F(AppListPresenterImplTest, DISABLED_HideOnFocusOut) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
   presenter()->Show(GetDisplayId(), base::TimeTicks());
@@ -174,12 +170,9 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
 // Tests that app launcher remains visible when focus moves to a window which
 // is app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown.
-TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
+TEST_F(AppListPresenterImplTest, DISABLED_RemainVisibleWhenFocusingToSibling) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
   presenter()->Show(GetDisplayId(), base::TimeTicks());
@@ -200,12 +193,9 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
 
 // Tests that the app list is dismissed and the delegate is destroyed when the
 // app list's widget is destroyed.
-TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
+TEST_F(AppListPresenterImplTest, DISABLED_WidgetDestroyed) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   presenter()->Show(GetDisplayId(), base::TimeTicks());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   presenter()->GetView()->GetWidget()->CloseNow();

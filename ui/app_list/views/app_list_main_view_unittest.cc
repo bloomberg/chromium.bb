@@ -12,7 +12,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -82,9 +81,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
     // list (http://crbug.com/759779).
-    if (app_list::features::IsFullscreenAppListEnabled())
-      return;
-
+#if 0
     delegate_.reset(new AppListTestViewDelegate);
     main_view_ = new AppListMainView(delegate_.get(), nullptr);
     main_view_->SetPaintToLayer();
@@ -107,19 +104,18 @@ class AppListMainViewTest : public views::ViewsTestBase {
         views::Widget::InitParams::TRANSLUCENT_WINDOW;
     search_box_widget_->Init(search_box_widget_params);
     search_box_widget_->SetContentsView(search_box_view_);
+#endif
   }
 
   void TearDown() override {
     // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
     // list (http://crbug.com/759779).
-    if (app_list::features::IsFullscreenAppListEnabled()) {
-      views::ViewsTestBase::TearDown();
-      return;
-    }
-
+    views::ViewsTestBase::TearDown();
+#if 0
     main_widget_->Close();
     views::ViewsTestBase::TearDown();
     delegate_.reset();
+#endif
   }
 
   // |point| is in |grid_view|'s coordinates.
@@ -257,12 +253,9 @@ class AppListMainViewTest : public views::ViewsTestBase {
 }  // namespace
 
 // Tests changing the AppListModel when switching profiles.
-TEST_F(AppListMainViewTest, ModelChanged) {
+TEST_F(AppListMainViewTest, DISABLED_ModelChanged) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   EXPECT_EQ(kInitialItems, RootViewModel()->view_size());
 
@@ -277,12 +270,9 @@ TEST_F(AppListMainViewTest, ModelChanged) {
 }
 
 // Tests that mouse hovering over an app item highlights it
-TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
+TEST_F(AppListMainViewTest, DISABLED_MouseHoverToHighlight) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   delegate_->GetTestModel()->PopulateApps(2);
   main_widget_->Show();
 
@@ -309,12 +299,9 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
 }
 
 // Tests that tap gesture on app item highlights it
-TEST_F(AppListMainViewTest, TapGestureToHighlight) {
+TEST_F(AppListMainViewTest, DISABLED_TapGestureToHighlight) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   delegate_->GetTestModel()->PopulateApps(1);
   main_widget_->Show();
 
@@ -336,12 +323,9 @@ TEST_F(AppListMainViewTest, TapGestureToHighlight) {
 
 // Tests dragging an item out of a single item folder and drop it at the last
 // slot.
-TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
+TEST_F(AppListMainViewTest, DISABLED_DragLastItemFromFolderAndDropAtLastSlot) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
   const gfx::Rect first_slot_tile = folder_item_view->bounds();
 
@@ -384,12 +368,9 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
 
 // Tests dragging an item out of a single item folder and dropping it onto the
 // page switcher. Regression test for http://crbug.com/415530/.
-TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
+TEST_F(AppListMainViewTest, DISABLED_DragReparentItemOntoPageSwitcher) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   // Number of apps to populate. Should provide more than 1 page of apps (6*4 =
   // 24).
   const int kNumApps = 30;
@@ -428,12 +409,9 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
 // Test that an interrupted drag while reparenting an item from a folder, when
 // canceled via the root grid, correctly forwards the cancelation to the drag
 // ocurring from the folder.
-TEST_F(AppListMainViewTest, MouseDragItemOutOfFolderWithCancel) {
+TEST_F(AppListMainViewTest, DISABLED_MouseDragItemOutOfFolderWithCancel) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   CreateAndOpenSingleItemFolder();
   AppListItemView* dragged = StartDragForReparent(0);
 
@@ -456,12 +434,9 @@ TEST_F(AppListMainViewTest, MouseDragItemOutOfFolderWithCancel) {
 // Test that dragging an app out of a single item folder and reparenting it
 // back into its original folder results in a cancelled reparent. This is a
 // regression test for http://crbug.com/429083.
-TEST_F(AppListMainViewTest, ReparentSingleItemOntoSelf) {
+TEST_F(AppListMainViewTest, DISABLED_ReparentSingleItemOntoSelf) {
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   // Add a folder with 1 item.
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
   std::string folder_id = folder_item_view->item()->id();

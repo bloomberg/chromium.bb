@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_H_
 
-#include <string>
-
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+
+class Profile;
+class AppListControllerDelegate;
 
 class AppListService {
  public:

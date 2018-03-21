@@ -13,31 +13,15 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/location.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_switches.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 
 // static
 AppListServiceImpl* AppListServiceImpl::GetInstance() {
@@ -46,15 +30,7 @@ AppListServiceImpl* AppListServiceImpl::GetInstance() {
 }
 
 AppListServiceImpl::AppListServiceImpl()
-    : command_line_(*base::CommandLine::ForCurrentProcess()),
-      local_state_(g_browser_process->local_state()),
-      weak_factory_(this) {}
-
-AppListServiceImpl::AppListServiceImpl(const base::CommandLine& command_line,
-                                       PrefService* local_state)
-    : command_line_(command_line),
-      local_state_(local_state),
-      weak_factory_(this) {}
+    : local_state_(g_browser_process->local_state()), weak_factory_(this) {}
 
 AppListServiceImpl::~AppListServiceImpl() = default;
 

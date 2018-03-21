@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,49 +19,8 @@
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 
-namespace test {
-
-// Test API to access private members of AppListServiceImpl.
-class AppListServiceImplTestApi {
- public:
-  explicit AppListServiceImplTestApi(AppListServiceImpl* impl) : impl_(impl) {}
-
-  AppListViewDelegate* view_delegate() { return impl_->view_delegate_.get(); }
-
- private:
-  AppListServiceImpl* impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceImplTestApi);
-};
-
-}  // namespace test
-
-// Browser Test for AppListServiceImpl that runs on all platforms supporting
-// app_list.
-class AppListServiceImplBrowserTest : public InProcessBrowserTest {
- public:
-  AppListServiceImplBrowserTest() {}
-
-  // Overridden from InProcessBrowserTest:
-  void SetUpOnMainThread() override {
-    service_ = test::GetAppListServiceImpl();
-    test_api_.reset(new test::AppListServiceImplTestApi(service_));
-  }
-
- protected:
-  AppListServiceImpl* service_;
-  std::unique_ptr<test::AppListServiceImplTestApi> test_api_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListServiceImplBrowserTest);
-};
-
-// Tests that the AppListViewDelegate is created lazily.
-IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
-  EXPECT_FALSE(test_api_->view_delegate());
-  service_->GetViewDelegate();
-  EXPECT_TRUE(test_api_->view_delegate());
-}
+// Browser Test for AppListServiceImpl.
+using AppListServiceImplBrowserTest = InProcessBrowserTest;
 
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
@@ -71,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(service);
 
   // Show the app list to ensure it has loaded a profile.
-  service_->Show();
+  service->Show();
   AppListModelUpdater* model_updater = test::GetModelUpdater(service);
   EXPECT_TRUE(model_updater);
 

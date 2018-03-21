@@ -255,30 +255,6 @@ TEST_F(MixerTest, RemoveDuplicates) {
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
 }
 
-// Tests that "known results" have priority over others.
-TEST_F(MixerTest, KnownResultsPriority) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  // This gives omnibox 0 -- 5.
-  omnibox_provider()->set_count(6);
-
-  // omnibox 1 -- 4 are "known results".
-  AddKnownResult("omnibox1", PREFIX_SECONDARY);
-  AddKnownResult("omnibox2", PERFECT_SECONDARY);
-  AddKnownResult("omnibox3", PREFIX_PRIMARY);
-  AddKnownResult("omnibox4", PERFECT_PRIMARY);
-
-  RunQuery();
-
-  // omnibox 1 -- 4 should be prioritised over the others. They should be
-  // ordered 4, 3, 2, 1 (in order of match quality).
-  EXPECT_EQ("omnibox4,omnibox3,omnibox2,omnibox1,omnibox0,omnibox5",
-            GetResults());
-}
-
 // Tests that "known results" are not considered for recommendation results.
 TEST_F(MixerTest, KnownResultsIgnoredForRecommendations) {
   // This gives omnibox 0 -- 5.
@@ -297,23 +273,6 @@ TEST_F(MixerTest, KnownResultsIgnoredForRecommendations) {
   // omnibox 1 -- 4 should be unaffected despite being known results.
   EXPECT_EQ("omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
             GetResults());
-}
-
-TEST_F(MixerTest, VoiceQuery) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  omnibox_provider()->set_count(3);
-  RunQuery();
-  EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
-
-  // Set "omnibox1" as a voice result. Do not expect any changes (as this is not
-  // a voice query).
-  omnibox_provider()->set_as_voice_result(1);
-  RunQuery();
-  EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
 }
 
 }  // namespace test
