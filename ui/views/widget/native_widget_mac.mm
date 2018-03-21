@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -16,6 +17,7 @@
 #include "components/crash/core/common/crash_key.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -45,6 +47,11 @@
 
 namespace views {
 namespace {
+
+bool AreModalAnimationsEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableModalAnimations);
+}
 
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
@@ -365,7 +372,8 @@ void NativeWidgetMac::Close() {
   }
 
   // For other modal types, animate the close.
-  if (bridge_->animate() && delegate_->IsModal()) {
+  if (bridge_->animate() && AreModalAnimationsEnabled() &&
+      delegate_->IsModal()) {
     [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
   }

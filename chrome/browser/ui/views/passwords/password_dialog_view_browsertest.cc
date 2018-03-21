@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +27,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
@@ -134,6 +136,13 @@ class PasswordDialogViewTest : public DialogBrowserTest {
 };
 
 void PasswordDialogViewTest::SetUpOnMainThread() {
+#if defined(OS_MACOSX)
+  // On non-Mac platforms, animations are globally disabled during tests; on
+  // Mac they are generally not, but these tests are dramatically slower and
+  // flakier with animations.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableModalAnimations);
+#endif
   SetupTabWithTestController(browser());
 }
 
