@@ -392,7 +392,14 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
   EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
+#if defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
+#define MAYBE_Escape DISABLED_Escape
+#else
+#define MAYBE_Escape Escape
+#endif
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
+                       MAYBE_Escape) {
   EXPECT_CALL(*auth_requestor_1_.get(), CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -406,8 +413,14 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
   EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
+#if defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
+#define MAYBE_SelectDefault DISABLED_SelectDefault
+#else
+#define MAYBE_SelectDefault SelectDefault
+#endif
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       SelectDefault) {
+                       MAYBE_SelectDefault) {
   EXPECT_CALL(*auth_requestor_1_.get(),
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));
