@@ -54,11 +54,62 @@ void GLES2ImplementationWithGrContextSupport::DidCallGLFromSkia() {
   using_gl_from_skia_ = false;
 }
 
+void GLES2ImplementationWithGrContextSupport::EndRasterCHROMIUM() {
+  BaseClass::EndRasterCHROMIUM();
+  // Assume that invoking the GLES2-backed version of the raster interface
+  // invalidates everything.
+  ResetGrContextIfNeeded(kALL_GrGLBackendState);
+}
+
 // Calls that invalidate kRenderTarget_GrGLBackendState
 void GLES2ImplementationWithGrContextSupport::BindFramebuffer(
     GLenum target,
     GLuint framebuffer) {
   BaseClass::BindFramebuffer(target, framebuffer);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::BindRenderbuffer(
+    GLenum target,
+    GLuint renderbuffer) {
+  BaseClass::BindRenderbuffer(target, renderbuffer);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::DiscardFramebufferEXT(
+    GLenum target,
+    GLsizei count,
+    const GLenum* attachments) {
+  BaseClass::DiscardFramebufferEXT(target, count, attachments);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::DeleteFramebuffers(
+    GLsizei n,
+    const GLuint* framebuffers) {
+  BaseClass::DeleteFramebuffers(n, framebuffers);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::DeleteRenderbuffers(
+    GLsizei n,
+    const GLuint* renderbuffers) {
+  BaseClass::DeleteRenderbuffers(n, renderbuffers);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::FramebufferTexture2D(
+    GLenum target,
+    GLenum attachment,
+    GLenum textarget,
+    GLuint texture,
+    GLint level) {
+  BaseClass::FramebufferTexture2D(target, attachment, textarget, texture,
+                                  level);
+  ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
+}
+void GLES2ImplementationWithGrContextSupport::FramebufferTextureLayer(
+    GLenum target,
+    GLenum attachment,
+    GLuint texture,
+    GLint level,
+    GLint layer) {
+  BaseClass::FramebufferTextureLayer(target, attachment, texture, level, layer);
   ResetGrContextIfNeeded(kRenderTarget_GrGLBackendState);
 }
 
