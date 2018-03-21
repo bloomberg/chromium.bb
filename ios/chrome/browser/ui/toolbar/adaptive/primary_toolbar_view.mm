@@ -315,13 +315,7 @@
 
   // locationBarView constraints, if present.
   if (self.locationBarView) {
-    AddSameConstraintsToSides(
-        self.locationBarView, self.locationBarContainer,
-        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading);
-    [self.locationBarContainer.trailingAnchor
-        constraintGreaterThanOrEqualToAnchor:self.locationBarView
-                                                 .trailingAnchor]
-        .active = YES;
+    AddSameConstraints(self.locationBarView, self.locationBarContainer);
   }
 
   // Cancel button constraints.
@@ -368,9 +362,7 @@
     return;
 
   [self.locationBarContainer addSubview:locationBarView];
-  AddSameConstraintsToSides(
-      self.locationBarView, self.locationBarContainer,
-      LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading);
+  AddSameConstraints(self.locationBarView, self.locationBarContainer);
   [self.locationBarContainer.trailingAnchor
       constraintGreaterThanOrEqualToAnchor:self.locationBarView.trailingAnchor]
       .active = YES;
