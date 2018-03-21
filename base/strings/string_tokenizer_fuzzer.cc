@@ -30,13 +30,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  std::string pattern(reinterpret_cast<const char*>(data + 1),
-                      pattern_size);
+  std::string pattern(reinterpret_cast<const char*>(data + 1), pattern_size);
 
-  std::string input(
-      reinterpret_cast<const char*>(data + 1 + pattern_size),
-      size - pattern_size - 1);
-
+  std::string input(reinterpret_cast<const char*>(data + 1 + pattern_size),
+                    size - pattern_size - 1);
 
   base::StringTokenizer t(input, pattern);
   GetAllTokens(t);
@@ -48,7 +45,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringTokenizer t_options(input, pattern);
   t_options.set_options(base::StringTokenizer::RETURN_DELIMS);
   GetAllTokens(t_options);
-
 
   base::StringTokenizer t_quote_and_options(input, pattern);
   t_quote_and_options.set_quote_chars("\"");

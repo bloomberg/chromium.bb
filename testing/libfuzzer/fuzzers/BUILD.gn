@@ -49,24 +49,6 @@ fuzzer_test("snappy_fuzzer") {
   ]
 }
 
-fuzzer_test("string_tokenizer_fuzzer") {
-  sources = [
-    "string_tokenizer_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
-fuzzer_test("string_to_int_fuzzer") {
-  sources = [
-    "string_to_int_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 fuzzer_test("template_url_parser_fuzzer") {
   sources = [
     "template_url_parser_fuzzer.cc",
