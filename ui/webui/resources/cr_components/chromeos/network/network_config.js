@@ -1169,6 +1169,9 @@ Polymer({
   /** @private */
   getPropertiesToSet_: function() {
     var propertiesToSet = Object.assign({}, this.configProperties_);
+    // Do not set AutoConnect by default, the connection manager will set
+    // it to true on a successful connection.
+    CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', undefined);
     if (this.guid)
       propertiesToSet.GUID = this.guid;
     var eap = this.getEap_(propertiesToSet);
