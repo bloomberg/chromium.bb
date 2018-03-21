@@ -2097,6 +2097,12 @@
           'isolated_scripts': 'chromium_dbg_isolated_scripts',
         },
       },
+      'Win10 Tests x64 (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_dbg_isolated_scripts',
+        },
+      },
     },
   },
   {
