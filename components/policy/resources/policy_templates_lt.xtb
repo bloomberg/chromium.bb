@@ -302,14 +302,6 @@
       Taikant šį politikos nustatymą įgalinami pranešimai, kuriais naudotojas informuojamas, kad rekomenduojama arba būtina iš naujo paleisti naršyklę. Nenustačius, „<ph name="PRODUCT_NAME" />“ subtiliais meniu pakeitimais nurodo naudotojui, kad reikia paleisti iš naujo. Nustačius kaip „Rekomenduojama“, naudotojui rodomas pasikartojantis įspėjimas, kad rekomenduojama paleisti iš naujo. Naudotojas gali atsisakyti šio pranešimo, kad atidėtų paleidimą iš naujo. Nustačius kaip „Būtina“, naudotojui rodomas pasikartojantis įspėjimas, nurodantis, kad naršyklė bus priverstinai paleista iš naujo pasibaigus pranešimo laikotarpiui. Pagal numatytuosius nustatymus šis laikotarpis yra septynios dienos. Jį galima konfigūruoti politikos „<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />“ nustatymuose.
 
       Paleidus iš naujo, naudotojo sesija atkuriama.</translation>
-<translation id="2075434678547407637">Leidžiama jums valdyti, ar vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso įrašo turiniu, naudojant „<ph name="PRODUCT_NAME" />“.
-
-      Nustačius politiką kaip „True“, „<ph name="PRODUCT_NAME" />“ leidžiama automatiškai leisti mediją.
-      Nustačius politiką kaip „False“, „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos.
-      Pagal numatytuosius nustatymus „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos.
-
-      Atminkite, kad pakeitus politiką, kai vykdoma „<ph name="PRODUCT_NAME" />“, tai bus taikoma tik naujiems atidarytiems skirtukams. Todėl kai kurie skirtukai vis dar gali veikti, kaip anksčiau.
-      </translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2077273864382355561">Ekrano išjungimo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
@@ -354,9 +346,6 @@
       Jei šis nustatymas sukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma įvesti slaptažodžius užrakinimo ekrane, atsižvelgiant į šį nustatymą.
 
       Jei šis nustatymas nesukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma kasdien įvesti slaptažodį užrakinimo ekrane.</translation>
-<translation id="2188722565665306629">Leidžiama nustatyti laikotarpį, per kurį rodomi „<ph name="PRODUCT_NAME" />“ paleidimo iš naujo pranešimai, kad būtų galima pritaikyti laukiantį naujinį.
-
-      Šį politikos nustatymą galima naudoti norint valdyti laikotarpį (milisekundėmis), per kurį naudotojas pakartotinai informuojamas, kad būtina iš naujo paleisti „<ph name="PRODUCT_NAME" />“ (arba pakartotinai paleisti „<ph name="PRODUCT_OS_NAME" />“) norint pritaikyti naujinį. Per šį laikotarpį naudotojui bus pakartotinai pranešama apie reikalingą atnaujinimą, atsižvelgiant į politikos „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“ nustatymą. Jei nenustatyta, naudojamas numatytasis 604 800 000 millisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="2194470398825717446">Ši politika nebenaudojama M61, vietoje jos naudokite „EcryptfsMigrationStrategy“.
 
       Nurodo, kaip su „ecryptfs“ pristatytas įrenginys turi elgtis, jei reikia pereiti prie „ext4“ šifruotės.

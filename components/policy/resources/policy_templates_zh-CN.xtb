@@ -281,14 +281,6 @@
       此政策设置旨在启用建议或要求用户重新启动浏览器的通知功能。如果此政策未设置，<ph name="PRODUCT_NAME" /> 会通过菜单的细微变化来提示用户需要重新启动。如果此政策设为“推荐”，系统将会显示建议用户重新启动浏览器的周期性警告。用户可以关闭该警告来推迟重新启动。如果此政策设为“必需”，系统将会显示周期性警告，以便让用户知道系统将于通知期结束后强制重新启动浏览器。该通知期会默认设为 7 天，不过可以通过 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策设置进行配置。
 
       浏览器重新启动后，将会恢复用户会话。</translation>
-<translation id="2075434678547407637">可让您控制 <ph name="PRODUCT_NAME" /> 中的视频能否不经用户同意即可有声地自动播放。
-
-      如果此政策设为 true，<ph name="PRODUCT_NAME" /> 将能够自动播放媒体。
-      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将无法自动播放媒体。
-      默认情况下，<ph name="PRODUCT_NAME" /> 无法自动播放媒体。
-
-      请注意，如果此政策在 <ph name="PRODUCT_NAME" /> 运行期间发生了更改，更改后的设置将会仅应用于新打开的标签页。因此，部分标签页或许仍会遵循先前的行为方式。
-      </translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2077273864382355561">使用电源供电时的屏幕关闭延迟时间</translation>
 <translation id="2082205219176343977">为设备配置允许使用的最低 Chrome 版本。</translation>
@@ -327,9 +319,6 @@
           如果此设置已配置，系统将会根据此设置的值要求那些使用“快速解锁”的用户在锁定屏幕上输入密码。
 
           如果此设置未配置，系统每天都会要求那些使用“快速解锁”的用户在锁定屏幕上输入密码。</translation>
-<translation id="2188722565665306629">可让您设置系统显示 <ph name="PRODUCT_NAME" /> 重新启动通知（提示用户应用尚未应用的更新）的时间段。
-
-      此政策设置可用于控制该时间段的时长（以毫秒为单位），系统将在该时间段内循序渐进地通知用户必须重新启动 <ph name="PRODUCT_NAME" />（或 <ph name="PRODUCT_OS_NAME" />）以进行更新。在该时间段内，系统将会根据 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的设置重复提示用户需要进行更新。如果此政策未设置，系统将会使用 604800000 毫秒（1 周）的默认时长。</translation>
 <translation id="2194470398825717446">我们在 M61 中弃用了此政策，请改用 EcryptfsMigrationStrategy。
 
       用于指定内置了 ecryptfs 且需要转换为采用 ext4 加密功能的设备的行为方式。

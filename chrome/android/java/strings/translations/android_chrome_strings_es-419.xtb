@@ -125,7 +125,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para obtener contenido personalizado y sugerido por Google, accede a tu cuenta en Chrome.</translation>
 <translation id="2091887806945687916">Sonido</translation>
-<translation id="209354263896846928">Accede a la barra de direcciones en la parte inferior de la pantalla</translation>
 <translation id="2095887075102408547">Cuando se active esta función, Chrome usará los servidores de Google para comprimir las páginas que visitas antes de descargarlas. Google no optimizará ni verá las páginas a las que accediste a través de conexiones privadas (HTTPS) o pestañas de incógnito.</translation>
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2111511281910874386">Ir a la página</translation>
@@ -224,7 +223,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="300526633675317032">Esta acción borrará todos los <ph name="SIZE_IN_KB" /> del almacenamiento del sitio web.</translation>
 <translation id="3029613699374795922">Se descargaron <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden.</translation>
-<translation id="3030708446010914655">Accede a la barra de direcciones aquí</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La ubicación está desactivada; actívala en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Pronto se mostrarán más artículos. Disfruta tu mañana.</translation>
@@ -295,7 +293,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3712575778697986964">¿Deseas restablecer Ahorro de datos?</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
 <translation id="3716182511346448902">Chrome pausó esta página porque usa demasiada memoria.</translation>
-<translation id="3734660163659757482">Desliza hacia arriba para ver tus favoritos y más contenido</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3739899004075612870">Agregado a favoritos en <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Otras apps: <ph name="MEGABYTES" /> megabytes</translation>

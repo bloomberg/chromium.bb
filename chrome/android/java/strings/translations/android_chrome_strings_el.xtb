@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, συνδεθείτε στο Chrome.</translation>
 <translation id="2091887806945687916">Ήχος</translation>
-<translation id="209354263896846928">Χρησιμοποιήστε τη γραμμή διευθύνσεων στο κάτω μέρος της οθόνης σας</translation>
 <translation id="2095887075102408547">Όταν είναι ενεργοποιημένη αυτή η λειτουργία, το Chrome θα χρησιμοποιεί τους διακομιστές της Google για τη συμπίεση των σελίδων που επισκέπτεστε πριν από τη λήψη τους. Οι σελίδες τις οποίες επισκεφτήκατε μέσω ασφαλών συνδέσεων (HTTPS) ή σε καρτέλες ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google.</translation>
 <translation id="2100273922101894616">Αυτόματη σύνδεση</translation>
 <translation id="2111511281910874386">Μετάβαση στη σελίδα</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">Αυτό θα διαγράψει και τα <ph name="SIZE_IN_KB" /> του αποθηκευτικού χώρου ιστοτόπων.</translation>
 <translation id="3029613699374795922">Έγινε λήψη <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Οι φράσεις πρόσβασης δεν συμφωνούν</translation>
-<translation id="3030708446010914655">Χρησιμοποιήστε τη γραμμή διευθύνσεων εδώ</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Η Τοποθεσία είναι απενεργοποιημένη. Ενεργοποιήστε την στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Περισσότερα άρθρα θα εμφανιστούν σύντομα. Απολαύστε το πρωινό σας!</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">Επαναφορά δεδομένων Εξοικονόμησης δεδομένων;</translation>
 <translation id="3714981814255182093">Άνοιγμα της γραμμής εύρεσης</translation>
 <translation id="3716182511346448902">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome την έθεσε σε παύση.</translation>
-<translation id="3734660163659757482">Τραβήξτε προς τα επάνω, για να δείτε τους σελιδοδείκτες και περισσότερα</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3739899004075612870">Ο σελιδοδείκτης προστέθηκε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB από άλλες εφαρμογές</translation>

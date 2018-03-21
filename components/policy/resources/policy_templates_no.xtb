@@ -300,15 +300,6 @@
       Denne regelen aktiverer varsler for å informere brukeren om at nettleseren må eller bør startes på nytt. Hvis regelen ikke er angitt, varsler <ph name="PRODUCT_NAME" /> brukeren om at det er nødvendig med en omstart ved hjelp av diskrete endringer i menyen. Hvis regelen er angitt som «Recommended» (anbefalt), ser brukeren en gjentakende advarsel om at en omstart er anbefalt. Brukeren kan avvise advarselen for å utsette omstarten. Hvis regelen er angitt som «Required» (obligatorisk), ser brukeren en gjentakende advarsel om at en tvungen omstart utføres når varselperioden er utløpt. Denne perioden er som standard 7 dager og kan konfigureres via regelen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Brukerens økt gjenopprettes etter omstarten.</translation>
-<translation id="2075434678547407637">Lar deg styre om videoer kan spilles automatisk (uten brukernes samtykke) sammen med lydinnhold i <ph name="PRODUCT_NAME" />.
-
-      Hvis regelen er angitt som «true» (sann), kan <ph name="PRODUCT_NAME" /> spille av medier automatisk.
-      Hvis regelen er angitt som «false» (usann), kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk.
-
-      Som standard kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk.
-
-      Hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, gjelder endringen bare for nye faner som åpnes. Det kan derfor hende at enkelte faner fortsatt følger den tidligere regelen.
-      </translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
@@ -353,9 +344,6 @@
       Hvis denne innstillingen er konfigurert, kan brukere som bruker hurtigopplåsing, bli bedt om å skrive inn passordet sitt på låseskjermen. Dette avhenger imidlertid av hvilken innstilling som er valgt.
 
       Hvis denne innstillingen ikke konfigureres, blir brukere som bruker hurtigopplåsing, bedt om å skrive inn passordet sitt på låseskjermen hver dag.</translation>
-<translation id="2188722565665306629">Lar deg angi hvor lenge varsler for omstart av <ph name="PRODUCT_NAME" /> skal vises når det finnes en oppdatering som ikke er installert ennå.
-
-      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) må startes på nytt på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen for regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 604 800 000 millisekunder (én uke).</translation>
 <translation id="2194470398825717446">Denne regelen er avviklet i M61. Bruk EcryptfsMigrationStrategy i stedet.
 
       Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.

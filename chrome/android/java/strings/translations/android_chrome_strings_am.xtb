@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">በGoogle የሚጠቆም ግላዊነት የተላበሰ ይዘትን ለማግኘት በመለያ ወደ Chrome ይግቡ።</translation>
 <translation id="2091887806945687916">ድምፅ</translation>
-<translation id="209354263896846928">በእርስዎ የማያ ገጽ ግርጌ ላይ ያለውን የአድራሻ አሞሌ ይድረሱበት</translation>
 <translation id="2095887075102408547">ይህ ባህሪ ሲበራ Chrome የጎበኟቸውን ገጾች ከማውረዱ በፊት ለማመቅ የGoogle አገልጋዮችን ይጠቀማል። ግላዊ ግንኙነቶችን (ኤችቲቲፒኤስ) ወይም ማንነት የማያሳውቁ ትሮችን በመጠቀም የተደረሰባቸው ገጾች አይተቡም ወይም በGoogle አይታይም።</translation>
 <translation id="2100273922101894616">በራስ-ግባ</translation>
 <translation id="2111511281910874386">ወደዚህ ገጽ ይሂዱ</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">ይህ ሁሉንም <ph name="SIZE_IN_KB" /> የድር ጣቢያ ማከማቻ ያጸዳል።</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> ኪባ ወርዷል</translation>
 <translation id="3029704984691124060">የይለፍ ሐረጎቹ አይዛመዱም</translation>
-<translation id="3030708446010914655">የአድራሻ አሞሌውን እዚህ ይድረሱበት</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />እገዛ ያግኙ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">አካባቢ ጠፍቷል፤ በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="307908932405420782">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ጥዋት ይዝናኑበት!</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">ውሂብ ቆጣቢ ዳግም ይጀመር?</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
-<translation id="3734660163659757482">ዕልባቶችን እና ተጨማሪ ነገሮችን ለመመልከት ወደ ላይ ይጎትቱ</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
 <translation id="3739899004075612870">በ<ph name="PRODUCT_NAME" /> ውስጥ ዕልባት ተቀምጦለታል</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> ሜባ ሌሎች መተግበሪያዎች</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="104962181688258143">Open the Files app</translation>
 <translation id="1126871238933253947">Switch to the previous keyboard language that you were using.</translation>
+<translation id="1134347825771908369">Mute volume</translation>
 <translation id="1195667586424773550">Drag the link to the tab's address bar</translation>
 <translation id="1204450209689312104">Open a new window in incognito mode</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Save all open pages in your current window as bookmarks in a new folder</translation>
 <translation id="355103131818127604">Open the link in a new tab in the background</translation>
 <translation id="3649256019230929621">Minimise window</translation>
+<translation id="3655154169297074232">Tabs &amp; Windows</translation>
 <translation id="3668361878347172356">Redo your last action</translation>
 <translation id="3720939646656082033">Open the link in a new tab and switch to the new tab</translation>
 <translation id="3725795051337497754">Close the current tab</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Save the link as a bookmark</translation>
 <translation id="4141203561740478845">Highlight the row with the address bar</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> or <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Overview mode</translation>
+<translation id="4472417192667361414">System &amp; Display Settings</translation>
 <translation id="4556221320735744018">See Keyboard Shortcut Helper</translation>
 <translation id="4628718545549558538">Open the status area (where your account picture appears)</translation>
 <translation id="4642092649622328492">Take partial screenshot</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Go to beginning of document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> or <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotate screen 90 degrees</translation>
+<translation id="826184564253127735">Keyboard Shortcut Viewer</translation>
 <translation id="836869401750819675">Open the Downloads page</translation>
 <translation id="8388247778047144397">Drag the link to a blank area on the tab strip</translation>
 <translation id="8389638407792712197">Open new window</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Display hidden files in the Files app</translation>
 <translation id="8717459106217102612">Select previous word or letter</translation>
 <translation id="8727232706774971183">See your notifications</translation>
+<translation id="8855885154700222542">Full-screen key</translation>
 <translation id="88986195241502842">Page down</translation>
 <translation id="8903921497873541725">Zoom in</translation>
+<translation id="8924883688469390268">Switch to the previous user</translation>
+<translation id="8977648847395357314">Select the content in the address bar</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 to 8</translation>
+<translation id="9041599225465145264">Paste content from the clipboard</translation>
+<translation id="9052808072970550123">Switch to the next user</translation>
+<translation id="9106898733795143799">Page &amp; Web Browser</translation>
 <translation id="9179672198516322668">Popular Shortcuts</translation>
+<translation id="93603345341560814">Press <ph name="SHIFT" /> and click a link</translation>
+<translation id="945383118875625837">Drag link to bookmarks bar</translation>
+<translation id="98120814841227350">Go to end of document</translation>
 </translationbundle>

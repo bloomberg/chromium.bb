@@ -377,7 +377,7 @@
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="1559235587769913376">युनिकोड वर्ण इनपुट करा</translation>
 <translation id="1566049601598938765">वेबसाइट</translation>
-<translation id="1567387640189251553">तुम्ही शेवटचा पासवर्ड टाकल्या नंतर वेगर्ड कीबोर्ड कनेक्ट करण्यात आला आहे. तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
+<translation id="1567387640189251553">तुम्ही शेवटचा पासवर्ड टाकल्या नंतर वेगळा कीबोर्ड कनेक्ट करण्यात आला आहे. तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
 <translation id="1567993339577891801">JavaScript कन्सोल</translation>
 <translation id="1568067597247500137">साइट निःशब्द करा</translation>
 <translation id="1568323446248056064">प्रदर्शन डीव्हाइस सेटिंग्ज उघडा</translation>
@@ -969,6 +969,7 @@
 <translation id="2508428939232952663">Google Play स्टोअर खाते</translation>
 <translation id="2509495747794740764">स्केल मूल्य 10 आणि 200 दरम्यानचा नंबर असणे आवश्यक आहे.</translation>
 <translation id="2509566264613697683">८x</translation>
+<translation id="2512222046227390255">स्वयं-भरण फॉर्म</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">स्कॅन करा</translation>
 <translation id="2518024842978892609">आपली क्लायंट प्रमाणप‍त्रे वापरा</translation>
@@ -3490,7 +3491,7 @@
 <translation id="645705751491738698">JavaScript अवरोधित करणे सुरू ठेवा</translation>
 <translation id="6458308652667395253">JavaScript अवरोधित करणे व्यवस्थापित करा...</translation>
 <translation id="6459488832681039634">शोधण्यासाठी निवड वापरा</translation>
-<translation id="6459799433792303855">सक्रिय विंडो दुसऱ्या डिस्प्लेवर हलवली आहे.</translation>
+<translation id="6459799433792303855">अॅक्टिव्ह विंडो दुसऱ्या डिस्प्लेवर हलवली आहे.</translation>
 <translation id="6460601847208524483">पुढील शोधा</translation>
 <translation id="6462082050341971451">आपण अद्याप तिथे आहात?</translation>
 <translation id="6463795194797719782">&amp;संपादन</translation>
@@ -3602,6 +3603,7 @@
 <translation id="6639554308659482635">SQLite मेमरी</translation>
 <translation id="6641138807883536517">यादृच्छिकपणे तयार केलेला सुरक्षित मॉड्यूल पासवर्ड उपलब्ध नाही. पॉवरवॉशनंतर असे होणे स्‍वाभाविक आहे.</translation>
 <translation id="6643016212128521049">साफ करा</translation>
+<translation id="6644512095122093795">पासवर्ड जतन करण्यासाठी विचारा</translation>
 <translation id="6644846457769259194">आपले डिव्हाइस अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape प्रमाणन अधिकृतता निरस्तीकरण URL</translation>
 <translation id="6647838571840953560">सध्या <ph name="CHANNEL_NAME" /> वर</translation>
@@ -4156,7 +4158,7 @@
 <translation id="7544853251252956727">शफल करा</translation>
 <translation id="7545415673537747415"><ph name="BEGIN_LINK" />Google क्रियाकलाप नियंत्रणे<ph name="END_LINK" /> मधून शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यासाठी Google आपला ब्राउझिंग इतिहास कसा वापरते ते नियंत्रित करा.</translation>
 <translation id="7547317915858803630">चेतावणी: आपली <ph name="PRODUCT_NAME" /> सेटिंग्ज एका नेटवर्क ड्राइव्हवर संचयित करण्यात आली आहेत. यामुळे वेग मंदावणे, क्रॅश किंवा डेटा गमावणे हे परिणाम देखील होऊ शकतात.</translation>
-<translation id="7547483330017600937">तुमच्या <ph name="DEVICE_TYPE" /> वर विकसित करा. तुमची स्थानिक अॅप्स आणि कमांड लाइन साधने अखंड आणि सुरक्षितपणे चालवू शकता.
+<translation id="7547483330017600937">तुमच्या <ph name="DEVICE_TYPE" /> वर डेव्हलप करा. तुमची स्थानिक अॅप्स आणि कमांड लाइन साधने अखंड आणि सुरक्षितपणे चालवू शकता.
 <ph name="APP_NAME" /> इंस्टॉल केल्याने <ph name="DOWNLOAD_SIZE" /> डेटा डाउनलोड होईल</translation>
 <translation id="7548856833046333824">लेमोनेड</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
@@ -4890,7 +4892,7 @@
 <translation id="8725178340343806893">मनपसंत/बुकमार्क</translation>
 <translation id="8726206820263995930">सर्व्हरवरून धोरण सेटिंग्ज आणताना एरर: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727142376512517020">हे पुन्हा दर्शवू नका</translation>
-<translation id="8727344521467137076">Chrome ला तुमच्या काँप्युटरवर धोकादायक सॉफ्टवेअर आढळले आहे. Chrome ते काढून टाकेल आणि तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रीस्टोअर करेल.</translation>
+<translation id="8727344521467137076">Chrome ला तुमच्या काँप्युटरवर धोकादायक सॉफ्टवेअर आढळले आहे. Chrome ते काढून टाकेल आणि तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रिस्टोअर करेल.</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8732030010853991079">या चिन्हावर क्लिक करुन हा विस्तार वापरा.</translation>
 <translation id="8732212173949624846">आपल्या सर्व साइन इन केलेल्या डिव्हाइसेसवर आपला ब्राउझिंग इतिहास वाचा आणि बदला</translation>

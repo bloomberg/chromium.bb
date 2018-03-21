@@ -294,14 +294,6 @@
       Esta definição de política ativa as notificações para informar o utilizador de que é recomendado ou necessário reiniciar o navegador. Se não estiver definida, o <ph name="PRODUCT_NAME" /> indica ao utilizador que é necessário reiniciá-lo através de alterações subtis ao respetivo menu. Se estiver definida como "Recomendado", é apresentado um aviso recorrente ao utilizador a recomendar o reinício. O utilizador pode ignorar este aviso para adiar o reinício. Se estiver definida como "Obrigatório", é apresentado um aviso recorrente ao utilizador a indicar que o reinício do navegador será forçado assim que o período da notificação passar. Por predefinição, este período é de sete dias e pode ser configurado através da definição da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       A sessão do utilizador é restaurada após o reinício.</translation>
-<translation id="2075434678547407637">Permite-lhe controlar se os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
-
-      Se a política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> está autorizado a reproduzir automaticamente conteúdo multimédia.
-      Se a política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia.
-      Por predefinição, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia.
-
-      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.
-      </translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2077273864382355561">Atraso para desligar o ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima do Chrome permitida para o dispositivo</translation>
@@ -353,9 +345,6 @@
           Se esta definição estiver configurada, os utilizadores que recorram ao desbloqueio rápido terão de introduzir as respetivas palavras-passe no ecrã de bloqueio, consoante esta definição.
 
           Se esta definição não estiver configurada, os utilizadores que recorram ao desbloqueio rápido terão de introduzir a respetiva palavra-passe no ecrã de bloqueio todos os dias.</translation>
-<translation id="2188722565665306629">Permite-lhe definir o período de tempo durante o qual são apresentadas notificações de reinício do <ph name="PRODUCT_NAME" /> para aplicar uma atualização pendente.
-
-      Esta definição de política pode ser utilizada para controlar o período de tempo, em milissegundos, durante o qual o utilizador é gradualmente informado de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado (ou o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado) para aplicar uma atualização. Durante este período de tempo, o utilizador é repetidamente informado da necessidade de aplicar uma atualização com base na definição da política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se não estiver definida, é utilizado o período predefinido de 604 800 000 milissegundos (uma semana).</translation>
 <translation id="2194470398825717446">Esta política está obsoleta em M61, utilize EcryptfsMigrationStrategy em alternativa.
 
       Especifica o comportamento de um dispositivo enviado com ecryptfs e que tem de transitar para a encriptação ext4.

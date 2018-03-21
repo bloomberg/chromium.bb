@@ -58,6 +58,17 @@
 
       If this policy is used, all printers are provided to the user except for the IDs listed in this policy.
       </translation>
+<translation id="1181881366217399113">
+      NOTE: This policy is experimental and may break functionality!
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="1198465924256827162">How frequently device status uploads are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 hours. The minimum
@@ -256,7 +267,15 @@
       The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".
 
       Setting this policy completely disables automatic timezone resolve by device location. It also overrides SystemTimezoneAutomaticDetection policy.</translation>
+<translation id="1888871729456797026">The enrolment token of cloud policy on desktop</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
+<translation id="1906888171268104594">Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google.
+
+      If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics and diagnostic data.
+
+      If set to false, metrics and diagnostic data reporting will be disabled.
+
+      If not configured, metrics and diagnostic data reporting will be disabled on unmanaged devices, and enabled on managed devices.</translation>
 <translation id="193259052151668190">Whitelist of USB detachable devices</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>
 <translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME" />.
@@ -302,14 +321,6 @@
       This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
 
       The user's session is restored following the relaunch.</translation>
-<translation id="2075434678547407637">Allows you to control if videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME" />.
-
-      If the policy is set to True, <ph name="PRODUCT_NAME" /> is allowed to auto-play media.
-      If the policy is set to False, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media.
-      By default, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media.
-
-      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behaviour.
-      </translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
@@ -354,9 +365,6 @@
           If this setting is configured, users using quick unlock will be requested to enter their passwords on the lock screen depending on this setting.
 
           If this setting is not configured, users using quick unlock will be requested to enter their password on the lock screen every day.</translation>
-<translation id="2188722565665306629">Allows you to set the time period over which <ph name="PRODUCT_NAME" /> relaunch notifications are shown to apply a pending update.
-
-      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME" /> must be relaunched (or <ph name="PRODUCT_OS_NAME" /> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy. If not set, the default period of 604,800,000 milliseconds (one week) is used.</translation>
 <translation id="2194470398825717446">This policy is deprecated in M61, please use EcryptfsMigrationStrategy instead.
 
       Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
@@ -430,6 +438,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2386362615870139244">Allow screen wake locks</translation>
 <translation id="2411817661175306360">Password protection warning is off</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
+<translation id="2415979855753196119">Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at risk of being hijacked.
+
+      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
+      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site.
+      If this policy is left unset, password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site, but the user will be able to change this setting.</translation>
 <translation id="2418507228189425036">Disables saving browser history in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
       If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
@@ -625,6 +639,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
 <translation id="2867699958489427143">Roll back and stay on target version if OS version is newer than target. Do a full Powerwash during the process.</translation>
+<translation id="286802604195763750">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+
+      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their Google password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their Google password on a phishing site.
+      If this policy is left unset, password protection warning will be triggered when the user reuses their Google password on a phishing site, but the user will be able to change this setting.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
@@ -659,6 +679,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the screen off delay (if set) and the idle delay.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
+<translation id="2998886474614739865">
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
 <translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
@@ -768,6 +799,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3386001018488754001">
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="3395348522300156660">Specifies the printers which a user can use.
 
       This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -806,6 +848,10 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is set to False or left unset, power management delays and the session length limit start running immediately on session start.</translation>
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
 <translation id="348495353354674884">Enable virtual keyboard</translation>
+<translation id="3487623755010328395">
+        If this policy is set, <ph name="PRODUCT_NAME" /> will try to register itself and apply associated cloud policy for all profiles.
+
+        The value of this policy is an Enrolment token that can be retrieved from the Google Admin console.</translation>
 <translation id="3496296378755072552">Password manager</translation>
 <translation id="350443680860256679">Configure ARC</translation>
 <translation id="3504791027627803580">Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
@@ -1115,6 +1161,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
 <translation id="4485425108474077672">Configure the New Tab page URL</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
+<translation id="4497968613298501984">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
+      This setting should only be used by GSuite users using a SSO/SAML system.
+      In order for <ph name="PRODUCT_NAME" /> to correctly capture password fingerprints, please make sure that your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      If this setting is enabled, then password protection service will capture password fingerprint on these URLs for password reuse detection purpose.
+      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="450537894712826981">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided cache size regardless of whether the user has specified the '--media-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -1233,6 +1286,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
+<translation id="4868249328547841081">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
+      This setting should only be used by GSuite users using a SSO/SAML system.
+      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      If this setting is enabled, then password protection service will send users to this URL to change their passwords if they've been phished.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4869787217450099946">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
 
           If this policy is set to true or left not set, screen wake locks will be honoured for power management.
@@ -1388,6 +1448,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
+<translation id="5301787427319106606">
+      NOTE: This policy is experimental and may break functionality!
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="5302612588919538756">This policy is deprecated, consider using SyncDisabled instead.
 
       Allows the user to sign in to <ph name="PRODUCT_NAME" />.
@@ -1982,6 +2053,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
 <translation id="7072208053150563108">Machine password change rate</translation>
 <translation id="7072406291414141328">Enables throttling network bandwidth</translation>
+<translation id="7074513465313721551">Configure the list of domains which Safe Browsing will trust. This means:
+      Safe Browsing will not check for dangerous resources (e.g. phishing, malware or unwanted software) if their URLs match these domains.
+      Safe Browsing's download protection service will not check downloads hosted on these domains.
+      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+
+      If this setting is enabled, then Safe Browsing will trust these domains.
+      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
 <translation id="7106631983877564505">Enable lock when <ph name="PRODUCT_OS_NAME" /> devices become idle or suspended.
 

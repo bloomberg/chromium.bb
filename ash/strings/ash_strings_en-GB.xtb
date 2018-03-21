@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1525508553941733066">DISMISS</translation>
+<translation id="1537254971476575106">Full-screen magnifier</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1567387640189251553">A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
+<translation id="2081529251031312395">$1 can still sign in later.</translation>
 <translation id="2122028596993374965">Stop casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
+<translation id="2135456203358955318">Docked magnifier</translation>
 <translation id="2144487987174258011">Restart to update Adobe Flash Player</translation>
 <translation id="2191905770366256395">Your detachable keybaord needs a critical update</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>

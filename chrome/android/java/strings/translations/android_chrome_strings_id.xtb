@@ -125,7 +125,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2082238445998314030">Hasil <ph name="RESULT_NUMBER" /> dari <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, masuk ke Chrome.</translation>
 <translation id="2091887806945687916">Suara</translation>
-<translation id="209354263896846928">Akses kolom URL di bagian bawah halaman</translation>
 <translation id="2095887075102408547">Saat fitur ini diaktifkan, Chrome akan menggunakan server Google untuk mengompresi halaman yang Anda kunjungi sebelum mendownloadnya. Halaman yang diakses menggunakan sambungan pribadi (HTTPS) atau tab Penyamaran tidak akan dioptimalkan maupun dilihat oleh Google.</translation>
 <translation id="2100273922101894616">Masuk Otomatis</translation>
 <translation id="2111511281910874386">Buka halaman</translation>
@@ -224,7 +223,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="300526633675317032">Tindakan ini akan menghapus <ph name="SIZE_IN_KB" /> seluruhnya dari penyimpanan situs web.</translation>
 <translation id="3029613699374795922">Terdownload <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
-<translation id="3030708446010914655">Akses kolom URL di sini</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokasi nonaktif, aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Artikel lainnya akan segera muncul. Selamat beraktivitas pagi!</translation>
@@ -295,7 +293,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3712575778697986964">Setel ulang Penghemat Kuota Internet?</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
-<translation id="3734660163659757482">Tarik ke atas untuk melihat bookmark dan lainnya</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3739899004075612870">Dibookmark di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB aplikasi lain</translation>

@@ -125,7 +125,6 @@
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. од <ph name="TOTAL_RESULTS" /> резултата</translation>
 <translation id="2086652334978798447">Да бисте добијали персонализовани садржај који предлаже Google, пријавите се у Chrome.</translation>
 <translation id="2091887806945687916">Звук</translation>
-<translation id="209354263896846928">Приступајте траци за адресу у дну екрана</translation>
 <translation id="2095887075102408547">Када укључите ову функцију, Chrome користи Google сервере да би компримовао странице које посећујете пре него што их преузме. Google неће оптимизовати нити видети странице којима приступате помоћу приватних веза (HTTPS) или на картицама Без архивирања.</translation>
 <translation id="2100273922101894616">Аутоматско пријављивање</translation>
 <translation id="2111511281910874386">Иди на страницу</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">Овим ћете обрисати цео меморијски простор веб-сајта од <ph name="SIZE_IN_KB" />.</translation>
 <translation id="3029613699374795922">Преузели сте <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Приступне фразе се не подударају</translation>
-<translation id="3030708446010914655">Приступајте траци за адресу овде</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Потражите помоћ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Локација је искључена; укључите је у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Још чланака ће се појавити ускоро. Желимо вам пријатно јутро!</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">Желите ли да ресетујете Уштеду података?</translation>
 <translation id="3714981814255182093">Отварање траке за тражење</translation>
 <translation id="3716182511346448902">Ова страница користи превише меморије, па ју је Chrome паузирао.</translation>
-<translation id="3734660163659757482">Повуците нагоре за обележиваче и још опција</translation>
 <translation id="3738139272394829648">Додирни за претрагу</translation>
 <translation id="3739899004075612870">Обележено у <ph name="PRODUCT_NAME" />-у</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB – друге апликације</translation>

@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2086652334978798447">หากต้องการรับคำแนะนำเนื้อหาที่เหมาะสำหรับคุณจาก Google ให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2091887806945687916">เสียง</translation>
-<translation id="209354263896846928">ไปที่แถบที่อยู่เว็บที่ด้านล่างของหน้าจอ</translation>
 <translation id="2095887075102408547">เมื่อเปิดฟีเจอร์นี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2111511281910874386">ไปที่หน้า</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">การดำเนินการนี้จะล้างพื้นที่เก็บข้อมูลเว็บไซต์ทั้ง <ph name="SIZE_IN_KB" /></translation>
 <translation id="3029613699374795922">ดาวน์โหลดแล้ว <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
-<translation id="3030708446010914655">ไปที่แถบที่อยู่เว็บตรงนี้</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามเช้า</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">รีเซ็ตโปรแกรมประหยัดอินเทอร์เน็ตไหม</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3716182511346448902">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงหยุดหน้าชั่วคราว</translation>
-<translation id="3734660163659757482">เลื่อนขึ้นเพื่อดูบุ๊กมาร์กและอื่นๆ</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3739899004075612870">บุ๊กมาร์กไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB จากแอปอื่นๆ</translation>

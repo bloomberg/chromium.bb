@@ -125,7 +125,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Pour obtenir une recommandation de contenu personnalisé de la part de Google, connectez-vous à Chrome.</translation>
 <translation id="2091887806945687916">Son</translation>
-<translation id="209354263896846928">Accédez à la barre d'adresse en bas de l'écran</translation>
 <translation id="2095887075102408547">Lorsque cette fonctionnalité est activée, les pages consultées dans Chrome sont d'abord compressées via les serveurs Google avant d'être téléchargées. Les pages consultées via des connexions privées (HTTPS) ou en mode navigation privée ne sont pas optimisées ni détectées par Google.</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="2111511281910874386">Accéder à la page</translation>
@@ -224,7 +223,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="300526633675317032">Cette action aura pour effet de libérer l'espace de stockage utilisé pour les données de site (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> Ko téléchargé(s)</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
-<translation id="3030708446010914655">Accédez à la barre d'adresse ici</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La localisation est désactivée. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">D'autres articles vous seront bientôt proposés. Bonne matinée !</translation>
@@ -295,7 +293,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3712575778697986964">Réinitialiser l'économiseur de données ?</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
 <translation id="3716182511346448902">Cette page utilise trop de mémoire, Chrome a donc interrompu son chargement.</translation>
-<translation id="3734660163659757482">Tirez vers le haut pour afficher les favoris, etc.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mo par d'autres applis</translation>

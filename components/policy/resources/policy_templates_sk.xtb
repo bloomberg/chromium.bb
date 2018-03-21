@@ -293,14 +293,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto nastavenie pravidla aktivuje upozornenia, ktoré informujú používateľa o tom, že sa odporúča alebo vyžaduje opätovné spustenie prehliadača. Ak nie je nastavené, <ph name="PRODUCT_NAME" /> upozorní používateľa prostredníctvom nenápadných zmien v ponuke, že sa vyžaduje opätovné spustenie. Ak je nastavené na možnosť Recommended (Odporúčané), používateľovi sa bude zobrazovať opakované upozornenie na to, že sa odporúča opätovné spustenie. Používateľ môže toto upozornenie zrušiť a opätovné spustenie tak odmietnuť. Ak je nastavené na možnosť Required (Vyžadované), používateľovi sa zobrazí opakované upozornenie, že po vypršaní obdobia upozornenia sa vynúti opätovné spustenie prehliadača. Toto obdobie je predvolene nastavené na sedem dní a dá sa nakonfigurovať prostredníctvom nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Relácia používateľa sa po opätovnom spustení obnoví.</translation>
-<translation id="2075434678547407637">Umožňuje ovládať, či sa majú videá prehrávať automaticky (bez súhlasu používateľa) so zvukovým obsahom v prehliadači <ph name="PRODUCT_NAME" />.
-
-      Ak toto pravidlo nastavíte na hodnotu True, v prehliadači <ph name="PRODUCT_NAME" /> je povolené automatické prehrávanie médií.
-      Ak ho nastavíte na hodnotu False, v prehliadači <ph name="PRODUCT_NAME" /> je zakázané automatické prehrávanie médií.
-      Predvolene je v prehliadači <ph name="PRODUCT_NAME" /> automatické prehrávanie médií zakázané.
-
-      Upozorňujeme, že ak toto pravidlo zmeníte, keď je prehliadač <ph name="PRODUCT_NAME" /> spustený, použije sa iba na nové otvorené karty. Pri niektorých kartách si preto budete môcť všimnúť predchádzajúce správanie.
-      </translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2077273864382355561">Oneskorenie vypnutia obrazovky pri napájaní z batérie</translation>
 <translation id="2082205219176343977">Konfigurácia minimálnej povolenej verzie Chromu pre zariadenie.</translation>
@@ -344,9 +336,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto nastavenie nakonfigurované, používatelia využívajúci rýchle odomknutie budú musieť na uzamknutej obrazovke zadať svoje heslo v závislosti od tohto nastavenia.
 
       Ak toto nastavenie nie je nakonfigurované, používatelia využívajúci rýchle odomknutie budú musieť na uzamknutej obrazovke zadávať heslo každý deň.</translation>
-<translation id="2188722565665306629">Umožňuje nastaviť časové obdobie, počas ktorého sa zobrazujú upozornenia na opätovné spustenie prehliadača <ph name="PRODUCT_NAME" />, aby sa použila čakajúca aktualizácia.
-
-      Pomocou tohto nastavenia pravidla môžete ovládať časové obdobie (v milisekundách), počas ktorého je používateľ postupne informovaný o tom, že <ph name="PRODUCT_NAME" /> musí znova spustiť (alebo že sa <ph name="PRODUCT_OS_NAME" /> musí reštartovať), aby mohol použiť aktualizáciu. V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie na základe nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ak pravidlo nenastavíte, použije sa predvolené obdobie 604 800 000 milisekúnd (jeden týždeň).</translation>
 <translation id="2194470398825717446">Podpora tohto pravidla bola vo verzii M61 ukončená, použite namiesto neho pravidlo EcryptfsMigrationStrategy.
 
       Umožňuje určiť, ako sa má správať zariadenie, ktoré bolo dodané so šifrovaním ecryptfs a ktoré potrebuje prejsť na šifrovanie ext4.

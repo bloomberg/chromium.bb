@@ -294,14 +294,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig. Hvis politikken indstilles til "Anbefalet", får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis politikken er indstillet til "Påkrævet", får brugeren vist en fast advarsel, som indikerer, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Brugerens session genoprettes efter genstarten.</translation>
-<translation id="2075434678547407637">Giver dig mulighed for at bestemme, om videoer skal afspilles automatisk (uden brugernes samtykke) med lydindhold i <ph name="PRODUCT_NAME" />.
-
-      Hvis politikken er angivet som Sand, har <ph name="PRODUCT_NAME" /> tilladelse til automatisk at afspille medier.
-      Hvis politikken er angivet som Falsk, har <ph name="PRODUCT_NAME" /> ikke tilladelse til automatisk at afspille medier.
-      <ph name="PRODUCT_NAME" /> har som standard ikke tilladelse til automatisk at afspille medier.
-
-      Bemærk! Hvis <ph name="PRODUCT_NAME" /> kører, og denne politik ændres, anvendes ændringerne kun i nye åbne faner. Nogle faner kan derfor stadig have den tidligere adfærd.
-      </translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2077273864382355561">Skærmslukforsinkelse, når batteriet bruges</translation>
 <translation id="2082205219176343977">Konfigurer den Chrome-version, der som minimum påkræves for enheden.</translation>
@@ -346,9 +338,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen afhængigt af denne indstilling.
 
       Hvis denne indstilling ikke er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen hver dag.</translation>
-<translation id="2188722565665306629">Giver dig mulighed for at angive, hvor længe underretninger om genstart af <ph name="PRODUCT_NAME" /> skal vises, i forbindelse med anvendelsen af en afventende opdatering.
-
-      Denne politikindstilling kan bruges til at bestemme det tidsrum i millisekunder, hvor en bruger i stigende grad underrettes om, at <ph name="PRODUCT_NAME" /> skal genstartes (eller at <ph name="PRODUCT_OS_NAME" /> skal genstartes) i forbindelse med en opdatering. I løbet af dette tidsrum får brugeren gentagne gange besked om, at en opdatering er nødvendig, på baggrund af indstillingen for politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis politikken ikke angives, anvendes et tidsrum på 604800000 millisekunder (én uge) som standard.</translation>
 <translation id="2194470398825717446">Denne politik er udfaset i M61. Brug EcryptfsMigrationStrategy i stedet.
 
       Angiver, hvordan en enhed skal opføre sig, hvis den blev leveret med ecryptfs-kryptering og skal skifte til ext4-kryptering.

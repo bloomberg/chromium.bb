@@ -304,14 +304,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Cette règle active l'envoi de notifications pour avertir l'utilisateur qu'un redémarrage du navigateur est recommandé ou requis. Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> indique à l'utilisateur, par le biais de modifications discrètes du menu, qu'un redémarrage est nécessaire. Si elle est définie sur "Recommandé", un avertissement récurrent s'affiche, indiquant qu'un redémarrage est recommandé. L'utilisateur peut ignorer cet avertissement et redémarrer le navigateur plus tard. Si elle est définie sur "Requis", un avertissement récurrent s'affiche, indiquant que le redémarrage du navigateur sera forcé à l'issue de la période de notification. Par défaut, ce délai est de sept jours, et peut être configuré à l'aide du paramètre <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La session de l'utilisateur est restaurée après le redémarrage.</translation>
-<translation id="2075434678547407637">Permet de définir si des vidéos avec du contenu audio peuvent être lues automatiquement (sans le consentement de l'utilisateur) dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle est définie sur "True", la lecture automatique de contenu multimédia est autorisée dans <ph name="PRODUCT_NAME" />.
-      Si cette règle est définie sur "False", la lecture automatique de contenu multimédia n'est pas autorisée dans <ph name="PRODUCT_NAME" />.
-      Par défaut, la lecture automatique de contenu multimédia n'est pas autorisée dans <ph name="PRODUCT_NAME" />.
-
-      Notez que si cette règle est modifiée pendant que <ph name="PRODUCT_NAME" /> est en cours d'exécution, elle ne s'applique qu'aux onglets ouverts après cette modification. Il est donc possible que les onglets ouverts avant appliquent encore l'ancien paramètre.
-      </translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2077273864382355561">Délai d'arrêt de l'écran (batterie)</translation>
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
@@ -362,9 +354,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
 
           Si ce paramètre n'est pas configuré, les utilisateurs sont invités à saisir leur mot de passe tous les jours dans l'écran de verrouillage.</translation>
-<translation id="2188722565665306629">Vous permet de définir la période au cours de laquelle les notifications de redémarrage de <ph name="PRODUCT_NAME" /> concernant l'application d'une mise à jour en cours s'affichent.
-
-      Ce paramètre peut être utilisé pour définir la période, en millisecondes, pendant laquelle un utilisateur est régulièrement averti que <ph name="PRODUCT_NAME" /> (ou <ph name="PRODUCT_OS_NAME" />) doit être redémarré pour être mis à jour. Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité de la mise à jour en fonction du paramètre de la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si ce paramètre n'est pas défini, la période par défaut utilisée est de 604 800 000 millisecondes (une semaine).</translation>
 <translation id="2194470398825717446">Cette stratégie est obsolète dans M61. Veuillez appliquer "EcryptfsMigrationStrategy" à la place.
 
       Indique le comportement à adopter par un appareil qui a été fourni avec eCryptfs et qui doit faire la transition vers un chiffrement ext4.

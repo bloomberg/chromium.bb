@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
 <translation id="2091887806945687916">الصوت</translation>
-<translation id="209354263896846928">الوصول إلى شريط العناوين في أسفل الشاشة</translation>
 <translation id="2095887075102408547">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتم تحسين الصفحات التي يتم الوصول إليها باستخدام الاتصالات الخاصة (HTTPS) أو من خلال علامات تبويب التصفح المتخفي أو لن يكتشفها متصفح Google.</translation>
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
 <translation id="2111511281910874386">الانتقال إلى الصفحة</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">سيؤدي هذا إلى مسح السعة التي تبلغ <ph name="SIZE_IN_KB" /> بأكملها من سعة تخزين موقع الويب.</translation>
 <translation id="3029613699374795922">تم التنزيل بحجم <ph name="KBS" /> كيلوبايت</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
-<translation id="3030708446010914655">الوصول إلى شريط العناوين هنا</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">‏تحديد الموقع الجغرافي متوقف، يمكنك تفعيله من <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">ستظهر المزيد من المقالات قريبًا. استمتع بصباحك!</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
-<translation id="3734660163659757482">اسحب لأعلى للاطّلاع على الإشارات المرجعية والمزيد</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">تطبيقات أخرى بحجم <ph name="MEGABYTES" /> ميغابايت</translation>

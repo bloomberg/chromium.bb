@@ -298,14 +298,6 @@
       Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser opnieuw op te starten. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat de browser opnieuw moet worden opgestart via kleine wijzigingen in het menu. Als dit is ingesteld op 'Recommended', wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat het raadzaam is de browser opnieuw op te starten. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op 'Required', wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       De sessie van de gebruiker wordt hersteld zodra de browser opnieuw is opgestart.</translation>
-<translation id="2075434678547407637">Hiermee kun je bepalen of video's automatisch (zonder toestemming van gebruiker) met audiocontent in <ph name="PRODUCT_NAME" /> kunnen worden afgespeeld.
-
-      Als het beleid is ingesteld op True (Waar), is het <ph name="PRODUCT_NAME" /> toegestaan om automatisch media af te spelen.
-      Als dit beleid is ingesteld op False (Onwaar), is het <ph name="PRODUCT_NAME" /> niet toegestaan om automatisch media af te spelen.
-      Standaard is het <ph name="PRODUCT_NAME" /> niet toegestaan om automatisch media af te spelen.
-
-      Als <ph name="PRODUCT_NAME" /> wordt uitgevoerd en dit beleid wordt gewijzigd, wordt het beleid alleen toegepast op nieuw geopende tabbladen. Het is dus mogelijk dat sommige tabbladen het eerdere gedrag nog vertonen.
-      </translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
@@ -352,9 +344,6 @@
           Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
 
           Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
-<translation id="2188722565665306629">Hiermee kun je de periode instellen waarin meldingen om <ph name="PRODUCT_NAME" /> opnieuw op te starten, worden weergegeven om een update toe te passen.
-
-      Met deze beleidsinstellingen kun je de periode tot op de milliseconde nauwkeurig bepalen waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 604.800.000 milliseconden (één week) gehanteerd.</translation>
 <translation id="2194470398825717446">Dit beleid is beëindigd in M61. Gebruik EcryptfsMigrationStrategy.
 
       Geeft aan hoe een apparaat zich moet gedragen dat is geleverd met eCryptfs en moet worden overgezet naar ext4-versleuteling.

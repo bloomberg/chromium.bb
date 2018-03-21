@@ -125,7 +125,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Ak chcete získavať prispôsobený obsah navrhnutý Googlom, prihláste sa do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
-<translation id="209354263896846928">Prejdite na panel s adresou v dolnej časti obrazovky</translation>
 <translation id="2095887075102408547">Keď je táto funkcia zapnutá, Chrome navštívené stránky pred stiahnutím komprimuje pomocou serverov Google. Stránky navštívené pomocou súkromných pripojení (HTTPS) alebo v rámci kariet inkognito nebudú optimalizované ani viditeľné pre Google.</translation>
 <translation id="2100273922101894616">Automatické prihlasovanie</translation>
 <translation id="2111511281910874386">Prejdite na stránku</translation>
@@ -224,7 +223,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="300526633675317032">Táto akcia vymaže dáta z úložiska webu (celkovo: <ph name="SIZE_IN_KB" />).</translation>
 <translation id="3029613699374795922">Stiahnuté: <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Prístupové frázy sa nezhodujú</translation>
-<translation id="3030708446010914655">Tu prejdite na panel s adresou</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Poloha je vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Čoskoro sa zobrazia ďalšie články. Dobré ráno!</translation>
@@ -295,7 +293,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3712575778697986964">Resetovať Šetrič dát?</translation>
 <translation id="3714981814255182093">Otvorenie Panela vyhľadávania</translation>
 <translation id="3716182511346448902">Táto stránka využíva príliš veľa pamäte, a preto ju Chrome pozastavil.</translation>
-<translation id="3734660163659757482">Potiahnite nahor a uvidíte záložky a ďalší obsah</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="3739899004075612870">Pridané do záložiek <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Ďalšie aplikácie: <ph name="MEGABYTES" /> MB</translation>

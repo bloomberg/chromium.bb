@@ -119,7 +119,7 @@
 <translation id="1173894706177603556">পুনঃনামকরণ</translation>
 <translation id="1175364870820465910">&amp;প্রিন্ট...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> অনুলিপি করা হচ্ছে...</translation>
-<translation id="1177138678118607465">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবাগুলি ব্যক্তিগতকরণের জন্য Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে। আপনি এটি যেকোনও সময়ে myaccount.google.com/activitycontrols/search থেকে পরিবর্তন করতে পারেন</translation>
+<translation id="1177138678118607465">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবাগুলি আপনার মতো করে সাজানোর জন্য Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে। আপনি এটি যেকোনও সময়ে myaccount.google.com/activitycontrols/search থেকে পরিবর্তন করতে পারেন</translation>
 <translation id="1177863135347784049">কাস্টম</translation>
 <translation id="1178581264944972037">বিরতি</translation>
 <translation id="1181037720776840403">সরান</translation>
@@ -378,7 +378,7 @@
 <translation id="155865706765934889">টাচপ্যাড</translation>
 <translation id="1559235587769913376">ইউনিকোড অক্ষর ইনপুট করুন</translation>
 <translation id="1566049601598938765">ওয়েবসাইট</translation>
-<translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
+<translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
 <translation id="1567993339577891801">JavaScript কনসোল</translation>
 <translation id="1568067597247500137">সাইটটি মিউট করুন</translation>
 <translation id="1568323446248056064">প্রদর্শন ডিভাইস সেটিংস খুলুন</translation>
@@ -970,6 +970,7 @@
 <translation id="2508428939232952663">Google Play স্টোর অ্যাকাউন্ট</translation>
 <translation id="2509495747794740764">স্কেলের মাপকে অবশ্যই ১০ থেকে ১০০ এর মধ্যের একটি সংখ্যা হতে হবে।</translation>
 <translation id="2509566264613697683">৮x</translation>
+<translation id="2512222046227390255">স্বতঃপূর্ণ ফর্মগুলি</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">স্ক্যান করুন</translation>
 <translation id="2518024842978892609">আপনার ক্লায়েন্ট শংসাপত্র ব্যবহার করুন</translation>
@@ -3602,6 +3603,7 @@
 <translation id="6639554308659482635">SQLite স্মৃতি</translation>
 <translation id="6641138807883536517">র‍্যান্ডম ভাবে জেনারেট করা নিরাপদ মডিউল পাসওয়ার্ডটি পাওয়া যাচ্ছে না। পাওয়ারওয়াশের পরে এরকম হয়ে থাকে।</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
+<translation id="6644512095122093795">পাসওয়ার্ড সংরক্ষণের প্রস্তাব</translation>
 <translation id="6644846457769259194">আপনার ডিভাইস আপডেট করা হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape শংসাপত্র কর্তৃপক্ষ নাকচের URL</translation>
 <translation id="6647838571840953560">বর্তমানে <ph name="CHANNEL_NAME" /> এ</translation>

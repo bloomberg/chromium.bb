@@ -25,7 +25,7 @@
 <translation id="1525508553941733066">LOẠI BỎ</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
-<translation id="1567387640189251553">Bạn đã kết nối bàn phím khác kể từ lần nhập mật khẩu gần đây nhất. Tổ hợp phím bạn đã dùng có thể không còn.</translation>
+<translation id="1567387640189251553">Một bàn phím khác đã được kết nối kể từ lần gần đây nhất bạn nhập mật khẩu của mình. Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn.</translation>
 <translation id="1608626060424371292">Xóa người dùng này</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Rất tiếc, chúng tôi vẫn không thể xác minh được mật khẩu của bạn. Lưu ý: nếu gần đây bạn đã đổi mật khẩu thì mật khẩu mới của bạn sẽ được áp dụng sau khi bạn đăng xuất. Vui lòng sử dụng mật khẩu cũ của bạn tại đây.</translation>
@@ -326,7 +326,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="8652175077544655965">Đóng cài đặt</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
-<translation id="8734991477317290293">Tổ hợp phím bạn đã dùng có thể không còn</translation>
+<translation id="8734991477317290293">Bàn phím này có thể đang cố gắng đánh cắp thao tác nhấn phím của bạn</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Di chuyển cửa sổ sang màn hình khác có thể gây ra hoạt động không mong muốn.
 

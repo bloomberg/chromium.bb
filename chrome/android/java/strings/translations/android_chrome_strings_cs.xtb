@@ -125,7 +125,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Chcete-li od Googlu získat personalizované návrhy obsahu, přihlaste se do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
-<translation id="209354263896846928">Adresní řádek najdete v dolní části obrazovky</translation>
 <translation id="2095887075102408547">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky zobrazené prostřednictvím soukromého připojení (HTTPS) nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2111511281910874386">Přejít na stránku</translation>
@@ -224,7 +223,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="300526633675317032">Tímto vymažete celé úložiště webů (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3029613699374795922">Staženo: <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
-<translation id="3030708446010914655">Adresní řádek najdete zde</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Určování polohy je vypnuté, zapnete jej v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Brzy se zobrazí další články. Užijte si ráno.</translation>
@@ -295,7 +293,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3712575778697986964">Resetovat Spořič dat?</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
-<translation id="3734660163659757482">Vytažením nahoru zobrazíte záložky a další obsah</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3739899004075612870">Přidáno do záložek (<ph name="PRODUCT_NAME" />)</translation>
 <translation id="3744111309925758534">Ostatní aplikace: <ph name="MEGABYTES" /> MB</translation>

@@ -293,14 +293,6 @@
       Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio realizar un reinicio. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita llevar a cabo el reinicio. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para hacerlo. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es de siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Después del reinicio, se restablecerá la sesión del usuario.</translation>
-<translation id="2075434678547407637">Te permite controlar si los videos pueden reproducirse de forma automática (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
-
-      Si la política se establece como verdadera, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia de forma automática.
-      Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá hacerlo.
-      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede hacerlo.
-
-      Ten en cuenta que si se está ejecutando <ph name="PRODUCT_NAME" /> y esta política cambia, se aplicará solo a las pestañas que se abran a partir de ese momento. Por lo tanto, es posible que algunas pestañas sigan teniendo el comportamiento anterior.
-      </translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
 <translation id="2082205219176343977">Configura la versión mínima permitida de Chrome para el dispositivo.</translation>
@@ -339,9 +331,6 @@
       Si se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada, de acuerdo con esta configuración.
 
       Si no se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada todos los días.</translation>
-<translation id="2188722565665306629">Permite establecer el período en el que se mostrarán las notificaciones de reinicio de <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
-
-      Esta configuración de política se puede usar para controlar el período, en milisegundos, durante el cual se informa a los usuarios que <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) debe reiniciarse para instalar una actualización. En este período, se le informará al usuario de manera reiterada que es necesario instalar una actualización en función de la configuración de la política de <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece, se utiliza el período predeterminado de 604800000 milisegundos (una semana).</translation>
 <translation id="2194470398825717446">Esta política dejó de estar disponible en M61, usa EcryptfsMigrationStrategy en su lugar.
 
 Especifica el comportamiento de un dispositivo que se envió con ecryptfs y debe realizar una transición a la encriptación ext4.

@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
 
 Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>
+<translation id="1104942323762546749">Chromium chce exportovat vaše hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="1115445892567829615">Prohlížeč Chromium vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="113122355610423240">Chromium je vaším výchozím prohlížečem</translation>
 <translation id="1170115874949214249">Nainstalujte si Chromium do telefonu. Zašleme vám SMS na telefonní číslo pro obnovení účtu.</translation>
@@ -63,6 +64,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3155163173539279776">Restartovat Chromium</translation>
 <translation id="3179665906251668410">Otevřít odkaz v &amp;anonymním okně prohlížeče Chromium</translation>
 <translation id="3190315855212034486">Ouha! Prohlížeč Chromium spadl. Chcete jej znovu spustit?</translation>
+<translation id="3229526316128325841">Chromium chce exportovat vaše hesla.</translation>
 <translation id="3256316712990552818">Zkopírováno do prohlížeče Chromium</translation>
 <translation id="3258596308407688501">Chromium nemůže číst ani zapisovat do svého datového adresáře:
 
@@ -97,7 +99,8 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4271805377592243930">Pomoc s prohlížečem Chromium</translation>
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
-<translation id="4407044323746248786">Přesto ukončit Chromium?</translation>
+<translation id="4407044323746248786">Přesto Chromium ukončit?</translation>
+<translation id="4415566066719264597">Nechat Chromium běžet na pozadí</translation>
 <translation id="4421155425831608516">Přihlášení do prohlížeče Chromium je administrátorem tohoto zařízení zakázáno.</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se za hodinu restartuje}few{Chromium se za # hodiny restartuje}many{Chromium se za # hodiny restartuje}other{Chromium se za # hodin restartuje}}</translation>
@@ -111,7 +114,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="469338717132742108">Pomoc se systémem Chromium OS</translation>
 <translation id="4708774505295300557">Prohlížeč Chromium v tomto počítači je již přihlášen k účtu <ph name="ACCOUNT_EMAIL_LAST" />. Chcete-li své informace uchovat odděleně, vytvořte nového uživatele prohlížeče Chromium.</translation>
 <translation id="4714956846925717402">Mějte Chromium při ruce</translation>
-<translation id="4746050847053251315">Přesto zavřít Chromium?</translation>
+<translation id="4746050847053251315">Přesto Chromium ukončit?</translation>
 <translation id="4888717733111232871">Pravidlo příchozího provozu pro prohlížeč Chromium, které povolí provoz mDNS.</translation>
 <translation id="4943838377383847465">Chromium je v režimu na pozadí.</translation>
 <translation id="4987820182225656817">Hosté mohou Chromium používat, aniž by po nich zůstaly jakékoliv stopy.</translation>
@@ -160,6 +163,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="6394232988457703198">Nyní byste Chromium měli restartovat.</translation>
 <translation id="6400072781405947421">Prohlížeč Chromium nemusí fungovat správně, protože v systémech Mac OS X 10.9 již není podporován.</translation>
 <translation id="6403826409255603130">Chromium je webový prohlížeč, který spouští webové stránky a aplikace rychlostí blesku. Je rychlý a snadno se používá. Prohlížejte web bezpečněji díky ochraně proti malwaru a phishingu integrované v prohlížeči Chromium.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium se za 1 sekundu restartuje}few{Chromium se za # sekundy restartuje}many{Chromium se za # sekundy restartuje}other{Chromium se za # sekund restartuje}}</translation>
 <translation id="6475912303565314141">Také řídí, která stránka se zobrazí při spuštění prohlížeče Chromium.</translation>
 <translation id="6485906693002546646">Synchronizujete obsah a nastavení prohlížeče Chromium s účtem <ph name="PROFILE_EMAIL" />. Chcete-li možnosti synchronizace upravit nebo Chromium používat bez účtu Google, navštivte <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinstalovat Chromium</translation>

@@ -295,14 +295,6 @@
       Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesiunea utilizatorului este restabilită după relansare.</translation>
-<translation id="2075434678547407637">Îți permite să controlezi dacă videoclipurile se pot reda automat (fără consimțământul utilizatorului) cu conținut audio în <ph name="PRODUCT_NAME" />.
-
-      Dacă politica este activată, <ph name="PRODUCT_NAME" /> are permisiunea de a reda automat conținut media.
-      Dacă politica este dezactivată, <ph name="PRODUCT_NAME" /> nu are permisiunea de a reda automat conținut media.
-      În mod prestabilit, <ph name="PRODUCT_NAME" /> nu are permisiunea de a reda automat conținut media.
-
-      Reține că, dacă <ph name="PRODUCT_NAME" /> rulează și această politică se modifică, ea se va aplica doar la filele nou deschise. Astfel, este posibil ca unele file să mențină comportamentul anterior.
-      </translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
 <translation id="2077273864382355561">Interval până la oprirea ecranului la funcționarea pe baterie</translation>
 <translation id="2082205219176343977">Configurează versiunea Chrome minimă acceptată pentru dispozitiv.</translation>
@@ -347,9 +339,6 @@
           Dacă setarea este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare, în funcție de această setare.
 
           Dacă setarea nu este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare în fiecare zi.</translation>
-<translation id="2188722565665306629">Îți permite să setezi perioada în care se afișează notificările de relansare a browserului <ph name="PRODUCT_NAME" /> pentru a aplica o actualizare în așteptare.
-
-      Setarea acestei politici poate fi folosită pentru a controla perioada, în milisecunde, în care utilizatorul este informat treptat că <ph name="PRODUCT_NAME" /> trebuie relansat (sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit) pentru o actualizare. În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări pe baza setării politicii <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Dacă aceasta nu este setată, se folosește perioada prestabilită de 604800000 milisecunde (o săptămână).</translation>
 <translation id="2194470398825717446">Politica nu mai este dezvoltată în M61, folosește EcryptfsMigrationStrategy.
 
       Specifică modul în care trebuie să se comporte un dispozitiv care a fost livrat cu ecryptfs și necesită trecerea la criptarea ext4.
@@ -1074,6 +1063,13 @@
 <translation id="4482640907922304445">Afișează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME" />. Dacă activați această setare, butonul Pagina de pornire este întotdeauna afișat. Dacă dezactivați această setare, butonul Pagina de pornire nu este afișat. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă lăsați această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afișeze sau nu butonul Pagină de pornire.</translation>
 <translation id="4485425108474077672">Configurează adresa URL a paginii Filă nouă</translation>
 <translation id="4492287494009043413">Dezactivați capturile de ecran</translation>
+<translation id="4497968613298501984">Configurează lista de adrese URL de autentificare de întreprindere (doar schemele HTTP și HTTPS). Amprenta digitală a parolei va fi scanată în aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
+      Această setare trebuie aplicată doar de utilizatorii GSuite care folosesc un sistem SSO/SMAL.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprentele parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta digitală a parolelor pe aceste adrese URL pentru a detecta refolosirea parolelor.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta digitală a parolei doar pe https://accounts.google.com.
+      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele media salvate în memoria cache.
 
       Dacă setați această politică, <ph name="PRODUCT_NAME" /> va utiliza dimensiunea indicată a memoriei cache, indiferent dacă utilizatorul a specificat parametrul „--media-cache-size” sau nu. Valoarea specificată în această politică nu reprezintă o limită fermă, ci doar o sugestie pentru sistemul de salvare în memoria cache. Orice valoare sub câțiva megabytes este prea mică și va fi rotunjită în sus la o limită rezonabilă.
@@ -1190,6 +1186,13 @@
 
       Dacă această politică nu este setată sau este necompletată, atunci toți utilizatorii se pot conecta la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Activează modul ecran complet</translation>
+<translation id="4868249328547841081">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele în cazul în care acestea au fost compromise prin phishing.
+      Această setare trebuie aplicată doar de utilizatorii GSuite care folosesc un sistem SSO/SMAL.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Dacă această setare este activată, serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele în cazul în care acestea au fost compromise prin phishing.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
+      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Specifică dacă este permisă blocarea activării ecranului. Blocarea activării ecranului poate fi solicitată de extensii prin intermediul API-ului pentru extensiile de gestionare a consumului de energie.
 
           Dacă această politică este activată sau nu este configurată, se va bloca activarea ecranului pentru gestionarea consumului de energie.

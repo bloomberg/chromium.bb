@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para receber conteúdo personalizado sugerido pelo Google, faça login no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
-<translation id="209354263896846928">Acesse a barra de endereço na parte inferior da tela</translation>
 <translation id="2095887075102408547">Este recurso funciona assim: usamos os servidores do Google para compactar as páginas que você visita antes de fazer o download delas. O Google então lê e otimiza esses dados. (não funciona em páginas HTTPS e nem em guias anônimas)</translation>
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">Essa ação limpará todos <ph name="SIZE_IN_KB" /> de dados de armazenamento de website.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB transferido(s) por download</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
-<translation id="3030708446010914655">Acesse a barra de endereço aqui</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">A Localização está desativada. Ative-a nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Mais artigos serão exibidos em breve. Aproveite a manhã.</translation>
@@ -294,7 +292,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3712575778697986964">Redefinir a Economia de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Como esta página usa muita memória, o Chrome a pausou.</translation>
-<translation id="3734660163659757482">Deslize para cima para ver favoritos e mais</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3739899004075612870">Adicionado aos favoritos no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de outros apps</translation>

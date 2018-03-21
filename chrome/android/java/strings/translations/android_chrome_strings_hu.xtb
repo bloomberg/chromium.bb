@@ -125,7 +125,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2082238445998314030">Eredmény: <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">A Google által javasolt, személyre szabott tartalmak fogadásához jelentkezzen be a Chrome-ba.</translation>
 <translation id="2091887806945687916">Hang</translation>
-<translation id="209354263896846928">Nyissa meg a képernyő alján található címsávot</translation>
 <translation id="2095887075102408547">Amikor ezt a funkciót bekapcsolja, a Chrome a Google-szerverek segítségével tömöríti az Ön által felkeresett oldalakat, mielőtt letöltené azokat. A privát kapcsolat (HTTPS) használatával, illetve az inkognitómódban megtekintett oldalakat a Google nem látja és nem optimalizálja.</translation>
 <translation id="2100273922101894616">Automatikus bejelentkezés</translation>
 <translation id="2111511281910874386">Ugrás az oldalhoz</translation>
@@ -224,7 +223,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="300526633675317032">Ezzel törli a webhely teljes tárhelyét: <ph name="SIZE_IN_KB" />.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> kB letöltve</translation>
 <translation id="3029704984691124060">Az összetett jelszavak nem egyeznek</translation>
-<translation id="3030708446010914655">Nyissa meg itt a címsávot</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">A Helyadatok szolgáltatás ki van kapcsolva; bekapcsolhatja az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Hamarosan további cikkek jelennek meg. Kellemes délelőttöt kívánunk!</translation>
@@ -295,7 +293,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3712575778697986964">Alaphelyzetbe állítja az Adatforgalom-csökkentőt?</translation>
 <translation id="3714981814255182093">A keresősáv megnyitása</translation>
 <translation id="3716182511346448902">Ez az oldal túl sok memóriát használ, ezért a Chrome szünetelteti.</translation>
-<translation id="3734660163659757482">Húzza fel a könyvjelzők és egyéb tartalmak megtekintéséhez</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3739899004075612870">Felvéve a(z) <ph name="PRODUCT_NAME" /> könyvjelzői közé</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB más alkalmazások által</translation>

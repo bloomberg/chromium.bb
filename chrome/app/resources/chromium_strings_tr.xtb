@@ -93,6 +93,7 @@
 <translation id="4271805377592243930">Chromium'la ilgili yardım alın</translation>
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
 <translation id="4330585738697551178">Bu modülün Chromium'la çakıştığı biliniyor.</translation>
+<translation id="4407044323746248786">Yine de Chromium'dan çıkılsın mı?</translation>
 <translation id="4421155425831608516">Chromium'da oturum açma işlevi, bu cihazın yöneticisi tarafından devre dışı bırakılmıştır.</translation>
 <translation id="4423735387467980091">Chromium'u özelleştirin ve kontrol edin</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium bir saat içinde yeniden başlatılacak}other{Chromium # saat içinde yeniden başlatılacak}}</translation>
@@ -106,6 +107,7 @@
 <translation id="469338717132742108">Chromium OS ile ilgili yardım alın</translation>
 <translation id="4708774505295300557">Birisi daha önce bu bilgisayarda <ph name="ACCOUNT_EMAIL_LAST" /> olarak Chromium oturumu açmış. Bilgilerinizi ayrı tutmak için yeni bir Chromium kullanıcısı oluşturun.</translation>
 <translation id="4714956846925717402">Chromium'a daha hızlı ulaşın</translation>
+<translation id="4746050847053251315">Yine de Chromium'dan çıkılsın mı?</translation>
 <translation id="4888717733111232871">Chromium'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="4943838377383847465">Chromium arka plan modunda.</translation>
 <translation id="4987820182225656817">Misafirler Chromium'u geride hiçbir şey bırakmadan kullanabilir.</translation>

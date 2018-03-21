@@ -798,6 +798,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="7309308571273880165">Zpráva o selhání pořízená <ph name="CRASH_TIME" /> (o nahrání požádal uživatel, dosud nenahrána)</translation>
+<translation id="7320336641823683070">Pomoc s připojením</translation>
 <translation id="7334320624316649418">&amp;Opakovat změnu uspořádání</translation>
 <translation id="733923710415886693">Certifikát serveru nebyl zveřejněn prostřednictvím projektu Certificate Transparency.</translation>
 <translation id="7353601530677266744">Příkazový řádek</translation>
@@ -882,6 +883,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="782886543891417279">Síť Wi-Fi, kterou používáte (<ph name="WIFI_NAME" />), může vyžadovat, abyste navštívili její stránku přihlášení.</translation>
 <translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7862185352068345852">Opustit web?</translation>
 <translation id="7878176543348854470">Obchodník přijímá debetní a předplacené karty.</translation>
 <translation id="7878562273885520351">Heslo může být prolomeno</translation>
 <translation id="7887683347370398519">Zkontrolujte kód CVC a zkuste to znovu</translation>
@@ -904,6 +906,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8041940743680923270">Použít výchozí globální hodnotu (Dotázat se)</translation>
 <translation id="8042918947222776840">Vybrat způsob vyzvednutí</translation>
 <translation id="8057711352706143257">Software <ph name="SOFTWARE_NAME" /> není nakonfigurován správně. Tento problém lze obvykle vyřešit odinstalováním softwaru <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8079031581361219619">Načíst web znovu?</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
 <translation id="8094917007353911263">Síť, kterou používáte, může vyžadovat, abyste navštívili stránku <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -919,6 +922,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Shrnutí objednávky</translation>
 <translation id="8205463626947051446">Tento web často zobrazuje rušivé reklamy</translation>
+<translation id="8211406090763984747">Připojení není zabezpečené</translation>
 <translation id="8218327578424803826">Přiřazené místo:</translation>
 <translation id="8225771182978767009">Uživatel, který tento počítač nastavoval, se rozhodl tento web blokovat.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

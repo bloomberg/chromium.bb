@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
 <translation id="2091887806945687916">Сигнал</translation>
-<translation id="209354263896846928">Перейдіть до адресного рядка внизу екрана</translation>
 <translation id="2095887075102408547">Якщо ввімкнути цю функцію, Chrome використовуватиме сервери Google, щоб стискати сторінки перед завантаженням. Однак це не стосується сторінок, відкритих під час конфіденційного з’єднання (HTTPS) або в режимі анонімного перегляду.</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2111511281910874386">Перейти на сторінку</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">Буде видалено всі дані сайтів (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3029613699374795922">Завантажено <ph name="KBS" /> КБ</translation>
 <translation id="3029704984691124060">Парольні фрази не збігаються</translation>
-<translation id="3030708446010914655">Перейдіть до адресного рядка тут</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Геодані вимкнено. Увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Згодом тут з’являться інші статті. Гарного ранку.</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">Скинути дані Заощадження трафіку?</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716182511346448902">Ця сторінка займає велику кількість пам’яті, тому Chrome призупинив її роботу.</translation>
-<translation id="3734660163659757482">Потягніть угору, щоб побачити закладки тощо</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> МБ використовується іншими додатками</translation>

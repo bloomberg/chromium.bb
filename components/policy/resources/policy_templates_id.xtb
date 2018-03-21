@@ -294,14 +294,6 @@
       Setelan kebijakan ini mengaktifkan notifikasi untuk memberi tahu pengguna bahwa peluncuran ulang browser direkomendasikan atau diperlukan. Jika tidak disetel, <ph name="PRODUCT_NAME" /> memberi tahu pengguna bahwa peluncuran ulang diperlukan melalui sedikit perubahan pada menunya. Jika disetel ke 'Recommended', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang direkomendasikan. Pengguna dapat menutup peringatan ini untuk menunda peluncuran ulang. Jika disetel ke 'Required', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang browser akan dilakukan secara paksa setelah periode notifikasi terlampaui. Periode ini akan disetel secara default menjadi 7 hari, dan dapat dikonfigurasi melalui setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesi pengguna akan dilanjutkan kembali setelah peluncuran ulang.</translation>
-<translation id="2075434678547407637">Mengizinkan Anda untuk mengontrol apakah video dapat diputar otomatis (tanpa persetujuan pengguna) dengan konten audio di <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan disetel ke True, <ph name="PRODUCT_NAME" /> diizinkan untuk memutar otomatis media.
-      Jika kebijakan disetel ke False, <ph name="PRODUCT_NAME" /> tidaik diizinkan untuk memutar otomatis media.
-      Secara default, <ph name="PRODUCT_NAME" /> tidak diizinkan untuk memutar otomatis media.
-
-      Perlu diperhatikan bahwa jika <ph name="PRODUCT_NAME" /> berjalan dan kebijakan ini berubah, perubahan hanya akan diterapkan ke tab baru yang terbuka. Oleh karena itu, beberapa tab mungkin masih mengalami perilaku sebelumnya.
-      </translation>
 <translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2077273864382355561">Penundaan mematikan layar saat menggunakan daya baterai</translation>
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
@@ -346,9 +338,6 @@
           Jika setelan ini dikonfigurasi, pengguna yang menggunakan buka kunci cepat akan diminta untuk memasukkan sandi pada layar kunci, bergantung pada setelan ini.
 
           Jika setelan ini tidak dikonfigurasi, pengguna yang menggunakan buka kunci cepat akan diminta untuk memasukkan sandi pada layar kunci setiap hari.</translation>
-<translation id="2188722565665306629">Mengizinkan Anda menyetel jangka waktu pada <ph name="PRODUCT_NAME" /> tempat notifikasi peluncuran ditampilkan, untuk menerapkan update yang tertunda.
-
-      Setelan kebijakan ini dapat digunakan untuk mengontrol jangka waktu, dalam milidetik, pada produk tempat pengguna mendapatkan notifikasi bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang (atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang) untuk menerapkan update. Selama jangka waktu ini, pengguna akan berulang kali mendapatkan notifikasi tentang perlunya update, berdasarkan setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika tidak disetel, akan digunakan periode default selama 604800000 milidetik (1 minggu).</translation>
 <translation id="2194470398825717446">Kebijakan ini sudah tidak digunakan lagi di M61, sebagai gantinya harap gunakan EcryptfsMigrationStrategy.
 
       Menentukan perilaku perangkat yang dikirim dengan ecryptfs dan memerlukan transisi ke enkripsi ext4.
@@ -1068,6 +1057,13 @@
 <translation id="4482640907922304445">Menampilkan tombol Beranda di bilah alat <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, tombol Beranda akan selalu ditampilkan. Jika Anda menonaktifkan setelan ini, tombol Beranda tidak akan pernah ditampilkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih apakah akan menampilkan tombol beranda.</translation>
 <translation id="4485425108474077672">Mengonfigurasi URL halaman Tab Baru</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan screenshot</translation>
+<translation id="4497968613298501984">Mengonfigurasi daftar URL login perusahaan (khusus skema HTTP dan HTTPS). Sidik jari sandi akan diambil di URL tersebut dan digunakan untuk deteksi penggunaan ulang sandi.
+      Setelan ini sebaiknya hanya digunakan oleh pengguna G Suite yang menggunakan sistem SSO/SMAL.
+      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi dengan benar, harap pastikan bahwa halaman login Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengambil sidik jari sandi di URL tersebut untuk tujuan deteksi penggunaan ulang sandi.
+      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi hanya akan mengambil sidik jari sandi di https://accounts.google.com.
+      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file media di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--media-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
@@ -1184,6 +1180,13 @@
 
       Jika kebijakan ini dibiarkan tidak disetel atau kosong, semua pengguna dapat masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
+<translation id="4868249328547841081">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
+      Setelan ini sebaiknya hanya digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML.
+      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi baru di halaman ubah sandi ini dengan benar, harap pastikan bahwa halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
+      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccounts.google.com untuk mengubah sandinya.
+      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Menentukan apakah penguncian layar saat bangun diizinkan atau tidak. Penguncian layar saat bangun dapat diminta dengan ekstensi melalui API ekstensi pengelola daya.
 
           Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat bangun akan diterima demi pengelolaan daya.

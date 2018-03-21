@@ -125,7 +125,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Jei norite gauti „Google“ siūlomo suasmeninto turinio, prisijunkite prie „Chrome“.</translation>
 <translation id="2091887806945687916">Garsas</translation>
-<translation id="209354263896846928">Pasiekite adreso juostą, esančią ekrano apačioje</translation>
 <translation id="2095887075102408547">Kai ši funkcija įjungta, „Chrome“ naudoja „Google“ serverius, kad glaudintų puslapius, kuriuose lankotės, prieš juos atsisiųsdama. Puslapių, kurie buvo pasiekti naudojant privačius ryšius (HTTPS) ar inkognito skirtukų lapus, „Google“ neoptimizuos ir nematys.</translation>
 <translation id="2100273922101894616">Automatinis prisijungimas</translation>
 <translation id="2111511281910874386">Eiti į puslapį</translation>
@@ -224,7 +223,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="300526633675317032">Bus išvalyta visa <ph name="SIZE_IN_KB" /> svetainės saugykla.</translation>
 <translation id="3029613699374795922">Atsisiųsta <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Slaptafrazės neatitinka</translation>
-<translation id="3030708446010914655">Pasiekite adreso juostą čia</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Vieta išjungta; įjunkite <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Netrukus bus rodoma daugiau straipsnių. Gero ryto!</translation>
@@ -295,7 +293,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3712575778697986964">Iš naujo nustatyti Duomenų taupymo priemonę?</translation>
 <translation id="3714981814255182093">Atidaryti radimo juostą</translation>
 <translation id="3716182511346448902">Šis puslapis naudoja per daug atminties, todėl „Chrome“ jį pristabdė.</translation>
-<translation id="3734660163659757482">Patraukite aukštyn, kad būtų rodomos žymės ir daugiau</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3739899004075612870">Pažymėta naršyklėje „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB užima kitos programos</translation>

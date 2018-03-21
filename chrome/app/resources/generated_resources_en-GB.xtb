@@ -630,6 +630,7 @@
 <translation id="1944921356641260203">Update found</translation>
 <translation id="1951615167417147110">Scroll up one page</translation>
 <translation id="1956050014111002555">The file contained multiple certificates, none of which were imported:</translation>
+<translation id="1956390763342388273">This will upload all files from '<ph name="FOLDER_PATH" />'. Only do this if you trust the site.</translation>
 <translation id="1962233722219655970">This page uses a Native Client app that doesn't work on your computer.</translation>
 <translation id="1962969542251276847">Lock Screen</translation>
 <translation id="1963227389609234879">Remove All</translation>
@@ -842,6 +843,7 @@
 <translation id="2294358108254308676">Do you want to install <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">EAP method:</translation>
 <translation id="2297705863329999812">Search printers</translation>
+<translation id="2300383962156589922">Customise and control <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Extension root directory is invalid.</translation>
 <translation id="2302685579236571180">Go incognito</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" has requested additional permissions.</translation>
@@ -971,6 +973,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2508428939232952663">Google Play Store Account</translation>
 <translation id="2509495747794740764">Scale amount must be a number between 10 and 200.</translation>
 <translation id="2509566264613697683">8x</translation>
+<translation id="2512222046227390255">Auto-fill forms</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Scan</translation>
 <translation id="2518024842978892609">Use your client certificates</translation>
@@ -1329,6 +1332,7 @@ I don't think this site should be blocked!</translation>
 <translation id="3012917896646559015">Please contact your hardware manufacturer immediately to send your computer to a repair facility.</translation>
 <translation id="3013291976881901233">MIDI devices</translation>
 <translation id="3014095112974898292">Waiting for other requests to complete...</translation>
+<translation id="3015639418649705390">Relaunch now</translation>
 <translation id="3015992588037997514">Does this code appear on your Chromebox screen?</translation>
 <translation id="3016641847947582299">Component updated</translation>
 <translation id="3016780570757425217">Know your location</translation>
@@ -2205,6 +2209,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4430369329743628066">Bookmark added</translation>
 <translation id="443454694385851356">Legacy (insecure)</translation>
 <translation id="443464694732789311">Continue</translation>
+<translation id="443475966875174318">Update or remove incompatible applications</translation>
 <translation id="4439318412377770121">Do you wish to register <ph name="DEVICE_NAME" /> to Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Do you want to automatically start this app when the machine turns on?</translation>
 <translation id="444134486829715816">Expand...</translation>
@@ -2387,6 +2392,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="473775607612524610">Update</translation>
 <translation id="474217410105706308">Mute Tab</translation>
 <translation id="4742746985488890273">Pin to Shelf</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Find out how to update applications<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">Your download has completed</translation>
 <translation id="4746971725921104503">Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START" />import <ph name="USER_DISPLAY_NAME" /> to this device<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Requires extension from the Chrome Web Store</translation>
@@ -3198,6 +3204,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
     <ph name="BEGIN_PARAGRAPH2" />You can turn this on or off at any time in the Android apps Settings. This doesn’t affect your device’s ability to send the information it needs to receive essential services such as system updates and security.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Translated</translation>
 <translation id="5991049340509704927">Magnify</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{To ensure that you can keep browsing the web, ask your administrator to remove this application.}other{To ensure that you can keep browsing the web, ask your administrator to remove these applications.}}</translation>
 <translation id="5993332328670040093">Your data use will no longer be measured.</translation>
 <translation id="600424552813877586">Invalid application.</translation>
 <translation id="6005695835120147974">Media Router</translation>
@@ -3606,6 +3613,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6639554308659482635">SQLite memory</translation>
 <translation id="6641138807883536517">The randomly generated secure module password is not available. This is normal after a Powerwash.</translation>
 <translation id="6643016212128521049">Clear</translation>
+<translation id="6644512095122093795">Offer to save passwords</translation>
 <translation id="6644846457769259194">Updating your device (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape Certification Authority Revocation URL</translation>
 <translation id="6647838571840953560">Currently on <ph name="CHANNEL_NAME" /></translation>
@@ -3852,6 +3860,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="7040138676081995583">Open with...</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Pa&amp;ste and search</translation>
+<translation id="7043108582968290193">Finished! No incompatible applications found.</translation>
 <translation id="7049293980323620022">Keep file?</translation>
 <translation id="7051943809462976355">Searching for mouse...</translation>
 <translation id="7052237160939977163">Send performance trace data</translation>
@@ -4023,6 +4032,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="7328867076235380839">Invalid combination</translation>
 <translation id="7329154610228416156">Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL" />). Please contact your administrator.</translation>
 <translation id="7334190995941642545">Smart Lock is currently unavailable. Please try again later.</translation>
+<translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7339763383339757376">PKCS #7, single certificate</translation>
 <translation id="7339785458027436441">Check Spelling While Typing</translation>
 <translation id="7339898014177206373">New window</translation>
@@ -4396,6 +4406,7 @@ Installing the <ph name="APP_NAME" /> will download <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7912080627461681647">Your password has been changed on the server. Please sign out then sign in again.</translation>
 <translation id="7912883689016444961">Configure mobile network</translation>
 <translation id="7915471803647590281">Please tell us what is happening before sending the feedback.</translation>
+<translation id="792514962475806987">Docked zoom level:</translation>
 <translation id="7925247922861151263">AAA check failed</translation>
 <translation id="7925285046818567682">Waiting for <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Do not use mobile data for sync</translation>
@@ -4777,6 +4788,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8546541260734613940">[*.]sample.co.uk</translation>
 <translation id="854655314928502177">Web Proxy Auto Discovery URL:</translation>
 <translation id="8546930481464505581">Customise Touch Bar</translation>
+<translation id="8547013269961688403">Enable full-screen magnifier</translation>
 <translation id="85486688517848470">Hold the Search key to switch the behaviour of the top-row keys</translation>
 <translation id="855081842937141170">Pin tab</translation>
 <translation id="8551388862522347954">Licences</translation>
@@ -4831,6 +4843,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8642947597466641025">Make Text Larger</translation>
 <translation id="8647834505253004544">Not a valid web address</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> or <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Although you can no longer access your old profile, you can still remove it.</translation>
 <translation id="8651585100578802546">Force Reload This Page</translation>
 <translation id="8652400352452647993">Pack extension error</translation>
 <translation id="8652487083013326477">page range radio button</translation>
@@ -4907,7 +4920,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8737685506611670901">Open <ph name="PROTOCOL" /> links instead of <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Picture-in-picture</translation>
+<translation id="8743390665131937741">Full-screen zoom level:</translation>
 <translation id="8743864605301774756">Updated 1hr ago</translation>
+<translation id="874689135111202667">{0,plural, =1{Upload one file to this site?}other{Upload # files to this site?}}</translation>
 <translation id="8749863574775030885">Access USB devices from an unknown vendor</translation>
 <translation id="8754200782896249056">&lt;p&gt;When running <ph name="PRODUCT_NAME" /> under a supported desktop environment, the system proxy settings will be used. However, either your system is not supported or there was a problem launching your system configuration.&lt;/p&gt;
 
@@ -5212,6 +5227,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="960719561871045870">Operator code</translation>
 <translation id="960987915827980018">About 1 hour left</translation>
 <translation id="962802172452141067">Bookmark folder tree</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Application}other{Applications}}</translation>
 <translation id="968000525894980488">Turn on Google Play services.</translation>
 <translation id="968174221497644223">Application cache</translation>
 <translation id="969096075394517431">Change languages</translation>

@@ -971,6 +971,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2508428939232952663">Účet Obchodu Google Play</translation>
 <translation id="2509495747794740764">Hodnota měřítka musí být v intervalu 10 až 200.</translation>
 <translation id="2509566264613697683">8×</translation>
+<translation id="2512222046227390255">Automatické vyplňování formulářů</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Vyhledat</translation>
 <translation id="2518024842978892609">Používat vaše klientské certifikáty</translation>
@@ -3603,6 +3604,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6639554308659482635">Paměť SQLite</translation>
 <translation id="6641138807883536517">Náhodně generované heslo modulu zabezpečení není k dispozici. Po použití funkce Powerwash je to normální.</translation>
 <translation id="6643016212128521049">Vymazat</translation>
+<translation id="6644512095122093795">Nabídnout uložení hesel</translation>
 <translation id="6644846457769259194">Aktualizace zařízení (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Adresa URL pro odvolání certifikační autority Netscape</translation>
 <translation id="6647838571840953560">Aktuální kanál: <ph name="CHANNEL_NAME" /></translation>

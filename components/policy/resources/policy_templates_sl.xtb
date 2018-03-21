@@ -302,14 +302,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Ta nastavitev pravilnika omogoči obvestila, ki uporabnika obvestijo, da je priporočen ali obvezen vnovičen zagon brskalnika. Če pravilnik ni nastavljen, brskalnik <ph name="PRODUCT_NAME" /> uporabnika glede potrebnega vnovičnega zagona obvesti prek manjših sprememb menija. Če je pravilnik nastavljen na »Recommended«, je uporabniku prikazano ponavljajoče se opozorilo, da je priporočen vnovičen zagon. Uporabnik lahko opozorilo opusti in tako odloži vnovičen zagon. Če je pravilnik nastavljen na »Required«, je uporabniku prikazano ponavljajoče se opozorilo, da bo po izteku obdobja za obveščanje vsiljen vnovičen zagon brskalnika. To obdobje privzeto traja sedem dni in ga je mogoče konfigurirati v nastavitvi pravilnika <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Uporabniška seja je po vnovičnem zagonu obnovljena.</translation>
-<translation id="2075434678547407637">Omogoča nadziranje, ali se lahko videoposnetki samodejno predvajajo (brez dovoljenja uporabnika) z zvočno vsebino v brskalniku <ph name="PRODUCT_NAME" />.
-
-      Če je pravilnik omogočen, je v brskalniku <ph name="PRODUCT_NAME" /> dovoljeno samodejno predvajanje predstavnosti.
-      Če je pravilnik onemogočen, v brskalniku <ph name="PRODUCT_NAME" /> samodejno predvajanje predstavnosti ni dovoljeno.
-      V brskalniku <ph name="PRODUCT_NAME" /> samodejno predvajanje predstavnosti privzeto ni dovoljeno.
-
-      Če se <ph name="PRODUCT_NAME" /> izvaja in se ta pravilnik spremeni, se uporabi samo za novo odprte zavihke. Nekateri zavihki bodo zato morda delovali tako, kot je bilo pred spremembo.
-      </translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2077273864382355561">Časovni zamik izklopa zaslona ob napajanju iz akumulatorja</translation>
 <translation id="2082205219176343977">Konfiguriranje najmanjše dovoljene različice Chroma za napravo.</translation>
@@ -354,9 +346,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           Če je ta nastavitev konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo glede na to nastavitev.
 
           Če ta nastavitev ni konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo vsak dan.</translation>
-<translation id="2188722565665306629">Omogoči nastavitev časovnega obdobja, v katerem so prikazana obvestila o vnovičnem zagonu brskalnika <ph name="PRODUCT_NAME" /> zaradi uveljavitve posodobitve na čakanju.
-
-      S to nastavitvijo pravilnika je mogoče v milisekundah nadzirati časovno obdobje, v katerem je uporabnik postopno obveščan, da mora zaradi posodobitve znova zagnati brskalnik <ph name="PRODUCT_NAME" /> (ali operacijski sistem <ph name="PRODUCT_OS_NAME" />). V tem časovnem obdobju je uporabnik postopno obveščan glede potrebe po posodobitvi na podlagi nastavitve pravilnika <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Če pravilnik ni nastavljen, se kot privzeto časovno obdobje uporabi 604.800.000 milisekund (en teden).</translation>
 <translation id="2194470398825717446">Ta pravilnik je zastarel v različici M61, uporabite EcryptfsMigrationStrategy.
 
       Določa, kako naj deluje naprava, ki je bila dobavljena z ecryptfs in mora preiti na šifriranje ext4.

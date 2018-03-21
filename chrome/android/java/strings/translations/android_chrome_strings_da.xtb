@@ -125,7 +125,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
-<translation id="209354263896846928">Du finder adresselinjen nederst på din skærm</translation>
 <translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="2111511281910874386">Gå til side</translation>
@@ -224,7 +223,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="300526633675317032">Dette rydder alle <ph name="SIZE_IN_KB" /> i websitelagerpladsen.</translation>
 <translation id="3029613699374795922">Der er downloadet <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
-<translation id="3030708446010914655">Du finder adresselinjen her</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Placering er slået fra. Du kan aktivere den i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Der vises snart flere artikler. Hav en god formiddag!</translation>
@@ -295,7 +293,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3712575778697986964">Vil du nulstille Datasparefunktion?</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3716182511346448902">Denne side anvender for meget hukommelse, så Chrome har sat den på pause.</translation>
-<translation id="3734660163659757482">Træk opad for at se bogmærker m.m.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB af andre apps</translation>

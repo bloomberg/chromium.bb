@@ -55,7 +55,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="1813414402673211292">Borrar datos de navegación</translation>
 <translation id="1820259098641718022">Añadida a Lista de lectura</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
-<translation id="1886928167269928266">El origen de los tiempos</translation>
+<translation id="1886928167269928266">Desde siempre</translation>
 <translation id="1911619930368729126">Subir a Google Drive</translation>
 <translation id="1941314575388338491">Toca dos veces para copiar.</translation>
 <translation id="1952728750904661634">Inicia sesión con una cuenta gestionada</translation>
@@ -370,6 +370,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8019783059653722575">Esto te permite guardar fotos y subirlas.</translation>
 <translation id="802154636333426148">No se ha podido descargar el archivo</translation>
 <translation id="8023878949384262191">Amplía la sección.</translation>
+<translation id="8053390638574070785">Cargar página de nuevo</translation>
 <translation id="8059533439631660104">Oculta la sección.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
 <translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>

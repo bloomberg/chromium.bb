@@ -295,14 +295,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Mipangilio hii ya sera huwasha arifa ili kumwarifu mtumiaji kwamba anatakiwa afungue kivinjari upya au tunapendekeza afanye hivyo. Kama haijawekwa, <ph name="PRODUCT_NAME" /> humwonyesha mtumiaji kwamba anatakiwa aifungue upya kwa kufanya mabadiliko madogo kwenye menyu yake. Kama sera imewekwa kuwa 'Inapendekezwa', mtumiaji ataonyeshwa onyo linalojirudiarudia litakaloashiria kwamba anatakiwa afungue kivinjari upya. Mtumiaji anaweza kuondoa onyo hili ili afungue kivinjari upya baadaye. Kama sera imewekwa kuwa 'Inahitajika', mtumiaji ataonyeshwa onyo linalojirudiarudia litakaloashiria kwamba kivinjari kitafunguliwa upya kwa lazima pindi kipindi cha arifa kitakapokamiika. Kulingana na mipangilio chaguomsingi, kipindi hiki huwa siku saba na huenda mipangilio yake ikawekwa kupitia sera ya <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Kurasa alizokuwa amefungua mtumiaji hurejeshwa baada ya kuvinjari kufunguliwa upya.</translation>
-<translation id="2075434678547407637">Hukuruhusu udhibiti video ambazo ungependa kucheza kiotomatiki (bila idhini ya mtumiaji) ukitumia maudhui ya sauti katika <ph name="PRODUCT_NAME" />.
-
-      Kama sera imewekwa kuwa Ndivyo, <ph name="PRODUCT_NAME" /> inaruhusiwa kucheza maudhui kiotomatiki.
-      Kama sera imewekwa kuwa Sivyo, <ph name="PRODUCT_NAME" /> hairuhusiwi kucheza maudhui kiotomatiki.
-      Kwa chaguomsingi, <ph name="PRODUCT_NAME" /> hairuhusiwi kucheza maudhui kiotomatiki.
-
-     Kumbuka kwamba kama <ph name="PRODUCT_NAME" /> inatumika na sera hii inabadilika, itatumika tu kwenye vichupo vipya vilivyofunguliwa. Kwa hivyo, baadhi ya vichupo huenda vikahitaji kutumia sifa za awali.
-      </translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
 <translation id="2077273864382355561">Kuzimika kwa skrini kunachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="2082205219176343977">Weka mipangilio ya msingi inayoruhusiwa ya toleo la Chrome kwenye kifaa.</translation>
@@ -346,9 +338,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Mipangilio hii ikiwekwa, watumiaji wanaotumia kipengele cha kufungua skrini haraka wataombwa waweke manenosiri yao kwenye skrini iliyofungwa kutegemea mipangilio hii.
 
       Mipangilio hii isipowekwa, watumiaji wanaotumia kipengele cha kufungua skrini haraka wataombwa waweke manenosiri yao kwenye skrini iliyofungwa kila siku.</translation>
-<translation id="2188722565665306629">Hukuruhusu uweke kipindi ambapo arifa za kufungua <ph name="PRODUCT_NAME" /> upya huonyeshwa ili sasisho linalosubiri liwekwe.
-
-      Mipangilio ya sera hii inaweza kutumiwa kudhibiti kipindi, katika milisekunde, ambapo mtumiaji anaarifiwa mara kwa mara kwamba ni lazima afungue <ph name="PRODUCT_NAME" /> upya (au ni lazima azime kisha awashe <ph name="PRODUCT_OS_NAME" />) ili apate sasisho. Katika kipindi hiki, ni lazima mtumiaji aarifiwe kuhusu umuhimu wa kusasisha, kulingana na mipangilio ya sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Kama sera haijawekwa, kipindi chaguomsingi cha milisekunde 604800000 (wiki moja) kitatumika.</translation>
 <translation id="2194470398825717446">Sera hii haitumiki tena katika M61, tafadhali tumia EcryptfsMigrationStrategy badala yake.
 
       Hubainisha jinsi kifaa kilicholetwa kikiwa na ecryptfs ambacho kinahitaji kupata usimbaji fiche wa ext4 kinavyopaswa kufanya kazi.

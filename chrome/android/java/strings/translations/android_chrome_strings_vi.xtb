@@ -125,7 +125,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
-<translation id="209354263896846928">Truy cập vào thanh địa chỉ ở cuối màn hình của bạn</translation>
 <translation id="2095887075102408547">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="2111511281910874386">Chuyển đến trang</translation>
@@ -224,7 +223,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="300526633675317032">Thao tác này sẽ xóa tất cả <ph name="SIZE_IN_KB" /> bộ nhớ trang web.</translation>
 <translation id="3029613699374795922">Đã tải xuống <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
-<translation id="3030708446010914655">Truy cập vào thanh địa chỉ ở đây</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ!</translation>
@@ -295,7 +293,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
-<translation id="3734660163659757482">Kéo lên để xem dấu trang và nội dung khác</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Các ứng dụng khác chiếm <ph name="MEGABYTES" /> MB</translation>
