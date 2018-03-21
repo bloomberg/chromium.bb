@@ -108,8 +108,7 @@ TEST_F(AnimationAnimationTest, InitialState) {
   EXPECT_EQ(0, animation->CurrentTimeInternal());
   EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
-  EXPECT_FALSE(animation->HasStartTime());
-  EXPECT_TRUE(IsNull(animation->StartTimeInternal()));
+  EXPECT_FALSE(animation->StartTimeInternal());
 
   StartTimeline();
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
@@ -118,7 +117,6 @@ TEST_F(AnimationAnimationTest, InitialState) {
   EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
   EXPECT_EQ(0, animation->StartTimeInternal());
-  EXPECT_TRUE(animation->HasStartTime());
 }
 
 TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated) {
@@ -253,7 +251,7 @@ TEST_F(AnimationAnimationTest, StartTimePauseFinish) {
   NonThrowableExceptionState exception_state;
   animation->pause();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->finish(exception_state);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(-30000, animation->startTime());
@@ -274,13 +272,13 @@ TEST_F(AnimationAnimationTest, StartTimeFinishPause) {
   animation->finish(exception_state);
   EXPECT_EQ(-30 * 1000, animation->startTime());
   animation->pause();
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
 }
 
 TEST_F(AnimationAnimationTest, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   SimulateFrame(10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
@@ -733,11 +731,11 @@ TEST_F(AnimationAnimationTest, PlayAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->play();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   SimulateFrame(10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
@@ -751,11 +749,11 @@ TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->play();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   SimulateFrame(10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
@@ -766,11 +764,11 @@ TEST_F(AnimationAnimationTest, ReverseAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->reverse();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   SimulateFrame(10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
@@ -782,7 +780,7 @@ TEST_F(AnimationAnimationTest, FinishAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->finish(exception_state);
   EXPECT_EQ(30000, animation->currentTime());
   EXPECT_EQ(-30000, animation->startTime());
@@ -793,11 +791,11 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
   animation->pause();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
-  EXPECT_TRUE(std::isnan(animation->startTime()));
+  EXPECT_FALSE(animation->startTime());
 }
 
 TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
@@ -839,6 +837,108 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
       animation_not_composited
           ->CheckCanStartAnimationOnCompositorInternal(composited_element_ids)
           .Ok());
+}
+
+// Regression test for http://crbug.com/819591 . If a compositable animation is
+// played and then paused before any start time is set (either blink or
+// compositor side), the pausing must still set compositor pending or the pause
+// won't be synced.
+TEST_F(AnimationAnimationTest, SetCompositorPendingWithUnresolvedStartTimes) {
+  // Get rid of the default animation.
+  animation->cancel();
+
+  EnableCompositing();
+
+  SetBodyInnerHTML("<div id='target'></div>");
+
+  // Create a compositable animation; in this case opacity from 1 to 0.
+  Timing timing;
+  timing.iteration_duration = 30;
+
+  scoped_refptr<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  start_keyframe->SetCSSPropertyValue(
+      CSSPropertyOpacity, "1.0", SecureContextMode::kInsecureContext, nullptr);
+  scoped_refptr<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  end_keyframe->SetCSSPropertyValue(
+      CSSPropertyOpacity, "0.0", SecureContextMode::kInsecureContext, nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  auto* element = GetElementById("target");
+  StringKeyframeEffectModel* model =
+      StringKeyframeEffectModel::Create(keyframes);
+  KeyframeEffect* keyframe_effect_composited =
+      KeyframeEffect::Create(element, model, timing);
+  Animation* animation = timeline->Play(keyframe_effect_composited);
+
+  // After creating the animation we need to clean the lifecycle so that the
+  // animation can be pushed to the compositor.
+  UpdateAllLifecyclePhases();
+
+  document->GetAnimationClock().UpdateTime(0);
+  document->GetPendingAnimations().Update(WTF::nullopt, true);
+
+  // At this point, the animation exists on both the compositor and blink side,
+  // but no start time has arrived on either side. The compositor is currently
+  // synced, no update is pending.
+  EXPECT_FALSE(animation->CompositorPendingForTesting());
+
+  // However, if we pause the animation then the compositor should still be
+  // marked pending. This is required because otherwise the compositor will go
+  // ahead and start playing the animation once it receives a start time (e.g.
+  // on the next compositor frame).
+  animation->pause();
+
+  EXPECT_TRUE(animation->CompositorPendingForTesting());
+}
+
+TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
+  // Get rid of the default animation.
+  animation->cancel();
+
+  EnableCompositing();
+
+  SetBodyInnerHTML("<div id='target'></div>");
+
+  // Create a compositable animation; in this case opacity from 1 to 0.
+  Timing timing;
+  timing.iteration_duration = 30;
+
+  scoped_refptr<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  start_keyframe->SetCSSPropertyValue(
+      CSSPropertyOpacity, "1.0", SecureContextMode::kInsecureContext, nullptr);
+  scoped_refptr<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  end_keyframe->SetCSSPropertyValue(
+      CSSPropertyOpacity, "0.0", SecureContextMode::kInsecureContext, nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  auto* element = GetElementById("target");
+  StringKeyframeEffectModel* model =
+      StringKeyframeEffectModel::Create(keyframes);
+  KeyframeEffect* keyframe_effect_composited =
+      KeyframeEffect::Create(element, model, timing);
+  Animation* animation = timeline->Play(keyframe_effect_composited);
+
+  // After creating the animation we need to clean the lifecycle so that the
+  // animation can be pushed to the compositor.
+  UpdateAllLifecyclePhases();
+
+  document->GetAnimationClock().UpdateTime(0);
+  document->GetPendingAnimations().Update(WTF::nullopt, true);
+
+  // At this point, the animation exists on both the compositor and blink side,
+  // but no start time has arrived on either side. The compositor is currently
+  // synced, no update is pending.
+  EXPECT_FALSE(animation->CompositorPendingForTesting());
+
+  // At this point, a call to PreCommit should bail out and tell us to wait for
+  // next commit because there are no resolved start times.
+  EXPECT_FALSE(animation->PreCommit(0, WTF::nullopt, true));
 }
 
 }  // namespace blink
