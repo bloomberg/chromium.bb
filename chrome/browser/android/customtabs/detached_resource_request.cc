@@ -49,7 +49,10 @@ DetachedResourceRequest::DetachedResourceRequest(
     const GURL& site_for_cookies,
     net::URLRequest::ReferrerPolicy referrer_policy,
     DetachedResourceRequest::OnResultCallback cb)
-    : url_(url), site_for_cookies_(site_for_cookies), cb_(std::move(cb)) {
+    : url_(url),
+      site_for_cookies_(site_for_cookies),
+      cb_(std::move(cb)),
+      redirects_(0) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("customtabs_parallel_request",
                                           R"(
@@ -97,6 +100,11 @@ void DetachedResourceRequest::Start(
   request->start_time_ = base::TimeTicks::Now();
   auto* storage_partition =
       content::BrowserContext::GetStoragePartition(browser_context, nullptr);
+
+  request->url_loader_->SetOnRedirectCallback(
+      base::BindRepeating(&DetachedResourceRequest::OnRedirectCallback,
+                          base::Unretained(request.get())));
+
   // |url_loader_| is owned by the request, and must be kept alive to not cancel
   // the request. Pass the ownership of the request to the response callback,
   // ensuring that it stays alive, yet is freed upon completion or failure.
@@ -110,15 +118,28 @@ void DetachedResourceRequest::Start(
       kMaxResponseSize);
 }
 
+void DetachedResourceRequest::OnRedirectCallback(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head) {
+  redirects_++;
+}
+
 void DetachedResourceRequest::OnResponseCallback(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool success = url_loader_->NetError() == net::OK;
   auto duration = base::TimeTicks::Now() - start_time_;
   if (success) {
+    // Max 20 redirects, 21 would be a bug.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "CustomTabs.DetachedResourceRequest.RedirectsCount.Success", redirects_,
+        1, 21, 21);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "CustomTabs.DetachedResourceRequest.Duration.Success", duration);
   } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure", redirects_,
+        1, 21, 21);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "CustomTabs.DetachedResourceRequest.Duration.Failure", duration);
   }

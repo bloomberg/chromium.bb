@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
@@ -26,8 +27,8 @@
 #include "url/gurl.h"
 
 namespace customtabs {
-
 namespace {
+
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 using net::test_server::RequestQuery;
@@ -36,14 +37,17 @@ constexpr const char kSetCookieAndRedirect[] = "/set-cookie-and-redirect";
 constexpr const char kSetCookieAndNoContent[] = "/set-cookie-and-no-content";
 constexpr const char kHttpNoContent[] = "/nocontent";
 constexpr const char kEchoTitle[] = "/echotitle";
+constexpr const char kManyRedirects[] = "/many-redirects";
 constexpr const char kCookieKey[] = "cookie";
 constexpr const char kUrlKey[] = "url";
 constexpr const char kCookieFromNoContent[] = "no-content-cookie";
+constexpr const char kIndexKey[] = "index";
+constexpr const char kMaxKey[] = "max";
 
 // /set-cookie-and-redirect?cookie=bla&url=https://redictected-url
 // Sets a cookies, then responds with HTTP code 302.
 std::unique_ptr<HttpResponse> SetCookieAndRedirect(const HttpRequest& request) {
-  const auto& url = request.GetURL();
+  const GURL& url = request.GetURL();
   if (url.path() != kSetCookieAndRedirect || !url.has_query())
     return nullptr;
 
@@ -66,11 +70,49 @@ std::unique_ptr<HttpResponse> SetCookieAndRedirect(const HttpRequest& request) {
   return response;
 }
 
+// /many-redirects?index=0&max=10
+// Redirects a given amount of times, then responds with HTTP code 204.
+std::unique_ptr<HttpResponse> ManyRedirects(const HttpRequest& request) {
+  const GURL& url = request.GetURL();
+  if (url.path() != kManyRedirects || !url.has_query())
+    return nullptr;
+
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  RequestQuery query = net::test_server::ParseQuery(url);
+  int index, max;
+  if (query.find(kIndexKey) == query.end() ||
+      query.find(kMaxKey) == query.end() ||
+      !base::StringToInt(query[kIndexKey][0], &index) ||
+      !base::StringToInt(query[kMaxKey][0], &max)) {
+    return nullptr;
+  }
+
+  if (index == max) {
+    response->set_code(net::HTTP_NO_CONTENT);
+    return response;
+  }
+
+  GURL::Replacements replacements;
+  std::string new_query =
+      base::StringPrintf("%s=%d&%s=%d", kIndexKey, index + 1, kMaxKey, max);
+  replacements.SetQuery(new_query.c_str(),
+                        url::Component(0, new_query.length()));
+  GURL redirected_url = url.ReplaceComponents(replacements);
+
+  response->AddCustomHeader("Location", redirected_url.spec());
+  response->set_code(net::HTTP_FOUND);
+  response->set_content_type("text/html");
+  response->set_content(base::StringPrintf(
+      "<html><head></head><body>Redirecting to %s</body></html>",
+      redirected_url.spec().c_str()));
+  return response;
+}
+
 // /set-cookie-and-no-content
 // Sets a cookies, and replies with HTTP code 204.
 std::unique_ptr<HttpResponse> SetCookieAndNoContent(
     const HttpRequest& request) {
-  const auto& url = request.GetURL();
+  const GURL& url = request.GetURL();
   if (url.path() != kSetCookieAndNoContent)
     return nullptr;
 
@@ -112,6 +154,8 @@ class DetachedResourceRequestTest : public ::testing::Test {
         base::BindRepeating(&SetCookieAndRedirect));
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&SetCookieAndNoContent));
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&ManyRedirects));
     embedded_test_server()->AddDefaultHandlers(
         base::FilePath("chrome/test/data"));
     host_resolver_ = std::make_unique<content::TestHostResolver>();
@@ -180,12 +224,10 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
     DetachedResourceRequest::CreateAndStart(
         browser_context(), url, site_for_cookies, policy,
-        base::BindOnce(
-            [](base::OnceClosure closure, bool success) {
-              EXPECT_TRUE(success);
-              std::move(closure).Run();
-            },
-            request_completion_waiter.QuitClosure()));
+        base::BindLambdaForTesting([&](bool success) {
+          EXPECT_TRUE(success);
+          request_completion_waiter.Quit();
+        }));
     server_request_waiter.Run();
     EXPECT_EQ(expected_referrer, headers["referer"]);
     request_completion_waiter.Run();
@@ -214,15 +256,15 @@ TEST_F(DetachedResourceRequestTest, Simple) {
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
       content::Referrer::GetDefaultReferrerPolicy(),
-      base::BindOnce(
-          [](base::OnceClosure closure, bool success) {
-            EXPECT_TRUE(success);
-            std::move(closure).Run();
-          },
-          request_completion_waiter.QuitClosure()));
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        request_completion_waiter.Quit();
+      }));
   server_request_waiter.Run();
   EXPECT_EQ(site_for_cookies.spec(), headers["referer"]);
   request_completion_waiter.Run();
+  histogram_tester.ExpectUniqueSample(
+      "CustomTabs.DetachedResourceRequest.RedirectsCount.Success", 0, 1);
   histogram_tester.ExpectTotalCount(
       "CustomTabs.DetachedResourceRequest.Duration.Success", 1);
 }
@@ -237,13 +279,13 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
       content::Referrer::GetDefaultReferrerPolicy(),
-      base::BindOnce(
-          [](base::OnceClosure closure, bool success) {
-            EXPECT_FALSE(success);
-            std::move(closure).Run();
-          },
-          request_waiter.QuitClosure()));
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_FALSE(success);
+        request_waiter.Quit();
+      }));
   request_waiter.Run();
+  histogram_tester.ExpectUniqueSample(
+      "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure", 0, 1);
   histogram_tester.ExpectTotalCount(
       "CustomTabs.DetachedResourceRequest.Duration.Failure", 1);
 }
@@ -339,12 +381,10 @@ TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
       content::Referrer::GetDefaultReferrerPolicy(),
-      base::BindOnce(
-          [](base::OnceClosure closure, bool success) {
-            EXPECT_TRUE(success);
-            std::move(closure).Run();
-          },
-          request_completion_waiter.QuitClosure()));
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        request_completion_waiter.Quit();
+      }));
 
   request_completion_waiter.Run();
   cookie = content::GetCookies(browser_context(), url);
@@ -371,6 +411,7 @@ TEST_F(DetachedResourceRequestTest, NeverClearReferrerPolicy) {
 }
 
 TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
+  base::HistogramTester histogram_tester;
   base::RunLoop first_request_waiter;
   base::RunLoop second_request_waiter;
   base::RunLoop detached_request_waiter;
@@ -398,13 +439,12 @@ TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
   cookie = content::GetCookies(browser_context(), redirected_origin);
   ASSERT_EQ("", cookie);
 
-  auto quit_closure = detached_request_waiter.QuitClosure();
   DetachedResourceRequest::CreateAndStart(
       browser_context(), url, site_for_cookies,
       content::Referrer::GetDefaultReferrerPolicy(),
-      base::BindLambdaForTesting([=](bool success) {
+      base::BindLambdaForTesting([&](bool success) {
         EXPECT_TRUE(success);
-        quit_closure.Run();
+        detached_request_waiter.Quit();
       }));
   first_request_waiter.Run();
   second_request_waiter.Run();
@@ -414,6 +454,52 @@ TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
   ASSERT_EQ("acookie", cookie);
   cookie = content::GetCookies(browser_context(), redirected_origin);
   ASSERT_EQ(kCookieFromNoContent, cookie);
+  histogram_tester.ExpectUniqueSample(
+      "CustomTabs.DetachedResourceRequest.RedirectsCount.Success", 1, 1);
+}
+
+TEST_F(DetachedResourceRequestTest, ManyRedirects) {
+  base::HistogramTester histogram_tester;
+  base::RunLoop request_waiter;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto relative_url = base::StringPrintf("%s?%s=%d&%s=%d", kManyRedirects,
+                                         kIndexKey, 1, kMaxKey, 10);
+  GURL url(embedded_test_server()->GetURL(relative_url));
+  GURL site_for_cookies(embedded_test_server()->base_url());
+
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        request_waiter.Quit();
+      }));
+  request_waiter.Run();
+  histogram_tester.ExpectUniqueSample(
+      "CustomTabs.DetachedResourceRequest.RedirectsCount.Success", 9, 1);
+}
+
+TEST_F(DetachedResourceRequestTest, TooManyRedirects) {
+  base::HistogramTester histogram_tester;
+  base::RunLoop request_waiter;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto relative_url = base::StringPrintf("%s?%s=%d&%s=%d", kManyRedirects,
+                                         kIndexKey, 1, kMaxKey, 40);
+  GURL url(embedded_test_server()->GetURL(relative_url));
+  GURL site_for_cookies(embedded_test_server()->base_url());
+
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_FALSE(success);
+        request_waiter.Quit();
+      }));
+  request_waiter.Run();
+  histogram_tester.ExpectUniqueSample(
+      "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure", 20, 1);
 }
 
 }  // namespace customtabs
