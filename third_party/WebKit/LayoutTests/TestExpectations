@@ -1674,6 +1674,7 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux Mac10.10 Mac10.12 Mac10.13 Retina Win ] external/wpt/payment-request/show-method-postmessage-manual.https.html [ Skip ]
 crbug.com/626703 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-001.html [ Failure ]
 crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html [ Crash ]
 crbug.com/626703 external/wpt/payment-request/payment-request-show-method-manual.https.html [ Skip ]
