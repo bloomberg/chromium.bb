@@ -34,11 +34,14 @@ class BASE_EXPORT ThreadIdNameManager {
   using SetNameCallback = base::RepeatingCallback<void(const char* name)>;
   void InstallSetNameCallback(SetNameCallback callback);
 
-  // Set the name for the given id.
-  void SetName(PlatformThreadId id, const std::string& name);
+  // Set the name for the current thread.
+  void SetName(const std::string& name);
 
   // Get the name for the given id.
   const char* GetName(PlatformThreadId id);
+
+  // Unlike |GetName|, this method using TLS and avoids touching |lock_|.
+  const char* GetNameForCurrentThread();
 
   // Remove the name for the given id.
   void RemoveName(PlatformThreadHandle::Handle handle, PlatformThreadId id);

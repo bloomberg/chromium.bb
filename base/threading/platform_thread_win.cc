@@ -175,7 +175,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
 
 // static
 void PlatformThread::SetName(const std::string& name) {
-  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
+  ThreadIdNameManager::GetInstance()->SetName(name);
 
   // The SetThreadDescription API works even if no debugger is attached.
   auto set_thread_description_func =

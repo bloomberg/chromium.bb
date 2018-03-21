@@ -49,7 +49,7 @@ void InitThreading() {
 
 // static
 void PlatformThread::SetName(const std::string& name) {
-  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
+  ThreadIdNameManager::GetInstance()->SetName(name);
 
   // Mac OS X does not expose the length limit of the name, so
   // hardcode it.

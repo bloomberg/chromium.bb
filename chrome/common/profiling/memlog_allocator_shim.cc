@@ -149,12 +149,16 @@ void SetCurrentThreadName(const char* name) {
   GetShimState()->thread_name = name;
 }
 
-// Cannot call ThreadIdNameManager::GetName because it holds a lock and causes
-// deadlock when lock is already held by ThreadIdNameManager before the current
-// allocation. Gets the thread name from kernel if available or returns a string
-// with id. This function intentionally leaks the allocated strings since they
-// are used to tag allocations even after the thread dies.
+// If a thread name has been set from ThreadIdNameManager, use that. Otherwise,
+// gets the thread name from kernel if available or returns a string with id.
+// This function intentionally leaks the allocated strings since they are used
+// to tag allocations even after the thread dies.
 const char* GetAndLeakThreadName() {
+  const char* thread_name =
+      base::ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
+  if (thread_name && strcmp(thread_name, "") != 0)
+    return thread_name;
+
   // prctl requires 16 bytes, snprintf requires 19, pthread_getname_np requires
   // 64 on macOS, see PlatformThread::SetName in platform_thread_mac.mm.
   constexpr size_t kBufferLen = 64;

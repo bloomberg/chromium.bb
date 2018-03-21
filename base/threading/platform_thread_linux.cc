@@ -126,7 +126,7 @@ bool GetCurrentThreadPriorityForPlatform(ThreadPriority* priority) {
 
 // static
 void PlatformThread::SetName(const std::string& name) {
-  ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
+  ThreadIdNameManager::GetInstance()->SetName(name);
 
 #if !defined(OS_NACL) && !defined(OS_AIX)
   // On linux we can get the thread names to show up in the debugger by setting
