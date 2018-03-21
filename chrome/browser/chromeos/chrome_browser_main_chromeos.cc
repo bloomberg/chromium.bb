@@ -183,7 +183,7 @@
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
-#include "ui/keyboard/content/keyboard.h"
+#include "ui/keyboard/keyboard_resource_util.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
@@ -824,7 +824,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
-  keyboard::InitializeKeyboard();
+  keyboard::InitializeKeyboardResources();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =

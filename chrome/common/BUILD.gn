@@ -388,7 +388,7 @@ static_library("common") {
     }
     if (use_aura) {
       # This dependency is for a header used only by extensions code.
-      public_deps += [ "//ui/keyboard:keyboard_with_content" ]
+      public_deps += [ "//ui/keyboard:keyboard" ]
     }
   }
 

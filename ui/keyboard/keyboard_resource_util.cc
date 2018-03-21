@@ -1,14 +1,20 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/keyboard/content/keyboard_content_util.h"
+#include "ui/keyboard/keyboard_resource_util.h"
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/grit/keyboard_resources.h"
 #include "ui/keyboard/grit/keyboard_resources_map.h"
 
 namespace keyboard {
+
+const char kKeyboardURL[] = "chrome://keyboard";
+const char kKeyboardHost[] = "keyboard";
 
 const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   // This looks a lot like the contents of a resource map; however it is
@@ -89,6 +95,20 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   };
   *size = arraysize(kKeyboardResources);
   return kKeyboardResources;
+}
+
+void InitializeKeyboardResources() {
+  static bool initialized = false;
+  if (initialized)
+    return;
+  initialized = true;
+
+  base::FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+  base::FilePath pak_file =
+      pak_dir.Append(FILE_PATH_LITERAL("keyboard_resources.pak"));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_file, ui::SCALE_FACTOR_100P);
 }
 
 }  // namespace keyboard

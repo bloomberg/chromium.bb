@@ -25,7 +25,7 @@
 #include "extensions/common/permissions/api_permission.h"
 
 #if defined(USE_AURA)
-#include "ui/keyboard/content/keyboard_constants.h"  // nogncheck
+#include "ui/keyboard/keyboard_resource_util.h"  // nogncheck
 #endif
 
 namespace extensions {
