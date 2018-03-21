@@ -356,20 +356,15 @@ _COPY_PATHS_CHROME = (
     Path('dbus/', optional=True),
     Path('keyboard_resources.pak'),
     Path('libassistant.so', exe=True, optional=True),
-    # Widevine binaries are already pre-stripped.  In addition, they don't
+    # Widevine CDM is already pre-stripped.  In addition, it doesn't
     # play well with the binutils stripping tools, so skip stripping.
-    Path('libwidevinecdmadapter.so',
-         exe=True,
-         strip=True,
-         cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
-                            (_ENABLE_WIDEVINE, True)))),
     Path('libwidevinecdm.so',
          exe=True,
          strip=False,
          cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
                             (_ENABLE_WIDEVINE, True)))),
     Path('*.so',
-         blacklist=(r'libwidevine.*\.so$',),
+         blacklist=(r'libwidevinecdm.so',),
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
     Path('locales/*.pak'),
