@@ -250,8 +250,16 @@ class ChromeRuntimeAPIDelegateTest : public ExtensionServiceTestWithInstall {
 };
 
 TEST_F(ChromeRuntimeAPIDelegateTest, RequestUpdateCheck) {
-  base::FilePath v1_path = data_dir().AppendASCII("autoupdate/v1.crx");
-  base::FilePath v2_path = data_dir().AppendASCII("autoupdate/v2.crx");
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath root_dir = data_dir().AppendASCII("autoupdate");
+  base::FilePath pem_path = root_dir.AppendASCII("key.pem");
+  base::FilePath v1_path = temp_dir.GetPath().AppendASCII("v1.crx");
+  base::FilePath v2_path = temp_dir.GetPath().AppendASCII("v2.crx");
+  PackCRX(root_dir.AppendASCII("v1"), pem_path, v1_path);
+  PackCRX(root_dir.AppendASCII("v2"), pem_path, v2_path);
 
   // Start by installing version 1.
   scoped_refptr<const Extension> v1(InstallCRX(v1_path, INSTALL_NEW));
