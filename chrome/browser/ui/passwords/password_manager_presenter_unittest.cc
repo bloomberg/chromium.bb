@@ -23,8 +23,17 @@
 
 using base::ASCIIToUTF16;
 using testing::_;
+using testing::Each;
 using testing::Eq;
 using testing::Property;
+
+namespace {
+
+MATCHER(IsNotBlacklisted, "") {
+  return !arg->blacklisted_by_user;
+}
+
+}  // namespace
 
 class PasswordManagerPresenterTest : public testing::Test {
  protected:
@@ -124,6 +133,50 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
                   &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
                   Eq(1u))));
   UpdateLists();
+}
+
+// Check that only stored passwords, not blacklisted entries, are provided for
+// exporting.
+TEST_F(PasswordManagerPresenterTest, BlacklistedPasswordsNotExported) {
+  AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
+  AddPasswordException(GURL("http://abc2.com"));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  UpdateLists();
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> passwords_for_export =
+      GetUIController()->GetPasswordManagerPresenter()->GetAllPasswords();
+  EXPECT_EQ(1u, passwords_for_export.size());
+  EXPECT_THAT(passwords_for_export, Each(IsNotBlacklisted()));
+}
+
+// Check that stored passwords are provided for exporting even if there is a
+// blacklist entry for the same origin. This is needed to keep the user in
+// control of all of their stored passwords.
+TEST_F(PasswordManagerPresenterTest, BlacklistDoesNotPreventExporting) {
+  const GURL kSameOrigin("https://abc.com");
+  AddPasswordEntry(kSameOrigin, "test@gmail.com", "test");
+  AddPasswordException(kSameOrigin);
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  EXPECT_CALL(*GetUIController(),
+              SetPasswordExceptionList(Property(
+                  &std::vector<std::unique_ptr<autofill::PasswordForm>>::size,
+                  Eq(1u))));
+  UpdateLists();
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> passwords_for_export =
+      GetUIController()->GetPasswordManagerPresenter()->GetAllPasswords();
+  ASSERT_EQ(1u, passwords_for_export.size());
+  EXPECT_EQ(kSameOrigin, passwords_for_export[0]->origin);
 }
 
 }  // namespace
