@@ -29,7 +29,7 @@ namespace media {
 // indicates the type of CdmPromiseTemplate. CdmPromiseTemplate<T> adds the
 // resolve(T) method that is dependent on the type of promise. This base class
 // is specified so that the promises can be easily saved before passing across
-// the pepper interface.
+// IPC.
 class MEDIA_EXPORT CdmPromise {
  public:
   enum class Exception {

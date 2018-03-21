@@ -10,32 +10,19 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/supported_cdm_versions.h"
-
-#if defined(USE_PPAPI_CDM_ADAPTER)
-// When building the ppapi adapter do not include any non-trivial base/ headers.
-#include "ppapi/cpp/logging.h"  // nogncheck
-#define PLATFORM_DCHECK PP_DCHECK
-#else
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "media/base/media_switches.h"  // nogncheck
-#define PLATFORM_DCHECK DCHECK
-#endif
+#include "base/macros.h"
+#include "media/base/media_switches.h"
+#include "media/cdm/api/content_decryption_module.h"
+#include "media/cdm/supported_cdm_versions.h"
 
 namespace media {
 
 namespace {
 
 bool IsExperimentalCdmInterfaceSupported() {
-#if defined(USE_PPAPI_CDM_ADAPTER)
-  // No new CDM interface will be supported using pepper CDM.
-  return false;
-#else
   return base::FeatureList::IsEnabled(media::kSupportExperimentalCdmInterface);
-#endif
 }
 
 bool IsEncryptionSchemeSupportedByLegacyCdms(
@@ -322,7 +309,7 @@ class CdmWrapperImpl : public CdmWrapper {
   }
 
  private:
-  CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm) { PLATFORM_DCHECK(cdm_); }
+  CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm) { DCHECK(cdm_); }
 
   CdmInterface* cdm_;
 
@@ -505,14 +492,13 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
   // TODO(xhwang): Static assert these at compile time.
   const int kMinVersion = cdm::ContentDecryptionModule_8::kVersion;
   const int kMaxVersion = cdm::ContentDecryptionModule_10::kVersion;
-  PLATFORM_DCHECK(!IsSupportedCdmInterfaceVersion(kMinVersion - 1));
+  DCHECK(!IsSupportedCdmInterfaceVersion(kMinVersion - 1));
   for (int version = kMinVersion; version <= kMaxVersion; ++version)
-    PLATFORM_DCHECK(IsSupportedCdmInterfaceVersion(version));
-  PLATFORM_DCHECK(!IsSupportedCdmInterfaceVersion(kMaxVersion + 1));
+    DCHECK(IsSupportedCdmInterfaceVersion(version));
+  DCHECK(!IsSupportedCdmInterfaceVersion(kMaxVersion + 1));
 
   // Try to create the CDM using the latest CDM interface version.
-  // This is only attempted if requested. For pepper plugins, this is done
-  // at compile time. For mojo, it is done using a media feature setting.
+  // This is only attempted if requested.
   CdmWrapper* cdm_wrapper = nullptr;
 
   // TODO(xhwang): Check whether we can use static loops to simplify this code.
@@ -550,7 +536,5 @@ static_assert(cdm::ContentDecryptionModule::kVersion ==
               "ensure cdm wrapper templates have old version support");
 
 }  // namespace media
-
-#undef PLATFORM_DCHECK
 
 #endif  // MEDIA_CDM_CDM_WRAPPER_H_
