@@ -25919,9 +25919,11 @@ from previous Chrome versions.
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
+  <int value="-1481990501" label="Windows10CustomTitlebar:disabled"/>
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
+  <int value="-1476930281" label="Windows10CustomTitlebar:enabled"/>
   <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1471021059"
@@ -27078,7 +27080,6 @@ from previous Chrome versions.
   <int value="1369449914" label="SysInternals:disabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
-  <int value="1372199493" label="windows10-custom-titlebar"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
   <int value="1376437124" label="show-cert-link"/>

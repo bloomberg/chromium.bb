@@ -950,10 +950,6 @@ const char kUninstall[]                     = "uninstall";
 
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";
-
-// Enables custom-drawing the titlebar and tabstrip background so that it's not
-// a garish #FFFFFF like it is by default on Windows 10.
-const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
