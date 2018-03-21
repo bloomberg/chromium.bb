@@ -417,6 +417,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kStopLoadingInBackground))
     WebRuntimeFeatures::EnableStopLoadingInBackground(true);
 
+  if (base::FeatureList::IsEnabled(features::kStopNonTimersInBackground))
+    WebRuntimeFeatures::EnableStopNonTimersInBackground(true);
+
   WebRuntimeFeatures::EnablePWAFullCodeCache(
       base::FeatureList::IsEnabled(features::kPWAFullCodeCache));
 

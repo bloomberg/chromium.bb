@@ -90,6 +90,7 @@ CONTENT_EXPORT extern const base::Feature kSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintV175;
 CONTENT_EXPORT extern const base::Feature kStopInBackground;
 CONTENT_EXPORT extern const base::Feature kStopLoadingInBackground;
+CONTENT_EXPORT extern const base::Feature kStopNonTimersInBackground;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTopDocumentIsolation;
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
