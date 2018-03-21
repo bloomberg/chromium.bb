@@ -110,6 +110,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
     RequestOverlayInfoCB request_overlay_info_cb) {
+  // Both MCVD and D3D11 VideoDecoders need a command buffer.
+  if (!command_buffer_id)
+    return nullptr;
+
 #if defined(OS_ANDROID)
   auto get_stub_cb =
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
