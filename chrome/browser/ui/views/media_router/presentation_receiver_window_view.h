@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
@@ -42,6 +43,8 @@ class PresentationReceiverWindowView final
   ~PresentationReceiverWindowView() final;
 
   void Init();
+
+  LocationBarView* location_bar_view() { return location_bar_view_; }
 
  private:
   // PresentationReceiverWindow overrides.
@@ -108,6 +111,8 @@ class PresentationReceiverWindowView final
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const final;
 
+  void EnterFullscreen();
+
   PresentationReceiverWindowFrame* const frame_;
   PresentationReceiverWindowDelegate* const delegate_;
   base::string16 title_;
@@ -117,6 +122,11 @@ class PresentationReceiverWindowView final
   ExclusiveAccessManager exclusive_access_manager_;
   ui::Accelerator fullscreen_accelerator_;
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
+
+#if defined(OS_CHROMEOS)
+  class FullscreenWindowObserver;
+  std::unique_ptr<FullscreenWindowObserver> window_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PresentationReceiverWindowView);
 };

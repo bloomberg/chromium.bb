@@ -283,4 +283,6 @@
 -MediaRouterIntegrationOneUABrowserTest.*
 -MediaRouterIntegrationOneUANoReceiverBrowserTest.*
 
-
+# Segfaults after massive recursion setting ash::kWindowStateTypeKey:
+# crbug.com/824458
+-PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
