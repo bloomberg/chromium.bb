@@ -31,6 +31,54 @@
 #error "This file requires ARC support."
 #endif
 
+// Test object that conforms to GridConsumer and exposes inner state for test
+// verification.
+@interface FakeConsumer : NSObject<GridConsumer>
+@property(nonatomic, strong) NSMutableArray<GridItem*>* items;
+@property(nonatomic, assign) NSUInteger selectedIndex;
+@end
+@implementation FakeConsumer
+@synthesize items = _items;
+@synthesize selectedIndex = _selectedIndex;
+
+- (void)populateItems:(NSArray<GridItem*>*)items
+        selectedIndex:(NSUInteger)selectedIndex {
+  self.selectedIndex = selectedIndex;
+  self.items = [items mutableCopy];
+}
+
+- (void)insertItem:(GridItem*)item
+           atIndex:(NSUInteger)index
+     selectedIndex:(NSUInteger)selectedIndex {
+  [self.items insertObject:item atIndex:index];
+  self.selectedIndex = selectedIndex;
+}
+
+- (void)removeItemAtIndex:(NSUInteger)index
+            selectedIndex:(NSUInteger)selectedIndex {
+  [self.items removeObjectAtIndex:index];
+  self.selectedIndex = selectedIndex;
+}
+
+- (void)selectItemAtIndex:(NSUInteger)selectedIndex {
+  self.selectedIndex = selectedIndex;
+}
+
+- (void)replaceItemAtIndex:(NSUInteger)index withItem:(GridItem*)item {
+  self.items[index] = item;
+}
+
+- (void)moveItemFromIndex:(NSUInteger)fromIndex
+                  toIndex:(NSUInteger)toIndex
+            selectedIndex:(NSUInteger)selectedIndex {
+  GridItem* item = self.items[fromIndex];
+  [self.items removeObjectAtIndex:fromIndex];
+  [self.items insertObject:item atIndex:toIndex];
+  self.selectedIndex = selectedIndex;
+}
+
+@end
+
 // Fake WebStateList delegate that attaches the tab ID tab helper.
 class TabIdFakeWebStateListDelegate : public FakeWebStateListDelegate {
  public:
@@ -76,7 +124,7 @@ class TabGridMediatorTest : public PlatformTest {
                                       WebStateOpener());
     }
     web_state_list_->ActivateWebStateAt(1);
-    consumer_ = OCMProtocolMock(@protocol(GridConsumer));
+    consumer_ = [[FakeConsumer alloc] init];
     mediator_ = [[TabGridMediator alloc] initWithConsumer:consumer_];
     mediator_.tabModel = tab_model_;
   }
@@ -89,37 +137,22 @@ class TabGridMediatorTest : public PlatformTest {
   std::unique_ptr<TabIdFakeWebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   id tab_model_;
-  id consumer_;
+  FakeConsumer* consumer_;
   TabGridMediator* mediator_;
   NSMutableSet* original_identifiers_;
 };
 
 // Tests that the consumer is populated after the tab model is set on the
 // mediator.
-// TODO(crbug.com/819658): Test fails on device. Re-enable after fixing.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_ConsumerPopulateItems ConsumerPopulateItems
-#else
-#define MAYBE_ConsumerPopulateItems DISABLED_ConsumerPopulateItems
-#endif
-TEST_F(TabGridMediatorTest, MAYBE_ConsumerPopulateItems) {
-  [[consumer_ verify] populateItems:[OCMArg checkWithBlock:^BOOL(id value) {
-                        NSArray* items =
-                            base::mac::ObjCCastStrict<NSArray>(value);
-                        EXPECT_EQ(3UL, items.count);
-                        return YES;
-                      }]
-                      selectedIndex:1];
+TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
+  EXPECT_EQ(3UL, consumer_.items.count);
+  EXPECT_EQ(1UL, consumer_.selectedIndex);
 }
 
 // Tests that the consumer is notified when a web state is inserted.
-// TODO(crbug.com/819658): Test fails on device. Re-enable after fixing.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_ConsumerInsertItem ConsumerInsertItem
-#else
-#define MAYBE_ConsumerInsertItem DISABLED_ConsumerInsertItem
-#endif
-TEST_F(TabGridMediatorTest, MAYBE_ConsumerInsertItem) {
+TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
+  ASSERT_EQ(3UL, consumer_.items.count);
+  ASSERT_EQ(1UL, consumer_.selectedIndex);
   auto web_state = std::make_unique<web::TestWebState>();
   TabIdTabHelper::CreateForWebState(web_state.get());
   NSString* item_identifier =
@@ -127,27 +160,24 @@ TEST_F(TabGridMediatorTest, MAYBE_ConsumerInsertItem) {
   web_state_list_->InsertWebState(1, std::move(web_state),
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
-  [[consumer_ verify] insertItem:[OCMArg checkWithBlock:^BOOL(id value) {
-                        GridItem* item =
-                            base::mac::ObjCCastStrict<GridItem>(value);
-                        EXPECT_NSEQ(item_identifier, item.identifier);
-                        return YES;
-                      }]
-                         atIndex:1
-                   selectedIndex:2];
+  EXPECT_EQ(4UL, consumer_.items.count);
+  EXPECT_EQ(2UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(item_identifier, consumer_.items[1].identifier);
+  EXPECT_FALSE([original_identifiers_ containsObject:item_identifier]);
 }
 
 // Tests that the consumer is notified when a web state is removed.
 TEST_F(TabGridMediatorTest, ConsumerRemoveItem) {
   web_state_list_->CloseWebStateAt(1, WebStateList::CLOSE_NO_FLAGS);
-  [[consumer_ verify] removeItemAtIndex:1 selectedIndex:1];
+  EXPECT_EQ(2UL, consumer_.items.count);
+  EXPECT_EQ(1UL, consumer_.selectedIndex);
 }
 
 // Tests that the consumer is notified when the active web state is changed.
 TEST_F(TabGridMediatorTest, ConsumerUpdateSelectedItem) {
-  // Selected index is 1 before the update.
+  ASSERT_EQ(1UL, consumer_.selectedIndex);
   web_state_list_->ActivateWebStateAt(2);
-  [[consumer_ verify] selectItemAtIndex:2];
+  EXPECT_EQ(2UL, consumer_.selectedIndex);
 }
 
 // Tests that the consumer is notified when a web state is replaced.
@@ -157,20 +187,21 @@ TEST_F(TabGridMediatorTest, ConsumerReplaceItem) {
   NSString* new_item_identifier =
       TabIdTabHelper::FromWebState(new_web_state.get())->tab_id();
   web_state_list_->ReplaceWebStateAt(1, std::move(new_web_state));
-  [[consumer_ verify]
-      replaceItemAtIndex:1
-                withItem:[OCMArg checkWithBlock:^BOOL(id value) {
-                  GridItem* item = base::mac::ObjCCastStrict<GridItem>(value);
-                  EXPECT_NSEQ(new_item_identifier, item.identifier);
-                  return YES;
-                }]];
+  EXPECT_EQ(3UL, consumer_.items.count);
+  EXPECT_EQ(1UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(new_item_identifier, consumer_.items[1].identifier);
+  EXPECT_FALSE([original_identifiers_ containsObject:new_item_identifier]);
 }
 
 // Tests that the consumer is notified when a web state is moved.
 TEST_F(TabGridMediatorTest, ConsumerMoveItem) {
-  // Selected index is 1 before the move.
+  NSString* item1 = consumer_.items[1].identifier;
+  NSString* item2 = consumer_.items[2].identifier;
+  ASSERT_EQ(1UL, consumer_.selectedIndex);
   web_state_list_->MoveWebStateAt(1, 2);
-  [[consumer_ verify] moveItemFromIndex:1 toIndex:2 selectedIndex:2];
+  EXPECT_NSEQ(item1, consumer_.items[2].identifier);
+  EXPECT_NSEQ(item2, consumer_.items[1].identifier);
+  EXPECT_EQ(2UL, consumer_.selectedIndex);
 }
 
 // Tests that the active index is updated when |-selectItemAtIndex:| is called.
