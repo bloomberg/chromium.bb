@@ -209,6 +209,14 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
 HoverButton::~HoverButton() {}
 
+bool HoverButton::OnKeyPressed(const ui::KeyEvent& event) {
+  // Unlike MenuButton, HoverButton should not be activated when the up or down
+  // arrow key is pressed.
+  if (event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN)
+    return false;
+  return MenuButton::OnKeyPressed(event);
+}
+
 void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
   MenuButton::SetBorder(std::move(b));
   // Make sure the minimum size is correct according to the layout (if any).
@@ -218,6 +226,16 @@ void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
 
 void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
+}
+
+bool HoverButton::IsTriggerableEventType(const ui::Event& event) {
+  // HoverButton should only be triggered on mouse released, like normal
+  // buttons. To make sure that the button listener is only notified when the
+  // mouse was released, the event type must be explicitly checked here, since
+  // Button::IsTriggerableEvent() returns true even it was just a press.
+  if (event.IsMouseEvent())
+    return event.type() == ui::ET_MOUSE_RELEASED;
+  return Button::IsTriggerableEvent(event);
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
