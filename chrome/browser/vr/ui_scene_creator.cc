@@ -126,6 +126,13 @@ std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
   return element;
 }
 
+Sounds CreateButtonSounds() {
+  Sounds sounds;
+  sounds.hover_enter = kSoundButtonHover;
+  sounds.button_down = kSoundButtonClick;
+  return sounds;
+}
+
 typedef VectorBinding<OmniboxSuggestion, Button> SuggestionSetBinding;
 typedef typename SuggestionSetBinding::ElementBinding SuggestionBinding;
 
@@ -200,7 +207,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
   background->set_hover_offset(0.0);
-  background->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate);
+  background->SetSounds(CreateButtonSounds(), audio_delegate);
   VR_BIND_BUTTON_COLORS(model, background.get(),
                         &ColorScheme::suggestion_button_colors,
                         &Button::SetButtonColors);
@@ -1080,6 +1087,9 @@ void UiSceneCreator::CreateContentQuad() {
   plane->set_bounds_contain_padding(false);
   plane->set_corner_radius(kContentCornerRadius);
   plane->set_cursor_type(kCursorReposition);
+  Sounds sounds;
+  sounds.button_up = kSoundButtonClick;
+  plane->SetSounds(sounds, audio_delegate_);
   plane->set_padding(0, kRepositionFrameHitPlaneTopPadding, 0, 0);
   plane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
 
@@ -1566,6 +1576,9 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   hit_plane->SetSize(kSceneSize, kSceneSize);
   hit_plane->SetTranslate(0.0f, 0.0f, -kContentDistance);
   hit_plane->set_cursor_type(kCursorReposition);
+  Sounds sounds;
+  sounds.button_up = kSoundButtonClick;
+  hit_plane->SetSounds(sounds, audio_delegate_);
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
       [](Model* m) {
@@ -1758,7 +1771,7 @@ void UiSceneCreator::CreateUrlBar() {
   back_button->SetCornerRadii(
       {kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2, 0});
   back_button->set_hover_offset(0.0f);
-  back_button->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate_);
+  back_button->SetSounds(CreateButtonSounds(), audio_delegate_);
   back_button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                        model->can_navigate_back, Button,
                                        back_button.get(), set_enabled));
@@ -1862,8 +1875,7 @@ void UiSceneCreator::CreateUrlBar() {
   overflow_button->SetCornerRadii(
       {0, kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2});
   overflow_button->set_hover_offset(0.0f);
-  overflow_button->SetSounds(kSoundButtonHover, kSoundButtonClick,
-                             audio_delegate_);
+  overflow_button->SetSounds(CreateButtonSounds(), audio_delegate_);
   VR_BIND_BUTTON_COLORS(model_, overflow_button.get(),
                         &ColorScheme::back_button, &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(overflow_button));
@@ -2276,7 +2288,7 @@ void UiSceneCreator::CreateOmnibox() {
                       kOmniboxTextFieldIconButtonSizeDMM);
   mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
   mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-  mic_button->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate_);
+  mic_button->SetSounds(CreateButtonSounds(), audio_delegate_);
 
   VR_BIND_VISIBILITY(mic_button,
                      model->speech.has_or_can_request_audio_permission &&

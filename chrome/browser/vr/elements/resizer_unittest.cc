@@ -62,21 +62,21 @@ TEST_F(ResizerTest, HorizontalMove) {
 }
 
 TEST_F(ResizerTest, UpwardMove) {
-  Move({0.5f, 0.5f}, {0.5f, 1.0f});
+  Move({0.5f, 0.5f}, {0.5f, 0.0f});
   CheckScale(kMinResizerScale);
 }
 
 TEST_F(ResizerTest, DownwardMove) {
-  Move({0.5f, 0.5f}, {0.5f, 0.0f});
+  Move({0.5f, 0.5f}, {0.5f, 1.0f});
   CheckScale(kMaxResizerScale);
 }
 
 TEST_F(ResizerTest, AccumulatedMove) {
-  Move({0.5f, 0.5f}, {0.5f, 0.25f});
+  Move({0.5f, 0.5f}, {0.5f, 0.75f});
   float scale = ComputeScale();
   EXPECT_LT(1.0f, scale);
   EXPECT_GT(kMaxResizerScale, scale);
-  Move({0.5f, 0.5f}, {0.5f, 0.25f});
+  Move({0.5f, 0.5f}, {0.5f, 0.75f});
   CheckScale(kMaxResizerScale);
 }
 
