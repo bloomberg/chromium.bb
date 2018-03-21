@@ -26,6 +26,8 @@ typedef NS_ENUM(NSUInteger, IOSNTPImpression) {
   LOCAL_SUGGESTIONS = 0,
   // The NTP displays local and remote suggestions.
   REMOTE_SUGGESTIONS = 1,
+  // The NTP displays local suggestions and remote suggestions are collapsed.
+  REMOTE_COLLAPSED = 2,
   // Add new enum above COUNT.
   COUNT
 };
