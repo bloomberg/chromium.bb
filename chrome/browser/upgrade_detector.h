@@ -51,6 +51,10 @@ class UpgradeDetector {
 
   virtual ~UpgradeDetector();
 
+  // Returns the default delta from upgrade detection until high annoyance is
+  // reached.
+  static base::TimeDelta GetDefaultHighAnnoyanceThreshold();
+
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Returns the time at which an available upgrade was detected.

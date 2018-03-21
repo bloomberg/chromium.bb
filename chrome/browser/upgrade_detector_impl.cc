@@ -43,6 +43,12 @@
 
 namespace {
 
+// The default thresholds for reaching annoyance levels.
+constexpr base::TimeDelta kDefaultLowThreshold = base::TimeDelta::FromDays(2);
+constexpr base::TimeDelta kDefaultElevatedThreshold =
+    base::TimeDelta::FromDays(4);
+constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(7);
+
 // How long (in milliseconds) to wait (each cycle) before checking whether
 // Chrome's been upgraded behind our back.
 const int kCheckForUpgradeMs = 2 * 60 * 60 * 1000;  // 2 hours.
@@ -322,21 +328,26 @@ void UpgradeDetectorImpl::InitializeThresholds() {
   if (!low_threshold_.is_zero())
     return;
 
-  // Intervals are drastically shortened when test switches are used.
-  const bool is_testing = IsTesting();
-  const base::TimeDelta multiplier = is_testing
-                                         ? base::TimeDelta::FromSeconds(10)
-                                         : base::TimeDelta::FromDays(1);
-  high_threshold_ = 7 * multiplier;
-  elevated_threshold_ = 4 * multiplier;
+  // Start with the default values.
+  low_threshold_ = kDefaultLowThreshold;
+  elevated_threshold_ = kDefaultElevatedThreshold;
+  high_threshold_ = kDefaultHighThreshold;
 
+  // When testing, scale everything back so that a day passes in ten seconds.
+  const bool is_testing = IsTesting();
+  if (is_testing) {
+    static constexpr int64_t scale_factor =
+        base::TimeDelta::FromDays(1) / base::TimeDelta::FromSeconds(10);
+    low_threshold_ /= scale_factor;
+    elevated_threshold_ /= scale_factor;
+    high_threshold_ /= scale_factor;
+  }
+
+  // Canary and dev channels are extra special, and reach "low" annoyance after
+  // one hour (one second in testing) and never advance beyond that.
   if (is_unstable_channel_) {
-    // Canary and dev channels reach "low" annoyance after one hour (one second
-    // in testing) and never advance beyond that.
     low_threshold_ = is_testing ? base::TimeDelta::FromSeconds(1)
                                 : base::TimeDelta::FromHours(1);
-  } else {
-    low_threshold_ = 2 * multiplier;
   }
 }
 
@@ -510,4 +521,9 @@ base::TimeTicks UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
 // static
 UpgradeDetector* UpgradeDetector::GetInstance() {
   return UpgradeDetectorImpl::GetInstance();
+}
+
+// static
+base::TimeDelta UpgradeDetector::GetDefaultHighAnnoyanceThreshold() {
+  return kDefaultHighThreshold;
 }

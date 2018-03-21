@@ -11354,7 +11354,7 @@
       'example_value': 604800000,
       'desc': '''Allows you to set the time period over which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> relaunch notifications are shown to apply a pending update.
 
-      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched (or <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy. If not set, the default period of 604800000 milliseconds (one week) is used.''',
+      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched (or <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy. If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and 604800000 milliseconds (one week) for all other platforms.''',
     },
     {
       'name': 'VirtualMachinesAllowed',
