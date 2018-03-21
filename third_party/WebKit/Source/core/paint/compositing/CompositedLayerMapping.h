@@ -305,7 +305,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   void UpdateScrollingBlockSelection();
 
-  void AdjustForCompositedScrolling(const GraphicsLayer*,
+  // Returns whether an adjustment happend.
+  bool AdjustForCompositedScrolling(const GraphicsLayer*,
                                     IntSize& offset) const;
 
   // Returns true for layers with scrollable overflow which have a background
