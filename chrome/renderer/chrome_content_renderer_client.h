@@ -154,11 +154,12 @@ class ChromeContentRendererClient
                   bool is_initial_navigation,
                   bool is_server_redirect,
                   bool* send_referrer) override;
-  bool WillSendRequest(
-      blink::WebLocalFrame* frame,
-      ui::PageTransition transition_type,
-      const blink::WebURL& url,
-      GURL* new_url) override;
+  void WillSendRequest(blink::WebLocalFrame* frame,
+                       ui::PageTransition transition_type,
+                       const blink::WebURL& url,
+                       base::Optional<url::Origin> initiator_origin,
+                       GURL* new_url,
+                       bool* attach_same_site_cookies) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
   unsigned long long VisitedLinkHash(const char* canonical_url,

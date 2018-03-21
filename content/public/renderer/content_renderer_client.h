@@ -237,12 +237,18 @@ class CONTENT_EXPORT ContentRendererClient {
                           bool* send_referrer);
 
   // Notifies the embedder that the given frame is requesting the resource at
-  // |url|. If the function returns true, the url is changed to |new_url|.
-  virtual bool WillSendRequest(
-      blink::WebLocalFrame* frame,
-      ui::PageTransition transition_type,
-      const blink::WebURL& url,
-      GURL* new_url);
+  // |url|. If the function returns a valid |new_url|, the request must be
+  // updated to use it. The |attach_same_site_cookies| output parameter
+  // determines whether SameSite cookies should be attached to the request.
+  // TODO(nasko): When moved over to Network Service, find a way to perform
+  // this check on the browser side, so untrusted renderer processes cannot
+  // influence whether SameSite cookies are attached.
+  virtual void WillSendRequest(blink::WebLocalFrame* frame,
+                               ui::PageTransition transition_type,
+                               const blink::WebURL& url,
+                               base::Optional<url::Origin> initiator_origin,
+                               GURL* new_url,
+                               bool* attach_same_site_cookies);
 
   // Returns true if the request is associated with a document that is in
   // ""prefetch only" mode, and will not be rendered.

@@ -43,6 +43,7 @@ void RequestExtraData::CopyToResourceRequest(
   request->originated_from_service_worker = originated_from_service_worker_;
 
   request->initiated_in_secure_context = initiated_in_secure_context_;
+  request->attach_same_site_cookies = attach_same_site_cookies_;
 }
 
 }  // namespace content
