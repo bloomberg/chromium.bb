@@ -4,6 +4,7 @@
 
 #include "components/password_manager/content/common/credential_manager_mojom_traits.h"
 
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
