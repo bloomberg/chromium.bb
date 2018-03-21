@@ -431,18 +431,21 @@ List Examples:
         description='Where do we run the tryjob?')
     where_ex = where_group.add_mutually_exclusive_group()
     where_ex.add_argument(
-        '--remote', dest='where', action='store_const', const=REMOTE,
-        default=REMOTE,
+        '--remote', dest='where', action='store_const', const=SWARMING,
+        default=SWARMING,
         help='Run the tryjob on a remote builder. (default)')
+    where_ex.add_argument(
+        '--swarming', dest='where', action='store_const', const=SWARMING,
+        help='Run the tryjob on a swarming builder.')
+    where_ex.add_argument(
+        '--waterfall', dest='where', action='store_const', const=REMOTE,
+        help='Run the tryjob on a waterfall builder.')
     where_ex.add_argument(
         '--local', dest='where', action='store_const', const=LOCAL,
         help='Run the tryjob on your local machine.')
     where_ex.add_argument(
         '--cbuildbot', dest='where', action='store_const', const=CBUILDBOT,
         help='Run special local build from current checkout in buildroot.')
-    where_ex.add_argument(
-        '--swarming', dest='where', action='store_const', const=SWARMING,
-        help='Run the tryjob on a swarming builder (experimental)')
     where_group.add_argument(
         '-r', '--buildroot', type='path', dest='buildroot',
         help='Root directory to use for the local tryjob. '

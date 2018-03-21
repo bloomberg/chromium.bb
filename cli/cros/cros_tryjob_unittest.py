@@ -113,7 +113,7 @@ class TryjobTestParsing(TryjobTest):
 
   def setUp(self):
     self.expected = {
-        'where': cros_tryjob.REMOTE,
+        'where': cros_tryjob.SWARMING,
         'buildroot': None,
         'branch': 'master',
         'production': False,
@@ -136,7 +136,7 @@ class TryjobTestParsing(TryjobTest):
   def testComplexParsingRemote(self):
     """Tests flow for an interactive session."""
     self.SetupCommandMock([
-        '--remote',
+        '--waterfall',
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
