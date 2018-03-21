@@ -120,4 +120,24 @@ TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
   EXPECT_EQ(60, snap_position.y());
 }
 
+TEST_F(ScrollSnapDataTest, DoesNotSnapToPositionsOutsideProximityRange) {
+  SnapContainerData data(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::ScrollOffset(360, 380));
+  data.set_proximity_range(gfx::ScrollOffset(50, 50));
+
+  gfx::ScrollOffset current_position(100, 100);
+  SnapAreaData area(SnapAxis::kBoth, gfx::ScrollOffset(80, 160),
+                    gfx::RectF(50, 50, 200, 200), false);
+  data.AddSnapAreaData(area);
+  gfx::ScrollOffset snap_position =
+      data.FindSnapPosition(current_position, true, true);
+
+  // The snap position on x, 80, is within the proximity range of [50, 150].
+  // However, the snap position on y, 160, is outside the proximity range of
+  // [50, 150], so we should only snap on x.
+  EXPECT_EQ(80, snap_position.x());
+  EXPECT_EQ(100, snap_position.y());
+}
+
 }  // namespace cc
