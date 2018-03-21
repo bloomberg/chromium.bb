@@ -17,6 +17,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
+#include "content/browser/renderer_host/render_widget_host_ns_view_client.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
@@ -30,6 +31,8 @@
 namespace content {
 class CursorManager;
 class RenderWidgetHost;
+class RenderWidgetHostNSViewBridge;
+class RenderWidgetHostViewMac;
 class WebContents;
 }
 
@@ -62,6 +65,7 @@ namespace content {
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
+      public RenderWidgetHostNSViewClient,
       public BrowserCompositorMacClient,
       public TextInputManager::Observer,
       public ui::AcceleratedWidgetMacNSView,
@@ -79,7 +83,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   RenderWidgetHostViewMac(RenderWidgetHost* widget, bool is_guest_view_hack);
   ~RenderWidgetHostViewMac() override;
 
-  RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
+  RenderWidgetHostViewCocoa* cocoa_view() const;
 
   // |delegate| is used to separate out the logic from the NSResponder delegate.
   // |delegate| is retained by this class.
@@ -295,6 +299,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void PauseForPendingResizeOrRepaintsAndDraw();
 
+  // RenderWidgetHostNSViewClient implementation.
+  RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() override;
+
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
   void BrowserCompositorMacOnBeginFrame() override;
@@ -375,10 +382,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   using SpeechCallback = base::OnceCallback<void(const base::string16&)>;
   void GetPageTextForSpeech(SpeechCallback callback);
 
-  // The associated view. This is weak and is inserted into the view hierarchy
-  // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
-  // destructor.
-  RenderWidgetHostViewCocoa* cocoa_view_;
+  // Interface through which the NSView is to be manipulated.
+  std::unique_ptr<RenderWidgetHostNSViewBridge> ns_view_bridge_;
 
   // Indicates if the page is loading.
   bool is_loading_;

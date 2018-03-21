@@ -40,6 +40,7 @@ using content::EditCommand;
 using content::NativeWebKeyboardEvent;
 using content::RenderViewHost;
 using content::RenderWidgetHostImpl;
+using content::RenderWidgetHostNSViewClient;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
@@ -152,14 +153,15 @@ void ExtractUnderlines(NSAttributedString* string,
 @synthesize suppressNextEscapeKeyUp = suppressNextEscapeKeyUp_;
 @synthesize markedRange = markedRange_;
 
-- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
+- (id)initWithClient:(std::unique_ptr<RenderWidgetHostNSViewClient>)client {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     self.acceptsTouchEvents = YES;
     editCommand_helper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
     editCommand_helper_->AddEditingSelectorsToClass([self class]);
 
-    renderWidgetHostView_.reset(r);
+    client_ = std::move(client);
+    renderWidgetHostView_ = client_->GetRenderWidgetHostViewMac();
     canBeKeyView_ = YES;
     pinchHasReachedZoomThreshold_ = false;
     isStylusEnteringProximity_ = false;
@@ -356,8 +358,7 @@ void ExtractUnderlines(NSAttributedString* string,
         renderWidgetHostView_->host()
             ->delegate()
             ->GetInputEventRouter()
-            ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent,
-                              latency_info);
+            ->RouteMouseEvent(renderWidgetHostView_, &enterEvent, latency_info);
       } else {
         renderWidgetHostView_->ProcessMouseEvent(enterEvent, latency_info);
       }
@@ -397,7 +398,7 @@ void ExtractUnderlines(NSAttributedString* string,
     renderWidgetHostView_->host()
         ->delegate()
         ->GetInputEventRouter()
-        ->RouteMouseEvent(renderWidgetHostView_.get(), &event, latency_info);
+        ->RouteMouseEvent(renderWidgetHostView_, &event, latency_info);
   } else {
     renderWidgetHostView_->ProcessMouseEvent(event, latency_info);
   }
@@ -936,7 +937,7 @@ void ExtractUnderlines(NSAttributedString* string,
       renderWidgetHostView_->host()
           ->delegate()
           ->GetInputEventRouter()
-          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
+          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_, rootPoint,
                                        &transformedPoint);
   if (!widgetHost)
     return;
@@ -1058,7 +1059,7 @@ void ExtractUnderlines(NSAttributedString* string,
       renderWidgetHostView_->host()
           ->delegate()
           ->GetInputEventRouter()
-          ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent,
+          ->RouteMouseWheelEvent(renderWidgetHostView_, &webEvent,
                                  latency_info);
     } else {
       renderWidgetHostView_->ProcessMouseWheelEvent(webEvent, latency_info);
@@ -1340,7 +1341,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (RenderWidgetHostViewMac*)renderWidgetHostViewMac {
-  return renderWidgetHostView_.get();
+  return renderWidgetHostView_;
 }
 
 // Determine whether we should autohide the cursor (i.e., hide it until mouse
@@ -1537,7 +1538,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
       renderWidgetHostView_->host()
           ->delegate()
           ->GetInputEventRouter()
-          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
+          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_, rootPoint,
                                        &transformedPoint);
   if (!widgetHost)
     return NSNotFound;
@@ -1909,7 +1910,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)startSpeaking:(id)sender {
-  GetRenderWidgetHostViewToUse(renderWidgetHostView_.get())->SpeakSelection();
+  GetRenderWidgetHostViewToUse(renderWidgetHostView_)->SpeakSelection();
 }
 
 - (void)stopSpeaking:(id)sender {
