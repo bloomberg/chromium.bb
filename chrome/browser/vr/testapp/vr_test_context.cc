@@ -52,7 +52,7 @@ constexpr float kDefaultViewScaleFactor = 1.2f;
 constexpr float kMinViewScaleFactor = 0.5f;
 constexpr float kMaxViewScaleFactor = 5.0f;
 constexpr float kViewScaleAdjustmentFactor = 0.2f;
-constexpr float kPageLoadTimeMilliseconds = 500;
+constexpr float kPageLoadTimeMilliseconds = 1000;
 
 constexpr gfx::Point3F kDefaultLaserOrigin = {0.5f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
@@ -468,6 +468,31 @@ void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
 
 void VrTestContext::NavigateBack() {
   page_load_start_ = base::TimeTicks::Now();
+  model_->can_navigate_back = false;
+  model_->can_navigate_forward = true;
+}
+
+void VrTestContext::NavigateForward() {
+  page_load_start_ = base::TimeTicks::Now();
+  model_->can_navigate_back = true;
+  model_->can_navigate_forward = false;
+}
+
+void VrTestContext::ReloadTab() {
+  page_load_start_ = base::TimeTicks::Now();
+}
+
+void VrTestContext::OpenNewTab(bool incognito) {
+  DCHECK(incognito);
+  incognito_ = true;
+  ui_->SetIncognito(true);
+  model_->incognito_tabs_open = true;
+}
+
+void VrTestContext::CloseAllIncognitoTabs() {
+  incognito_ = true;
+  ui_->SetIncognito(false);
+  model_->incognito_tabs_open = false;
 }
 
 void VrTestContext::ExitCct() {}

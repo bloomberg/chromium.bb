@@ -42,6 +42,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) {}
   MOCK_METHOD0(OnAssetsUnavailable, void());
+  MOCK_METHOD1(SetIncognitoTabsOpen, void(bool));
 
   MOCK_METHOD1(ShowSoftInput, void(bool));
   MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));

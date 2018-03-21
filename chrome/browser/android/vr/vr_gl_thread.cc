@@ -222,6 +222,32 @@ void VrGLThread::NavigateBack() {
       FROM_HERE, base::BindOnce(&VrShell::NavigateBack, weak_vr_shell_));
 }
 
+void VrGLThread::NavigateForward() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::NavigateForward, weak_vr_shell_));
+}
+
+void VrGLThread::ReloadTab() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::ReloadTab, weak_vr_shell_));
+}
+
+void VrGLThread::OpenNewTab(bool incognito) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShell::OpenNewTab, weak_vr_shell_, incognito));
+}
+
+void VrGLThread::CloseAllIncognitoTabs() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShell::CloseAllIncognitoTabs, weak_vr_shell_));
+}
+
 void VrGLThread::ExitCct() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
@@ -429,6 +455,13 @@ void VrGLThread::OnAssetsUnavailable() {
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserUiInterface::OnAssetsUnavailable,
                                 weak_browser_ui_));
+}
+
+void VrGLThread::SetIncognitoTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetIncognitoTabsOpen,
+                                weak_browser_ui_, open));
 }
 
 void VrGLThread::ShowSoftInput(bool show) {

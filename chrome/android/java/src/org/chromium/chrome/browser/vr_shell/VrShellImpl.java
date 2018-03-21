@@ -897,6 +897,7 @@ public class VrShellImpl
 
     @VisibleForTesting
     @Override
+    @CalledByNative
     public void navigateForward() {
         if (!mCanGoForward) return;
         mActivity.getToolbarManager().forward();
@@ -916,6 +917,24 @@ public class VrShellImpl
             mActivity.getToolbarManager().back();
         }
         updateHistoryButtonsVisibility();
+    }
+
+    @Override
+    @CalledByNative
+    public void reloadTab() {
+        mTab.reload();
+    }
+
+    @Override
+    @CalledByNative
+    public void openNewTab(boolean incognito) {
+        mActivity.getTabCreator(incognito).launchNTP();
+    }
+
+    @Override
+    @CalledByNative
+    public void closeAllIncognitoTabs() {
+        mTabModelSelector.getModel(true).closeAllTabs();
     }
 
     private void updateHistoryButtonsVisibility() {

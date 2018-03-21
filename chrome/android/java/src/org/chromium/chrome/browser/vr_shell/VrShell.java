@@ -82,6 +82,21 @@ public interface VrShell extends VrDialogManager {
     void navigateBack();
 
     /**
+     *  Asks VrShell to reload the current page.
+     */
+    void reloadTab();
+
+    /**
+     *  Asks VrShell to open a new tab.
+     */
+    void openNewTab(boolean incognito);
+
+    /**
+     *  Asks VrShell to close all incognito tabs.
+     */
+    void closeAllIncognitoTabs();
+
+    /**
      * Simulates a user accepting the currently visible DOFF prompt.
      */
     void acceptDoffPromptForTesting();
