@@ -1500,7 +1500,7 @@ MockGLInterface::Mock_glGetBufferPointervRobustANGLE(GLenum target,
                                            params);
 }
 
-void GL_BINDING_CALL
+GLuint GL_BINDING_CALL
 MockGLInterface::Mock_glGetDebugMessageLog(GLuint count,
                                            GLsizei bufSize,
                                            GLenum* sources,
@@ -1510,11 +1510,11 @@ MockGLInterface::Mock_glGetDebugMessageLog(GLuint count,
                                            GLsizei* lengths,
                                            char* messageLog) {
   MakeFunctionUnique("glGetDebugMessageLog");
-  interface_->GetDebugMessageLog(count, bufSize, sources, types, ids,
-                                 severities, lengths, messageLog);
+  return interface_->GetDebugMessageLog(count, bufSize, sources, types, ids,
+                                        severities, lengths, messageLog);
 }
 
-void GL_BINDING_CALL
+GLuint GL_BINDING_CALL
 MockGLInterface::Mock_glGetDebugMessageLogKHR(GLuint count,
                                               GLsizei bufSize,
                                               GLenum* sources,
@@ -1524,8 +1524,8 @@ MockGLInterface::Mock_glGetDebugMessageLogKHR(GLuint count,
                                               GLsizei* lengths,
                                               char* messageLog) {
   MakeFunctionUnique("glGetDebugMessageLogKHR");
-  interface_->GetDebugMessageLog(count, bufSize, sources, types, ids,
-                                 severities, lengths, messageLog);
+  return interface_->GetDebugMessageLog(count, bufSize, sources, types, ids,
+                                        severities, lengths, messageLog);
 }
 
 GLenum GL_BINDING_CALL MockGLInterface::Mock_glGetError(void) {
