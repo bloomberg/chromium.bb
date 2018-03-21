@@ -1731,16 +1731,20 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #else   // CONFIG_DIST_8X8
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #endif  // CONFIG_DIST_8X8
+  const uint16_t eob = p->eobs[block];
 
-  if (cpi->sf.use_transform_domain_distortion
+  int use_transform_domain_distortion =
+      // When eob is 0, pixel domain distortion is more efficient.
+      cpi->sf.use_transform_domain_distortion && eob &&
       // Any 64-pt transforms only preserves half the coefficients.
       // Therefore transform domain distortion is not valid for these
       // transform sizes.
-      && txsize_sqr_up_map[tx_size] != TX_64X64
+      txsize_sqr_up_map[tx_size] != TX_64X64;
 #if CONFIG_DIST_8X8
-      && !x->using_dist_8x8
+  if (x->using_dist_8x8) use_transform_domain_distortion = 0;
 #endif
-  ) {
+
+  if (use_transform_domain_distortion) {
     // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = av1_get_max_eob(tx_size);
@@ -1773,7 +1777,6 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     const uint8_t *src = &x->plane[plane].src.buf[src_idx];
     const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
     const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-    const uint16_t eob = p->eobs[block];
 
     assert(cpi != NULL);
     assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
