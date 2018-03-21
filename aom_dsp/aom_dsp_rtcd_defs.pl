@@ -53,8 +53,6 @@ push @block_sizes, [8, 32];
 push @block_sizes, [32, 8];
 push @block_sizes, [16, 64];
 push @block_sizes, [64, 16];
-push @block_sizes, [32, 128];
-push @block_sizes, [128, 32];
 
 @tx_dims = (2, 4, 8, 16, 32, 64);
 @tx_sizes = ();
@@ -615,8 +613,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_jnt_sad32x8_avg     ssse3/;
   specialize qw/aom_jnt_sad16x64_avg     ssse3/;
   specialize qw/aom_jnt_sad64x16_avg     ssse3/;
-  specialize qw/aom_jnt_sad32x128_avg     ssse3/;
-  specialize qw/aom_jnt_sad128x32_avg     ssse3/;
 
   add_proto qw/unsigned int/, "aom_sad4xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
   add_proto qw/unsigned int/, "aom_sad8xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
@@ -942,8 +938,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_variance128x128   sse2 avx2         /;
   specialize qw/aom_variance128x64    sse2 avx2         /;
   specialize qw/aom_variance64x128    sse2 avx2         /;
-  specialize qw/aom_variance128x32    sse2 avx2         /;
-  specialize qw/aom_variance32x128    sse2 avx2         /;
   specialize qw/aom_variance64x64     sse2 avx2 neon msa/;
   specialize qw/aom_variance64x32     sse2 avx2 neon msa/;
   specialize qw/aom_variance32x64     sse2      neon msa/;
@@ -1025,8 +1019,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_jnt_sub_pixel_avg_variance32x8  ssse3/;
   specialize qw/aom_jnt_sub_pixel_avg_variance16x64 ssse3/;
   specialize qw/aom_jnt_sub_pixel_avg_variance64x16 ssse3/;
-  specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
-  specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
 
   specialize qw/aom_jnt_sub_pixel_avg_variance128x128  ssse3/;
   specialize qw/aom_jnt_sub_pixel_avg_variance128x64   ssse3/;

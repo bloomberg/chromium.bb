@@ -55,11 +55,11 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   int maxc = cm->mi_cols - mi_col;
   int maxr = cm->mi_rows - mi_row;
 
-  if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
+  if (bs == BLOCK_128X128 || bs == BLOCK_128X64)
     maxc = AOMMIN(maxc, MI_SIZE_128X128);
   else
     maxc = AOMMIN(maxc, MI_SIZE_64X64);
-  if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128)
+  if (bs == BLOCK_128X128 || bs == BLOCK_64X128)
     maxr = AOMMIN(maxr, MI_SIZE_128X128);
   else
     maxr = AOMMIN(maxr, MI_SIZE_64X64);

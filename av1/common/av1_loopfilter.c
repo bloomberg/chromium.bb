@@ -59,8 +59,6 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
       32 - 1,   // BLOCK_32X8,
       16 - 1,   // BLOCK_16X64,
       64 - 1,   // BLOCK_64X16
-      32 - 1,   // BLOCK_32X128
-      128 - 1,  // BLOCK_128X32
   },
   // mask for horizontal edges filtering
   {
@@ -86,8 +84,6 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
       8 - 1,    // BLOCK_32X8,
       64 - 1,   // BLOCK_16X64,
       16 - 1,   // BLOCK_64X16
-      128 - 1,  // BLOCK_32X128
-      32 - 1,   // BLOCK_128X32
   },
 };
 
@@ -490,11 +486,7 @@ const FilterMaskY size_mask_y[BLOCK_SIZES_ALL] = {
       0x000f000f000f000fULL, 0x000f000f000f000fULL, 0x000f000f000f000fULL } },
 
   { { 0xffffffffffffffffULL,  // BLOCK_64X16
-      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
-  // BLOCK_32X128
-  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
-  // BLOCK_128X32
-  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } }
 };
 
 // U/V plane max transform size is 32x32 (format 420).
@@ -570,8 +562,6 @@ const FilterMaskUV size_mask_u_v[BLOCK_SIZES_ALL] = {
   0x000000000000ffffULL,  // BLOCK_32X8,
   0x0f0f0f0f0f0f0f0fULL,  // BLOCK_16X64,
   0x00000000ffffffffULL,  // BLOCK_64X16
-  0xffffffffffffffffULL,  // BLOCK_32X128,
-  0xffffffffffffffffULL,  // BLOCK_128X32,
 };
 
 static LoopFilterMask *get_loop_filter_mask(AV1_COMMON *const cm, int mi_row,

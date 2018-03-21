@@ -133,28 +133,12 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
 
 #if CONFIG_FP_MB_STATS
 static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1, 1,
-  1, 1,
-  1, 1,
-  1, 1,
-  2, 2,
-  2, 4,
-  4, IF_EXT_PARTITION(4, 8, 8) 1,
-  1, 1,
-  2, 2,
-  4, IF_EXT_PARTITION(2, 8)
+  1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, IF_EXT_PARTITION(4, 8, 8) 1,
+  1, 1, 2, 2, 4
 };
 static const uint8_t num_16x16_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1, 1,
-  1, 1,
-  1, 1,
-  1, 2,
-  1, 2,
-  4, 2,
-  4, IF_EXT_PARTITION(8, 4, 8) 1,
-  1, 2,
-  1, 4,
-  2, IF_EXT_PARTITION(8, 2)
+  1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 4, 2, 4, IF_EXT_PARTITION(8, 4, 8) 1,
+  1, 2, 1, 4, 2
 };
 #endif  // CONFIG_FP_MB_STATS
 
@@ -1943,7 +1927,6 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
   BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  // 64x128, 128x64, 128x128
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   4x16,   16x4,    8x32
   BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,  //   32x8,  16x64,   64x16
-  BLOCK_16X16, BLOCK_16X16                // 32x128, 128x32
 };
 
 static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
@@ -1955,7 +1938,6 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
   BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  // 64x128, 128x64, 128x128
   BLOCK_16X16,   BLOCK_16X16,   BLOCK_32X32,    //   4x16,   16x4,    8x32
   BLOCK_32X32,   BLOCK_LARGEST, BLOCK_LARGEST,  //   32x8,  16x64,   64x16
-  BLOCK_LARGEST, BLOCK_LARGEST                  // 32x128, 128x32
 };
 
 // Next square block size less or equal than current block size.
@@ -1968,7 +1950,6 @@ static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
   BLOCK_64X64, BLOCK_64X64, BLOCK_128X128,  // 64x128, 128x64, 128x128
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
   BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,    //   32x8,  16x64,   64x16
-  BLOCK_32X32, BLOCK_32X32                  // 32x128, 128x32
 };
 /* clang-format on */
 

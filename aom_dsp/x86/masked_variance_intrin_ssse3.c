@@ -131,8 +131,6 @@ MASK_SUBPIX_VAR8XH_SSSE3(32)
 MASK_SUBPIX_VAR_SSSE3(32, 8)
 MASK_SUBPIX_VAR_SSSE3(64, 16)
 MASK_SUBPIX_VAR_SSSE3(16, 64)
-MASK_SUBPIX_VAR_SSSE3(128, 32)
-MASK_SUBPIX_VAR_SSSE3(32, 128)
 
 static INLINE __m128i filter_block(const __m128i a, const __m128i b,
                                    const __m128i filter) {
@@ -711,8 +709,6 @@ HIGHBD_MASK_SUBPIX_VAR_SSSE3(8, 32)
 HIGHBD_MASK_SUBPIX_VAR_SSSE3(32, 8)
 HIGHBD_MASK_SUBPIX_VAR_SSSE3(16, 64)
 HIGHBD_MASK_SUBPIX_VAR_SSSE3(64, 16)
-HIGHBD_MASK_SUBPIX_VAR_SSSE3(32, 128)
-HIGHBD_MASK_SUBPIX_VAR_SSSE3(128, 32)
 
 static INLINE __m128i highbd_filter_block(const __m128i a, const __m128i b,
                                           const __m128i filter) {

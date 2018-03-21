@@ -241,7 +241,5 @@ jnt_sadMxN_sse2(8, 32)
 jnt_sadMxN_sse2(32, 8)
 jnt_sadMxN_sse2(16, 64)
 jnt_sadMxN_sse2(64, 16)
-jnt_sadMxN_sse2(32, 128)
-jnt_sadMxN_sse2(128, 32)
 #endif
     /* clang-format on */

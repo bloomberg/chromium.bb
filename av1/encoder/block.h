@@ -349,8 +349,6 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
     1,  // BLOCK_32X8
     1,  // BLOCK_16X64
     1,  // BLOCK_64X16
-    1,  // BLOCK_32X128
-    1,  // BLOCK_128X32
   };
 
   return LUT[bsize];

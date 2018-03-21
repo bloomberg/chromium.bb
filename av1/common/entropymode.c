@@ -65,7 +65,7 @@ static const aom_cdf_prob
       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
       { AOM_CDF2(16384) },  // 208, 1
-      { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
+      { AOM_CDF2(16384) }
     };
 
 #if WEDGE_IDX_ENTROPY_CODING
@@ -113,10 +113,6 @@ static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)] =
       { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
                   20480, 22528, 24576, 26624, 28672, 30720) },
       { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
-                  20480, 22528, 24576, 26624, 28672, 30720) },
-      { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
                   20480, 22528, 24576, 26624, 28672, 30720) } };
 #endif
 
@@ -142,7 +138,7 @@ static const aom_cdf_prob
       { AOM_CDF2(128 * 128) }, { AOM_CDF2(255 * 128) }, { AOM_CDF2(255 * 128) },
       { AOM_CDF2(255 * 128) }, { AOM_CDF2(208 * 128) }, { AOM_CDF2(208 * 128) },
       { AOM_CDF2(208 * 128) }, { AOM_CDF2(208 * 128) }, { AOM_CDF2(255 * 128) },
-      { AOM_CDF2(255 * 128) }, { AOM_CDF2(255 * 128) }, { AOM_CDF2(255 * 128) },
+      { AOM_CDF2(255 * 128) },
     };
 
 static const aom_cdf_prob
@@ -158,7 +154,6 @@ static const aom_cdf_prob
       { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
       { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
       { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-      { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
     };
 
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
@@ -169,7 +164,7 @@ static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_CDF2(231 * 128) }, { AOM_CDF2(252 * 128) }, { AOM_CDF2(252 * 128) },
   { AOM_CDF2(252 * 128) }, { AOM_CDF2(208 * 128) }, { AOM_CDF2(208 * 128) },
   { AOM_CDF2(208 * 128) }, { AOM_CDF2(208 * 128) }, { AOM_CDF2(208 * 128) },
-  { AOM_CDF2(208 * 128) }, { AOM_CDF2(252 * 128) }, { AOM_CDF2(252 * 128) },
+  { AOM_CDF2(208 * 128) },
 };
 
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
@@ -584,7 +579,7 @@ static const aom_cdf_prob
       { AOM_CDF2(30378) }, { AOM_CDF2(30378) }, { AOM_CDF2(30378) },
       { AOM_CDF2(30378) }, { AOM_CDF2(10985) }, { AOM_CDF2(10985) },
       { AOM_CDF2(15723) }, { AOM_CDF2(15723) }, { AOM_CDF2(30378) },
-      { AOM_CDF2(30378) }, { AOM_CDF2(30378) }, { AOM_CDF2(30378) },
+      { AOM_CDF2(30378) },
     };
 
 // FIXME(someone) need real defaults here

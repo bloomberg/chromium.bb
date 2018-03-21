@@ -270,8 +270,6 @@ AOM_VAR_16_SSE2(32, 64, 11);
 AOM_VAR_16_SSE2(128, 128, 14);
 AOM_VAR_16_SSE2(128, 64, 13);
 AOM_VAR_16_SSE2(64, 128, 13);
-AOM_VAR_16_SSE2(128, 32, 12);
-AOM_VAR_16_SSE2(32, 128, 12);
 
 unsigned int aom_mse8x8_sse2(const uint8_t *src, int src_stride,
                              const uint8_t *ref, int ref_stride,

@@ -390,21 +390,18 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                                MI_SIZE_64X64 * fbc]
                ->mbmi;
       if (((fbc & 1) &&
-           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64 ||
-            mbmi->sb_type == BLOCK_128X32)) ||
+           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64)) ||
           ((fbr & 1) &&
-           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_64X128 ||
-            mbmi->sb_type == BLOCK_32X128)))
+           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_64X128)))
         continue;
       if (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64 ||
-          mbmi->sb_type == BLOCK_128X32 || mbmi->sb_type == BLOCK_64X128 ||
-          mbmi->sb_type == BLOCK_32X128)
+          mbmi->sb_type == BLOCK_64X128)
         bs = mbmi->sb_type;
-      if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32) {
+      if (bs == BLOCK_128X128 || bs == BLOCK_128X64) {
         nhb = AOMMIN(MI_SIZE_128X128, cm->mi_cols - MI_SIZE_64X64 * fbc);
         hb_step = 2;
       }
-      if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128) {
+      if (bs == BLOCK_128X128 || bs == BLOCK_64X128) {
         nvb = AOMMIN(MI_SIZE_128X128, cm->mi_rows - MI_SIZE_64X64 * fbr);
         vb_step = 2;
       }

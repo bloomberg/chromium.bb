@@ -82,8 +82,6 @@ AOM_VAR_AVX2(64, 32, 32, 11);
 AOM_VAR_AVX2(128, 128, 32, 14);
 AOM_VAR_AVX2(128, 64, 32, 13);
 AOM_VAR_AVX2(64, 128, 32, 13);
-AOM_VAR_AVX2(128, 32, 32, 12);
-AOM_VAR_AVX2(32, 128, 32, 12);
 
 unsigned int aom_sub_pixel_variance32xh_avx2(const uint8_t *src, int src_stride,
                                              int x_offset, int y_offset,

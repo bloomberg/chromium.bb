@@ -189,10 +189,6 @@ sadMxN(16, 64)
 sadMxNx4D(16, 64)
 sadMxN(64, 16)
 sadMxNx4D(64, 16)
-sadMxN(32, 128)
-sadMxNx4D(32, 128)
-sadMxN(128, 32)
-sadMxNx4D(128, 32)
 #endif
     /* clang-format on */
 
@@ -369,9 +365,5 @@ highbd_sadMxN(16, 64)
 highbd_sadMxNx4D(16, 64)
 highbd_sadMxN(64, 16)
 highbd_sadMxNx4D(64, 16)
-highbd_sadMxN(32, 128)
-highbd_sadMxNx4D(32, 128)
-highbd_sadMxN(128, 32)
-highbd_sadMxNx4D(128, 32)
 #endif
     /* clang-format on */

@@ -139,19 +139,16 @@ const map_entry refs_map[] = {
   ENUM(ALTREF2_FRAME), ENUM(ALTREF_FRAME), LAST_ENUM
 };
 
-const map_entry block_size_map[] = { ENUM(BLOCK_4X4),    ENUM(BLOCK_4X8),
-                                     ENUM(BLOCK_8X4),    ENUM(BLOCK_8X8),
-                                     ENUM(BLOCK_8X16),   ENUM(BLOCK_16X8),
-                                     ENUM(BLOCK_16X16),  ENUM(BLOCK_16X32),
-                                     ENUM(BLOCK_32X16),  ENUM(BLOCK_32X32),
-                                     ENUM(BLOCK_32X64),  ENUM(BLOCK_64X32),
-                                     ENUM(BLOCK_64X64),  ENUM(BLOCK_64X128),
-                                     ENUM(BLOCK_128X64), ENUM(BLOCK_128X128),
-                                     ENUM(BLOCK_4X16),   ENUM(BLOCK_16X4),
-                                     ENUM(BLOCK_8X32),   ENUM(BLOCK_32X8),
-                                     ENUM(BLOCK_16X64),  ENUM(BLOCK_64X16),
-                                     ENUM(BLOCK_32X128), ENUM(BLOCK_128X32),
-                                     LAST_ENUM };
+const map_entry block_size_map[] = {
+  ENUM(BLOCK_4X4),     ENUM(BLOCK_4X8),    ENUM(BLOCK_8X4),
+  ENUM(BLOCK_8X8),     ENUM(BLOCK_8X16),   ENUM(BLOCK_16X8),
+  ENUM(BLOCK_16X16),   ENUM(BLOCK_16X32),  ENUM(BLOCK_32X16),
+  ENUM(BLOCK_32X32),   ENUM(BLOCK_32X64),  ENUM(BLOCK_64X32),
+  ENUM(BLOCK_64X64),   ENUM(BLOCK_64X128), ENUM(BLOCK_128X64),
+  ENUM(BLOCK_128X128), ENUM(BLOCK_4X16),   ENUM(BLOCK_16X4),
+  ENUM(BLOCK_8X32),    ENUM(BLOCK_32X8),   ENUM(BLOCK_16X64),
+  ENUM(BLOCK_64X16),   LAST_ENUM
+};
 
 const map_entry tx_size_map[] = {
   ENUM(TX_4X4),   ENUM(TX_8X8),   ENUM(TX_16X16), ENUM(TX_32X32),

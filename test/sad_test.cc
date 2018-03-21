@@ -1303,8 +1303,6 @@ const JntSadMxhParam jnt_sad_sse2_tests[] = {
   make_tuple(32, 8, &aom_sad32xh_sse2, -1),
   make_tuple(16, 64, &aom_sad16xh_sse2, -1),
   make_tuple(64, 16, &aom_sad64xh_sse2, -1),
-  make_tuple(32, 128, &aom_sad32xh_sse2, -1),
-  make_tuple(128, 32, &aom_sad128xh_sse2, -1),
 };
 INSTANTIATE_TEST_CASE_P(SSE2, JntSADTest,
                         ::testing::ValuesIn(jnt_sad_sse2_tests));
