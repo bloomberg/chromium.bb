@@ -60,7 +60,7 @@ void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
     AddChildViewAt(icon_, 0);
   }
 
-  constexpr int kIconSize = 12;
+  constexpr int kIconSize = 16;
   constexpr SkColor kIconColor = SkColorSetARGBMacro(0xFF, 0x5C, 0x5D, 0x60);
   icon_->SetImage(gfx::CreateVectorIcon(icon, kIconColor));
   icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
@@ -94,7 +94,7 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
   preferred_size.Enlarge(GetInsets().width(), GetInsets().height());
 
   // To avoid text and icon bubbles have different heights in a row.
-  constexpr int kMinimumHeight = 24;
+  constexpr int kMinimumHeight = 32;
   preferred_size.SetToMax(gfx::Size(kMinimumHeight, kMinimumHeight));
   // Make the width to be at lease as large as the height.
   preferred_size.set_width(
@@ -106,7 +106,7 @@ void BubbleView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
   constexpr SkColor kBackgroundColor =
-      SkColorSetARGBMacro(0xFF, 0xE8, 0xEA, 0xED);
+      SkColorSetARGBMacro(0xFF, 0xF1, 0xF3, 0xF4);
   constexpr int kCornerRadius = 22;
   // Draw a round rect with background color and shadow.
   cc::PaintFlags flags;
