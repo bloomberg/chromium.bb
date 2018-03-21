@@ -397,7 +397,6 @@ void NotifyContextGettersOfShutdownOnIO(
     std::unique_ptr<ProfileIOData::ChromeURLRequestContextGetterVector>
         getters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData::ChromeURLRequestContextGetterVector::iterator iter;
   for (auto& chrome_context_getter : *getters)
     chrome_context_getter->NotifyContextShuttingDown();
 }

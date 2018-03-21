@@ -130,7 +130,7 @@ void FidoBleTransaction::StopTimeout() {
 
 void FidoBleTransaction::OnError() {
   request_frame_.reset();
-  request_cont_fragments_ = {};
+  request_cont_fragments_ = base::queue<FidoBleFrameContinuationFragment>();
   response_frame_assembler_.reset();
   std::move(callback_).Run(base::nullopt);
 }

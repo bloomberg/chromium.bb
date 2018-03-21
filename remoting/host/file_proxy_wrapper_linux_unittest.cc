@@ -87,7 +87,7 @@ void FileProxyWrapperLinuxTest::SetUp() {
   final_state_ = FileProxyWrapper::kUninitialized;
   done_callback_succeeded_ = false;
 
-  read_chunks_ = {};
+  read_chunks_ = base::queue<std::vector<char>>();
   read_filesize_ = 0;
 }
 

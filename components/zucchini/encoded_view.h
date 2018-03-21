@@ -50,15 +50,15 @@ class EncodedView {
     using reference = size_t;
     using pointer = size_t*;
 
-    Iterator(const EncodedView& encoded_view, difference_type pos)
+    Iterator(const EncodedView* encoded_view, difference_type pos)
         : encoded_view_(encoded_view), pos_(pos) {}
 
     value_type operator*() const {
-      return encoded_view_.Projection(static_cast<offset_t>(pos_));
+      return encoded_view_->Projection(static_cast<offset_t>(pos_));
     }
 
     value_type operator[](difference_type n) const {
-      return encoded_view_.Projection(static_cast<offset_t>(pos_ + n));
+      return encoded_view_->Projection(static_cast<offset_t>(pos_ + n));
     }
 
     Iterator& operator++() {
@@ -93,6 +93,12 @@ class EncodedView {
       return *this;
     }
 
+    Iterator& operator=(const Iterator& it) {
+      encoded_view_ = it.encoded_view_;
+      pos_ = it.pos_;
+      return *this;
+    }
+
     friend bool operator==(Iterator a, Iterator b) { return a.pos_ == b.pos_; }
 
     friend bool operator!=(Iterator a, Iterator b) { return !(a == b); }
@@ -120,7 +126,7 @@ class EncodedView {
     }
 
    private:
-    const EncodedView& encoded_view_;
+    const EncodedView* encoded_view_;
     difference_type pos_;
   };
 
@@ -154,10 +160,10 @@ class EncodedView {
   // Range functions.
   size_type size() const { return size_type(image_index_.size()); }
   const_iterator begin() const {
-    return const_iterator{*this, difference_type(0)};
+    return const_iterator{this, difference_type(0)};
   }
   const_iterator end() const {
-    return const_iterator{*this, difference_type(size())};
+    return const_iterator{this, difference_type(size())};
   }
 
  private:
