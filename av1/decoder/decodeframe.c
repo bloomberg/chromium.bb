@@ -2620,6 +2620,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
   cm->show_frame = aom_rb_read_bit(rb);
+#if CONFIG_FILM_GRAIN_SHOWEX
+  cm->showable_frame = 0;
+  if (!cm->show_frame) {
+    // See if this frame can be used as show_existing_frame in future
+    cm->showable_frame = aom_rb_read_bit(rb);
+  }
+  cm->cur_frame->showable_frame = cm->showable_frame;
+#endif
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
   cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
   cm->enable_intra_edge_filter = aom_rb_read_bit(rb);
@@ -3117,14 +3125,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
-#if CONFIG_FILM_GRAIN_SHOWEX
-  cm->showable_frame = 0;
-  if (!cm->show_frame) {
-    // See if this frame can be used as show_existing_frame in future
-    cm->showable_frame = aom_rb_read_bit(rb);
-  }
-  cm->cur_frame->showable_frame = cm->showable_frame;
-#endif
 #if CONFIG_FILM_GRAIN
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
 #if CONFIG_FILM_GRAIN_SHOWEX

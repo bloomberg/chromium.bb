@@ -2956,6 +2956,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->intra_only) cm->frame_type = INTRA_ONLY_FRAME;
 
   aom_wb_write_bit(wb, cm->show_frame);
+#if CONFIG_FILM_GRAIN_SHOWEX
+  if (!cm->show_frame) {
+    aom_wb_write_bit(wb, cm->showable_frame);
+  }
+#endif
   if (frame_is_sframe(cm)) {
     assert(cm->error_resilient_mode);
   } else {
@@ -3261,11 +3266,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
-#if CONFIG_FILM_GRAIN_SHOWEX
-  if (!cm->show_frame) {
-    aom_wb_write_bit(wb, cm->showable_frame);
-  }
-#endif
 #if CONFIG_FILM_GRAIN
 #if CONFIG_FILM_GRAIN_SHOWEX
   if (cm->film_grain_params_present && (cm->show_frame || cm->showable_frame)) {
