@@ -879,10 +879,10 @@ static void setup_segmentation(AV1_COMMON *const cm,
         av1_set_segdata(seg, i, j, data);
       }
     }
-    segfeatures_copy(&cm->cur_frame->seg, seg);
   } else if (cm->prev_frame) {
     segfeatures_copy(seg, &cm->prev_frame->seg);
   }
+  segfeatures_copy(&cm->cur_frame->seg, seg);
 }
 
 static void decode_restoration_mode(AV1_COMMON *cm,

@@ -4286,12 +4286,13 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   }
   apply_active_map(cpi);
   if (cm->seg.enabled) {
-    if (cm->seg.update_data) {
-      segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
-    } else if (cm->prev_frame) {
+    if (!cm->seg.update_data && cm->prev_frame) {
       segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
     }
+  } else {
+    memset(&cm->seg, 0, sizeof(cm->seg));
   }
+  segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
 
   // transform / motion compensation build reconstruction frame
   av1_encode_frame(cpi);
@@ -4389,12 +4390,13 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       av1_setup_in_frame_q_adj(cpi);
     }
     if (cm->seg.enabled) {
-      if (cm->seg.update_data) {
-        segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
-      } else if (cm->prev_frame) {
+      if (!cm->seg.update_data && cm->prev_frame) {
         segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
       }
+    } else {
+      memset(&cm->seg, 0, sizeof(cm->seg));
     }
+    segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
 
     // transform / motion compensation build reconstruction frame
     save_coding_context(cpi);
