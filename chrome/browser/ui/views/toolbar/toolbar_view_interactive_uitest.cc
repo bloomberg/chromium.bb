@@ -259,10 +259,23 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
 }
 
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
+#if defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
+#define MAYBE_ToolbarCycleFocus DISABLED_ToolbarCycleFocus
+#else
+#define MAYBE_ToolbarCycleFocus ToolbarCycleFocus
+#endif
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, MAYBE_ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
+#if defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
+#define MAYBE_ToolbarCycleFocusWithBookmarkBar \
+  DISABLED_ToolbarCycleFocusWithBookmarkBar
+#else
+#define MAYBE_ToolbarCycleFocusWithBookmarkBar ToolbarCycleFocusWithBookmarkBar
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
   CommandUpdater* updater = browser()->command_controller();
   updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);

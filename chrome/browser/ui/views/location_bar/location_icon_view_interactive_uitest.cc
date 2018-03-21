@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
@@ -60,8 +61,16 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, HideOnSecondClick) {
             PageInfoBubbleView::GetShownBubbleType());
 }
 
+#if defined(OS_MACOSX)
+// Widget activation doesn't work on Mac: https://crbug.com/823543
+#define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
+  DISABLED_ActivateFirstInactiveBubbleForAccessibility
+#else
+#define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
+  ActivateFirstInactiveBubbleForAccessibility
+#endif
 IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
-                       ActivateFirstInactiveBubbleForAccessibility) {
+                       MAYBE_ActivateFirstInactiveBubbleForAccessibility) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   LocationBarView* location_bar_view = browser_view->GetLocationBarView();
   EXPECT_FALSE(
