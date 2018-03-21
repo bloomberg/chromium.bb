@@ -11,11 +11,11 @@
 namespace blink {
 namespace {
 
-// Extracts a Whitelist from a ParsedFeaturePolicyDeclaration.
-std::unique_ptr<FeaturePolicy::Whitelist> WhitelistFromDeclaration(
+// Extracts an Allowlist from a ParsedFeaturePolicyDeclaration.
+std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
     const ParsedFeaturePolicyDeclaration& parsed_declaration) {
-  std::unique_ptr<FeaturePolicy::Whitelist> result =
-      base::WrapUnique(new FeaturePolicy::Whitelist());
+  std::unique_ptr<FeaturePolicy::Allowlist> result =
+      base::WrapUnique(new FeaturePolicy::Allowlist());
   if (parsed_declaration.matches_all_origins)
     result->AddAll();
   for (const auto& origin : parsed_declaration.origins)
@@ -49,30 +49,30 @@ bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
   // This method returns true only when the arguments are actually identical,
   // including the order of elements in the origins vector.
   // TODO(iclelland): Consider making this return true when comparing equal-
-  // but-not-identical whitelists, or eliminate those comparisons by maintaining
-  // the whiteslists in a normalized form.
+  // but-not-identical allowlists, or eliminate those comparisons by maintaining
+  // the allowlists in a normalized form.
   // https://crbug.com/710324
   return std::tie(lhs.feature, lhs.matches_all_origins, lhs.origins) ==
          std::tie(rhs.feature, rhs.matches_all_origins, rhs.origins);
 }
 
-FeaturePolicy::Whitelist::Whitelist() : matches_all_origins_(false) {}
+FeaturePolicy::Allowlist::Allowlist() : matches_all_origins_(false) {}
 
-FeaturePolicy::Whitelist::Whitelist(const Whitelist& rhs) = default;
+FeaturePolicy::Allowlist::Allowlist(const Allowlist& rhs) = default;
 
-FeaturePolicy::Whitelist::~Whitelist() = default;
+FeaturePolicy::Allowlist::~Allowlist() = default;
 
-void FeaturePolicy::Whitelist::Add(const url::Origin& origin) {
+void FeaturePolicy::Allowlist::Add(const url::Origin& origin) {
   origins_.push_back(origin);
 }
 
-void FeaturePolicy::Whitelist::AddAll() {
+void FeaturePolicy::Allowlist::AddAll() {
   matches_all_origins_ = true;
 }
 
-bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
+bool FeaturePolicy::Allowlist::Contains(const url::Origin& origin) const {
   // This does not handle the case where origin is an opaque origin, which is
-  // also supposed to exist in the whitelist. (The identical opaque origins
+  // also supposed to exist in the allowlist. (The identical opaque origins
   // should match in that case)
   // TODO(iclelland): Fix that, possibly by having another flag for
   // 'matches_self', which will explicitly match the policy's origin.
@@ -86,11 +86,11 @@ bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
   return false;
 }
 
-bool FeaturePolicy::Whitelist::MatchesAll() const {
+bool FeaturePolicy::Allowlist::MatchesAll() const {
   return matches_all_origins_;
 }
 
-const std::vector<url::Origin>& FeaturePolicy::Whitelist::Origins() const {
+const std::vector<url::Origin>& FeaturePolicy::Allowlist::Origins() const {
   return origins_;
 }
 
@@ -110,9 +110,9 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromPolicyWithOrigin(
   std::unique_ptr<FeaturePolicy> new_policy =
       base::WrapUnique(new FeaturePolicy(origin, policy.feature_list_));
   new_policy->inherited_policies_ = policy.inherited_policies_;
-  for (const auto& feature : policy.whitelists_) {
-    new_policy->whitelists_[feature.first] =
-        base::WrapUnique(new Whitelist(*feature.second));
+  for (const auto& feature : policy.allowlists_) {
+    new_policy->allowlists_[feature.first] =
+        base::WrapUnique(new Allowlist(*feature.second));
   }
   return new_policy;
 }
@@ -129,9 +129,9 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   if (!inherited_policies_.at(feature))
     return false;
-  auto whitelist = whitelists_.find(feature);
-  if (whitelist != whitelists_.end())
-    return whitelist->second->Contains(origin);
+  auto allowlist = allowlists_.find(feature);
+  if (allowlist != allowlists_.end())
+    return allowlist->second->Contains(origin);
 
   const FeaturePolicy::FeatureDefault default_policy =
       feature_list_.at(feature);
@@ -146,37 +146,37 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
   return false;
 }
 
-const FeaturePolicy::Whitelist FeaturePolicy::GetWhitelistForFeature(
+const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
     mojom::FeaturePolicyFeature feature) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   // Disabled through inheritance.
   if (!inherited_policies_.at(feature))
-    return FeaturePolicy::Whitelist();
+    return FeaturePolicy::Allowlist();
 
   // Return defined policy if exists; otherwise return default policy.
-  auto whitelist = whitelists_.find(feature);
-  if (whitelist != whitelists_.end())
-    return FeaturePolicy::Whitelist(*(whitelist->second));
+  auto allowlist = allowlists_.find(feature);
+  if (allowlist != allowlists_.end())
+    return FeaturePolicy::Allowlist(*(allowlist->second));
 
   const FeaturePolicy::FeatureDefault default_policy =
       feature_list_.at(feature);
-  FeaturePolicy::Whitelist default_whitelist;
+  FeaturePolicy::Allowlist default_allowlist;
 
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll)
-    default_whitelist.AddAll();
+    default_allowlist.AddAll();
   else if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf)
-    default_whitelist.Add(origin_);
-  return default_whitelist;
+    default_allowlist.Add(origin_);
+  return default_allowlist;
 }
 
 void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
-  DCHECK(whitelists_.empty());
+  DCHECK(allowlists_.empty());
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        parsed_header) {
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
     DCHECK(feature != mojom::FeaturePolicyFeature::kNotFound);
-    whitelists_[feature] = WhitelistFromDeclaration(parsed_declaration);
+    allowlists_[feature] = AllowlistFromDeclaration(parsed_declaration);
   }
 }
 
@@ -226,7 +226,7 @@ void FeaturePolicy::AddContainerPolicy(
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
     if (feature == mojom::FeaturePolicyFeature::kNotFound)
       continue;
-    if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
+    if (AllowlistFromDeclaration(parsed_declaration)->Contains(origin_) &&
         parent_policy->IsFeatureEnabled(feature)) {
       inherited_policies_[feature] = true;
     } else {
