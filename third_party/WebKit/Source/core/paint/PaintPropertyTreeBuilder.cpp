@@ -339,6 +339,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateCssClip();
   ALWAYS_INLINE void UpdateClipPathClip(bool spv1_compositing_specific_pass);
   ALWAYS_INLINE void UpdateLocalBorderBoxContext();
+  ALWAYS_INLINE bool NeedsOverflowControlsClip() const;
   ALWAYS_INLINE void UpdateOverflowControlsClip();
   ALWAYS_INLINE void UpdateInnerBorderRadiusClip();
   ALWAYS_INLINE void UpdateOverflowClip();
@@ -1047,11 +1048,11 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
          !IsPrintingRootLayoutView(object);
 }
 
-static bool NeedsOverflowControlsClip(const LayoutObject& object) {
-  if (!object.HasOverflowClip())
+bool FragmentPaintPropertyTreeBuilder::NeedsOverflowControlsClip() const {
+  if (!object_.HasOverflowClip())
     return false;
 
-  const auto& box = ToLayoutBox(object);
+  const auto& box = ToLayoutBox(object_);
   const auto* scrollable_area = box.GetScrollableArea();
   IntRect scroll_controls_bounds =
       scrollable_area->ScrollCornerAndResizerRect();
@@ -1059,8 +1060,10 @@ static bool NeedsOverflowControlsClip(const LayoutObject& object) {
     scroll_controls_bounds.Unite(scrollbar->FrameRect());
   if (const auto* scrollbar = scrollable_area->VerticalScrollbar())
     scroll_controls_bounds.Unite(scrollbar->FrameRect());
-  IntRect conservative_border_box_rect(IntPoint(), FlooredIntSize(box.Size()));
-  return !conservative_border_box_rect.Contains(scroll_controls_bounds);
+  auto pixel_snapped_border_box_rect = box.PixelSnappedBorderBoxRect(
+      ToLayoutSize(context_.current.paint_offset));
+  pixel_snapped_border_box_rect.SetLocation(IntPoint());
+  return !pixel_snapped_border_box_rect.Contains(scroll_controls_bounds);
 }
 
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
@@ -1101,7 +1104,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
   if (!NeedsPaintPropertyUpdate())
     return;
 
-  if (NeedsOverflowControlsClip(object_)) {
+  if (NeedsOverflowControlsClip()) {
     // Clip overflow controls to the border box rect.
     properties_->UpdateOverflowControlsClip(
         context_.current.clip, context_.current.transform,
@@ -2296,8 +2299,7 @@ bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
       NeedsFilter(object_) || NeedsCssClip(object_) ||
       NeedsInnerBorderRadiusClip(object_) || NeedsOverflowClip(object_) ||
       NeedsPerspective(object_) || NeedsSVGLocalToBorderBoxTransform(object_) ||
-      NeedsScrollOrScrollTranslation(object_) ||
-      NeedsOverflowControlsClip(object_);
+      NeedsScrollOrScrollTranslation(object_);
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 
   if (!NeedsFragmentation()) {

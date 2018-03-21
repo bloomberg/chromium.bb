@@ -5113,15 +5113,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClipSubpixel) {
 
   const auto* properties2 = PaintPropertiesForElement("div2");
   ASSERT_NE(nullptr, properties2);
-  EXPECT_NE(nullptr, properties2->OverflowControlsClip());
-  const auto* overflow_controls_clip2 = properties2->OverflowControlsClip();
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    EXPECT_EQ(FloatRect(0, 0, 51, 50),
-              overflow_controls_clip2->ClipRect().Rect());
-  } else {
-    EXPECT_EQ(FloatRect(0, 0, 50.5, 50),
-              overflow_controls_clip2->ClipRect().Rect());
-  }
+  EXPECT_EQ(nullptr, properties2->OverflowControlsClip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
