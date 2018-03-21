@@ -154,9 +154,8 @@ class ASH_EXPORT ScreenOrientationController
 
   struct LockInfo {
     LockInfo() {}
-    LockInfo(OrientationLockType orientation_lock)
-        : orientation(orientation_lock) {}
-    OrientationLockType orientation = OrientationLockType::kAny;
+    LockInfo(OrientationLockType lock) : orientation_lock(lock) {}
+    OrientationLockType orientation_lock = OrientationLockType::kAny;
     LockCompletionBehavior lock_completion_behavior =
         LockCompletionBehavior::None;
   };

@@ -222,15 +222,19 @@ void ScreenOrientationController::LockOrientationForWindow(
     OrientationLockType orientation_lock) {
   if (!requesting_window->HasObserver(this))
     requesting_window->AddObserver(this);
-
-  if (orientation_lock == OrientationLockType::kCurrent &&
-      lock_info_map_.count(requesting_window)) {
-    // If the app previously requested an orientation,
-    // disable the sensor when that orientation is locked.
-    lock_info_map_[requesting_window].lock_completion_behavior =
-        LockCompletionBehavior::DisableSensor;
+  auto iter = lock_info_map_.find(requesting_window);
+  if (iter != lock_info_map_.end()) {
+    if (orientation_lock == OrientationLockType::kCurrent) {
+      // If the app previously requested an orientation,
+      // disable the sensor when that orientation is locked.
+      iter->second.lock_completion_behavior =
+          LockCompletionBehavior::DisableSensor;
+    } else {
+      iter->second.orientation_lock = orientation_lock;
+      iter->second.lock_completion_behavior = LockCompletionBehavior::None;
+    }
   } else {
-    lock_info_map_[requesting_window] = LockInfo(orientation_lock);
+    lock_info_map_.emplace(requesting_window, LockInfo(orientation_lock));
   }
 
   ApplyLockForActiveWindow();
@@ -575,22 +579,21 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
       continue;
     for (auto& pair : lock_info_map_) {
       if (pair.first->TargetVisibility() && window->Contains(pair.first)) {
-        if (pair.second.orientation == OrientationLockType::kCurrent) {
+        if (pair.second.orientation_lock == OrientationLockType::kCurrent) {
           // If the app requested "current" without previously
-          // specifying a orientation, use the current rotation.
-          pair.second.orientation =
+          // specifying an orientation, use the current rotation.
+          pair.second.orientation_lock =
               RotationToOrientation(natural_orientation_, current_rotation_);
-          LockRotationToOrientation(pair.second.orientation);
-
-        } else if (pair.second.lock_completion_behavior ==
-                   LockCompletionBehavior::DisableSensor) {
-          pair.second.lock_completion_behavior = LockCompletionBehavior::None;
-          pair.second.orientation = ResolveOrientationLock(
-              pair.second.orientation, user_locked_orientation_);
-          LockRotationToOrientation(pair.second.orientation);
+          LockRotationToOrientation(pair.second.orientation_lock);
         } else {
-          LockRotationToOrientation(ResolveOrientationLock(
-              pair.second.orientation, user_locked_orientation_));
+          const auto orientation_lock = ResolveOrientationLock(
+              pair.second.orientation_lock, user_locked_orientation_);
+          LockRotationToOrientation(orientation_lock);
+          if (pair.second.lock_completion_behavior ==
+              LockCompletionBehavior::DisableSensor) {
+            pair.second.lock_completion_behavior = LockCompletionBehavior::None;
+            pair.second.orientation_lock = orientation_lock;
+          }
         }
         return;
       }
