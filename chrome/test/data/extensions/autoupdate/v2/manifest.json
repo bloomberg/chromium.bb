@@ -4,7 +4,7 @@
   "name": "Auto-Update Test",
   "version": "2.0",
   "background": {
-    "page": "background.html"
+    "scripts": ["background.js"]
   },
   "update_url": "http://localhost/autoupdate/manifest"
 }

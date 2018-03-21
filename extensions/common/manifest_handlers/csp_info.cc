@@ -111,21 +111,19 @@ CSPHandler::~CSPHandler() {
 bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   const std::string key = Keys()[0];
   if (!extension->manifest()->HasPath(key)) {
-    if (extension->manifest_version() >= 2) {
-      // TODO(abarth): Should we continue to let extensions override the
-      //               default Content-Security-Policy?
-      std::string content_security_policy = is_platform_app_ ?
-          kDefaultPlatformAppContentSecurityPolicy :
-          kDefaultContentSecurityPolicy;
+    // TODO(abarth): Should we continue to let extensions override the
+    //               default Content-Security-Policy?
+    std::string content_security_policy =
+        is_platform_app_ ? kDefaultPlatformAppContentSecurityPolicy
+                         : kDefaultContentSecurityPolicy;
 
-      CHECK_EQ(content_security_policy,
-               SanitizeContentSecurityPolicy(content_security_policy,
-                                             GetValidatorOptions(extension),
-                                             NULL));
-      extension->SetManifestData(
-          keys::kContentSecurityPolicy,
-          std::make_unique<CSPInfo>(content_security_policy));
-    }
+    CHECK_EQ(
+        content_security_policy,
+        SanitizeContentSecurityPolicy(content_security_policy,
+                                      GetValidatorOptions(extension), NULL));
+    extension->SetManifestData(
+        keys::kContentSecurityPolicy,
+        std::make_unique<CSPInfo>(content_security_policy));
     return true;
   }
 
