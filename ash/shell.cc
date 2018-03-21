@@ -1090,7 +1090,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
-  magnification_controller_.reset(MagnificationController::CreateInstance());
+  magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
 
   autoclick_controller_.reset(AutoclickController::CreateInstance());
