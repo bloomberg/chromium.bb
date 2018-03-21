@@ -497,6 +497,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
     web_contents_accessibility_ = wcax;
   }
 
+  void set_is_currently_scrolling_viewport(
+      bool is_currently_scrolling_viewport) {
+    is_currently_scrolling_viewport_ = is_currently_scrolling_viewport;
+  }
+
+  bool is_currently_scrolling_viewport() {
+    return is_currently_scrolling_viewport_;
+  }
 #if defined(USE_AURA)
   void EmbedChildFrameRendererWindowTreeClient(
       RenderWidgetHostViewBase* root_view,
@@ -565,6 +573,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   const bool wheel_scroll_latching_enabled_;
 
   WebContentsAccessibility* web_contents_accessibility_;
+
+  bool is_currently_scrolling_viewport_;
 
  private:
 #if defined(USE_AURA)

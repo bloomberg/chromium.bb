@@ -21,7 +21,8 @@ namespace content {
 
 class GestureEventQueue;
 
-// Interface with which the FlingController can forward generated wheel events.
+// Interface with which the FlingController can forward generated fling progress
+// events.
 class CONTENT_EXPORT FlingControllerClient {
  public:
   virtual ~FlingControllerClient() {}
@@ -29,7 +30,12 @@ class CONTENT_EXPORT FlingControllerClient {
   virtual void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) = 0;
 
+  virtual void SendGeneratedGestureScrollEvents(
+      const GestureEventWithLatencyInfo& gesture_event) = 0;
+
   virtual void SetNeedsBeginFrameForFlingProgress() = 0;
+
+  virtual void DidStopFlingingOnBrowser() = 0;
 };
 
 class CONTENT_EXPORT FlingController {
@@ -62,8 +68,9 @@ class CONTENT_EXPORT FlingController {
 
   ~FlingController();
 
-  // Used to progress an active fling on every begin frame.
-  void ProgressFling(base::TimeTicks current_time);
+  // Used to progress an active fling on every begin frame and return the
+  // current fling velocity.
+  gfx::Vector2dF ProgressFling(base::TimeTicks current_time);
 
   // Used to halt an active fling progress whenever needed.
   void StopFling();
@@ -80,6 +87,10 @@ class CONTENT_EXPORT FlingController {
       const GestureEventWithLatencyInfo& gesture_event);
 
   bool fling_in_progress() const { return fling_in_progress_; }
+
+  bool FlingCancellationIsDeferred() const;
+
+  bool TouchscreenFlingInProgress() const;
 
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
@@ -104,8 +115,24 @@ class CONTENT_EXPORT FlingController {
   void ScheduleFlingProgress();
 
   // Used to generate synthetic wheel events from touchpad fling and send them.
-  void GenerateAndSendWheelEvents(gfx::Vector2dF delta,
+  void GenerateAndSendWheelEvents(const gfx::Vector2dF& delta,
                                   blink::WebMouseWheelEvent::Phase phase);
+
+  // Used to generate synthetic gesture scroll events from touchscreen fling and
+  // send them.
+  void GenerateAndSendGestureScrollEvents(
+      blink::WebInputEvent::Type type,
+      const gfx::Vector2dF& delta = gfx::Vector2dF());
+
+  // Calls one of the GenerateAndSendWheelEvents or
+  // GenerateAndSendGestureScrollEvents functions depending on the source
+  // device of the current_fling_parameters_. We send GSU and wheel events
+  // to progress flings with touchscreen and touchpad source respectively.
+  // The reason for this difference is that during the touchpad fling we still
+  // send wheel events to JS and generating GSU events directly is not enough.
+  void GenerateAndSendFlingProgressEvents(const gfx::Vector2dF& delta);
+
+  void GenerateAndSendFlingEndEvents();
 
   void CancelCurrentFling();
 
@@ -131,8 +158,7 @@ class CONTENT_EXPORT FlingController {
 
   ActiveFlingParameters current_fling_parameters_;
 
-  // True while no GestureFlingCancel has arrived after the FlingController has
-  // processed a GestureFlingStart.
+  // True when a fling is active.
   bool fling_in_progress_;
 
   // Whether an active fling has seen a |ProgressFling()| call. This is useful

@@ -560,6 +560,8 @@ void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
 
 void SynchronousCompositorHost::OnComputeScroll(
     base::TimeTicks animation_time) {
+  on_compute_scroll_called_ = true;
+
   if (!need_animate_scroll_)
     return;
   need_animate_scroll_ = false;

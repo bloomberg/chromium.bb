@@ -88,6 +88,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void UpdateState(const SyncCompositorCommonRendererParams& params) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
+  bool on_compute_scroll_called() { return on_compute_scroll_called_; }
+
  private:
   class ScopedSendZeroMemory;
   struct SharedMemoryWithSize;
@@ -138,6 +140,11 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   // Updated by both renderer and browser.
   gfx::ScrollOffset root_scroll_offset_;
+
+  // Indicates that whether OnComputeScroll is called or overridden. The
+  // fling_controller should advance the fling only when OnComputeScroll is not
+  // overridden.
+  bool on_compute_scroll_called_ = false;
 
   // From renderer.
   uint32_t renderer_param_version_;

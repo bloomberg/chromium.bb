@@ -244,6 +244,13 @@ void WidgetInputHandlerManager::DidAnimateForInput() {
   renderer_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
+void WidgetInputHandlerManager::DidStartScrollingViewport() {
+  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
+  if (!host)
+    return;
+  host->DidStartScrollingViewport();
+}
+
 void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
     const blink::WebGestureEvent& update_event) {
   DCHECK_EQ(update_event.GetType(), blink::WebInputEvent::kGestureScrollUpdate);

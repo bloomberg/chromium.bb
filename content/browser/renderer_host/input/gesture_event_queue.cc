@@ -57,13 +57,15 @@ bool GestureEventQueue::QueueEvent(
     return false;
   }
 
-  // fling_controller_ is in charge of handling GFS events from touchpad source
-  // when wheel scroll latching is enabled. In this case instead of queuing the
-  // GFS event to be sent to the renderer, the controller processes the fling
-  // and generates wheel events with momentum phase which are handled in the
-  // renderer normally.
+  // fling_controller_ is in charge of handling GFS events from touchpad and
+  // touchscreen sources. In these cases instead of queuing the GFS event to be
+  // sent to the renderer, the controller processes the fling and generates
+  // fling progress events (wheel events for touchpad and GSU events for
+  // touchscreen) which are handled normally.
   if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart &&
-      gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad) {
+      (gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad ||
+       gesture_event.event.SourceDevice() ==
+           blink::kWebGestureDeviceTouchscreen)) {
     fling_controller_.ProcessGestureFlingStart(gesture_event);
     fling_in_progress_ = true;
     return false;
@@ -82,13 +84,21 @@ bool GestureEventQueue::QueueEvent(
   return true;
 }
 
-void GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
-  fling_controller_.ProgressFling(current_time);
+gfx::Vector2dF GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
+  return fling_controller_.ProgressFling(current_time);
 }
 
 void GestureEventQueue::StopFling() {
   fling_in_progress_ = false;
   fling_controller_.StopFling();
+}
+
+bool GestureEventQueue::FlingCancellationIsDeferred() const {
+  return fling_controller_.FlingCancellationIsDeferred();
+}
+
+bool GestureEventQueue::TouchscreenFlingInProgress() const {
+  return fling_controller_.TouchscreenFlingInProgress();
 }
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(

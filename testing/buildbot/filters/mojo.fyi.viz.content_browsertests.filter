@@ -26,7 +26,6 @@
 -SitePerProcessBrowserTest.GestureFlingStart
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
--SitePerProcessBrowserTest.PhysicalBackingSizeTest
 -SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
 -SitePerProcessBrowserTest.ScrollBubblingFromOOPIFWithBodyOverflowHidden
@@ -54,7 +53,6 @@
 -SitePerProcessHitTestBrowserTest.SubframeTouchEventRouting*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestPointerEventsNone*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestTest*
--SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 
 #### Compositor Frame Submission
@@ -62,7 +60,6 @@
 -SitePerProcessBrowserTest.CompositorFrameSwapped
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFrames
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
--SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
 
 # Touch selection information is not provided to the browser
 # http://crbug.com/777882
@@ -71,7 +68,6 @@
 
 #### Tab Capture
 # Copy Surface timing out http://crbug.com/785257
--GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.CopyFromSurface*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestHiDPI.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCapture.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI.*
@@ -95,9 +91,3 @@
 #### Hit Testing
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
-
-# Browser side fling cannot use SetNeedsBeginFrame on viz https://crbug.com/823310
--NonBlockingEventBrowserTest.TouchStartDuringFling
-
-# Uses LatencyInfo for input info https://crbug.com/791557
--MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated

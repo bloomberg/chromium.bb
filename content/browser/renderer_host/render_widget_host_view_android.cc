@@ -1501,10 +1501,23 @@ RenderWidgetHostViewAndroid::GetRenderViewHostDelegateView() const {
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (overscroll_controller_ &&
-      blink::WebInputEvent::IsGestureEventType(input_event.GetType()) &&
-      overscroll_controller_->WillHandleGestureEvent(
-          static_cast<const blink::WebGestureEvent&>(input_event))) {
-    return INPUT_EVENT_ACK_STATE_CONSUMED;
+      blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
+    blink::WebGestureEvent gesture_event =
+        static_cast<const blink::WebGestureEvent&>(input_event);
+    if (overscroll_controller_->WillHandleGestureEvent(gesture_event)) {
+      // Terminate an active fling when a GSU generated from the fling progress
+      // (GSU with inertial state) is consumed by the overscroll_controller_ and
+      // overscrolling mode is not |OVERSCROLL_NONE|. The early fling
+      // termination generates a GSE which completes the overscroll action.
+      if (gesture_event.GetType() ==
+              blink::WebInputEvent::kGestureScrollUpdate &&
+          gesture_event.data.scroll_update.inertial_phase ==
+              blink::WebGestureEvent::kMomentumPhase) {
+        host_->StopFling();
+      }
+
+      return INPUT_EVENT_ACK_STATE_CONSUMED;
+    }
   }
 
   if (gesture_listener_manager_ &&
@@ -2014,6 +2027,16 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
     return;
   }
 
+  bool webview_fling = sync_compositor_ && is_currently_scrolling_viewport_;
+  if (!webview_fling) {
+    host_->ProgressFling(args.frame_time);
+  } else if (sync_compositor_->on_compute_scroll_called()) {
+    // On Android webview progress the fling only when |OnComputeScroll| is
+    // called since in some cases Apps override |OnComputeScroll| to cancel
+    // fling animation.
+    host_->ProgressFling(args.frame_time);
+  }
+
   // Update |last_begin_frame_args_| before handling
   // |outstanding_begin_frame_requests_| to prevent the BeginFrameSource from
   // sending the same MISSED args in infinite recursion.
@@ -2027,7 +2050,6 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
     OnDidNotProduceFrame(
         viz::BeginFrameAck(args.source_id, args.sequence_number, false));
   }
-  host()->ProgressFling(args.frame_time);
 }
 
 const viz::BeginFrameArgs& RenderWidgetHostViewAndroid::LastUsedBeginFrameArgs()

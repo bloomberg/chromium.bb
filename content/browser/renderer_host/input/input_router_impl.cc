@@ -117,6 +117,7 @@ void InputRouterImpl::SendWheelEvent(
 
 void InputRouterImpl::SendKeyboardEvent(
     const NativeWebKeyboardEventWithLatencyInfo& key_event) {
+  gesture_event_queue_.StopFling();
   gesture_event_queue_.FlingHasBeenHalted();
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
       &InputRouterImpl::KeyboardEventHandled, weak_this_, key_event);
@@ -126,7 +127,8 @@ void InputRouterImpl::SendKeyboardEvent(
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
-  input_stream_validator_.Validate(original_gesture_event.event);
+  input_stream_validator_.Validate(original_gesture_event.event,
+                                   FlingCancellationIsDeferred());
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
@@ -209,11 +211,20 @@ void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
 }
 
 void InputRouterImpl::ProgressFling(base::TimeTicks current_time) {
-  gesture_event_queue_.ProgressFling(current_time);
+  current_fling_velocity_ = gesture_event_queue_.ProgressFling(current_time);
 }
 
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
+}
+
+bool InputRouterImpl::FlingCancellationIsDeferred() {
+  return gesture_event_queue_.FlingCancellationIsDeferred();
+}
+
+void InputRouterImpl::DidStopFlingingOnBrowser() {
+  current_fling_velocity_ = gfx::Vector2dF();
+  client_->DidStopFlinging();
 }
 
 void InputRouterImpl::CancelTouchTimeout() {
@@ -231,7 +242,10 @@ void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
 }
 
 void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
-  client_->DidOverscroll(params);
+  // Touchpad and Touchscreen flings are handled on the browser side.
+  ui::DidOverscrollParams fling_updated_params = params;
+  fling_updated_params.current_fling_velocity = current_fling_velocity_;
+  client_->DidOverscroll(fling_updated_params);
 }
 
 void InputRouterImpl::DidStopFlinging() {
@@ -241,6 +255,10 @@ void InputRouterImpl::DidStopFlinging() {
   // cannot use this bookkeeping for logic like tap suppression.
   --active_renderer_fling_count_;
   client_->DidStopFlinging();
+}
+
+void InputRouterImpl::DidStartScrollingViewport() {
+  client_->DidStartScrollingViewport();
 }
 
 void InputRouterImpl::ImeCancelComposition() {
@@ -341,6 +359,10 @@ void InputRouterImpl::OnFilteringTouchEvent(const WebTouchEvent& touch_event) {
   output_stream_validator_.Validate(touch_event);
 }
 
+bool InputRouterImpl::TouchscreenFlingInProgress() {
+  return gesture_event_queue_.TouchscreenFlingInProgress();
+}
+
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
@@ -361,6 +383,12 @@ void InputRouterImpl::SendGeneratedWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   client_->ForwardWheelEventWithLatencyInfo(wheel_event.event,
                                             wheel_event.latency);
+}
+
+void InputRouterImpl::SendGeneratedGestureScrollEvents(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  client_->ForwardGestureEventWithLatencyInfo(gesture_event.event,
+                                              gesture_event.latency);
 }
 
 void InputRouterImpl::SetNeedsBeginFrameForFlingProgress() {

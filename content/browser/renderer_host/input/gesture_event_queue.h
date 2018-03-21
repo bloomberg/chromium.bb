@@ -110,11 +110,15 @@ class CONTENT_EXPORT GestureEventQueue {
       const GestureEventWithLatencyInfo& gesture_event) const;
 
   // Calls |fling_controller_.ProgressFling| to advance an active fling on every
-  // begin frame.
-  void ProgressFling(base::TimeTicks current_time);
+  // begin frame and returns the current fling velocity if a fling is active.
+  gfx::Vector2dF ProgressFling(base::TimeTicks current_time);
 
   // Calls |fling_controller_.StopFling| to halt an active fling if such exists.
   void StopFling();
+
+  bool FlingCancellationIsDeferred() const;
+
+  bool TouchscreenFlingInProgress() const;
 
   void set_debounce_interval_time_ms_for_testing(int interval_ms) {
     debounce_interval_ = base::TimeDelta::FromMilliseconds(interval_ms);

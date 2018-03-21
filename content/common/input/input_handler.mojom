@@ -177,6 +177,9 @@ interface WidgetInputHandlerHost {
   // Sent by the compositor when a fling animation is stopped.
   DidStopFlinging();
 
+  // Sent by the compositor when a GSB has started scrolling the viewport.
+  DidStartScrollingViewport();
+
   // Required for cancelling an ongoing input method composition.
   ImeCancelComposition();
 

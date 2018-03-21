@@ -49,6 +49,8 @@ class InputHandlerProxyClient {
 
   virtual void DidAnimateForInput() = 0;
 
+  virtual void DidStartScrollingViewport() = 0;
+
   // Used to send a GSB to the main thread when the wheel scroll latching is
   // enabled and the scrolling should switch to the main thread.
   virtual void GenerateScrollBeginAndSendToMainThread(

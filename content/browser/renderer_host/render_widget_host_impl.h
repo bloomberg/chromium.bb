@@ -654,6 +654,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFling(base::TimeTicks current_time);
   void StopFling();
+  bool FlingCancellationIsDeferred() const;
 
   void DidReceiveFirstFrameAfterNavigation();
 
@@ -796,6 +797,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
+  void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(
       cc::TouchAction white_listed_touch_action) override {}
   void SetNeedsBeginFrameForFlingProgress() override;
@@ -1016,6 +1018,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This is state that may arrive before the view has been set and that must be
   // consistent with the state in the renderer, so this host handles it.
   bool needs_begin_frames_ = false;
+
+  // This is used to make sure that when the fling controller sets
+  // needs_begin_frames_ it doesn't get overriden by the renderer.
+  bool browser_fling_needs_begin_frame_ = false;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;

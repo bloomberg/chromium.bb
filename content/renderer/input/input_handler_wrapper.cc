@@ -88,6 +88,10 @@ void InputHandlerWrapper::DidAnimateForInput() {
   input_handler_manager_->DidAnimateForInput();
 }
 
+void InputHandlerWrapper::DidStartScrollingViewport() {
+  input_handler_manager_->DidStartScrollingViewport(routing_id_);
+}
+
 void InputHandlerWrapper::GenerateScrollBeginAndSendToMainThread(
     const blink::WebGestureEvent& update_event) {
   DCHECK_EQ(update_event.GetType(), blink::WebInputEvent::kGestureScrollUpdate);
