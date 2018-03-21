@@ -506,8 +506,8 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // TODO(estade): these book-keeping fields should be moved into
   // NotificationList.
   unsigned serial_number_;
-  bool shown_as_popup_;  // True if this has been shown as a popup.
-  bool is_read_;         // True if this has been seen in the message center.
+  bool shown_as_popup_ = false;  // True if this has been shown as a popup.
+  bool is_read_ = false;  // True if this has been seen in the message center.
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.
