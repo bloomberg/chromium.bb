@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -100,13 +102,19 @@ std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
 
 class RenderViewContextMenuTest : public testing::Test {
  protected:
-  RenderViewContextMenuTest() = default;
+  RenderViewContextMenuTest()
+      : RenderViewContextMenuTest(
+            std::unique_ptr<extensions::TestExtensionEnvironment>()) {}
+
   // If the test uses a TestExtensionEnvironment, which provides a MessageLoop,
   // it needs to be passed to the constructor so that it exists before the
   // RenderViewHostTestEnabler which needs to use the MessageLoop.
   explicit RenderViewContextMenuTest(
       std::unique_ptr<extensions::TestExtensionEnvironment> env)
-      : environment_(std::move(env)) {}
+      : environment_(std::move(env)) {
+    // TODO(mgiuca): Add tests with DesktopPWAs enabled.
+    feature_list_.InitAndDisableFeature(features::kDesktopPWAWindowing);
+  }
 
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
   static bool ExtensionContextAndPatternMatch(
@@ -135,6 +143,7 @@ class RenderViewContextMenuTest : public testing::Test {
 
  private:
   content::RenderViewHostTestEnabler rvh_test_enabler_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuTest);
 };
@@ -375,6 +384,8 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   RenderViewContextMenuPrefsTest() = default;
 
   void SetUp() override {
+    // TODO(mgiuca): Add tests with DesktopPWAs enabled.
+    feature_list_.InitAndDisableFeature(features::kDesktopPWAWindowing);
     ChromeRenderViewHostTestHarness::SetUp();
     registry_ = std::make_unique<ProtocolHandlerRegistry>(profile(), nullptr);
   }
@@ -448,6 +459,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
 
  private:
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuPrefsTest);
 };
