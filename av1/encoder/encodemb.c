@@ -205,6 +205,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -212,7 +213,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   ENTROPY_CONTEXT *a, *l;
   int dummy_rate_cost = 0;
 
-  int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 
@@ -222,8 +223,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   // Assert not magic number (uninitialized).
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
-  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0 &&
-      !xd->mi[0]->mbmi.skip_mode) {
+  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0 && !mbmi->skip_mode) {
     if (args->enable_optimize_b) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
@@ -251,22 +251,22 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 cm->reduced_tx_set_used);
   }
 
-  const int txk_type_idx =
-      av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
-  if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0) {
-    xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
-  }
-  // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
-  // enable_optimize_b is true.
-  const uint8_t disable_txk_check = args->enable_optimize_b;
-  if (plane == 0 && p->eobs[block] == 0) {
-    if (disable_txk_check) {
-      // TODO(angiebird): Turn this on to detect potential rd bug
-      // assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
-      xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
-    } else {
-      assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
+  if (p->eobs[block] == 0 && plane == 0) {
+    if (args->cpi->oxcf.aq_mode == NO_AQ
+#if CONFIG_EXT_DELTA_Q
+        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q
+#endif
+    ) {
+      // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
+      // enable_optimize_b is true to detect potential RD bug.
+      const uint8_t disable_txk_check = args->enable_optimize_b;
+      if (!disable_txk_check) {
+        assert(mbmi->txk_type[av1_get_txk_type_index(plane_bsize, blk_row,
+                                                     blk_col)] == DCT_DCT);
+      }
     }
+    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                     DCT_DCT);
   }
 
 #if CONFIG_MISMATCH_DEBUG
@@ -499,6 +499,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const AV1_COMMON *const cm = &args->cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -517,59 +518,53 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (x->blk_skip[plane][blk_row * bw + blk_col] && plane == 0) {
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;
-    *(args->skip) = 0;
-    assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
-               plane_bsize, blk_row, blk_col)] == DCT_DCT);
-    if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
-        is_cfl_allowed(&xd->mi[0]->mbmi)) {
-      cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
+  } else {
+    av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
+
+    const ENTROPY_CONTEXT *a = &args->ta[blk_col];
+    const ENTROPY_CONTEXT *l = &args->tl[blk_row];
+    if (args->enable_optimize_b) {
+      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, AV1_XFORM_QUANT_FP);
+      av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
+                     tx_size, a, l, 1, &dummy_rate_cost);
+    } else {
+      av1_xform_quant(
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+          USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
     }
-    return;
   }
 
-  av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
-
-  const ENTROPY_CONTEXT *a = &args->ta[blk_col];
-  const ENTROPY_CONTEXT *l = &args->tl[blk_row];
-  if (args->enable_optimize_b) {
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    AV1_XFORM_QUANT_FP);
-    av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                   tx_size, a, l, 1, &dummy_rate_cost);
-  } else {
-    av1_xform_quant(
-        cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-        USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
+  if (*eob) {
+    av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
+                                dst_stride, *eob, cm->reduced_tx_set_used);
   }
 
   if (*eob == 0 && plane == 0) {
-    const int txk_type_idx =
-        av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
-    // TODO(jingning): Temporarily disable txk_type check for eob=0 case.
-    // It is possible that certain collision in hash index would cause
-    // the assertion failure. To further optimize the rate-distortion
-    // performance, we need to re-visit this part and enable this assert
-    // again.
+  // TODO(jingning): Temporarily disable txk_type check for eob=0 case.
+  // It is possible that certain collision in hash index would cause
+  // the assertion failure. To further optimize the rate-distortion
+  // performance, we need to re-visit this part and enable this assert
+  // again.
 #if 0
+    if (args->cpi->oxcf.aq_mode == NO_AQ
 #if CONFIG_EXT_DELTA_Q
-    assert(args->cpi->oxcf.aq_mode != NO_AQ ||
-           args->cpi->oxcf.deltaq_mode != NO_DELTA_Q ||
-           xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
-#else
-    assert(args->cpi->oxcf.aq_mode != NO_AQ ||
-           xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
+        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q
 #endif
+    ) {
+      assert(mbmi->txk_type[av1_get_txk_type_index(plane_bsize, blk_row,
+                                                   blk_col)] == DCT_DCT);
+    }
 #endif
-    xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
+    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                     DCT_DCT);
   }
 
-  av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
-                              dst_stride, *eob, cm->reduced_tx_set_used);
+  // For intra mode, skipped blocks are so rare that transmitting skip=1 is
+  // very expensive.
+  *(args->skip) = 0;
 
-  if (*eob) *(args->skip) = 0;
-
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
-      is_cfl_allowed(&xd->mi[0]->mbmi)) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
 }
