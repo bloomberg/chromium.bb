@@ -92,7 +92,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             ContentViewCoreImpl contentViewCore = mWeakContentViewCore.get();
             if (contentViewCore == null) return;
             contentViewCore.hidePopupsAndClearSelection();
-            contentViewCore.resetScrollInProgress();
+            contentViewCore.getGestureListenerManager().resetScrollInProgress();
         }
     }
 
@@ -103,19 +103,19 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private class ContentGestureStateListener implements GestureStateListener {
         @Override
         public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {
-            setTouchScrollInProgress(false);
+            getGestureListenerManager().setTouchScrollInProgress(false);
         }
 
         @Override
         public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
             // Note that mTouchScrollInProgress should normally be false at this
             // point, but we reset it anyway as another failsafe.
-            setTouchScrollInProgress(false);
+            getGestureListenerManager().setTouchScrollInProgress(false);
         }
 
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-            setTouchScrollInProgress(true);
+            getGestureListenerManager().setTouchScrollInProgress(false);
         }
 
         @Override
@@ -125,7 +125,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
         @Override
         public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
-            setTouchScrollInProgress(false);
+            getGestureListenerManager().setTouchScrollInProgress(false);
         }
 
         @Override
@@ -432,18 +432,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         //                  the test-only method in content layer.
         if (mNativeContentViewCore == 0) return 0;
         return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
-    }
-
-    @Override
-    public boolean isScrollInProgress() {
-        return getSelectionPopupController().getScrollInProgress()
-                || getGestureListenerManager().hasPotentiallyActiveFling();
-    }
-
-    private void setTouchScrollInProgress(boolean touchScrollInProgress) {
-        final boolean scrollInProgress =
-                touchScrollInProgress || getGestureListenerManager().hasPotentiallyActiveFling();
-        getSelectionPopupController().setScrollInProgress(touchScrollInProgress, scrollInProgress);
     }
 
     @Override
@@ -777,20 +765,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 settings.getTextTrackFontStyle(), settings.getTextTrackFontVariant(),
                 settings.getTextTrackTextColor(), settings.getTextTrackTextShadow(),
                 settings.getTextTrackTextSize());
-    }
-
-    /**
-     * Reset scroll and fling accounting, notifying listeners as appropriate.
-     * This is useful as a failsafe when the input stream may have been interruped.
-     */
-    private void resetScrollInProgress() {
-        if (!isScrollInProgress()) return;
-
-        final boolean touchScrollInProgress = getSelectionPopupController().getScrollInProgress();
-
-        setTouchScrollInProgress(false);
-        if (touchScrollInProgress) getGestureListenerManager().updateOnScrollEnd();
-        getGestureListenerManager().resetFlingGesture();
     }
 
     // DisplayAndroidObserver method.

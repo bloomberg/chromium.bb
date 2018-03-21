@@ -11,6 +11,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
@@ -45,6 +46,13 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private int mPotentiallyActiveFlingCount;
 
     private long mNativeGestureListenerManager;
+
+    /**
+     * Whether a touch scroll sequence is active, used to hide text selection
+     * handles. Note that a scroll sequence will *always* bound a pinch
+     * sequence, so this will also be true for the duration of a pinch gesture.
+     */
+    private boolean mIsTouchScrollInProgress;
 
     /**
      * @param webContents {@link WebContents} object.
@@ -266,6 +274,36 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         }
         if (scaleLimitsChanged) updateOnScaleLimitsChanged(minPageScaleFactor, maxPageScaleFactor);
         TraceEvent.end("GestureListenerManagerImpl:updateScrollInfo");
+    }
+
+    @Override
+    public boolean isScrollInProgress() {
+        return mIsTouchScrollInProgress || hasPotentiallyActiveFling();
+    }
+
+    void setTouchScrollInProgress(boolean touchScrollInProgress) {
+        mIsTouchScrollInProgress = touchScrollInProgress;
+
+        // Use the active touch scroll signal for hiding. The animation movement
+        // by fling will naturally hide the ActionMode by invalidating its content rect.
+        getSelectionPopupController().setScrollInProgress(touchScrollInProgress);
+    }
+
+    /**
+     * Reset scroll and fling accounting, notifying listeners as appropriate.
+     * This is useful as a failsafe when the input stream may have been interruped.
+     */
+    void resetScrollInProgress() {
+        if (!isScrollInProgress()) return;
+
+        final boolean touchScrollInProgress = mIsTouchScrollInProgress;
+        setTouchScrollInProgress(false);
+        if (touchScrollInProgress) updateOnScrollEnd();
+        resetFlingGesture();
+    }
+
+    private SelectionPopupControllerImpl getSelectionPopupController() {
+        return SelectionPopupControllerImpl.fromWebContents(mWebContents);
     }
 
     /**
