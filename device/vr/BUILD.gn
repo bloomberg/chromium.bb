@@ -183,6 +183,7 @@ if (enable_openvr) {
 
     sources = [
       "openvr/test/fake_openvr_impl_api.cc",
+      "openvr/test/fake_openvr_log.h",
     ]
 
     libs = [

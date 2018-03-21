@@ -2,15 +2,110 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/debug/debugger.h"
+#include "base/environment.h"
+#include "base/files/file.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "device/vr/openvr/test/fake_openvr_log.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "third_party/openvr/src/src/ivrclientcore.h"
 
 #include <D3D11_1.h>
 #include <DXGI1_4.h>
 #include <wrl.h>
+#include <memory>
 
 namespace vr {
+
+class TestVRLogger {
+ public:
+  void Start() {
+    // Look for environment variable saying we should log data.
+    std::unique_ptr<base::Environment> env = base::Environment::Create();
+    std::string log_filename;
+    if (env->GetVar(GetVrPixelLogEnvVarName(), &log_filename)) {
+      base::ScopedAllowBlockingForTesting allow_files;
+      log_file_ = std::make_unique<base::File>(
+          base::FilePath::FromUTF8Unsafe(log_filename),
+          base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE);
+      logging_ = log_file_->IsValid();
+    }
+  }
+
+  void Stop() {
+    base::ScopedAllowBlockingForTesting allow_files;
+    if (logging_) {
+      log_file_->Flush();
+      log_file_->Close();
+      log_file_ = nullptr;
+    }
+    logging_ = false;
+  }
+
+  void OnPresentedFrame(ID3D11Texture2D* texture) {
+    if (!logging_)
+      return;
+
+    VRSubmittedFrameEvent frame;
+
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    texture->GetDevice(&device);
+
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    device->GetImmediateContext(&context);
+
+    // We copy the submitted texture to a new texture, so we can map it, and
+    // read back pixel data.
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_copy;
+    D3D11_TEXTURE2D_DESC desc;
+    texture->GetDesc(&desc);
+    desc.Width = 1;
+    desc.Height = 1;
+    desc.MiscFlags = 0;
+    desc.BindFlags = 0;
+    desc.Usage = D3D11_USAGE_STAGING;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    HRESULT hr = device->CreateTexture2D(&desc, nullptr, &texture_copy);
+    if (FAILED(hr)) {
+      // We'll have invalid data in log (no frame data) so test will fail.
+      Stop();
+      return;
+    }
+
+    D3D11_BOX box = {0, 0, 0, 1, 1, 1};  // a 1-pixel box
+    context->CopySubresourceRegion(texture_copy.Get(), 0, 0, 0, 0, texture, 0,
+                                   &box);
+
+    D3D11_MAPPED_SUBRESOURCE map_data = {};
+    hr = context->Map(texture_copy.Get(), 0, D3D11_MAP_READ, 0, &map_data);
+    if (FAILED(hr)) {
+      // We'll have invalid data in log (no frame data) so test will fail.
+      Stop();
+      return;
+    }
+
+    VRSubmittedFrameEvent::Color* data =
+        reinterpret_cast<VRSubmittedFrameEvent::Color*>(map_data.pData);
+    frame.color = data[0];  // Save top-left pixel value.
+    context->Unmap(texture_copy.Get(), 0);
+
+    WriteVRSubmittedFrameEvent(&frame);
+    Stop();  // For now only validate one pixel from first frame.
+  }
+
+ private:
+  void WriteVRSubmittedFrameEvent(VRSubmittedFrameEvent* frame) {
+    base::ScopedAllowBlockingForTesting allow_files;
+    log_file_->WriteAtCurrentPos(reinterpret_cast<char*>(frame),
+                                 sizeof(*frame));
+  }
+
+  bool logging_ = false;
+  std::unique_ptr<base::File> log_file_;
+};
 
 class TestVRSystem : public IVRSystem {
  public:
@@ -393,15 +488,19 @@ class TestVRClientCore : public IVRClientCore {
   }
 };
 
+TestVRLogger g_logger;
 TestVRSystem g_system;
 TestVRCompositor g_compositor;
 TestVRClientCore g_loader;
 
 EVRInitError TestVRClientCore::Init(EVRApplicationType eApplicationType) {
+  g_logger.Start();
   return VRInitError_None;
 }
 
-void TestVRClientCore::Cleanup() {}
+void TestVRClientCore::Cleanup() {
+  g_logger.Stop();
+}
 
 EVRInitError TestVRClientCore::IsInterfaceVersionValid(
     const char* pchInterfaceVersion) {
@@ -564,9 +663,11 @@ EVRCompositorError TestVRCompositor::WaitGetPoses(TrackedDevicePose_t* poses1,
 }
 
 EVRCompositorError TestVRCompositor::Submit(EVREye,
-                                            Texture_t const*,
+                                            Texture_t const* texture,
                                             VRTextureBounds_t const*,
                                             EVRSubmitFlags) {
+  g_logger.OnPresentedFrame(
+      reinterpret_cast<ID3D11Texture2D*>(texture->handle));
   return VRCompositorError_None;
 }
 

@@ -1915,6 +1915,7 @@ test("browser_tests") {
         "../browser/vr/test/vr_transition_utils.cc",
         "../browser/vr/test/vr_transition_utils.h",
         "../browser/vr/webvr_input_browser_test.cc",
+        "../browser/vr/webvr_pixel_browser_test.cc",
         "../browser/vr/webvr_tab_browser_test.cc",
         "../browser/vr/webvr_transition_browser_test.cc",
       ]
