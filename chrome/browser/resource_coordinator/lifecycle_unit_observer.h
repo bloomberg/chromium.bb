@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_OBSERVER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_OBSERVER_H_
 
+#include "content/public/browser/visibility.h"
+
 namespace resource_coordinator {
 
 class LifecycleUnit;
@@ -17,8 +19,13 @@ class LifecycleUnitObserver {
   // Invoked when the state of the observed LifecycleUnit changes.
   virtual void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) = 0;
 
+  // Invoked when the visibility of the observed LifecyleUnit changes.
+  virtual void OnLifecycleUnitVisibilityChanged(
+      LifecycleUnit* lifecycle_unit,
+      content::Visibility visibility) = 0;
+
   // Invoked before the observed LifecycleUnit starts being destroyed (i.e.
-  // |lifecycle_unit| is still valid when this is inovked).
+  // |lifecycle_unit| is still valid when this is invoked).
   virtual void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) = 0;
 };
 

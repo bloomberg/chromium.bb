@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "content/public/browser/visibility.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +19,8 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   MockLifecycleUnitObserver() = default;
 
   MOCK_METHOD1(OnLifecycleUnitStateChanged, void(LifecycleUnit*));
+  MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
+               void(LifecycleUnit*, content::Visibility));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
 
  private:
@@ -27,6 +30,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
 class DummyLifecycleUnit : public LifecycleUnitBase {
  public:
   using LifecycleUnitBase::SetState;
+  using LifecycleUnitBase::OnLifecycleUnitVisibilityChanged;
 
   DummyLifecycleUnit() = default;
   ~DummyLifecycleUnit() override { OnLifecycleUnitDestroyed(); }
@@ -94,4 +98,30 @@ TEST(LifecycleUnitBaseTest, DestroyNotifiesObservers) {
   testing::Mock::VerifyAndClear(&observer);
 }
 
+// Verify that observers are notified when the visibility of the LifecyleUnit
+// changes.
+TEST(LifecycleUnitBaseTest, ChangeVisibilityNotifiesObservers) {
+  testing::StrictMock<MockLifecycleUnitObserver> observer;
+  DummyLifecycleUnit lifecycle_unit;
+  lifecycle_unit.AddObserver(&observer);
+
+  // Observer is notified when the visibility changes.
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &lifecycle_unit, content::Visibility::HIDDEN));
+  lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::HIDDEN);
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &lifecycle_unit, content::Visibility::OCCLUDED));
+  lifecycle_unit.OnLifecycleUnitVisibilityChanged(
+      content::Visibility::OCCLUDED);
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &lifecycle_unit, content::Visibility::VISIBLE));
+  lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::VISIBLE);
+  testing::Mock::VerifyAndClear(&observer);
+
+  lifecycle_unit.RemoveObserver(&observer);
+}
 }  // namespace resource_coordinator

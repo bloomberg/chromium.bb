@@ -20,6 +20,9 @@ class DiscardMetricsLifecycleUnitObserver : public LifecycleUnitObserver {
 
   // LifecycleUnitObserver:
   void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) override;
+  void OnLifecycleUnitVisibilityChanged(
+      LifecycleUnit* lifecycle_unit,
+      content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
 
  private:

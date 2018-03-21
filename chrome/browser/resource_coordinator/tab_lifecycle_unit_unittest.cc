@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
@@ -46,6 +47,19 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
 };
 
 }  // namespace
+
+class MockLifecycleUnitObserver : public LifecycleUnitObserver {
+ public:
+  MockLifecycleUnitObserver() = default;
+
+  MOCK_METHOD1(OnLifecycleUnitStateChanged, void(LifecycleUnit*));
+  MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
+  MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
+               void(LifecycleUnit*, content::Visibility));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
+};
 
 class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -316,6 +330,37 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
   EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+}
+
+TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_.get(),
+                                      tab_strip_model_.get());
+
+  testing::StrictMock<MockLifecycleUnitObserver> observer;
+  tab_lifecycle_unit.AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &tab_lifecycle_unit, content::Visibility::VISIBLE));
+  web_contents_->WasShown();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &tab_lifecycle_unit, content::Visibility::HIDDEN));
+  web_contents_->WasHidden();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
+                            &tab_lifecycle_unit, content::Visibility::VISIBLE));
+  web_contents_->WasShown();
+  testing::Mock::VerifyAndClear(&observer);
+
+  EXPECT_CALL(observer,
+              OnLifecycleUnitVisibilityChanged(&tab_lifecycle_unit,
+                                               content::Visibility::OCCLUDED));
+  web_contents_->WasOccluded();
+  testing::Mock::VerifyAndClear(&observer);
+
+  tab_lifecycle_unit.RemoveObserver(&observer);
 }
 
 }  // namespace resource_coordinator

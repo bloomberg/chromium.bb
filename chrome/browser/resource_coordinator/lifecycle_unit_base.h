@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
 
@@ -26,6 +27,9 @@ class LifecycleUnitBase : public LifecycleUnit {
  protected:
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
   void SetState(State state);
+
+  // Notifies observers that the visibility of the LifecycleUnit has changed.
+  void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);
 
   // Notifies observers that the LifecycleUnit is being destroyed. This is
   // invoked by derived classes rather than by the base class to avoid notifying

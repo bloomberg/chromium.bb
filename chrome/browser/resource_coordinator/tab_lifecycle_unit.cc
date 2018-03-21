@@ -319,4 +319,9 @@ void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
   }
 }
 
+void TabLifecycleUnitSource::TabLifecycleUnit::OnVisibilityChanged(
+    content::Visibility visibility) {
+  OnLifecycleUnitVisibilityChanged(visibility);
+}
+
 }  // namespace resource_coordinator
