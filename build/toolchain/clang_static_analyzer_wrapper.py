@@ -61,11 +61,6 @@ def main():
   returncode, stderr = wrapper_utils.CaptureCommandStderr(
       wrapper_utils.CommandToRun(cmd))
   sys.stderr.write(stderr)
-  if returncode != 0:
-    sys.stderr.write(
-        """WARNING! The Clang static analyzer exited with error code %d.
-         Please share the error details in crbug.com/695243 if this looks like
-         a new regression.\n""" % (returncode))
 
   returncode, stderr = wrapper_utils.CaptureCommandStderr(
     wrapper_utils.CommandToRun(parsed_args.args))
