@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -138,14 +139,12 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   close_all_button_ = new MessageCenterButton(this);
   close_all_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kActiveButtonColor));
+      gfx::CreateVectorIcon(kNotificationCenterClearAllIcon, kMenuIconSize,
+                            kMenuIconColor));
   close_all_button_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kInactiveButtonColor));
+      gfx::CreateVectorIcon(kNotificationCenterClearAllIcon, kMenuIconSize,
+                            kMenuIconColorDisabled));
   close_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
   button_container_->AddChildView(close_all_button_);
@@ -156,12 +155,9 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   quiet_mode_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kInactiveButtonColor));
-  gfx::ImageSkia quiet_mode_toggle_icon =
-      gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kActiveButtonColor);
+                            kMenuIconSize, kMenuIconColorDisabled));
+  gfx::ImageSkia quiet_mode_toggle_icon = gfx::CreateVectorIcon(
+      kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize, kMenuIconColor);
   quiet_mode_button_->SetToggledImage(views::Button::STATE_NORMAL,
                                       &quiet_mode_toggle_icon);
   quiet_mode_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -174,9 +170,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   settings_button_ = new MessageCenterButton(this);
   settings_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationCenterSettingsIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kActiveButtonColor));
+      gfx::CreateVectorIcon(kNotificationCenterSettingsIcon, kMenuIconSize,
+                            kMenuIconColor));
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP));
   button_container_->AddChildView(settings_button_);
@@ -188,9 +183,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   collapse_button_->SetPaintToLayer();
   collapse_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kActiveButtonColor));
+      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon, kMenuIconSize,
+                            kMenuIconColor));
   collapse_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_COLLAPSE_BUTTON_TOOLTIP));
   AddChildView(collapse_button_);
