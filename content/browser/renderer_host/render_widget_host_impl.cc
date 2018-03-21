@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -335,6 +336,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       owner_delegate_(nullptr),
       process_(process),
       routing_id_(routing_id),
+      clock_(base::DefaultTickClock::GetInstance()),
       is_loading_(false),
       is_hidden_(hidden),
       repaint_ack_pending_(false),
@@ -359,10 +361,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
-      hung_renderer_delay_(
-          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
+      hung_renderer_delay_(TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
-          base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
+          TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       current_content_source_id_(0),
       monitoring_composition_info_(false),
       compositor_frame_sink_binding_(this),
@@ -998,7 +999,7 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
 
   // Pump a nested run loop until we time out or get a frame of the right
   // size.
-  TimeTicks start_time = TimeTicks::Now();
+  TimeTicks start_time = clock_->NowTicks();
   TimeDelta time_left = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
   TimeTicks timeout_time = start_time + time_left;
   while (1) {
@@ -1007,7 +1008,7 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
       if (!view_->ShouldContinueToPauseForFrame())
         break;
     }
-    time_left = timeout_time - TimeTicks::Now();
+    time_left = timeout_time - clock_->NowTicks();
     if (time_left <= TimeDelta::FromSeconds(0)) {
       TRACE_EVENT0("renderer_host", "WaitForSurface::Timeout");
       break;
@@ -1023,7 +1024,7 @@ bool RenderWidgetHostImpl::ScheduleComposite() {
   }
 
   // Send out a request to the renderer to paint the view if required.
-  repaint_start_time_ = TimeTicks::Now();
+  repaint_start_time_ = clock_->NowTicks();
   repaint_ack_pending_ = true;
   TRACE_EVENT_ASYNC_BEGIN0(
       "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
@@ -1039,7 +1040,7 @@ void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
     RestartHangMonitorTimeoutIfNecessary();
 }
 
-void RenderWidgetHostImpl::StartHangMonitorTimeout(base::TimeDelta delay) {
+void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
   if (!hang_monitor_timeout_)
     return;
   hang_monitor_timeout_->Start(delay);
@@ -1952,7 +1953,7 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
         FROM_HERE,
         base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
                    weak_factory_.GetWeakPtr(), sequence_number),
-        base::TimeDelta::FromSecondsD(1. / 6));
+        TimeDelta::FromSecondsD(1. / 6));
 #else
     WindowSnapshotReachedScreen(sequence_number);
 #endif
@@ -2067,7 +2068,7 @@ void RenderWidgetHostImpl::DidDeleteSharedBitmap(
 void RenderWidgetHostImpl::OnResizeOrRepaintACK(
     const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnResizeOrRepaintACK");
-  TimeTicks paint_start = TimeTicks::Now();
+  TimeTicks paint_start = clock_->NowTicks();
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
@@ -2089,7 +2090,7 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
     TRACE_EVENT_ASYNC_END0(
         "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
     repaint_ack_pending_ = false;
-    TimeDelta delta = TimeTicks::Now() - repaint_start_time_;
+    TimeDelta delta = clock_->NowTicks() - repaint_start_time_;
     UMA_HISTOGRAM_TIMES("MPArch.RWH_RepaintDelta", delta);
   }
 
@@ -2112,7 +2113,7 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
   // Log the time delta for processing a paint message. On platforms that don't
   // support asynchronous painting, this is equivalent to
   // MPArch.RWH_TotalPaintTime.
-  TimeDelta delta = TimeTicks::Now() - paint_start;
+  TimeDelta delta = clock_->NowTicks() - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgResizeOrRepaintACK", delta);
 }
 
@@ -2781,8 +2782,8 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                                      &tracing_enabled);
   if (tracing_enabled) {
-    base::TimeDelta elapsed = base::TimeTicks::Now().since_origin() -
-                              base::TimeDelta::FromMicroseconds(submit_time);
+    TimeDelta elapsed = clock_->NowTicks().since_origin() -
+                        TimeDelta::FromMicroseconds(submit_time);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                          "SubmitCompositorFrame::TimeElapsed",
                          TRACE_EVENT_SCOPE_THREAD,
@@ -2947,7 +2948,7 @@ void RenderWidgetHostImpl::OnSharedBitmapAllocatedByChild(
     SubmitCompositorFrame(
         saved_frame_.local_surface_id, std::move(saved_frame_.frame),
         std::move(saved_frame_.hit_test_region_list),
-        tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()
+        tracing_enabled ? clock_->NowTicks().since_origin().InMicroseconds()
                         : 0);
     saved_frame_.local_surface_id = viz::LocalSurfaceId();
     compositor_frame_sink_binding_.ResumeIncomingMethodCallProcessing();
@@ -3021,7 +3022,7 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
   }
 }
 
-void RenderWidgetHostImpl::ProgressFling(base::TimeTicks current_time) {
+void RenderWidgetHostImpl::ProgressFling(TimeTicks current_time) {
   browser_fling_needs_begin_frame_ = false;
   if (input_router_)
     input_router_->ProgressFling(current_time);
