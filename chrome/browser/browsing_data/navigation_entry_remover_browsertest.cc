@@ -270,6 +270,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabDeletion) {
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabWindowDeletion) {
+  // Create a new browser with three tabs and close it.
   AddBrowser(browser(), {url_a_});
   Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
   AddTab(new_browser, {url_b_, url_c_});
@@ -285,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabWindowDeletion) {
       tab_service->entries().front().get());
   EXPECT_EQ(3U, window->tabs.size());
 
-  // Delete b and d.
+  // Delete b and d. The last opened tab should be removed.
   browsing_data::RemoveNavigationEntries(
       browser()->profile(), history::DeletionTimeRange::Invalid(),
       {history::URLResult(url_b_, base::Time()),
@@ -298,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabWindowDeletion) {
       tab_service->entries().front().get());
   EXPECT_EQ(2U, window->tabs.size());
   EXPECT_EQ(2U, window->tabs.size());
-  EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_EQ(1, window->selected_tab_index);
   EXPECT_EQ(0, window->tabs[0]->tabstrip_index);
   EXPECT_EQ(1, window->tabs[1]->tabstrip_index);
   EXPECT_EQ(url_a_, window->tabs[0]->navigations.front().virtual_url());

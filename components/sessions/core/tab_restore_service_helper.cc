@@ -146,21 +146,21 @@ bool TabRestoreServiceHelper::DeleteFromTab(const DeletionPredicate& predicate,
                                             Tab* tab) {
   // TODO(dullweber): Change to DCHECK() when this is tested to be true.
   CHECK(ValidateTab(*tab));
-  CHECK_EQ(tab->current_navigation_index,
-           tab->navigations[tab->current_navigation_index].index());
   std::vector<SerializedNavigationEntry> new_navigations;
-  int deleted_navigations = 0;
-  for (auto& navigation : tab->navigations) {
+  int deleted_navigations_count = 0;
+  for (size_t i = 0; i < tab->navigations.size(); i++) {
+    SerializedNavigationEntry& navigation = tab->navigations[i];
     if (predicate.Run(navigation)) {
       // If the current navigation is deleted, remove this tab.
-      if (tab->current_navigation_index == navigation.index())
+      if (static_cast<int>(i) == tab->current_navigation_index)
         return true;
-      deleted_navigations++;
+      deleted_navigations_count++;
     } else {
       // Adjust indices according to number of deleted navigations.
-      if (tab->current_navigation_index == navigation.index())
-        tab->current_navigation_index -= deleted_navigations;
-      navigation.set_index(navigation.index() - deleted_navigations);
+      if (static_cast<int>(i) == tab->current_navigation_index)
+        tab->current_navigation_index -= deleted_navigations_count;
+      DCHECK_GE(navigation.index(), deleted_navigations_count);
+      navigation.set_index(navigation.index() - deleted_navigations_count);
       new_navigations.push_back(std::move(navigation));
     }
   }
@@ -173,24 +173,30 @@ bool TabRestoreServiceHelper::DeleteFromTab(const DeletionPredicate& predicate,
 bool TabRestoreServiceHelper::DeleteFromWindow(
     const DeletionPredicate& predicate,
     Window* window) {
+  // TODO(dullweber): Change to DCHECK() when this is tested to be true.
+  CHECK(ValidateWindow(*window));
   std::vector<std::unique_ptr<Tab>> new_tabs;
-  int deleted_tabs = 0;
-  for (auto& tab : window->tabs) {
+  int deleted_tabs_count = 0;
+  for (size_t i = 0; i < window->tabs.size(); i++) {
+    std::unique_ptr<Tab>& tab = window->tabs[i];
     if (DeleteFromTab(predicate, tab.get())) {
-      if (window->tabs[window->selected_tab_index] == tab)
-        window->selected_tab_index = 0;
-      deleted_tabs++;
+      if (static_cast<int>(i) == window->selected_tab_index)
+        window->selected_tab_index = new_tabs.empty() ? 0 : new_tabs.size() - 1;
+      deleted_tabs_count++;
     } else {
       // Adjust indices according to number of deleted tabs.
-      if (window->tabs[window->selected_tab_index] == tab)
-        window->selected_tab_index -= deleted_tabs;
-      if (tab->tabstrip_index >= 0)
-        tab->tabstrip_index -= deleted_tabs;
+      if (static_cast<int>(i) == window->selected_tab_index)
+        window->selected_tab_index -= deleted_tabs_count;
+      if (tab->tabstrip_index >= 0) {
+        DCHECK_GE(tab->tabstrip_index, deleted_tabs_count);
+        tab->tabstrip_index -= deleted_tabs_count;
+      }
       new_tabs.push_back(std::move(tab));
     }
   }
   window->tabs = std::move(new_tabs);
-  DCHECK(window->tabs.empty() || ValidateWindow(*window));
+  // TODO(dullweber): Change to DCHECK() when this is tested to be true.
+  CHECK(window->tabs.empty() || ValidateWindow(*window));
   return window->tabs.empty();
 }
 
