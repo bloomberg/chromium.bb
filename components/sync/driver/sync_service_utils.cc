@@ -18,4 +18,21 @@ bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
          !sync_service->GetEncryptedDataTypes().Has(SESSIONS);
 }
 
+UploadState GetUploadToGoogleState(const SyncService* sync_service,
+                                   ModelType type) {
+  // Note: Before configuration is done, GetPreferredDataTypes returns
+  // "everything" (i.e. the default setting). If a data type is missing there,
+  // it must be because the user explicitly disabled it.
+  if (!sync_service->CanSyncStart() || sync_service->IsLocalSyncEnabled() ||
+      !sync_service->GetPreferredDataTypes().Has(type) ||
+      sync_service->GetAuthError().IsPersistentError() ||
+      sync_service->IsUsingSecondaryPassphrase()) {
+    return UploadState::NOT_ACTIVE;
+  }
+  if (!sync_service->IsSyncActive() || !sync_service->ConfigurationDone()) {
+    return UploadState::INITIALIZING;
+  }
+  return UploadState::ACTIVE;
+}
+
 }  // namespace syncer
