@@ -128,4 +128,8 @@ void TestBrowserThreadBundle::CreateBrowserThreads() {
   SetBrowserStartupIsCompleteForTesting();
 }
 
+void TestBrowserThreadBundle::RunUntilIdle() {
+  scoped_task_environment_->RunUntilIdle();
+}
+
 }  // namespace content

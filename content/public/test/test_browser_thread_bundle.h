@@ -123,6 +123,13 @@ class TestBrowserThreadBundle {
   // DONT_CREATE_BROWSER_THREADS option was used when the bundle was created.
   void CreateBrowserThreads();
 
+  // Runs all tasks posted to TaskScheduler and main thread until idle. Note: at
+  // the momment, this will not process BrowserThread::IO if this
+  // TestBrowserThreadBundle is using a REAL_IO_THREAD. TODO(robliao): fix this
+  // by making TaskScheduler aware of all MessageLoops.
+  // Prefer this to the equivalent content::RunAllTasksUntilIdle().
+  void RunUntilIdle();
+
   ~TestBrowserThreadBundle();
 
  private:

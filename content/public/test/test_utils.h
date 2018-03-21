@@ -62,6 +62,7 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 // (have no more immediate tasks, delayed tasks may still exist). Tasks may
 // still be running from sources outside of the task scheduler and the current
 // message loop.
+// Prefer TestBrowserThreadBundle::RunUntilIdle() over this static method.
 void RunAllTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
