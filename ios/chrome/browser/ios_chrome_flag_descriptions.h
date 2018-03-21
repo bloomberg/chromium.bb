@@ -114,10 +114,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kTabSwitcherPresentsBVCName[];
 extern const char kTabSwitcherPresentsBVCDescription[];
 
-// Title and description for the flag to enable the TabGrid as the tab switcher.
-extern const char kTabSwitcherTabGridName[];
-extern const char kTabSwitcherTabGridDescription[];
-
 // Title and description for the flag to enable the phase 1 UI Refresh.
 extern const char kUIRefreshPhase1Name[];
 extern const char kUIRefreshPhase1Description[];

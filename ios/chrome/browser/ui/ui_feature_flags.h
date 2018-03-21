@@ -11,10 +11,6 @@
 // used directly. Instead use ui_util::IsUIRefreshPhase1Enabled().
 extern const base::Feature kUIRefreshPhase1;
 
-// Used to enable the tab grid on phone and tablet. This flag should not be
-// used directly. Instead use ui_util::IsTabSwitcherTabGridEnabled().
-extern const base::Feature kTabSwitcherTabGrid;
-
 // Feature to choose whether to use the new UI Reboot Collection stack, or the
 // legacy one. This flag should not be used directly. Instead use
 // experimental_flags::IsCollectionsUIRebootEnabled()

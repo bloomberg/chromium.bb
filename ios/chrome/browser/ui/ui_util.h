@@ -42,9 +42,6 @@ bool IsIPhoneX();
 // Returns whether the first phase of the UI refresh will be displayed.
 bool IsUIRefreshPhase1Enabled();
 
-// Returns whether the tab grid will be displayed as the tab switcher.
-bool IsTabSwitcherTabGridEnabled();
-
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 
