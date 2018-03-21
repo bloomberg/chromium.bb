@@ -48,6 +48,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -239,6 +240,7 @@ public class LocationBarLayout extends FrameLayout
 
     private boolean mOmniboxVoiceSearchAlwaysVisible;
     protected float mUrlFocusChangePercent;
+    protected LinearLayout mUrlActionContainer;
 
     private static abstract class DeferredOnSelectionRunnable implements Runnable {
         protected final OmniboxSuggestion mSuggestion;
@@ -683,6 +685,7 @@ public class LocationBarLayout extends FrameLayout
         super(context, attrs);
 
         LayoutInflater.from(context).inflate(layoutId, this, true);
+
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
 
@@ -715,6 +718,8 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), this, mSuggestionItems);
 
         mMicButton = (TintedImageButton) findViewById(R.id.mic_button);
+
+        mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
     }
 
     @Override
@@ -1504,18 +1509,12 @@ public class LocationBarLayout extends FrameLayout
 
         int urlContainerMarginEnd = 0;
         if (addMarginForActionsContainer) {
-            int urlContainerChildIndex = indexOfChild(mUrlBar);
-            assert urlContainerChildIndex != -1;
-
-            for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
-                View childView = getChildAt(i);
-                if (childView.getVisibility() != GONE) {
-                    LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
-                    urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
-                            childLayoutParams.width
-                                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
-                                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
-                }
+            for (View childView : getUrlContainerViewsForMargin()) {
+                ViewGroup.MarginLayoutParams childLayoutParams =
+                        (ViewGroup.MarginLayoutParams) childView.getLayoutParams();
+                urlContainerMarginEnd += childLayoutParams.width
+                        + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
+                        + ApiCompatibilityUtils.getMarginEnd(childLayoutParams);
             }
         }
         return urlContainerMarginEnd;
@@ -1569,6 +1568,24 @@ public class LocationBarLayout extends FrameLayout
             ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
             mUrlBar.setLayoutParams(urlLayoutParams);
         }
+    }
+
+    /**
+     * Gets the list of views that need to be taken into account for adding margin to the end of the
+     * URL bar.
+     *
+     * @return A {@link List} of the views to be taken into account for URL bar margin to avoid
+     *         overlapping text and buttons.
+     */
+    protected List<View> getUrlContainerViewsForMargin() {
+        List<View> outList = new ArrayList<View>();
+        if (mUrlActionContainer == null) return outList;
+
+        for (int i = 0; i < mUrlActionContainer.getChildCount(); i++) {
+            View childView = mUrlActionContainer.getChildAt(i);
+            if (childView.getVisibility() != GONE) outList.add(childView);
+        }
+        return outList;
     }
 
     /**
