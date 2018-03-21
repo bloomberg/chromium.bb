@@ -13,13 +13,10 @@ namespace ash {
 
 namespace message_center_style {
 
-constexpr SkColor kBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr SkColor kEmptyViewColor = SkColorSetARGB(0x8A, 0x0, 0x0, 0x0);
 constexpr SkColor kScrollShadowColor = SkColorSetARGB(0x24, 0x0, 0x0, 0x0);
-constexpr SkColor kActiveButtonColor = SkColorSetARGB(0xFF, 0x5A, 0x5A, 0x5A);
-constexpr SkColor kInactiveButtonColor = SkColorSetARGB(0x8A, 0x5A, 0x5A, 0x5A);
 
-constexpr int kActionIconSize = 20;
 constexpr int kEmptyIconSize = 24;
 constexpr gfx::Insets kActionIconPadding(14);
 constexpr gfx::Insets kEmptyIconPadding(0, 0, 4, 0);

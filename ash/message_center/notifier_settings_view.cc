@@ -16,6 +16,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -490,15 +491,12 @@ bool NotifierSettingsView::IsScrollable() {
 void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
   quiet_mode_toggle_->SetIsOn(is_quiet_mode, false /* animate */);
   if (is_quiet_mode) {
-    quiet_mode_icon_->SetImage(
-        gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
-                              message_center_style::kActionIconSize,
-                              message_center_style::kActiveButtonColor));
+    quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
+        kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize, kMenuIconColor));
   } else {
     quiet_mode_icon_->SetImage(
         gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
-                              message_center_style::kActionIconSize,
-                              message_center_style::kInactiveButtonColor));
+                              kMenuIconSize, kMenuIconColorDisabled));
   }
 }
 
