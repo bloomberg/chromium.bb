@@ -42,7 +42,8 @@ static remoting::GestureInterpreter::GestureState toGestureState(
   UITapGestureRecognizer* _fourFingerTapRecognizer;
 
   __weak UIView* _view;
-  __weak RemotingClient* _client;
+
+  base::WeakPtr<remoting::GestureInterpreter> _gestureInterpreter;
 }
 @end
 
@@ -52,7 +53,7 @@ static remoting::GestureInterpreter::GestureState toGestureState(
 
 - (instancetype)initWithView:(UIView*)view client:(RemotingClient*)client {
   _view = view;
-  _client = client;
+  _gestureInterpreter = client.gestureInterpreter->GetWeakPtr();
 
   _longPressRecognizer = [[UILongPressGestureRecognizer alloc]
       initWithTarget:self
@@ -141,23 +142,35 @@ static remoting::GestureInterpreter::GestureState toGestureState(
 
 // Resize the view of the desktop - Zoom in/out.  This can occur during a Pan.
 - (IBAction)pinchGestureTriggered:(UIPinchGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   CGPoint pivot = [sender locationInView:_view];
-  _client.gestureInterpreter->Zoom(pivot.x, pivot.y, sender.scale,
-                                   toGestureState([sender state]));
+  _gestureInterpreter->Zoom(pivot.x, pivot.y, sender.scale,
+                            toGestureState([sender state]));
 
   sender.scale = 1.0;  // reset scale so next iteration is a relative ratio
 }
 
 - (IBAction)tapGestureTriggered:(UITapGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   CGPoint touchPoint = [sender locationInView:_view];
-  _client.gestureInterpreter->Tap(touchPoint.x, touchPoint.y);
+  _gestureInterpreter->Tap(touchPoint.x, touchPoint.y);
 }
 
 // Change position of the viewport. This can occur during a pinch or long press.
 - (IBAction)panGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   if ([sender state] == UIGestureRecognizerStateChanged) {
     CGPoint translation = [sender translationInView:_view];
-    _client.gestureInterpreter->Pan(translation.x, translation.y);
+    _gestureInterpreter->Pan(translation.x, translation.y);
 
     // Reset translation so next iteration is relative
     [sender setTranslation:CGPointZero inView:_view];
@@ -167,26 +180,34 @@ static remoting::GestureInterpreter::GestureState toGestureState(
 // Do fling on the viewport. This will happen at the end of the one-finger
 // panning.
 - (IBAction)flingGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   if ([sender state] == UIGestureRecognizerStateEnded) {
     CGPoint velocity = [sender velocityInView:_view];
     if (velocity.x != 0 || velocity.y != 0) {
-      _client.gestureInterpreter->OneFingerFling(velocity.x, velocity.y);
+      _gestureInterpreter->OneFingerFling(velocity.x, velocity.y);
     }
   }
 }
 
 // Handles the two finger scrolling gesture.
 - (IBAction)scrollGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   if ([sender state] == UIGestureRecognizerStateEnded) {
     CGPoint velocity = [sender velocityInView:_view];
-    _client.gestureInterpreter->ScrollWithVelocity(velocity.x, velocity.y);
+    _gestureInterpreter->ScrollWithVelocity(velocity.x, velocity.y);
     return;
   }
 
   CGPoint scrollPoint = [sender locationInView:_view];
   CGPoint translation = [sender translationInView:_view];
-  _client.gestureInterpreter->Scroll(scrollPoint.x, scrollPoint.y,
-                                     translation.x, translation.y);
+  _gestureInterpreter->Scroll(scrollPoint.x, scrollPoint.y, translation.x,
+                              translation.y);
 
   // Reset translation so next iteration is relative
   [sender setTranslation:CGPointZero inView:_view];
@@ -194,22 +215,38 @@ static remoting::GestureInterpreter::GestureState toGestureState(
 
 // Click-Drag mouse operation.  This can occur during a Pan.
 - (IBAction)longPressGestureTriggered:(UILongPressGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   CGPoint touchPoint = [sender locationInView:_view];
-  _client.gestureInterpreter->Drag(touchPoint.x, touchPoint.y,
-                                   toGestureState([sender state]));
+  _gestureInterpreter->Drag(touchPoint.x, touchPoint.y,
+                            toGestureState([sender state]));
 }
 
 - (IBAction)twoFingerTapGestureTriggered:(UITapGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   CGPoint touchPoint = [sender locationInView:_view];
-  _client.gestureInterpreter->TwoFingerTap(touchPoint.x, touchPoint.y);
+  _gestureInterpreter->TwoFingerTap(touchPoint.x, touchPoint.y);
 }
 
 - (IBAction)threeFingerTapGestureTriggered:(UITapGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   CGPoint touchPoint = [sender locationInView:_view];
-  _client.gestureInterpreter->ThreeFingerTap(touchPoint.x, touchPoint.y);
+  _gestureInterpreter->ThreeFingerTap(touchPoint.x, touchPoint.y);
 }
 
 - (IBAction)threeFingerPanGestureTriggered:(UIPanGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   if ([sender state] != UIGestureRecognizerStateEnded) {
     return;
   }
@@ -227,6 +264,10 @@ static remoting::GestureInterpreter::GestureState toGestureState(
 // To trigger the menu.
 - (IBAction)fourFingerTapGestureTriggered:
     (UILongPressGestureRecognizer*)sender {
+  if (!_gestureInterpreter) {
+    return;
+  }
+
   [_delegate menuShouldShow];
 }
 

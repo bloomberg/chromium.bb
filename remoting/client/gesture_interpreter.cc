@@ -29,7 +29,8 @@ GestureInterpreter::GestureInterpreter(RendererProxy* renderer,
       scroll_animation_(
           kScrollFlingTimeConstant,
           base::Bind(&GestureInterpreter::ScrollWithoutAbortAnimations,
-                     base::Unretained(this))) {
+                     base::Unretained(this))),
+      weak_factory_(this) {
   viewport_.RegisterOnTransformationChangedCallback(
       base::Bind(&RendererProxy::SetTransformation,
                  base::Unretained(renderer_)),
@@ -173,6 +174,10 @@ void GestureInterpreter::OnSurfaceSizeChanged(int width, int height) {
 
 void GestureInterpreter::OnDesktopSizeChanged(int width, int height) {
   viewport_.SetDesktopSize(width, height);
+}
+
+base::WeakPtr<GestureInterpreter> GestureInterpreter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void GestureInterpreter::PanWithoutAbortAnimations(float translation_x,
