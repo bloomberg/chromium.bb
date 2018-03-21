@@ -230,3 +230,7 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
     true)
+
+// If true, a separate QuicAlarm in QuicConnection is used to trigger
+// OnPathDegrading() instead of using retransmission_alarm_.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm, true)

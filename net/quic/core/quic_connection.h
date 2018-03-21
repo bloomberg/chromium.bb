@@ -492,6 +492,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionChange() override;
+  // TODO(wangyix): remove OnPathDegrading() once
+  // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
   void OnPathDegrading() override;
   void OnPathMtuIncreased(QuicPacketLength packet_size) override;
 
@@ -576,6 +578,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
+
+  // Called when the path degrading alarm fires.
+  void OnPathDegradingTimeout();
 
   // Called when an RTO fires.  Resets the retransmission alarm if there are
   // remaining unacked packets.
@@ -893,6 +898,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sets the retransmission alarm based on SentPacketManager.
   void SetRetransmissionAlarm();
 
+  // Sets the path degrading alarm.
+  void SetPathDegradingAlarm();
+
   // Sets the MTU discovery alarm if necessary.
   // |sent_packet_number| is the recently sent packet number.
   void MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number);
@@ -930,7 +938,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Called when last received ack frame has been processed.
   // |send_stop_waiting| indicates whether a stop waiting needs to be sent.
-  void PostProcessAfterAckFrame(bool send_stop_waiting);
+  // |acked_new_packet| is true if a previously-unacked packet was acked.
+  void PostProcessAfterAckFrame(bool send_stop_waiting, bool acked_new_packet);
 
   QuicFramer framer_;
 
@@ -1089,6 +1098,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // An alarm that fires when there have been no retransmittable packets on the
   // wire for some period.
   QuicArenaScopedPtr<QuicAlarm> retransmittable_on_wire_alarm_;
+  // An alarm that fires when this connection is considered degrading.
+  QuicArenaScopedPtr<QuicAlarm> path_degrading_alarm_;
 
   // Neither visitor is owned by this class.
   QuicConnectionVisitorInterface* visitor_;
@@ -1209,10 +1220,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_always_discard_packets_after_close.
   const bool always_discard_packets_after_close_;
-
   // Latched valure of
   // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.
   const bool handle_write_results_for_connectivity_probe_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_path_degrading_alarm
+  const bool use_path_degrading_alarm_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
