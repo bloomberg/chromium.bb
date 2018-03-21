@@ -318,6 +318,6 @@ def PostUploadHook(cl, change, output_api):
     cl,
     [
       'master.tryserver.blink:linux_trusty_blink_rel',
-      'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
+      'luci.chromium.try:android_optional_gpu_tests_rel',
     ],
     'Automatically added Blink and Android GPU trybots for CQ.')
