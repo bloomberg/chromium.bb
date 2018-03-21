@@ -34,7 +34,11 @@ constexpr SkColor kFolderNameColor = SkColorSetARGBMacro(138, 0, 0, 0);
 
 class FolderHeaderView::FolderNameView : public views::Textfield {
  public:
-  FolderNameView() { SetBorder(views::CreateEmptyBorder(1, 1, 1, 1)); }
+  explicit FolderNameView(FolderHeaderView* folder_header_view)
+      : folder_header_view_(folder_header_view) {
+    DCHECK(folder_header_view_);
+    SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
+  }
 
   ~FolderNameView() override = default;
 
@@ -43,13 +47,23 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     Textfield::OnFocus();
   }
 
+  void OnBlur() override {
+    // Collapse whitespace when FolderNameView loses focus.
+    SetText(base::CollapseWhitespace(text(), false));
+    folder_header_view_->ContentsChanged(this, text());
+    Textfield::OnBlur();
+  }
+
  private:
+  // The parent FolderHeaderView, owns this.
+  FolderHeaderView* folder_header_view_;
+
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
 
 FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     : folder_item_(nullptr),
-      folder_name_view_(new FolderNameView),
+      folder_name_view_(new FolderNameView(this)),
       folder_name_placeholder_text_(
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
