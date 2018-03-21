@@ -46,6 +46,22 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
   return canceler->get();
 }
 
+void PrerenderThrottleDestructed(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    prerender::PrerenderDispatcher* prerender_dispatcher) {
+  // http://crbug.com/823306: nostateprefetch shouldn't be executing XHR since
+  // it's not supposed to be running scripts.
+  if (!task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&prerender::PrerenderDispatcher::DecrementPrefetchCount,
+                       base::Unretained(prerender_dispatcher)));
+    return;
+  }
+
+  prerender_dispatcher->DecrementPrefetchCount();
+}
+
 }  // namespace
 
 URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
@@ -116,8 +132,8 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
             chrome_content_renderer_client_->prerender_dispatcher();
         prerender_dispatcher->IncrementPrefetchCount();
         throttle->set_destruction_closure(base::BindOnce(
-            &prerender::PrerenderDispatcher::DecrementPrefetchCount,
-            base::Unretained(prerender_dispatcher)));
+            PrerenderThrottleDestructed,
+            base::MessageLoop::current()->task_runner(), prerender_dispatcher));
       }
       throttles.push_back(std::move(throttle));
     }
