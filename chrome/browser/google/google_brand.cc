@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -41,11 +43,20 @@ bool GetBrand(std::string* brand) {
     return true;
   }
 
-  base::string16 brand16;
-  bool ret = GoogleUpdateSettings::GetBrand(&brand16);
-  if (ret)
-    brand->assign(base::UTF16ToASCII(brand16));
-  return ret;
+  // Cache brand code value, since it is queried a lot and registry queries are
+  // slow enough to actually affect top-level metrics like
+  // Omnibox.CharTypedToRepaintLatency.
+  static const base::NoDestructor<base::Optional<std::string>> brand_code(
+      []() -> base::Optional<std::string> {
+        base::string16 brand16;
+        if (!GoogleUpdateSettings::GetBrand(&brand16))
+          return base::nullopt;
+        return base::UTF16ToASCII(brand16);
+      }());
+  if (!brand_code->has_value())
+    return false;
+  brand->assign(**brand_code);
+  return true;
 }
 
 bool GetReactivationBrand(std::string* brand) {
