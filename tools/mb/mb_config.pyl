@@ -125,7 +125,7 @@
       'CrWinClangLLD64': 'clang_tot_shared_release_use_lld_dcheck',
       'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_use_lld',
       'CrWinClngLLDdbg': 'clang_tot_full_symbols_shared_debug_use_lld_x86',
-      'linux-win_cross-rel': 'win_release_cross',
+      'linux-win_cross-rel': 'clang_tot_win_release_cross',
       'ToTAndroid': 'android_clang_tot_release',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroidASan': 'android_clang_tot_asan',
@@ -1741,8 +1741,8 @@
       'clang', 'release_bot', 'minimal_symbols', 'disable_nacl',
     ],
 
-    'win_release_cross': [
-      'win_cross', 'minimal_symbols', 'shared', 'release', 'dcheck_always_on',
+    'clang_tot_win_release_cross': [
+      'clang_tot', 'win_cross', 'minimal_symbols', 'shared', 'release', 'dcheck_always_on',
     ],
 
     'windows_analyze': [
