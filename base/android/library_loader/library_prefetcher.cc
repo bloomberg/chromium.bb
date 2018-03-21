@@ -183,7 +183,7 @@ void DumpResidency(size_t start,
 }  // namespace
 
 // static
-bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
+bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool ordered_only) {
 #if defined(CYGPROFILE_INSTRUMENTATION)
   // Avoid forking with cygprofile instrumentation because the child process
   // would create a dump as well.
@@ -200,7 +200,12 @@ bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
   // state of its parent thread. It cannot rely on being able to acquire any
   // lock (unless special care is taken in a pre-fork handler), including being
   // able to call malloc().
-  const auto& range = GetTextRange();
+  std::pair<size_t, size_t> range;
+  if (ordered_only) {
+    range = GetOrderedTextRange();
+  } else {
+    range = GetTextRange();
+  }
 
   pid_t pid = fork();
   if (pid == 0) {
