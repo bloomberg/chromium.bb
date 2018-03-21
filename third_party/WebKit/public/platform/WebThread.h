@@ -77,12 +77,12 @@ class BLINK_PLATFORM_EXPORT WebThread {
     virtual void DidProcessTask() = 0;
   };
 
-  // DEPRECATED: Returns a WebTaskRunner bound to the underlying scheduler's
+  // DEPRECATED: Returns a task runner bound to the underlying scheduler's
   // default task queue.
   //
   // Default scheduler task queue does not give scheduler enough freedom to
   // manage task priorities and should not be used.
-  // Use TaskRunnerHelper::Get instead (crbug.com/624696).
+  // Use ExecutionContext::GetTaskRunner instead (crbug.com/624696).
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const {
     return nullptr;
   }
