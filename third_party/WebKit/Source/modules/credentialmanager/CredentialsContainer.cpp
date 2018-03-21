@@ -167,6 +167,15 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     return false;
   }
 
+  if (origin->Protocol() != url::kHttpScheme &&
+      origin->Protocol() != url::kHttpsScheme) {
+    resolver->Reject(DOMException::Create(
+        kNotAllowedError,
+        "Public-key credentials are only available to secure HTTP or HTTPS "
+        "origins. See https://crbug.com/824383"));
+    return false;
+  }
+
   DCHECK_NE(origin->Protocol(), url::kAboutScheme);
   DCHECK_NE(origin->Protocol(), url::kFileScheme);
 

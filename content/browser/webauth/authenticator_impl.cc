@@ -30,6 +30,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "url/url_constants.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -49,7 +50,15 @@ constexpr int32_t kCoseEs256 = -7;
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
   return !caller_origin.unique() &&
          !url::HostIsIPAddress(caller_origin.host()) &&
-         content::IsOriginSecure(caller_origin.GetURL());
+         content::IsOriginSecure(caller_origin.GetURL()) &&
+         // Additionally, the scheme is required to be HTTP(S). Other schemes
+         // may be supported in the future but the webauthn relying party is
+         // just the domain of the origin so we would have to define how the
+         // authority part of other schemes maps to a "domain" without
+         // collisions. Given the |IsOriginSecure| check, just above, HTTP is
+         // effectively restricted to just "localhost".
+         (caller_origin.scheme() == url::kHttpScheme ||
+          caller_origin.scheme() == url::kHttpsScheme);
 }
 
 // Ensure the relying party ID is a registrable domain suffix of or equal
