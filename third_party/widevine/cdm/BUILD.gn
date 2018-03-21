@@ -22,15 +22,12 @@ if (widevine_arch == "x86") {
 widevine_cdm_binary_files = []
 widevine_cdm_manifest_file = []
 
-if (is_android) {
-  # Always available on Android regardless of branding.
-  widevine_cdm_version_h_file = "android/widevine_cdm_version.h"
-} else if (is_chrome_branded) {
+if (should_bundle_widevine_cdm) {
   if (is_chromeos) {
     widevine_cdm_version_h_file =
         "chromeos/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "chromeos/$widevine_arch/libwidevinecdm.so" ]
-  } else if (is_linux) {
+  } else if (is_desktop_linux) {
     widevine_cdm_version_h_file = "linux/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "linux/$widevine_arch/libwidevinecdm.so" ]
   } else if (is_win) {
@@ -38,20 +35,18 @@ if (is_android) {
     widevine_cdm_binary_files = [
       "win/$widevine_arch/widevinecdm.dll",
       "win/$widevine_arch/widevinecdm.dll.lib",
-      "win/$widevine_arch/widevinecdm.dll.sig",
     ]
     widevine_cdm_manifest_file = [ "win/$widevine_arch/manifest.json" ]
   } else if (is_mac) {
     widevine_cdm_version_h_file = "mac/$widevine_arch/widevine_cdm_version.h"
-    widevine_cdm_binary_files = [
-      "mac/$widevine_arch/libwidevinecdm.dylib",
-      "mac/$widevine_arch/libwidevinecdm.dylib.sig",
-    ]
+    widevine_cdm_binary_files = [ "mac/$widevine_arch/libwidevinecdm.dylib" ]
     widevine_cdm_manifest_file = [ "mac/$widevine_arch/manifest.json" ]
   } else {
-    # Other platforms, use the default one.
-    widevine_cdm_version_h_file = "widevine_cdm_version.h"
+    assert(false, "Platform not supported to bundle Widevine CDM.")
   }
+} else if (is_android) {
+  # Always available on Android regardless of branding.
+  widevine_cdm_version_h_file = "android/widevine_cdm_version.h"
 } else if (enable_widevine) {
   # TODO(crbug.com/349182): Remove after we replace WIDEVINE_CDM_AVAILABLE with
   # ENABLE_WIDEVINE build flag.
@@ -59,6 +54,15 @@ if (is_android) {
 } else {
   # No branding, use the default one.
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
+}
+
+if (should_bundle_widevine_cdm && enable_widevine_cdm_host_verification) {
+  if (is_win) {
+    widevine_cdm_binary_files += [ "win/$widevine_arch/widevinecdm.dll.sig" ]
+  } else if (is_mac) {
+    widevine_cdm_binary_files +=
+        [ "mac/$widevine_arch/libwidevinecdm.dylib.sig" ]
+  }
 }
 
 copy("version_h") {
@@ -131,20 +135,5 @@ source_set("widevine_test_license_server") {
       # This target should be removed and targets should have data_deps on this target:
       #"//third_party/widevine/test/license_server/license_server.gyp:test_license_server"
     ]
-  }
-}
-
-if (is_chrome_branded) {
-  copy("widevine_signature_scripts") {
-    sources = [
-      "../scripts/signature_generator.py",
-      "../scripts/signer.py",
-    ]
-    outputs = [
-      "$root_out_dir/installer/widevine/{{source_file_part}}",
-    ]
-  }
-} else {
-  group("widevine_signature_scripts") {
   }
 }
