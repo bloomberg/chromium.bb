@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "mojo/common/logfont_win.mojom";
+import "mojo/public/mojom/base/logfont_win.mojom";
 
 // Messages sent from child processes to the browser on Windows only. This file
 // will not be built on other platforms.
@@ -13,7 +13,7 @@ interface FontCacheWin {
   // OS. This must wait for the browser to finish to guarantee the font has been
   // cached. See ChildProcessHost::PreCacheFont() for details.
   [Sync]
-  PreCacheFont(mojo.common.mojom.LOGFONT log_font) => ();
+  PreCacheFont(mojo_base.mojom.LOGFONT log_font) => ();
 
   // Release the cached fonts.
   ReleaseCachedFonts();

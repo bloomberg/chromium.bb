@@ -4,7 +4,7 @@
 
 module autofill.mojom;
 
-import "mojo/common/text_direction.mojom";
+import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
@@ -119,7 +119,7 @@ struct FormFieldData {
   bool is_focusable;
   bool should_autocomplete;
   RoleAttribute role;
-  mojo.common.mojom.TextDirection text_direction;
+  mojo_base.mojom.TextDirection text_direction;
 
   array<mojo_base.mojom.String16> option_values;
   array<mojo_base.mojom.String16> option_contents;

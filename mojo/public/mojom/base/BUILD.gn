@@ -14,9 +14,14 @@ mojom_component("base") {
     "file_path.mojom",
     "ref_counted_memory.mojom",
     "string16.mojom",
+    "text_direction.mojom",
     "time.mojom",
     "values.mojom",
   ]
+
+  if (is_win) {
+    sources += [ "logfont_win.mojom" ]
+  }
 
   output_prefix = "mojo_base_mojom"
   macro_prefix = "MOJO_BASE_MOJOM"

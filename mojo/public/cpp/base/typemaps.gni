@@ -11,6 +11,8 @@ typemaps = [
   "//mojo/public/cpp/base/file.typemap",
   "//mojo/public/cpp/base/ref_counted_memory.typemap",
   "//mojo/public/cpp/base/string16.typemap",
+  "//mojo/public/cpp/base/logfont_win.typemap",
+  "//mojo/public/cpp/base/text_direction.typemap",
   "//mojo/public/cpp/base/time.typemap",
   "//mojo/public/cpp/base/values.typemap",
 ]
