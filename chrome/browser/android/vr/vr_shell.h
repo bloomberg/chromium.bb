@@ -125,6 +125,10 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnContentPaused(bool paused);
   void Navigate(GURL url, NavigationMethod method);
   void NavigateBack();
+  void NavigateForward();
+  void ReloadTab();
+  void OpenNewTab(bool incognito);
+  void CloseAllIncognitoTabs();
   void ExitCct();
   void CloseHostedDialog();
   void ToggleCardboardGamepad(bool enabled);
@@ -237,8 +241,6 @@ class VrShell : device::GvrGamepadDataProvider,
   void PostToGlThread(const base::Location& from_here, base::OnceClosure task);
   void SetUiState();
 
-  void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
-
   void PollMediaAccessFlag();
 
   bool HasDaydreamSupport(JNIEnv* env);
@@ -316,6 +318,8 @@ class VrShell : device::GvrGamepadDataProvider,
   gl::SurfaceTexture* ui_surface_texture_ = nullptr;
 
   base::Timer waiting_for_assets_component_timer_;
+
+  std::set<int> incognito_tab_ids_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

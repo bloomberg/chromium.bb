@@ -35,8 +35,11 @@ class Button : public UiElement {
   Rect* background() const { return background_; }
   UiElement* hit_plane() const { return hit_plane_; }
   void SetButtonColors(const ButtonColors& colors);
+  void SetEnabled(bool enabled);
 
-  void set_enabled(bool enabled) { enabled_ = enabled; }
+  void set_click_handler(base::RepeatingCallback<void()> click_handler) {
+    click_handler_ = click_handler;
+  }
 
   // TODO(vollick): once all elements are scaled by a ScaledDepthAdjuster, we
   // will never have to change the button hover offset from the default and this

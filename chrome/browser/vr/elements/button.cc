@@ -65,6 +65,11 @@ void Button::SetButtonColors(const ButtonColors& colors) {
   OnStateUpdated();
 }
 
+void Button::SetEnabled(bool enabled) {
+  enabled_ = enabled;
+  OnStateUpdated();
+}
+
 void Button::HandleHoverEnter() {
   hovered_ = enabled_;
   OnStateUpdated();

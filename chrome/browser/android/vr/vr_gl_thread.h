@@ -81,6 +81,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ExitFullscreen() override;
   void Navigate(GURL gurl, NavigationMethod method) override;
   void NavigateBack() override;
+  void NavigateForward() override;
+  void ReloadTab() override;
+  void OpenNewTab(bool incognito) override;
+  void CloseAllIncognitoTabs() override;
   void ExitCct() override;
   void CloseHostedDialog() override;
   void OnUnsupportedMode(UiUnsupportedMode mode) override;
@@ -115,6 +119,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
+  void SetIncognitoTabsOpen(bool open) override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,
                              int selection_end,

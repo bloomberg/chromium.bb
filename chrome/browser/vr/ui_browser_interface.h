@@ -30,6 +30,10 @@ class UiBrowserInterface {
   virtual void ExitFullscreen() = 0;
   virtual void Navigate(GURL gurl, NavigationMethod method) = 0;
   virtual void NavigateBack() = 0;
+  virtual void NavigateForward() = 0;
+  virtual void ReloadTab() = 0;
+  virtual void OpenNewTab(bool incognito) = 0;
+  virtual void CloseAllIncognitoTabs() = 0;
   virtual void ExitCct() = 0;
   virtual void CloseHostedDialog() = 0;
   virtual void OnUnsupportedMode(UiUnsupportedMode mode) = 0;

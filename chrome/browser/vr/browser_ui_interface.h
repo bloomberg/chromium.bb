@@ -48,6 +48,7 @@ class BrowserUiInterface {
                               std::unique_ptr<Assets> assets,
                               const base::Version& component_version) = 0;
   virtual void OnAssetsUnavailable() = 0;
+  virtual void SetIncognitoTabsOpen(bool open) = 0;
 
   // Web contents text input related.
   virtual void ShowSoftInput(bool show) = 0;
@@ -55,14 +56,6 @@ class BrowserUiInterface {
                                      int selection_end,
                                      int composition_start,
                                      int composition_end) = 0;
-
-  // Tab handling.
-  virtual void AppendToTabList(bool incognito,
-                               int id,
-                               const base::string16& title) {}
-  virtual void FlushTabList() {}
-  virtual void UpdateTab(bool incognito, int id, const std::string& title) {}
-  virtual void RemoveTab(bool incognito, int id) {}
 };
 
 }  // namespace vr

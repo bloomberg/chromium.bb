@@ -645,7 +645,6 @@ void UiSceneCreator::CreateScene() {
   CreateSystemIndicators();
   CreateUrlBar();
   CreateOverflowMenu();
-  CreateLoadingIndicator();
   if (model_->update_ready_snackbar_enabled) {
     CreateSnackbars();
   }
@@ -1758,6 +1757,42 @@ void UiSceneCreator::CreateUrlBar() {
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
   scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
 
+  auto indicator_bg = std::make_unique<Rect>();
+  indicator_bg->SetName(kLoadingIndicator);
+  indicator_bg->set_hit_testable(true);
+  indicator_bg->SetDrawPhase(kPhaseForeground);
+  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffsetDMM, 0);
+  indicator_bg->SetSize(kLoadingIndicatorWidthDMM, kLoadingIndicatorHeightDMM);
+  indicator_bg->set_y_anchoring(TOP);
+  indicator_bg->SetTransitionedProperties({OPACITY});
+  indicator_bg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
+  indicator_bg->set_contributes_to_parent_bounds(false);
+  VR_BIND_VISIBILITY(indicator_bg, model->loading);
+  VR_BIND_COLOR(model_, indicator_bg.get(),
+                &ColorScheme::loading_indicator_background, &Rect::SetColor);
+
+  scene_->AddUiElement(kUrlBar, std::move(indicator_bg));
+
+  auto indicator_fg = std::make_unique<Rect>();
+  indicator_fg->SetDrawPhase(kPhaseForeground);
+  indicator_fg->SetName(kLoadingIndicatorForeground);
+  indicator_fg->set_x_anchoring(LEFT);
+  indicator_fg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
+  VR_BIND_COLOR(model_, indicator_fg.get(),
+                &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
+  indicator_fg->AddBinding(std::make_unique<Binding<float>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->load_progress; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Rect* r, const float& value) {
+            r->SetSize(kLoadingIndicatorWidthDMM * value,
+                       kLoadingIndicatorHeightDMM);
+            r->SetTranslate(kLoadingIndicatorWidthDMM * value * 0.5f, 0.0f,
+                            0.001f);
+          },
+          base::Unretained(indicator_fg.get()))));
+
+  scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
   auto layout =
       Create<LinearLayout>(kUrlBarLayout, kPhaseNone, LinearLayout::kRight);
   layout->set_bounds_contain_children(true);
@@ -1774,7 +1809,7 @@ void UiSceneCreator::CreateUrlBar() {
   back_button->SetSounds(CreateButtonSounds(), audio_delegate_);
   back_button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                        model->can_navigate_back, Button,
-                                       back_button.get(), set_enabled));
+                                       back_button.get(), SetEnabled));
   VR_BIND_BUTTON_COLORS(model_, back_button.get(), &ColorScheme::back_button,
                         &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(back_button));
@@ -1886,10 +1921,7 @@ void UiSceneCreator::CreateUrlBar() {
   overflow_icon->SetSize(kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
   overflow_icon->SetTranslate(-kUrlBarEndButtonIconOffsetDMM, 0, 0);
   overflow_icon->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model_,
-      model->can_navigate_back
-          ? model->color_scheme().button_colors.foreground
-          : model->color_scheme().button_colors.foreground_disabled,
+      SkColor, Model, model_, model->color_scheme().element_foreground,
       VectorIcon, overflow_icon.get(), SetColor));
   scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_icon));
 }
@@ -1924,21 +1956,16 @@ void UiSceneCreator::CreateOverflowMenu() {
   // space for them, and the buttons themselves are anchored to the bottom
   // corners of the overall layout. In the future, when we have more buttons,
   // they may instead be placed in a linear layout (locked to one side).
-  std::vector<std::tuple<LayoutAlignment, const gfx::VectorIcon&,
-                         base::RepeatingCallback<void()>>>
+  std::vector<
+      std::tuple<UiElementName, LayoutAlignment, const gfx::VectorIcon&>>
       menu_buttons = {
-          {LEFT, vector_icons::kForwardArrowIcon, base::DoNothing()},
-          {RIGHT, vector_icons::kReloadIcon, base::DoNothing()},
+          {kOverflowMenuFordwardButton, LEFT, vector_icons::kForwardArrowIcon},
+          {kOverflowMenuReloadButton, RIGHT, vector_icons::kReloadIcon},
       };
   for (auto& item : menu_buttons) {
-    auto button = std::make_unique<DiscButton>(
-        base::BindRepeating(
-            [](base::RepeatingCallback<void()> callback, Model* model) {
-              model->overflow_menu_enabled = false;
-              callback.Run();
-            },
-            std::get<2>(item), base::Unretained(model_)),
-        std::get<1>(item), audio_delegate_);
+    auto button = Create<DiscButton>(std::get<0>(item), kPhaseForeground,
+                                     base::DoNothing(), std::get<2>(item),
+                                     audio_delegate_);
     button->SetType(kTypeOverflowMenuButton);
     button->SetDrawPhase(kPhaseForeground);
     button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
@@ -1947,15 +1974,40 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
     button->set_requires_layout(false);
     button->set_contributes_to_parent_bounds(false);
-    button->set_x_anchoring(std::get<0>(item));
-    button->set_x_centering(std::get<0>(item));
+    button->set_x_anchoring(std::get<1>(item));
+    button->set_x_centering(std::get<1>(item));
     button->set_y_anchoring(BOTTOM);
     button->set_y_centering(BOTTOM);
     button->SetTranslate(
-        kOverflowButtonXOffset * (std::get<0>(item) == RIGHT ? -1 : 1),
+        kOverflowButtonXOffset * (std::get<1>(item) == RIGHT ? -1 : 1),
         kOverflowMenuYPadding, 0);
     VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::back_button,
                           &Button::SetButtonColors);
+
+    switch (std::get<0>(item)) {
+      case kOverflowMenuFordwardButton:
+        button->set_click_handler(base::BindRepeating(
+            [](Model* model, UiBrowserInterface* browser) {
+              model->overflow_menu_enabled = false;
+              browser->NavigateForward();
+            },
+            base::Unretained(model_), base::Unretained(browser_)));
+        button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
+                                        model->can_navigate_forward, Button,
+                                        button.get(), SetEnabled));
+        break;
+      case kOverflowMenuReloadButton:
+        button->set_click_handler(base::BindRepeating(
+            [](Model* model, UiBrowserInterface* browser) {
+              model->overflow_menu_enabled = false;
+              browser->ReloadTab();
+            },
+            base::Unretained(model_), base::Unretained(browser_)));
+        break;
+      default:
+        break;
+    }
+
     overflow_menu->AddChild(std::move(button));
   }
 
@@ -1966,23 +2018,27 @@ void UiSceneCreator::CreateOverflowMenu() {
                          kOverflowButtonRegionHeight);
   overflow_layout->AddChild(std::move(button_spacer));
 
-  std::vector<std::pair<int, base::RepeatingCallback<void()>>> menu_items = {
-      {IDS_VR_MENU_CLOSE_INCOGNITO_TABS, base::DoNothing()},
-      {IDS_VR_MENU_NEW_INCOGNITO_TAB, base::DoNothing()},
+  std::vector<std::tuple<UiElementName, int>> menu_items = {
+      {kOverflowMenuCloseAllIncognitoTabsItem,
+       IDS_VR_MENU_CLOSE_INCOGNITO_TABS},
+      {kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB},
   };
 
   for (auto& item : menu_items) {
     auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
     layout->SetType(kTypeOverflowMenuItem);
     layout->SetDrawPhase(kPhaseNone);
-    layout->set_layout_length(kOverflowMenuMinimumWidth);
+    layout->set_layout_length(kOverflowMenuMinimumWidth -
+                              2 * kOverflowMenuItemXPadding);
 
     auto text =
         Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
     text->SetDrawPhase(kPhaseForeground);
-    text->SetText(l10n_util::GetStringUTF16(std::get<0>(item)));
+    text->SetText(l10n_util::GetStringUTF16(std::get<1>(item)));
     text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
     text->SetAlignment(UiTexture::kTextAlignmentLeft);
+    VR_BIND_COLOR(model_, text.get(), &ColorScheme::element_foreground,
+                  &Text::SetColor);
     layout->AddChild(std::move(text));
 
     auto spacer = Create<Rect>(kNone, kPhaseNone);
@@ -1991,14 +2047,8 @@ void UiSceneCreator::CreateOverflowMenu() {
     spacer->set_resizable_by_layout(true);
     layout->AddChild(std::move(spacer));
 
-    auto background = Create<Button>(
-        kNone, kPhaseForeground,
-        base::BindRepeating(
-            [](base::RepeatingCallback<void()> callback, Model* model) {
-              model->overflow_menu_enabled = false;
-              callback.Run();
-            },
-            std::get<1>(item), base::Unretained(model_)));
+    auto background =
+        Create<Button>(std::get<0>(item), kPhaseForeground, base::DoNothing());
     background->set_hit_testable(true);
     background->set_bounds_contain_children(true);
     background->set_hover_offset(0);
@@ -2006,6 +2056,28 @@ void UiSceneCreator::CreateOverflowMenu() {
     VR_BIND_BUTTON_COLORS(model_, background.get(), &ColorScheme::button_colors,
                           &Button::SetButtonColors);
     background->AddChild(std::move(layout));
+
+    switch (std::get<0>(item)) {
+      case kOverflowMenuCloseAllIncognitoTabsItem:
+        background->set_click_handler(base::BindRepeating(
+            [](Model* model, UiBrowserInterface* browser) {
+              model->overflow_menu_enabled = false;
+              browser->CloseAllIncognitoTabs();
+            },
+            base::Unretained(model_), base::Unretained(browser_)));
+        VR_BIND_VISIBILITY(background, model->incognito_tabs_open);
+        break;
+      case kOverflowMenuNewIncognitoTabItem:
+        background->set_click_handler(base::BindRepeating(
+            [](Model* model, UiBrowserInterface* browser) {
+              model->overflow_menu_enabled = false;
+              browser->OpenNewTab(true);
+            },
+            base::Unretained(model_), base::Unretained(browser_)));
+        break;
+      default:
+        break;
+    }
 
     overflow_layout->AddChild(std::move(background));
   }
@@ -2018,44 +2090,6 @@ void UiSceneCreator::CreateOverflowMenu() {
   overflow_menu->AddChild(std::move(overflow_layout));
   overflow_backplane->AddChild(std::move(overflow_menu));
   scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_backplane));
-}
-
-void UiSceneCreator::CreateLoadingIndicator() {
-  auto indicator_bg = std::make_unique<Rect>();
-  indicator_bg->SetName(kLoadingIndicator);
-  indicator_bg->set_hit_testable(true);
-  indicator_bg->SetDrawPhase(kPhaseForeground);
-  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffsetDMM, 0);
-  indicator_bg->SetSize(kLoadingIndicatorWidthDMM, kLoadingIndicatorHeightDMM);
-  indicator_bg->set_y_anchoring(TOP);
-  indicator_bg->SetTransitionedProperties({OPACITY});
-  indicator_bg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
-  indicator_bg->set_contributes_to_parent_bounds(false);
-  VR_BIND_VISIBILITY(indicator_bg, model->loading);
-  VR_BIND_COLOR(model_, indicator_bg.get(),
-                &ColorScheme::loading_indicator_background, &Rect::SetColor);
-
-  scene_->AddUiElement(kUrlBar, std::move(indicator_bg));
-
-  auto indicator_fg = std::make_unique<Rect>();
-  indicator_fg->SetDrawPhase(kPhaseForeground);
-  indicator_fg->SetName(kLoadingIndicatorForeground);
-  indicator_fg->set_x_anchoring(LEFT);
-  indicator_fg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
-  VR_BIND_COLOR(model_, indicator_fg.get(),
-                &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
-  indicator_fg->AddBinding(std::make_unique<Binding<float>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->load_progress; },
-                     base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](Rect* r, const float& value) {
-            r->SetSize(kLoadingIndicatorWidthDMM * value,
-                       kLoadingIndicatorHeightDMM);
-            r->SetTranslate(kLoadingIndicatorWidthDMM * value * 0.5f, 0.0f,
-                            0.001f);
-          },
-          base::Unretained(indicator_fg.get()))));
-  scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
 }
 
 void UiSceneCreator::CreateSnackbars() {

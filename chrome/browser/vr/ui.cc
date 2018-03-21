@@ -123,8 +123,8 @@ void Ui::SetIsExiting() {
 }
 
 void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {
-  // We don't yet support forward navigation so we ignore this parameter.
   model_->can_navigate_back = can_go_back;
+  model_->can_navigate_forward = can_go_forward;
 }
 
 void Ui::SetVideoCaptureEnabled(bool enabled) {
@@ -433,6 +433,10 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
 
 void Ui::OnAssetsUnavailable() {
   model_->waiting_for_background = false;
+}
+
+void Ui::SetIncognitoTabsOpen(bool open) {
+  model_->incognito_tabs_open = open;
 }
 
 void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
