@@ -889,7 +889,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
               host, host->GetBrowserContext(), site_url))
         continue;
 
-      if (host->VisibleWidgetCount())
+      if (host->VisibleClientCount())
         foreground_processes->insert(host);
       else
         background_processes->insert(host);
@@ -1350,7 +1350,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       keep_alive_ref_count_(0),
       is_keep_alive_ref_count_disabled_(false),
       route_provider_binding_(this),
-      visible_widgets_(0),
+      visible_clients_(0),
       priority_({
         blink::kLaunchingProcessIsBackgrounded,
             blink::kLaunchingProcessIsBoostedForPendingView,
@@ -2301,47 +2301,19 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
       PROCESS_TYPE_RENDERER);
 }
 
-void RenderProcessHostImpl::WidgetRestored() {
-  visible_widgets_++;
-  UpdateProcessPriority();
+void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
+  DCHECK(client);
+  DCHECK_EQ(1u, priority_clients_.count(client));
+  UpdateProcessPriorityInputs();
 }
 
-void RenderProcessHostImpl::WidgetHidden() {
-  // On startup, the browser will call Hide. We ignore this call.
-  if (visible_widgets_ == 0)
-    return;
-
-  --visible_widgets_;
-  if (visible_widgets_ == 0) {
-    UpdateProcessPriority();
-  }
-}
-
-int RenderProcessHostImpl::VisibleWidgetCount() const {
-  return visible_widgets_;
+int RenderProcessHostImpl::VisibleClientCount() const {
+  return visible_clients_;
 }
 
 #if defined(OS_ANDROID)
-void RenderProcessHostImpl::UpdateWidgetImportance(
-    ChildProcessImportance old_value,
-    ChildProcessImportance new_value) {
-  DCHECK_NE(old_value, new_value);
-  DCHECK(widget_importance_counts_[static_cast<size_t>(old_value)]);
-  widget_importance_counts_[static_cast<size_t>(old_value)]--;
-  widget_importance_counts_[static_cast<size_t>(new_value)]++;
-  UpdateProcessPriority();
-}
-
 ChildProcessImportance RenderProcessHostImpl::ComputeEffectiveImportance() {
-  ChildProcessImportance importance = ChildProcessImportance::NORMAL;
-  for (size_t i = 0u; i < arraysize(widget_importance_counts_); ++i) {
-    DCHECK_GE(widget_importance_counts_[i], 0);
-    if (widget_importance_counts_[i]) {
-      // No early out. Highest importance wins.
-      importance = static_cast<ChildProcessImportance>(i);
-    }
-  }
-  return importance;
+  return effective_importance_;
 }
 #endif
 
@@ -3148,10 +3120,10 @@ void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
   RenderWidgetHostImpl* widget_impl =
       static_cast<RenderWidgetHostImpl*>(widget);
   widgets_.insert(widget_impl);
-#if defined(OS_ANDROID)
-  widget_importance_counts_[static_cast<size_t>(widget_impl->importance())]++;
-  UpdateProcessPriority();
-#endif
+
+  DCHECK(!base::ContainsKey(priority_clients_, widget_impl));
+  priority_clients_.insert(widget_impl);
+  UpdateProcessPriorityInputs();
 }
 
 void RenderProcessHostImpl::RemoveWidget(RenderWidgetHost* widget) {
@@ -3159,12 +3131,9 @@ void RenderProcessHostImpl::RemoveWidget(RenderWidgetHost* widget) {
       static_cast<RenderWidgetHostImpl*>(widget);
   widgets_.erase(widget_impl);
 
-#if defined(OS_ANDROID)
-  ChildProcessImportance importance = widget_impl->importance();
-  DCHECK(widget_importance_counts_[static_cast<size_t>(importance)]);
-  widget_importance_counts_[static_cast<size_t>(importance)]--;
-  UpdateProcessPriority();
-#endif
+  DCHECK(base::ContainsKey(priority_clients_, widget_impl));
+  priority_clients_.erase(widget_impl);
+  UpdateProcessPriorityInputs();
 }
 
 void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
@@ -3857,6 +3826,33 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
   SetSuddenTerminationAllowed(enabled);
 }
 
+void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
+  int32_t new_visible_widgets_count = 0;
+#if defined(OS_ANDROID)
+  ChildProcessImportance new_effective_importance =
+      ChildProcessImportance::NORMAL;
+#endif
+  for (auto* client : priority_clients_) {
+    Priority priority = client->GetPriority();
+    if (!priority.is_hidden)
+      new_visible_widgets_count++;
+#if defined(OS_ANDROID)
+    new_effective_importance =
+        std::max(new_effective_importance, priority.importance);
+#endif
+  }
+
+  bool inputs_changed = new_visible_widgets_count != visible_clients_;
+  visible_clients_ = new_visible_widgets_count;
+#if defined(OS_ANDROID)
+  inputs_changed =
+      inputs_changed || new_effective_importance != effective_importance_;
+  effective_importance_ = new_effective_importance;
+#endif
+  if (inputs_changed)
+    UpdateProcessPriority();
+}
+
 void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!run_renderer_in_process() && (!child_process_launcher_.get() ||
                                      child_process_launcher_->IsStarting())) {
@@ -3870,7 +3866,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     // We background a process as soon as it hosts no active audio/video streams
     // and no visible widgets -- the callers must call this function whenever we
     // transition in/out of those states.
-    visible_widgets_ == 0 && media_stream_count_ == 0 &&
+    visible_clients_ == 0 && media_stream_count_ == 0 &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableRendererBackgrounding),
     // boost_for_pending_views

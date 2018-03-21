@@ -153,14 +153,17 @@ void MockRenderProcessHost::ShutdownForBadMessage(
   ++bad_msg_count_;
 }
 
-void MockRenderProcessHost::WidgetRestored() {
-}
+void MockRenderProcessHost::UpdateClientPriority(PriorityClient* client) {}
 
-void MockRenderProcessHost::WidgetHidden() {
-}
-
-int MockRenderProcessHost::VisibleWidgetCount() const {
-  return 1;
+int MockRenderProcessHost::VisibleClientCount() const {
+  int count = 0;
+  for (auto* client : priority_clients_) {
+    const Priority priority = client->GetPriority();
+    if (!priority.is_hidden) {
+      count++;
+    }
+  }
+  return count;
 }
 
 bool MockRenderProcessHost::IsForGuestsOnly() const {
@@ -260,16 +263,14 @@ void MockRenderProcessHost::RemovePendingView() {
 }
 
 void MockRenderProcessHost::AddWidget(RenderWidgetHost* widget) {
+  priority_clients_.insert(static_cast<RenderWidgetHostImpl*>(widget));
 }
 
 void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
+  priority_clients_.erase(static_cast<RenderWidgetHostImpl*>(widget));
 }
 
 #if defined(OS_ANDROID)
-void MockRenderProcessHost::UpdateWidgetImportance(
-    ChildProcessImportance old_value,
-    ChildProcessImportance new_value) {}
-
 ChildProcessImportance MockRenderProcessHost::ComputeEffectiveImportance() {
   NOTIMPLEMENTED();
   return ChildProcessImportance::NORMAL;

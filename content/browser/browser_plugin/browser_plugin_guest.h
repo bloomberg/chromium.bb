@@ -318,7 +318,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // fewer GPU and CPU resources.
   //
   // When every WebContents in a RenderProcessHost is hidden, it will lower
-  // the priority of the process (see RenderProcessHostImpl::WidgetHidden).
+  // the priority of the process (see
+  // RenderProcessHostImpl::UpdateClientPriority).
   //
   // It will also send a message to the guest renderer process to cleanup
   // resources such as dropping back buffers and adjusting memory limits (if in

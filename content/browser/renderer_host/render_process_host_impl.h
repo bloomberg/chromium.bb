@@ -14,6 +14,7 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -155,9 +156,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
-  void WidgetRestored() override;
-  void WidgetHidden() override;
-  int VisibleWidgetCount() const override;
+  void UpdateClientPriority(PriorityClient* client) override;
+  int VisibleClientCount() const override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code) override;
@@ -177,8 +177,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void AddWidget(RenderWidgetHost* widget) override;
   void RemoveWidget(RenderWidgetHost* widget) override;
 #if defined(OS_ANDROID)
-  void UpdateWidgetImportance(ChildProcessImportance old_value,
-                              ChildProcessImportance new_value) override;
   ChildProcessImportance ComputeEffectiveImportance() override;
 #endif
   void SetSuddenTerminationAllowed(bool enabled) override;
@@ -490,6 +488,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::CommandLine& browser_cmd,
       base::CommandLine* renderer_cmd);
 
+  // Recompute |visible_clients_| and |effective_importance_| from
+  // |priority_clients_|.
+  void UpdateProcessPriorityInputs();
+
   // Inspects the current object state and sets/removes background priority if
   // appropriate. Should be called after any of the involved data members
   // change.
@@ -609,18 +611,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
 
-  // The count of currently visible widgets.  Since the host can be a container
-  // for multiple widgets, it uses this count to determine when it should be
-  // backgrounded.
-  int32_t visible_widgets_;
-
+  // These fields are cached values that are updated in
+  // UpdateProcessPriorityInputs, and are used to compute priority sent to
+  // ChildProcessLauncher.
+  // |visible_clients_|is the count of currently visible clients.
+  int32_t visible_clients_;
 #if defined(OS_ANDROID)
-  // Track count of number of widgets with each possible ChildProcessImportance
-  // value.
-  int32_t widget_importance_counts_[static_cast<size_t>(
-      ChildProcessImportance::COUNT)] = {0};
-
+  // Highest importance of all clients that contribute priority.
+  ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;
 #endif
+
+  // Clients that contribute priority to this proces.
+  base::flat_set<PriorityClient*> priority_clients_;
 
   // The set of widgets in this RenderProcessHostImpl.
   std::set<RenderWidgetHostImpl*> widgets_;

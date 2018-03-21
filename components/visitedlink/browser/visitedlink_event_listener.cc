@@ -92,7 +92,7 @@ class VisitedLinkUpdater {
     if (!process)
       return;  // Happens in tests
 
-    if (!process->VisibleWidgetCount())
+    if (!process->VisibleClientCount())
       return;
 
     if (reset_needed_) {

@@ -39,6 +39,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/drag_event_source_info.h"
@@ -112,6 +113,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public FrameTokenMessageQueue::Client,
       public InputRouterImplClient,
       public InputDispositionHandler,
+      public RenderProcessHostImpl::PriorityClient,
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
@@ -228,6 +230,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
   void SetCursor(const CursorInfo& cursor_info) override;
+
+  // RenderProcessHostImpl::PriorityClient implementation.
+  RenderProcessHost::Priority GetPriority() override;
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -871,13 +876,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether a page is loading or not.
   bool is_loading_;
 
-  // Indicates whether a page is hidden or not. It has to stay in sync with the
-  // most recent call to process_->WidgetRestored() / WidgetHidden().
+  // Indicates whether a page is hidden or not. Need to call
+  // process_->UpdateClientPriority when this value changes.
   bool is_hidden_;
 
 #if defined(OS_ANDROID)
-  // Tracks the current importance of widget, so the old value can be passed to
-  // RenderProcessHost on changes.
+  // Tracks the current importance of widget.
   ChildProcessImportance importance_ = ChildProcessImportance::NORMAL;
 #endif
 

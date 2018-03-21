@@ -57,7 +57,6 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -386,11 +385,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   process_->AddWidget(this);
   process_->GetSharedBitmapAllocationNotifier()->AddObserver(this);
 
-  // If we're initially visible, tell the process host that we're alive.
-  // Otherwise we'll notify the process host when we are first shown.
-  if (!hidden)
-    process_->WidgetRestored();
-
   latency_tracker_.Initialize(routing_id_, GetProcess()->GetID());
 
   SetupInputRouter();
@@ -674,7 +668,7 @@ void RenderWidgetHostImpl::WasHidden() {
   Send(new ViewMsg_WasHidden(routing_id_));
 
   // Tell the RenderProcessHost we were hidden.
-  process_->WidgetHidden();
+  process_->UpdateClientPriority(this);
 
   bool is_visible = false;
   NotificationService::current()->Notify(
@@ -702,7 +696,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   needs_repainting_on_restore_ = false;
   Send(new ViewMsg_WasShown(routing_id_, needs_repainting, latency_info));
 
-  process_->WidgetRestored();
+  process_->UpdateClientPriority(this);
 
   bool is_visible = true;
   NotificationService::current()->Notify(
@@ -732,9 +726,8 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
     return;
-  ChildProcessImportance old = importance_;
   importance_ = importance;
-  process_->UpdateWidgetImportance(old, importance_);
+  process_->UpdateClientPriority(this);
 }
 #endif
 
@@ -1607,6 +1600,15 @@ void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
   SetCursor(cursor);
 }
 
+RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
+  return {
+    is_hidden_,
+#if defined(OS_ANDROID)
+        importance_,
+#endif
+  };
+}
+
 mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
   if (associated_widget_input_handler_)
     return associated_widget_input_handler_.get();
@@ -1770,8 +1772,9 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // the |is_hidden_| change, so that the renderer will have correct visibility
   // set when respawned.
   if (!is_hidden_) {
-    process_->WidgetHidden();
     is_hidden_ = true;
+    if (!destroyed_)
+      process_->UpdateClientPriority(this);
   }
 
   // Reset this to ensure the hung renderer mechanism is working properly.

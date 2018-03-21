@@ -602,7 +602,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
   explicit VisitRelayingRenderProcessHost(
       content::BrowserContext* browser_context,
       VisitCountingContext* context)
-      : MockRenderProcessHost(browser_context), widgets_(0) {
+      : MockRenderProcessHost(browser_context) {
     OverrideBinderForTesting(
         mojom::VisitedLinkNotificationSink::Name_,
         base::Bind(&VisitCountingContext::Bind, base::Unretained(context)));
@@ -618,13 +618,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
         content::NotificationService::NoDetails());
   }
 
-  void WidgetRestored() override { widgets_++; }
-  void WidgetHidden() override { widgets_--; }
-  int VisibleWidgetCount() const override { return widgets_; }
-
  private:
-  int widgets_;
-
   DISALLOW_COPY_AND_ASSIGN(VisitRelayingRenderProcessHost);
 };
 
