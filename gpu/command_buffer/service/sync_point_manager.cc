@@ -133,7 +133,6 @@ void SyncPointOrderData::FinishProcessingOrderNumber(uint32_t order_num) {
   }
 
   for (OrderFence& order_fence : ensure_releases) {
-    DLOG(ERROR) << "Client did not release sync token as expected";
     order_fence.client_state->EnsureWaitReleased(order_fence.fence_release,
                                                  order_fence.release_callback);
   }
@@ -156,7 +155,6 @@ bool SyncPointOrderData::ValidateReleaseOrderNumber(
   // We should have an unprocessed order number lower than the wait order
   // number for the wait to be valid. It's not possible for wait order number to
   // equal next unprocessed order number, but we handle that defensively.
-  DCHECK_NE(wait_order_num, unprocessed_order_nums_.front());
   if (wait_order_num <= unprocessed_order_nums_.front())
     return false;
 
@@ -309,6 +307,7 @@ void SyncPointClientState::EnsureWaitReleased(uint64_t release,
 
   if (call_callback) {
     // This effectively releases the wait without releasing the fence.
+    DLOG(ERROR) << "Client did not release sync token as expected";
     callback.Run();
   }
 }
