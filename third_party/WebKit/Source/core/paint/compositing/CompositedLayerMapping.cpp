@@ -3350,6 +3350,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
 
   FloatSize offset_from_anchor_layout_object;
   const LayoutBoxModelObject* anchor_layout_object;
+  bool should_apply_anchor_overflow_clip = false;
   if (graphics_layer == squashing_layer_.get()) {
     // All squashed layers have the same clip and transform space, so we can use
     // the first squashed layer's layoutObject to map the squashing layer's
@@ -3371,21 +3372,31 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
            graphics_layer == scrolling_contents_layer_.get());
     anchor_layout_object = &owning_layer_.GetLayoutObject();
     IntSize offset = graphics_layer->OffsetFromLayoutObject();
-    AdjustForCompositedScrolling(graphics_layer, offset);
+    should_apply_anchor_overflow_clip =
+        AdjustForCompositedScrolling(graphics_layer, offset) &&
+        (RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
+         !owning_layer_.IsRootLayer());
     offset_from_anchor_layout_object = FloatSize(offset);
   }
+
+  LayoutView* root_view = anchor_layout_object->View();
+  while (root_view->GetFrame()->OwnerLayoutObject())
+    root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
+
   // Start with the bounds of the graphics layer in the space of the anchor
   // LayoutObject.
   FloatRect graphics_layer_bounds_in_object_space(graphics_layer_bounds);
   graphics_layer_bounds_in_object_space.Move(offset_from_anchor_layout_object);
+  if (should_apply_anchor_overflow_clip && anchor_layout_object != root_view) {
+    FloatRect clip_rect(
+        ToLayoutBox(anchor_layout_object)->OverflowClipRect(LayoutPoint()));
+    graphics_layer_bounds_in_object_space.Intersect(clip_rect);
+  }
 
   // Now map the bounds to its visible content rect in root view space,
   // including applying clips along the way.
   LayoutRect graphics_layer_bounds_in_root_view_space(
       graphics_layer_bounds_in_object_space);
-  LayoutView* root_view = anchor_layout_object->View();
-  while (root_view->GetFrame()->OwnerLayoutObject())
-    root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
 
   anchor_layout_object->MapToVisualRectInAncestorSpace(
       root_view, graphics_layer_bounds_in_root_view_space);
@@ -3529,7 +3540,7 @@ bool CompositedLayerMapping::NeedsRepaint(
                                                 : owning_layer_.NeedsRepaint();
 }
 
-void CompositedLayerMapping::AdjustForCompositedScrolling(
+bool CompositedLayerMapping::AdjustForCompositedScrolling(
     const GraphicsLayer* graphics_layer,
     IntSize& offset) const {
   if (graphics_layer == scrolling_contents_layer_.get() ||
@@ -3543,9 +3554,11 @@ void CompositedLayerMapping::AdjustForCompositedScrolling(
         // beginning of flow.
         ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
         offset.Expand(-scroll_offset.Width(), -scroll_offset.Height());
+        return true;
       }
     }
   }
+  return false;
 }
 
 void CompositedLayerMapping::PaintContents(
