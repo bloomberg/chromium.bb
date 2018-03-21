@@ -199,12 +199,12 @@ static jboolean JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  // Calling madvise(MADV_RANDOM) and prefetching the same region have the
-  // opposite effects.
-  // TODO(crbug.com/758566): add library prefetching that only prefetches
-  // regions not madvise(MADV_RANDOM)'d.
-  if (!ShouldDoOrderfileMemoryOptimization()) {
-    return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
+  if (!ShouldDoOrderfileMemoryOptimization() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceNativePrefetch)) {
+    return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNativePrefetchOrderedOnly));
   }
 #endif
   return false;
