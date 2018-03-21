@@ -344,10 +344,12 @@ TEST_F(DownloadTaskImplTest, Restarting) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(100, task_->GetPercentComplete());
 
   // Restart the task.
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
   session_task = Start();
+  EXPECT_EQ(0, task_->GetPercentComplete());
   ASSERT_TRUE(session_task);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
 
