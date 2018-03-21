@@ -23,16 +23,16 @@ struct StructTraits<viz::mojom::LocalSurfaceIdDataView, viz::LocalSurfaceId> {
     return local_surface_id.child_sequence_number();
   }
 
-  static const base::UnguessableToken& nonce(
+  static const base::UnguessableToken& embed_token(
       const viz::LocalSurfaceId& local_surface_id) {
-    return local_surface_id.nonce();
+    return local_surface_id.embed_token();
   }
 
   static bool Read(viz::mojom::LocalSurfaceIdDataView data,
                    viz::LocalSurfaceId* out) {
     out->parent_sequence_number_ = data.parent_sequence_number();
     out->child_sequence_number_ = data.child_sequence_number();
-    return data.ReadNonce(&out->nonce_) && out->is_valid();
+    return data.ReadEmbedToken(&out->embed_token_) && out->is_valid();
   }
 };
 

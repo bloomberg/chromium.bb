@@ -19,17 +19,15 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
   DCHECK_GE(parent_allocated_local_surface_id.parent_sequence_number(),
             last_known_local_surface_id_.parent_sequence_number());
-  // Thie verifies that we only update the nonce if the parent sequence number
-  // has changed.
-  DCHECK(parent_allocated_local_surface_id.parent_sequence_number() >
-             last_known_local_surface_id_.parent_sequence_number() ||
-         parent_allocated_local_surface_id.nonce() ==
-             last_known_local_surface_id_.nonce());
+  if (!last_known_local_surface_id_.embed_token().is_empty()) {
+    DCHECK_EQ(parent_allocated_local_surface_id.embed_token(),
+              last_known_local_surface_id_.embed_token());
+  }
 
   last_known_local_surface_id_.parent_sequence_number_ =
       parent_allocated_local_surface_id.parent_sequence_number_;
-  last_known_local_surface_id_.nonce_ =
-      parent_allocated_local_surface_id.nonce_;
+  last_known_local_surface_id_.embed_token_ =
+      parent_allocated_local_surface_id.embed_token_;
   return last_known_local_surface_id_;
 }
 

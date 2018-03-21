@@ -75,7 +75,7 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
 }
 
 // UpdateFromParent() on a child allocator should accept the parent's sequence
-// number and nonce. But it should continue to use its own child sequence
+// number and embed_token. But it should continue to use its own child sequence
 // number.
 TEST(ChildLocalSurfaceIdAllocatorTest,
      UpdateFromParentOnlyUpdatesExpectedLocalSurfaceIdComponents) {
@@ -88,8 +88,8 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
             parent_allocated_local_surface_id.parent_sequence_number());
   EXPECT_NE(preupdate_local_surface_id.child_sequence_number(),
             parent_allocated_local_surface_id.child_sequence_number());
-  EXPECT_NE(preupdate_local_surface_id.nonce(),
-            parent_allocated_local_surface_id.nonce());
+  EXPECT_NE(preupdate_local_surface_id.embed_token(),
+            parent_allocated_local_surface_id.embed_token());
 
   const LocalSurfaceId& returned_local_surface_id =
       parent_updated_child_allocator.UpdateFromParent(
@@ -101,8 +101,8 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
             parent_allocated_local_surface_id.parent_sequence_number());
   EXPECT_NE(postupdate_local_surface_id.child_sequence_number(),
             parent_allocated_local_surface_id.child_sequence_number());
-  EXPECT_EQ(postupdate_local_surface_id.nonce(),
-            parent_allocated_local_surface_id.nonce());
+  EXPECT_EQ(postupdate_local_surface_id.embed_token(),
+            parent_allocated_local_surface_id.embed_token());
   EXPECT_EQ(returned_local_surface_id,
             parent_updated_child_allocator.last_known_local_surface_id());
 }
@@ -125,8 +125,8 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
             postgenerateid_local_surface_id.parent_sequence_number());
   EXPECT_EQ(pregenerateid_local_surface_id.child_sequence_number() + 1,
             postgenerateid_local_surface_id.child_sequence_number());
-  EXPECT_EQ(pregenerateid_local_surface_id.nonce(),
-            postgenerateid_local_surface_id.nonce());
+  EXPECT_EQ(pregenerateid_local_surface_id.embed_token(),
+            postgenerateid_local_surface_id.embed_token());
   EXPECT_EQ(returned_local_surface_id,
             generating_child_allocator.last_known_local_surface_id());
 }
@@ -151,18 +151,19 @@ namespace {
 
 ::testing::AssertionResult NonceIsEmpty(
     const LocalSurfaceId& local_surface_id) {
-  if (local_surface_id.nonce().is_empty())
+  if (local_surface_id.embed_token().is_empty())
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "nonce() is not empty";
+  return ::testing::AssertionFailure() << "embed_token() is not empty";
 }
 
 LocalSurfaceId GetFakeParentAllocatedLocalSurfaceId() {
   constexpr uint32_t kParentSequenceNumber = 3;
   constexpr uint32_t kChildSequenceNumber = 2;
-  const base::UnguessableToken nonce = base::UnguessableToken::Create();
+  const base::UnguessableToken embed_token = base::UnguessableToken::Create();
 
-  return LocalSurfaceId(kParentSequenceNumber, kChildSequenceNumber, nonce);
+  return LocalSurfaceId(kParentSequenceNumber, kChildSequenceNumber,
+                        embed_token);
 }
 
 ChildLocalSurfaceIdAllocator GetParentUpdatedAllocator() {
