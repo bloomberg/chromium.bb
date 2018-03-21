@@ -25,6 +25,7 @@ class OAuthTokenGetter {
     AUTH_ERROR,
   };
 
+  // TODO(crbug.com/824488): Change to use base::OnceCallback.
   typedef base::Callback<void(Status status,
                               const std::string& user_email,
                               const std::string& access_token)>

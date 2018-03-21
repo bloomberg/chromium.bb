@@ -44,8 +44,9 @@ static void JNI_JniOAuthTokenGetter_ResolveOAuthTokenCallback(
   delete callback;
 }
 
-JniOAuthTokenGetter::JniOAuthTokenGetter() {
+JniOAuthTokenGetter::JniOAuthTokenGetter() : weak_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 JniOAuthTokenGetter::~JniOAuthTokenGetter() {
@@ -64,6 +65,10 @@ void JniOAuthTokenGetter::InvalidateCache() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JniOAuthTokenGetter_invalidateCache(env);
+}
+
+base::WeakPtr<JniOAuthTokenGetter> JniOAuthTokenGetter::GetWeakPtr() {
+  return weak_ptr_;
 }
 
 }  // namespace remoting

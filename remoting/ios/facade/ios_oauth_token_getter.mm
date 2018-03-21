@@ -14,7 +14,9 @@
 
 namespace remoting {
 
-IosOauthTokenGetter::IosOauthTokenGetter() {}
+IosOauthTokenGetter::IosOauthTokenGetter() : weak_factory_(this) {
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+}
 
 IosOauthTokenGetter::~IosOauthTokenGetter() {}
 
@@ -48,6 +50,10 @@ void IosOauthTokenGetter::InvalidateCache() {
   // TODO(crbug.com/782071): Implement this once we make the caller invalidate
   // the cache.
   NOTIMPLEMENTED();
+}
+
+base::WeakPtr<IosOauthTokenGetter> IosOauthTokenGetter::GetWeakPtr() {
+  return weak_ptr_;
 }
 
 }  // namespace remoting

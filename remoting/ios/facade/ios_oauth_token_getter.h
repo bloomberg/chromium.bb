@@ -6,13 +6,14 @@
 #define REMOTING_IOS_FACADE_IOS_OAUTH_TOKEN_GETTER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
 
 namespace remoting {
 
 // The OAuthTokenGetter implementation on iOS client that uses
-// RemotingService.instance.authentication to authenticate. Depending on the
-// RemotingAuthentication implementation, this class may be single-threaded.
+// RemotingService.instance.authentication to authenticate. Please use it only
+// on one thread.
 class IosOauthTokenGetter : public OAuthTokenGetter {
  public:
   IosOauthTokenGetter();
@@ -22,7 +23,11 @@ class IosOauthTokenGetter : public OAuthTokenGetter {
   void CallWithToken(const TokenCallback& on_access_token) override;
   void InvalidateCache() override;
 
+  base::WeakPtr<IosOauthTokenGetter> GetWeakPtr();
+
  private:
+  base::WeakPtr<IosOauthTokenGetter> weak_ptr_;
+  base::WeakPtrFactory<IosOauthTokenGetter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(IosOauthTokenGetter);
 };
 

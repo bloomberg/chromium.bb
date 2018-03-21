@@ -168,6 +168,7 @@ class ChromotingSession::Core : public ClientUserInterface,
   // |signaling_| must outlive |client_|, so it must be declared above
   // |client_|.
   std::unique_ptr<XmppSignalStrategy> signaling_;
+  std::unique_ptr<OAuthTokenGetter> token_getter_;
   std::unique_ptr<ChromotingClient> client_;
 
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
@@ -482,6 +483,8 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       session_context_->runtime->url_requester(), xmpp_config));
 
+  token_getter_ = session_context_->runtime->CreateOAuthTokenGetter();
+
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signaling_.get(),
@@ -492,8 +495,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);
   transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url(),
-      session_context_->runtime->token_getter());
+      ServiceUrls::GetInstance()->ice_config_url(), token_getter_.get());
 
 #if defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (session_context_->info.flags.find("useWebrtc") != std::string::npos) {

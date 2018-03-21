@@ -13,6 +13,7 @@
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "remoting/client/oauth_token_getter_proxy.h"
 
 namespace {
 
@@ -62,12 +63,6 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
                                                  base::MessageLoop::TYPE_IO);
   url_requester_ =
       new URLRequestContextGetter(network_task_runner_, file_task_runner_);
-
-  log_writer_ = std::make_unique<TelemetryLogWriter>(
-      kTelemetryBaseUrl,
-      std::make_unique<ChromiumUrlRequestFactory>(url_requester()),
-      base::BindRepeating(&ChromotingClientRuntime::RequestAuthTokenForLogger,
-                          base::Unretained(this)));
 }
 
 ChromotingClientRuntime::~ChromotingClientRuntime() {
@@ -85,21 +80,21 @@ ChromotingClientRuntime::~ChromotingClientRuntime() {
   }
 }
 
-void ChromotingClientRuntime::SetDelegate(
+void ChromotingClientRuntime::Init(
     ChromotingClientRuntime::Delegate* delegate) {
+  DCHECK(delegate);
+  DCHECK(!delegate_);
   delegate_ = delegate;
+  log_writer_ = std::make_unique<TelemetryLogWriter>(
+      kTelemetryBaseUrl,
+      std::make_unique<ChromiumUrlRequestFactory>(url_requester()),
+      CreateOAuthTokenGetter());
 }
 
-void ChromotingClientRuntime::RequestAuthTokenForLogger() {
-  if (delegate_) {
-    delegate_->RequestAuthTokenForLogger();
-  } else {
-    DLOG(ERROR) << "ClientRuntime Delegate is null.";
-  }
-}
-
-OAuthTokenGetter* ChromotingClientRuntime::token_getter() {
-  return delegate_->token_getter();
+std::unique_ptr<OAuthTokenGetter>
+ChromotingClientRuntime::CreateOAuthTokenGetter() {
+  return std::make_unique<OAuthTokenGetterProxy>(
+      delegate_->oauth_token_getter(), ui_task_runner());
 }
 
 }  // namespace remoting

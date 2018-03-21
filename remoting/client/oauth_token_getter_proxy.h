@@ -24,7 +24,7 @@ namespace remoting {
 class OAuthTokenGetterProxy : public OAuthTokenGetter {
  public:
   OAuthTokenGetterProxy(
-      std::unique_ptr<OAuthTokenGetter> token_getter,
+      base::WeakPtr<OAuthTokenGetter> token_getter,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~OAuthTokenGetterProxy() override;
 
@@ -33,9 +33,7 @@ class OAuthTokenGetterProxy : public OAuthTokenGetter {
   void InvalidateCache() override;
 
  private:
-  class Core;
-
-  std::unique_ptr<Core> core_;
+  base::WeakPtr<OAuthTokenGetter> token_getter_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetterProxy);

@@ -25,6 +25,8 @@ struct DefaultSingletonTraits;
 
 namespace remoting {
 
+class JniOAuthTokenGetter;
+
 // JniRuntimeDelegate is a singleton that hooks into delegate role for
 // the ChromotingClientRuntime object. This class handles Android specific
 // integrations for the runtime. Proxies outgoing JNI calls from
@@ -36,14 +38,10 @@ class JniRuntimeDelegate : public ChromotingClientRuntime::Delegate {
   // we close. Its components are reused across |JniRuntimeDelegate|s.
   static JniRuntimeDelegate* GetInstance();
 
-  // Fetch OAuth token for the telemetry logger. Call on UI thread.
-  void FetchAuthToken();
-
   // remoting::ChromotingClientRuntime::Delegate overrides.
   void RuntimeWillShutdown() override;
   void RuntimeDidShutdown() override;
-  void RequestAuthTokenForLogger() override;
-  OAuthTokenGetter* token_getter() override;
+  base::WeakPtr<OAuthTokenGetter> oauth_token_getter() override;
 
  private:
   JniRuntimeDelegate();
@@ -59,7 +57,7 @@ class JniRuntimeDelegate : public ChromotingClientRuntime::Delegate {
   void DetachFromVmAndSignal(base::WaitableEvent* waiter);
 
   ChromotingClientRuntime* runtime_;
-  std::unique_ptr<OAuthTokenGetter> token_getter_;
+  std::unique_ptr<JniOAuthTokenGetter> token_getter_;
 
   friend struct base::DefaultSingletonTraits<JniRuntimeDelegate>;
 
