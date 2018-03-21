@@ -8,6 +8,15 @@
 #error "This file requires ARC support."
 #endif
 
+// Accessibility identifiers for automated testing.
+NSString* const kTabGridDoneButtonIdentifier = @"TabGridDoneButtonIdentifier";
+NSString* const kTabGridCloseAllButtonIdentifier =
+    @"TabGridCloseAllButtonIdentifier";
+NSString* const kTabGridIncognitoTabsEmptyStateIdentifier =
+    @"TabGridIncognitoTabsEmptyStateIdentifier";
+NSString* const kTabGridRegularTabsEmptyStateIdentifier =
+    @"TabGridRegularTabsEmptyStateIdentifier";
+
 // The color of the text buttons in the toolbars.
 const int kTabGridToolbarTextButtonColor = 0xFFFFFF;
 

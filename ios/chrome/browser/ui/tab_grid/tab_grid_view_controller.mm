@@ -23,10 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-// The accessibility label for the done button for use in test automation.
-NSString* const kTabGridDoneButtonAccessibilityID =
-    @"TabGridDoneButtonAccessibilityID";
-
 namespace {
 // Types of configurations of this view controller.
 typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
@@ -310,6 +306,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [viewController didMoveToParentViewController:self];
   viewController.emptyStateView =
       [[TabGridEmptyStateView alloc] initWithPage:TabGridPageIncognitoTabs];
+  viewController.emptyStateView.accessibilityIdentifier =
+      kTabGridIncognitoTabsEmptyStateIdentifier;
   viewController.theme = GridThemeDark;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -342,6 +340,8 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [viewController didMoveToParentViewController:self];
   viewController.emptyStateView =
       [[TabGridEmptyStateView alloc] initWithPage:TabGridPageRegularTabs];
+  viewController.emptyStateView.accessibilityIdentifier =
+      kTabGridRegularTabsEmptyStateIdentifier;
   viewController.theme = GridThemeLight;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -525,7 +525,9 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   self.doneButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.closeAllButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
+  self.doneButton.accessibilityIdentifier = kTabGridDoneButtonIdentifier;
+  self.closeAllButton.accessibilityIdentifier =
+      kTabGridCloseAllButtonIdentifier;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
             forControlEvents:UIControlEventTouchUpInside];
