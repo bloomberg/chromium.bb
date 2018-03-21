@@ -462,15 +462,16 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReportWorked() {
 static int g_instance_count = 0;
 
 DevToolsFileSystemIndexer::DevToolsFileSystemIndexer() {
-  ++g_instance_count;
+  impl_task_runner()->PostTask(FROM_HERE,
+                               base::BindOnce([]() { ++g_instance_count; }));
 }
 
 DevToolsFileSystemIndexer::~DevToolsFileSystemIndexer() {
-  --g_instance_count;
-  if (!g_instance_count) {
-    impl_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce([]() { g_trigram_index.Get().Reset(); }));
-  }
+  impl_task_runner()->PostTask(FROM_HERE, base::BindOnce([]() {
+                                 --g_instance_count;
+                                 if (!g_instance_count)
+                                   g_trigram_index.Get().Reset();
+                               }));
 }
 
 scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>
