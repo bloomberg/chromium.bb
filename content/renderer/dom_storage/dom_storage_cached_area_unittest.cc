@@ -29,8 +29,8 @@ class MockProxy : public DOMStorageProxy {
 
   void LoadArea(int connection_id,
                 DOMStorageValuesMap* values,
-                const CompletionCallback& callback) override {
-    pending_callbacks_.push_back(callback);
+                CompletionCallback callback) override {
+    pending_callbacks_.push_back(std::move(callback));
     observed_load_area_ = true;
     observed_connection_id_ = connection_id;
     *values = load_area_return_values_;
@@ -41,8 +41,8 @@ class MockProxy : public DOMStorageProxy {
                const base::string16& value,
                const base::NullableString16& old_value,
                const GURL& page_url,
-               const CompletionCallback& callback) override {
-    pending_callbacks_.push_back(callback);
+               CompletionCallback callback) override {
+    pending_callbacks_.push_back(std::move(callback));
     observed_set_item_ = true;
     observed_connection_id_ = connection_id;
     observed_key_ = key;
@@ -54,8 +54,8 @@ class MockProxy : public DOMStorageProxy {
                   const base::string16& key,
                   const base::NullableString16& old_value,
                   const GURL& page_url,
-                  const CompletionCallback& callback) override {
-    pending_callbacks_.push_back(callback);
+                  CompletionCallback callback) override {
+    pending_callbacks_.push_back(std::move(callback));
     observed_remove_item_ = true;
     observed_connection_id_ = connection_id;
     observed_key_ = key;
@@ -64,8 +64,8 @@ class MockProxy : public DOMStorageProxy {
 
   void ClearArea(int connection_id,
                  const GURL& page_url,
-                 const CompletionCallback& callback) override {
-    pending_callbacks_.push_back(callback);
+                 CompletionCallback callback) override {
+    pending_callbacks_.push_back(std::move(callback));
     observed_clear_area_ = true;
     observed_connection_id_ = connection_id;
     observed_page_url_ = page_url;
@@ -91,7 +91,7 @@ class MockProxy : public DOMStorageProxy {
 
   void CompleteOnePendingCallback(bool success) {
     ASSERT_TRUE(!pending_callbacks_.empty());
-    pending_callbacks_.front().Run(success);
+    std::move(pending_callbacks_.front()).Run(success);
     pending_callbacks_.pop_front();
   }
 

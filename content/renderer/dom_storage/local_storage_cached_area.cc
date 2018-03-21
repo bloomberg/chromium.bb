@@ -32,20 +32,21 @@ enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
  public:
   static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
-      const base::Callback<void(bool)>& callback) {
+      base::OnceCallback<void(bool)> callback) {
     mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo ptr_info;
     auto request = mojo::MakeRequest(&ptr_info);
     mojo::MakeStrongAssociatedBinding(
-        base::WrapUnique(new GetAllCallback(callback)), std::move(request));
+        base::WrapUnique(new GetAllCallback(std::move(callback))),
+        std::move(request));
     return ptr_info;
   }
 
  private:
-  explicit GetAllCallback(const base::Callback<void(bool)>& callback)
-      : m_callback(callback) {}
-  void Complete(bool success) override { m_callback.Run(success); }
+  explicit GetAllCallback(base::OnceCallback<void(bool)> callback)
+      : m_callback(std::move(callback)) {}
+  void Complete(bool success) override { std::move(m_callback).Run(success); }
 
-  base::Callback<void(bool)> m_callback;
+  base::OnceCallback<void(bool)> m_callback;
 };
 
 }  // namespace
@@ -428,8 +429,8 @@ void LocalStorageCachedArea::EnsureLoaded() {
   leveldb::mojom::DatabaseError status = leveldb::mojom::DatabaseError::OK;
   std::vector<content::mojom::KeyValuePtr> data;
   leveldb_->GetAll(GetAllCallback::CreateAndBind(
-                       base::Bind(&LocalStorageCachedArea::OnGetAllComplete,
-                                  weak_factory_.GetWeakPtr())),
+                       base::BindOnce(&LocalStorageCachedArea::OnGetAllComplete,
+                                      weak_factory_.GetWeakPtr())),
                    &status, &data);
 
   DOMStorageValuesMap values;

@@ -17,28 +17,28 @@ namespace content {
 // Abstract interface for cached area, renderer to browser communications.
 class DOMStorageProxy : public base::RefCounted<DOMStorageProxy> {
  public:
-  typedef base::Callback<void(bool)> CompletionCallback;
+  typedef base::OnceCallback<void(bool)> CompletionCallback;
 
   virtual void LoadArea(int connection_id,
                         DOMStorageValuesMap* values,
-                        const CompletionCallback& callback) = 0;
+                        CompletionCallback callback) = 0;
 
   virtual void SetItem(int connection_id,
                        const base::string16& key,
                        const base::string16& value,
                        const base::NullableString16& old_value,
                        const GURL& page_url,
-                       const CompletionCallback& callback) = 0;
+                       CompletionCallback callback) = 0;
 
   virtual void RemoveItem(int connection_id,
                           const base::string16& key,
                           const base::NullableString16& old_value,
                           const GURL& page_url,
-                          const CompletionCallback& callback) = 0;
+                          CompletionCallback callback) = 0;
 
   virtual void ClearArea(int connection_id,
                          const GURL& page_url,
-                         const CompletionCallback& callback) = 0;
+                         CompletionCallback callback) = 0;
 
  protected:
   friend class base::RefCounted<DOMStorageProxy>;

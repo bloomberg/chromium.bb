@@ -110,21 +110,21 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   // DOMStorageProxy interface for use by DOMStorageCachedArea.
   void LoadArea(int connection_id,
                 DOMStorageValuesMap* values,
-                const CompletionCallback& callback) override;
+                CompletionCallback callback) override;
   void SetItem(int connection_id,
                const base::string16& key,
                const base::string16& value,
                const base::NullableString16& old_value,
                const GURL& page_url,
-               const CompletionCallback& callback) override;
+               CompletionCallback callback) override;
   void RemoveItem(int connection_id,
                   const base::string16& key,
                   const base::NullableString16& old_value,
                   const GURL& page_url,
-                  const CompletionCallback& callback) override;
+                  CompletionCallback callback) override;
   void ClearArea(int connection_id,
                  const GURL& page_url,
-                 const CompletionCallback& callback) override;
+                 CompletionCallback callback) override;
 
  private:
   // Struct to hold references to our contained areas and
@@ -141,7 +141,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
 
   ~ProxyImpl() override {}
 
-  void PushPendingCallback(const CompletionCallback& callback) {
+  void PushPendingCallback(CompletionCallback callback) {
     // Terminate the renderer if an excessive number of calls are made,
     // This is indicative of script in an infinite loop or being malicious.
     // It's better to crash intentionally than by running the system OOM
@@ -154,11 +154,11 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
     // to more reliably commit changes during shutdown.
     if (pending_callbacks_.empty())
       blink::Platform::Current()->SuddenTerminationChanged(false);
-    pending_callbacks_.push_back(callback);
+    pending_callbacks_.push_back(std::move(callback));
   }
 
   CompletionCallback PopPendingCallback() {
-    CompletionCallback callback = pending_callbacks_.front();
+    CompletionCallback callback = std::move(pending_callbacks_.front());
     pending_callbacks_.pop_front();
     if (pending_callbacks_.empty())
       blink::Platform::Current()->SuddenTerminationChanged(true);
@@ -238,10 +238,10 @@ void DomStorageDispatcher::ProxyImpl::Shutdown() {
   pending_callbacks_.clear();
 }
 
-void DomStorageDispatcher::ProxyImpl::LoadArea(
-    int connection_id, DOMStorageValuesMap* values,
-    const CompletionCallback& callback) {
-  PushPendingCallback(callback);
+void DomStorageDispatcher::ProxyImpl::LoadArea(int connection_id,
+                                               DOMStorageValuesMap* values,
+                                               CompletionCallback callback) {
+  PushPendingCallback(std::move(callback));
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_LoadStorageArea(
       connection_id, values));
 }
@@ -252,8 +252,8 @@ void DomStorageDispatcher::ProxyImpl::SetItem(
     const base::string16& value,
     const base::NullableString16& old_value,
     const GURL& page_url,
-    const CompletionCallback& callback) {
-  PushPendingCallback(callback);
+    CompletionCallback callback) {
+  PushPendingCallback(std::move(callback));
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_SetItem(
       connection_id, key, value, old_value, page_url));
 }
@@ -263,16 +263,16 @@ void DomStorageDispatcher::ProxyImpl::RemoveItem(
     const base::string16& key,
     const base::NullableString16& old_value,
     const GURL& page_url,
-    const CompletionCallback& callback) {
-  PushPendingCallback(callback);
+    CompletionCallback callback) {
+  PushPendingCallback(std::move(callback));
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_RemoveItem(
       connection_id, key, old_value, page_url));
 }
 
 void DomStorageDispatcher::ProxyImpl::ClearArea(int connection_id,
-                      const GURL& page_url,
-                      const CompletionCallback& callback) {
-  PushPendingCallback(callback);
+                                                const GURL& page_url,
+                                                CompletionCallback callback) {
+  PushPendingCallback(std::move(callback));
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_Clear(
       connection_id, page_url));
 }
