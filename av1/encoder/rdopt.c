@@ -1699,10 +1699,31 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                               dst_stride, eob, reduced_tx_set);
 }
 
-void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                    BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
-                    TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
-                    OUTPUT_STATUS output_status) {
+static int find_tx_size_rd_info(TXB_RD_RECORD *cur_record, const uint32_t hash);
+
+static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
+                                   int blk_col, BLOCK_SIZE plane_bsize,
+                                   TX_SIZE tx_size) {
+  int16_t hash_data[64 * 64];
+  int16_t *cur_hash_row = hash_data;
+  const int diff_stride = block_size_wide[plane_bsize];
+  const int16_t *diff = x->plane[plane].src_diff;
+  const int16_t *cur_diff_row = diff + 4 * blk_row * diff_stride + 4 * blk_col;
+  const int txb_w = tx_size_wide[tx_size];
+  const int txb_h = tx_size_high[tx_size];
+  for (int i = 0; i < txb_h; i++) {
+    memcpy(cur_hash_row, cur_diff_row, sizeof(*hash_data) * txb_w);
+    cur_hash_row += txb_w;
+    cur_diff_row += diff_stride;
+  }
+  return av1_get_crc_value(&x->mb_rd_record.crc_calculator,
+                           (uint8_t *)hash_data, 2 * txb_w * txb_h);
+}
+
+void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
+                TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
+                OUTPUT_STATUS output_status) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
 #if CONFIG_DIST_8X8
@@ -1831,27 +1852,6 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       *out_dist = *out_sse;
     }
   }
-}
-
-static int find_tx_size_rd_info(TXB_RD_RECORD *cur_record, const uint32_t hash);
-
-static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
-                                   int blk_col, BLOCK_SIZE plane_bsize,
-                                   TX_SIZE tx_size) {
-  int16_t hash_data[64 * 64];
-  int16_t *cur_hash_row = hash_data;
-  const int diff_stride = block_size_wide[plane_bsize];
-  const int16_t *diff = x->plane[plane].src_diff;
-  const int16_t *cur_diff_row = diff + 4 * blk_row * diff_stride + 4 * blk_col;
-  const int txb_w = tx_size_wide[tx_size];
-  const int txb_h = tx_size_high[tx_size];
-  for (int i = 0; i < txb_h; i++) {
-    memcpy(cur_hash_row, cur_diff_row, sizeof(*hash_data) * txb_w);
-    cur_hash_row += txb_w;
-    cur_diff_row += diff_stride;
-  }
-  return av1_get_crc_value(&x->mb_rd_record.crc_calculator,
-                           (uint8_t *)hash_data, 2 * txb_w * txb_h);
 }
 
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
@@ -1997,9 +1997,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &rate_cost);
     }
-    av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
-                   &this_rd_stats.dist, &this_rd_stats.sse,
-                   OUTPUT_HAS_PREDICTED_PIXELS);
+    dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
+               &this_rd_stats.dist, &this_rd_stats.sse,
+               OUTPUT_HAS_PREDICTED_PIXELS);
 
     this_rd_stats.rate = rate_cost;
 

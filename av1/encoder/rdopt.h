@@ -66,11 +66,6 @@ int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
 int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
                             int bit_depth, int *val_count);
 
-void av1_dist_block(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                    BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
-                    TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
-                    OUTPUT_STATUS output_status);
-
 #if CONFIG_DIST_8X8
 int64_t av1_dist_8x8(const struct AV1_COMP *const cpi, const MACROBLOCK *x,
                      const uint8_t *src, int src_stride, const uint8_t *dst,
