@@ -65,9 +65,9 @@
       }
     </style>
     <settings-toggle-button id="autofillToggle"
-        class="first primary-toggle"
+        class="first"
         aria-label="$i18n{autofill}" no-extension-indicator
-        label="[[getOnOffLabel_(prefs.autofill.enabled.value)]]"
+        label="$i18n{autofillFormsLabel}"
         pref="{{prefs.autofill.enabled}}">
     </settings-toggle-button>
     <template is="dom-if" if="[[prefs.autofill.enabled.extensionId]]">
