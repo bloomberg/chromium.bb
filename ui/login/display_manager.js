@@ -385,12 +385,12 @@ cr.define('cr.ui.login', function() {
      * @param {string} name Accelerator name.
      */
     handleAccelerator: function(name) {
-      if (this.currentScreen.ignoreAccelerators) {
+      if (this.currentScreen && this.currentScreen.ignoreAccelerators) {
         return;
       }
       var currentStepId = this.screens_[this.currentStep_];
       if (name == ACCELERATOR_CANCEL) {
-        if (this.currentScreen.cancel) {
+        if (this.currentScreen && this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
       } else if (name == ACCELERATOR_ENABLE_DEBBUGING) {

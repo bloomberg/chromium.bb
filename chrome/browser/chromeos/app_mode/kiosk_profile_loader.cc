@@ -109,14 +109,13 @@ class KioskProfileLoader::CryptohomedChecker
       return;
     }
 
-    if (!is_mounted.value())
-      SYSLOG(ERROR) << "Cryptohome is mounted before launching kiosk app.";
-
     // Proceed only when cryptohome is not mounded or running on dev box.
-    if (!is_mounted.value() || !base::SysInfo::IsRunningOnChromeOS())
+    if (!is_mounted.value() || !base::SysInfo::IsRunningOnChromeOS()) {
       ReportCheckResult(KioskAppLaunchError::NONE);
-    else
+    } else {
+      SYSLOG(ERROR) << "Cryptohome is mounted before launching kiosk app.";
       ReportCheckResult(KioskAppLaunchError::ALREADY_MOUNTED);
+    }
   }
 
   void ReportCheckResult(KioskAppLaunchError::Error error) {
