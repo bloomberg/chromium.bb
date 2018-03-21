@@ -67,6 +67,11 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.use_skia_renderer;
   }
 
+  static bool use_skia_deferred_display_list(
+      const viz::RendererSettings& input) {
+    return input.use_skia_deferred_display_list;
+  }
+
   static bool allow_overlays(const viz::RendererSettings& input) {
     return input.allow_overlays;
   }
