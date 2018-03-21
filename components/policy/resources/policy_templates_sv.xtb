@@ -303,14 +303,6 @@
       Med den här principen kan användaren få en avisering om att webbläsaren bör eller måste startas om. Om principen lämnas utan inställning framgår det av en diskret ändring i menyn i <ph name="PRODUCT_NAME" /> att omstart krävs. Med inställningen Rekommenderas visas ett återkommande meddelande för användaren att en omstart rekommenderas. Användaren kan ignorera meddelandet och skjuta upp omstarten. Med inställningen Krävs visas ett återkommande meddelande om att webbläsaren kommer att startas om efter en viss tid. Tidsperioden är sju dagar som standard och kan konfigureras via principen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Användarens session återställs efter omstarten.</translation>
-<translation id="2075434678547407637">Ger dig möjlighet att styra om videor får spelas upp automatiskt (utan användarens tillstånd) tillsammans med ljudinnehåll i <ph name="PRODUCT_NAME" />.
-
-      Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> spela upp media automatiskt.
-      Om principen är inställd på falskt får <ph name="PRODUCT_NAME" /> inte spela upp media automatiskt.
-      <ph name="PRODUCT_NAME" /> får inte spela upp media automatiskt som standard.
-
-      Observera att om <ph name="PRODUCT_NAME" /> körs när principen ändras tillämpas den endast på nya flikar som öppnas. Därför kan den tidigare inställningen gälla för vissa flikar.
-      </translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2077273864382355561">Skärmavstängningstid när enheten drivs av batteriet</translation>
 <translation id="2082205219176343977">Konfigurera lägsta tillåtna Chrome-version för enheten.</translation>
@@ -355,9 +347,6 @@
           Om inställningen konfigureras uppmanas användaren att ange lösenord på låsskärmen beroende på inställningen.
 
           Om inställningen inte konfigureras uppmanas användaren att ange lösenord på låsskärmen varje dag.</translation>
-<translation id="2188722565665306629">Gör att du kan ställa in under hur lång tid som uppmaningar om att starta om <ph name="PRODUCT_NAME" /> ska visas när en uppdatering väntar.
-
-      Med den här principen kan du ställa in under hur lång tid (i millisekunder) som användaren ska få upprepade aviseringar om att <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) behöver startas om på grund av en uppdatering. Under den tiden visas upprepade uppmaningar att starta om för användaren utifrån principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Om principen lämnas utan inställning används standardperioden 604 800 000 millisekunder (en vecka).</translation>
 <translation id="2194470398825717446">Den här principen har fasats ut i M61. Använd EcryptfsMigrationStrategy i stället.
 
       Anger beteendet för en enhet som levererades med ecryptfs och måste övergå till ext4-kryptering.

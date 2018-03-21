@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
 <translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
 <translation id="2091887806945687916">音訊</translation>
-<translation id="209354263896846928">在畫面底部存取網址列</translation>
 <translation id="2095887075102408547">啟用這項功能後，Chrome 會先使用 Google 伺服器壓縮您要造訪的網頁資料，然後再下載這些網頁。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2111511281910874386">前往指定頁面</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">這會將網站儲存的 <ph name="SIZE_IN_KB" /> 的資料全部清除。</translation>
 <translation id="3029613699374795922">已下載 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
-<translation id="3030708446010914655">在這裡存取網址列</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">定位功能已關閉，請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟這項功能。</translation>
 <translation id="307908932405420782">系統即將顯示更多文章供你閱覽，陪你度過美好的早晨！</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">確定要重設 Data Saver 嗎？</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用了過多記憶體，因此遭到 Chrome 暫停。</translation>
-<translation id="3734660163659757482">往上拉即可查看書籤和其他內容</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3739899004075612870">已加入 <ph name="PRODUCT_NAME" /> 書籤</translation>
 <translation id="3744111309925758534">其他應用程式佔 <ph name="MEGABYTES" /> MB</translation>

@@ -87,6 +87,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1729516292547892356">To view virtual reality content, update Google VR Services</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Updated <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Sync your bookmarks</translation>
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
@@ -125,7 +126,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
 <translation id="2091887806945687916">Sound</translation>
-<translation id="209354263896846928">Access the address bar at the bottom of your screen</translation>
 <translation id="2095887075102408547">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimised or seen by Google.</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2111511281910874386">Go to page</translation>
@@ -224,7 +224,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="300526633675317032">This will clear all <ph name="SIZE_IN_KB" /> of website storage.</translation>
 <translation id="3029613699374795922">Downloaded <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Passphrases do not match</translation>
-<translation id="3030708446010914655">Access the address bar here</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Location is off; turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">More articles will appear soon. Enjoy your morning!</translation>
@@ -295,7 +294,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3712575778697986964">Reset Data Saver?</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
-<translation id="3734660163659757482">Pull up to see bookmarks and more</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB other apps</translation>
@@ -789,6 +787,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Open image</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB downloaded</translation>
+<translation id="8249310407154411074">Move to top</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8260126382462817229">Try signing in again</translation>
 <translation id="8261506727792406068">Delete</translation>

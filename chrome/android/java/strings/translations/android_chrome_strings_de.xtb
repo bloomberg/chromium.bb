@@ -125,7 +125,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Melden Sie sich in Chrome an, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten.</translation>
 <translation id="2091887806945687916">Ton</translation>
-<translation id="209354263896846928">Die Adressleiste befindet sich am unteren Bildschirmrand</translation>
 <translation id="2095887075102408547">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um besuchte Seiten vor dem Download zu komprimieren. Über private Verbindungen (HTTPS) oder in Inkognito-Tabs aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="2111511281910874386">Seite aufrufen</translation>
@@ -224,7 +223,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="300526633675317032">Alle <ph name="SIZE_IN_KB" /> des Websitespeichers werden gelöscht.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB heruntergeladen</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
-<translation id="3030708446010914655">Hier können Sie auf die Adressleiste zugreifen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="307908932405420782">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
@@ -295,7 +293,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
-<translation id="3734660163659757482">Nach oben ziehen, um Lesezeichen und weitere Inhalte anzuzeigen</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB sonstiger Apps</translation>

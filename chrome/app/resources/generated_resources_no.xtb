@@ -374,7 +374,7 @@
 <translation id="155865706765934889">Styreflate</translation>
 <translation id="1559235587769913376">Angi Unicode-tegn</translation>
 <translation id="1566049601598938765">Nettsted</translation>
-<translation id="1567387640189251553">Et annet tastatur er koblet til etter at du sist skrev inn passordet ditt. Det prøver kanskje å stjele tastetrykkene dine.</translation>
+<translation id="1567387640189251553">Et annet tastatur er koblet til etter at du sist skrev inn passordet ditt. Det brukes kanskje til å stjele tastetrykkene dine.</translation>
 <translation id="1567993339577891801">JavaScript-konsoll</translation>
 <translation id="1568067597247500137">Kutt lyden for nettsted</translation>
 <translation id="1568323446248056064">Åpne skjerminnstillingene på enheten</translation>
@@ -967,6 +967,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2508428939232952663">Google Play Butikk-konto</translation>
 <translation id="2509495747794740764">Skaleringsverdien må være et tall mellom 10 og 200.</translation>
 <translation id="2509566264613697683">8x</translation>
+<translation id="2512222046227390255">Fyll ut skjemaer automatisk</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Skann</translation>
 <translation id="2518024842978892609">Bruk klientsertifikatene dine</translation>
@@ -3597,6 +3598,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6639554308659482635">SQLite-minne</translation>
 <translation id="6641138807883536517">Det tilfeldig genererte sikker modul-passordet er ikke tilgjengelig. Dette er vanlig etter en Powerwash.</translation>
 <translation id="6643016212128521049">Tøm</translation>
+<translation id="6644512095122093795">Tilbud om å lagre passord</translation>
 <translation id="6644846457769259194">Oppdaterer enheten din (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Nettadresse for tilbakekalling av Netscape-autoritetssertifikat</translation>
 <translation id="6647838571840953560">Nå på <ph name="CHANNEL_NAME" /></translation>

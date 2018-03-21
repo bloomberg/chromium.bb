@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
 <translation id="2091887806945687916">音声</translation>
-<translation id="209354263896846928">アドレスバーは画面下部にあります</translation>
 <translation id="2095887075102408547">この機能が有効になっている場合、アクセスしたページはダウンロード前に Google サーバーで圧縮されます。プライベート接続（HTTPS）やシークレット タブでアクセスしたページには、Google による最適化や確認は行われません。</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2111511281910874386">ページを開く</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> をすべて消去します。</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB をダウンロード済み</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
-<translation id="3030708446010914655">アドレスバーはこちらです</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置情報が OFF になっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で ON にしてください。</translation>
 <translation id="307908932405420782">記事は随時更新されます。また後でご覧ください。</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">データセーバーをリセットしますか？</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3716182511346448902">このページは大量のメモリを使用しているため、Chrome により一時停止されました。</translation>
-<translation id="3734660163659757482">上にスワイプしてブックマークなどを表示</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>

@@ -967,6 +967,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2508428939232952663">Google Play Butik-konto</translation>
 <translation id="2509495747794740764">Skaleringsværdien skal være et tal mellem 10 og 200.</translation>
 <translation id="2509566264613697683">8x</translation>
+<translation id="2512222046227390255">Udfyld formularer automatisk</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Scan</translation>
 <translation id="2518024842978892609">Brug dine klientcertifikater</translation>
@@ -3607,6 +3608,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6639554308659482635">SQLite-hukommelse</translation>
 <translation id="6641138807883536517">Den tilfældigt genererede adgangskode til sikkerhedsmodulet er ikke tilgængelig. Dette er normalt efter en Powerwash.</translation>
 <translation id="6643016212128521049">Ryd</translation>
+<translation id="6644512095122093795">Få tilbudt at gemme adgangskoder</translation>
 <translation id="6644846457769259194">Opdaterer din enhed (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Webadresse for tilbagekaldelse af Netscape-certifikatautoritet</translation>
 <translation id="6647838571840953560">I øjeblikket på <ph name="CHANNEL_NAME" /></translation>

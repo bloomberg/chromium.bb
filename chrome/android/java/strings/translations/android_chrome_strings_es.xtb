@@ -125,7 +125,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para obtener contenido personalizado sugerido por Google, inicia sesión en Chrome.</translation>
 <translation id="2091887806945687916">Sonido</translation>
-<translation id="209354263896846928">Accede a la barra de direcciones en la parte inferior de la pantalla</translation>
 <translation id="2095887075102408547">Si se activa esta función, Chrome utilizará los servidores de Google para comprimir las páginas que visites antes de descargarlas. Google no optimizará ni verá las páginas a las que accedas mediante conexiones privadas (HTTPS) o pestañas de incógnito.</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
 <translation id="2111511281910874386">Ir a la página</translation>
@@ -224,7 +223,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="300526633675317032">Se borrarán los <ph name="SIZE_IN_KB" /> de almacenamiento del sitio web.</translation>
 <translation id="3029613699374795922">kB descargados: <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
-<translation id="3030708446010914655">Accede a la barra de direcciones aquí</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La ubicación está desactivada. Actívala en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Próximamente se mostrarán más artículos. Disfruta de la mañana.</translation>
@@ -295,7 +293,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3712575778697986964">¿Quieres vaciar el historial de ahorro de datos?</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
-<translation id="3734660163659757482">Desliza hacia arriba para ver marcadores y más</translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de otras aplicaciones</translation>

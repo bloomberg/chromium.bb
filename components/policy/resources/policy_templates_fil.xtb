@@ -300,14 +300,6 @@
       Ine-enable ng setting ng patakarang ito ang mga notification upang ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito upang ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Bilang default, may pitong araw ang panahong ito at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Ire-restore ang session ng user pagkatapos ng muling paglulunsad.</translation>
-<translation id="2075434678547407637">Nagbibigay-daan sa iyong kontrolin kung maaaring awtomatikong mag-play ang mga video (nang walang pahintulot ng user) na may content na audio sa <ph name="PRODUCT_NAME" />.
-
-      Kung nakatakda ang patakaran sa True, pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
-      Kung nakatakda ang patakaran sa False, hindi pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
-      Bilang default, hindi pinapayagan ang <ph name="PRODUCT_NAME" /> na mag-autoplay ng media.
-
-      Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> at magbabago ang patakarang ito, malalapat lang ito sa mga bagong nabuksang tab. Kaya maaaring maobserbahan pa rin sa ilang tab ang nakaraang gawi.
-      </translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
@@ -352,9 +344,6 @@
           Kung naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen depende sa setting na ito.
 
           Kung hindi naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen araw-araw.</translation>
-<translation id="2188722565665306629">Nagbibigay-daan sa iyong itakda ang yugto ng panahon kung kailan ipapakita ang mga notification ng muling paglulunsad ng <ph name="PRODUCT_NAME" /> upang malapat ang nakabinbing pag-update.
-
-      Magagamit ang setting ng patakarang ito upang makontrol ang yugto ng panahon, sa mga millisecond, kung kailan unti-unting sasabihan ang user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> (o dapat i-restart ang <ph name="PRODUCT_OS_NAME" />) para sa pag-update. Sa loob ng yugto ng panahong ito, paulit-ulit na sasabihan ang user tungkol sa pangangailangang mag-update batay sa setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Kung hindi nakatakda, ang default na panahong 604800000 millisecond (isang linggo) ang gagamitin.</translation>
 <translation id="2194470398825717446">Hindi na ginagamit ang patakarang ito sa M61, pakigamit na lang ang EcryptfsMigrationStrategy.
 
       Tinutukoy kung paano dapat kumilos ang isang device na naipadala nang may ecryptfs at kinakailangang lumipat sa ext4 na pag-encrpyt.

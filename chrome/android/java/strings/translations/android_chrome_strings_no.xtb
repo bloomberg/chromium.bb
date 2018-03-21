@@ -125,7 +125,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">For å få forslag om personlig tilpasset innhold fra Google, logg på Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
-<translation id="209354263896846928">Du finner adressefeltet nederst på skjermen</translation>
 <translation id="2095887075102408547">Når denne funksjonen er slått på, blir sidene du besøker, komprimert på Googles tjenere før de lastes ned til Chrome. Google verken ser eller optimaliserer sider som åpnes med private tilkoblinger (HTTPS) eller i inkognitofaner.</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2111511281910874386">Gå til side</translation>
@@ -224,7 +223,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="300526633675317032">Dette sletter alle dataene (<ph name="SIZE_IN_KB" />) fra nettstedslagringen.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> kB er lastet ned</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
-<translation id="3030708446010914655">Du finner adressefeltet her</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Flere artikler kommer snart. Ha en fin morgen.</translation>
@@ -295,7 +293,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3712575778697986964">Vil du tilbakestille Datasparing?</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
 <translation id="3716182511346448902">Denne siden bruker for mye minne, så Chrome har satt den på pause.</translation>
-<translation id="3734660163659757482">Dra oppover for å se bokmerker og andre ting</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3739899004075612870">Satt som bokmerke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB andre apper</translation>

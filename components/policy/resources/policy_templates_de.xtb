@@ -288,14 +288,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Mit dieser Richtlinieneinstellung kann der Nutzer durch Benachrichtigungen informiert werden, dass ein Neustart des Browsers empfohlen wird oder erforderlich ist. Wenn die Richtlinie nicht festgelegt ist, wird dem Nutzer in <ph name="PRODUCT_NAME" /> durch kleinere Menüänderungen angezeigt, dass ein Neustart erforderlich ist. Wenn die Richtlinie auf "Recommended" (Empfohlen) festgelegt ist, wird dem Nutzer eine wiederkehrende Warnung angezeigt, dass ein Neustart empfohlen wird. Der Nutzer kann diese Warnung schließen, um den Neustart zu verschieben. Wenn die Richtlinie auf "Required" (Erforderlich) festgelegt ist, wird dem Nutzer eine wiederkehrende Warnung angezeigt, dass nach Ablauf des Benachrichtigungszeitraums ein Neustart des Browsers erzwungen wird. Dieser Zeitraum beträgt standardmäßig sieben Tage und kann über die <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-Richtlinieneinstellung konfiguriert werden.
 
       Nach dem Neustart wird die Sitzung des Nutzers wiederhergestellt.</translation>
-<translation id="2075434678547407637">Mit dieser Richtlinie können Sie festlegen, ob Videos mit Ton automatisch (ohne Zustimmung durch den Nutzer) in <ph name="PRODUCT_NAME" /> wiedergegeben werden dürfen.
-
-      Wenn die Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> Medien automatisch wiedergeben.
-      Wird die Richtlinie auf "false" festgelegt, darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch wiedergeben.
-      Standardmäßig darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch wiedergeben.
-
-      Hinweis: Wenn <ph name="PRODUCT_NAME" /> gerade läuft und diese Richtlinie geändert wird, wird sie nur auf Tabs angewendet, die neu geöffnet werden. Aus diesem Grund kann es passieren, dass einige Tabs das zuvor eingestellte Verhalten zeigen.
-      </translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2077273864382355561">Verzögerung für die Bildschirmabschaltung im Akkubetrieb</translation>
 <translation id="2082205219176343977">Konfigurieren Sie die für das Gerät erforderliche Mindestversion von Chrome.</translation>
@@ -341,9 +333,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
           Ist diese Einstellung konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort je nach Einstellung auf dem Sperrbildschirm einzugeben.
 
           Ist diese Einstellung nicht konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort jeden Tag auf dem Sperrbildschirm einzugeben.</translation>
-<translation id="2188722565665306629">Mit dieser Einstellung können Sie festlegen, wie lange Benachrichtigungen zum Neustart von <ph name="PRODUCT_NAME" /> angezeigt werden, um ein ausstehendes Update durchzuführen.
-
-      Mit dieser Richtlinieneinstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer fortschreitend darüber informiert wird, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss. Während dieses Zeitraums wird der Nutzer basierend auf der Einstellung der <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-Richtlinie wiederholt über die Notwendigkeit eines Updates informiert. Wenn die Richtlinie nicht festgelegt ist, wird der Standardzeitraum von 604.800.000 Millisekunden verwendet. Dies entspricht einer Woche.</translation>
 <translation id="2194470398825717446">Diese Richtlinie ist in M61 eingestellt, bitte verwenden Sie stattdessen EcryptfsMigrationStrategy.
 
       Hiermit wird angegeben, wie sich ein Gerät verhalten soll, das mit eCryptfs geliefert wurde und nun eine ext4-Verschlüsselung benötigt.
@@ -1249,7 +1238,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wird die Richtlinie auf "false" festgelegt, werden grundsätzlich keine Berichte gesendet.
 
-      Falls diese Richtlinie weder auf "true" noch auf "false" festgelegt wird, kann der Nutzer die Einstellung nicht ändern.
+      Wenn diese Richtlinie auf "true" oder "false" festgelegt wird, kann der Nutzer die Einstellung nicht ändern.
 
       Wenn diese Richtlinie nicht konfiguriert wird, kann der Nutzer die Einstellung ändern und entscheiden, ob Berichte gesendet werden sollen.
 

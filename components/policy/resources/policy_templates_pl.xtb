@@ -292,14 +292,6 @@
       Ta zasada włącza powiadomienia informujące użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki. Jeśli nie jest włączona, <ph name="PRODUCT_NAME" /> informuje użytkownika o potrzebie ponownego uruchomienia za pomocą subtelnych zmian w menu. Wybranie opcji „Zalecane” powoduje cykliczne wyświetlanie ostrzeżenia o tym, że ponowne uruchomienie jest zalecane. Użytkownik może zamknąć to ostrzeżenie, by odłożyć ponowne uruchomienie na później. Wybranie opcji „Wymagane” powoduje wyświetlanie ostrzeżenia, że ponowne uruchomienie przeglądarki zostanie wymuszone po upływie czasu powiadamiania. Domyślnie ten czas to siedem dni, a można go ustawić za pomocą zasady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesja użytkownika zostanie przywrócona po ponownym uruchomieniu.</translation>
-<translation id="2075434678547407637">Określa, czy <ph name="PRODUCT_NAME" /> może automatycznie (bez zgody użytkownika) odtwarzać filmy z dźwiękiem.
-
-      Jeśli zasada ma wartość Prawda, <ph name="PRODUCT_NAME" /> może automatycznie odtwarzać multimedia.
-      Jeśli zasada ma wartość Fałsz, <ph name="PRODUCT_NAME" /> nie może automatycznie odtwarzać multimediów.
-      Domyślnie <ph name="PRODUCT_NAME" /> nie może automatycznie odtwarzać multimediów.
-
-      Jeśli zmienisz tę zasadę, gdy <ph name="PRODUCT_NAME" /> działa, zmieniona zasada będzie obowiązywać tylko w nowych kartach. Karty otwarte wcześniej mogą działać jak dawniej.
-      </translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
 <translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
@@ -345,9 +337,6 @@
           Jeśli to ustawienie jest skonfigurowane, jego wartość określa, jak często użytkownicy korzystający z szybkiego odblokowania muszą podawać swoje hasło na ekranie blokady.
 
           Jeśli to ustawienie nie jest skonfigurowane, użytkownicy korzystający z szybkiego odblokowania muszą podawać swoje hasło na ekranie blokady codziennie.</translation>
-<translation id="2188722565665306629">Umożliwia ustawienie czasu, przez który <ph name="PRODUCT_NAME" /> będzie wyświetlać powiadomienia o konieczności ponownego uruchomienia w celu zastosowania oczekującej aktualizacji.
-
-      Ta zasada umożliwia określenie czasu (w milisekundach), przez który użytkownik będzie informowany o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> (lub <ph name="PRODUCT_OS_NAME" />) z powodu aktualizacji. Przez ten czas użytkownik będzie cyklicznie informowany o konieczności aktualizacji zgodnie z ustawieniem zasady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jeśli zasada nie jest skonfigurowana, stosowany jest domyślny czas 604800000 milisekund (jeden tydzień).</translation>
 <translation id="2194470398825717446">Ta zasada jest wycofywana w wersji M61. Zmiast niej należy użyć zasady EcryptfsMigrationStrategy.
 
       Określa, jak powinno zachowywać się urządzenie, które zostało dostarczone z systemem plików eCryptfs i wymaga przejścia na szyfrowany system plików ext4.

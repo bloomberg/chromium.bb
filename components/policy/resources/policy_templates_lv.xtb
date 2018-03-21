@@ -301,14 +301,6 @@
       Izmantojot šo politikas iestatījumu, tiek iespējoti paziņojumi lietotājiem par ieteicamu vai obligātu pārlūka atkārtotu palaišanu. Ja šī politika nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ar nelielām izmaiņām izvēlnē lietotājam tiek norādīts, ka ir jāveic atkārtota palaišana. Ja politikai ir iestatīta vērtība “Recommended”, lietotājam periodiski tiek rādīts brīdinājums par to, ka ieteicams veikt atkārtotu palaišanu. Lietotājs var noraidīt šo brīdinājumu, lai atliktu atkārtoto palaišanu. Ja šai politikai ir iestatīta vērtība “Required”, lietotājam periodiski tiek rādīts brīdinājums par to, ka pārlūks tiks atkārtoti palaists piespiedu kārtā, tiklīdz beigsies paziņojuma periods. Pēc noklusējuma šis periods ir septiņas dienas, un to var konfigurēt politikas <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> iestatījumos.
 
       Pēc atkārtotas palaišanas tiek atjaunota lietotāja sesija.</translation>
-<translation id="2075434678547407637">Atļauj kontrolēt, vai <ph name="PRODUCT_NAME" /> videoklipus var atskaņot automātiski kopā ar audio saturu (bez lietotāja piekrišanas).
-
-      Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts atskaņot multividi automātiski.
-      Ja politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> nav atļauts atskaņot multividi automātiski.
-      Pēc noklusējuma <ph name="PRODUCT_NAME" /> nav atļauts atskaņot multividi automātiski.
-
-      Ņemiet vērā, ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.
-      </translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="2077273864382355561">Aizkave līdz ekrāna izslēgšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2082205219176343977">Konfigurējiet ierīcē minimālo atļauto Chrome versiju.</translation>
@@ -355,9 +347,6 @@
       Ja šis iestatījums ir konfigurēts, lietotājiem, kuri izmanto ātro atbloķēšanu, atbilstoši šim iestatījumam bloķēšanas ekrānā būs jāievada parole.
 
       Ja šis iestatījums nav konfigurēts, lietotājiem, kuri izmanto ātro bloķēšanu, bloķēšanas ekrānā būs jāievada parole katru dienu.</translation>
-<translation id="2188722565665306629">Ļauj iestatīt laika periodu, kurā tiek rādīti <ph name="PRODUCT_NAME" /> atkārtotas palaišanas paziņojumi, lai veiktu neapstrādātu atjauninājumu.
-
-      Šīs politikas iestatījumus var izmantot, lai kontrolētu laika periodu (milisekundēs), kurā lietotājs tiek pakāpeniski informēts, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž (vai ka pārlūks <ph name="PRODUCT_OS_NAME" /> ir jārestartē) atjaunināšanas nolūkā. Šajā laika periodā lietotājs tiks atkārtoti informēts par to, ka jāveic atjaunināšana, pamatojoties uz politikas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> iestatījumu. Ja šī politika nav iestatīta, tiek izmantots noklusējuma periods — 604800000 milisekundes (viena nedēļa).</translation>
 <translation id="2194470398825717446">Šī politika ir novecojusi versijā M61. Lūdzu, izmantojiet politiku EcryptfsMigrationStrategy.
 
       Norāda ierīces darbību gadījumos, kad tajā uzstādīta sistēma eCryptfs un jāpāriet uz ext4 šifrēšanu.

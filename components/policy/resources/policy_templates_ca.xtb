@@ -152,7 +152,7 @@
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1519337829779572350">Aquesta opció de configuració està obsoleta, però pots utilitzar SafeBrowsingExtendedReportingEnabled. Activar o desactivar SafeBrowsingExtendedReportingEnabled és el mateix que establir SafeBrowsingExtendedReportingOptInAllowed en "false".
 
-      Si aquesta política s'estableix en "false", els usuaris no podran decidir si volen que algunes dades del sistema i cert contingut de les pàgines s'enviïn als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran enviar aquestes dades a Navegació segura per ajudar a detectar aplicacions i llocs perillosos.
+      Si aquesta política s'estableix en "false", els usuaris no podran decidir si volen que s'enviï informació del sistema i contingut de les pàgines als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran enviar aquestes dades a Navegació segura per ajudar a detectar aplicacions i llocs perillosos.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
@@ -290,14 +290,6 @@
       Aquesta política activa les notificacions per avisar l'usuari que es recomana o es requereix reiniciar el navegador. Si no s'estableix, <ph name="PRODUCT_NAME" /> fa canvis subtils al seu menú per indicar a l'usuari que cal reiniciar el navegador. Si s'estableix en "Recommended", s'avisa periòdicament l'usuari que es recomana reiniciar el navegador. L'usuari pot ignorar aquest advertiment per posposar el reinici. Si s'estableix en "Required", s'avisa periòdicament l'usuari que el navegador es reiniciarà a la força en finalitzar el període de notificació. La durada predeterminada d'aquest període és de 7 dies i es pot configurar amb la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessió de l'usuari es restaura en reiniciar el navegador.</translation>
-<translation id="2075434678547407637">Et permet controlar si els vídeos es poden reproduir automàticament (sense el consentiment de l'usuari) amb contingut d'àudio a <ph name="PRODUCT_NAME" />.
-
-      Si la política s'estableix en "true", <ph name="PRODUCT_NAME" /> podrà reproduir contingut multimèdia automàticament.
-      Si la política s'estableix en "false", <ph name="PRODUCT_NAME" /> no podrà reproduir contingut multimèdia automàticament.
-      De manera predeterminada, <ph name="PRODUCT_NAME" /> no pot reproduir contingut multimèdia automàticament.
-
-      Tingues en compte que si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.
-      </translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2077273864382355561">Retard de la desactivació de pantalla quan s'utilitza bateria</translation>
 <translation id="2082205219176343977">Configura la versió mínima de Chrome que es permet al dispositiu.</translation>
@@ -343,9 +335,6 @@
       Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
 
       Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
-<translation id="2188722565665306629">Et permet establir el període de temps durant el qual es mostren les notificacions per reiniciar <ph name="PRODUCT_NAME" /> a fi d'aplicar una actualització pendent.
-
-      Aquesta política es pot utilitzar per controlar el període de temps, en mil·lisegons, durant el qual s'informa l'usuari de manera progressiva que cal reiniciar <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per aplicar una actualització. Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat d'actualitzar el navegador en funció de com estigui configurada la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no s'estableix, s'utilitza el període predeterminat de 604.800.000 mil·lisegons (1 setmana).</translation>
 <translation id="2194470398825717446">Aquesta política es considera obsoleta a M61; utilitza EcryptfsMigrationStrategy en lloc seu.
 
       Especifica com s'ha de comportar un dispositiu que conté eCryptfs i que ha de fer una transició a encriptació ext4.

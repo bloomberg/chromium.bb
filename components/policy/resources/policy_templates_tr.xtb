@@ -305,14 +305,6 @@
       Bu politika ayarı, kullanıcıya tarayıcının yeniden başlatılmasının önerildiği veya gerektiği bilgisini verecek bildirimleri etkinleştirir. Bir değer ayarlanmazsa <ph name="PRODUCT_NAME" />, menüsündeki küçük değişiklikler aracılığıyla kullanıcıya uygulamanın yeniden başlatılması gerektiğini belirtir. "Önerilen" seçeneği ayarlanırsa, kullanıcıya uygulamayı yeniden başlatmasının önerildiği yinelenen bir uyarı ile bildirilir. Kullanıcı, yeniden başlatmayı ertelemek için bu uyarıyı kapatabilir. "Zorunlu" değeri ayarlanırsa kullanıcıya, bildirim dönemi geçtikten sonra tarayıcının yeniden başlatılmasının zorlanacağını belirten yinelenen bir uyarı gösterilir. Bu dönem varsayılan olarak yedi gündür ve <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politika ayarı aracılığıyla yapılandırılabilir.
 
       Yeniden başlatmanın ardından kullanıcı oturumu yeniden açılır.</translation>
-<translation id="2075434678547407637">Videoların <ph name="PRODUCT_NAME" /> içinde otomatik olarak (kullanıcı onayı olmadan) ses içeriğiyle oynatılıp oynatılamayacağını kontrol etmenize olanak tanır.
-
-      Bu politika Doğru değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilir.
-      Bu politika Yanlış değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilmez.
-      Varsayılan olarak <ph name="PRODUCT_NAME" /> ürününün medyayı otomatik olarak oynatmasına izin verilmez.
-
-      <ph name="PRODUCT_NAME" /> çalışıyorsa ve bu politika değişirse, yalnızca yeni açılan sekmelere uygulanır. Bu nedenle bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.
-      </translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım hızlandırmayı kullan</translation>
 <translation id="2077273864382355561">Pil gücüyle çalışırken ekran kapatma gecikmesi</translation>
 <translation id="2082205219176343977">Cihaz için izin verilen minimum Chrome sürümünü yapılandır.</translation>
@@ -357,9 +349,6 @@
           Bu ayar yapılandırılırsa, hızlı kilit açmayı kullanan kullanıcılardan kilit ekranında şifrelerini bu ayara göre girmeleri istenir.
 
           Bu ayar yapılandırılmazsa, hızlı kilit açmayı kullanan kullanıcılardan kilit ekranında şifrelerini her gün girmeleri istenir.</translation>
-<translation id="2188722565665306629">Bekleyen bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> uygulamasını yeniden başlatılmasıyla ilgili bildirimlerin gösterileceği dönemi ayarlamanıza olanak tanır.
-
-      Bu politika ayarı, kullanıcıya bir güncelleme için <ph name="PRODUCT_NAME" /> uygulamasının (veya <ph name="PRODUCT_OS_NAME" /> işletim sisteminin) yeniden başlatılması gerektiği bilgisinin kademeli olarak verileceği dönemi milisaniye cinsinden kontrol etmek için kullanılabilir. Bu dönem boyunca, kullanıcıya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasının ayarına dayalı olarak bir güncelleme gerektiği konusunda tekrarlanan şekilde bilgi verilir. Bir değer ayarlanmazsa, varsayılan olarak 604.800.000 milisaniye (bir hafta) değeri kullanılır.</translation>
 <translation id="2194470398825717446">Bu politika M61'de kullanımdan kaldırılmıştır, onun yerine lütfen EcryptfsMigrationStrategy'yi kullanın.
 
       Ecryptfs koduyla gönderilen ve ext4 şifrelemesine geçmesi gereken bir cihazın nasıl davranması gerektiğini belirtir.

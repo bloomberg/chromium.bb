@@ -125,7 +125,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
 <translation id="2091887806945687916">Ljud</translation>
-<translation id="209354263896846928">Adressfältet finns längst ned på skärmen</translation>
 <translation id="2095887075102408547">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. Sidor som öppnas via privata anslutningar (HTTPS) eller i inkognitoflikar varken optimeras eller visas av Google.</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2111511281910874386">Öppna sida</translation>
@@ -224,7 +223,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="300526633675317032">Det här alternativet tar bort alla <ph name="SIZE_IN_KB" /> webbplatslagring.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> kB har laddats ned</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
-<translation id="3030708446010914655">Här finns adressfältet</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Plats har inaktiverats. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Fler artiklar visas snart. Ha en bra förmiddag!</translation>
@@ -295,7 +293,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3712575778697986964">Vill du återställa Databesparing?</translation>
 <translation id="3714981814255182093">Öppna sökfältet</translation>
 <translation id="3716182511346448902">Den här sidan har pausats i Chrome eftersom den använder för mycket minne.</translation>
-<translation id="3734660163659757482">Bokmärken med mera visas om du drar uppåt</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3739899004075612870">Bokmärket har lagts till i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB används av övriga appar</translation>

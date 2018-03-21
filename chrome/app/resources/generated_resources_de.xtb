@@ -967,6 +967,7 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2508428939232952663">Google Play Store-Konto</translation>
 <translation id="2509495747794740764">Der Wert für die Skalierung muss zwischen 10 und 200 liegen.</translation>
 <translation id="2509566264613697683">8-fach</translation>
+<translation id="2512222046227390255">AutoFill-Formulare</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Suchen</translation>
 <translation id="2518024842978892609">Clientzertifikate verwenden</translation>
@@ -3602,6 +3603,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6639554308659482635">SQLite-Speicher</translation>
 <translation id="6641138807883536517">Das zufällig generierte Passwort für das Sicherheitsmodul ist nicht verfügbar. Dies ist nach einem Powerwash normal.</translation>
 <translation id="6643016212128521049">Löschen</translation>
+<translation id="6644512095122093795">Speichern von Passwörtern anbieten</translation>
 <translation id="6644846457769259194">Gerät wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL zum Zurückrufen der Zertifizierungsstelle von Netscape-Zertifikaten</translation>
 <translation id="6647838571840953560">Derzeit auf <ph name="CHANNEL_NAME" /></translation>
@@ -4161,7 +4163,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7547317915858803630">Warnung: Ihre <ph name="PRODUCT_NAME" />-Einstellungen werden auf einem Netzlaufwerk gespeichert. Dies kann zu einer Verlangsamung, zu Abstürzen oder sogar zu Datenverlust führen.</translation>
 <translation id="7547483330017600937">Sie haben die Möglichkeit, auf Ihrem <ph name="DEVICE_TYPE" /> zu entwickeln. Sie können Ihre bevorzugten systemeigenen Apps und Befehlszeilentools nahtlos und sicher nutzen.
 
-Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE" /> heruntergeladen.</translation>
+Bei der Installation von "<ph name="APP_NAME" />" werden <ph name="DOWNLOAD_SIZE" /> an Daten heruntergeladen.</translation>
 <translation id="7548856833046333824">Cocktail</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
 <translation id="7551059576287086432">Fehler beim Download von <ph name="FILE_NAME" /></translation>

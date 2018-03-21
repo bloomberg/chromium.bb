@@ -283,14 +283,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
-<translation id="2075434678547407637">Permette di controllare se i video possono essere riprodotti automaticamente (senza il consenso dell'utente) con contenuti audio in <ph name="PRODUCT_NAME" />.
-
-      Se la norma è impostata su true, i contenuti multimediali possono essere riprodotti automaticamente in <ph name="PRODUCT_NAME" />.
-      Se la norma è impostata su false, i contenuti multimediali non possono essere riprodotti automaticamente in <ph name="PRODUCT_NAME" />.
-      Per impostazione predefinita, <ph name="PRODUCT_NAME" /> non consente la riproduzione automatica dei contenuti multimediali.
-
-      Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e l'impostazione della norma cambia, la modifica interesserà solo le nuove schede aperte. Pertanto alcune schede potrebbero ancora avere il comportamento precedente.
-      </translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2077273864382355561">Ritardo disattivazione schermo in caso di utilizzo della batteria</translation>
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
@@ -329,9 +321,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione viene configurata, gli utenti che usano lo sblocco rapido devono inserire le proprie password nella schermata di blocco in base a questa impostazione.
 
       Se questa impostazione non viene configurata, gli utenti che usano lo sblocco rapido devono inserire ogni giorno la propria password nella schermata di blocco.</translation>
-<translation id="2188722565665306629">Ti consente di impostare il periodo di tempo durante il quale vengono visualizzate le notifiche di riavvio di <ph name="PRODUCT_NAME" /> per applicare un aggiornamento in attesa.
-
-      Questa impostazione della norma può essere utilizzata per controllare il periodo di tempo, in millisecondi, durante il quale un utente viene informato progressivamente che <ph name="PRODUCT_NAME" /> deve essere riavviato (o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato) per un aggiornamento. Durante questo periodo, l'utente verrà ripetutamente informato della necessità di un aggiornamento in base all'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non impostata, viene utilizzato il periodo predefinito di 604800000 millisecondi (una settimana).</translation>
 <translation id="2194470398825717446">Questa norma è stata ritirata in M61. Usa la norma EcryptfsMigrationStrategy.
 
       Consente di specificare come deve comportarsi un dispositivo con ecryptfs e come deve passare alla crittografia ext4.

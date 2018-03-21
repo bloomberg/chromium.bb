@@ -294,14 +294,6 @@
       Ova postavka pravila omogućuje obavijesti koje informiraju korisnika o preporučenom ili obaveznom ponovnom pokretanju preglednika. Ako nije postavljeno, <ph name="PRODUCT_NAME" /> korisniku naznačuje potrebu za ponovnim pokretanjem putem sitnih promjena na izborniku. Ako se postavi na "Preporučeno", korisniku će se prikazivati ponavljajuće upozorenje da je preporučeno ponovno pokretanje. Korisnik može odbaciti upozorenje i tako odgoditi ponovno pokretanje. Ako se postavi na "Obavezno", korisniku će se prikazati ponavljajuće upozorenje da će se preglednik prisilno ponovo pokrenuti nakon isteka naznačenog vremena u obavijesti. To razdoblje prema zadanim postavkama iznosi sedam dana, a može se konfigurirati putem postavke pravila <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Korisnička će se sesija vratiti nakon ponovnog pokretanja.</translation>
-<translation id="2075434678547407637">Omogućuje vam da odredite mogu li se videozapisi reproducirati automatski (bez korisnikova pristanka) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
-
-      Ako se to pravilo postavi na točno, <ph name="PRODUCT_NAME" /> može automatski reproducirati medije.
-      Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije.
-      Prema zadanim postavkama <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije.
-
-      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.
-      </translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2077273864382355561">Odgoda isključivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2082205219176343977">Konfiguriraj najmanju dopuštenu verziju Chromea za uređaj.</translation>
@@ -346,9 +338,6 @@
           Ako se ta postavka konfigurira, korisnici koji upotrebljavaju brzo otključavanje morat će unijeti zaporku na zaključanom zaslonu ovisno o toj postavci.
 
           Ako se ta postavka ne konfigurira, korisnici koji upotrebljavaju brzo otključavanje morat će svaki dan unijeti zaporku na zaključanom zaslonu.</translation>
-<translation id="2188722565665306629">Omogućuje postavljanje razdoblja tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> radi primjene ažuriranja na čekanju.
-
-      Pomoću ove postavke pravila može se odrediti razdoblje u milisekundama tijekom kojeg se korisnik progresivno obavještava o tome da je potrebno ponovo pokrenuti <ph name="PRODUCT_NAME" /> (ili <ph name="PRODUCT_OS_NAME" />) radi ažuriranja. Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju na temelju postavke pravila <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ako se ne postavi, koristit će se zadano razdoblje od 604800000 milisekundi (tjedan dana).</translation>
 <translation id="2194470398825717446">To je pravilo obustavljeno u verziji M61. Umjesto toga upotrijebite EcryptfsMigrationStrategy.
 
       Određuje kako se treba ponašati uređaj koji je isporučen s enkripcijom ecryptfs, a treba se prebaciti na enkripciju ext4.

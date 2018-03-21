@@ -152,9 +152,9 @@
 <translation id="1503487916067509762">Cho phép chặn phần mềm bên thứ ba thêm mã thực thi</translation>
 <translation id="1504431521196476721">Chứng thực từ xa</translation>
 <translation id="1509692106376861764">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_NAME" /> 29.</translation>
-<translation id="1519337829779572350">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled để thay thế. Thao tác bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
+<translation id="1519337829779572350">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled để thay thế. Việc bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
 
-      Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi một số thông tin hệ thống và nội dung trang cho máy chủ Google. Nếu cài đặt này là true hoặc chưa được định cấu hình, thì người dùng sẽ được phép gửi một số thông tin hệ thống và nội dung trang cho dịch vụ Duyệt web an toàn nhằm giúp phát hiện các trang web cũng như ứng dụng nguy hiểm.
+      Đặt chính sách này thành false sẽ ngăn người dùng chọn gửi một số thông tin hệ thống và nội dung trang đến máy chủ Google. Nếu cài đặt này là true hoặc chưa được định cấu hình, thì người dùng sẽ được phép gửi một số thông tin hệ thống và nội dung trang đến dịch vụ Duyệt web an toàn nhằm giúp phát hiện các trang web cũng như ứng dụng nguy hiểm.
 
       Hãy truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
@@ -296,14 +296,6 @@
       Cài đặt chính sách này bật thông báo để báo cho người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt. Nếu người dùng không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại qua các thay đổi nhỏ đối với menu của sản phẩm. Nếu người dùng đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ cần chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu người dùng đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng bắt buộc phải chạy lại trình duyệt sau khi khoảng thời gian thông báo đã hết. Khoảng thời gian này là 7 ngày theo mặc định và có thể định cấu hình qua cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Phiên của người dùng được lưu trữ sau lần chạy lại đó.</translation>
-<translation id="2075434678547407637">Cho phép bạn kiểm soát xem có thể tự động phát video chứa nội dung âm thanh trong <ph name="PRODUCT_NAME" /> (khi chưa có sự đồng ý của người dùng) hay không.
-
-      Nếu bạn đặt chính sách thành True, <ph name="PRODUCT_NAME" /> sẽ được phép tự động phát phương tiện.
-      Nếu bạn đặt chính sách thành False, <ph name="PRODUCT_NAME" /> sẽ không được phép tự động phát phương tiện.
-      Theo mặc định, <ph name="PRODUCT_NAME" /> sẽ không được phép tự động phát phương tiện.
-
-      Xin lưu ý rằng nếu <ph name="PRODUCT_NAME" /> đang chạy và chính sách này thay đổi thì chính sách sẽ chỉ áp dụng cho các tab mới mở. Vì vậy, một số tab có thể vẫn hoạt động như cũ.
-      </translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2077273864382355561">Độ trễ tắt màn hình khi chạy trên nguồn pin</translation>
 <translation id="2082205219176343977">Định cấu hình phiên bản Chrome tối thiểu được phép cho thiết bị.</translation>
@@ -355,9 +347,6 @@
           Nếu cài đặt này được định cấu hình, người dùng sử dụng mở khóa nhanh sẽ được yêu cầu nhập mật khẩu vào màn hình khóa tùy theo cài đặt này.
 
           Nếu cài đặt này không được định cấu hình, người dùng sử dụng mở khóa nhanh sẽ được yêu cầu nhập mật khẩu vào màn hình khóa hàng ngày.</translation>
-<translation id="2188722565665306629">Cho phép bạn thiết lập khoảng thời gian hiển thị thông báo yêu cầu chạy lại <ph name="PRODUCT_NAME" /> để áp dụng bản cập nhật đang chờ.
-
-      Có thể sử dụng cài đặt chính sách này để kiểm soát khoảng thời gian, tính bằng mili giây, qua đó người dùng được thông báo dần dần rằng cần phải chạy lại <ph name="PRODUCT_NAME" /> (hoặc cần phải khởi động lại <ph name="PRODUCT_OS_NAME" />) để cập nhật. Quá khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật dựa trên việc đặt chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Nếu người dùng không đặt chính sách thì khoảng thời gian mặc định là 604800000 mili giây (một tuần) sẽ được sử dụng.</translation>
 <translation id="2194470398825717446">Chính sách này không dùng trong M61 nữa, vui lòng sử dụng EcryptfsMigrationStrategy.
 
       Chỉ định cách thiết bị đã có sẵn ecryptfs sẽ hoạt động và cần chuyển đổi sang mã hóa ext4..

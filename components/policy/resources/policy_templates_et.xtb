@@ -302,14 +302,6 @@
       See reegli seade lubab märguanded, mis teavitavad kasutajat sellest, brauseri taaskäivitamine on soovitatav või nõutav. Kui reegel on määramata, <ph name="PRODUCT_NAME" /> näidatakse taaskäivitamise vajadust menüü väikeste muudatuste abil. Kui reegel on seatud väärtusele „Soovitatav”, kuvatakse kasutajale korduv hoiatus, mis annab teada, et taaskäivitamine on soovitatav. Kasutaja saab hoiatusest loobuda, et taaskäivitamine edasi lükata. Kui valitud on väärtus „Nõutav”, kuvatakse kasutajale korduv hoiatus, mis annab teada, et brauser taaskäivitatakse sunniviisiliselt pärast märguandeperioodi möödumist. Perioodi vaikekestus on seitse päeva ja seda saab reegli <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> seadetes konfigureerida.
 
       Kasutaja seanss taastatakse pärast taaskäivitamist.</translation>
-<translation id="2075434678547407637">Võimaldab teil juhtida, kas videoid saab teenuses <ph name="PRODUCT_NAME" /> automaatselt (ilma kasutaja nõusolekuta) koos helisisuga esitada.
-
-      Kui reegel on määratud väärtusele Tõene, lubatakse teenuses <ph name="PRODUCT_NAME" /> meedia automaatesitus.
-      Kui reegel on määratud väärtusele Väär, ei lubata teenuses <ph name="PRODUCT_NAME" /> meedia automaatesitust.
-      Vaikimisi ei lubata teenuses <ph name="PRODUCT_NAME" /> meedia automaatesitust.
-
-      Pange tähele, et kui teenus <ph name="PRODUCT_NAME" /> töötab ja seda reeglit muudetakse, rakendatakse seda ainult uutel avatud vahelehtedel. Seetõttu võite mõnel vahelehel siiski märgata eelmist käitumismustrit.
-      </translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2077273864382355561">Ekraani väljalülitamise viiteaeg akutoite kasutamisel</translation>
 <translation id="2082205219176343977">Seadmes kõige vanema lubatud Chrome'i versiooni seadistamine.</translation>
@@ -354,9 +346,6 @@
           Kui see seade on seadistatud, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli sellest seadest olenevalt.
 
           Kui see seade on seadistamata, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli iga päev.</translation>
-<translation id="2188722565665306629">Võimaldab määrata ajavahemiku, mille jooksul kuvatakse märguanded rakenduse <ph name="PRODUCT_NAME" /> taaskäivitamiseks, et rakendada ootelolev värskendus.
-
-      Reegli seade abil saab juhtida ajavahemikku millisekundites, mille jooksul antakse kasutajale regulaarselt teada, et <ph name="PRODUCT_NAME" /> (või <ph name="PRODUCT_OS_NAME" />) tuleb taaskäivitada värskenduse rakendamiseks. Ajavahemiku jooksul teavitatakse kasutajat reegli <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seade alusel korduvalt sellest, et värskendus on nõutav. Kui reegel on määramata, kasutatakse vaikeperioodi 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="2194470398825717446">Tugi sellele reeglile on versioonis M61 katkestatud. Kasutage selle asemel reeglit EcryptfsMigrationStrategy.
 
       Määrab, kuidas peaks käituma süsteemiga ecryptfs tarnitud seade, mis on vaja üle viia krüpteerimissüsteemile ext4.

@@ -288,14 +288,6 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
       Tato zásada povoluje oznámení o tom, že je vyžadován nebo doporučen restart prohlížeče. Pokud není nastavena, <ph name="PRODUCT_NAME" /> uživatele o potřebě restartu informuje prostřednictvím drobných změn v nabídce. Pokud je nastavena na hodnotu Doporučeno, bude se uživateli opakovaně zobrazovat upozornění, že je doporučen restart. Uživatel upozornění může odmítnout a tím restart odložit. Pokud je nastavena na hodnotu Povinné, bude se uživateli opakovaně zobrazovat upozornění, že po uplynutí lhůty pro oznámení bude vynucen restart prohlížeče. Lhůta je ve výchozím nastavení sedm dní a lze ji nakonfigurovat pomocí zásady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Relace uživatele se po restartu obnoví.</translation>
-<translation id="2075434678547407637">Umožňuje určit, zda se v prohlížeči <ph name="PRODUCT_NAME" /> mohou videa automaticky (bez souhlasu uživatele) přehrávat se zvukovým obsahem.
-
-      Je-li tato zásada nastavena na hodnotu True, může <ph name="PRODUCT_NAME" /> automaticky přehrávat média.
-      Je-li tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> média automaticky přehrávat nemůže.
-      Ve výchozím nastavení <ph name="PRODUCT_NAME" /> média automaticky přehrávat nemůže.
-
-      Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn a tato zásada se změní, použije se nové nastavení pouze na nově otevřené karty. Některé karty proto mohou nadále vykazovat předchozí chování.
-      </translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2077273864382355561">Prodleva vypnutí obrazovky při napájení z baterie</translation>
 <translation id="2082205219176343977">Konfigurace minimální povolené verze Chromu v zařízení.</translation>
@@ -334,9 +326,6 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
       Je-li toto nastavení nakonfigurováno, uživatelé, kteří používají rychlé odemknutí, budou muset na obrazovce uzamčení zadávat heslo podle tohoto nastavení.
 
       Pokud toto nastavení není nakonfigurováno, uživatelé, kteří používají rychlé odemknutí, budou na obrazovce uzamčení muset zadávat heslo každý den.</translation>
-<translation id="2188722565665306629">Umožňuje nastavit dobu, po kterou se budou zobrazovat oznámení o restartu prohlížeče <ph name="PRODUCT_NAME" /> za účelem použití aktualizace čekající na vyřízení.
-
-      Pomocí této zásady lze ovládat dobu (v milisekundách), po kterou je uživatel postupně informován o tom, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" /> kvůli aktualizaci restartovat. Během této doby bude uživatel na základě nastavení zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> opakovaně informován, že je potřeba nainstalovat aktualizaci. Pokud tuto zásadu nenastavíte, použije se výchozí hodnota 604 800 000 milisekund (jeden týden).</translation>
 <translation id="2194470398825717446">Podpora této zásady byla ve verzi M61 ukončena. Použijte namísto ní zásadu EcryptfsMigrationStrategy.
 
 Určuje, jak se má chovat zařízení dodané s šifrováním ecryptfs, které potřebuje přejít na šifrování ext4.

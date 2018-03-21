@@ -293,14 +293,6 @@
       Ezen házirend-beállítás használatával a felhasználó értesítéseken keresztül tudomást szerezhet arról, hogy ajánlott, illetve szükséges a böngésző újraindítása. Ha nincs beállítva, a <ph name="PRODUCT_NAME" /> a menüben található apró módosításokkal jelzi a felhasználónak, hogy szükség van az újraindításra. Ha a házirend beállítása „Ajánlott”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára az ajánlott újraindítással kapcsolatban. A felhasználónak lehetősége van a figyelmeztetés elvetésére és az újraindítás elhalasztására. Ha a házirend beállítása „Szükséges”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára, amely szerint a rendszer kényszeríti a böngésző újraindítását az értesítési időszak lejárta után. Ez az időszak alapértelmezés szerint hét nap, és a <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> házirend-beállításnál módosítható.
 
       Az újraindítás után a rendszer visszaállítja a felhasználói munkamenetet.</translation>
-<translation id="2075434678547407637">Lehetővé teszi annak ellenőrzését, hogy a videók automatikusan lejátszhatók-e (felhasználói engedély nélkül) hangtartalommal a <ph name="PRODUCT_NAME" /> böngészőben.
-
-      Ha a házirend beállítása igaz, akkor a <ph name="PRODUCT_NAME" /> automatikusan lejátszhatja a médiatartalmakat.
-      Ha a házirend beállítása hamis, akkor a <ph name="PRODUCT_NAME" /> nem játszhatja le automatikusan a médiatartalmakat.
-      A <ph name="PRODUCT_NAME" /> alapértelmezés szerint nem játszhatja le automatikusan a médiatartalmakat.
-
-      Kérjük, vegye figyelembe, hogy amennyiben fut a <ph name="PRODUCT_NAME" />, és a házirend módosul, akkor a változás csak az újonnan megnyitott lapokon érvényesül. Emiatt egyes lapokon továbbra is a korábbi viselkedés tapasztalható.
-      </translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2077273864382355561">Képernyő kikapcsolásának késleltetése akkumulátorról való működés során</translation>
 <translation id="2082205219176343977">Az engedélyezett legrégebbi Chrome-verzió beállítása az eszközön.</translation>
@@ -345,9 +337,6 @@
       Ha konfigurálta ezt a beállítást, a gyorsfeloldást használó felhasználóknak a beállítástól függően kell beírniuk jelszavukat a lezárási képernyőn.
 
       Ha nem konfigurálta ezt a beállítást, a gyorsfeloldást használó felhasználóknak minden nap be kell írniuk jelszavukat a lezárási képernyőn.</translation>
-<translation id="2188722565665306629">Lehetővé teszi annak az időszaknak a beállítását, amely során a <ph name="PRODUCT_NAME" /> újraindítására vonatkozó értesítések jelennek meg a függőben lévő frissítéssel kapcsolatban.
-
-      Ezen házirend-beállítás segítségével ezredmásodpercben adható meg az az időszak, amely során a rendszer folyamatosan tájékoztatja a felhasználót arról, hogy frissítés miatt szükség van a <ph name="PRODUCT_NAME" /> (vagy a <ph name="PRODUCT_OS_NAME" />) újraindítására. Ezen időszak során a rendszer újra és újra tájékoztatja a felhasználót a frissítés szükségességéről a <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> házirend beállítása alapján. Ha a házirend értéke nincs megadva, a rendszer alapértelmezés szerint 604 800 000 ezredmásodperces időszakot (egy hét) vesz alapul.</translation>
 <translation id="2194470398825717446">Ezt a házirendet megszüntettük az M61 verzióban, használja helyette az EcryptfsMigrationStrategy házirendet.
 
       Meghatározza az olyan eszközök viselkedését, amelyek ecryptfs titkosítással rendelkeznek, és amelyeket át kell ültetni ext4 titkosításra.

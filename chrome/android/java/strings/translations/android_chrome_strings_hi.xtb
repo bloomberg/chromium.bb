@@ -125,7 +125,6 @@
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2086652334978798447">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="2091887806945687916">ध्वनि</translation>
-<translation id="209354263896846928">अपनी स्क्रीन के नीचे दिया गया पता बार एक्सेस करें</translation>
 <translation id="2095887075102408547">इस सुविधा के चालू होने पर, Chrome आपके द्वारा देखे जाने वाले पृष्ठों को डाउनलोड करने से पहले संपीड़ित करने के लिए Google सर्वर का उपयोग करेगा. निजी कनेक्शन (HTTPS) या गुप्त टैब का उपयोग करके एक्सेस किए गए पृष्ठों को Google द्वारा ऑप्‍टिमाइज़ या देखा नहीं जाएगा.</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">इससे वेबसाइट की सभी <ph name="SIZE_IN_KB" /> जगह साफ़ हो जाएगी.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
-<translation id="3030708446010914655">पता बार यहां एक्सेस करें</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थान सेवा बंद है, उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
 <translation id="307908932405420782">जल्द ही और लेख दिखाई देंगे. अपनी सुबह का आनंद लें!</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">डेटा बचाने का साधन रीसेट करें?</translation>
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
-<translation id="3734660163659757482">बुकमार्क आदि देखने के लिए ऊपर खींचें</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB अन्य ऐप्लिकेशन</translation>

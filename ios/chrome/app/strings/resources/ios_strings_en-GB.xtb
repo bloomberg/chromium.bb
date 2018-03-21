@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1580783302095112590">Mail sent.</translation>
+<translation id="1582732959743469162">This will stop all progress for your current download.</translation>
 <translation id="1612730193129642006">Show Tab Grid</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
@@ -284,6 +285,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="633809752005859102">Something went really wrong. We'll work on that.</translation>
 <translation id="6342069812937806050">Just now</translation>
 <translation id="6344783595350022745">Clear Text</translation>
+<translation id="6346549652287021269">Start new download?</translation>
 <translation id="6362362396625799311">No Incognito Tabs</translation>
 <translation id="6374469231428023295">Try Again</translation>
 <translation id="6380866119319257197">If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7031882061095297553">Sync to</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
+<translation id="7102005569666697658">Downloading… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Hide</translation>
 <translation id="7133798577887235672">Full Name</translation>
 <translation id="7136892417564438900">Camera is unavailable</translation>
@@ -360,6 +363,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7769602470925380267">Accept and sign out</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="780301667611848630">No, thank you</translation>
+<translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export Passwords…</translation>
@@ -370,6 +374,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8019783059653722575">This lets you save and upload photos.</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8023878949384262191">Expands the section.</translation>
+<translation id="8053390638574070785">Reload This Page</translation>
 <translation id="8059533439631660104">Collapses the section.</translation>
 <translation id="806745655614357130">Keep my data separate</translation>
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
@@ -422,6 +427,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9148126808321036104">Sign in again</translation>
+<translation id="915371508759614899">Cancel download?</translation>
 <translation id="9157836665414082580">Suppress Dialogues</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -297,14 +297,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Este ajuste de la política habilita las notificaciones para informar al usuario de que es necesario o recomendable reiniciar el navegador. Si no se configura, <ph name="PRODUCT_NAME" /> indica al usuario que es necesario reiniciarlo mediante pequeños cambios en el menú. Si se le asigna el valor "Recomendada", se muestra una advertencia al usuario de forma periódica indicando que se recomienda reiniciar el navegador. El usuario puede ignorar esta advertencia y aplazar esta acción. Si se le asigna el valor "Obligatoria", se muestra una advertencia al usuario de forma periódica indicando que se reiniciará el navegador cuando haya transcurrido el periodo de notificación. De forma predeterminada, este periodo dura siete días, pero se puede configurar en los ajustes de la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sesión del usuario se restaurará cuando el navegador se reinicie.</translation>
-<translation id="2075434678547407637">Permite controlar si los vídeos se pueden reproducir automáticamente (sin el consentimiento de los usuarios) con contenido de audio en <ph name="PRODUCT_NAME" />.
-
-      Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> puede reproducir contenido multimedia automáticamente.
-      Si se le asigna el valor "False" a esta política, <ph name="PRODUCT_NAME" /> no puede reproducir contenido multimedia automáticamente.
-      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede reproducir contenido multimedia automáticamente.
-
-      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, solo se aplicará a las nuevas pestañas que abras. Por lo tanto, en algunas pestañas se seguirá el comportamiento anterior.
-      </translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Retraso de desconexión de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2082205219176343977">Configurar la versión mínima permitida de Chrome en el dispositivo.</translation>
@@ -349,9 +341,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
           Si se configura esta opción, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan sus contraseñas en la pantalla de bloqueo según corresponda.
 
           Si esta opción no se configura, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan su contraseña en la pantalla de bloqueo todos los días.</translation>
-<translation id="2188722565665306629">Te permite definir cada cuánto tiempo muestra <ph name="PRODUCT_NAME" /> las notificaciones de reinicio para aplicar una actualización pendiente.
-
-      Puedes utilizar esta opción de la política para controlar el periodo (en milisegundos) en el que se informa al usuario de forma progresiva de que debe reiniciar <ph name="PRODUCT_NAME" /> (o de que debe reiniciar <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este periodo, el usuario recibe una notificación de forma periódica indicando que es necesario aplicar una actualización de acuerdo con el ajuste de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se le asigna ningún valor, se utiliza el periodo predeterminado, que es de 604.800.000 milisegundos (una semana).</translation>
 <translation id="2194470398825717446">Esta política está obsoleta en M61. En su lugar, utiliza EcryptfsMigrationStrategy.
 
       Especifica cómo debe comportarse un dispositivo que se ha enviado con eCryptfs y tiene que transferirse al sistema de cifrado ext4.

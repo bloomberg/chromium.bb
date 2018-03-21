@@ -293,14 +293,6 @@
       Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla. Jos tilana on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tilana on Vaadittu, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää, ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntoasetuksista.
 
       Käyttäjän käyttökerta palautetaan uudelleenkäynnistyksen jälkeen.</translation>
-<translation id="2075434678547407637">Voit valita, voiko <ph name="PRODUCT_NAME" /> toistaa videoita äänen kanssa automaattisesti (ilman käyttäjän hyväksyntää).
-
-      Jos käytännön arvoksi asetetaan Tosi, <ph name="PRODUCT_NAME" /> saa toistaa mediasisältöä automaattisesti.
-      Jos käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei saa toistaa mediasisältöä automaattisesti.
-      Oletuksena <ph name="PRODUCT_NAME" /> ei saa toistaa mediasisältöä automaattisesti.
-
-      Huomaa, että jos <ph name="PRODUCT_NAME" /> on käynnissä, kun tätä käytäntöä muutetaan, muutos ei vaikuta auki olleisiin välilehtiin vaan vain myöhemmin avattuihin välilehtiin.
-      </translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2077273864382355561">Ruudun sammutuksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="2082205219176343977">Määritä vanhin sallittu Chrome-versio laitteelle.</translation>
@@ -346,9 +338,6 @@
           Jos tämä asetus on määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä tämän asetuksen mukaisesti.
 
           Jos tätä asetusta ei ole määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä päivittäin.</translation>
-<translation id="2188722565665306629">Voit määrittää ajanjakson, jolloin tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistysilmoituksia näytetään.
-
-      Tämän käytäntöasetuksen avulla voit määrittää millisekunteina sen ajan, jolloin käyttäjä saa ilmoituksia päivityksen edellyttämästä tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistyksestä (tai tuotteen <ph name="PRODUCT_OS_NAME" /> uudelleenkäynnistyksestä). Tänä aikana käyttäjä saa toistuvia muistutuksia <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-käytännön mukaisen päivityksen tarpeellisuudesta. Jos ajanjaksoa ei ole määritetty, oletuksena on 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="2194470398825717446">Tämä käytäntö on poistettu käytöstä M61:ssä, ota sen sijaan käyttöön EcryptfsMigrationStrategy.
 
       Määrittää laitteen toiminnan, jos se toimitettiin ecryptfs-salauksen kanssa mutta on siirrettävä ext4-salaukseen.

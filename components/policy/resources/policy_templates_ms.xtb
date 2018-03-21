@@ -302,14 +302,6 @@
       Tetapan dasar ini mendayakan pemberitahuan untuk memaklumi pengguna bahawa pelancaran semula penyemak imbas adalah disyorkan atau diperlukan. Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> menunjukkan kepada pengguna bahawa pelancaran semula diperlukan melalui sedikit perubahan kepada menunya. Jika ditetapkan kepada 'Disyorkan', amaran berulang akan ditunjukkan kepada pengguna bahawa pelancaran semula disyorkan. Pengguna boleh menolak amaran ini untuk menunda pelancaran semula. Jika ditetapkan kepada 'Diperlukan', amaran berulang akan ditunjukkan kepada pengguna yang menunjukkan bahawa pelancaran semula penyemak imbas akan dipaksa selepas tempoh pemberitahuan tamat. Tempoh ini ialah 7 hari secara lalai dan boleh dikonfigurasikan melalui tetapan dasar <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesi pengguna dipulihkan selepas pelancaran semula.</translation>
-<translation id="2075434678547407637">Membolehkan anda mengawal jika video boleh dimainkan secara automatik (tanpa kebenaran pengguna) dengan kandungan audio dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ditetapkan kepada Benar, <ph name="PRODUCT_NAME" /> dibenarkan untuk automain media.
-      Jika dasar ditetapkan kepada Palsu, <ph name="PRODUCT_NAME" /> tidak dibenarkan untuk automain media.
-      Secara lalainya, <ph name="PRODUCT_NAME" /> tidak dibenarkan untuk automain media.
-
-      Sila ambil perhatian jika <ph name="PRODUCT_NAME" /> dijalankan dan dasar ini berubah, dasar ini akan digunakan pada tab baharu yang dibuka sahaja. Oleh sebab itu, sesetengah tab mungkin masih mematuhi gelagat sebelum ini.
-      </translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2077273864382355561">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2082205219176343977">Konfigurasikan versi Chrome minimum yang dibenarkan untuk peranti ini.</translation>
@@ -354,9 +346,6 @@
       Jika tetapan ini dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin bergantung pada tetapan ini.
 
       Jika tetapan ini tidak dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin setiap hari.</translation>
-<translation id="2188722565665306629">Membolehkan anda menetapkan jangka masa untuk pemberitahuan pelancaran semula <ph name="PRODUCT_NAME" /> ditunjukkan bagi menggunakan kemas kini yang belum selesai.
-
-      Tetapan dasar ini boleh digunakan untuk mengawal jangka masa pengguna dimaklumi secara progresif dalam milisaat berkenaan <ph name="PRODUCT_NAME" /> yang perlu dilancarkan semula (atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula) untuk dikemas kini. Dalam jangka masa ini, pengguna akan dimaklumi berulang kali tentang keperluan kemas kini berdasarkan tetapan dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika dasar ini tidak ditetapkan, tempoh lalai ialah 604800000 milisaat (satu minggu) akan digunakan.</translation>
 <translation id="2194470398825717446">Dasar ini ditamatkan dalam M61, sila gunakan EcryptfsMigrationStrategy.
 
       Menentukan gelagat peranti yang dihantar dengan ecryptfs dan memerlukan peralihan kepada penyulitan ext4.
@@ -1112,6 +1101,13 @@
       Membiarkan tetapan tanpa ditetapkan akan membolehkan pengguna memilih sama ada untuk memaparkan butang laman utama atau tidak.</translation>
 <translation id="4485425108474077672">Konfigurasi URL halaman Tab Baharu</translation>
 <translation id="4492287494009043413">Lumpuhkan pengambilan tangkapan skrin</translation>
+<translation id="4497968613298501984">Konfigurasi senarai URL log masuk perusahaan (skim HTTP dan HTTPS sahaja). Cap jari kata laluan akan dirakam pada URL ini dan digunakan untuk pengesanan pengunaan semula kata laluan.
+      Tetapan ini hendaklah digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML sahaja.
+      Untuk membolehkan <ph name="PRODUCT_NAME" /> merakam cap jari kata laluan dengan betul, sila pastikan halaman log masuk anda mengikut garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan merakam cap jari kata laluan pada URL ini bagi tujuan pengesanan penggunaan semula kata laluan.
+      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan hanya akan merakam cap jari kata laluan pada https://accounts.google.com.
+      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail media cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan saiz cache yang diberikan tidak kira sama ada pengguna telah menyatakan bendera '--saiz-cache-cakera'' atau tidak. Nilai yang dinyatakan dalam dasar ini bukan sempadan keras tetapi lebih kepada cadangan kepada sistem cache, sebarang nilai di bawah beberapa megabait adalah terlalu kecil dan akan dibulatkan kepada jumlah minimum yang munasabah.
@@ -1230,6 +1226,13 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan atau kosong, maka mana-mana pengguna boleh log masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
+<translation id="4868249328547841081">Konfigurasi penukaran kata laluan URL (skim HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka telah mengalami pancingan data.
+      Tetapan ini hendaklah digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML sahaja.
+      Untuk membolehkan <ph name="PRODUCT_NAME" /> merakam cap jari kata laluan baharu dengan betul pada halaman penukaran kata laluan ini, sila pastikan halaman penukaran kata laluan anda mengikut garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka telah mengalami pancingan data.
+      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com to change their password.
+      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Menentukan sama ada kunci bangkit skrin dibenarkan. Kunci bangkit skrin boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa.
 
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.

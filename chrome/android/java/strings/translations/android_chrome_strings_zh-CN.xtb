@@ -125,7 +125,6 @@
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
 <translation id="2091887806945687916">声音</translation>
-<translation id="209354263896846928">前往屏幕底部的地址栏</translation>
 <translation id="2095887075102408547">当此功能处于开启状态时，Chrome 会先使用 Google 服务器压缩您所访问的网页，然后再下载它们。Google 既不会优化也不会看到您通过私密连接 (HTTPS) 或在隐身标签页中访问的网页。</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2111511281910874386">转至相关网页</translation>
@@ -224,7 +223,6 @@
 <translation id="300526633675317032">这会清除全部的网站存储数据 (<ph name="SIZE_IN_KB" />)。</translation>
 <translation id="3029613699374795922">已下载 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
-<translation id="3030708446010914655">前往此处的地址栏</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置信息功能现处于关闭状态；请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此项功能。</translation>
 <translation id="307908932405420782">我们很快将会为您奉上更多文章，伴您度过美好的晨间时光！</translation>
@@ -295,7 +293,6 @@
 <translation id="3712575778697986964">重置流量节省程序？</translation>
 <translation id="3714981814255182093">打开查找栏</translation>
 <translation id="3716182511346448902">此网页占用的内存过多，因此 Chrome 已将其暂停。</translation>
-<translation id="3734660163659757482">上拉即可查看书签及更多内容</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111309925758534">其他应用已占用的空间：<ph name="MEGABYTES" /> MB</translation>

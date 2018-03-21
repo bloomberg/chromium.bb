@@ -970,6 +970,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2508428939232952663">Compte de Google Play Store</translation>
 <translation id="2509495747794740764">El valor de l'escala ha d'oscil·lar entre 10 i 200.</translation>
 <translation id="2509566264613697683">8x</translation>
+<translation id="2512222046227390255">Emplenament automàtic de formularis</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Cerca</translation>
 <translation id="2518024842978892609">Utilitzar els certificats de client</translation>
@@ -2451,7 +2452,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="4850669014075537160">Desplaçament</translation>
 <translation id="4850886885716139402">Mostra</translation>
 <translation id="4853020600495124913">Obre en una &amp;finestra nova</translation>
-<translation id="4856478137399998590">El servei de dades mòbil està activat i a punt per fer servir</translation>
+<translation id="4856478137399998590">El servei de dades mòbils està activat i a punt per fer servir</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Obre-les totes en una &amp;finestra d'incògnit}=1{Obre en una &amp;finestra d'incògnit}other{Obre-les totes (#) en una &amp;finestra d'incògnit}}</translation>
 <translation id="4858913220355269194">Pilota</translation>
 <translation id="4862050643946421924">S'està afegint el dispositiu...</translation>
@@ -2868,7 +2869,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5485080380723335835"><ph name="DEVICE_TYPE" /> està bloquejat per seguretat. Introdueix la contrasenya manualment per continuar.</translation>
 <translation id="5485102783864353244">Afegeix l'aplicació</translation>
 <translation id="5485754497697573575">Restaura totes les pestanyes</translation>
-<translation id="5486261815000869482">Confirmeu la contrasenya</translation>
+<translation id="5486261815000869482">Confirma la contrasenya</translation>
 <translation id="5486275809415469523"><ph name="APP_NAME" /> comparteix la vostra pantalla amb <ph name="TAB_NAME" />.</translation>
 <translation id="5486561344817861625">Simula el reinici del navegador</translation>
 <translation id="5487521232677179737">Esborra les dades</translation>
@@ -3605,6 +3606,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6639554308659482635">Memòria SQLite</translation>
 <translation id="6641138807883536517">La contrasenya del mòdul de seguretat generada aleatòriament no està disponible. Això és normal després d'executar la funció Powerwash.</translation>
 <translation id="6643016212128521049">Esborra</translation>
+<translation id="6644512095122093795">Ofereix desar contrasenyes</translation>
 <translation id="6644846457769259194">S'està actualitzant el dispositiu (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL de revocació de l'entitat emissora de certificats de Netscape</translation>
 <translation id="6647838571840953560">Actualment a <ph name="CHANNEL_NAME" /></translation>
@@ -4026,7 +4028,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7339785458027436441">Comprova l'ortografia mentre escric</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="7340431621085453413">Ara <ph name="FULLSCREEN_ORIGIN" /> a pantalla completa.</translation>
-<translation id="7345706641791090287">Confirmeu la contrasenya</translation>
+<translation id="7345706641791090287">Confirma la contrasenya</translation>
 <translation id="7346909386216857016">D'acord</translation>
 <translation id="7347751611463936647">Per utilitzar aquesta extensió, escriviu "<ph name="EXTENSION_KEYWORD" />", premeu la tecla de tabulació i indiqueu l'ordre o la cerca.</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
@@ -4557,7 +4559,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8162857629993139764">Crea una nota</translation>
 <translation id="8165383685500900731">Gestioneu la configuració del micròfon…</translation>
 <translation id="8168435359814927499">Contingut</translation>
-<translation id="8174047975335711832">Informació dels dispositius</translation>
+<translation id="8174047975335711832">Informació del dispositiu</translation>
 <translation id="8177196903785554304">Informació sobre la xarxa</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8180239481735238521">pàgina</translation>

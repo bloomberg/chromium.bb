@@ -125,7 +125,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te la Chrome.</translation>
 <translation id="2091887806945687916">Sunet</translation>
-<translation id="209354263896846928">Accesează bara de adrese din partea de jos a ecranului</translation>
 <translation id="2095887075102408547">Când această funcție este activată, Chrome va folosi serverele Google pentru a comprima paginile pe care le accesezi înainte de a le descărca. Paginile accesate folosind conexiuni private (HTTPS) sau în file incognito nu vor fi optimizate sau detectate de Google.</translation>
 <translation id="2100273922101894616">Conectare automată</translation>
 <translation id="2111511281910874386">Accesează pagina</translation>
@@ -224,7 +223,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="300526633675317032">Astfel, se vor șterge <ph name="SIZE_IN_KB" /> din stocarea site-urilor.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB descărcați</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
-<translation id="3030708446010914655">Accesează bara de adrese aici</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Locația este dezactivată; activeaz-o în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">În curând vor apărea mai multe articole. O dimineață plăcută!</translation>
@@ -295,7 +293,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3712575778697986964">Resetezi Economizorul de date?</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
 <translation id="3716182511346448902">Această pagină folosește prea multă memorie, prin urmare Chrome a întrerupt-o.</translation>
-<translation id="3734660163659757482">Trage în sus ca să vezi marcajele și altele</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3739899004075612870">Marcat în <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB pentru alte aplicații</translation>

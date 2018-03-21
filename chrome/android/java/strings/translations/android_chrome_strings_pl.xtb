@@ -125,7 +125,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, zaloguj się w Chrome.</translation>
 <translation id="2091887806945687916">Dźwięk</translation>
-<translation id="209354263896846928">Użyj paska adresu u dołu ekranu</translation>
 <translation id="2095887075102408547">Kiedy ta funkcja jest włączona, Chrome korzysta z serwerów Google, by kompresować strony przed ich pobraniem. Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz na kartach incognito.</translation>
 <translation id="2100273922101894616">Autologowanie</translation>
 <translation id="2111511281910874386">Przejdź do strony</translation>
@@ -224,7 +223,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="300526633675317032">Spowoduje to usunięcie <ph name="SIZE_IN_KB" /> danych witryn.</translation>
 <translation id="3029613699374795922">Pobrano <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Hasła nie pasują do siebie</translation>
-<translation id="3030708446010914655">Użyj paska adresu tutaj</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poproś o pomoc<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokalizacja jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Wkrótce pojawi się więcej artykułów. Życzymy miłego poranka.</translation>
@@ -295,7 +293,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3712575778697986964">Zresetować Oszczędzanie danych?</translation>
 <translation id="3714981814255182093">Otwórz pasek wyszukiwania</translation>
 <translation id="3716182511346448902">Ta strona używa zbyt dużo pamięci, dlatego została wstrzymana w Chrome.</translation>
-<translation id="3734660163659757482">Przeciągnij w górę, by zobaczyć zakładki i inne elementy</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3739899004075612870">Utworzono zakładkę w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB innych aplikacji</translation>
