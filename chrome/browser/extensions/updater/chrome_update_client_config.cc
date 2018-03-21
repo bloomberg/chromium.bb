@@ -126,7 +126,7 @@ base::Version ChromeUpdateClientConfig::GetBrowserVersion() const {
 }
 
 std::string ChromeUpdateClientConfig::GetChannel() const {
-  return chrome::GetChannelString();
+  return chrome::GetChannelName();
 }
 
 std::string ChromeUpdateClientConfig::GetBrand() const {

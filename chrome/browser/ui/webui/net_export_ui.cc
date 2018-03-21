@@ -333,7 +333,7 @@ void NetExportMessageHandler::StartNetLog(const base::FilePath& path) {
   file_writer_->StartNetLog(
       path, capture_mode_, max_log_file_size_,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-      chrome::GetChannelString(), GetURLRequestContexts());
+      chrome::GetChannelName(), GetURLRequestContexts());
 }
 
 void NetExportMessageHandler::ShowFileInShell(const base::FilePath& path) {

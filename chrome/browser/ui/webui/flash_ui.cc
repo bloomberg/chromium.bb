@@ -244,9 +244,9 @@ void FlashDOMHandler::MaybeRespondToPage() {
   auto list = std::make_unique<base::ListValue>();
 
   // Chrome version information.
-  AddPair(list.get(), l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          version_info::GetVersionNumber() + " (" + chrome::GetChannelString() +
-              ")");
+  AddPair(
+      list.get(), l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+      version_info::GetVersionNumber() + " (" + chrome::GetChannelName() + ")");
 
   // OS version information.
   std::string os_label = version_info::GetOSType();

@@ -125,7 +125,7 @@ std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   if (version_info::IsOfficialBuild())
     version += " (Official)";
   version += " " + version_info::GetOSType();
-  std::string modifier(chrome::GetChannelString());
+  std::string modifier(chrome::GetChannelName());
   if (!modifier.empty())
     version += " " + modifier;
   return version;

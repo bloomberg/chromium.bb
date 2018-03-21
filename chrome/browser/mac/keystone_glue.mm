@@ -40,9 +40,11 @@ namespace ksr = keystone_registration;
 // updates to Chrome.)
 
 #if defined(GOOGLE_CHROME_BUILD)
-#define kBrandFileName @"Google Chrome Brand.plist";
+#define kStableBrandFileName @"Google Chrome Brand.plist"
+#define kCanaryBrandFileName @"Google Chrome Canary Brand.plist"
 #elif defined(CHROMIUM_BUILD)
-#define kBrandFileName @"Chromium Brand.plist";
+#define kStableBrandFileName @"Chromium Brand.plist"
+#define kCanaryBrandFileName @"Chromium Canary Brand.plist"
 #else
 #error Unknown branding
 #endif
@@ -50,14 +52,23 @@ namespace ksr = keystone_registration;
 // These directories are hardcoded in Keystone promotion preflight and the
 // Keystone install script, so NSSearchPathForDirectoriesInDomains isn't used
 // since the scripts couldn't use anything like that.
-NSString* kBrandUserFile = @"~/Library/Google/" kBrandFileName;
-NSString* kBrandSystemFile = @"/Library/Google/" kBrandFileName;
+NSString* kStableBrandUserFile = @"~/Library/Google/" kStableBrandFileName;
+NSString* kStableBrandSystemFile = @"/Library/Google/" kStableBrandFileName;
+NSString* kCanaryBrandUserFile = @"~/Library/Google/" kCanaryBrandFileName;
+NSString* kCanaryBrandSystemFile = @"/Library/Google/" kCanaryBrandFileName;
 
-NSString* UserBrandFilePath() {
-  return [kBrandUserFile stringByStandardizingPath];
+NSString* UserBrandFilePath(version_info::Channel channel) {
+  NSString* file = (channel == version_info::Channel::CANARY)
+                       ? kCanaryBrandUserFile
+                       : kStableBrandUserFile;
+  return [file stringByStandardizingPath];
 }
-NSString* SystemBrandFilePath() {
-  return [kBrandSystemFile stringByStandardizingPath];
+
+NSString* SystemBrandFilePath(version_info::Channel channel) {
+  NSString* file = (channel == version_info::Channel::CANARY)
+                       ? kCanaryBrandSystemFile
+                       : kStableBrandSystemFile;
+  return [file stringByStandardizingPath];
 }
 
 // Adaptor for scheduling an Objective-C method call in TaskScheduler.
@@ -275,7 +286,6 @@ NSString* const kVersionKey = @"KSVersion";
   [appPath_ release];
   [url_ release];
   [version_ release];
-  [channel_ release];
   [registration_ release];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
@@ -311,130 +321,118 @@ NSString* const kVersionKey = @"KSVersion";
     return;
   }
 
-  NSString* channel = base::mac::ObjCCast<NSString>(
-      [infoDictionary objectForKey:kChannelKey]);
+  std::string channel = chrome::GetChannelName();
   // The stable channel has no tag.  If updating to stable, remove the
   // dev and beta tags since we've been "promoted".
-  if (channel == nil)
-    channel = ksr::KSRegistrationRemoveExistingTag;
+  version_info::Channel channelType = chrome::GetChannelByName(channel);
+  if (channelType == version_info::Channel::STABLE) {
+    channel = ksr::KSRegistrationRemoveExistingTag.UTF8String;
+#if defined(GOOGLE_CHROME_BUILD)
+    DCHECK(chrome::GetChannelByName(channel) == version_info::Channel::STABLE)
+        << "-channel name modification has side effect";
+#endif
+  }
 
   productID_ = [productID retain];
   appPath_ = [appPath retain];
   url_ = [url retain];
   version_ = [version retain];
-  channel_ = [channel retain];
+  channel_ = channel;
 }
 
 - (NSString*)brandFilePath {
   DCHECK(version_ != nil) << "-loadParameters must be called first";
 
-  if (brandFileType_ == kBrandFileTypeNotDetermined) {
+  if (brandFile_)
+    return brandFile_;
 
-    NSFileManager* fm = [NSFileManager defaultManager];
-    NSString* userBrandFile = UserBrandFilePath();
-    NSString* systemBrandFile = SystemBrandFilePath();
+  NSFileManager* fm = [NSFileManager defaultManager];
+  version_info::Channel channel = chrome::GetChannelByName(channel_);
+  NSString* userBrandFile = UserBrandFilePath(channel);
+  NSString* systemBrandFile = SystemBrandFilePath(channel);
 
-    // Default to none.
-    brandFileType_ = kBrandFileTypeNone;
+  // Default to none.
+  brandFile_ = @"";
 
-    // Only the stable channel has a brand code.
-    version_info::Channel channel = chrome::GetChannel();
+  // Only the stable and canary channel can have independent brand codes.
 
-    if (channel == version_info::Channel::DEV ||
-        channel == version_info::Channel::BETA) {
+  if (channel == version_info::Channel::DEV ||
+      channel == version_info::Channel::BETA) {
+    // If on the dev or beta channel, this installation may have replaced
+    // an older system-level installation. Check for a user brand file and
+    // nuke it if present. Don't try to remove the system brand file, there
+    // wouldn't be any permission to do so.
+    //
+    // Don't do this on the canary channel. The canary can run side-by-side
+    // with another Google Chrome installation whose brand code, if any,
+    // should remain intact.
 
-      // If on the dev or beta channel, this installation may have replaced
-      // an older system-level installation. Check for a user brand file and
-      // nuke it if present. Don't try to remove the system brand file, there
-      // wouldn't be any permission to do so.
-      //
-      // Don't do this on the canary channel. The canary can run side-by-side
-      // with another Google Chrome installation whose brand code, if any,
-      // should remain intact.
+    if ([fm fileExistsAtPath:userBrandFile]) {
+      [fm removeItemAtPath:userBrandFile error:NULL];
+    }
 
+  } else if (channel == version_info::Channel::STABLE ||
+             channel == version_info::Channel::CANARY) {
+    // Stable and Canary use different app ids, so they can both have brand
+    // codes. Even if Canary does not actively use brand codes, we want to
+    // exercise the same logic, so that we can detect perf regressions early.
+
+    // If there is a system brand file, use it.
+    if ([fm fileExistsAtPath:systemBrandFile]) {
+      // System
+
+      // Use the system file that is there.
+      brandFile_ = systemBrandFile;
+
+      // Clean up any old user level file.
       if ([fm fileExistsAtPath:userBrandFile]) {
         [fm removeItemAtPath:userBrandFile error:NULL];
       }
 
-    } else if (channel == version_info::Channel::STABLE) {
+    } else {
+      // User
 
-      // If there is a system brand file, use it.
-      if ([fm fileExistsAtPath:systemBrandFile]) {
-        // System
+      NSDictionary* infoDictionary = [self infoDictionary];
+      NSString* appBundleBrandID = base::mac::ObjCCast<NSString>(
+          [infoDictionary objectForKey:kBrandKey]);
 
-        // Use the system file that is there.
-        brandFileType_ = kBrandFileTypeSystem;
+      NSString* storedBrandID = nil;
+      if ([fm fileExistsAtPath:userBrandFile]) {
+        NSDictionary* storedBrandDict =
+            [NSDictionary dictionaryWithContentsOfFile:userBrandFile];
+        storedBrandID = base::mac::ObjCCast<NSString>(
+            [storedBrandDict objectForKey:kBrandKey]);
+      }
 
-        // Clean up any old user level file.
-        if ([fm fileExistsAtPath:userBrandFile]) {
-          [fm removeItemAtPath:userBrandFile error:NULL];
-        }
-
-      } else {
-        // User
-
-        NSDictionary* infoDictionary = [self infoDictionary];
-        NSString* appBundleBrandID = base::mac::ObjCCast<NSString>(
-            [infoDictionary objectForKey:kBrandKey]);
-
-        NSString* storedBrandID = nil;
-        if ([fm fileExistsAtPath:userBrandFile]) {
-          NSDictionary* storedBrandDict =
-              [NSDictionary dictionaryWithContentsOfFile:userBrandFile];
-          storedBrandID = base::mac::ObjCCast<NSString>(
-              [storedBrandDict objectForKey:kBrandKey]);
-        }
-
-        if ((appBundleBrandID != nil) &&
-            (![storedBrandID isEqualTo:appBundleBrandID])) {
-          // App and store don't match, update store and use it.
-          NSDictionary* storedBrandDict =
-              [NSDictionary dictionaryWithObject:appBundleBrandID
-                                          forKey:kBrandKey];
-          // If Keystone hasn't been installed yet, the location the brand file
-          // is written to won't exist, so manually create the directory.
-          NSString *userBrandFileDirectory =
-              [userBrandFile stringByDeletingLastPathComponent];
-          if (![fm fileExistsAtPath:userBrandFileDirectory]) {
-            if (![fm createDirectoryAtPath:userBrandFileDirectory
-               withIntermediateDirectories:YES
-                                attributes:nil
-                                     error:NULL]) {
-              LOG(ERROR) << "Failed to create the directory for the brand file";
-            }
+      if ((appBundleBrandID != nil) &&
+          (![storedBrandID isEqualTo:appBundleBrandID])) {
+        // App and store don't match, update store and use it.
+        NSDictionary* storedBrandDict =
+            [NSDictionary dictionaryWithObject:appBundleBrandID
+                                        forKey:kBrandKey];
+        // If Keystone hasn't been installed yet, the location the brand file
+        // is written to won't exist, so manually create the directory.
+        NSString* userBrandFileDirectory =
+            [userBrandFile stringByDeletingLastPathComponent];
+        if (![fm fileExistsAtPath:userBrandFileDirectory]) {
+          if (![fm createDirectoryAtPath:userBrandFileDirectory
+                  withIntermediateDirectories:YES
+                                   attributes:nil
+                                        error:NULL]) {
+            LOG(ERROR) << "Failed to create the directory for the brand file";
           }
-          if ([storedBrandDict writeToFile:userBrandFile atomically:YES]) {
-            brandFileType_ = kBrandFileTypeUser;
-          }
-        } else if (storedBrandID) {
-          // Had stored brand, use it.
-          brandFileType_ = kBrandFileTypeUser;
         }
+        if ([storedBrandDict writeToFile:userBrandFile atomically:YES]) {
+          brandFile_ = userBrandFile;
+        }
+      } else if (storedBrandID) {
+        // Had stored brand, use it.
+        brandFile_ = userBrandFile;
       }
     }
-
   }
 
-  NSString* result = nil;
-  switch (brandFileType_) {
-    case kBrandFileTypeUser:
-      result = UserBrandFilePath();
-      break;
-
-    case kBrandFileTypeSystem:
-      result = SystemBrandFilePath();
-      break;
-
-    case kBrandFileTypeNotDetermined:
-      NOTIMPLEMENTED();
-      FALLTHROUGH;
-    case kBrandFileTypeNone:
-      // Clear the value.
-      result = @"";
-      break;
-
-  }
-  return result;
+  return brandFile_;
 }
 
 - (BOOL)loadKeystoneRegistration {
@@ -483,9 +481,9 @@ NSString* const kVersionKey = @"KSVersion";
 
   // Note that channel_ is permitted to be an empty string, but it must not be
   // nil.
-  DCHECK(channel_);
   NSString* tagSuffix = [self tagSuffix];
-  NSString* tagValue = [channel_ stringByAppendingString:tagSuffix];
+  NSString* tagValue =
+      [NSString stringWithFormat:@"%s%@", channel_.c_str(), tagSuffix];
   NSString* tagKey = [kChannelKey stringByAppendingString:tagSuffix];
 
   return [NSDictionary dictionaryWithObjectsAndKeys:
@@ -957,14 +955,20 @@ NSString* const kVersionKey = @"KSVersion";
           pathForResource:@"keystone_promote_preflight"
                    ofType:@"sh"];
   const char* preflightPathC = [preflightPath fileSystemRepresentation];
-  const char* userBrandFile = NULL;
-  const char* systemBrandFile = NULL;
-  if (brandFileType_ == kBrandFileTypeUser) {
+
+  // This is typically a once per machine operation, so it is not worth caching
+  // the type of brand file (user vs system). Figure it out here:
+  version_info::Channel channel = chrome::GetChannelByName(channel_);
+  NSString* userBrandFile = UserBrandFilePath(channel);
+  NSString* systemBrandFile = SystemBrandFilePath(channel);
+  const char* arguments[] = {NULL, NULL, NULL};
+  BOOL userBrand = NO;
+  if ([brandFile_ isEqualToString:userBrandFile]) {
     // Running with user level brand file, promote to the system level.
-    userBrandFile = [UserBrandFilePath() fileSystemRepresentation];
-    systemBrandFile = [SystemBrandFilePath() fileSystemRepresentation];
+    userBrand = YES;
+    arguments[0] = userBrandFile.UTF8String;
+    arguments[1] = systemBrandFile.UTF8String;
   }
-  const char* arguments[] = {userBrandFile, systemBrandFile, NULL};
 
   int exit_status;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndWait(
@@ -1006,11 +1010,11 @@ NSString* const kVersionKey = @"KSVersion";
 
   // If the brand file is user level, update parameters to point to the new
   // system level file during promotion.
-  if (brandFileType_ == kBrandFileTypeUser) {
+  if (userBrand) {
     NSMutableDictionary* temp_parameters =
         [[parameters mutableCopy] autorelease];
-    [temp_parameters setObject:SystemBrandFilePath()
-                        forKey:ksr::KSRegistrationBrandPathKey];
+    temp_parameters[ksr::KSRegistrationBrandPathKey] = systemBrandFile;
+    brandFile_ = systemBrandFile;
     parameters = temp_parameters;
   }
 

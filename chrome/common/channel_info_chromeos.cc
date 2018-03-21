@@ -10,7 +10,7 @@ namespace chrome {
 
 static version_info::Channel chromeos_channel = version_info::Channel::UNKNOWN;
 
-std::string GetChannelString() {
+std::string GetChannelName() {
 #if defined(GOOGLE_CHROME_BUILD)
   switch (chromeos_channel) {
     case version_info::Channel::STABLE:

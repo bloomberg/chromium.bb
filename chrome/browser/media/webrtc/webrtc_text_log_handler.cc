@@ -403,7 +403,7 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
 
   // Chrome version
   LogToCircularBuffer("Chrome version: " + version_info::GetVersionNumber() +
-                      " " + chrome::GetChannelString());
+                      " " + chrome::GetChannelName());
 
   // OS
   LogToCircularBuffer(base::SysInfo::OperatingSystemName() + " " +

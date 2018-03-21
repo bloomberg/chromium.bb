@@ -31,7 +31,7 @@ ChromeUpdateQueryParamsDelegate::GetInstance() {
 
 std::string ChromeUpdateQueryParamsDelegate::GetExtraParams() {
   return base::StringPrintf("&prodchannel=%s&prodversion=%s&lang=%s",
-                            chrome::GetChannelString().c_str(),
+                            chrome::GetChannelName().c_str(),
                             version_info::GetVersionNumber().c_str(),
                             GetLang());
 }

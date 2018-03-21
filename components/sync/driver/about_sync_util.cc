@@ -180,7 +180,7 @@ class SectionList {
 std::string GetVersionString(version_info::Channel channel) {
   // Build a version string that matches syncer::MakeUserAgentForSync with the
   // addition of channel info and proper OS names.
-  // chrome::GetChannelString() returns empty string for stable channel or
+  // chrome::GetChannelName() returns empty string for stable channel or
   // unofficial builds, the channel string otherwise. We want to have "-devel"
   // for unofficial builds only.
   std::string version_modifier = version_info::GetChannelString(channel);

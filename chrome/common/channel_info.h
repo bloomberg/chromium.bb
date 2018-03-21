@@ -26,15 +26,23 @@ std::string GetVersionString();
 // In branded builds, when the channel cannot be determined, "unknown" will
 // be returned. In unbranded builds, the modifier is usually an empty string
 // (""), although on Linux, it may vary in certain distributions.
-// GetChannelString() is intended to be used for display purposes.
+// GetChannelName() is intended to be used for display purposes.
 // To simply test the channel, use GetChannel().
-std::string GetChannelString();
+std::string GetChannelName();
 
 // Returns the channel for the installation. In branded builds, this will be
 // version_info::Channel::{STABLE,BETA,DEV,CANARY}. In unbranded builds, or
 // in branded builds when the channel cannot be determined, this will be
 // version_info::Channel::UNKNOWN.
 version_info::Channel GetChannel();
+
+#if defined(OS_MACOSX)
+// Maps the name of the channel to version_info::Channel, always returning
+// Channel::UNKNOWN for unbranded builds. For branded builds defaults to
+// Channel::STABLE, if channel is empty, else matches the name and returns
+// {STABLE,BETA,DEV,CANARY, UNKNOWN}.
+version_info::Channel GetChannelByName(const std::string& channel);
+#endif
 
 #if defined(OS_CHROMEOS)
 // Sets channel before use.

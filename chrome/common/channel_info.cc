@@ -10,7 +10,7 @@
 namespace chrome {
 
 std::string GetVersionString() {
-  return version_info::GetVersionStringWithModifier(GetChannelString());
+  return version_info::GetVersionStringWithModifier(GetChannelName());
 }
 
 }  // namespace chrome

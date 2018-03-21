@@ -57,7 +57,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddString(version_ui::kVersion,
                          version_info::GetVersionNumber());
   html_source->AddString(version_ui::kVersionModifier,
-                         chrome::GetChannelString());
+                         chrome::GetChannelName());
   html_source->AddString(version_ui::kJSEngine, "V8");
   html_source->AddString(version_ui::kJSVersion, V8_VERSION_STRING);
   html_source->AddLocalizedString(version_ui::kCompany,
