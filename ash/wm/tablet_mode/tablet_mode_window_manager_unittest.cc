@@ -904,6 +904,33 @@ TEST_F(TabletModeWindowManagerTest, MinimizedEnterAndLeaveTabletMode) {
   EXPECT_TRUE(window_state->IsMinimized());
 }
 
+// Tests that pre-minimized window show state is persistent after entering and
+// leaving tablet mode, that is not cleared in tablet mode.
+TEST_F(TabletModeWindowManagerTest, PersistPreMinimizedShowState) {
+  gfx::Rect rect(10, 10, 100, 100);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Maximize();
+  window_state->Minimize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  window_state->Unminimize();
+  // Check that pre-minimized window show state is not cleared due to
+  // unminimizing in tablet mode.
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+  window_state->Minimize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsMaximized());
+}
+
 // Check that a full screen window remains full screen upon entering maximize
 // mode. Furthermore, checks that this window is not full screen upon exiting
 // tablet mode if it was un-full-screened while in tablet mode.

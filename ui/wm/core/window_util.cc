@@ -131,11 +131,6 @@ void Unminimize(aura::Window* window) {
   window->SetProperty(
       aura::client::kShowStateKey,
       window->GetProperty(aura::client::kPreMinimizedShowStateKey));
-  // Clear the property only when the window is actually unminimized.
-  if (window->GetProperty(aura::client::kShowStateKey) !=
-      ui::SHOW_STATE_MINIMIZED) {
-    window->ClearProperty(aura::client::kPreMinimizedShowStateKey);
-  }
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
