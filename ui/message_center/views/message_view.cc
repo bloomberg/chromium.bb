@@ -284,7 +284,7 @@ void MessageView::OnSlideOut() {
         notification_id_, true /* mark_notification_as_read */);
   } else {
     MessageCenter::Get()->RemoveNotification(notification_id_,
-                                             false /* by_user */);
+                                             true /* by_user */);
   }
 }
 
