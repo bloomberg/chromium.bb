@@ -73,6 +73,7 @@ blink_platform_sources("heap") {
     "ThreadingTraits.h",
     "TraceTraits.h",
     "Visitor.h",
+    "Worklist.h",
   ]
 
   deps = [
@@ -112,6 +113,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "ObjectStartBitmapTest.cpp",
     "PersistentTest.cpp",
     "RunAllTests.cpp",
+    "WorklistTest.cpp",
   ]
 
   configs += [
