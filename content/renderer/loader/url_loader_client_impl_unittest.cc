@@ -27,7 +27,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
   URLLoaderClientImplTest() : dispatcher_(new ResourceDispatcher()) {
     request_id_ = dispatcher_->StartAsync(
         std::make_unique<network::ResourceRequest>(), 0,
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),

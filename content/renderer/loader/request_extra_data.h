@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/page_transition_types.h"
-#include "url/origin.h"
 
 namespace network {
 struct ResourceRequest;
@@ -42,10 +41,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   }
   void set_is_main_frame(bool is_main_frame) {
     is_main_frame_ = is_main_frame;
-  }
-  url::Origin frame_origin() const { return frame_origin_; }
-  void set_frame_origin(const url::Origin& frame_origin) {
-    frame_origin_ = frame_origin;
   }
   void set_allow_download(bool allow_download) {
     allow_download_ = allow_download;
@@ -159,7 +154,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   blink::mojom::PageVisibilityState visibility_state_;
   int render_frame_id_;
   bool is_main_frame_;
-  url::Origin frame_origin_;
   bool allow_download_;
   ui::PageTransition transition_type_;
   bool should_replace_current_entry_;

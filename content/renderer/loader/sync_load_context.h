@@ -15,10 +15,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace network {
 struct ResourceRequest;
 }
@@ -38,7 +34,6 @@ class SyncLoadContext : public RequestPeer {
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,

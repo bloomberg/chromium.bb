@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/site_isolation_stats_gatherer.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -147,15 +146,6 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     ResourceDispatcher::PendingRequestInfo* request_info =
         resource_dispatcher_->GetPendingRequestInfo(request_id_);
     DCHECK(request_info);
-
-    // Check whether this response data is compliant with our cross-site
-    // document blocking policy. We only do this for the first chunk of data.
-    if (request_info->site_isolation_metadata.get()) {
-      SiteIsolationStatsGatherer::OnReceivedFirstChunk(
-          request_info->site_isolation_metadata,
-          static_cast<const char*>(buffer), available);
-      request_info->site_isolation_metadata.reset();
-    }
 
     request_info->peer->OnReceivedData(std::make_unique<ReceivedData>(
         static_cast<const char*>(buffer), available, this));

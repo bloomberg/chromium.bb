@@ -30,7 +30,6 @@
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/loader/site_isolation_stats_gatherer.h"
 #include "content/renderer/loader/sync_load_context.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/url_loader_client_impl.h"
@@ -169,10 +168,6 @@ void ResourceDispatcher::OnReceivedResponse(
 
   network::ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
-  request_info->site_isolation_metadata =
-      SiteIsolationStatsGatherer::OnReceivedResponse(
-          request_info->frame_origin, request_info->response_url,
-          request_info->resource_type, renderer_response_info);
   request_info->peer->OnReceivedResponse(renderer_response_info);
 }
 
@@ -219,8 +214,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info = GetPendingRequestInfo(request_id);
     if (!request_info)
       return;
-    // We update the response_url here so that we can send it to
-    // SiteIsolationStatsGatherer later when OnReceivedResponse is called.
+    // We update the response_url here for tracking/stats use later.
     request_info->response_url = redirect_info.new_url;
     request_info->response_method = redirect_info.new_method;
     request_info->response_referrer = GURL(redirect_info.new_referrer);
@@ -352,7 +346,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     ResourceType resource_type,
     int render_frame_id,
-    const url::Origin& frame_origin,
     const GURL& request_url,
     const std::string& method,
     const GURL& referrer,
@@ -361,7 +354,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       resource_type(resource_type),
       render_frame_id(render_frame_id),
       url(request_url),
-      frame_origin(frame_origin),
       response_url(request_url),
       response_method(method),
       response_referrer(referrer),
@@ -374,7 +366,6 @@ ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
 void ResourceDispatcher::StartSync(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
-    const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -399,7 +390,7 @@ void ResourceDispatcher::StartSync(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
-                     std::move(request), routing_id, task_runner, frame_origin,
+                     std::move(request), routing_id, task_runner,
                      traffic_annotation, std::move(factory_info),
                      std::move(throttles), base::Unretained(response),
                      base::Unretained(&event)));
@@ -411,7 +402,6 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
@@ -425,7 +415,7 @@ int ResourceDispatcher::StartAsync(
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), static_cast<ResourceType>(request->resource_type),
-      request->render_frame_id, frame_origin, request->url, request->method,
+      request->render_frame_id, request->url, request->method,
       request->referrer, request->download_to_file);
 
   if (url_loader_client_endpoints) {

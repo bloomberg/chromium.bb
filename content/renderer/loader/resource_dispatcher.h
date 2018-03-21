@@ -31,7 +31,6 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 struct RedirectInfo;
@@ -50,7 +49,6 @@ class URLLoaderFactory;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
 class ThrottlingURLLoader;
 class URLLoaderClientImpl;
@@ -85,7 +83,6 @@ class CONTENT_EXPORT ResourceDispatcher {
   virtual void StartSync(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
-      const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -104,7 +101,6 @@ class CONTENT_EXPORT ResourceDispatcher {
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
@@ -153,7 +149,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        ResourceType resource_type,
                        int render_frame_id,
-                       const url::Origin& frame_origin,
                        const GURL& request_url,
                        const std::string& method,
                        const GURL& referrer,
@@ -167,8 +162,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     bool is_deferred = false;
     // Original requested url.
     GURL url;
-    // The security origin of the frame that initiates this request.
-    url::Origin frame_origin;
     // The url, method and referrer of the latest response even in case of
     // redirection.
     GURL response_url;
@@ -180,7 +173,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     base::TimeTicks response_start;
     base::TimeTicks completion_time;
     linked_ptr<base::SharedMemory> buffer;
-    std::unique_ptr<SiteIsolationResponseMetaData> site_isolation_metadata;
     int buffer_size;
 
     // For mojo loading.

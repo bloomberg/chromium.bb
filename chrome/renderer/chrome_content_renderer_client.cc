@@ -1443,15 +1443,6 @@ bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
 #endif
 }
 
-bool ChromeContentRendererClient::ShouldGatherSiteIsolationStats() const {
-  // Site isolation stats are gathered currently for non-extension renderer
-  // processes running a normal web page from the Internet.
-  // TODO(nick): https://crbug.com/268640 Gather stats for extension processes
-  // too; we would need to check the extension's manifest to know which sites
-  // it's allowed to access.
-  return !IsStandaloneExtensionProcess();
-}
-
 std::unique_ptr<blink::WebContentSettingsClient>
 ChromeContentRendererClient::CreateWorkerContentSettingsClient(
     content::RenderFrame* render_frame) {

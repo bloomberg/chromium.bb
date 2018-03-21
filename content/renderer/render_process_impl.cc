@@ -34,7 +34,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/loader/site_isolation_stats_gatherer.h"
 #include "services/service_manager/embedder/switches.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
@@ -183,9 +182,6 @@ RenderProcessImpl::RenderProcessImpl(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
     v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   }
-
-  SiteIsolationStatsGatherer::SetEnabled(
-      GetContentClient()->renderer()->ShouldGatherSiteIsolationStats());
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
     enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
