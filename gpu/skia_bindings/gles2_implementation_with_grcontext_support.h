@@ -38,8 +38,27 @@ class GLES2ImplementationWithGrContextSupport
   // These must be kept in sync with the invalidation defines in
   // GrGLGpu::onResetContext()
 
+  // Calls that invalidate arbitrary state
+  void EndRasterCHROMIUM() override;
+
   // Calls that invalidate kRenderTarget_GrGLBackendState
   void BindFramebuffer(GLenum target, GLuint framebuffer) override;
+  void BindRenderbuffer(GLenum target, GLuint renderbuffer) override;
+  void DiscardFramebufferEXT(GLenum target,
+                             GLsizei count,
+                             const GLenum* attachments) override;
+  void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) override;
+  void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) override;
+  void FramebufferTexture2D(GLenum target,
+                            GLenum attachment,
+                            GLenum textarget,
+                            GLuint texture,
+                            GLint level) override;
+  void FramebufferTextureLayer(GLenum target,
+                               GLenum attachment,
+                               GLuint texture,
+                               GLint level,
+                               GLint layer) override;
 
   // Calls that invalidate kTextureBinding_GrGLBackendState
   // Note: Deleting a texture may affect the binding if the currently bound
