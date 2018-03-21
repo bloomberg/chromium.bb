@@ -381,8 +381,9 @@ void PeopleHandler::DisplayTimeout() {
 }
 
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
-  // Don't mark setup as complete if "didAbort" is true.
-  if (!args->GetList()[0].GetBool()) {
+  // Don't mark setup as complete if "didAbort" is true, or if authentication
+  // is still needed.
+  if (!args->GetList()[0].GetBool() && !IsProfileAuthNeeded()) {
     MarkFirstSetupComplete();
   }
 
