@@ -943,11 +943,10 @@
           'scripts': 'check_network_annotation_auditor_script',
         }
       },
-      'Chromium Mac 10.10 MacViews': {
+      'mac-views-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
         },
-        'use_swarming': False,
       },
       'Chromium Mac 10.11': {
         'test_suites': {
