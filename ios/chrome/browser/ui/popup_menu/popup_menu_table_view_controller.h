@@ -7,12 +7,24 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
+@protocol PopupMenuItem;
+
 // TableViewController for the popup menu.
 @interface PopupMenuTableViewController : ChromeTableViewController
 
+// The model of this controller.
+@property(nonatomic, readonly, strong)
+    TableViewModel<TableViewItem<PopupMenuItem>*>* tableViewModel;
+
+// Dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+
 // Sets the |items| to be displayed by this Table View. Removes all the
 // currently presented items.
-- (void)setPopupMenuItems:(NSArray<NSArray<TableViewItem*>*>*)items;
+- (void)setPopupMenuItems:
+    (NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>*)items;
 
 @end
 

@@ -10,8 +10,14 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kImageLength = 30;
+}
+
 @implementation PopupMenuToolsItem
 
+@synthesize actionIdentifier = _actionIdentifier;
+@synthesize image = _image;
 @synthesize title = _title;
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -26,6 +32,7 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   [cell setTitleText:self.title];
+  cell.imageView.image = self.image;
 }
 
 @end
@@ -36,11 +43,14 @@
 
 // Title label for the cell.
 @property(nonatomic, strong) UILabel* title;
+// Image view for the cell, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIImageView* imageView;
 
 @end
 
 @implementation PopupMenuToolsCell
 
+@synthesize imageView = _imageView;
 @synthesize title = _title;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -49,8 +59,26 @@
   if (self) {
     _title = [[UILabel alloc] init];
     _title.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _imageView = [[UIImageView alloc] init];
+    _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+      [_imageView.widthAnchor constraintEqualToConstant:kImageLength],
+      [_imageView.heightAnchor
+          constraintGreaterThanOrEqualToConstant:kImageLength],
+    ]];
+
     [self.contentView addSubview:_title];
-    AddSameConstraints(self.contentView, _title);
+    [self.contentView addSubview:_imageView];
+
+    AddSameConstraintsToSides(
+        self.contentView, _title,
+        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kTrailing);
+    AddSameConstraintsToSides(
+        self.contentView, _imageView,
+        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading);
+    [_imageView.trailingAnchor constraintEqualToAnchor:_title.leadingAnchor]
+        .active = YES;
   }
   return self;
 }

@@ -78,8 +78,8 @@ const CGFloat kContentMargin = 8;
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
-  // Do no get the touches on the container view.
-  return touch.view != self.contentContainer;
+  // Only get the touch on the scrim.
+  return touch.view == self.view;
 }
 
 @end
