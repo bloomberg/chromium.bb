@@ -60,15 +60,12 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
 
   // A map to hold all image cursors. It maps the cursor ID to the X Cursor, the
   // display's scale factor, and the display's rotation.
-  typedef std::map<CursorType, std::unique_ptr<ImageCursor>> ImageCursorMap;
-  ImageCursorMap image_cursors_;
+  std::map<CursorType, std::unique_ptr<ImageCursor>> image_cursors_;
 
   // A map to hold all animated cursors. It maps the cursor ID to the pair of
   // the X Cursor and the corresponding XcursorImages. We need a pointer to the
   // images so that we can free them on destruction.
-  typedef std::map<CursorType, std::pair<::Cursor, XcursorImages*>>
-      AnimatedCursorMap;
-  AnimatedCursorMap animated_cursors_;
+  std::map<CursorType, std::pair<::Cursor, XcursorImages*>> animated_cursors_;
 
   const XScopedCursor invisible_cursor_;
 

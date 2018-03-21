@@ -35,8 +35,7 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.
-  typedef std::map<CursorType, PlatformCursor> ImageCursorMap;
-  ImageCursorMap cursors_;
+  std::map<CursorType, PlatformCursor> image_cursors_;
   CursorFactoryOzone* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);

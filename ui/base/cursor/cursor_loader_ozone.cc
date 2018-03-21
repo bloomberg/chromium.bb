@@ -28,7 +28,7 @@ void CursorLoaderOzone::LoadImageCursor(CursorType id,
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
 
-  cursors_[id] = factory_->CreateImageCursor(bitmap, hotspot, scale());
+  image_cursors_[id] = factory_->CreateImageCursor(bitmap, hotspot, scale());
 }
 
 void CursorLoaderOzone::LoadAnimatedCursor(CursorType id,
@@ -41,25 +41,23 @@ void CursorLoaderOzone::LoadAnimatedCursor(CursorType id,
   GetAnimatedCursorBitmaps(
       resource_id, scale(), rotation(), &hotspot, &bitmaps);
 
-  cursors_[id] =
+  image_cursors_[id] =
       factory_->CreateAnimatedCursor(bitmaps, hotspot, frame_delay_ms, scale());
 }
 
 void CursorLoaderOzone::UnloadAll() {
-  for (ImageCursorMap::const_iterator it = cursors_.begin();
-       it != cursors_.end(); ++it) {
-    factory_->UnrefImageCursor(it->second);
-  }
-  cursors_.clear();
+  for (const auto& image_cursor : image_cursors_)
+    factory_->UnrefImageCursor(image_cursor.second);
+  image_cursors_.clear();
 }
 
 void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
   CursorType native_type = cursor->native_type();
   PlatformCursor platform;
 
-  if (cursors_.count(native_type)) {
+  if (image_cursors_.count(native_type)) {
     // An image cursor is loaded for this type.
-    platform = cursors_[native_type];
+    platform = image_cursors_[native_type];
   } else if (native_type == CursorType::kCustom) {
     // The platform cursor was already set via WebCursor::GetPlatformCursor.
     platform = cursor->platform();

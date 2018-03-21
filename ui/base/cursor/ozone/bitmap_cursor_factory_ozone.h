@@ -77,9 +77,7 @@ class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
   scoped_refptr<BitmapCursorOzone> GetDefaultCursorInternal(CursorType type);
 
   // Default cursors are cached & owned by the factory.
-  typedef std::map<CursorType, scoped_refptr<BitmapCursorOzone>>
-      DefaultCursorMap;
-  DefaultCursorMap default_cursors_;
+  std::map<CursorType, scoped_refptr<BitmapCursorOzone>> default_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapCursorFactoryOzone);
 };
