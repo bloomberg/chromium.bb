@@ -120,13 +120,27 @@ class RenderFrameAudioInputStreamFactoryTest : public testing::Test {
 
   ~RenderFrameAudioInputStreamFactoryTest() override {
     audio_manager_.Shutdown();
+
+    // UniqueAudioInputStreamFactoryPtr uses DeleteOnIOThread and must run
+    // before |thread_bundle_| tear down.
+    factory_handle_.reset();
+
+    // Shutdown BrowserThread::IO before tearing down members.
     thread_bundle_.reset();
   }
 
+  // |thread_bundle_| needs to be up before the members below (as they use
+  // BrowserThreads for their initialization) but then needs to be torn down
+  // before them as some verify they're town down in a single-threaded
+  // environment (while
+  // !BrowserThread::IsThreadInitiaslized(BrowserThread::IO)).
   base::Optional<TestBrowserThreadBundle> thread_bundle_;
+
+  // These members need to be torn down after |thread_bundle_|.
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   MediaStreamManager media_stream_manager_;
+
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr_;
   media::mojom::AudioInputStreamPtr stream_ptr_;
   MockRendererAudioInputStreamFactoryClient client_;

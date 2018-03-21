@@ -140,10 +140,16 @@ void DialURLFetcher::StartDownload() {
   // Currently this is the only way to guarantee a live URLLoaderFactory.
   // TOOD(mmenke): Figure out a way to do this transparently on IO thread.
   network::mojom::URLLoaderFactoryPtr loader_factory;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
-                     mojo::MakeRequest(&loader_factory)));
+
+  // TODO(https://crbug.com/823869): Fix DeviceDescriptionServiceTest and remove
+  // this conditional.
+  auto mojo_request = mojo::MakeRequest(&loader_factory);
+  if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
+                       std::move(mojo_request)));
+  }
 
   loader_->DownloadToString(
       loader_factory.get(),
