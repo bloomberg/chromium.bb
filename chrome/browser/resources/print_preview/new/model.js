@@ -365,7 +365,7 @@ Polymer({
       this.set('settings.dpi.value', defaultOption);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
-      this.set('settings.dpi.value', caps.dpi.option[0]);
+      this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
     }
 
     if (this.settings.vendorItems.available) {
@@ -518,7 +518,7 @@ Polymer({
       duplex: this.getSettingValue('duplex') ?
           print_preview_new.DuplexMode.LONG_EDGE :
           print_preview_new.DuplexMode.SIMPLEX,
-      copies: this.getSettingValue('copies'),
+      copies: parseInt(this.getSettingValue('copies'), 10),
       collate: this.getSettingValue('collate'),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: false,  // only used in print preview

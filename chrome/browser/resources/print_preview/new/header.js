@@ -88,13 +88,13 @@ Polymer({
    */
   computeLabelInfo_: function() {
     const saveToPdfOrDrive = this.isPdfOrDrive_();
-    let numPages = this.getSetting('pages').value.length;
+    let numPages = this.getSettingValue('pages').length;
     let numSheets = numPages;
-    if (!saveToPdfOrDrive && this.getSetting('duplex').value) {
+    if (!saveToPdfOrDrive && this.getSettingValue('duplex')) {
       numSheets = Math.ceil(numPages / 2);
     }
 
-    const copies = /** @type {number} */ (this.getSetting('copies').value);
+    const copies = parseInt(this.getSettingValue('copies'), 10);
     numSheets *= copies;
     numPages *= copies;
 
