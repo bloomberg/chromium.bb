@@ -15,6 +15,13 @@ namespace blink {
 // Represents a break token for an inline node.
 class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
  public:
+  enum NGInlineBreakTokenFlags {
+    kDefault = 0,
+    kIsForcedBreak = 1 << 0,
+    kUseFirstLineStyle = 1 << 1
+    // When adding values, ensure |flags_| has enough storage.
+  };
+
   // Creates a break token for a node which did fragment, and can potentially
   // produce more fragments.
   // Takes ownership of the state_stack.
@@ -23,11 +30,10 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
       const ComputedStyle* style,
       unsigned item_index,
       unsigned text_offset,
-      bool is_forced_break,
+      unsigned flags,  // NGInlineBreakTokenFlags
       std::unique_ptr<const NGInlineLayoutStateStack> state_stack) {
-    return base::AdoptRef(new NGInlineBreakToken(node, style, item_index,
-                                                 text_offset, is_forced_break,
-                                                 std::move(state_stack)));
+    return base::AdoptRef(new NGInlineBreakToken(
+        node, style, item_index, text_offset, flags, std::move(state_stack)));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
@@ -54,9 +60,14 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
     return text_offset_;
   }
 
+  bool UseFirstLineStyle() const {
+    DCHECK(!IsFinished());
+    return flags_ & kUseFirstLineStyle;
+  }
+
   bool IsForcedBreak() const {
     DCHECK(!IsFinished());
-    return is_forced_break_;
+    return flags_ & kIsForcedBreak;
   }
 
   const NGInlineLayoutStateStack& StateStack() const {
@@ -82,7 +93,7 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
                      const ComputedStyle*,
                      unsigned item_index,
                      unsigned text_offset,
-                     bool is_forced_break,
+                     unsigned flags,  // NGInlineBreakTokenFlags
                      std::unique_ptr<const NGInlineLayoutStateStack>);
 
   explicit NGInlineBreakToken(NGLayoutInputNode node);
@@ -90,7 +101,7 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
   scoped_refptr<const ComputedStyle> style_;
   unsigned item_index_;
   unsigned text_offset_;
-  unsigned is_forced_break_ : 1;
+  unsigned flags_ : 2;  // NGInlineBreakTokenFlags
   unsigned ignore_floats_ : 1;
 
   std::unique_ptr<const NGInlineLayoutStateStack> state_stack_;

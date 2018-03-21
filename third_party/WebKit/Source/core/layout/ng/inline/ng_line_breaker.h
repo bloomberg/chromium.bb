@@ -49,7 +49,14 @@ class CORE_EXPORT NGLineBreaker {
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
+      const NGLineInfo&,
       std::unique_ptr<const NGInlineLayoutStateStack>) const;
+
+  // Compute NGInlineItemResult for an open tag item.
+  // Returns true if this item has edge and may have non-zero inline size.
+  static bool ComputeOpenTagResult(const NGInlineItem&,
+                                   const NGConstraintSpace&,
+                                   NGInlineItemResult*);
 
  private:
   // This struct holds information for the current line.

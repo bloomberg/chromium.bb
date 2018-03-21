@@ -57,7 +57,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
       if (!line_breaker.NextLine(opportunity, &line_info))
         break;
 
-      break_token = line_breaker.CreateBreakToken(nullptr);
+      break_token = line_breaker.CreateBreakToken(line_info, nullptr);
       lines.push_back(std::move(line_info.Results()));
     }
 

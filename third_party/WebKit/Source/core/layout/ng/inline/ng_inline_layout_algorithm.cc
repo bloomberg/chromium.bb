@@ -88,6 +88,64 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     baseline_type_ = FontBaseline::kIdeographicBaseline;
 }
 
+NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
+    const NGInlineItem& item,
+    const NGInlineItemResult& item_result) {
+  NGInlineBoxState* box = box_states_->OnOpenTag(item, item_result, line_box_);
+  // Compute text metrics for all inline boxes since even empty inlines
+  // influence the line height, except when quirks mode and the box is empty
+  // for the purpose of empty block calculation.
+  // https://drafts.csswg.org/css2/visudet.html#line-height
+  if (!quirks_mode_ || !item.IsEmptyItem())
+    box->ComputeTextMetrics(*item.Style(), baseline_type_);
+  if (item.ShouldCreateBoxFragment())
+    box->SetNeedsBoxFragment();
+  return box;
+}
+
+// Prepare NGInlineLayoutStateStack for a new line.
+void NGInlineLayoutAlgorithm::PrepareBoxStates(
+    const NGLineInfo& line_info,
+    const NGInlineBreakToken* break_token) {
+  // Copy the state stack from the unfinished break token if provided. This
+  // enforces the layout inputs immutability constraint.
+  if (break_token && !break_token->UseFirstLineStyle()) {
+    box_states_ =
+        std::make_unique<NGInlineLayoutStateStack>(break_token->StateStack());
+    return;
+  }
+
+  // If we weren't provided with a break token we just create an empty state
+  // stack.
+  box_states_ = std::make_unique<NGInlineLayoutStateStack>();
+
+  // If the previous line uses first-line style, rebuild the box state stack
+  // because styles and metrics may be different.
+  if (!break_token)
+    return;
+  DCHECK(break_token->UseFirstLineStyle());
+
+  // Compute which tags are not closed at the beginning of this line.
+  const Vector<NGInlineItem>& items = Node().Items();
+  Vector<const NGInlineItem*, 16> open_items;
+  for (unsigned i = 0; i < break_token->ItemIndex(); i++) {
+    const NGInlineItem& item = items[i];
+    if (item.Type() == NGInlineItem::kOpenTag)
+      open_items.push_back(&item);
+    else if (item.Type() == NGInlineItem::kCloseTag)
+      open_items.pop_back();
+  }
+
+  // Create box states for tags that are not closed yet.
+  box_states_->OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+                                 quirks_mode_);
+  for (const NGInlineItem* item : open_items) {
+    NGInlineItemResult item_result;
+    NGLineBreaker::ComputeOpenTagResult(*item, ConstraintSpace(), &item_result);
+    HandleOpenTag(*item, item_result);
+  }
+}
+
 void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                          NGExclusionSpace* exclusion_space) {
   NGInlineItemResults* line_items = &line_info->Results();
@@ -139,15 +197,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
-      box = box_states_->OnOpenTag(item, item_result, line_box_);
-      // Compute text metrics for all inline boxes since even empty inlines
-      // influence the line height, except when quirks mode and the box is empty
-      // for the purpose of empty block calculation.
-      // https://drafts.csswg.org/css2/visudet.html#line-height
-      if (!(item.IsEmptyItem() && quirks_mode_))
-        box->ComputeTextMetrics(*item.Style(), baseline_type_);
-      if (item.ShouldCreateBoxFragment())
-        box->SetNeedsBoxFragment();
+      box = HandleOpenTag(item, item_result);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       if (!box->needs_box_fragment && item_result.inline_size)
         box->SetNeedsBoxFragment();
@@ -532,13 +582,6 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   NGInlineBreakToken* break_token = BreakToken();
 
   for (const auto& opportunity : opportunities) {
-    // Copy the state stack from the unfinished break token if provided. This
-    // enforces the layout inputs immutability constraint. If we weren't
-    // provided with a break token we just create an empty state stack.
-    box_states_ = break_token ? std::make_unique<NGInlineLayoutStateStack>(
-                                    break_token->StateStack())
-                              : std::make_unique<NGInlineLayoutStateStack>();
-
     // Reset any state that may have been modified in a previous pass.
     positioned_floats.clear();
     unpositioned_floats_.clear();
@@ -565,6 +608,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
             ConstraintSpace().AvailableSize().inline_size)
       continue;
 
+    PrepareBoxStates(line_info, break_token);
     CreateLine(&line_info, exclusion_space.get());
 
     // We now can check the block-size of the fragment, and it fits within the
@@ -582,7 +626,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // Success!
     positioned_floats_.AppendVector(positioned_floats);
     container_builder_.SetBreakToken(
-        line_breaker.CreateBreakToken(std::move(box_states_)));
+        line_breaker.CreateBreakToken(line_info, std::move(box_states_)));
 
     // Place any remaining floats which couldn't fit on the line.
     PositionPendingFloats(line_height, exclusion_space.get());
