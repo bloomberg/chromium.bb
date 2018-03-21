@@ -838,7 +838,7 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 
   base::Value* process_mmaps =
       FindArgDump(base::Process::Current().Pid(), dump_json, "process_mmaps");
-  if (!ValidateProcessMmaps(process_mmaps, !HasPseudoFrames())) {
+  if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
     LOG(ERROR) << "Failed to validate browser process mmaps.";
     return false;
   }
@@ -864,7 +864,7 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
 
     base::Value* process_mmaps =
         FindArgDump(renderer_pid, dump_json, "process_mmaps");
-    if (!ValidateProcessMmaps(process_mmaps, !HasPseudoFrames())) {
+    if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
       LOG(ERROR) << "Failed to validate renderer process mmaps.";
       return false;
     }
@@ -913,6 +913,12 @@ bool ProfilingTestDriver::ShouldIncludeNativeThreadNames() {
 
 bool ProfilingTestDriver::HasPseudoFrames() {
   return options_.stack_mode == mojom::StackMode::PSEUDO ||
+         options_.stack_mode == mojom::StackMode::MIXED;
+}
+
+bool ProfilingTestDriver::HasNativeFrames() {
+  return options_.stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES ||
+         options_.stack_mode == mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES ||
          options_.stack_mode == mojom::StackMode::MIXED;
 }
 
