@@ -19,6 +19,7 @@ import sys
 import tempfile
 import zipfile
 
+import apkanalyzer
 import concurrent
 import demangle
 import describe
@@ -99,9 +100,10 @@ def _NormalizeNames(raw_symbols):
   found_prefixes = set()
   for symbol in raw_symbols:
     full_name = symbol.full_name
-    if full_name.startswith('*'):
-      # See comment in _CalculatePadding() about when this
-      # can happen.
+
+    # See comment in _CalculatePadding() about when this can happen. Don't
+    # process names for non-native sections.
+    if full_name.startswith('*') or not symbol.IsNative():
       symbol.template_name = full_name
       symbol.name = full_name
       continue
@@ -149,6 +151,7 @@ def _NormalizeNames(raw_symbols):
 
     # Strip out return type, and split out name, template_name.
     # Function parsing also applies to non-text symbols. E.g. Function statics.
+    # TODO(wnwen): Dex methods might want this processing.
     symbol.full_name, symbol.template_name, symbol.name = (
         function_signature.Parse(full_name))
 
@@ -199,7 +202,13 @@ def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper):
     logging.info('Looking up source paths from ninja files')
     for symbol in raw_symbols:
       object_path = symbol.object_path
-      if object_path:
+      if symbol.IsDex():
+        symbol.generated_source, symbol.source_path = _NormalizeSourcePath(
+            symbol.source_path)
+      elif symbol.IsOther():
+        # TODO(wnwen): Add source mapping for other symbols.
+        pass
+      elif object_path:
         # We don't have source info for prebuilt .a files.
         if not os.path.isabs(object_path) and not object_path.startswith('..'):
           source_path = source_mapper.FindSourceForPath(object_path)
@@ -457,7 +466,7 @@ def _CalculatePadding(raw_symbols):
       symbol.padding = symbol.size
       continue
     if (symbol.address <= 0 or prev_symbol.address <= 0 or
-        symbol.IsPak() or prev_symbol.IsPak()):
+        not symbol.IsNative() or not prev_symbol.IsNative()):
       continue
 
     if symbol.address == prev_symbol.address:
@@ -793,19 +802,29 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
   return section_sizes
 
 
+def _ParseDexSymbols(section_sizes, apk_path, output_directory):
+  symbols = apkanalyzer.CreateDexSymbols(apk_path, output_directory)
+  prev = section_sizes.setdefault(models.SECTION_DEX, 0)
+  section_sizes[models.SECTION_DEX] = prev + sum(s.size for s in symbols)
+  return symbols
+
+
 def _ParseApkOtherSymbols(section_sizes, apk_path):
+  apk_name = os.path.basename(apk_path)
   apk_symbols = []
   zip_info_total = 0
   with zipfile.ZipFile(apk_path) as z:
     for zip_info in z.infolist():
       zip_info_total += zip_info.compress_size
-      # Skip shared library and pak files as they are already accounted for.
+      # Skip shared library, pak, and dex files as they are accounted for.
       if (zip_info.filename.endswith('.so')
+          or zip_info.filename.endswith('.dex')
           or zip_info.filename.endswith('.pak')):
         continue
+      path = os.path.join(apk_name, 'other', zip_info.filename)
       apk_symbols.append(models.Symbol(
             models.SECTION_OTHER, zip_info.compress_size,
-            full_name=zip_info.filename))
+            object_path=path, full_name=os.path.basename(zip_info.filename)))
   overhead_size = os.path.getsize(apk_path) - zip_info_total
   zip_overhead_symbol = models.Symbol(
       models.SECTION_OTHER, overhead_size, full_name='Overhead: APK file')
@@ -910,6 +929,8 @@ def CreateSectionSizesAndSymbols(
                                                knobs)
     section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
         section_sizes, metadata, apk_elf_result)
+    raw_symbols.extend(
+        _ParseDexSymbols(section_sizes, apk_path, output_directory))
     raw_symbols.extend(_ParseApkOtherSymbols(section_sizes, apk_path))
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(

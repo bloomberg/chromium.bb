@@ -76,8 +76,9 @@ D3SymbolTreeMap._NM_SYMBOL_TYPE_DESCRIPTIONS = {
   'd': '.data and .data.*',
   'r': '.rodata',
   't': '.text',
-  'v': 'Vtable entry',
+  'v': 'Vtable Entry',
   '!': 'Generated Symbols (typeinfo, thunks, etc)',
+  'x': 'Dex Entries',
   'p': 'Locale Pak Entries',
   'P': 'Non-Locale Pak Entries',
   'o': 'Other Entries',
@@ -108,9 +109,10 @@ D3SymbolTreeMap._colorArray = [
   'rgb(128,177,211)',
   'rgb(255,237,111)',
   'rgb(204,235,197)',
+  'rgb(255,111,111)',
   'rgb(93,156,110)',
   'rgb(61,109,55)',
-  'rgb(255,111,111)',
+  'rgb(150,100,111)',
 ]
 
 D3SymbolTreeMap._initColorMap = function() {
