@@ -22,9 +22,9 @@ class SRTDownloadURLTest : public ::testing::Test {
   }
 
   void CreateDownloadFeature(const std::string& download_group_name) {
-    constexpr char kFeatureName[] = "DownloadCleanupToolByBitness";
+    constexpr char kFeatureName[] = "ChromeCleanupDistribution";
     std::map<std::string, std::string> params;
-    params["download_group"] = download_group_name;
+    params["cleaner_download_group"] = download_group_name;
     variations_.SetVariationParamsWithFeatureAssociations(
         "A trial name", params, {kFeatureName});
   }
@@ -36,12 +36,6 @@ class SRTDownloadURLTest : public ::testing::Test {
 TEST_F(SRTDownloadURLTest, Stable) {
   CreatePromptTrial("On");
   EXPECT_EQ("/dl/softwareremovaltool/win/chrome_cleanup_tool.exe",
-            GetSRTDownloadURL().path());
-}
-
-TEST_F(SRTDownloadURLTest, Canary) {
-  CreatePromptTrial("SRTCanary");
-  EXPECT_EQ("/dl/softwareremovaltool/win/c/chrome_cleanup_tool.exe",
             GetSRTDownloadURL().path());
 }
 

@@ -53,7 +53,6 @@ namespace component_updater {
 
 namespace {
 
-using safe_browsing::OnReporterSequenceDone;
 using safe_browsing::SwReporterInvocation;
 using safe_browsing::SwReporterInvocationSequence;
 
@@ -76,9 +75,6 @@ const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
 
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
-
-constexpr base::Feature kComponentTagFeature{kComponentTagFeatureName,
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 void SRTHasCompleted(SRTCompleted value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
@@ -406,18 +402,20 @@ std::string SwReporterInstallerPolicy::GetName() const {
 update_client::InstallerAttributes
 SwReporterInstallerPolicy::GetInstallerAttributes() const {
   update_client::InstallerAttributes attributes;
-  if (base::FeatureList::IsEnabled(kComponentTagFeature)) {
-    // Pass the "tag" parameter to the installer; it will be used to choose
-    // which binary is downloaded.
-    constexpr char kTagParam[] = "tag";
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kChromeCleanupDistributionFeature)) {
+    // Pass the tag parameter to the installer as the "tag" attribute; it will
+    // be used to choose which binary is downloaded.
+    constexpr char kTagParamName[] = "reporter_omaha_tag";
     const std::string tag = variations::GetVariationParamValueByFeature(
-        kComponentTagFeature, kTagParam);
+        safe_browsing::kChromeCleanupDistributionFeature, kTagParamName);
 
     // If the tag is not a valid attribute (see the regexp in
     // ComponentInstallerPolicy::InstallerAttributes), set it to a valid but
     // unrecognized value so that nothing will be downloaded.
     constexpr size_t kMaxAttributeLength = 256;
     constexpr char kExtraAttributeChars[] = "-.,;+_=";
+    constexpr char kTagParam[] = "tag";
     if (tag.empty() ||
         !ValidateString(tag, kExtraAttributeChars, kMaxAttributeLength)) {
       ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG);
