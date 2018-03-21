@@ -35,10 +35,17 @@ BluetoothClassicWrapper::~BluetoothClassicWrapper() {}
 HBLUETOOTH_RADIO_FIND BluetoothClassicWrapper::FindFirstRadio(
     const BLUETOOTH_FIND_RADIO_PARAMS* params,
     HANDLE* out_handle) {
-  HANDLE radio_handle = NULL;
+  HANDLE radio_handle = INVALID_HANDLE_VALUE;
   HBLUETOOTH_RADIO_FIND radio_find_handle =
       BluetoothFindFirstRadio(params, &radio_handle);
   if (radio_find_handle) {
+    // TODO(crbug.com/820864): At some point, we crash when we attempt to close
+    // the handle.  This and the related checks in this file are designed to
+    // see if our handle becomes garbage (i.e., "valid", but not closeable) at
+    // some point.
+    DWORD info;
+    CHECK(!base::win::HandleTraits::IsHandleValid(radio_handle) ||
+          ::GetHandleInformation(radio_handle, &info));
     opened_radio_handle_.Set(radio_handle);
     *out_handle = opened_radio_handle_.Get();
   }
@@ -48,7 +55,11 @@ HBLUETOOTH_RADIO_FIND BluetoothClassicWrapper::FindFirstRadio(
 DWORD BluetoothClassicWrapper::GetRadioInfo(
     HANDLE handle,
     PBLUETOOTH_RADIO_INFO out_radio_info) {
-  return BluetoothGetRadioInfo(handle, out_radio_info);
+  DWORD ret = BluetoothGetRadioInfo(handle, out_radio_info);
+  DWORD info;
+  // TODO(crbug.com/820864): Remove this check.
+  CHECK(::GetHandleInformation(handle, &info));
+  return ret;
 }
 
 BOOL BluetoothClassicWrapper::FindRadioClose(HBLUETOOTH_RADIO_FIND handle) {
@@ -56,7 +67,11 @@ BOOL BluetoothClassicWrapper::FindRadioClose(HBLUETOOTH_RADIO_FIND handle) {
 }
 
 BOOL BluetoothClassicWrapper::IsConnectable(HANDLE handle) {
-  return BluetoothIsConnectable(handle);
+  DWORD ret = BluetoothIsConnectable(handle);
+  DWORD info;
+  // TODO(crbug.com/820864): Remove this check.
+  CHECK(::GetHandleInformation(handle, &info));
+  return ret;
 }
 
 HBLUETOOTH_DEVICE_FIND BluetoothClassicWrapper::FindFirstDevice(
@@ -76,12 +91,20 @@ BOOL BluetoothClassicWrapper::FindDeviceClose(HBLUETOOTH_DEVICE_FIND handle) {
 }
 
 BOOL BluetoothClassicWrapper::EnableDiscovery(HANDLE handle, BOOL is_enable) {
-  return BluetoothEnableDiscovery(handle, is_enable);
+  DWORD ret = BluetoothEnableDiscovery(handle, is_enable);
+  DWORD info;
+  // TODO(crbug.com/820864): Remove this check.
+  CHECK(::GetHandleInformation(handle, &info));
+  return ret;
 }
 
 BOOL BluetoothClassicWrapper::EnableIncomingConnections(HANDLE handle,
                                                         BOOL is_enable) {
-  return BluetoothEnableIncomingConnections(handle, is_enable);
+  DWORD ret = BluetoothEnableIncomingConnections(handle, is_enable);
+  DWORD info;
+  // TODO(crbug.com/820864): Remove this check.
+  CHECK(::GetHandleInformation(handle, &info));
+  return ret;
 }
 
 DWORD BluetoothClassicWrapper::LastError() {
