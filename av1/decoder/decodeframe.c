@@ -2464,7 +2464,6 @@ static void wrap_around_current_video_frame(AV1Decoder *pbi) {
 }
 #endif
 
-#if CONFIG_FWD_KF
 static void show_existing_frame_reset(AV1Decoder *const pbi,
                                       int existing_frame_idx) {
   AV1_COMMON *const cm = &pbi->common;
@@ -2542,7 +2541,6 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   // Reload the adapted CDFs from when we originally coded this keyframe
   *cm->fc = cm->frame_contexts[existing_frame_idx];
 }
-#endif  // CONFIG_FWD_KF
 
 static int read_uncompressed_header(AV1Decoder *pbi,
                                     struct aom_read_bit_buffer *rb) {
@@ -2563,9 +2561,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->is_reference_frame = 1;
 
   cm->show_existing_frame = aom_rb_read_bit(rb);
-#if CONFIG_FWD_KF
   cm->reset_decoder_state = 0;
-#endif  // CONFIG_FWD_KF
 
   if (cm->show_existing_frame) {
     // Show an existing frame directly.
@@ -2589,9 +2585,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                          frame_to_show);
     }
     ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
-#if CONFIG_FWD_KF
     cm->reset_decoder_state = frame_bufs[frame_to_show].frame_type == KEY_FRAME;
-#endif  // CONFIG_FWD_KF
     unlock_buffer_pool(pool);
 
     cm->lf.filter_level[0] = 0;
@@ -2612,15 +2606,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 #endif
 
-#if CONFIG_FWD_KF
     if (cm->reset_decoder_state) {
       show_existing_frame_reset(pbi, existing_frame_idx);
     } else {
-#endif  // CONFIG_FWD_KF
       pbi->refresh_frame_flags = 0;
-#if CONFIG_FWD_KF
     }
-#endif  // CONFIG_FWD_KF
 
     return 0;
   }
@@ -2724,12 +2714,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->frame_type == KEY_FRAME) {
 #if !CONFIG_EXPLICIT_ORDER_HINT
     wrap_around_current_video_frame(pbi);
-#endif  // !CONFIG_EXPLICIT_ORDER_HINT
-#if CONFIG_FWD_KF
+#endif                    // !CONFIG_EXPLICIT_ORDER_HINT
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
     else  // shown keyframe
-#endif    // CONFIG_FWD_KF
       pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
@@ -3298,7 +3286,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 #else
     *p_data_end = data + aom_rb_bytes_read(&rb);
 #endif
-#if CONFIG_FWD_KF
     if (cm->reset_decoder_state) {
       // Use the default frame context values.
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
@@ -3307,7 +3294,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Uninitialized entropy context.");
     }
-#endif  // CONFIG_FWD_KF
     return 0;
   }
 

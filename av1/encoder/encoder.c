@@ -5719,11 +5719,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->refresh_alt2_ref_frame = 0;
   cpi->refresh_alt_ref_frame = 0;
 
-#if CONFIG_FWD_KF
   // TODO(zoeliu@gmail.com): To support forward-KEY_FRAME and set up the
   //                         following flag accordingly.
   cm->reset_decoder_state = 0;
-#endif  // CONFIG_FWD_KF
 
   if (oxcf->pass == 2 && cm->show_existing_frame) {
     // Manage the source buffer and flush out the source frame that has been
