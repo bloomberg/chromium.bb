@@ -17,6 +17,10 @@ DownloadEntry InProgressConversions::DownloadEntryFromProto(
   entry.download_source = DownloadSourceFromProto(proto.download_source());
   entry.ukm_download_id = proto.ukm_download_id();
   entry.bytes_wasted = proto.bytes_wasted();
+  entry.fetch_error_body = proto.fetch_error_body();
+  for (const auto& header : proto.request_headers()) {
+    entry.request_headers.emplace_back(HttpRequestHeaderFromProto(header));
+  }
   return entry;
 }
 
@@ -28,6 +32,12 @@ metadata_pb::DownloadEntry InProgressConversions::DownloadEntryToProto(
   proto.set_download_source(DownloadSourceToProto(entry.download_source));
   proto.set_ukm_download_id(entry.ukm_download_id);
   proto.set_bytes_wasted(entry.bytes_wasted);
+  proto.set_fetch_error_body(entry.fetch_error_body);
+  for (const auto& header : entry.request_headers) {
+    auto* proto_header = proto.add_request_headers();
+    *proto_header = HttpRequestHeaderToProto(header);
+  }
+
   return proto;
 }
 
@@ -105,6 +115,28 @@ metadata_pb::DownloadEntries InProgressConversions::DownloadEntriesToProto(
     *proto_entry = DownloadEntryToProto(entries[i]);
   }
   return proto;
+}
+
+// static
+metadata_pb::HttpRequestHeader InProgressConversions::HttpRequestHeaderToProto(
+    const std::pair<std::string, std::string>& header) {
+  metadata_pb::HttpRequestHeader proto;
+  if (header.first.empty())
+    return proto;
+
+  proto.set_key(header.first);
+  proto.set_value(header.second);
+  return proto;
+}
+
+// static
+std::pair<std::string, std::string>
+InProgressConversions::HttpRequestHeaderFromProto(
+    const metadata_pb::HttpRequestHeader& proto) {
+  if (proto.key().empty())
+    return std::pair<std::string, std::string>();
+
+  return std::make_pair(proto.key(), proto.value());
 }
 
 }  // namespace download

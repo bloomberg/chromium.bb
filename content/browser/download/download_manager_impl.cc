@@ -139,16 +139,16 @@ uint64_t GetUniqueDownloadId() {
   return download_id;
 }
 
-download::DownloadEntry CreateDownloadEntryFromItemImpl(
-    const DownloadItemImpl& item) {
-  return download::DownloadEntry(item.GetGuid(), item.download_source(),
-                                 GetUniqueDownloadId());
-}
-
 download::DownloadEntry CreateDownloadEntryFromItem(
-    const download::DownloadItem& item) {
-  return download::DownloadEntry(
-      item.GetGuid(), download::DownloadSource::UNKNOWN, GetUniqueDownloadId());
+    const download::DownloadItem& item,
+    const std::string& request_origin,
+    download::DownloadSource download_source,
+    bool fetch_error_body,
+    const download::DownloadUrlParameters::RequestHeadersType&
+        request_headers) {
+  return download::DownloadEntry(item.GetGuid(), request_origin,
+                                 download_source, fetch_error_body,
+                                 request_headers, GetUniqueDownloadId());
 }
 
 void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
@@ -370,7 +370,10 @@ void InProgressDownloadObserver::OnDownloadUpdated(
           in_progress_cache_->RetrieveEntry(download->GetGuid());
       download::DownloadEntry entry;
       if (!entry_opt.has_value()) {
-        entry = CreateDownloadEntryFromItem(*download);
+        entry = CreateDownloadEntryFromItem(
+            *download, std::string(),                 /* request_origin */
+            download::DownloadSource::UNKNOWN, false, /* fetch_error_body */
+            download::DownloadUrlParameters::RequestHeadersType());
         in_progress_cache_->AddOrReplaceEntry(entry);
         break;
       }
@@ -657,8 +660,9 @@ void DownloadManagerImpl::StartDownloadWithId(
       base::Optional<download::DownloadEntry> entry_opt =
           in_progress_cache->RetrieveEntry(download->GetGuid());
       if (!entry_opt.has_value()) {
-        in_progress_cache->AddOrReplaceEntry(
-            CreateDownloadEntryFromItemImpl(*download));
+        in_progress_cache->AddOrReplaceEntry(CreateDownloadEntryFromItem(
+            *download, info->request_origin, info->download_source,
+            info->fetch_error_body, info->request_headers));
       }
     }
 
@@ -790,8 +794,10 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
       base::Optional<download::DownloadEntry> entry_opt =
           in_progress_cache->RetrieveEntry(download_item->GetGuid());
       if (!entry_opt.has_value()) {
-        in_progress_cache->AddOrReplaceEntry(
-            CreateDownloadEntryFromItemImpl(*download_item));
+        in_progress_cache->AddOrReplaceEntry(CreateDownloadEntryFromItem(
+            *download_item, std::string(),            /* request_origin */
+            download::DownloadSource::UNKNOWN, false, /* fetch_error_body */
+            download::DownloadUrlParameters::RequestHeadersType()));
       }
     }
   }

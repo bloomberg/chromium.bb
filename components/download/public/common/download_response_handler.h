@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_RESPONSE_HANDLER_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_RESPONSE_HANDLER_H_
 
+#include <string>
 #include <vector>
 
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/download_stream.mojom.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -33,15 +35,17 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
     virtual void OnReceiveRedirect() = 0;
   };
 
-  DownloadResponseHandler(network::ResourceRequest* resource_request,
-                          Delegate* delegate,
-                          std::unique_ptr<DownloadSaveInfo> save_info,
-                          bool is_parallel_request,
-                          bool is_transient,
-                          bool fetch_error_body,
-                          const std::string& request_origin,
-                          DownloadSource download_source,
-                          std::vector<GURL> url_chain);
+  DownloadResponseHandler(
+      network::ResourceRequest* resource_request,
+      Delegate* delegate,
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      bool is_parallel_request,
+      bool is_transient,
+      bool fetch_error_body,
+      const DownloadUrlParameters::RequestHeadersType& request_headers,
+      const std::string& request_origin,
+      DownloadSource download_source,
+      std::vector<GURL> url_chain);
   ~DownloadResponseHandler() override;
 
   // network::mojom::URLLoaderClient
@@ -81,6 +85,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   GURL referrer_;
   bool is_transient_;
   bool fetch_error_body_;
+  DownloadUrlParameters::RequestHeadersType request_headers_;
   std::string request_origin_;
   DownloadSource download_source_;
   net::CertStatus cert_status_;

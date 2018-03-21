@@ -3334,6 +3334,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, UploadBytes) {
 // Verify the case that the first response is HTTP 200, and then interrupted,
 // and the second response is HTTP 404, the response body of 404 should be
 // fetched.
+// Also verify the request header is correctly piped to download item.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
@@ -3348,6 +3349,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
       DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           shell()->web_contents(), server_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   download_parameters->set_fetch_error_body(true);
+  download_parameters->add_request_header("header_key", "header_value");
+
   DownloadManager* download_manager = DownloadManagerForShell(shell());
 
   std::unique_ptr<DownloadTestObserver> observer;
@@ -3378,6 +3381,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
         base::ReadFileToString(items[0]->GetTargetFilePath(), &file_content));
     EXPECT_EQ(std::string(), file_content);
   }
+
+  // Additional request header should be sent.
+  test_response_handler()->WaitUntilCompletion(2u);
+  const auto& request = test_response_handler()->completed_requests().back();
+  auto it = request->http_request.headers.find("header_key");
+  EXPECT_TRUE(it != request->http_request.headers.end());
+  EXPECT_EQ(request->http_request.headers["header_key"],
+            std::string("header_value"));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMultipartRelatedPage) {

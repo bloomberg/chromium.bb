@@ -44,7 +44,7 @@ class InProgressCacheImpl : public InProgressCache {
   };
 
   // Steps to execute after initialization is complete.
-  void OnInitialized(std::vector<char> entries);
+  void OnInitialized(const std::vector<char>& entries);
 
   metadata_pb::DownloadEntries entries_;
   base::FilePath file_path_;

@@ -141,6 +141,7 @@ void ResourceDownloader::Start(
           download_url_parameters->GetSaveInfo()),
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
+      download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
       std::vector<GURL>(1, resource_request_->url));
@@ -178,8 +179,13 @@ void ResourceDownloader::InterceptResponse(
   if (suggested_filename.has_value())
     save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
-      resource_request_.get(), this, std::move(save_info), false, false, false,
-      std::string(), DownloadSource::NAVIGATION, std::move(url_chain));
+      resource_request_.get(), this, std::move(save_info),
+      false, /* is_parallel_request */
+      false, /* is_transient */
+      false, /* fetch_error_body */
+      download::DownloadUrlParameters::RequestHeadersType(),
+      std::string(), /* request_origin */
+      download::DownloadSource::NAVIGATION, std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   net::SSLInfo info;

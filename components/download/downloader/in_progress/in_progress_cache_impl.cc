@@ -81,15 +81,14 @@ std::vector<char> ReadEntriesFromFile(base::FilePath file_path) {
   }
 
   // Read and parse file.
-  const int64_t size = base::saturated_cast<int64_t>(info.size);
-  if (size > INT_MAX || size < 0) {
+  if (info.size < 0) {
     LOG(ERROR) << "Could not read download entries from file "
                << "because the file size was unexpected.";
     return std::vector<char>();
   }
 
-  auto file_data = std::vector<char>(size);
-  if (entries_file.Read(0, file_data.data(), size) <= 0) {
+  auto file_data = std::vector<char>(info.size);
+  if (entries_file.Read(0, file_data.data(), info.size) < 0) {
     LOG(ERROR) << "Could not read download entries from file "
                << "because there was a read failure.";
     return std::vector<char>();
@@ -149,8 +148,8 @@ void InProgressCacheImpl::Initialize(const base::RepeatingClosure& callback) {
   }
 }
 
-void InProgressCacheImpl::OnInitialized(std::vector<char> entries) {
-  if (entries.empty()) {
+void InProgressCacheImpl::OnInitialized(const std::vector<char>& entries) {
+  if (!entries.empty()) {
     if (!entries_.ParseFromArray(entries.data(), entries.size())) {
       // TODO(crbug.com/778425): Get UMA for errors.
       LOG(ERROR) << "Could not read download entries from file "
