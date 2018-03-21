@@ -1154,26 +1154,6 @@
             ]
         }
     ],
-    "DisallowFetchForDocWrittenScriptsInMainFrame": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "DocumentWriteScriptBlockGroup_20161208_Launch",
-                    "params": {
-                        "disallowFetchForDocWrittenScriptsInMainFrame": "false",
-                        "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "true"
-                    }
-                }
-            ]
-        }
-    ],
     "DownloadHomeMoreButton": [
         {
             "platforms": [

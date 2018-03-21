@@ -814,7 +814,7 @@
     // frame inserted via document.write, for users on slow connections.
     {
       name: "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections",
-      initial: false,
+      initial: true,
     },
 
     // Whether to disallow network fetches for parser blocking scripts in the main
