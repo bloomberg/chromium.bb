@@ -106,7 +106,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "tab_audio_rounded.icon",
     "tab_bluetooth_connected.icon",
     "tab_close_button_touch.icon",
-    "tab_close_button_touch_incognito.icon",
+    "tab_close_button_touch_hovered_pressed.icon",
     "tab_close_button_touch_incognito_hovered_pressed.icon",
     "tab_close_hovered_pressed.1x.icon",
     "tab_close_hovered_pressed.icon",

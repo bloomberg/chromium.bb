@@ -30,11 +30,10 @@ namespace {
 
 const gfx::VectorIcon& GetTouchIcon(views::Button::ButtonState state,
                                     bool is_incognito) {
-  if (!is_incognito)
+  if (state == views::Button::STATE_NORMAL)
     return kTabCloseButtonTouchIcon;
-  return state == views::Button::STATE_NORMAL
-             ? kTabCloseButtonTouchIncognitoIcon
-             : kTabCloseButtonTouchIncognitoHoveredPressedIcon;
+  return is_incognito ? kTabCloseButtonTouchIncognitoHoveredPressedIcon
+                      : kTabCloseButtonTouchHoveredPressedIcon;
 }
 
 }  // namespace
