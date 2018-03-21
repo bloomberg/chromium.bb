@@ -161,6 +161,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/win/titlebar_config.h"
 #endif  // OS_WIN
 
 using flags_ui::FeatureEntry;
@@ -2948,7 +2949,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"windows10-custom-titlebar",
      flag_descriptions::kWindows10CustomTitlebarName,
      flag_descriptions::kWindows10CustomTitlebarDescription, kOsWin,
-     SINGLE_VALUE_TYPE(switches::kWindows10CustomTitlebar)},
+     FEATURE_VALUE_TYPE(kWindows10CustomTitlebar)},
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
