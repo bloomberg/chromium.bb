@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.notifications.NotificationConstants.DE
 
 import android.app.Notification;
 import android.content.Context;
+import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -84,6 +85,10 @@ public final class DownloadForegroundServiceManagerTest {
             super.startOrUpdateForegroundService(notificationId, notification);
         }
 
+        // Skip waiting for delayed runnable in tests.
+        @Override
+        void postMaybeStopServiceRunnable() {}
+
         /**
          * Call for testing that mimics the onServiceConnected call in mConnection that ensures the
          * mBoundService is non-null and the pending queue is processed.
@@ -107,6 +112,8 @@ public final class DownloadForegroundServiceManagerTest {
 
     @Before
     public void setUp() throws Exception {
+        Looper.prepare();
+
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
         mDownloadServiceManager = new MockDownloadForegroundServiceManager();
 
