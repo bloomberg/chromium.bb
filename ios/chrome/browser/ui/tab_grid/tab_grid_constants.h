@@ -7,6 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+// Accessibility identifiers for automated testing.
+extern NSString* const kTabGridDoneButtonIdentifier;
+extern NSString* const kTabGridCloseAllButtonIdentifier;
+extern NSString* const kTabGridIncognitoTabsEmptyStateIdentifier;
+extern NSString* const kTabGridRegularTabsEmptyStateIdentifier;
+
 // All kxxxColor constants are RGB values stored in a Hex integer. These will be
 // converted into UIColors using the UIColorFromRGB() function, from
 // uikit_ui_util.h

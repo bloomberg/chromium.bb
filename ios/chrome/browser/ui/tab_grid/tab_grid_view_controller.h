@@ -14,10 +14,6 @@
 @protocol GridCommands;
 @protocol GridImageDataSource;
 
-// TODO(crbug.com/818198) : Move to constants file.
-// The accessibility label for the done button for use in test automation.
-extern NSString* const kTabGridDoneButtonAccessibilityID;
-
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
 @protocol TabPresentationDelegate<NSObject>

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -35,10 +35,23 @@ id<GREYMatcher> CloseButtonForCellAtIndex(unsigned int index) {
       grey_sufficientlyVisible(), nil);
 }
 
-// Matcher for done button in tab grid.
-id<GREYMatcher> TabGridDoneButton() {
-  return grey_allOf(grey_accessibilityID(kTabGridDoneButtonAccessibilityID),
+// Matcher for the Done button in the tab grid.
+id<GREYMatcher> DoneButton() {
+  return grey_allOf(grey_accessibilityID(kTabGridDoneButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for the Close All button in the tab grid.
+id<GREYMatcher> CloseAllButton() {
+  return grey_allOf(grey_accessibilityID(kTabGridCloseAllButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for the regular tabs empty state view.
+id<GREYMatcher> RegularTabsEmptyStateView() {
+  return grey_allOf(
+      grey_accessibilityID(kTabGridRegularTabsEmptyStateIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 }  // namespace
@@ -52,8 +65,7 @@ id<GREYMatcher> TabGridDoneButton() {
 - (void)testEnteringAndLeavingTabGrid {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:DoneButton()] performAction:grey_tap()];
 }
 
 // Tests that tapping on the first cell shows that tab.
@@ -65,7 +77,7 @@ id<GREYMatcher> TabGridDoneButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that closing the cell shows no tabs.
+// Tests that closing the cell shows no tabs, and displays the empty state.
 - (void)testClosingFirstCell {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
@@ -73,6 +85,20 @@ id<GREYMatcher> TabGridDoneButton() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:CellAtIndex(0)]
       assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:RegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that tapping Close All shows no tabs, and displays the empty state.
+- (void)testShowingEmptyStateOnCloseAll {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CloseAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:RegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end
