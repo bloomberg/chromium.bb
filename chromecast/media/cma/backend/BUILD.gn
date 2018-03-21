@@ -30,6 +30,8 @@ cast_source_set("backend") {
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",
     "media_pipeline_backend_wrapper.h",
+    "video_decoder_wrapper.cc",
+    "video_decoder_wrapper.h",
   ]
 
   public_deps = [

@@ -277,7 +277,7 @@ void AvPipelineImpl::PushReadyBuffer(scoped_refptr<DecoderBufferBase> buffer) {
 
   pushed_buffer_ = std::move(buffer);
 
-  CmaBackend::BufferStatus status = decoder_->PushBuffer(pushed_buffer_.get());
+  CmaBackend::BufferStatus status = decoder_->PushBuffer(pushed_buffer_);
 
   if (status != CmaBackend::BufferStatus::kBufferPending)
     OnPushBufferComplete(status);
