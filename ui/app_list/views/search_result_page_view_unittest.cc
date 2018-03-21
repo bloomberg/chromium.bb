@@ -124,18 +124,18 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
   // Add 3 results and expect the tile list view to be the first result
   // container view.
   TestSearchResult* tile_result = new TestSearchResult();
-  tile_result->set_display_type(SearchResult::DISPLAY_TILE);
+  tile_result->set_display_type(ash::SearchResultDisplayType::kTile);
   tile_result->set_relevance(1.0);
   results->Add(base::WrapUnique(tile_result));
   {
     TestSearchResult* list_result = new TestSearchResult();
-    list_result->set_display_type(SearchResult::DISPLAY_LIST);
+    list_result->set_display_type(ash::SearchResultDisplayType::kList);
     list_result->set_relevance(0.5);
     results->Add(base::WrapUnique(list_result));
   }
   {
     TestSearchResult* list_result = new TestSearchResult();
-    list_result->set_display_type(SearchResult::DISPLAY_LIST);
+    list_result->set_display_type(ash::SearchResultDisplayType::kList);
     list_result->set_relevance(0.3);
     results->Add(base::WrapUnique(list_result));
   }

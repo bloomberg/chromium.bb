@@ -5,13 +5,17 @@
 #ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_
 
+#include <vector>
+
 #include "ash/public/cpp/ash_public_export.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/range/range.h"
 
 namespace ash {
 
 // All possible states of the app list.
 // Note: Do not change the order of these as they are used for metrics.
-enum class ASH_PUBLIC_EXPORT AppListState {
+enum class AppListState {
   kStateApps = 0,
   kStateSearchResults,
   kStateStart,
@@ -23,10 +27,74 @@ enum class ASH_PUBLIC_EXPORT AppListState {
 };
 
 // The status of the app list model.
-enum class ASH_PUBLIC_EXPORT AppListModelStatus {
+enum class AppListModelStatus {
   kStatusNormal,
   kStatusSyncing,  // Syncing apps or installing synced apps.
 };
+
+// Type of the search result, which is set in Chrome.
+enum class SearchResultType {
+  kUnknown,       // Unknown type. Don't use over IPC
+  kInstalledApp,  // Installed apps.
+  kPlayStoreApp,  // Uninstalled apps from playstore.
+  kInstantApp,    // Instant apps.
+  // Add new values here.
+};
+
+// How the result should be displayed. Do not change the order of these as
+// they are used for metrics.
+enum SearchResultDisplayType {
+  kNone = 0,
+  kList,
+  kTile,
+  kRecommendation,
+  kCard,
+  // Add new values here.
+
+  kLast,  // Don't use over IPC
+};
+
+// A tagged range in search result text.
+struct ASH_PUBLIC_EXPORT SearchResultTag {
+  // Similar to ACMatchClassification::Style, the style values are not
+  // mutually exclusive.
+  enum Style {
+    NONE = 0,
+    URL = 1 << 0,
+    MATCH = 1 << 1,
+    DIM = 1 << 2,
+  };
+
+  SearchResultTag();
+  SearchResultTag(int styles, uint32_t start, uint32_t end);
+
+  int styles;
+  gfx::Range range;
+};
+using SearchResultTags = std::vector<SearchResultTag>;
+
+// Data representing an action that can be performed on this search result.
+// An action could be represented as an icon set or as a blue button with
+// a label. Icon set is chosen if label text is empty. Otherwise, a blue
+// button with the label text will be used.
+struct ASH_PUBLIC_EXPORT SearchResultAction {
+  SearchResultAction();
+  SearchResultAction(const gfx::ImageSkia& base_image,
+                     const gfx::ImageSkia& hover_image,
+                     const gfx::ImageSkia& pressed_image,
+                     const base::string16& tooltip_text);
+  SearchResultAction(const base::string16& label_text,
+                     const base::string16& tooltip_text);
+  SearchResultAction(const SearchResultAction& other);
+  ~SearchResultAction();
+
+  gfx::ImageSkia base_image;
+  gfx::ImageSkia hover_image;
+  gfx::ImageSkia pressed_image;
+  base::string16 tooltip_text;
+  base::string16 label_text;
+};
+using SearchResultActions = std::vector<SearchResultAction>;
 
 }  // namespace ash
 

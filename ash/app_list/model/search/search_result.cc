@@ -12,23 +12,6 @@
 
 namespace app_list {
 
-SearchResult::Action::Action(const gfx::ImageSkia& base_image,
-                             const gfx::ImageSkia& hover_image,
-                             const gfx::ImageSkia& pressed_image,
-                             const base::string16& tooltip_text)
-    : base_image(base_image),
-      hover_image(hover_image),
-      pressed_image(pressed_image),
-      tooltip_text(tooltip_text) {}
-
-SearchResult::Action::Action(const base::string16& label_text,
-                             const base::string16& tooltip_text)
-    : tooltip_text(tooltip_text), label_text(label_text) {}
-
-SearchResult::Action::Action(const Action& other) = default;
-
-SearchResult::Action::~Action() = default;
-
 SearchResult::SearchResult() = default;
 
 SearchResult::~SearchResult() {

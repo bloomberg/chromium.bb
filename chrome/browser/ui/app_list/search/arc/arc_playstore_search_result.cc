@@ -66,13 +66,14 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   set_title(base::UTF8ToUTF16(label().value()));
   set_id(kPlayAppPrefix +
          crx_file::id_util::GenerateId(install_intent_uri().value()));
-  set_display_type(DISPLAY_TILE);
+  set_display_type(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(gfx::CreateVectorIcon(
       is_instant_app() ? kIcBadgeInstantIcon : kIcBadgePlayIcon,
       kAppBadgeIconSize, kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));
   SetRating(review_score());
-  set_result_type(is_instant_app() ? RESULT_INSTANT_APP : RESULT_PLAYSTORE_APP);
+  set_result_type(is_instant_app() ? ash::SearchResultType::kInstantApp
+                                   : ash::SearchResultType::kPlayStoreApp);
 
   icon_decode_request_ = std::make_unique<IconDecodeRequest>(base::BindOnce(
       &ArcPlayStoreSearchResult::SetIcon, weak_ptr_factory_.GetWeakPtr()));

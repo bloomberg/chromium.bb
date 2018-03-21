@@ -8,8 +8,12 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom-shared.h"
+#include "base/strings/string16.h"
 
 namespace mojo {
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListState:
 
 template <>
 struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
@@ -47,6 +51,9 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
   }
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// AppListModelStatus:
+
 template <>
 struct EnumTraits<ash::mojom::AppListModelStatus, ash::AppListModelStatus> {
   static ash::mojom::AppListModelStatus ToMojom(ash::AppListModelStatus input) {
@@ -72,6 +79,140 @@ struct EnumTraits<ash::mojom::AppListModelStatus, ash::AppListModelStatus> {
     }
     NOTREACHED();
     return false;
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultType:
+
+template <>
+struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
+  static ash::mojom::SearchResultType ToMojom(ash::SearchResultType input) {
+    switch (input) {
+      case ash::SearchResultType::kInstalledApp:
+        return ash::mojom::SearchResultType::kInstalledApp;
+      case ash::SearchResultType::kPlayStoreApp:
+        return ash::mojom::SearchResultType::kPlayStoreApp;
+      case ash::SearchResultType::kInstantApp:
+        return ash::mojom::SearchResultType::kInstantApp;
+      case ash::SearchResultType::kUnknown:
+        break;
+    }
+    NOTREACHED();
+    return ash::mojom::SearchResultType::kInstalledApp;
+  }
+
+  static bool FromMojom(ash::mojom::SearchResultType input,
+                        ash::SearchResultType* out) {
+    switch (input) {
+      case ash::mojom::SearchResultType::kInstalledApp:
+        *out = ash::SearchResultType::kInstalledApp;
+        return true;
+      case ash::mojom::SearchResultType::kPlayStoreApp:
+        *out = ash::SearchResultType::kPlayStoreApp;
+        return true;
+      case ash::mojom::SearchResultType::kInstantApp:
+        *out = ash::SearchResultType::kInstantApp;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultDisplayType:
+
+template <>
+struct EnumTraits<ash::mojom::SearchResultDisplayType,
+                  ash::SearchResultDisplayType> {
+  static ash::mojom::SearchResultDisplayType ToMojom(
+      ash::SearchResultDisplayType input) {
+    switch (input) {
+      case ash::SearchResultDisplayType::kNone:
+        return ash::mojom::SearchResultDisplayType::kNone;
+      case ash::SearchResultDisplayType::kList:
+        return ash::mojom::SearchResultDisplayType::kList;
+      case ash::SearchResultDisplayType::kTile:
+        return ash::mojom::SearchResultDisplayType::kTile;
+      case ash::SearchResultDisplayType::kRecommendation:
+        return ash::mojom::SearchResultDisplayType::kRecommendation;
+      case ash::SearchResultDisplayType::kCard:
+        return ash::mojom::SearchResultDisplayType::kCard;
+      case ash::SearchResultDisplayType::kLast:
+        break;
+    }
+    NOTREACHED();
+    return ash::mojom::SearchResultDisplayType::kNone;
+  }
+
+  static bool FromMojom(ash::mojom::SearchResultDisplayType input,
+                        ash::SearchResultDisplayType* out) {
+    switch (input) {
+      case ash::mojom::SearchResultDisplayType::kNone:
+        *out = ash::SearchResultDisplayType::kNone;
+        return true;
+      case ash::mojom::SearchResultDisplayType::kList:
+        *out = ash::SearchResultDisplayType::kList;
+        return true;
+      case ash::mojom::SearchResultDisplayType::kTile:
+        *out = ash::SearchResultDisplayType::kTile;
+        return true;
+      case ash::mojom::SearchResultDisplayType::kRecommendation:
+        *out = ash::SearchResultDisplayType::kRecommendation;
+        return true;
+      case ash::mojom::SearchResultDisplayType::kCard:
+        *out = ash::SearchResultDisplayType::kCard;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultTag:
+
+template <>
+struct StructTraits<ash::mojom::SearchResultTagDataView, ash::SearchResultTag> {
+  static int styles(const ash::SearchResultTag& tag) { return tag.styles; }
+  static const gfx::Range& range(const ash::SearchResultTag& tag) {
+    return tag.range;
+  }
+  static bool Read(ash::mojom::SearchResultTagDataView data,
+                   ash::SearchResultTag* out);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultActionLabel:
+
+template <>
+struct UnionTraits<ash::mojom::SearchResultActionLabelDataView,
+                   ash::SearchResultAction> {
+  static ash::mojom::SearchResultActionLabelDataView::Tag GetTag(
+      const ash::SearchResultAction& action);
+
+  static bool Read(ash::mojom::SearchResultActionLabelDataView data,
+                   ash::SearchResultAction* out);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultAction:
+
+template <>
+struct StructTraits<ash::mojom::SearchResultActionDataView,
+                    ash::SearchResultAction> {
+  static bool Read(ash::mojom::SearchResultActionDataView data,
+                   ash::SearchResultAction* out);
+
+  static const base::string16& tooltip_text(
+      const ash::SearchResultAction& action) {
+    return action.tooltip_text;
+  }
+
+  static const ash::SearchResultAction& label(
+      const ash::SearchResultAction& action) {
+    return action;
   }
 };
 

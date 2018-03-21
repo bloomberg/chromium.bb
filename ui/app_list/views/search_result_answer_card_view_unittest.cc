@@ -55,7 +55,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
     SearchModel::SearchResults* results = GetResults();
     std::unique_ptr<TestSearchResult> result =
         std::make_unique<TestSearchResult>();
-    result->set_display_type(SearchResult::DISPLAY_CARD);
+    result->set_display_type(ash::SearchResultDisplayType::kCard);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
     result->set_answer_card_contents_token(token_);
     result->set_relevance(kRelevance);

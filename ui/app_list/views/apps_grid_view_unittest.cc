@@ -101,7 +101,9 @@ class PageFlipWaiter : public PaginationModelObserver {
 
 class TestSuggestedSearchResult : public TestSearchResult {
  public:
-  TestSuggestedSearchResult() { set_display_type(DISPLAY_RECOMMENDATION); }
+  TestSuggestedSearchResult() {
+    set_display_type(ash::SearchResultDisplayType::kRecommendation);
+  }
   ~TestSuggestedSearchResult() override {}
 
  private:

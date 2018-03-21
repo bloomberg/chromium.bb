@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/app_list/model/search/search_result.h"
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
@@ -109,9 +111,10 @@ SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), SearchResult::DISPLAY_TILE, kMaxNumSearchResultTiles);
+          results(), ash::SearchResultDisplayType::kTile,
+          kMaxNumSearchResultTiles);
 
-  SearchResult::ResultType previous_type = SearchResult::RESULT_UNKNOWN;
+  SearchResult::ResultType previous_type = ash::SearchResultType::kUnknown;
 
   for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
     if (i >= display_results.size()) {

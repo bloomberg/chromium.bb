@@ -109,7 +109,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
 
     EXPECT_EQ(1UL, results().size());
     SearchResult* result = results()[0].get();
-    EXPECT_EQ(SearchResult::DISPLAY_CARD, result->display_type());
+    EXPECT_EQ(ash::SearchResultDisplayType::kCard, result->display_type());
     EXPECT_EQ(id, result->id());
     EXPECT_EQ(1, result->relevance());
     EXPECT_EQ(token, result->answer_card_contents_token());

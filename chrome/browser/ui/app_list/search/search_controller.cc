@@ -52,10 +52,10 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
 
   UMA_HISTOGRAM_ENUMERATION(kSearchResultOpenDisplayTypeHistogram,
                             result->display_type(),
-                            SearchResult::DISPLAY_TYPE_LAST);
+                            ash::SearchResultDisplayType::kLast);
 
   // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() != SearchResult::DISPLAY_RECOMMENDATION) {
+  if (result->display_type() != ash::SearchResultDisplayType::kRecommendation) {
     // Count AppList.Search here because it is composed of search + action.
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 

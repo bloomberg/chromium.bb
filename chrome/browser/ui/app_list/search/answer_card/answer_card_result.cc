@@ -21,7 +21,7 @@ AnswerCardResult::AnswerCardResult(Profile* profile,
       list_controller_(list_controller),
       contents_(contents) {
   DCHECK(!stripped_result_url.empty());
-  set_display_type(DISPLAY_CARD);
+  set_display_type(ash::SearchResultDisplayType::kCard);
   set_id(result_url);
   set_comparable_id(stripped_result_url);
   set_relevance(1);
