@@ -455,37 +455,6 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
-static void wait_worker_and_cache_frame(aom_codec_alg_priv_t *ctx) {
-  YV12_BUFFER_CONFIG sd;
-  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
-  AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
-  FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-  ctx->next_output_worker_id =
-      (ctx->next_output_worker_id + 1) % ctx->num_frame_workers;
-  // TODO(hkuang): Add worker error handling here.
-  winterface->sync(worker);
-  frame_worker_data->received_frame = 0;
-  ++ctx->available_threads;
-
-  check_resync(ctx, frame_worker_data->pbi);
-
-  if (av1_get_raw_frame(frame_worker_data->pbi, &sd) == 0) {
-    AV1_COMMON *const cm = &frame_worker_data->pbi->common;
-    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-    ctx->frame_cache[ctx->frame_cache_write].fb_idx = cm->new_fb_idx;
-    yuvconfig2image(&ctx->frame_cache[ctx->frame_cache_write].img, &sd,
-                    frame_worker_data->user_priv);
-    ctx->frame_cache[ctx->frame_cache_write].img.fb_priv =
-        frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
-#if CONFIG_FILM_GRAIN
-    memcpy(&ctx->frame_cache[ctx->frame_cache_write].film_grain_params,
-           &cm->film_grain_params, sizeof(aom_film_grain_t));
-#endif
-    ctx->frame_cache_write = (ctx->frame_cache_write + 1) % FRAME_CACHE_SIZE;
-    ++ctx->num_cache_frames;
-  }
-}
-
 static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       const uint8_t *data, unsigned int data_sz,
                                       void *user_priv) {

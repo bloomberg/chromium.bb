@@ -1316,12 +1316,6 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   return is_inter;
 }
 
-static void fpm_sync(void *const data, int mi_row) {
-  AV1Decoder *const pbi = (AV1Decoder *)data;
-  av1_frameworker_wait(pbi->frame_worker_owner, pbi->common.prev_frame,
-                       mi_row << pbi->common.seq_params.mib_size_log2);
-}
-
 #if DEC_MISMATCH_DEBUG
 static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi, int mi_row,
                           int mi_col, int16_t mode_ctx) {

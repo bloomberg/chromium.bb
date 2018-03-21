@@ -4808,14 +4808,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-static void make_update_tile_list_enc(AV1_COMP *cpi, const int start_tile,
-                                      const int num_tiles,
-                                      FRAME_CONTEXT *ec_ctxs[]) {
-  int i;
-  for (i = start_tile; i < start_tile + num_tiles; ++i)
-    ec_ctxs[i - start_tile] = &cpi->tile_data[i].tctx;
-}
-
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                                      int skip_adapt,
                                      unsigned int *frame_flags) {

@@ -2440,13 +2440,14 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 
+#if !CONFIG_EXPLICIT_ORDER_HINT
+
 // Copied from av1/encoder/random.h
 static INLINE unsigned int lcg_rand16(unsigned int *state) {
   *state = (unsigned int)(*state * 1103515245ULL + 12345);
   return *state / 65536 % 32768;
 }
 
-#if !CONFIG_EXPLICIT_ORDER_HINT
 // Wrap around to make sure current_video_frame won't surpass a limit
 // Such that distance computation could remain correct
 static void wrap_around_current_video_frame(AV1Decoder *pbi) {
@@ -3193,12 +3194,6 @@ void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   int profile = aom_rb_read_literal(rb, 2);
   return (BITSTREAM_PROFILE)profile;
-}
-
-static void make_update_tile_list_dec(AV1Decoder *pbi, int start_tile,
-                                      int num_tile, FRAME_CONTEXT *ec_ctxs[]) {
-  for (int i = start_tile; i < start_tile + num_tile; ++i)
-    ec_ctxs[i - start_tile] = &pbi->tile_data[i].tctx;
 }
 
 void superres_post_decode(AV1Decoder *pbi) {
