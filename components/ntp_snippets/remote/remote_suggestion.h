@@ -32,7 +32,7 @@ class RemoteSuggestion {
  public:
   using PtrVector = std::vector<std::unique_ptr<RemoteSuggestion>>;
 
-  enum ContentType { UNKNOWN, VIDEO };
+  enum class ContentType { UNKNOWN, VIDEO };
 
   ~RemoteSuggestion();
 
