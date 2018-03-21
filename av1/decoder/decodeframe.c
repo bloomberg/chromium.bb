@@ -2867,8 +2867,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         }
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
-        // NOTE: For the scenario of (cm->frame_type != S_FRAME),
-        // ref_frame_sign_bias will be reset based on frame offsets.
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
 
         if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -2933,7 +2931,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   av1_setup_frame_buf_refs(cm);
 
-  if (!frame_is_sframe(cm)) av1_setup_frame_sign_bias(cm);
+  av1_setup_frame_sign_bias(cm);
 
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
   cm->cur_frame->frame_type = cm->frame_type;
