@@ -110,6 +110,9 @@ class CONTENT_EXPORT InputHandlerManager {
   void DidAnimateForInput();
 
   // Called from the compositor's thread.
+  void DidStartScrollingViewport(int routing_id);
+
+  // Called from the compositor's thread.
   void DispatchNonBlockingEventToMainThread(
       int routing_id,
       ui::WebScopedInputEvent event,

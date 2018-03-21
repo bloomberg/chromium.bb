@@ -87,6 +87,11 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
   SendMessage(std::make_unique<InputHostMsg_DidStopFlinging>(routing_id));
 }
 
+void InputEventFilter::DidStartScrollingViewport(int routing_id) {
+  SendMessage(
+      std::make_unique<InputHostMsg_DidStartScrollingViewport>(routing_id));
+}
+
 void InputEventFilter::QueueClosureForMainThreadEventQueue(
     int routing_id,
     const base::Closure& closure) {

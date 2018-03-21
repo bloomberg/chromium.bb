@@ -26,6 +26,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_switches.h"
 #include "ui/latency/latency_info.h"
 
@@ -72,6 +73,23 @@ const char kPassiveTouchStartBlockingTouchEndDataURL[] =
     "  document.addEventListener('touchstart', function(e) { while(true) {} }, "
     "{'passive': true});"
     "  document.addEventListener('touchend', function(e) { while(true) {} });"
+    "  document.title='ready';"
+    "</script>";
+
+const char kBlockingTouchStartDataURL[] =
+    "data:text/html;charset=utf-8,"
+    "<!DOCTYPE html>"
+    "<meta name='viewport' content='width=device-width'/>"
+    "<style>"
+    "html, body {"
+    "  margin: 0;"
+    "}"
+    ".spacer { height: 10000px; }"
+    "</style>"
+    "<div class=spacer></div>"
+    "<script>"
+    "  document.addEventListener('touchstart', function(e) { while(true) {} }, "
+    "{'passive': false});"
     "  document.title='ready';"
     "</script>";
 
@@ -202,6 +220,61 @@ IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MouseWheel) {
 IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_TouchStart) {
   LoadURL(kNonBlockingEventDataURL);
   DoTouchScroll();
+}
+
+// Disabled on MacOS because it doesn't support touch input.
+#if defined(OS_MACOSX)
+#define MAYBE_TouchStartDuringFling DISABLED_TouchStartDuringFling
+#else
+#define MAYBE_TouchStartDuringFling TouchStartDuringFling
+#endif
+IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest,
+                       MAYBE_TouchStartDuringFling) {
+  LoadURL(kBlockingTouchStartDataURL);
+
+  // Send GSB to start scrolling sequence.
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
+  GetWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
+
+  //  Send a GFS and wait for the page to scroll making sure that fling progress
+  //  has started.
+  blink::WebGestureEvent gesture_fling_start(
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_fling_start.data.fling_start.velocity_x = 0.f;
+  gesture_fling_start.data.fling_start.velocity_y = -2000.f;
+  GetWidgetHost()->ForwardGestureEvent(gesture_fling_start);
+  RenderFrameSubmissionObserver observer(
+      GetWidgetHost()->render_frame_metadata_provider());
+  gfx::Vector2dF default_scroll_offset;
+  while (observer.LastRenderFrameMetadata()
+             .root_scroll_offset.value_or(default_scroll_offset)
+             .y() <= 0)
+    observer.WaitForMetadataChange();
+
+  // Send a touch start event and wait for its ack. The touch start must be
+  // uncancelable since there is an on-going fling with touchscreen source. The
+  // test will timeout if the touch start event is cancelable since there is a
+  // busy loop in the blocking touch start event listener.
+  InputEventAckWaiter touch_start_ack_observer(GetWidgetHost(),
+                                               WebInputEvent::kTouchStart);
+  SyntheticWebTouchEvent touch_event;
+  touch_event.PressPoint(50, 50);
+  touch_event.SetTimeStampSeconds(
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch_event,
+                                                    ui::LatencyInfo());
+  touch_start_ack_observer.Wait();
 }
 
 // Disabled on MacOS because it doesn't support touch input.

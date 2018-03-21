@@ -32,6 +32,7 @@ class MockInputRouterClient : public InputRouterClient {
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override;
   void DidStopFlinging() override;
+  void DidStartScrollingViewport() override;
   void SetNeedsBeginFrameForFlingProgress() override;
   void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,

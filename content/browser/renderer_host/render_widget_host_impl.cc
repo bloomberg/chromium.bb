@@ -1184,13 +1184,25 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+    // When a user starts scrolling while a fling is active, the GSB will arrive
+    // when is_in_gesture_scroll_[gesture_event.SourceDevice()] is still true.
+    // This is because the fling controller defers handling the GFC event
+    // arrived before the GSB and doesn't send a GSE to end the fling; Instead,
+    // it waits for a second GFS to arrive and boost the current active fling if
+    // possible. While GFC handling is deferred the controller suppresses the
+    // GSB and GSU events instead of sending them to the renderer and continues
+    // to progress the fling. So, the renderer doesn't receive two GSB events
+    // without any GSE in between.
+    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()] ||
+           FlingCancellationIsDeferred());
     is_in_gesture_scroll_[gesture_event.SourceDevice()] = true;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
     DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
     is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     is_in_touchpad_gesture_fling_ = false;
+    if (view_)
+      view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
     if (gesture_event.SourceDevice() ==
@@ -1232,8 +1244,17 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       }
 
       is_in_touchpad_gesture_fling_ = true;
-    } else {  // gesture_event.SourceDevice() !=
-              // blink::WebGestureDevice::kWebGestureDeviceTouchpad
+    } else if (gesture_event.SourceDevice() ==
+               blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+      DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+
+      // The FlingController handles GFS with touchscreen source and sends GSU
+      // events with inertial state to the renderer to progress the fling.
+      // is_in_gesture_scroll must stay true till the fling progress is
+      // finished. Then the FlingController will generate and send a GSE which
+      // shows the end of a scroll sequence and resets is_in_gesture_scroll_.
+    } else {
+      // Autoscroll fling is still handled on renderer.
       DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
       is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     }
@@ -2347,7 +2368,12 @@ void RenderWidgetHostImpl::DidStopFlinging() {
     view_->DidStopFlinging();
 }
 
+void RenderWidgetHostImpl::DidStartScrollingViewport() {
+  if (view_)
+    view_->set_is_currently_scrolling_viewport(true);
+}
 void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
+  browser_fling_needs_begin_frame_ = true;
   SetNeedsBeginFrame(true);
 }
 
@@ -2719,9 +2745,9 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
   if (needs_begin_frames_ == needs_begin_frames)
     return;
 
-  needs_begin_frames_ = needs_begin_frames;
+  needs_begin_frames_ = needs_begin_frames || browser_fling_needs_begin_frame_;
   if (view_)
-    view_->SetNeedsBeginFrames(needs_begin_frames);
+    view_->SetNeedsBeginFrames(needs_begin_frames_);
 }
 
 void RenderWidgetHostImpl::SetWantsAnimateOnlyBeginFrames() {
@@ -2989,6 +3015,7 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
 }
 
 void RenderWidgetHostImpl::ProgressFling(base::TimeTicks current_time) {
+  browser_fling_needs_begin_frame_ = false;
   if (input_router_)
     input_router_->ProgressFling(current_time);
 }
@@ -3013,6 +3040,13 @@ void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
 void RenderWidgetHostImpl::StopFling() {
   if (input_router_)
     input_router_->StopFling();
+}
+
+bool RenderWidgetHostImpl::FlingCancellationIsDeferred() const {
+  if (input_router_)
+    return input_router_->FlingCancellationIsDeferred();
+
+  return false;
 }
 
 void RenderWidgetHostImpl::SetScreenOrientationForTesting(

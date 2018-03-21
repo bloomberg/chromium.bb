@@ -353,6 +353,9 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_DidOverscroll,
 // Sent by the compositor when a fling animation is stopped.
 IPC_MESSAGE_ROUTED0(InputHostMsg_DidStopFlinging)
 
+// Sent by the compositor when a GSB has started scrolling the viewport.
+IPC_MESSAGE_ROUTED0(InputHostMsg_DidStartScrollingViewport)
+
 // Acknowledges receipt of a InputMsg_MoveCaret message.
 IPC_MESSAGE_ROUTED0(InputHostMsg_MoveCaret_ACK)
 

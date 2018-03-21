@@ -61,6 +61,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
       const cc::OverscrollBehavior& overscroll_behavior) override;
   void DidStopFlinging() override;
   void DidAnimateForInput() override;
+  void DidStartScrollingViewport() override;
   void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event) override;
   void SetWhiteListedTouchAction(

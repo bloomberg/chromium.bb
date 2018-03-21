@@ -274,6 +274,10 @@ void InputHandlerManager::DidAnimateForInput() {
   renderer_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
+void InputHandlerManager::DidStartScrollingViewport(int routing_id) {
+  client_->DidStartScrollingViewport(routing_id);
+}
+
 void InputHandlerManager::DispatchNonBlockingEventToMainThread(
     int routing_id,
     ui::WebScopedInputEvent event,

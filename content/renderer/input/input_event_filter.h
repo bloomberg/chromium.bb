@@ -73,6 +73,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void DidOverscroll(int routing_id,
                      const ui::DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
+  void DidStartScrollingViewport(int routing_id) override;
   void DispatchNonBlockingEventToMainThread(
       int routing_id,
       ui::WebScopedInputEvent event,

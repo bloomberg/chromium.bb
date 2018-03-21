@@ -63,6 +63,8 @@ void MockInputRouterClient::OnSetWhiteListedTouchAction(
 void MockInputRouterClient::DidStopFlinging() {
 }
 
+void MockInputRouterClient::DidStartScrollingViewport() {}
+
 void MockInputRouterClient::SetNeedsBeginFrameForFlingProgress() {}
 
 void MockInputRouterClient::ForwardGestureEventWithLatencyInfo(

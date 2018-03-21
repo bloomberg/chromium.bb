@@ -82,6 +82,8 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
 
   MOCK_METHOD0(DidStopFlinging, void());
 
+  MOCK_METHOD0(DidStartScrollingViewport, void());
+
   MOCK_METHOD0(ImeCancelComposition, void());
 
   MOCK_METHOD2(ImeCompositionRangeChanged,
