@@ -177,6 +177,7 @@ bool IsOobeComplete() {
           connector->IsEnterpriseManaged());
 }
 
+// Returns true if signin (not oobe) should be displayed.
 bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
   return (first_screen == chromeos::OobeScreen::SCREEN_UNKNOWN &&
           IsOobeComplete()) ||
@@ -1186,9 +1187,10 @@ void ShowLoginWizard(OobeScreen first_screen) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault));
 
-  session_manager::SessionManager::Get()->SetSessionState(
-      IsOobeComplete() ? session_manager::SessionState::LOGIN_PRIMARY
-                       : session_manager::SessionState::OOBE);
+  auto session_state = session_manager::SessionState::OOBE;
+  if (IsOobeComplete() || first_screen == OobeScreen::SCREEN_SPECIAL_LOGIN)
+    session_state = session_manager::SessionState::LOGIN_PRIMARY;
+  session_manager::SessionManager::Get()->SetSessionState(session_state);
 
   bool show_app_launch_splash_screen =
       (first_screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH);

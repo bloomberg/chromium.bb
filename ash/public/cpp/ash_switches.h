@@ -57,6 +57,7 @@ ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
 ASH_PUBLIC_EXPORT extern const char kShowTaps[];
 ASH_PUBLIC_EXPORT extern const char kShowViewsLogin[];
 ASH_PUBLIC_EXPORT extern const char kShowWebUiLock[];
+ASH_PUBLIC_EXPORT extern const char kShowWebUiLogin[];
 ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];

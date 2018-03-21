@@ -122,13 +122,15 @@ const char kHasInternalStylus[] = "has-internal-stylus";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// If true, the views login screen will be shown. This will become the default
-// in the future.
+// Forces the views login implementation.
 const char kShowViewsLogin[] = "show-views-login";
 
 // If true, the webui lock screen wil be shown. This is deprecated and will be
 // removed in the future.
 const char kShowWebUiLock[] = "show-webui-lock";
+
+// Forces the webui login implementation.
+const char kShowWebUiLogin[] = "show-webui-login";
 
 // Chromebases' touchscreens can be used to wake from suspend, unlike the
 // touchscreens on other Chrome OS devices. If set, the touchscreen is kept
@@ -156,7 +158,10 @@ bool IsSidebarEnabled() {
 }
 
 bool IsUsingViewsLogin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowViewsLogin);
+  // Only show views login if it is forced. If both switches are present use
+  // webui.
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  return !cl->HasSwitch(kShowWebUiLogin) && cl->HasSwitch(kShowViewsLogin);
 }
 
 bool IsUsingViewsLock() {

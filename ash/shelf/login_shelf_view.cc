@@ -156,6 +156,8 @@ LoginShelfView::LoginShelfView(
   add_button(kBrowseAsGuest, IDS_ASH_BROWSE_AS_GUEST_BUTTON,
              kShelfBrowseAsGuestButtonIcon);
   add_button(kAddUser, IDS_ASH_ADD_USER_BUTTON, kShelfAddPersonButtonIcon);
+  add_button(kShowWebUiLogin, IDS_ASH_SHOW_WEBUI_LOGIN_BUTTON,
+             kShelfSignOutButtonIcon);
 
   // Adds observers for states that affect the visiblity of different buttons.
   tray_action_observer_.Add(Shell::Get()->tray_action());
@@ -215,6 +217,9 @@ void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void LoginShelfView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
+  // Intentional crash. session_manager will add --show-webui-login.
+  CHECK(sender->id() != kShowWebUiLogin);
+
   UserMetricsRecorder::RecordUserClickOnShelfButton(
       GetUserClickTarget(sender->id()));
   switch (sender->id()) {

@@ -459,7 +459,9 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
 };
 
 TEST_F(ShelfWidgetViewsVisibilityTest, LoginWebUiLockViews) {
-  // Web UI login enabled by default. Views lock enabled by default.
+  // Enable web UI login.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kShowWebUiLogin);
   ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
 
   // Both shelf views are hidden when session state hasn't been initialized.
@@ -499,9 +501,10 @@ TEST_F(ShelfWidgetViewsVisibilityTest, LoginViewsLockViews) {
 }
 
 TEST_F(ShelfWidgetViewsVisibilityTest, LoginWebUiLockWebUi) {
-  // Enable web UI lock. Web UI login enabled by default.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kShowWebUiLock);
+  // Enable web UI lock and login.
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kShowWebUiLogin);
+  cl->AppendSwitch(switches::kShowWebUiLock);
   ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
 
   // Views based shelf is never visible.
