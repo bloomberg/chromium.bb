@@ -7,6 +7,7 @@
 #include <memory>
 
 #import "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,9 +31,33 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Tracks download tasks which were not opened by the user yet. Reports various
+// metrics in DownloadTaskObserver callbacks.
+class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
+ public:
+  // Starts tracking this download task.
+  void Add(web::DownloadTask* task) { task->AddObserver(this); }
+  // Stops tracking this download task.
+  void Remove(web::DownloadTask* task) { task->RemoveObserver(this); }
+  // DownloadTaskObserver overrides:
+  void OnDownloadDestroyed(web::DownloadTask* task) override {
+    // This download task was never open by the user.
+    task->RemoveObserver(this);
+
+    if (task->IsDone() && task->GetErrorCode() == net::OK) {
+      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction",
+                                DownloadedFileAction::NoAction,
+                                DownloadedFileAction::Count);
+    }
+  }
+};
+}  // namespace
+
 @interface DownloadManagerCoordinator ()<
     ContainedPresenterDelegate,
-    DownloadManagerViewControllerDelegate> {
+    DownloadManagerViewControllerDelegate,
+    UIDocumentInteractionControllerDelegate> {
   // View controller for presenting Download Manager UI.
   DownloadManagerViewController* _viewController;
   // A dialog which requests a confirmation from the user.
@@ -41,6 +66,7 @@
   UIDocumentInteractionController* _openInController;
   DownloadManagerMediator _mediator;
   StoreKitCoordinator* _storeKitCoordinator;
+  UnopenedDownloadsTracker _unopenedDownloads;
 }
 @end
 
@@ -61,6 +87,7 @@
   _viewController.delegate = self;
   _mediator.SetDownloadTask(_downloadTask);
   _mediator.SetConsumer(_viewController);
+  _unopenedDownloads.Add(_downloadTask);
 
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.presentedViewController = _viewController;
@@ -144,6 +171,19 @@
   [self start];
 }
 
+#pragma mark - UIDocumentInteractionControllerDelegate
+
+- (void)documentInteractionController:
+            (UIDocumentInteractionController*)controller
+        willBeginSendingToApplication:(NSString*)applicationID {
+  DownloadedFileAction action = [applicationID isEqual:kGoogleDriveAppBundleID]
+                                    ? DownloadedFileAction::OpenedInDrive
+                                    : DownloadedFileAction::OpenedInOtherApp;
+  UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction", action,
+                            DownloadedFileAction::Count);
+  _unopenedDownloads.Remove(_downloadTask);
+}
+
 #pragma mark - ContainedPresenterDelegate
 
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
@@ -203,6 +243,7 @@
   NSURL* URL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
   _openInController =
       [UIDocumentInteractionController interactionControllerWithURL:URL];
+  _openInController.delegate = self;
 
   BOOL menuShown =
       [_openInController presentOpenInMenuFromRect:layoutGuide.layoutFrame

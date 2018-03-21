@@ -16,6 +16,9 @@ extern NSString* const kGoogleDriveITunesItemIdentifier;
 // app is installed.
 extern NSString* const kGoogleDriveAppURLScheme;
 
+// Bundle ID of Google Drive application.
+extern NSString* const kGoogleDriveAppBundleID;
+
 // Returns URL which can be used to check if Google Drive app is installed via
 // -[UIApplication canOpenURL:] call.
 NSURL* GetGoogleDriveAppUrl();

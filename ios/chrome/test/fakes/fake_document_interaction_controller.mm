@@ -22,6 +22,7 @@
 @end
 
 @implementation FakeDocumentInteractionController
+@synthesize delegate = _delegate;
 @synthesize presentedOpenInMenu = _presentedOpenInMenu;
 - (BOOL)presentOpenInMenuFromRect:(CGRect)rect
                            inView:(UIView*)view
