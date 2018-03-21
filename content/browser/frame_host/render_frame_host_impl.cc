@@ -1531,9 +1531,6 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                validated_params->url.possibly_invalid_spec());
 
-  if (navigation_request_)
-    was_discarded_ = navigation_request_->request_params().was_discarded;
-
   // Notify the resource scheduler of the navigation committing.
   NotifyResourceSchedulerOfNavigation(process->GetID(), *validated_params);
 
@@ -4769,6 +4766,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
     pending_commit_ = false;
   }
+
+  if (navigation_request_)
+    was_discarded_ = navigation_request_->request_params().was_discarded;
 
   // Find the appropriate NavigationHandle for this navigation.
   std::unique_ptr<NavigationHandleImpl> navigation_handle;
