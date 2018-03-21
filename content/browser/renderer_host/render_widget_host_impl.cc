@@ -2976,12 +2976,16 @@ void RenderWidgetHostImpl::SetupInputRouter() {
             static_cast<LegacyInputRouterImpl*>(input_router_.get()));
   }
 
+  // input_router_ recreated, need to update the force_enable_zoom_ state.
+  input_router_->SetForceEnableZoom(force_enable_zoom_);
+
   if (IsUseZoomForDSFEnabled()) {
     input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
   }
 }
 
 void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
+  force_enable_zoom_ = enabled;
   input_router_->SetForceEnableZoom(enabled);
 }
 

@@ -15,6 +15,8 @@ class WebGestureEvent;
 
 namespace content {
 
+class MockRenderWidgetHost;
+
 // The TouchActionFilter is responsible for filtering scroll and pinch gesture
 // events according to the CSS touch-action values the renderer has sent for
 // each touch point.
@@ -53,6 +55,8 @@ class CONTENT_EXPORT TouchActionFilter {
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
 
  private:
+  friend class MockRenderWidgetHost;
+
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
 
