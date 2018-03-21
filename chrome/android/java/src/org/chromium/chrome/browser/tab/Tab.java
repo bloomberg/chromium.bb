@@ -447,8 +447,13 @@ public class Tab
             private void onScrollingStateChanged() {
                 FullscreenManager fullscreenManager = getFullscreenManager();
                 if (fullscreenManager == null) return;
-                fullscreenManager.onContentViewScrollingStateChanged(
-                        getContentViewCore() != null && getContentViewCore().isScrollInProgress());
+                fullscreenManager.onContentViewScrollingStateChanged(isScrollInProgress());
+            }
+
+            private boolean isScrollInProgress() {
+                WebContents webContents = getWebContents();
+                if (webContents == null) return false;
+                return GestureListenerManager.fromWebContents(webContents).isScrollInProgress();
             }
         };
     }

@@ -41,6 +41,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentClassFactory;
+import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.PopupController;
 import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
@@ -161,9 +162,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // The classificaton result of the selected text if the selection exists and
     // SelectionClient was able to classify it, otherwise null.
     private SelectionClient.Result mClassificationResult;
-
-    // Whether a scroll is in progress.
-    private boolean mScrollInProgress;
 
     private boolean mPreserveSelectionOnNextLossOfFocus;
 
@@ -604,22 +602,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         updateTextSelectionUI(false);
     }
 
-    public void setScrollInProgress(boolean touchScrollInProgress, boolean scrollInProgress) {
-        mScrollInProgress = scrollInProgress;
-
-        // The active fling count reflected in |scrollInProgress| isn't reliable with WebView,
-        // so only use the active touch scroll signal for hiding. The fling animation
-        // movement will naturally hide the ActionMode by invalidating its content rect.
-        hideActionMode(touchScrollInProgress);
-    }
-
     /**
-     * Whether a touch scroll sequence is active, used to hide text selection
-     * handles. Note that a scroll sequence will *always* bound a pinch
-     * sequence, so this will also be true for the duration of a pinch gesture.
+     * Update scroll status.
+     * @param scrollInProgress {@code true} if scroll is in progress.
      */
-    public boolean getScrollInProgress() {
-        return mScrollInProgress;
+    public void setScrollInProgress(boolean scrollInProgress) {
+        hideActionMode(scrollInProgress);
     }
 
     /**
@@ -1256,7 +1244,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             case SelectionEventType.INSERTION_HANDLE_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
-                if (!mScrollInProgress && isPastePopupShowing()) {
+                if (!getGestureListenerManager().isScrollInProgress() && isPastePopupShowing()) {
                     showPastePopup();
                 } else {
                     destroyPastePopup();
@@ -1305,6 +1293,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             final int yAnchorPix = (int) (mSelectionRect.bottom * deviceScale);
             mSelectionClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
         }
+    }
+
+    private GestureListenerManagerImpl getGestureListenerManager() {
+        return GestureListenerManagerImpl.fromWebContents(mWebContents);
     }
 
     @VisibleForTesting

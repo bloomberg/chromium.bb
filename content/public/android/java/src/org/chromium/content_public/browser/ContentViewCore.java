@@ -155,11 +155,6 @@ public interface ContentViewCore {
     boolean isAlive();
 
     /**
-     * @return Whether a scroll targeting web content is in progress.
-     */
-    boolean isScrollInProgress();
-
-    /**
      * To be called when the ContentView is shown.
      */
     void onShow();

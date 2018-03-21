@@ -55,11 +55,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public boolean isScrollInProgress() {
-        return false;
-    }
-
-    @Override
     public void onShow() {}
 
     @Override
