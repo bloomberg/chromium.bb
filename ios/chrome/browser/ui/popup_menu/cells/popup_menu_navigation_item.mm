@@ -10,6 +10,8 @@
 
 @implementation PopupMenuNavigationItem
 
+@synthesize actionIdentifier = _actionIdentifier;
+
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {

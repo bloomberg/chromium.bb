@@ -5,6 +5,7 @@
 source_set("cells") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "popup_menu_item.h",
     "popup_menu_navigation_item.h",
     "popup_menu_navigation_item.mm",
     "popup_menu_tools_item.h",

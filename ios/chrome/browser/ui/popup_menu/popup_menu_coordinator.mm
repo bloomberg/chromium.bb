@@ -63,6 +63,8 @@
 - (void)showToolsMenuPopup {
   PopupMenuTableViewController* tableViewController =
       [[PopupMenuTableViewController alloc] init];
+  tableViewController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
 
   PopupMenuMediator* mediator =
       [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];

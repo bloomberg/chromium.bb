@@ -13,10 +13,12 @@ source_set("popup_menu") {
   deps = [
     ":popup_menu_ui",
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/popup_menu/cells",
     "//ios/chrome/browser/ui/util",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
 }
