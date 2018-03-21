@@ -47,8 +47,6 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
 
   String ToString();
 
-  void SetIsSVGText(bool value) { is_svgtext_ = value; }
-
   // Returns whether the items contain any Bidi controls.
   bool HasBidiControls() const { return has_bidi_controls_; }
 
@@ -125,7 +123,6 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
   bool auto_wrap_ = true;
   bool last_auto_wrap_ = false;
-  bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
   bool is_empty_inline_ = true;
 
@@ -140,21 +137,18 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
               const ComputedStyle*,
               LayoutObject*);
 
-  void AppendWithWhiteSpaceCollapsing(const String&,
-                                      unsigned start,
-                                      unsigned end,
-                                      const ComputedStyle*,
-                                      LayoutText*);
-  void AppendWithoutWhiteSpaceCollapsing(const String&,
-                                         const ComputedStyle*,
-                                         LayoutText*);
-  void AppendWithPreservingNewlines(const String&,
-                                    const ComputedStyle*,
-                                    LayoutText*);
+  void AppendCollapseWhitespace(const String&,
+                                unsigned start,
+                                unsigned end,
+                                const ComputedStyle*,
+                                LayoutText*);
+  void AppendPreserveWhitespace(const String&,
+                                const ComputedStyle*,
+                                LayoutText*);
+  void AppendPreserveNewline(const String&, const ComputedStyle*, LayoutText*);
 
+  void AppendForcedBreakCollapseWhitespace(const ComputedStyle*, LayoutObject*);
   void AppendForcedBreak(const ComputedStyle*, LayoutObject*);
-  void AppendForcedBreakWithoutWhiteSpaceCollapsing(const ComputedStyle*,
-                                                    LayoutObject*);
 
   void RemoveTrailingCollapsibleSpaceIfExists();
   void RemoveTrailingCollapsibleSpace(unsigned);

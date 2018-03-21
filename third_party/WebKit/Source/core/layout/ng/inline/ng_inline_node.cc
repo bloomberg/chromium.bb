@@ -76,9 +76,7 @@ void CollectInlinesInternal(
       if (UNLIKELY(layout_text->IsWordBreak())) {
         builder->AppendBreakOpportunity(node->Style(), layout_text);
       } else {
-        builder->SetIsSVGText(node->IsSVGInlineText());
-        const String& text = layout_text->GetText();
-        builder->Append(text, node->Style(), layout_text);
+        builder->Append(layout_text->GetText(), node->Style(), layout_text);
       }
       ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
 
