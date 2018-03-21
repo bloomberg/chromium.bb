@@ -72,10 +72,10 @@
         </a>
         <div id="logging" class="layout horizontal">
           <paper-checkbox id="usageStats" checked="{{usageStatsChecked}}"
-              on-change="onUsageChanged_">
+              on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
           </paper-checkbox>
           <div id="usageStatsLabelContainer">
-            <span i18n-content="checkboxLogging"></span>
+            <span id="usageStatsLabel" i18n-content="checkboxLogging"></span>
             <a id="" href="#" i18n-content="learnMore"
                 on-tap="onUsageStatsHelpLinkClicked_">
             </a>
