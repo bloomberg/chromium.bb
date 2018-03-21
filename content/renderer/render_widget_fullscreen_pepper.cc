@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -25,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gpu_preference.h"
 
@@ -337,9 +339,7 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   }
   if (!compositor())
     InitializeLayerTreeView();
-  // Note that root cc::Layers' bounds are specified in pixels (in contrast with
-  // non-root cc::Layers' bounds, which are specified in DIPs).
-  layer_->SetBounds(blink::WebSize(compositor_viewport_pixel_size()));
+  UpdateLayerBounds();
   layer_->SetDrawsContent(true);
   compositor_->SetRootLayer(*layer_);
 }
@@ -377,15 +377,31 @@ void RenderWidgetFullscreenPepper::Close() {
 }
 
 void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
-  // Note that root cc::Layers' bounds are specified in pixels (in contrast with
-  // non-root cc::Layers' bounds, which are specified in DIPs).
-  if (layer_)
-    layer_->SetBounds(blink::WebSize(params.compositor_viewport_pixel_size));
   RenderWidget::OnResize(params);
+  UpdateLayerBounds();
 }
 
 GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {
   return active_url_;
+}
+
+void RenderWidgetFullscreenPepper::UpdateLayerBounds() {
+  if (!layer_)
+    return;
+
+  if (IsUseZoomForDSFEnabled()) {
+    // Note that root cc::Layers' bounds are specified in pixels (in contrast
+    // with non-root cc::Layers' bounds, which are specified in DIPs).
+    layer_->SetBounds(blink::WebSize(compositor_viewport_pixel_size()));
+  } else {
+    // For reasons that are unclear, the above comment doesn't appear to apply
+    // when zoom for DSF is not enabled.
+    // https://crbug.com/822252
+    gfx::Size dip_size =
+        gfx::ConvertSizeToDIP(GetOriginalScreenInfo().device_scale_factor,
+                              compositor_viewport_pixel_size());
+    layer_->SetBounds(blink::WebSize(dip_size));
+  }
 }
 
 }  // namespace content
