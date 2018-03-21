@@ -60,7 +60,7 @@ cr.define('settings_sections_tests', function() {
       const info = new print_preview.DocumentInfo();
       info.init(!isPdf, 'title', hasSelection);
       if (isPdf)
-        info.fitToPageScaling_ = '98';
+        info.updateFitToPageScaling(98);
       info.updatePageCount(3);
       page.set('documentInfo_', info);
     }
@@ -533,7 +533,8 @@ cr.define('settings_sections_tests', function() {
         // verify that the input matches them.
         if (scalingValid) {
           const scalingDisplay =
-              fitToPage ? page.documentInfo_.fitToPageScaling : scalingValue;
+              fitToPage ? page.documentInfo_.fitToPageScaling.toString() :
+              scalingValue;
           expectEquals(scalingDisplay, scalingInput.value);
         }
         expectEquals(scalingValue, page.settings.scaling.value);

@@ -57,6 +57,14 @@ cr.define('print_preview', function() {
        * @private {string} The ID of a printer with a bad driver.
        */
       this.badPrinterId_ = '';
+
+      /** @private {number} The number of total pages in the document. */
+      this.pageCount_ = 1;
+    }
+
+    /** @param {number} pageCount The number of pages in the document. */
+    setPageCount(pageCount) {
+      this.pageCount_ = pageCount;
     }
 
     /** @override */
@@ -96,8 +104,10 @@ cr.define('print_preview', function() {
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
-        cr.webUIListenerCallback('page-count-ready', 1, requestId, 100);
-        cr.webUIListenerCallback('page-preview-ready', 0, 0, requestId);
+        cr.webUIListenerCallback(
+            'page-count-ready', this.pageCount_, requestId, 100);
+        for (let i = 0; i < this.pageCount_; i++)
+          cr.webUIListenerCallback('page-preview-ready', i, 0, requestId);
       } else {
         const pages = pageRanges.reduce(function(soFar, range) {
           for (let page = range.from; page <= range.to; page++) {
@@ -106,7 +116,7 @@ cr.define('print_preview', function() {
           return soFar;
         }, []);
         cr.webUIListenerCallback(
-            'page-count-ready', pages.length, requestId, 100);
+            'page-count-ready', this.pageCount_, requestId, 100);
         pages.forEach(function(page) {
           cr.webUIListenerCallback(
               'page-preview-ready', page - 1, 0, requestId);
