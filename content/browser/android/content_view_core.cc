@@ -371,12 +371,6 @@ void ContentViewCore::SendOrientationChangeEventInternal() {
   static_cast<WebContentsImpl*>(web_contents())->OnScreenOrientationChange();
 }
 
-jboolean ContentViewCore::UsingSynchronousCompositing(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  return content::GetContentClient()->UsingSynchronousCompositing();
-}
-
 // This is called for each ContentView.
 jlong JNI_ContentViewCoreImpl_Init(
     JNIEnv* env,

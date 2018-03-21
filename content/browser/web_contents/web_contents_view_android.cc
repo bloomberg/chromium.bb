@@ -4,11 +4,13 @@
 
 #include "content/browser/web_contents/web_contents_view_android.h"
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
+#include "content/browser/android/content_feature_list.h"
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
@@ -41,6 +43,20 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 namespace {
+
+const int kAndroidLSDKVersion = 21;
+
+// True if we want to disable Android native event batching and use
+// compositor event queue.
+bool ShouldRequestUnbufferedDispatch() {
+  static bool should_request_unbuffered_dispatch =
+      base::FeatureList::IsEnabled(
+          content::android::kRequestUnbufferedDispatch) &&
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          kAndroidLSDKVersion &&
+      !content::GetContentClient()->UsingSynchronousCompositing();
+  return should_request_unbuffered_dispatch;
+}
 
 RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid(
     WebContents* web_contents) {
@@ -493,8 +509,11 @@ bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
-  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN)
+  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN) {
+    if (ShouldRequestUnbufferedDispatch())
+      view_.RequestUnbufferedDispatch(event);
     content_view_core_->OnTouchDown(event.GetJavaObject());
+  }
   return false;  // let the children handle the actual event.
 }
 

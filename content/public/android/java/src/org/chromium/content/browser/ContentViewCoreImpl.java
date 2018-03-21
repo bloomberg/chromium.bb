@@ -166,9 +166,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // if there is no render process.
     public static final int INVALID_RENDER_PROCESS_PID = 0;
 
-    // True if we want to disable Android native event batching and use compositor event queue.
-    private boolean mShouldRequestUnbufferedDispatch;
-
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
 
@@ -287,9 +284,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         SelectPopup.create(mContext, mWebContents, containerView);
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
-        mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH)
-                && !nativeUsingSynchronousCompositing(mNativeContentViewCore);
         getGestureListenerManager().addListener(new ContentGestureStateListener());
 
         mWindowEventObservers.addObserver(controller);
@@ -526,7 +520,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @CalledByNative
     private void onTouchDown(MotionEvent event) {
-        if (mShouldRequestUnbufferedDispatch) requestUnbufferedDispatch(event);
         cancelRequestToScrollFocusedEditableNodeIntoView();
         getGestureListenerManager().updateOnTouchDown();
     }
@@ -775,11 +768,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mSystemCaptioningBridge.syncToListener(this);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void requestUnbufferedDispatch(MotionEvent touchDownEvent) {
-        mContainerView.requestUnbufferedDispatch(touchDownEvent);
-    }
-
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void onSystemCaptioningChanged(TextTrackSettings settings) {
@@ -868,7 +856,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCore, boolean enabled);
-    private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
     private native void nativeSetTextTrackSettings(long nativeContentViewCore,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
             String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
