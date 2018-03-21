@@ -9,6 +9,24 @@ bundle_data_ib_file("download_manager_controller_xib") {
   source = "DownloadManagerController.xib"
 }
 
+imageset("done_badge") {
+  sources = [
+    "done_badge.imageset/Contents.json",
+    "done_badge.imageset/done_badge.png",
+    "done_badge.imageset/done_badge@2x.png",
+    "done_badge.imageset/done_badge@3x.png",
+  ]
+}
+
+imageset("error_badge") {
+  sources = [
+    "error_badge.imageset/Contents.json",
+    "error_badge.imageset/error_badge.png",
+    "error_badge.imageset/error_badge@2x.png",
+    "error_badge.imageset/error_badge@3x.png",
+  ]
+}
+
 imageset("error_icon") {
   sources = [
     "error_icon.imageset/Contents.json",
