@@ -169,6 +169,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_non_isolated_descendant_with_blend_mode_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
+      is_under_svg_hidden_container_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),

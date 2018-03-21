@@ -4,6 +4,7 @@
 
 #include "core/paint/SVGContainerPainter.h"
 
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -81,8 +82,12 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
 
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
-           child = child->NextSibling())
-        child->Paint(paint_context.GetPaintInfo(), IntPoint());
+           child = child->NextSibling()) {
+        if (!child->IsBoxModelObject() ||
+            !ToLayoutBoxModelObject(child)->HasSelfPaintingLayer()) {
+          child->Paint(paint_context.GetPaintInfo(), IntPoint());
+        }
+      }
     }
   }
 

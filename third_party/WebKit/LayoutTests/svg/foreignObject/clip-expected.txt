@@ -11,3 +11,7 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {DIV} at (0,0) size 200x50 [bgcolor=#00FE00]
           LayoutBlockFlow {DIV} at (0,50) size 200x50 [bgcolor=#FE0000]
       LayoutText {#text} at (0,0) size 0x0
+layer at (0,0) size 200x100 backgroundClip at (0,0) size 200x50 clip at (0,0) size 200x50 transparent
+  LayoutSVGForeignObject {foreignObject} at (0,0) size 200x100
+    LayoutBlockFlow {DIV} at (0,0) size 200x50 [bgcolor=#00FE00]
+    LayoutBlockFlow {DIV} at (0,50) size 200x50 [bgcolor=#FE0000]

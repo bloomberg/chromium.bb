@@ -15,3 +15,8 @@ layer at (0,0) size 785x666 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (140,0) size 120x59
                 text run at (140,0) width 120: "TEST"
         LayoutText {#text} at (0,0) size 0x0
+layer at (12,247) size 400x50 backgroundClip at (12,324) size 576x72 clip at (0,0) size 0x0 scrollHeight 59
+  LayoutSVGForeignObject {foreignObject} at (0,175) size 400x50 [color=#FFFFFF]
+    LayoutBlockFlow {div} at (0,0) size 400x59
+      LayoutText {#text} at (140,0) size 120x59
+        text run at (140,0) width 120: "TEST"

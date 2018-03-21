@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'PASS '",
-          "rect": [0, 114, 301, 46],
+          "rect": [0, 114, 192, 46],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [0, 14, 301, 46],
+          "rect": [0, 14, 192, 46],
           "reason": "appeared"
         },
         {
@@ -38,8 +38,18 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [210, 114, 91, 46],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [210, 14, 91, 46],
+          "reason": "paint property change"
+        },
+        {
           "object": "LayoutSVGContainer g id='text3g'",
-          "rect": [0, 3, 10, 3],
+          "rect": [0, 3, 8, 3],
           "reason": "disappeared"
         },
         {
@@ -48,9 +58,14 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGContainer g id='text1g'",
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [6, 3, 4, 2],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
           "rect": [0, 0, 1, 1],
-          "reason": "disappeared"
+          "reason": "paint property change"
         }
       ]
     }

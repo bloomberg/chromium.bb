@@ -8,3 +8,6 @@ layer at (0,0) size 800x600
         LayoutSVGForeignObject {foreignObject} at (0,0) size 200x50
           LayoutBlockFlow {DIV} at (0,0) size 200x50 [bgcolor=#008000]
       LayoutText {#text} at (0,0) size 0x0
+layer at (0,0) size 200x50
+  LayoutSVGForeignObject {foreignObject} at (0,0) size 200x50
+    LayoutBlockFlow {DIV} at (0,0) size 200x50 [bgcolor=#008000]

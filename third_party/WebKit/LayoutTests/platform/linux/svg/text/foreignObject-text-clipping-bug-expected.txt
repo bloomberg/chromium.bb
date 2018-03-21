@@ -14,6 +14,11 @@ layer at (0,0) size 800x271
               LayoutText {#text} at (0,0) size 24x12
                 text run at (0,0) width 24: "TEST"
         LayoutText {#text} at (0,0) size 0x0
+layer at (9,29) size 60x10 backgroundClip at (18,38) size 390x100 clip at (18,38) size 51x1 scrollHeight 12
+  LayoutSVGForeignObject {foreignObject} at (1,1) size 60x10
+    LayoutBlockFlow {div} at (0,0) size 60x12 [color=#000080]
+      LayoutText {#text} at (0,0) size 24x12
+        text run at (0,0) width 24: "TEST"
 layer at (18,163) size 390x110
   LayoutBlockFlow (relative positioned) {div} at (0,145) size 390x110 [color=#000080] [bgcolor=#D3D3D3]
     LayoutBlockFlow {div} at (0,0) size 390x118

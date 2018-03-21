@@ -12,7 +12,7 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGRoot svg",
+          "object": "LayoutSVGForeignObject foreignObject",
           "rect": [8, 8, 100, 100],
           "reason": "disappeared"
         }

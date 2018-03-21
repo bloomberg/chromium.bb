@@ -448,9 +448,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   sk_sp<PaintFilter> image_filter = FilterPainter::GetImageFilter(paint_layer_);
 
-  bool should_paint_content = paint_layer_.HasVisibleContent() &&
-                              is_self_painting_layer &&
-                              !is_painting_overlay_scrollbars;
+  bool should_paint_content =
+      paint_layer_.HasVisibleContent() &&
+      // Content under a LayoutSVGHiddenContainer is auxiliary resources for
+      // painting. Foreign content should never paint in this situation, as it
+      // is primary, not auxiliary.
+      !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
+      !is_painting_overlay_scrollbars;
 
   PaintLayerFragments layer_fragments;
 

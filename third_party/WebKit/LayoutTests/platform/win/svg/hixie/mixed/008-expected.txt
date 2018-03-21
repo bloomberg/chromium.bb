@@ -15,3 +15,8 @@ layer at (0,0) size 800x465
               LayoutText {#text} at (139,1) size 122x57
                 text run at (139,1) width 122: "TEST"
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,227) size 400x50 scrollHeight 59
+  LayoutSVGForeignObject {foreignObject} at (0,175) size 400x50 [color=#FFFFFF]
+    LayoutBlockFlow {div} at (0,0) size 400x59
+      LayoutText {#text} at (139,1) size 122x57
+        text run at (139,1) width 122: "TEST"

@@ -53,7 +53,7 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
   AffineTransform LocalSVGTransform() const final { return local_transform_; }
 
-  PaintLayerType LayerTypeRequired() const final { return kNoPaintLayer; }
+  PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
  protected:
   void WillBeDestroyed() override;
@@ -72,8 +72,6 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
  private:
   LayoutRect AbsoluteVisualRect() const final;
-
-  bool AllowsOverflowClip() const final;
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const final;

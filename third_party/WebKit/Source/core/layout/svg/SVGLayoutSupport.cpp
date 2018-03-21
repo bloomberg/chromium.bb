@@ -189,8 +189,9 @@ const LayoutObject* SVGLayoutSupport::PushMappingToContainer(
   // to CSS box coordinates.
   // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
   if (parent->IsSVGRoot()) {
-    TransformationMatrix matrix(object->LocalToSVGParentTransform());
-    matrix.Multiply(ToLayoutSVGRoot(parent)->LocalToBorderBoxTransform());
+    TransformationMatrix matrix(
+        ToLayoutSVGRoot(parent)->LocalToBorderBoxTransform());
+    matrix.Multiply(object->LocalToSVGParentTransform());
     geometry_map.Push(object, matrix);
   } else {
     geometry_map.Push(object, object->LocalToSVGParentTransform());

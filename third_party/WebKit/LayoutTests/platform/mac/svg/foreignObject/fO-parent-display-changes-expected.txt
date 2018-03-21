@@ -9,3 +9,9 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {body} at (0,0) size 100x100 [color=#FFFFFF]
             LayoutText {#text} at (0,0) size 37x18
               text run at (0,0) width 37: "PASS"
+layer at (0,0) size 100x90 scrollHeight 100
+  LayoutSVGForeignObject {foreignObject} at (0,0) size 100x90
+    LayoutBlockFlow {html} at (0,0) size 100x100
+      LayoutBlockFlow {body} at (0,0) size 100x100 [color=#FFFFFF]
+        LayoutText {#text} at (0,0) size 37x18
+          text run at (0,0) width 37: "PASS"

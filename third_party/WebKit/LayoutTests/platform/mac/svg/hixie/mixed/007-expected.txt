@@ -6,3 +6,8 @@ layer at (0,0) size 400x400
       LayoutBlockFlow {p} at (0,0) size 400x18
         LayoutText {#text} at (0,0) size 37x18
           text run at (0,0) width 37: "PASS"
+layer at (0,0) size 400x400
+  LayoutSVGForeignObject {foreignObject} at (0,0) size 400x400
+    LayoutBlockFlow {p} at (0,0) size 400x18
+      LayoutText {#text} at (0,0) size 37x18
+        text run at (0,0) width 37: "PASS"
