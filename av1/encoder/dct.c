@@ -1146,58 +1146,6 @@ static void maybe_flip_input(const int16_t **src, int *src_stride, int l, int w,
   }
 }
 
-void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
-                  TxfmParam *txfm_param) {
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  if (tx_type == DCT_DCT) {
-    aom_fdct4x4_c(input, output, stride);
-    return;
-  }
-  {
-    static const transform_2d FHT[] = {
-      { fdct4, fdct4 },    // DCT_DCT
-      { fadst4, fdct4 },   // ADST_DCT
-      { fdct4, fadst4 },   // DCT_ADST
-      { fadst4, fadst4 },  // ADST_ADST
-      { fadst4, fdct4 },   // FLIPADST_DCT
-      { fdct4, fadst4 },   // DCT_FLIPADST
-      { fadst4, fadst4 },  // FLIPADST_FLIPADST
-      { fadst4, fadst4 },  // ADST_FLIPADST
-      { fadst4, fadst4 },  // FLIPADST_ADST
-      { fidtx4, fidtx4 },  // IDTX
-      { fdct4, fidtx4 },   // V_DCT
-      { fidtx4, fdct4 },   // H_DCT
-      { fadst4, fidtx4 },  // V_ADST
-      { fidtx4, fadst4 },  // H_ADST
-      { fadst4, fidtx4 },  // V_FLIPADST
-      { fidtx4, fadst4 },  // H_FLIPADST
-    };
-    const transform_2d ht = FHT[tx_type];
-    tran_low_t out[4 * 4];
-    int i, j;
-    tran_low_t temp_in[4], temp_out[4];
-
-    int16_t flipped_input[4 * 4];
-    maybe_flip_input(&input, &stride, 4, 4, flipped_input, tx_type);
-
-    // Columns
-    for (i = 0; i < 4; ++i) {
-      /* A C99-safe upshift by 4 for both Daala and VPx TX. */
-      for (j = 0; j < 4; ++j) temp_in[j] = input[j * stride + i] * 16;
-      if (i == 0 && temp_in[0]) temp_in[0] += 1;
-      ht.cols(temp_in, temp_out);
-      for (j = 0; j < 4; ++j) out[j * 4 + i] = temp_out[j];
-    }
-
-    // Rows
-    for (i = 0; i < 4; ++i) {
-      for (j = 0; j < 4; ++j) temp_in[j] = out[j + i * 4];
-      ht.rows(temp_in, temp_out);
-      for (j = 0; j < 4; ++j) output[j + i * 4] = (temp_out[j] + 1) >> 2;
-    }
-  }
-}
-
 /* 4-point reversible, orthonormal Walsh-Hadamard in 3.5 adds, 0.5 shifts per
    pixel. */
 void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
