@@ -27,13 +27,15 @@ class BrowserContext;
 };
 
 // This is a singleton class running in the browser UI thread (ownership of
-// the only instance lies in BrowserContext).  It is in charge of writing WebRTC
+// the only instance lies in BrowserContext). It is in charge of writing WebRTC
 // event logs to temporary files, then uploading those files to remote servers,
 // as well as of writing the logs to files which were manually indicated by the
 // user from the WebRTCIntenals. (A log may simulatenously be written to both,
 // either, or none.)
-// This needs to be final, so that posting |base::Unretained(this)| to the
-// internal task runner would not be a problem during destruction.
+// The only instance of this class is owned by BrowserProcessImpl. It is
+// destroyed from ~BrowserProcessImpl(), at which point any tasks posted to the
+// internal SequencedTaskRunner, or coming from another thread, would no longer
+// execute.
 class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                     public content::WebRtcEventLogger,
                                     public WebRtcLocalEventLogsObserver,
@@ -67,11 +69,14 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   static BrowserContextId GetBrowserContextId(int render_process_id);
 
   // Ensures that no previous instantiation of the class was performed, then
-  // instantiates the class and returns the object. Subsequent calls to
-  // GetInstance() will return this object.
-  static WebRtcEventLogManager* CreateSingletonInstance();
+  // instantiates the class and returns the object (ownership is transfered to
+  // the caller). Subsequent calls to GetInstance() will return this object,
+  // until it is destructed, at which pointer nullptr will be returned by
+  // subsequent calls.
+  static std::unique_ptr<WebRtcEventLogManager> CreateSingletonInstance();
 
-  // Returns the object previously constructed using CreateSingletonInstance().
+  // Returns the object previously constructed using CreateSingletonInstance(),
+  // if it was constructed and was not yet destroyed; nullptr otherwise.
   static WebRtcEventLogManager* GetInstance();
 
   ~WebRtcEventLogManager() override;

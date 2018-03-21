@@ -75,13 +75,16 @@ BrowserContextId WebRtcEventLogManager::GetBrowserContextId(
   return GetBrowserContextId(browser_context);
 }
 
-WebRtcEventLogManager* WebRtcEventLogManager::CreateSingletonInstance() {
+std::unique_ptr<WebRtcEventLogManager>
+WebRtcEventLogManager::CreateSingletonInstance() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_webrtc_event_log_manager);
   g_webrtc_event_log_manager = new WebRtcEventLogManager;
-  return g_webrtc_event_log_manager;
+  return base::WrapUnique<WebRtcEventLogManager>(g_webrtc_event_log_manager);
 }
 
 WebRtcEventLogManager* WebRtcEventLogManager::GetInstance() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_webrtc_event_log_manager;
 }
 
@@ -122,7 +125,8 @@ void WebRtcEventLogManager::EnableForBrowserContext(
   DCHECK(browser_context);
   CHECK(!browser_context->IsOffTheRecord());
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableForBrowserContextInternal,
@@ -137,7 +141,8 @@ void WebRtcEventLogManager::DisableForBrowserContext(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableForBrowserContextInternal,
@@ -171,7 +176,8 @@ void WebRtcEventLogManager::PeerConnectionAdded(
   const auto browser_context_id = GetBrowserContextId(rph->GetBrowserContext());
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -195,7 +201,8 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
     return;
   }
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -225,7 +232,8 @@ void WebRtcEventLogManager::EnableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base_path.empty());
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableLocalLoggingInternal,
@@ -236,7 +244,8 @@ void WebRtcEventLogManager::EnableLocalLogging(
 void WebRtcEventLogManager::DisableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableLocalLoggingInternal,
@@ -262,7 +271,8 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
 
   const bool remote_logging_allowed = !browser_context->IsOffTheRecord();
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -290,7 +300,8 @@ void WebRtcEventLogManager::StartRemoteLogging(
   const auto browser_context_id = GetBrowserContextId(browser_context);
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::StartRemoteLoggingInternal,
@@ -304,7 +315,8 @@ void WebRtcEventLogManager::SetLocalLogsObserver(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetLocalLogsObserverInternal,
@@ -315,7 +327,8 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
     WebRtcRemoteEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetRemoteLogsObserverInternal,
@@ -347,7 +360,8 @@ void WebRtcEventLogManager::RenderProcessHostExitedDestroyed(
   host->RemoveObserver(this);
   observed_render_process_hosts_.erase(host);
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::RenderProcessExitedInternal,
@@ -639,7 +653,8 @@ void WebRtcEventLogManager::SetClockForTesting(base::Clock* clock,
     }
   };
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                                    clock, std::move(reply)));
 }
@@ -658,7 +673,8 @@ void WebRtcEventLogManager::SetPeerConnectionTrackerProxyForTesting(
     }
   };
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(pc_tracker_proxy), std::move(reply)));
@@ -683,7 +699,8 @@ void WebRtcEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
         }
       };
 
-  // The object outlives the task queue - base::Unretained(this) is safe.
+  // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
+  // will not be dereferenced after destruction.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(uploader_factory), std::move(reply)));
