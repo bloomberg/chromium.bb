@@ -62,7 +62,8 @@ bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
   // is enabled. Do not enable snapping if the minimize button is not visible.
   // The close button is always visible.
   if (IsTriggerableEvent(event) && !in_snap_mode_ &&
-      delegate_->IsMinimizeButtonVisible()) {
+      delegate_->IsMinimizeButtonVisible() &&
+      wm::GetWindowState(frame_->GetNativeWindow())->CanSnap()) {
     StartSetButtonsToSnapModeTimer(event);
   }
   FrameCaptionButton::OnMousePressed(event);
@@ -100,8 +101,8 @@ void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
     SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
     return;
   }
-
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+      wm::GetWindowState(frame_->GetNativeWindow())->CanSnap()) {
     StartSetButtonsToSnapModeTimer(*event);
     // Go through FrameCaptionButton's handling so that the button gets pressed.
     FrameCaptionButton::OnGestureEvent(event);

@@ -26,11 +26,11 @@ namespace {
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() = default;
+  explicit TestWidgetDelegate(bool resizable) : resizable_(resizable) {}
   ~TestWidgetDelegate() override = default;
 
   // Overridden from views::WidgetDelegate:
-  bool CanResize() const override { return true; }
+  bool CanResize() const override { return resizable_; }
   bool CanMaximize() const override { return true; }
   bool CanMinimize() const override { return true; }
 
@@ -71,15 +71,15 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
   // Not owned.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
+  bool resizable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
-}  // namespace
-
 class FrameSizeButtonTest : public AshTestBase {
  public:
   FrameSizeButtonTest() = default;
+  explicit FrameSizeButtonTest(bool resizable) : resizable_(resizable) {}
   ~FrameSizeButtonTest() override = default;
 
   // Returns the center point of |view| in screen coordinates.
@@ -117,7 +117,7 @@ class FrameSizeButtonTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    TestWidgetDelegate* delegate = new TestWidgetDelegate();
+    TestWidgetDelegate* delegate = new TestWidgetDelegate(resizable_);
     window_state_ =
         ash::wm::GetWindowState(CreateWidget(delegate)->GetNativeWindow());
 
@@ -144,9 +144,12 @@ class FrameSizeButtonTest : public AshTestBase {
   FrameCaptionButton* minimize_button_;
   FrameCaptionButton* size_button_;
   FrameCaptionButton* close_button_;
+  bool resizable_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSizeButtonTest);
 };
+
+}  // namespace
 
 // Tests that pressing the left mouse button or tapping down on the size button
 // puts the button into the pressed state.
@@ -453,6 +456,37 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
   EXPECT_TRUE(AllButtonsInNormalState());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+}
+
+namespace {
+
+class FrameSizeButtonNonResizableTest : public FrameSizeButtonTest {
+ public:
+  FrameSizeButtonNonResizableTest() : FrameSizeButtonTest(false) {}
+  ~FrameSizeButtonNonResizableTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FrameSizeButtonNonResizableTest);
+};
+
+}  // namespace
+
+TEST_F(FrameSizeButtonNonResizableTest, NoSnap) {
+  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_TRUE(AllButtonsInNormalState());
+
+  // Pressing the size button should result in the size button being pressed and
+  // the minimize and close button icons changing.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(CenterPointInScreen(size_button()));
+  generator.PressLeftButton();
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+
   EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
