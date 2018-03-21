@@ -326,25 +326,6 @@ std::string ChromeURLs() {
   return html;
 }
 
-std::string HelpCenterContent() {
-  std::string html;
-  AppendHeader(&html, 0, l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_TITLE));
-  html +=
-      "<meta name=\"viewport\" content=\"initial-scale=1, minimum-scale=1, "
-      "width=device-width\">\n";
-  webui::AppendWebUiCssTextDefaults(&html);
-  html += "<style>";
-  html += l10n_util::GetStringUTF8(IDR_SECURITY_INTERSTITIAL_COMMON_CSS);
-  html += l10n_util::GetStringUTF8(IDR_SECURITY_INTERSTITIAL_CORE_CSS);
-  html += "</style>";
-  AppendBody(&html);
-  html += "<div class=\"interstitial-wrapper\">\n";
-  html += l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_HTML);
-  html += "</div>\n";
-  AppendFooter(&html);
-  return html;
-}
-
 // AboutDnsHandler bounces the request back to the IO thread to collect
 // the DNS information.
 class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
@@ -445,8 +426,6 @@ void AboutUIHTMLSource::StartDataRequest(
   // Add your data source here, in alphabetical order.
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {
     response = ChromeURLs();
-  } else if (source_name_ == chrome::kChromeUIConnectionHelpHost) {
-    response = HelpCenterContent();
   } else if (source_name_ == chrome::kChromeUICreditsHost) {
     int idr = IDR_ABOUT_UI_CREDITS_HTML;
     if (path == kCreditsJsPath)
