@@ -39,10 +39,7 @@
 namespace subresource_filter {
 
 SubresourceFilterBrowserTest::SubresourceFilterBrowserTest() {
-  scoped_feature_list_.InitWithFeatures(
-      {kSafeBrowsingSubresourceFilter,
-       kSafeBrowsingSubresourceFilterExperimentalUI, kAbusiveExperienceEnforce},
-      {});
+  scoped_feature_list_.InitAndEnableFeature(kAdTagging);
 }
 
 SubresourceFilterBrowserTest::~SubresourceFilterBrowserTest() {}
