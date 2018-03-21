@@ -29,6 +29,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool show_overdraw_feedback = false;
   bool enable_draw_occlusion = false;
   bool use_skia_renderer = false;
+  bool use_skia_deferred_display_list = false;
   bool allow_overlays = true;
   bool dont_round_texture_sizes_for_pixel_tests = false;
   int highp_threshold_min = 0;

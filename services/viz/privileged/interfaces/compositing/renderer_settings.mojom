@@ -18,5 +18,6 @@ struct RendererSettings {
   bool enable_draw_occlusion;
   int32 slow_down_compositing_scale_factor;
   bool use_skia_renderer;
+  bool use_skia_deferred_display_list;
   bool allow_overlays;
 };

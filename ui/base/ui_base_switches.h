@@ -41,6 +41,7 @@ UI_BASE_EXPORT extern const char kTopChromeMDMaterialHybrid[];
 UI_BASE_EXPORT extern const char kTopChromeMDMaterialTouchOptimized[];
 UI_BASE_EXPORT extern const char kTopChromeMDMaterialRefresh[];
 UI_BASE_EXPORT extern const char kUIDisablePartialSwap[];
+UI_BASE_EXPORT extern const char kUseSkiaDeferredDisplayList[];
 UI_BASE_EXPORT extern const char kUseSkiaRenderer[];
 
 // Test related.
