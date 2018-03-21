@@ -7727,6 +7727,9 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="VeyronEmmcUpgrade.FailedWPEnable"/>
   <int value="19" label="VeyronEmmcUpgrade.SignatureDetected"/>
   <int value="20" label="Watchdog.StartupFailed"/>
+  <int value="21" label="Vm.VmcStart"/>
+  <int value="22" label="Vm.VmcStartSuccess"/>
+  <int value="23" label="Vm.DiskEraseFailed"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
