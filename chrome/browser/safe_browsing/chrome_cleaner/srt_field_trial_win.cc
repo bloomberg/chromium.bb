@@ -15,23 +15,19 @@
 namespace {
 
 // Field trial strings.
-const char kSRTCanaryGroup[] = "SRTCanary";
 const char kSRTPromptOffGroup[] = "Off";
 const char kSRTPromptSeedParam[] = "Seed";
 
 const char kSRTElevationTrial[] = "SRTElevation";
 const char kSRTElevationAsNeededGroup[] = "AsNeeded";
 
+// The download links of the Software Removal Tool.
 const char kDownloadRootPath[] =
     "https://dl.google.com/dl/softwareremovaltool/win/";
 
-// The download links of the Software Removal Tool.
-const char kMainSRTDownloadURL[] =
+const char kLegacySRTDownloadURL[] =
     "https://dl.google.com/dl"
     "/softwareremovaltool/win/chrome_cleanup_tool.exe";
-const char kCanarySRTDownloadURL[] =
-    "https://dl.google.com/dl"
-    "/softwareremovaltool/win/c/chrome_cleanup_tool.exe";
 
 }  // namespace
 
@@ -45,10 +41,8 @@ const base::Feature kRebootPromptDialogFeature{
 const base::Feature kUserInitiatedChromeCleanupsFeature{
     "UserInitiatedChromeCleanups", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// TODO(b/786964): Rename this to remove ByBitness from the feature name once
-// all test scripts have been updated.
-const base::Feature kCleanerDownloadFeature{"DownloadCleanupToolByBitness",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeCleanupDistributionFeature{
+    "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsInSRTPromptFieldTrialGroups() {
   return !base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
@@ -66,17 +60,13 @@ bool UserInitiatedCleanupsEnabled() {
 }
 
 GURL GetLegacyDownloadURL() {
-  if (base::StartsWith(base::FieldTrialList::FindFullName(kSRTPromptTrial),
-                       kSRTCanaryGroup, base::CompareCase::SENSITIVE)) {
-    return GURL(kCanarySRTDownloadURL);
-  }
-  return GURL(kMainSRTDownloadURL);
+  return GURL(kLegacySRTDownloadURL);
 }
 
 GURL GetSRTDownloadURL() {
-  constexpr char kDownloadGroupParam[] = "download_group";
+  constexpr char kCleanerDownloadGroupParam[] = "cleaner_download_group";
   const std::string download_group = base::GetFieldTrialParamValueByFeature(
-      kCleanerDownloadFeature, kDownloadGroupParam);
+      kChromeCleanupDistributionFeature, kCleanerDownloadGroupParam);
   if (download_group.empty())
     return GetLegacyDownloadURL();
 

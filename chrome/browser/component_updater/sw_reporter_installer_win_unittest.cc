@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/mock_component_updater_service.h"
 #include "components/variations/variations_params_manager.h"
@@ -72,7 +73,7 @@ class SwReporterInstallerTest : public ::testing::Test {
   }
 
   void CreateFeatureWithTag(const std::string& tag) {
-    std::map<std::string, std::string> params{{"tag", tag}};
+    std::map<std::string, std::string> params{{"reporter_omaha_tag", tag}};
     CreateFeatureWithParams(params);
   }
 
@@ -83,9 +84,10 @@ class SwReporterInstallerTest : public ::testing::Test {
     // create a FieldTrial for this group and associate the params with the
     // feature. For the test just re-use the feature name as the trial name.
     variations_ = std::make_unique<variations::testing::VariationParamsManager>(
-        /*trial_name=*/kComponentTagFeatureName, params,
+        "SwReporterInstallerTestTrialName", params,
         /*associated_features=*/
-        std::set<std::string>{kComponentTagFeatureName});
+        std::set<std::string>{
+            safe_browsing::kChromeCleanupDistributionFeature.name});
   }
 
   void ExpectAttributesWithTag(const SwReporterInstallerPolicy& policy,

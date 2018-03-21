@@ -32,12 +32,6 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
-// Expose the feature name so it can be referenced in tests.
-// TODO(crbug.com/786964): This feature will continue to exist as part of a
-// permanent variations study to control which version of the reporter gets
-// downloaded. Rename it to something that makes sense long-term.
-constexpr char kComponentTagFeatureName[] = "ExperimentalSwReporterEngine";
-
 constexpr char kSwReporterComponentId[] = "gkmgaooipdjhmangpemjhigmamcehddo";
 
 // These MUST match the values for SoftwareReporterExperimentError in
