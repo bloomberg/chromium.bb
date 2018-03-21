@@ -56,6 +56,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
@@ -1913,6 +1914,13 @@ bool RenderWidgetHostViewAndroid::OnMouseWheelEvent(
 
 void RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventData& gesture) {
+  if ((gesture.type() == ui::ET_GESTURE_PINCH_BEGIN ||
+       gesture.type() == ui::ET_GESTURE_PINCH_UPDATE ||
+       gesture.type() == ui::ET_GESTURE_PINCH_END) &&
+      !IsPinchToZoomEnabled()) {
+    return;
+  }
+
   blink::WebGestureEvent web_gesture =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
   // TODO(jdduke): Remove this workaround after Android fixes UiAutomator to
