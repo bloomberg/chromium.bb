@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -37,11 +38,17 @@ class ExclusiveAccessBubbleViewsTest : public FullscreenControllerTest,
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubbleViewsTest);
 };
 
+#if defined(OS_MACOSX)
+// Encounters an internal MacOS assert: http://crbug.com/823490
+#define MAYBE_NativeClose DISABLED_NativeClose
+#else
+#define MAYBE_NativeClose NativeClose
+#endif
 // Simulate obscure codepaths resulting in the bubble Widget being closed before
 // the ExclusiveAccessBubbleViews destructor asks for it. If a close bypasses
 // the destructor, animations could still be running that attempt to manipulate
 // a destroyed Widget and crash.
-IN_PROC_BROWSER_TEST_F(ExclusiveAccessBubbleViewsTest, NativeClose) {
+IN_PROC_BROWSER_TEST_F(ExclusiveAccessBubbleViewsTest, MAYBE_NativeClose) {
   EXPECT_FALSE(bubble());
   EnterActiveTabFullscreen();
   EXPECT_TRUE(bubble());
