@@ -5,5 +5,6 @@ FAIL insertDTMF() should throw InvalidStateError if transceiver is stopped pc.ad
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is recvonly pc.addTransceiver is not a function
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is inactive pc.addTransceiver is not a function
 PASS insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden
+PASS insertDTMF() after remove and close should reject
 Harness: the test ran to completion.
 
