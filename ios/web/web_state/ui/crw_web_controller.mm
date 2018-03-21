@@ -4222,17 +4222,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  BOOL allowLoad = [self shouldAllowLoadWithNavigationAction:action];
-
-  if (allowLoad) {
-    ui::PageTransition transition =
-        [self pageTransitionFromNavigationType:action.navigationType];
-    allowLoad =
-        self.webStateImpl->ShouldAllowRequest(action.request, transition);
-    if (!allowLoad && action.targetFrame.mainFrame) {
-      [_pendingNavigationInfo setCancelled:YES];
-    }
+  ui::PageTransition transition =
+      [self pageTransitionFromNavigationType:action.navigationType];
+  BOOL allowLoad =
+      self.webStateImpl->ShouldAllowRequest(action.request, transition);
+  if (!allowLoad && action.targetFrame.mainFrame) {
+    [_pendingNavigationInfo setCancelled:YES];
   }
+
+  if (allowLoad)
+    allowLoad = [self shouldAllowLoadWithNavigationAction:action];
 
   if (!allowLoad && !_isBeingDestroyed) {
     // Loading was started for user initiated navigations and should be stopped
