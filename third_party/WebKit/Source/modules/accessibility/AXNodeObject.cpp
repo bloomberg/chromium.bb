@@ -1533,7 +1533,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
     *out_value = ToHTMLInputElement(*GetNode()).valueAsNumber();
-    return isfinite(*out_value);
+    return std::isfinite(*out_value);
   }
 
   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
@@ -1579,7 +1579,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
     *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Maximum());
-    return isfinite(*out_value);
+    return std::isfinite(*out_value);
   }
 
   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
@@ -1612,7 +1612,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
     *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Minimum());
-    return isfinite(*out_value);
+    return std::isfinite(*out_value);
   }
 
   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
@@ -1641,7 +1641,7 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
     Decimal step =
         ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
     *out_value = step.ToString().ToFloat();
-    return isfinite(*out_value);
+    return std::isfinite(*out_value);
   }
 
   switch (AriaRoleAttribute()) {

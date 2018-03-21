@@ -5,6 +5,7 @@
 #include "base/files/dir_reader_posix.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

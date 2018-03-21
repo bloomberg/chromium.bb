@@ -21,7 +21,7 @@ struct Pod {
 
 bool operator==(const Pod& left, const Pod& right) {
   return left.a == right.a && left.b == right.b &&
-         std::memcmp(left.c, right.c, sizeof(left.c)) == 0;
+         memcmp(left.c, right.c, sizeof(left.c)) == 0;
 }
 
 }  // namespace

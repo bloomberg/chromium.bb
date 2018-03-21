@@ -212,7 +212,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= static_cast<int32_t>(ax::mojom::FloatAttribute::kLast);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::FloatAttribute>(attr_index);
-    if (node.HasFloatAttribute(attr) && isfinite(node.GetFloatAttribute(attr)))
+    if (node.HasFloatAttribute(attr) &&
+        std::isfinite(node.GetFloatAttribute(attr)))
       dict->SetDouble(ui::ToString(attr), node.GetFloatAttribute(attr));
   }
 

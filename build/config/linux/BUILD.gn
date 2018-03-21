@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
@@ -26,7 +27,8 @@ config("runtime_library") {
     defines = [ "OS_CHROMEOS" ]
   }
 
-  if (current_cpu == "mipsel") {
+  if ((!is_chromeos || default_toolchain != "//build/toolchain/cros:target") &&
+      (!use_custom_libcxx || current_cpu == "mipsel")) {
     libs = [ "atomic" ]
   }
 }
