@@ -25,6 +25,10 @@ void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitStateChanged(
     OnReload();
 }
 
+void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitVisibilityChanged(
+    LifecycleUnit* lifecycle_unit,
+    content::Visibility visibility) {}
+
 void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitDestroyed(
     LifecycleUnit* lifecycle_unit) {
   // If the browser is not shutting down and the tab is in a LOADED state after

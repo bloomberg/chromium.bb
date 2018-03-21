@@ -36,6 +36,12 @@ void LifecycleUnitBase::SetState(State state) {
     observer.OnLifecycleUnitStateChanged(this);
 }
 
+void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
+    content::Visibility visibility) {
+  for (auto& observer : observers_)
+    observer.OnLifecycleUnitVisibilityChanged(this, visibility);
+}
+
 void LifecycleUnitBase::OnLifecycleUnitDestroyed() {
   for (auto& observer : observers_)
     observer.OnLifecycleUnitDestroyed(this);
