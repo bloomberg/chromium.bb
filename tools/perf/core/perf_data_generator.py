@@ -1059,6 +1059,10 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
     'One Buildbot Step Test Builder': {
       'isolate': 'telemetry_perf_tests_experimental',
       'platform': 'linux',
+      'dimension': {
+        'pool': 'Chrome-perf-fyi',
+        'os': 'Linux',
+      },
       'testing': True,
       'device_ids': [
           'swarm823-c4',
@@ -1069,6 +1073,11 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
     'Mac 10.12 Laptop Low End': {
       'isolate': 'performance_test_suite',
       'platform': 'mac',
+      'dimension': {
+        'pool': 'Chrome-perf-fyi',
+        'os': 'Mac-10.12',
+        'gpu': '8086:1626'
+      },
       'device_ids': [
           'build195-a9', 'build196-a9', 'build197-a9', 'build198-a9',
           'build199-a9', 'build200-a9', 'build201-a9', 'build202-a9',
@@ -1158,9 +1167,7 @@ def generate_performance_test_suite(tester_config):
     'ignore_task_failure': False,
     'io_timeout': 30 * 60, # 30 minutes
     'dimension_sets': [
-      {
-        'pool': 'Chrome-perf-fyi',
-      }
+      tester_config['dimension']
     ],
     'upload_test_results': True,
     'shards': shards,
