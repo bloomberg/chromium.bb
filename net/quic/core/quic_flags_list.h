@@ -222,3 +222,11 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_redundant_ping, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_reset_stream_is_not_zombie,
           true)
+
+// If true, when a packet write for connectivity probe does not complete
+// successfully synchronously, connection will not be affected, i.e., blocked or
+// closed, if the probing packet writer is not the default writer.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
+    true)

@@ -1210,6 +1210,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_reloadable_flag_quic_always_discard_packets_after_close.
   const bool always_discard_packets_after_close_;
 
+  // Latched valure of
+  // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.
+  const bool handle_write_results_for_connectivity_probe_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
 
