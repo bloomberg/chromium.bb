@@ -12,11 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -26,6 +29,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
 #include "ui/gl/gl_context.h"
@@ -53,6 +57,46 @@ using namespace gpu::gles2;
 
 namespace gpu {
 namespace raster {
+
+namespace {
+
+class TextureMetadata {
+ public:
+  TextureMetadata(bool use_buffer,
+                  gfx::BufferUsage buffer_usage,
+                  viz::ResourceFormat format,
+                  const Capabilities& caps)
+      : use_buffer_(use_buffer),
+        buffer_usage_(buffer_usage),
+        format_(format),
+        target_(CalcTarget(use_buffer, buffer_usage, format, caps)) {}
+  TextureMetadata(const TextureMetadata& tmd) = default;
+
+  bool use_buffer() const { return use_buffer_; }
+  gfx::BufferUsage buffer_usage() const { return buffer_usage_; }
+  viz::ResourceFormat format() const { return format_; }
+  GLenum target() const { return target_; }
+
+ private:
+  static GLenum CalcTarget(bool use_buffer,
+                           gfx::BufferUsage buffer_usage,
+                           viz::ResourceFormat format,
+                           const gpu::Capabilities& caps) {
+    if (use_buffer) {
+      gfx::BufferFormat buffer_format = viz::BufferFormat(format);
+      return GetBufferTextureTarget(buffer_usage, buffer_format, caps);
+    } else {
+      return GL_TEXTURE_2D;
+    }
+  }
+
+  const bool use_buffer_;
+  const gfx::BufferUsage buffer_usage_;
+  const viz::ResourceFormat format_;
+  const GLenum target_;
+};
+
+}  // namespace
 
 class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
  public:
@@ -137,6 +181,13 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void SetIgnoreCachedStateForTest(bool ignore) override;
 
  private:
+  std::unordered_map<GLuint, TextureMetadata> texture_metadata_;
+  TextureMetadata* GetTextureMetadata(GLuint client_id) {
+    auto it = texture_metadata_.find(client_id);
+    DCHECK(it != texture_metadata_.end()) << "Undefined texture id";
+    return &it->second;
+  }
+
   gl::GLApi* api() const { return state_.api(); }
 
   const FeatureInfo::FeatureFlags& features() const {
@@ -167,6 +218,11 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   // Deletes the texture info for the given texture.
   void RemoveTexture(GLuint client_id) {
     texture_manager()->RemoveTexture(client_id);
+
+    auto texture_iter = texture_metadata_.find(client_id);
+    DCHECK(texture_iter != texture_metadata_.end());
+
+    texture_metadata_.erase(texture_iter);
   }
 
   void UnbindTexture(TextureRef* texture_ref) {
@@ -193,24 +249,18 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
   GLuint DoCreateTexture(bool use_buffer,
-                         gfx::BufferUsage buffer_usage,
-                         viz::ResourceFormat resource_format) {
-    // Stubbed out enough for unittests. Need to take params into account.
-    NOTIMPLEMENTED();
-    GLuint service_id;
-    api()->glGenTexturesFn(1, &service_id);
-    return service_id;
-  }
+                         gfx::BufferUsage /* buffer_usage */,
+                         viz::ResourceFormat /* resource_format */);
   void CreateTexture(GLuint client_id,
                      GLuint service_id,
                      bool use_buffer,
                      gfx::BufferUsage buffer_usage,
-                     viz::ResourceFormat resource_format) {
-    // Stubbed out enough for unittests. Need to take params into account.
-    NOTIMPLEMENTED();
-    CreateTexture(client_id, service_id);
-  }
-
+                     viz::ResourceFormat resource_format);
+  void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
+                                         bool use_buffer,
+                                         gfx::BufferUsage buffer_usage,
+                                         viz::ResourceFormat resource_format,
+                                         const volatile GLbyte* key);
   void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids);
@@ -221,9 +271,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
     NOTIMPLEMENTED();
   }
-  void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* mailbox) {
-    NOTIMPLEMENTED();
-  }
+  void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
     NOTIMPLEMENTED();
   }
@@ -563,6 +611,9 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.supports_oop_raster = true;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
+  caps.texture_format_bgra8888 =
+      feature_info_->feature_flags().ext_texture_format_bgra8888;
+
   return caps;
 }
 
@@ -1045,6 +1096,83 @@ void RasterDecoderImpl::DoGetIntegerv(GLenum pname,
   NOTREACHED() << "Unhandled enum " << pname;
 }
 
+GLuint RasterDecoderImpl::DoCreateTexture(
+    bool use_buffer,
+    gfx::BufferUsage /* buffer_usage */,
+    viz::ResourceFormat /* resource_format */) {
+  GLuint service_id = 0;
+  api()->glGenTexturesFn(1, &service_id);
+  DCHECK(service_id);
+  return service_id;
+}
+
+void RasterDecoderImpl::CreateTexture(GLuint client_id,
+                                      GLuint service_id,
+                                      bool use_buffer,
+                                      gfx::BufferUsage buffer_usage,
+                                      viz::ResourceFormat resource_format) {
+  texture_metadata_.emplace(std::make_pair(
+      client_id, TextureMetadata(use_buffer, buffer_usage, resource_format,
+                                 GetCapabilities())));
+  texture_manager()->CreateTexture(client_id, service_id);
+}
+
+void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
+    GLuint client_id,
+    bool use_buffer,
+    gfx::BufferUsage buffer_usage,
+    viz::ResourceFormat resource_format,
+    const volatile GLbyte* key) {
+  TRACE_EVENT2("gpu", "RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL",
+               "context", logger_.GetLogPrefix(), "key[0]",
+               static_cast<unsigned char>(key[0]));
+  Mailbox mailbox =
+      Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(key));
+  DLOG_IF(ERROR, !mailbox.Verify()) << "CreateAndConsumeTexture was "
+                                       "passed a mailbox that was not "
+                                       "generated by GenMailboxCHROMIUM.";
+  if (!client_id) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glCreateAndConsumeTextureCHROMIUM",
+                       "invalid client id");
+    return;
+  }
+
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (texture_ref) {
+    // No need to create texture here, the client_id already has an associated
+    // texture.
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glCreateAndConsumeTextureCHROMIUM",
+                       "client id already in use");
+    return;
+  }
+
+  texture_metadata_.emplace(std::make_pair(
+      client_id, TextureMetadata(use_buffer, buffer_usage, resource_format,
+                                 GetCapabilities())));
+
+  Texture* texture =
+      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
+  if (!texture) {
+    // Create texture to handle invalid mailbox (see http://crbug.com/472465).
+    GLuint service_id = 0;
+    api()->glGenTexturesFn(1, &service_id);
+    DCHECK(service_id);
+    texture_manager()->CreateTexture(client_id, service_id);
+
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glCreateAndConsumeTextureCHROMIUM",
+                       "invalid mailbox name");
+    return;
+  }
+
+  texture_ref = texture_manager()->Consume(client_id, texture);
+
+  // TODO(backer): Validate that the consumed texture is consistent with
+  // TextureMetadata.
+}
+
 void RasterDecoderImpl::DeleteTexturesHelper(
     GLsizei n,
     const volatile GLuint* client_ids) {
@@ -1116,6 +1244,44 @@ void RasterDecoderImpl::DoTexParameteri(GLuint texture_id,
 
   texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
                                    pname, param);
+}
+
+void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,
+                                               const volatile GLbyte* key) {
+  TRACE_EVENT2("gpu", "RasterDecoderImpl::DoProduceTextureDirect", "context",
+               logger_.GetLogPrefix(), "key[0]",
+               static_cast<unsigned char>(key[0]));
+
+  Mailbox mailbox =
+      Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(key));
+  DLOG_IF(ERROR, !mailbox.Verify()) << "ProduceTextureDirect was passed a "
+                                       "mailbox that was not generated by "
+                                       "GenMailboxCHROMIUM.";
+
+  TextureRef* texture_ref = GetTexture(client_id);
+
+  bool clear = !client_id;
+  if (clear) {
+    DCHECK(!texture_ref);
+
+    group_->mailbox_manager()->ProduceTexture(mailbox, nullptr);
+    return;
+  }
+
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "ProduceTextureDirect",
+                       "unknown texture");
+    return;
+  }
+
+  Texture* produced = texture_manager()->Produce(texture_ref);
+  if (!produced) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "ProduceTextureDirect",
+                       "invalid texture");
+    return;
+  }
+
+  group_->mailbox_manager()->ProduceTexture(mailbox, produced);
 }
 
 // Include the auto-generated part of this file. We split this because it means

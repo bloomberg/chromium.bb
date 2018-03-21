@@ -1105,7 +1105,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                          TextureRef* texture_ref,
                          const volatile GLbyte* data);
 
-  void EnsureTextureForClientId(GLenum target, GLuint client_id);
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
@@ -18289,21 +18288,6 @@ void GLES2DecoderImpl::ProduceTextureRef(const char* func_name,
   group_->mailbox_manager()->ProduceTexture(mailbox, produced);
 }
 
-void GLES2DecoderImpl::EnsureTextureForClientId(
-    GLenum target,
-    GLuint client_id) {
-  TextureRef* texture_ref = GetTexture(client_id);
-  if (!texture_ref) {
-    GLuint service_id;
-    api()->glGenTexturesFn(1, &service_id);
-    DCHECK_NE(0u, service_id);
-    texture_ref = CreateTexture(client_id, service_id);
-    texture_manager()->SetTarget(texture_ref, target);
-    api()->glBindTextureFn(target, service_id);
-    RestoreCurrentTextureBindings(&state_, target, state_.active_texture_unit);
-  }
-}
-
 void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     GLuint client_id,
     const volatile GLbyte* data) {
@@ -18324,8 +18308,8 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
 
   TextureRef* texture_ref = GetTexture(client_id);
   if (texture_ref) {
-    // No need to call EnsureTextureForClientId here, the client_id already has
-    // an associated texture.
+    // No need to create texture here, the client_id already has an associated
+    // texture.
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCreateAndConsumeTextureCHROMIUM", "client id already in use");
@@ -18334,6 +18318,7 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   Texture* texture =
       static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
+    // Create texture to handle invalid mailbox (see http://crbug.com/472465).
     bool result = GenTexturesHelper(1, &client_id);
     DCHECK(result);
     LOCAL_SET_GL_ERROR(

@@ -1181,6 +1181,75 @@ static_assert(offsetof(ProduceTextureDirectImmediate, header) == 0,
 static_assert(offsetof(ProduceTextureDirectImmediate, texture) == 4,
               "offset of ProduceTextureDirectImmediate texture should be 4");
 
+struct CreateAndConsumeTextureINTERNALImmediate {
+  typedef CreateAndConsumeTextureINTERNALImmediate ValueType;
+  static const CommandId kCmdId = kCreateAndConsumeTextureINTERNALImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _texture_id,
+            bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            const GLbyte* _mailbox) {
+    SetHeader();
+    texture_id = _texture_id;
+    use_buffer = _use_buffer;
+    buffer_usage = static_cast<uint32_t>(_buffer_usage);
+    format = static_cast<uint32_t>(_format);
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _use_buffer, _buffer_usage,
+                                       _format, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  uint32_t use_buffer;
+  uint32_t buffer_usage;
+  uint32_t format;
+};
+
+static_assert(sizeof(CreateAndConsumeTextureINTERNALImmediate) == 20,
+              "size of CreateAndConsumeTextureINTERNALImmediate should be 20");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, header) == 0,
+    "offset of CreateAndConsumeTextureINTERNALImmediate header should be 0");
+static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate, texture_id) ==
+                  4,
+              "offset of CreateAndConsumeTextureINTERNALImmediate texture_id "
+              "should be 4");
+static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate, use_buffer) ==
+                  8,
+              "offset of CreateAndConsumeTextureINTERNALImmediate use_buffer "
+              "should be 8");
+static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate,
+                       buffer_usage) == 12,
+              "offset of CreateAndConsumeTextureINTERNALImmediate buffer_usage "
+              "should be 12");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, format) == 16,
+    "offset of CreateAndConsumeTextureINTERNALImmediate format should be 16");
+
 struct TexParameteri {
   typedef TexParameteri ValueType;
   static const CommandId kCmdId = kTexParameteri;

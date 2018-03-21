@@ -339,6 +339,43 @@ error::Error RasterDecoderImpl::HandleProduceTextureDirectImmediate(
   return error::kNoError;
 }
 
+error::Error RasterDecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile raster::cmds::CreateAndConsumeTextureINTERNALImmediate& c =
+      *static_cast<const volatile raster::cmds::
+                       CreateAndConsumeTextureINTERNALImmediate*>(cmd_data);
+  GLuint texture_id = static_cast<GLuint>(c.texture_id);
+  bool use_buffer = static_cast<bool>(c.use_buffer);
+  gfx::BufferUsage buffer_usage = static_cast<gfx::BufferUsage>(c.buffer_usage);
+  viz::ResourceFormat format = static_cast<viz::ResourceFormat>(c.format);
+  uint32_t data_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
+      c, data_size, immediate_data_size);
+  if (!validators_->gfx_buffer_usage.IsValid(buffer_usage)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCreateAndConsumeTextureINTERNAL",
+                                    buffer_usage, "buffer_usage");
+    return error::kNoError;
+  }
+  if (!validators_->viz_resource_format.IsValid(format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCreateAndConsumeTextureINTERNAL", format,
+                                    "format");
+    return error::kNoError;
+  }
+  if (mailbox == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoCreateAndConsumeTextureINTERNAL(texture_id, use_buffer, buffer_usage,
+                                    format, mailbox);
+  return error::kNoError;
+}
+
 error::Error RasterDecoderImpl::HandleTexParameteri(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
