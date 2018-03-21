@@ -114,8 +114,14 @@
       ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
+  bool contentSuggestionsVisible =
+      prefs->GetBoolean(ntp_snippets::prefs::kArticlesListVisible);
   if (contentSuggestionsEnabled) {
-    ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
+    if (contentSuggestionsVisible) {
+      ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
+    } else {
+      ntp_home::RecordNTPImpression(ntp_home::REMOTE_COLLAPSED);
+    }
   } else {
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }

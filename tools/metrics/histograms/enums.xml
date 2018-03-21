@@ -23691,6 +23691,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IOSNTPImpression">
   <int value="0" label="Local suggestions"/>
   <int value="1" label="Remote suggestions"/>
+  <int value="2" label="Remote suggestions collapsed"/>
 </enum>
 
 <enum name="IOSPageLoadCountNavigationType">
