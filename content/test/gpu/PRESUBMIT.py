@@ -38,6 +38,6 @@ def PostUploadHook(cl, change, output_api):
       'luci.chromium.try:linux_optional_gpu_tests_rel',
       'luci.chromium.try:mac_optional_gpu_tests_rel',
       'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
-      'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
+      'luci.chromium.try:android_optional_gpu_tests_rel',
     ],
     'Automatically added optional GPU tests to run on CQ.')
