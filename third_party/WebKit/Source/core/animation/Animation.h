@@ -52,6 +52,7 @@
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -157,13 +158,10 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   const DocumentTimeline* TimelineInternal() const { return timeline_; }
   DocumentTimeline* TimelineInternal() { return timeline_; }
 
-  double CalculateStartTime(double current_time) const;
-  bool HasStartTime() const { return !IsNull(start_time_); }
   double startTime(bool& is_null) const;
-  double startTime() const;
-  double StartTimeInternal() const { return start_time_; }
+  WTF::Optional<double> startTime() const;
+  WTF::Optional<double> StartTimeInternal() const { return start_time_; }
   void setStartTime(double, bool is_null);
-  void SetStartTimeInternal(double);
 
   const AnimationEffectReadOnly* effect() const { return content_.Get(); }
   AnimationEffectReadOnly* effect() { return content_.Get(); }
@@ -228,6 +226,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   void Trace(blink::Visitor*) override;
 
+  bool CompositorPendingForTesting() const { return compositor_pending_; }
+
  protected:
   DispatchEventResult DispatchEventInternal(Event*) override;
   void AddedEventListener(const AtomicString& event_type,
@@ -242,11 +242,13 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   double EffectEnd() const;
   bool Limited(double current_time) const;
 
-  AnimationPlayState CalculatePlayState();
+  AnimationPlayState CalculatePlayState() const;
+  WTF::Optional<double> CalculateStartTime(double current_time) const;
   double CalculateCurrentTime() const;
 
   void UnpauseInternal();
   void SetPlaybackRateInternal(double);
+  void SetStartTimeInternal(WTF::Optional<double>);
   void UpdateCurrentTimingState(TimingUpdateReason);
 
   void BeginUpdatingState();
@@ -276,7 +278,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   AnimationPlayState play_state_;
   double playback_rate_;
-  double start_time_;
+  WTF::Optional<double> start_time_;
   double hold_time_;
 
   unsigned sequence_number_;
@@ -317,7 +319,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
           playback_rate(animation.playback_rate_),
           effect_changed(false),
           pending_action(kStart) {}
-    double start_time;
+    WTF::Optional<double> start_time;
     double hold_time;
     double playback_rate;
     bool effect_changed;
