@@ -90,7 +90,7 @@ class NotificationLaunchId {
   // The profile id this launch ID is associated with. The string is UTF8.
   std::string profile_id_;
 
-  // A flat indicating if the notification associated with this launch ID is in
+  // A flag indicating if the notification associated with this launch ID is in
   // incognito mode or not.
   bool incognito_ = false;
 
