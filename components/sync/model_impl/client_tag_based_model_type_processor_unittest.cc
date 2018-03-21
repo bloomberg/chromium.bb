@@ -56,12 +56,6 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
   return FakeModelTypeSyncBridge::GenerateEntityData(key, value);
 }
 
-std::unique_ptr<ModelTypeChangeProcessor>
-CreateProcessor(bool commit_only, ModelType type, ModelTypeSyncBridge* bridge) {
-  return std::make_unique<ClientTagBasedModelTypeProcessor>(
-      type, bridge, base::RepeatingClosure(), commit_only);
-}
-
 void CaptureCommitRequest(CommitRequestDataList* dst,
                           CommitRequestDataList&& src) {
   *dst = std::move(src);
@@ -70,7 +64,11 @@ void CaptureCommitRequest(CommitRequestDataList* dst,
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
   explicit TestModelTypeSyncBridge(bool commit_only)
-      : FakeModelTypeSyncBridge(base::Bind(&CreateProcessor, commit_only)) {}
+      : FakeModelTypeSyncBridge(
+            std::make_unique<ClientTagBasedModelTypeProcessor>(
+                PREFERENCES,
+                /*dump_stack=*/base::RepeatingClosure(),
+                commit_only)) {}
 
   TestModelTypeSyncBridge(std::unique_ptr<TestModelTypeSyncBridge> other,
                           bool commit_only)
@@ -179,10 +177,12 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 //   metadata in storage on the bridge side.
 class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
  public:
-  ClientTagBasedModelTypeProcessorTest()
-      : bridge_(std::make_unique<TestModelTypeSyncBridge>(false)) {}
-
+  ClientTagBasedModelTypeProcessorTest() {}
   ~ClientTagBasedModelTypeProcessorTest() override { CheckPostConditions(); }
+
+  void SetUp() override {
+    bridge_ = std::make_unique<TestModelTypeSyncBridge>(IsCommitOnly());
+  }
 
   void InitializeToMetadataLoaded() {
     bridge()->SetInitialSyncDone(true);
@@ -197,7 +197,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   }
 
   void ModelReadyToSync() {
-    type_processor()->ModelReadyToSync(db().CreateMetadataBatch());
+    type_processor()->ModelReadyToSync(bridge(), db().CreateMetadataBatch());
   }
 
   void OnPendingCommitDataLoaded() { bridge()->OnPendingCommitDataLoaded(); }
@@ -237,13 +237,16 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     return;
   }
 
-  void ResetState(bool keep_db, bool commit_only = false) {
-    bridge_ = keep_db ? std::make_unique<TestModelTypeSyncBridge>(
-                            std::move(bridge_), commit_only)
-                      : std::make_unique<TestModelTypeSyncBridge>(commit_only);
+  void ResetState(bool keep_db) {
+    bridge_ = keep_db
+                  ? std::make_unique<TestModelTypeSyncBridge>(
+                        std::move(bridge_), IsCommitOnly())
+                  : std::make_unique<TestModelTypeSyncBridge>(IsCommitOnly());
     worker_ = nullptr;
     CheckPostConditions();
   }
+
+  virtual bool IsCommitOnly() { return false; }
 
   // Wipes existing DB and simulates a pending update of a server-known item.
   EntitySpecifics ResetStateWriteItem(const std::string& name,
@@ -292,7 +295,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
         bridge()->change_processor());
   }
 
- private:
+ protected:
   void CheckPostConditions() { EXPECT_FALSE(expect_error_); }
 
   void OnReadyToConnect(std::unique_ptr<ActivationContext> context) {
@@ -311,6 +314,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     expect_error_ = false;
   }
 
+ private:
   std::unique_ptr<TestModelTypeSyncBridge> bridge_;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
@@ -707,51 +711,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, LocalCreateItem) {
   EXPECT_EQ(1, acked_metadata.sequence_number());
   EXPECT_EQ(1, acked_metadata.acked_sequence_number());
   EXPECT_EQ(1, acked_metadata.server_version());
-}
-
-// Test that commit only types are deleted after commit response.
-TEST_F(ClientTagBasedModelTypeProcessorTest, CommitOnlySimple) {
-  ResetState(false, true);
-  InitializeToReadyState();
-  EXPECT_TRUE(db().model_type_state().initial_sync_done());
-
-  bridge()->WriteItem(kKey1, kValue1);
-  worker()->VerifyPendingCommits({kHash1});
-  EXPECT_EQ(1U, db().data_count());
-  EXPECT_EQ(1U, db().metadata_count());
-
-  worker()->AckOnePendingCommit();
-  EXPECT_EQ(0U, db().data_count());
-  EXPECT_EQ(0U, db().metadata_count());
-}
-
-// Test that commit only types maintain tracking of entities while unsynced
-// changes exist.
-TEST_F(ClientTagBasedModelTypeProcessorTest, CommitOnlyUnsyncedChanges) {
-  ResetState(false, true);
-  InitializeToReadyState();
-
-  bridge()->WriteItem(kKey1, kValue1);
-  worker()->VerifyPendingCommits({kHash1});
-  EXPECT_EQ(1U, db().data_count());
-  EXPECT_EQ(1U, db().metadata_count());
-
-  bridge()->WriteItem(kKey1, kValue2);
-  worker()->VerifyPendingCommits({kHash1, kHash1});
-  EXPECT_EQ(1U, db().data_count());
-  EXPECT_EQ(1U, db().metadata_count());
-
-  worker()->AckOnePendingCommit();
-  worker()->VerifyPendingCommits({kHash1});
-  EXPECT_EQ(1U, db().data_count());
-  EXPECT_EQ(1U, db().metadata_count());
-
-  // The version field isn't meaningful on commit only types, so force a value
-  // that isn't incremented to verify everything still works.
-  worker()->AckOnePendingCommit(0 /* version_offset */);
-  worker()->VerifyPendingCommits({});
-  EXPECT_EQ(0U, db().data_count());
-  EXPECT_EQ(0U, db().metadata_count());
 }
 
 // Test that an error applying metadata changes from a commit response is
@@ -1691,6 +1650,55 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, GarbageCollectionByItemLimit) {
   EXPECT_EQ(2U, db().metadata_count());
   EXPECT_EQ(3U, db().data_count());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
+class CommitOnlyClientTagBasedModelTypeProcessorTest
+    : public ClientTagBasedModelTypeProcessorTest {
+ protected:
+  bool IsCommitOnly() override { return true; }
+};
+
+// Test that commit only types are deleted after commit response.
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest, Simple) {
+  InitializeToReadyState();
+  EXPECT_TRUE(db().model_type_state().initial_sync_done());
+
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  worker()->AckOnePendingCommit();
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
+}
+
+// Test that commit only types maintain tracking of entities while unsynced
+// changes exist.
+TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest, UnsyncedChanges) {
+  InitializeToReadyState();
+
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  bridge()->WriteItem(kKey1, kValue2);
+  worker()->VerifyPendingCommits({kHash1, kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  worker()->AckOnePendingCommit();
+  worker()->VerifyPendingCommits({kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  // The version field isn't meaningful on commit only types, so force a value
+  // that isn't incremented to verify everything still works.
+  worker()->AckOnePendingCommit(0 /* version_offset */);
+  worker()->VerifyPendingCommits({});
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
 }
 
 }  // namespace syncer

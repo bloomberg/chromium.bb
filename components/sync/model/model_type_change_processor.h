@@ -27,12 +27,6 @@ class ModelTypeChangeProcessor {
   using StartCallback =
       base::Callback<void(std::unique_ptr<ActivationContext>)>;
 
-  // A factory function to make an implementation of ModelTypeChangeProcessor.
-  static std::unique_ptr<ModelTypeChangeProcessor> Create(
-      const base::RepeatingClosure& dump_stack,
-      ModelType type,
-      ModelTypeSyncBridge* bridge);
-
   ModelTypeChangeProcessor();
   virtual ~ModelTypeChangeProcessor();
 
@@ -66,13 +60,15 @@ class ModelTypeChangeProcessor {
   // change_processor()->Delete() instead.
   virtual void UntrackEntity(const EntityData& entity_data) = 0;
 
-  // The bridge is expected to call this exactly once unless it encounters an
+  // The |bridge| is expected to call this exactly once unless it encounters an
   // error. Ideally ModelReadyToSync() is called as soon as possible during
   // initialization, and must be called before invoking either Put() or
   // Delete(). The bridge needs to be able to synchronously handle
   // MergeSyncData() and ApplySyncChanges() after calling ModelReadyToSync(). If
   // an error is encountered, calling ReportError() instead is sufficient.
-  virtual void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) = 0;
+  // |bridge| must not be nullptr and must outlive this object.
+  virtual void ModelReadyToSync(ModelTypeSyncBridge* bridge,
+                                std::unique_ptr<MetadataBatch> batch) = 0;
 
   // Indicates that sync wants to connect a sync worker to this processor. Once
   // the processor has metadata from the bridge, it will pass the info needed

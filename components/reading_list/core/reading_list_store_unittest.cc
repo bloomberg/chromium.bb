@@ -94,8 +94,7 @@ class ReadingListStoreTest : public testing::Test,
     reading_list_store_ = std::make_unique<ReadingListStore>(
         base::BindOnce(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
                        std::move(store_)),
-        base::Bind(&ReadingListStoreTest::CreateModelTypeChangeProcessor,
-                   base::Unretained(this)));
+        CreateModelTypeChangeProcessor());
     auto clock = std::make_unique<base::SimpleTestClock>();
     clock_ = clock.get();
     model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr,
@@ -106,11 +105,10 @@ class ReadingListStoreTest : public testing::Test,
   }
 
   std::unique_ptr<syncer::ModelTypeChangeProcessor>
-  CreateModelTypeChangeProcessor(syncer::ModelType type,
-                                 syncer::ModelTypeSyncBridge* service) {
+  CreateModelTypeChangeProcessor() {
     auto processor = std::make_unique<TestModelTypeChangeProcessor>();
     processor->SetObserver(this);
-    return std::move(processor);
+    return processor;
   }
 
   void Put(const std::string& storage_key,

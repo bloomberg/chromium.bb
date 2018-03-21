@@ -66,6 +66,7 @@
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/sync_error.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/sync_db_util.h"
@@ -86,6 +87,7 @@
 using sync_sessions::SessionsSyncManager;
 using syncer::BackendMigrator;
 using syncer::ChangeProcessor;
+using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeStatusTable;
@@ -236,9 +238,10 @@ void ProfileSyncService::Initialize() {
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory_,
-      base::BindRepeating(
-          &ModelTypeChangeProcessor::Create,
-          base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
+      std::make_unique<ClientTagBasedModelTypeProcessor>(
+          syncer::DEVICE_INFO,
+          /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                             channel_)));
 
   syncer::SyncApiComponentFactory::RegisterDataTypesMethod
       register_platform_types_callback =

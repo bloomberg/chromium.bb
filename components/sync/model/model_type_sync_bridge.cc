@@ -12,11 +12,10 @@
 namespace syncer {
 
 ModelTypeSyncBridge::ModelTypeSyncBridge(
-    const ChangeProcessorFactory& change_processor_factory,
-    ModelType type)
-    : type_(type),
-      change_processor_factory_(change_processor_factory),
-      change_processor_(change_processor_factory_.Run(type_, this)) {}
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    : change_processor_(std::move(change_processor)) {
+  DCHECK(change_processor_);
+}
 
 ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
 
@@ -41,13 +40,9 @@ void ModelTypeSyncBridge::OnSyncStarting(
 }
 
 void ModelTypeSyncBridge::DisableSync() {
-  DCHECK(change_processor_);
-  const bool model_ready_to_sync = change_processor_->IsTrackingMetadata();
+  // The processor resets its internal state and clears the metadata (by calling
+  // ApplyDisableSyncChanges() of this bridge).
   change_processor_->DisableSync();
-  change_processor_ = change_processor_factory_.Run(type_, this);
-  if (model_ready_to_sync) {
-    change_processor_->ModelReadyToSync(std::make_unique<MetadataBatch>());
-  }
 }
 
 void ModelTypeSyncBridge::ApplyDisableSyncChanges(

@@ -85,8 +85,8 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
 DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     LocalDeviceInfoProvider* local_device_info_provider,
     OnceModelTypeStoreFactory store_factory,
-    const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeSyncBridge(change_processor_factory, DEVICE_INFO),
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    : ModelTypeSyncBridge(std::move(change_processor)),
       local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 
@@ -390,7 +390,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
     return;
   }
 
-  change_processor()->ModelReadyToSync(std::move(metadata_batch));
+  change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
   ReconcileLocalAndStored();
 }
 

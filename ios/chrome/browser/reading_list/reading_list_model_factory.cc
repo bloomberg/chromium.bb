@@ -16,6 +16,7 @@
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/reading_list/core/reading_list_store.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -63,12 +64,13 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
   syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           chrome_browser_state->GetStatePath());
+  auto change_processor =
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::READING_LIST,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              ::GetChannel()));
   std::unique_ptr<ReadingListStore> store = std::make_unique<ReadingListStore>(
-      std::move(store_factory),
-      base::Bind(&syncer::ModelTypeChangeProcessor::Create,
-                 base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                     GetChannel())));
-
+      std::move(store_factory), std::move(change_processor));
   std::unique_ptr<KeyedService> reading_list_model =
       std::make_unique<ReadingListModelImpl>(
           std::move(store), chrome_browser_state->GetPrefs(),

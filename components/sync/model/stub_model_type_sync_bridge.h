@@ -19,7 +19,7 @@ class StubModelTypeSyncBridge : public ModelTypeSyncBridge {
  public:
   StubModelTypeSyncBridge();
   explicit StubModelTypeSyncBridge(
-      const ChangeProcessorFactory& change_processor_factory);
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
   ~StubModelTypeSyncBridge() override;
 
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;

@@ -41,8 +41,9 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->UntrackEntity(entity_data);
   }
 
-  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
-    other_->ModelReadyToSync(std::move(batch));
+  void ModelReadyToSync(ModelTypeSyncBridge* bridge,
+                        std::unique_ptr<MetadataBatch> batch) override {
+    other_->ModelReadyToSync(bridge, std::move(batch));
   }
 
   void OnSyncStarting(const ModelErrorHandler& error_handler,
@@ -76,18 +77,15 @@ void MockModelTypeChangeProcessor::Put(
 }
 
 void MockModelTypeChangeProcessor::ModelReadyToSync(
+    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
-  DoModelReadyToSync(batch.get());
+  DoModelReadyToSync(bridge, batch.get());
 }
 
-ModelTypeSyncBridge::ChangeProcessorFactory
-MockModelTypeChangeProcessor::FactoryForBridgeTest() {
-  return base::BindRepeating(
-      [](ModelTypeChangeProcessor* processor, ModelType, ModelTypeSyncBridge*) {
-        return base::WrapUnique<ModelTypeChangeProcessor>(
-            new ForwardingModelTypeChangeProcessor(processor));
-      },
-      base::Unretained(this));
+std::unique_ptr<ModelTypeChangeProcessor>
+MockModelTypeChangeProcessor::CreateForwardingProcessor() {
+  return base::WrapUnique<ModelTypeChangeProcessor>(
+      new ForwardingModelTypeChangeProcessor(this));
 }
 
 }  //  namespace syncer

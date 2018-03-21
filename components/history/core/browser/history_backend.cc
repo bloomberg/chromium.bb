@@ -40,6 +40,7 @@
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/url_utils.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -54,7 +55,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using syncer::ModelTypeChangeProcessor;
+using syncer::ClientTagBasedModelTypeProcessor;
 
 /* The HistoryBackend consists of two components:
 
@@ -218,8 +219,8 @@ void HistoryBackend::Init(
 
   typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
       this, db_.get(),
-      base::BindRepeating(&ModelTypeChangeProcessor::Create,
-                          base::RepeatingClosure()));
+      std::make_unique<ClientTagBasedModelTypeProcessor>(
+          syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
   typed_url_sync_bridge_->Init();
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(

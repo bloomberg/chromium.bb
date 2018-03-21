@@ -21,7 +21,7 @@ class Clock;
 }
 
 namespace syncer {
-class ModelTypeSyncBridge;
+class ModelTypeChangeProcessor;
 }
 
 // Interface for a persistence layer for reading list.
@@ -31,8 +31,7 @@ class ReadingListModelStorage : public syncer::ModelTypeSyncBridge {
   class ScopedBatchUpdate;
 
   ReadingListModelStorage(
-      const ChangeProcessorFactory& change_processor_factory,
-      syncer::ModelType type);
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~ReadingListModelStorage() override;
 
   // Sets the model the Storage is backing.

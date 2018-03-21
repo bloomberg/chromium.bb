@@ -46,17 +46,21 @@ int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
 
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
-    ModelTypeSyncBridge* bridge,
+    const base::RepeatingClosure& dump_stack)
+    : ClientTagBasedModelTypeProcessor(type,
+                                       dump_stack,
+                                       CommitOnlyTypes().Has(type)) {}
+
+ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
+    ModelType type,
     const base::RepeatingClosure& dump_stack,
     bool commit_only)
     : type_(type),
-      bridge_(bridge),
+      bridge_(nullptr),
       dump_stack_(dump_stack),
       commit_only_(commit_only),
-      cached_gc_directive_version_(0),
-      cached_gc_directive_aged_out_day_(base::Time::FromDoubleT(0)),
       weak_ptr_factory_(this) {
-  DCHECK(bridge);
+  ResetState();
 }
 
 ClientTagBasedModelTypeProcessor::~ClientTagBasedModelTypeProcessor() {
@@ -78,16 +82,17 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
 }
 
 void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
+    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(waiting_for_metadata_);
   DCHECK(entities_.empty());
+  DCHECK(bridge);
+
+  bridge_ = bridge;
 
   // The model already experienced an error; abort;
   if (model_error_)
     return;
-
-  waiting_for_metadata_ = false;
 
   if (batch->GetModelTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
@@ -126,7 +131,7 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
 }
 
 bool ClientTagBasedModelTypeProcessor::IsModelReadyOrError() const {
-  return model_error_ || (!waiting_for_metadata_ && !waiting_for_pending_data_);
+  return model_error_ || (bridge_ && !waiting_for_pending_data_);
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
@@ -151,7 +156,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
 bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Changes can be handled correctly even before pending data is loaded.
-  return !waiting_for_metadata_;
+  return bridge_ != nullptr;
 }
 
 bool ClientTagBasedModelTypeProcessor::IsConnected() const {
@@ -161,6 +166,9 @@ bool ClientTagBasedModelTypeProcessor::IsConnected() const {
 
 void ClientTagBasedModelTypeProcessor::DisableSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Disabling sync for a type never happens before the model is ready to sync.
+  DCHECK(bridge_);
+
   std::unique_ptr<MetadataChangeList> change_list =
       bridge_->CreateMetadataChangeList();
   for (const auto& kv : entities_) {
@@ -168,6 +176,13 @@ void ClientTagBasedModelTypeProcessor::DisableSync() {
   }
   change_list->ClearModelTypeState();
   bridge_->ApplyDisableSyncChanges(std::move(change_list));
+
+  // Reset all the internal state of the processor.
+  ResetState();
+
+  // The model is still ready to sync (with the same |bridge_|) - replay the
+  // initialization.
+  ModelReadyToSync(bridge_, std::make_unique<MetadataBatch>());
 }
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
@@ -945,6 +960,24 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
   metadata_change_list->ClearMetadata(entity->storage_key());
   storage_key_to_tag_hash_.erase(entity->storage_key());
   entities_.erase(entity->metadata().client_tag_hash());
+}
+
+void ClientTagBasedModelTypeProcessor::ResetState() {
+  // This should reset all mutable fields (except for |bridge_| that is not
+  // const only because the pointer cannot be passed in the ctor).
+  worker_.reset();
+  model_error_.reset();
+  entities_.clear();
+  storage_key_to_tag_hash_.clear();
+  model_type_state_ = sync_pb::ModelTypeState();
+  start_callback_ = StartCallback();
+  error_handler_ = ModelErrorHandler();
+  waiting_for_pending_data_ = false;
+  cached_gc_directive_version_ = 0;
+  cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
+
+  // Do not let any delayed callbacks to be called.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace syncer

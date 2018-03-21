@@ -9,6 +9,7 @@
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/typed_url_sync_metadata_database.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_error.h"
 
@@ -19,9 +20,10 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
  public:
   // |sync_metadata_store| is owned by |history_backend|, and must outlive
   // TypedURLSyncBridge.
-  TypedURLSyncBridge(HistoryBackend* history_backend,
-                     TypedURLSyncMetadataDatabase* sync_metadata_store,
-                     const ChangeProcessorFactory& change_processor_factory);
+  TypedURLSyncBridge(
+      HistoryBackend* history_backend,
+      TypedURLSyncMetadataDatabase* sync_metadata_store,
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~TypedURLSyncBridge() override;
 
   // syncer::ModelTypeSyncBridge implementation.
