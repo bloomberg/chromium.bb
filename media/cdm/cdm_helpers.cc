@@ -4,14 +4,7 @@
 
 #include "media/cdm/cdm_helpers.h"
 
-#if defined(USE_PPAPI_CDM_ADAPTER)
-// When building the ppapi adapter do not include any non-trivial base/ headers.
-#include "ppapi/cpp/logging.h"  // nogncheck
-#define PLATFORM_DCHECK PP_DCHECK
-#else
 #include "base/logging.h"
-#define PLATFORM_DCHECK DCHECK
-#endif
 
 namespace media {
 
@@ -77,22 +70,22 @@ cdm::Buffer* VideoFrameImpl::FrameBuffer() {
 
 void VideoFrameImpl::SetPlaneOffset(cdm::VideoFrame::VideoPlane plane,
                                     uint32_t offset) {
-  PLATFORM_DCHECK(plane < kMaxPlanes);
+  DCHECK(plane < kMaxPlanes);
   plane_offsets_[plane] = offset;
 }
 
 uint32_t VideoFrameImpl::PlaneOffset(VideoPlane plane) {
-  PLATFORM_DCHECK(plane < kMaxPlanes);
+  DCHECK(plane < kMaxPlanes);
   return plane_offsets_[plane];
 }
 
 void VideoFrameImpl::SetStride(VideoPlane plane, uint32_t stride) {
-  PLATFORM_DCHECK(plane < kMaxPlanes);
+  DCHECK(plane < kMaxPlanes);
   strides_[plane] = stride;
 }
 
 uint32_t VideoFrameImpl::Stride(VideoPlane plane) {
-  PLATFORM_DCHECK(plane < kMaxPlanes);
+  DCHECK(plane < kMaxPlanes);
   return strides_[plane];
 }
 

@@ -5,24 +5,16 @@
 #ifndef MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 #define MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 
-#ifdef USE_PPAPI_CDM_ADAPTER
-// When building the adapter these functions need to be local.
-#define FUNCTION_EXPORT
-#else
-#include "media/base/media_export.h"  // nogncheck
-#define FUNCTION_EXPORT MEDIA_EXPORT
-#endif
+#include "media/base/media_export.h"
 
 namespace media {
 
-FUNCTION_EXPORT bool IsSupportedCdmModuleVersion(int version);
+MEDIA_EXPORT bool IsSupportedCdmModuleVersion(int version);
 
-FUNCTION_EXPORT bool IsSupportedCdmInterfaceVersion(int version);
+MEDIA_EXPORT bool IsSupportedCdmInterfaceVersion(int version);
 
-FUNCTION_EXPORT bool IsSupportedCdmHostVersion(int version);
+MEDIA_EXPORT bool IsSupportedCdmHostVersion(int version);
 
 }  // namespace media
-
-#undef FUNCTION_EXPORT
 
 #endif  // MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
