@@ -147,6 +147,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
 
+  float zoom_factor() const { return zoom_factor_; }
+  void set_zoom_factor(float zoom_factor) { zoom_factor_ = zoom_factor; }
+
   // Gets/Sets the device DPI of the display.
   float device_dpi() const { return device_dpi_; }
   void set_device_dpi(float dpi) { device_dpi_ = dpi; }
@@ -296,6 +299,11 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // of |bounds_in_native_| if the display has overscan insets and/or rotation.
   gfx::Size size_in_pixel_;
   gfx::Insets overscan_insets_in_dip_;
+
+  // The zoom level currently applied to the display. This value is appended
+  // multiplicatively to the device scale factor to get the effecting scaling
+  // for a display.
+  float zoom_factor_;
 
   // The pixel scale of the display. This is used to simply expand (or shrink)
   // the desktop over the native display resolution (useful in HighDPI display).

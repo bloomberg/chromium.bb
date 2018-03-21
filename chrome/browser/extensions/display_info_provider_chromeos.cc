@@ -799,15 +799,14 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     }
   }
 
-  unit->display_zoom_factor =
-      display_manager->GetZoomFactorForDisplay(display.id());
+  unit->display_zoom_factor = display_info.zoom_factor();
+
   display::ManagedDisplayMode active_mode;
   if (display_manager->GetActiveModeForDisplayId(display.id(), &active_mode)) {
     unit->available_display_zoom_factors =
         display::GetDisplayZoomFactors(active_mode);
   } else {
-    unit->available_display_zoom_factors.push_back(
-        display_manager->GetZoomFactorForDisplay(display.id()));
+    unit->available_display_zoom_factors.push_back(display_info.zoom_factor());
   }
 
   const float device_dpi = display_info.device_dpi();

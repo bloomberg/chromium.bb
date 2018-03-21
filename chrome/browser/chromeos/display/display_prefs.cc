@@ -504,8 +504,8 @@ void StoreCurrentDisplayProperties(PrefService* local_state) {
     }
 
     // Store the display zoom as a percentage.
-    int display_zoom_percentage =
-        display_manager->GetZoomFactorForDisplay(id) * 100;
+    int display_zoom_percentage = std::round(info.zoom_factor() * 100.f);
+
     property_value->SetInteger(kDisplayZoom, display_zoom_percentage);
 
     pref_data->Set(base::Int64ToString(id), std::move(property_value));

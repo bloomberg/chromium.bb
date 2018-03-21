@@ -79,6 +79,10 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
     tablet_mode_client_->FlushForTesting();
   }
 
+  float GetDisplayZoom(int64_t display_id) {
+    return display_manager()->GetDisplayInfo(display_id).zoom_factor();
+  }
+
  protected:
   void CallSetDisplayUnitInfo(
       const std::string& display_id,
@@ -1656,10 +1660,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
   display_manager()->UpdateZoomFactor(display_id_list[0], zoom_factor_2);
   display_manager()->UpdateZoomFactor(display_id_list[1], zoom_factor_1);
 
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
-            zoom_factor_2);
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
-            zoom_factor_1);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[0]), zoom_factor_2);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[1]), zoom_factor_1);
 
   // After update, display 1 should have |final_zoom_factor_1| as its zoom
   // factor and display 2 should have |final_zoom_factor_2| as its zoom factor.
@@ -1675,12 +1677,10 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
                          &success, &error);
   ASSERT_TRUE(success);
 
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
-            final_zoom_factor_1);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[0]), final_zoom_factor_1);
   // Display 2 has not been updated yet, so it will still have the old zoom
   // factor.
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
-            zoom_factor_1);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[1]), zoom_factor_1);
 
   info.display_zoom_factor = std::make_unique<double>(zoom_factor_2);
   CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info,
@@ -1688,10 +1688,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
   ASSERT_TRUE(success);
 
   // Both displays should now have the correct zoom factor set.
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
-            final_zoom_factor_1);
-  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
-            final_zoom_factor_2);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[0]), final_zoom_factor_1);
+  EXPECT_EQ(GetDisplayZoom(display_id_list[1]), final_zoom_factor_2);
 
   std::string expected_err =
       "Zoom value is out of range for display with id: " +
