@@ -26,3 +26,9 @@
 -keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
     boolean mShiftingMode;
 }
+
+# There is stack-walking code in our IME that breaks with obfuscation.
+# https://crbug.com/824048.
+-keepnames class org.chromium.content.browser.input.* {
+  *;
+}
