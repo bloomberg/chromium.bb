@@ -103,9 +103,13 @@ public class ConsentTextTracker {
      * @param text The text to be assigned.
      */
     public void setTextNonRecordable(TextView view, CharSequence text) {
-        view.setText(text);
+        // TODO(crbug.com/821908): The selected account name, which is assigned to its |view| using
+        // this method, can be null in rare circumstances.
+        CharSequence textSanitized = text != null ? text : "";
+
+        view.setText(textSanitized);
         mTextViewToMetadataMap.put(
-                view, new TextViewMetadata(text.toString(), 0 /* no resource id */));
+                view, new TextViewMetadata(textSanitized.toString(), 0 /* no resource id */));
     }
 
     /**
