@@ -2833,7 +2833,7 @@ TEST_F(%(prefix)sImplementationTest, %(name)s) {
     f.write("    SetHeader();\n")
     args = func.GetCmdArgs()
     for arg in args:
-      f.write("    %s = _%s;\n" % (arg.name, arg.name))
+      arg.WriteSetCode(f, 4, "_%s" % arg.name)
     f.write("    memcpy(ImmediateDataAddress(this),\n")
     if self.__NeedsToCalcDataCount(func):
       f.write("           _%s, ComputeEffectiveDataSize(%s));" %
@@ -2908,8 +2908,8 @@ TEST_F(%(prefix)sImplementationTest, %(name)s) {
     f.write("            RoundSizeToMultipleOfEntries(sizeof(data)),\n")
     f.write("            cmd.header.size * 4u);\n")
     for value, arg in enumerate(args):
-      f.write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value + 11, arg.name))
+      f.write("  EXPECT_EQ(static_cast<%s>(%d), %s);\n" %
+                 (arg.type, value + 11, arg.GetArgAccessor('cmd')))
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
@@ -3181,7 +3181,7 @@ TEST_F(%(prefix)sImplementationTest,
     f.write("    SetHeader(_count);\n")
     args = func.GetCmdArgs()
     for arg in args:
-      f.write("    %s = _%s;\n" % (arg.name, arg.name))
+      arg.WriteSetCode(f, 4, "_%s" % arg.name)
     f.write("    memcpy(ImmediateDataAddress(this),\n")
     pointer_arg = func.GetLastOriginalPointerArg()
     f.write("           _%s, ComputeDataSize(_count));\n" % pointer_arg.name)
@@ -3256,8 +3256,8 @@ TEST_F(%(prefix)sImplementationTest,
     for value, arg in enumerate(args):
       if arg.IsPointer() or arg.IsConstant():
         continue
-      f.write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value + 1, arg.name))
+      f.write("  EXPECT_EQ(static_cast<%s>(%d), %s);\n" %
+                 (arg.type, value + 1, arg.GetArgAccessor('cmd')))
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
@@ -3663,22 +3663,19 @@ class GLcharHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     last_arg = func.GetLastOriginalArg()
     args = func.GetCmdArgs()
-    set_code = []
-    for arg in args:
-      set_code.append("    %s = _%s;" % (arg.name, arg.name))
     code = """
-  void Init(%(typed_args)s, uint32_t _data_size) {
+  void Init(%s, uint32_t _data_size) {
     SetHeader(_data_size);
-%(set_code)s
-    memcpy(ImmediateDataAddress(this), _%(last_arg)s, _data_size);
+"""
+    f.write(code % func.MakeTypedArgString("_"))
+    for arg in args:
+      arg.WriteSetCode(f, 4, "_%s" % arg.name)
+    code = """
+    memcpy(ImmediateDataAddress(this), _%s, _data_size);
   }
 
 """
-    f.write(code % {
-          "typed_args": func.MakeTypedArgString("_"),
-          "set_code": "\n".join(set_code),
-          "last_arg": last_arg.name
-        })
+    f.write(code % last_arg.name)
 
   def WriteImmediateCmdSet(self, func, f):
     """Overrriden from TypeHandler."""
@@ -3719,8 +3716,8 @@ class GLcharHandler(CustomHandler):
     for value, arg in enumerate(all_but_last_arg):
       init_code.append("      static_cast<%s>(%d)," % (arg.type, value + 11))
     for value, arg in enumerate(all_but_last_arg):
-      check_code.append("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);" %
-                        (arg.type, value + 11, arg.name))
+      check_code.append("  EXPECT_EQ(static_cast<%s>(%d), %s);" %
+                        (arg.type, value + 11, arg.GetArgAccessor('cmd')))
     code = """
 TEST_F(%(prefix)sFormatTest, %(func_name)s) {
   cmds::%(func_name)s& cmd = *GetBufferAs<cmds::%(func_name)s>();
@@ -6209,7 +6206,7 @@ bool ClientContextState::SetCapabilityState(
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceImplementation(self, filename):
-    """Writes the service decorder implementation."""
+    """Writes the service decoder implementation."""
     comment = "// It is included by %s_cmd_decoder.cc\n" % _lower_prefix
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.functions:
@@ -6250,7 +6247,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
     self.generated_cpp_filenames.append(filename)
 
   def WritePassthroughServiceImplementation(self, filename):
-    """Writes the passthrough service decorder implementation."""
+    """Writes the passthrough service decoder implementation."""
     with CWriter(filename, self.year) as f:
       header = """
 #include \"gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h\"
@@ -6273,7 +6270,7 @@ namespace gles2 {
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUnitTests(self, filename_pattern):
-    """Writes the service decorder unit tests."""
+    """Writes the service decoder unit tests."""
     num_tests = len(self.functions)
     FUNCTIONS_PER_FILE = 98  # hard code this so it doesn't change.
     count = 0
@@ -6410,7 +6407,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUnitTestsForExtensions(self, filename):
-    """Writes the service decorder unit tests for functions with extension_flag.
+    """Writes the service decoder unit tests for functions with extension_flag.
 
        The functions are special in that they need a specific unit test
        baseclass to turn on the extension.

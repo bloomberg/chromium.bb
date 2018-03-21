@@ -254,6 +254,21 @@ void ProduceTextureDirectImmediate(GLuint texture, const GLbyte* mailbox) {
   }
 }
 
+void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
+                                              bool use_buffer,
+                                              gfx::BufferUsage buffer_usage,
+                                              viz::ResourceFormat format,
+                                              const GLbyte* mailbox) {
+  const uint32_t size =
+      raster::cmds::CreateAndConsumeTextureINTERNALImmediate::ComputeSize();
+  raster::cmds::CreateAndConsumeTextureINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
+  if (c) {
+    c->Init(texture_id, use_buffer, buffer_usage, format, mailbox);
+  }
+}
+
 void TexParameteri(GLuint texture_id, GLenum pname, GLint param) {
   raster::cmds::TexParameteri* c = GetCmdSpace<raster::cmds::TexParameteri>();
   if (c) {

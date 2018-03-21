@@ -51,6 +51,7 @@ GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadata (GLuint texture_id, 
 GL_APICALL void         GL_APIENTRY glGenMailbox (GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glProduceTextureDirect (GLuint texture, const GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTexture (bool use_buffer, EnumClassgfx::BufferUsage buffer_usage, EnumClassviz::ResourceFormat format, const GLbyte* mailbox);
+GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureINTERNAL (GLuint texture_id, bool use_buffer, EnumClassgfx::BufferUsage buffer_usage, EnumClassviz::ResourceFormat format, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glTexParameteri (GLuint texture_id, GLenumTextureParameter pname, GLint param);
 GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLuint texture_id, GLint image_id);
 GL_APICALL void         GL_APIENTRY glReleaseTexImage2DCHROMIUM (GLuint texture_id, GLint image_id);

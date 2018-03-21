@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -106,9 +107,9 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
@@ -172,9 +173,9 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   QueryManager* query_manager = decoder_->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
+  ASSERT_TRUE(query_manager != nullptr);
   QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
-  ASSERT_TRUE(query != NULL);
+  ASSERT_TRUE(query != nullptr);
   EXPECT_FALSE(query->IsPending());
 
   // Test end succeeds
@@ -183,6 +184,50 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_FALSE(query->IsPending());
+}
+
+TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
+  Mailbox mailbox = Mailbox::Generate();
+  GLuint new_texture_id = kNewClientId;
+
+  // TODO(backer): Use TexStorage2D to set some attributes like width and
+  // height.
+
+  gles2::TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != nullptr);
+  gles2::Texture* texture = texture_ref->texture();
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  ProduceTextureDirectImmediate& produce_cmd =
+      *GetImmediateAs<ProduceTextureDirectImmediate>();
+  produce_cmd.Init(client_texture_id_, mailbox.name);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(produce_cmd, sizeof(mailbox.name)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // TODO(backer): Check that ProduceTextureDirect did not change attributes
+  // like width and height.
+
+  // Service ID has not changed.
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureINTERNALImmediate>();
+  consume_cmd.Init(new_texture_id, false /* use_buffer */,
+                   gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888,
+                   mailbox.name);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // TODO(backer): Check that new_texture_id has appropriate attributes like
+  // width and height.
+
+  // Service ID is restored.
+  texture_ref = group().texture_manager()->GetTexture(new_texture_id);
+  ASSERT_NE(texture_ref, nullptr);
+  EXPECT_EQ(kServiceTextureId, texture_ref->service_id());
 }
 
 }  // namespace raster

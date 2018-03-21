@@ -401,6 +401,46 @@ TEST_F(RasterFormatTest, ProduceTextureDirectImmediate) {
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
 
+TEST_F(RasterFormatTest, CreateAndConsumeTextureINTERNALImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLbyte data[] = {
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
+  };
+  cmds::CreateAndConsumeTextureINTERNALImmediate& cmd =
+      *GetBufferAs<cmds::CreateAndConsumeTextureINTERNALImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<bool>(12),
+                           static_cast<gfx::BufferUsage>(13),
+                           static_cast<viz::ResourceFormat>(14), data);
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::CreateAndConsumeTextureINTERNALImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
+  EXPECT_EQ(static_cast<bool>(12), static_cast<bool>(cmd.use_buffer));
+  EXPECT_EQ(static_cast<gfx::BufferUsage>(13),
+            static_cast<gfx::BufferUsage>(cmd.buffer_usage));
+  EXPECT_EQ(static_cast<viz::ResourceFormat>(14),
+            static_cast<viz::ResourceFormat>(cmd.format));
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+}
+
 TEST_F(RasterFormatTest, TexParameteri) {
   cmds::TexParameteri& cmd = *GetBufferAs<cmds::TexParameteri>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),

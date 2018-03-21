@@ -922,14 +922,26 @@ void RasterImplementation::ProduceTextureDirect(GLuint texture,
                                                 const GLbyte* mailbox) {
   NOTIMPLEMENTED();
 }
+
 GLuint RasterImplementation::CreateAndConsumeTexture(
     bool use_buffer,
     gfx::BufferUsage buffer_usage,
     viz::ResourceFormat format,
     const GLbyte* mailbox) {
-  NOTIMPLEMENTED();
-  return texture_id_allocator_.AllocateID();
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateAndConsumeTexture("
+                     << use_buffer << ", "
+                     << static_cast<uint32_t>(buffer_usage) << ", "
+                     << static_cast<uint32_t>(format) << ", "
+                     << static_cast<const void*>(mailbox) << ")");
+  GLuint client_id = texture_id_allocator_.AllocateID();
+  helper_->CreateAndConsumeTextureINTERNALImmediate(
+      client_id, use_buffer, buffer_usage, format, mailbox);
+  GPU_CLIENT_LOG("returned " << client_id);
+  CheckGLError();
+  return client_id;
 }
+
 void RasterImplementation::BeginRasterCHROMIUM(
     GLuint texture_id,
     GLuint sk_color,
