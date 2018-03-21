@@ -6,7 +6,7 @@ module autofill.mojom;
 
 import "components/autofill/content/common/autofill_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "mojo/common/text_direction.mojom";
+import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -116,7 +116,7 @@ interface PasswordManagerDriver {
   // associated with |key|. The popup will use |text_direction| for displaying
   // text.
   ShowPasswordSuggestions(int32 key,
-                          mojo.common.mojom.TextDirection text_direction,
+                          mojo_base.mojom.TextDirection text_direction,
                           mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
@@ -124,14 +124,14 @@ interface PasswordManagerDriver {
   // is not secure. The popup will use |text_direction| for displaying
   // text. This popup is shown when a password form on a non-secure page is
   // autofilled on page load.
-  ShowNotSecureWarning(mojo.common.mojom.TextDirection text_direction,
+  ShowNotSecureWarning(mojo_base.mojom.TextDirection text_direction,
                        gfx.mojom.RectF bounds);
 
 
   // Instructs the browser to show a suggestion, which will redirect the user to
   // the list of all saved passwords. The popup will use |text_direction| for
   // displaying text.
-  ShowManualFallbackSuggestion(mojo.common.mojom.TextDirection text_direction,
+  ShowManualFallbackSuggestion(mojo_base.mojom.TextDirection text_direction,
                            gfx.mojom.RectF bounds);
 
   // Instructs the browser to presave the form with generated password.

@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/text_direction.mojom";
+import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -119,7 +119,7 @@ struct StartSessionDetails {
   // Initial details about |client| required by IMEDriver.
   TextInputType text_input_type;
   TextInputMode text_input_mode;
-  mojo.common.mojom.TextDirection text_direction;
+  mojo_base.mojom.TextDirection text_direction;
   int32 text_input_flags;
   gfx.mojom.Rect caret_bounds;
 };

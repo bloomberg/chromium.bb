@@ -16,15 +16,10 @@ mojom("common_custom_types") {
   sources = [
     "memory_allocator_dump_cross_process_uid.mojom",
     "process_id.mojom",
-    "text_direction.mojom",
     "thread_priority.mojom",
     "unguessable_token.mojom",
     "values.mojom",
   ]
-
-  if (is_win) {
-    sources += [ "logfont_win.mojom" ]
-  }
 
   public_deps = [
     "//mojo/public/mojom/base",

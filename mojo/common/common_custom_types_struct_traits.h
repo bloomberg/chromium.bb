@@ -5,7 +5,6 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
-#include "base/i18n/rtl.h"
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
@@ -13,7 +12,6 @@
 #include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
-#include "mojo/common/text_direction.mojom-shared.h"
 #include "mojo/common/thread_priority.mojom-shared.h"
 #include "mojo/common/unguessable_token.mojom-shared.h"
 
@@ -50,14 +48,6 @@ struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {
     *process_id = static_cast<base::ProcessId>(data.pid());
     return true;
   }
-};
-
-template <>
-struct EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection> {
-  static common::mojom::TextDirection ToMojom(
-      base::i18n::TextDirection text_direction);
-  static bool FromMojom(common::mojom::TextDirection input,
-                        base::i18n::TextDirection* out);
 };
 
 template <>
