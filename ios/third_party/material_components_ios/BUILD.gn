@@ -31,6 +31,13 @@ config("config") {
   ]
 }
 
+config("disable_deprecated_errors") {
+  cflags = [
+    "-Wno-deprecated",
+    "-Wno-deprecated-declarations",
+  ]
+}
+
 _icon_names = [
   "ic_check",
   "ic_check_circle",
@@ -322,6 +329,10 @@ source_set("material_components_ios") {
     ":config",
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
+
+    # material_components_ios internally uses deprecated methods.
+    # Disable the warning about deprecation usage.
+    ":disable_deprecated_errors",
   ]
 }
 
