@@ -86,17 +86,14 @@ void UpdateEngine::Update(bool is_foreground,
     return;
   }
 
-  const auto result =
-      update_contexts_.insert(base::MakeRefCounted<UpdateContext>(
-          config_, is_foreground, ids, std::move(crx_data_callback),
-          notify_observers_callback_, std::move(callback),
-          crx_downloader_factory_));
-
-  DCHECK(result.second);
-
-  const auto update_context = *result.first;
-  DCHECK(update_context);
+  const auto update_context = base::MakeRefCounted<UpdateContext>(
+      config_, is_foreground, ids, std::move(crx_data_callback),
+      notify_observers_callback_, std::move(callback), crx_downloader_factory_);
   DCHECK(!update_context->session_id.empty());
+
+  const auto result = update_contexts_.insert(
+      std::make_pair(update_context->session_id, update_context));
+  DCHECK(result.second);
 
   // Calls out to get the corresponding CrxComponent data for the CRXs in this
   // update context.
@@ -304,24 +301,20 @@ void UpdateEngine::UpdateComplete(scoped_refptr<UpdateContext> update_context,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(update_context);
 
+  const auto num_erased = update_contexts_.erase(update_context->session_id);
+  DCHECK_EQ(1u, num_erased);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(update_context->callback), error));
-
-  const auto it =
-      std::find_if(update_contexts_.begin(), update_contexts_.end(),
-                   [update_context](scoped_refptr<UpdateContext> other) {
-                     return update_context->session_id == other->session_id;
-                   });
-  DCHECK(it != update_contexts_.end());
-  update_contexts_.erase(it);
 }
 
 bool UpdateEngine::GetUpdateState(const std::string& id,
                                   CrxUpdateItem* update_item) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& context : update_contexts_) {
-    const auto it = context->components.find(id);
-    if (it != context->components.end()) {
+    const auto& components = context.second->components;
+    const auto it = components.find(id);
+    if (it != components.end()) {
       *update_item = it->second->GetCrxUpdateItem();
       return true;
     }
@@ -349,15 +342,16 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto result =
-      update_contexts_.insert(base::MakeRefCounted<UpdateContext>(
-          config_, false, std::vector<std::string>{id},
-          UpdateClient::CrxDataCallback(),
-          UpdateEngine::NotifyObserversCallback(), std::move(callback),
-          nullptr));
+  const auto update_context = base::MakeRefCounted<UpdateContext>(
+      config_, false, std::vector<std::string>{id},
+      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
+      std::move(callback), nullptr);
+  DCHECK(!update_context->session_id.empty());
 
+  const auto result = update_contexts_.insert(
+      std::make_pair(update_context->session_id, update_context));
   DCHECK(result.second);
-  const auto update_context = *result.first;
+
   DCHECK(update_context);
   DCHECK_EQ(1u, update_context->ids.size());
   DCHECK_EQ(1u, update_context->components.count(id));
