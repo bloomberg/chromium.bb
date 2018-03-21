@@ -308,6 +308,7 @@ TEST_P(SnapCoordinatorTest,
     EXPECT_EQ(expected.max_position().x(), actual.max_position().x()); \
     EXPECT_EQ(expected.max_position().y(), actual.max_position().y()); \
     EXPECT_EQ(expected.scroll_snap_type(), actual.scroll_snap_type()); \
+    EXPECT_EQ(expected.proximity_range(), actual.proximity_range());   \
     EXPECT_EQ(expected.size(), actual.size());                         \
   }
 

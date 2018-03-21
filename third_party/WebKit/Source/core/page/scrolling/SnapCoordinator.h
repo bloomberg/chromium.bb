@@ -45,6 +45,7 @@ class CORE_EXPORT SnapCoordinator final
   // container.
   SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
                                      const LayoutBox& snap_container,
+                                     const LayoutRect& area_rect,
                                      const FloatPoint& max_position);
 
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
