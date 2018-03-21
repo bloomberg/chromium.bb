@@ -12,6 +12,7 @@
 
 NSString* const kGoogleDriveITunesItemIdentifier = @"507874739";
 NSString* const kGoogleDriveAppURLScheme = @"googledrive";
+NSString* const kGoogleDriveAppBundleID = @"com.google.Drive";
 
 NSURL* GetGoogleDriveAppUrl() {
   NSURLComponents* google_drive_url = [[NSURLComponents alloc] init];
