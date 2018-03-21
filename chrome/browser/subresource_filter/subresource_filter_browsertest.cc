@@ -710,7 +710,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, LazyRulesetValidation) {
-  // The ruleset shouldn't be validated until it's used.
+  // The ruleset shouldn't be validated until it's used, unless ad tagging is
+  // enabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(subresource_filter::kAdTagging);
   SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::NOT_VERIFIED, dealer_status);
