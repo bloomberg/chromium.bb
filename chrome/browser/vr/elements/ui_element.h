@@ -24,6 +24,7 @@
 #include "chrome/browser/vr/elements/ui_element_type.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
+#include "chrome/browser/vr/model/sounds.h"
 #include "chrome/browser/vr/target_property.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -472,7 +473,7 @@ class UiElement : public cc::AnimationTarget {
 
   // Set the sounds that play when an applicable handler is executed.  Elements
   // that override element hover and click methods must manage their own sounds.
-  void SetSounds(SoundId hover, SoundId click, AudioDelegate* delegate);
+  void SetSounds(Sounds sounds, AudioDelegate* delegate);
 
   bool resizable_by_layout() { return resizable_by_layout_; }
   void set_resizable_by_layout(bool resizable) {
@@ -608,8 +609,7 @@ class UiElement : public cc::AnimationTarget {
   UpdatePhase phase_ = kClean;
 
   AudioDelegate* audio_delegate_ = nullptr;
-  SoundId hover_sound_id_ = kSoundNone;
-  SoundId click_sound_id_ = kSoundNone;
+  Sounds sounds_;
 
   // Indicates that this element may be resized by parent layout elements.
   bool resizable_by_layout_ = false;

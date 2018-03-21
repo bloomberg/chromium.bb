@@ -61,7 +61,7 @@ void Resizer::Reset() {
 
 void Resizer::UpdateTransform(const gfx::Transform& head_pose) {
   float delta = touchpad_position_.y() - initial_touchpad_position_.y();
-  t_ = base::ClampToRange(initial_t_ - delta, 0.0f, 1.0f);
+  t_ = base::ClampToRange(initial_t_ + delta, 0.0f, 1.0f);
   float scale =
       gfx::Tween::FloatValueBetween(t_, kMinResizerScale, kMaxResizerScale);
   transform_.MakeIdentity();

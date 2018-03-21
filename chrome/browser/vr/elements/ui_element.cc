@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/model/camera_model.h"
-#include "chrome/browser/vr/model/sound_id.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -141,8 +140,8 @@ void UiElement::Render(UiElementRenderer* renderer,
 void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
 void UiElement::OnHoverEnter(const gfx::PointF& position) {
-  if (hover_sound_id_ != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(hover_sound_id_);
+  if (sounds_.hover_enter != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(sounds_.hover_enter);
   }
   if (event_handlers_.hover_enter) {
     event_handlers_.hover_enter.Run();
@@ -152,6 +151,9 @@ void UiElement::OnHoverEnter(const gfx::PointF& position) {
 }
 
 void UiElement::OnHoverLeave() {
+  if (sounds_.hover_leave != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(sounds_.hover_leave);
+  }
   if (event_handlers_.hover_leave) {
     event_handlers_.hover_leave.Run();
   } else if (parent() && bubble_events()) {
@@ -160,6 +162,9 @@ void UiElement::OnHoverLeave() {
 }
 
 void UiElement::OnMove(const gfx::PointF& position) {
+  if (sounds_.move != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(sounds_.move);
+  }
   if (event_handlers_.hover_move) {
     event_handlers_.hover_move.Run(position);
   } else if (parent() && bubble_events()) {
@@ -168,8 +173,8 @@ void UiElement::OnMove(const gfx::PointF& position) {
 }
 
 void UiElement::OnButtonDown(const gfx::PointF& position) {
-  if (hover_sound_id_ != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(click_sound_id_);
+  if (sounds_.button_down != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(sounds_.button_down);
   }
   if (event_handlers_.button_down) {
     event_handlers_.button_down.Run();
@@ -179,6 +184,9 @@ void UiElement::OnButtonDown(const gfx::PointF& position) {
 }
 
 void UiElement::OnButtonUp(const gfx::PointF& position) {
+  if (sounds_.button_up != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(sounds_.button_up);
+  }
   if (event_handlers_.button_up) {
     event_handlers_.button_up.Run();
   } else if (parent() && bubble_events()) {
@@ -535,11 +543,8 @@ void UiElement::DumpGeometry(std::ostringstream* os) const {
 }
 #endif
 
-void UiElement::SetSounds(SoundId hover,
-                          SoundId click,
-                          AudioDelegate* delegate) {
-  hover_sound_id_ = hover;
-  click_sound_id_ = click;
+void UiElement::SetSounds(Sounds sounds, AudioDelegate* delegate) {
+  sounds_ = sounds;
   audio_delegate_ = delegate;
 }
 

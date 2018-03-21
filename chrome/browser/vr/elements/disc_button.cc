@@ -37,7 +37,10 @@ DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
   vector_icon->AddChild(std::move(target));
   AddChild(std::move(vector_icon));
 
-  SetSounds(kSoundButtonHover, kSoundBackButtonClick, audio_delegate);
+  Sounds sounds;
+  sounds.hover_enter = kSoundButtonHover;
+  sounds.button_down = kSoundBackButtonClick;
+  SetSounds(sounds, audio_delegate);
 }
 
 DiscButton::~DiscButton() = default;
