@@ -52,6 +52,7 @@ class StabilityMetricsProvider : public MetricsProvider {
   int GetPrefValue(const char* path, int* value);
 
   // MetricsProvider:
+  void Init() override;
   void ClearSavedStabilityMetrics() override;
   void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;

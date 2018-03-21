@@ -23,23 +23,23 @@ namespace metrics {
 namespace {
 
 #if defined(OS_ANDROID)
-bool UpdateGmsCoreVersionPref(PrefService* local_state) {
+bool HasGmsCoreVersionChanged(PrefService* local_state) {
   std::string previous_version =
       local_state->GetString(prefs::kStabilityGmsCoreVersion);
   std::string current_version =
       base::android::BuildInfo::GetInstance()->gms_version_code();
 
   // If the last version is empty, treat it as consistent.
-  if (previous_version.empty()) {
-    local_state->SetString(prefs::kStabilityGmsCoreVersion, current_version);
-    return true;
-  }
+  if (previous_version.empty())
+    return false;
 
-  if (previous_version == current_version)
-    return true;
+  return previous_version != current_version;
+}
 
+void UpdateGmsCoreVersionPref(PrefService* local_state) {
+  std::string current_version =
+      base::android::BuildInfo::GetInstance()->gms_version_code();
   local_state->SetString(prefs::kStabilityGmsCoreVersion, current_version);
-  return false;
 }
 #endif
 
@@ -71,6 +71,14 @@ void StabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
 #if defined(OS_WIN)
   registry->RegisterIntegerPref(prefs::kStabilitySystemCrashCount, 0);
+#endif
+}
+
+void StabilityMetricsProvider::Init() {
+#if defined(OS_ANDROID)
+  // This method has to be called after HasGmsCoreVersionChanged() to avoid
+  // overwriting thie result.
+  UpdateGmsCoreVersionPref(local_state_);
 #endif
 }
 
@@ -186,7 +194,7 @@ void StabilityMetricsProvider::LogCrash(base::Time last_live_timestamp) {
   // On Android, if there is an update for GMS core when Chrome is running,
   // Chrome will be killed and restart. This is expected and we should only
   // report crash if the GMS core version has not been changed.
-  if (UpdateGmsCoreVersionPref(local_state_))
+  if (!HasGmsCoreVersionChanged(local_state_))
     IncrementPrefValue(prefs::kStabilityCrashCountWithoutGmsCoreUpdate);
 #endif
 
