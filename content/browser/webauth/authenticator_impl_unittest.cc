@@ -98,10 +98,6 @@ constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
     {"https://.google.com", ".google.com"},
     {"https://..google.com", ".google.com"},
     {"https://accounts.google.com", ".google.com"},
-
-    // The spec notes that RPs should not use non-https schemes, but this is
-    // technically still valid according to the authoritative parts.
-    {"wss:///google.com", "google.com"},
 };
 
 constexpr OriginRelyingPartyIdPair kInvalidRelyingPartyTestCases[] = {
@@ -149,6 +145,9 @@ constexpr OriginRelyingPartyIdPair kInvalidRelyingPartyTestCases[] = {
     {"gopher://google.com", "google.com"},
     {"ftp://google.com", "google.com"},
     {"file:///google.com", "google.com"},
+    // Use of webauthn from a WSS origin may be technically valid, but we
+    // prohibit use on non-HTTPS origins. (At least for now.)
+    {"wss://google.com", "google.com"},
 
     {"data:,", ""},
     {"https://google.com", ""},
