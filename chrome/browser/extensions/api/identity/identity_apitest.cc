@@ -2346,13 +2346,14 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   EXPECT_FALSE(HasExpectedEvent());
 }
 
-// Test that an event is fired for changes to a secondary account when there is
-// a primary account available.
-IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
-                       FireForSecondaryAccountWhenPrimaryAccountExists) {
+// Test that an event is fired for changes to a secondary account.
+IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest, FireForSecondaryAccount) {
   id_api()->SetAccountStateForTesting("primary", false);
   id_api()->SetAccountStateForTesting("secondary", false);
 
+  // NOTE: The current implementation requires that the primary account be
+  // present for an event to fire for secondary accounts. This is not actually
+  // part of the semantics of chrome.identity.OnSignInEventChanged, however.
   SignIn("primary", "primary");
 
   api::identity::AccountInfo account_info;
@@ -2371,75 +2372,6 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   token_service_->RevokeCredentials("secondary");
   EXPECT_FALSE(HasExpectedEvent());
 }
-
-// Test that an event is not fired for changes to a secondary account when
-// there is no primary account available.
-IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
-                       DontFireForSecondaryAccountWhenNoPrimaryAccountExists) {
-  // Add an expected event to be able to verify that no event is fired.
-  api::identity::AccountInfo account_info;
-  account_info.id = "secondary";
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
-
-  // Check not firing on addition of secondary account.
-  AddAccount("secondary", "secondary");
-  EXPECT_TRUE(HasExpectedEvent());
-
-  // Check not firing on token revocation of secondary account.
-  token_service_->RevokeCredentials("primary");
-  EXPECT_TRUE(HasExpectedEvent());
-}
-
-// The below tests involve elements that aren't relevant on ChromeOS:
-// - Signin of secondary accounts before the primary account signs in. On
-//   ChromeOS, this isn't possible.
-// - Signout of the primary account. On ChromeOS, this isn't possible.
-#if !defined(OS_CHROMEOS)
-// Test that signin events are fired for all known accounts when the primary
-// account signs in and there is a secondary account already present. Note that
-// the order in which the events fire is undefined.
-IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
-                       FireForAllAccountsOnPrimaryAccountSignIn) {
-  id_api()->SetAccountStateForTesting("primary", false);
-  id_api()->SetAccountStateForTesting("secondary", false);
-
-  api::identity::AccountInfo account_info;
-  account_info.id = "secondary";
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
-
-  // Add the secondary account, and verify that no event is yet fired for it.
-  AddAccount("secondary", "secondary");
-  EXPECT_TRUE(HasExpectedEvent());
-
-  // Add an event for the primary account in preparation for signing in.
-  account_info.id = "primary";
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
-
-  // Sign in with the primary account, and verify that both events are fired.
-  SignIn("primary", "primary");
-  EXPECT_FALSE(HasExpectedEvent());
-}
-
-// Test that signout events are fired for all known accounts when the primary
-// account signs out. Note that the order in which the events fire is undefined.
-IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
-                       FireForAllAccountsOnPrimaryAccountSignOut) {
-  id_api()->SetAccountStateForTesting("primary", true);
-  id_api()->SetAccountStateForTesting("secondary", true);
-
-  api::identity::AccountInfo account_info;
-  account_info.id = "primary";
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
-
-  account_info.id = "secondary";
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
-
-  // Sign out and verify that both events fire.
-  signin_manager_->ForceSignOut();
-
-  EXPECT_FALSE(HasExpectedEvent());
-}
-#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace extensions
 
