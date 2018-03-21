@@ -122,11 +122,8 @@ extern const char kForceColorProfileDescription[];
 extern const char kCompositedLayerBordersName[];
 extern const char kCompositedLayerBordersDescription[];
 
-extern const char kContextualSuggestionsAboveArticlesName[];
-extern const char kContextualSuggestionsAboveArticlesDescription[];
-
-extern const char kContextualSuggestionsCarouselName[];
-extern const char kContextualSuggestionsCarouselDescription[];
+extern const char kContextualSuggestionsBottomSheetName[];
+extern const char kContextualSuggestionsBottomSheetDescription[];
 
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];

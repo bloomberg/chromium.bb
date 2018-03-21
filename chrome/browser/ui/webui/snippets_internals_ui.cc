@@ -27,12 +27,9 @@ content::WebUIDataSource* CreateSnippetsInternalsHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
 
 #if defined(OS_ANDROID)
-  source->AddBoolean(
-      "contextualSuggestionsEnabled",
-      base::FeatureList::IsEnabled(
-          chrome::android::kContextualSuggestionsCarousel) ||
-          base::FeatureList::IsEnabled(
-              chrome::android::kContextualSuggestionsAboveArticles));
+  source->AddBoolean("contextualSuggestionsEnabled",
+                     base::FeatureList::IsEnabled(
+                         chrome::android::kContextualSuggestionsBottomSheet));
 #else
   source->AddBoolean("contextualSuggestionsEnabled", false);
 #endif

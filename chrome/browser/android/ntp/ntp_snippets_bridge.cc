@@ -306,9 +306,7 @@ void NTPSnippetsBridge::FetchContextualSuggestions(
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jobject>& j_callback) {
   DCHECK(base::FeatureList::IsEnabled(
-             chrome::android::kContextualSuggestionsCarousel) ||
-         base::FeatureList::IsEnabled(
-             chrome::android::kContextualSuggestionsAboveArticles));
+      chrome::android::kContextualSuggestionsBottomSheet));
   GURL url(ConvertJavaStringToUTF8(env, j_url));
   contextual_content_suggestions_service_->FetchContextualSuggestions(
       url, base::Bind(&NTPSnippetsBridge::OnContextualSuggestionsFetched,
