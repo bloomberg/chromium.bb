@@ -167,6 +167,7 @@ Vector<MessagePortChannel> MessagePort::DisentanglePorts(
     return Vector<MessagePortChannel>();
 
   HeapHashSet<Member<MessagePort>> visited;
+  bool has_closed_ports = false;
 
   // Walk the incoming array - if there are any duplicate ports, or null ports
   // or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
@@ -185,10 +186,14 @@ Vector<MessagePortChannel> MessagePort::DisentanglePorts(
           "Port at index " + String::Number(i) + " is " + type + ".");
       return Vector<MessagePortChannel>();
     }
+    if (port->closed_)
+      has_closed_ports = true;
     visited.insert(port);
   }
 
   UseCounter::Count(context, WebFeature::kMessagePortsTransferred);
+  if (has_closed_ports)
+    UseCounter::Count(context, WebFeature::kMessagePortTransferClosedPort);
 
   // Passed-in ports passed validity checks, so we can disentangle them.
   Vector<MessagePortChannel> channels;
