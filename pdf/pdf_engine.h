@@ -135,7 +135,7 @@ class PDFEngine {
     virtual void Invalidate(const pp::Rect& rect) = 0;
 
     // Informs the client to scroll the plugin area by the given offset.
-    virtual void Scroll(const pp::Point& point) = 0;
+    virtual void DidScroll(const pp::Point& point) = 0;
 
     // Scroll the horizontal/vertical scrollbars to a given position.
     // Values are in screen coordinates, where 0 is the top/left of the document

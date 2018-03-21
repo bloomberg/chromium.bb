@@ -29,7 +29,7 @@ class PreviewModeClient : public PDFEngine::Client {
   // PDFEngine::Client implementation.
   void DocumentSizeUpdated(const pp::Size& size) override;
   void Invalidate(const pp::Rect& rect) override;
-  void Scroll(const pp::Point& point) override;
+  void DidScroll(const pp::Point& point) override;
   void ScrollToX(int x_in_screen_coords) override;
   void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override;
   void ScrollToPage(int page) override;

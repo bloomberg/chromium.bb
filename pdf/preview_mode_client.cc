@@ -18,7 +18,7 @@ void PreviewModeClient::Invalidate(const pp::Rect& rect) {
   NOTREACHED();
 }
 
-void PreviewModeClient::Scroll(const pp::Point& point) {
+void PreviewModeClient::DidScroll(const pp::Point& point) {
   NOTREACHED();
 }
 

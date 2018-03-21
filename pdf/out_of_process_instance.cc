@@ -1234,7 +1234,7 @@ void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
   paint_manager_.InvalidateRect(offset_rect);
 }
 
-void OutOfProcessInstance::Scroll(const pp::Point& point) {
+void OutOfProcessInstance::DidScroll(const pp::Point& point) {
   if (!image_data_.is_null()) {
     paint_manager_.ScrollRect(available_area_, point);
     pp::PDF::DidScroll(GetPluginInstance());
