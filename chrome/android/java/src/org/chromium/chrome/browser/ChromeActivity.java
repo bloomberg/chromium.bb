@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
+import org.chromium.chrome.browser.contextualsuggestions.ContextualSuggestionsCoordinator;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
@@ -115,7 +116,6 @@ import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
-import org.chromium.chrome.browser.suggestions.ContextualSuggestionsManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -258,7 +258,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ToolbarManager mToolbarManager;
     private FindToolbarManager mFindToolbarManager;
     private BottomSheet mBottomSheet;
-    private ContextualSuggestionsManager mContextualSuggestionsManager;
+    private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private FadingBackgroundView mFadingBackgroundView;
 
     // Time in ms that it took took us to inflate the initial layout
@@ -1134,6 +1134,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet = null;
         }
 
+        if (mContextualSuggestionsCoordinator != null) {
+            mContextualSuggestionsCoordinator.destroy();
+            mContextualSuggestionsCoordinator = null;
+        }
+
         if (mTabModelsInitialized) {
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
@@ -1259,8 +1264,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             });
             mFadingBackgroundView.addObserver(mBottomSheet);
 
-            mContextualSuggestionsManager = new ContextualSuggestionsManager(
-                    this, mBottomSheet, getTabModelSelector(), getSnackbarManager());
+            mContextualSuggestionsCoordinator =
+                    new ContextualSuggestionsCoordinator(this, mBottomSheet, getTabModelSelector());
         }
     }
 
