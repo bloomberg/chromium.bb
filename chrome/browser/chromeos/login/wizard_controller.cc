@@ -590,8 +590,9 @@ void WizardController::ShowSyncConsentScreen() {
 #if defined(GOOGLE_CHROME_BUILD)
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
-  // Skip for non-regular users.
-  if (user_manager->IsLoggedInAsPublicAccount() ||
+  // Skip for non-regular users and for users without Gaia account.
+  if (!user_manager->IsLoggedInAsUserWithGaiaAccount() ||
+      user_manager->IsLoggedInAsPublicAccount() ||
       (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
        user_manager->GetActiveUser()->GetType() !=
            user_manager::USER_TYPE_REGULAR)) {
