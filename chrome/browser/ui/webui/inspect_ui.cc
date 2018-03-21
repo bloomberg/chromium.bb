@@ -478,7 +478,7 @@ void InspectUI::StartListeningNotifications() {
   PopulateAdditionalTargets(additional_targets);
 
   AddTargetUIHandler(
-      DevToolsTargetsUIHandler::CreateForLocal(callback));
+      DevToolsTargetsUIHandler::CreateForLocal(callback, profile));
   if (profile->IsOffTheRecord()) {
     ShowIncognitoWarning();
   } else {

@@ -32,7 +32,8 @@ class DevToolsTargetsUIHandler {
   std::string source_id() const { return source_id_; }
 
   static std::unique_ptr<DevToolsTargetsUIHandler> CreateForLocal(
-      const Callback& callback);
+      const Callback& callback,
+      Profile* profile);
 
   static std::unique_ptr<DevToolsTargetsUIHandler> CreateForAdb(
       const Callback& callback,
