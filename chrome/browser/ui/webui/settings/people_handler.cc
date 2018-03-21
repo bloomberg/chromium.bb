@@ -617,7 +617,8 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   AllowJavascript();
 
-  if (!GetSyncService()) {
+  ProfileSyncService* service = GetSyncService();
+  if (!service) {
     CloseUI();
     return;
   }
@@ -633,7 +634,38 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
   }
 
-  OpenSyncSetup();
+  // Notify services that login UI is now active.
+  GetLoginUIService()->SetLoginUI(this);
+
+  if (!sync_blocker_)
+    sync_blocker_ = service->GetSetupInProgressHandle();
+
+  // Early exit if there is already a preferences push pending sync startup.
+  if (sync_startup_tracker_)
+    return;
+
+  if (!service->IsEngineInitialized()) {
+    // Requesting the sync service to start may trigger call to PushSyncPrefs.
+    // Setting up the startup tracker beforehand correctly signals the
+    // re-entrant call to early exit.
+    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
+    service->RequestStart();
+
+    // See if it's even possible to bring up the sync engine - if not
+    // (unrecoverable error?), don't bother displaying a spinner that will be
+    // immediately closed because this leads to some ugly infinite UI loop (see
+    // http://crbug.com/244769).
+    if (SyncStartupTracker::GetSyncServiceState(profile_) !=
+        SyncStartupTracker::SYNC_STARTUP_ERROR) {
+      DisplaySpinner();
+    }
+    return;
+  }
+
+  // User is already logged in. They must have brought up the config wizard
+  // via the "Advanced..." button or through One-Click signin (cases 4-6), or
+  // they are re-enabling sync after having disabled it (case 7).
+  PushSyncPrefs();
 }
 
 #if defined(OS_CHROMEOS)
@@ -749,42 +781,6 @@ void PeopleHandler::CloseSyncSetup() {
   sync_blocker_.reset();
 
   configuring_sync_ = false;
-}
-
-void PeopleHandler::OpenSyncSetup() {
-  // Notify services that login UI is now active.
-  GetLoginUIService()->SetLoginUI(this);
-
-  ProfileSyncService* service = GetSyncService();
-  if (service && !sync_blocker_)
-    sync_blocker_ = service->GetSetupInProgressHandle();
-
-  // Early exit if there is already a preferences push pending sync startup.
-  if (sync_startup_tracker_)
-    return;
-
-  if (!service->IsEngineInitialized()) {
-    // Requesting the sync service to start may trigger call to PushSyncPrefs.
-    // Setting up the startup tracker beforehand correctly signals the
-    // re-entrant call to early exit.
-    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
-    service->RequestStart();
-
-    // See if it's even possible to bring up the sync engine - if not
-    // (unrecoverable error?), don't bother displaying a spinner that will be
-    // immediately closed because this leads to some ugly infinite UI loop (see
-    // http://crbug.com/244769).
-    if (SyncStartupTracker::GetSyncServiceState(profile_) !=
-        SyncStartupTracker::SYNC_STARTUP_ERROR) {
-      DisplaySpinner();
-    }
-    return;
-  }
-
-  // User is already logged in. They must have brought up the config wizard
-  // via the "Advanced..." button or through One-Click signin (cases 4-6), or
-  // they are re-enabling sync after having disabled it (case 7).
-  PushSyncPrefs();
 }
 
 void PeopleHandler::InitializeSyncBlocker() {
