@@ -46,6 +46,10 @@ const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
     char_count *= -1;
     char_index -= char_count - 1;
   }
+  DCHECK_GE(char_index, 0) << "start: " << char_index_
+                           << " count: " << char_count_;
+  DCHECK_LT(char_index, FPDFText_CountChars(page_->GetTextPage()))
+      << "start: " << char_index_ << " count: " << char_count_;
 
   int count = FPDFText_CountRects(page_->GetTextPage(), char_index, char_count);
   for (int i = 0; i < count; ++i) {
