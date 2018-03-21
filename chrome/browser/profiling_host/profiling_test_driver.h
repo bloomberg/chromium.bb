@@ -102,6 +102,7 @@ class ProfilingTestDriver {
   bool ShouldProfileRenderer();
   bool ShouldIncludeNativeThreadNames();
   bool HasPseudoFrames();
+  bool HasNativeFrames();
   bool IsRecordingAllAllocations();
 
   void WaitForProfilingToStartForAllRenderersUIThread();
