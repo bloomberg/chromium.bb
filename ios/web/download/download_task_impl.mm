@@ -219,6 +219,8 @@ void DownloadTaskImpl::Start(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK_NE(state_, State::kInProgress);
   writer_ = std::move(writer);
+  percent_complete_ = 0;
+  received_bytes_ = 0;
   state_ = State::kInProgress;
   GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
                         weak_factory_.GetWeakPtr()));
