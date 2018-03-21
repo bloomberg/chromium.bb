@@ -11,6 +11,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kCornerRadius = 15;
+const CGFloat kShadowRadius = 10;
+const CGFloat kShadowOpacity = 0.3;
+const CGFloat kContentMargin = 8;
+}  // namespace
+
 @interface PopupMenuViewController ()<UIGestureRecognizerDelegate>
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* contentContainer;
@@ -40,7 +47,7 @@
   [self addChildViewController:content];
   content.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentContainer addSubview:content.view];
-  AddSameConstraints(self.contentContainer, content.view);
+  AddSameConstraints(self.contentContainer.layoutMarginsGuide, content.view);
   [content didMoveToParentViewController:self];
 }
 
@@ -50,9 +57,12 @@
 - (void)setUpContentContainer {
   _contentContainer = [[UIView alloc] init];
   _contentContainer.backgroundColor = [UIColor whiteColor];
-  _contentContainer.layer.cornerRadius = 15;
-  _contentContainer.layer.shadowRadius = 10;
-  _contentContainer.layer.shadowOpacity = 0.3;
+  _contentContainer.layer.cornerRadius = kCornerRadius;
+  _contentContainer.layer.shadowRadius = kShadowRadius;
+  _contentContainer.layer.shadowOpacity = kShadowOpacity;
+  _contentContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  _contentContainer.layoutMargins = UIEdgeInsetsMake(
+      kContentMargin, kContentMargin, kContentMargin, kContentMargin);
   // TODO(crbug.com/821765): Add blur effect and update the shadow.
   [self.view addSubview:_contentContainer];
 }
