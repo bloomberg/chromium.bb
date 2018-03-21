@@ -33,6 +33,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -208,6 +209,7 @@ public class WebVrInputTest {
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @DisabledTest(message = "crbug.com/824194")
     public void testControllerClicksRegisteredOnDaydream_WebXr() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
         mXrTestFramework.loadUrlAndAwaitInitialization(
