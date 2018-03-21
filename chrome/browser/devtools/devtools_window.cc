@@ -1034,8 +1034,15 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const std::string& panel,
                                     bool has_other_clients) {
   std::string url;
+
+// Modules are always bundled in CrOS.
+#if defined(OS_CHROMEOS)
+  std::string remote_base = "?";
+#else
   std::string remote_base =
       "?remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
+#endif
+
   // remoteFrontend is here for backwards compatibility only.
   std::string remote_frontend =
       frontend_url + ((frontend_url.find("?") == std::string::npos)
