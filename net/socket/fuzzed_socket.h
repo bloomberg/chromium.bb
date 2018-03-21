@@ -99,6 +99,12 @@ class FuzzedSocket : public StreamSocket {
   void OnWriteComplete(const CompletionCallback& callback, int result);
   void OnConnectComplete(const CompletionCallback& callback, int result);
 
+  // Returns whether all operations should be synchronous.  Starts returning
+  // true once there have been too many async reads and writes, as spinning the
+  // message loop too often tends to cause fuzzers to time out.
+  // See https://crbug.com/823012
+  bool ForceSync() const;
+
   base::FuzzedDataProvider* data_provider_;
 
   // If true, the result of the Connect() call is fuzzed - it can succeed or
@@ -121,6 +127,8 @@ class FuzzedSocket : public StreamSocket {
 
   int64_t total_bytes_read_ = 0;
   int64_t total_bytes_written_ = 0;
+
+  int num_async_reads_and_writes_ = 0;
 
   NetLogWithSource net_log_;
 

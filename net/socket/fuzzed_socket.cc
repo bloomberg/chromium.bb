@@ -19,6 +19,8 @@ namespace net {
 
 namespace {
 
+const int kMaxAsyncReadsAndWrites = 1000;
+
 // Some of the socket errors that can be returned by normal socket connection
 // attempts.
 const Error kConnectErrors[] = {
@@ -57,8 +59,12 @@ int FuzzedSocket::Read(IOBuffer* buf,
     result = net_error_;
     sync = !error_pending_;
   } else {
-    // Otherwise, use |data_provider_|.
-    sync = data_provider_->ConsumeBool();
+    // Otherwise, use |data_provider_|. Always consume a bool, even when
+    // ForceSync() is true, to behave more consistently against input mutations.
+    sync = data_provider_->ConsumeBool() || ForceSync();
+
+    num_async_reads_and_writes_ += static_cast<int>(!sync);
+
     std::string data = data_provider_->ConsumeRandomLengthString(buf_len);
     result = data.size();
 
@@ -106,8 +112,12 @@ int FuzzedSocket::Write(
     result = net_error_;
     sync = !error_pending_;
   } else {
-    // Otherwise, use |data_|.
-    sync = data_provider_->ConsumeBool();
+    // Otherwise, use |data_provider_|. Always consume a bool, even when
+    // ForceSync() is true, to behave more consistently against input mutations.
+    sync = data_provider_->ConsumeBool() || ForceSync();
+
+    num_async_reads_and_writes_ += static_cast<int>(!sync);
+
     result = data_provider_->ConsumeUint8();
     if (result > buf_len)
       result = buf_len;
@@ -281,6 +291,10 @@ void FuzzedSocket::OnConnectComplete(const CompletionCallback& callback,
     error_pending_ = false;
   net_error_ = result;
   callback.Run(result);
+}
+
+bool FuzzedSocket::ForceSync() const {
+  return (num_async_reads_and_writes_ >= kMaxAsyncReadsAndWrites);
 }
 
 }  // namespace net
