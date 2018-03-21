@@ -6,27 +6,57 @@
 #define ASH_DISPLAY_DISPLAY_ANIMATOR_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_animator.h"
 #include "base/callback.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
+
+namespace ui {
+class Layer;
+}  // namespace ui
 
 namespace ash {
 
-// Interface class for animating display changes.
-class ASH_EXPORT DisplayAnimator {
+// DisplayAnimator provides the visual effects for
+// display::DisplayConfigurator, such like fade-out/in during changing
+// the display mode.
+class ASH_EXPORT DisplayAnimator
+    : public display::DisplayConfigurator::Observer {
  public:
-  virtual ~DisplayAnimator() {}
+  DisplayAnimator();
+  ~DisplayAnimator() override;
 
-  // Starts the fade-out animation for the all root windows. It will
-  // call |callback| once all of the animations have finished.
-  virtual void StartFadeOutAnimation(base::Closure callback) = 0;
+  void StartFadeOutAnimation(base::Closure callback);
+  void StartFadeInAnimation();
 
-  // Starts the animation to clear the fade-out animation effect
-  // for the all root windows.
-  virtual void StartFadeInAnimation() = 0;
+ protected:
+  // display::DisplayConfigurator::Observer overrides:
+  void OnDisplayModeChanged(
+      const display::DisplayConfigurator::DisplayStateList& outputs) override;
+  void OnDisplayModeChangeFailed(
+      const display::DisplayConfigurator::DisplayStateList& displays,
+      display::MultipleDisplayState failed_new_state) override;
 
  private:
-  DISALLOW_ASSIGN(DisplayAnimator);
+  // Clears all hiding layers.  Note that in case that this method is called
+  // during an animation, the method call will cancel all of the animations
+  // and *not* call the registered callback.
+  void ClearHidingLayers();
+
+  std::map<aura::Window*, std::unique_ptr<ui::Layer>> hiding_layers_;
+  std::unique_ptr<base::OneShotTimer> timer_;
+  base::WeakPtrFactory<DisplayAnimator> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayAnimator);
 };
 
 }  // namespace ash

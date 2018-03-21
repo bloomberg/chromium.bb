@@ -5,7 +5,6 @@
 #include "ash/display/display_configuration_controller.h"
 
 #include "ash/display/display_animator.h"
-#include "ash/display/display_animator_chromeos.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -68,7 +67,7 @@ DisplayConfigurationController::DisplayConfigurationController(
   window_tree_host_manager_->AddObserver(this);
   if (chromeos::IsRunningAsSystemCompositor())
     limiter_.reset(new DisplayChangeLimiter);
-  display_animator_.reset(new DisplayAnimatorChromeOS());
+  display_animator_.reset(new DisplayAnimator());
 }
 
 DisplayConfigurationController::~DisplayConfigurationController() {
