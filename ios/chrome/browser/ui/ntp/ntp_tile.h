@@ -26,9 +26,6 @@
 @property(assign, atomic) BOOL fallbackIsDefaultColor;
 // The monogram to use on the fallback icon.
 @property(strong, atomic) NSString* fallbackMonogram;
-// Whether the favicon has been fetched for the most visited site. This can be
-// YES with no fallback values or favicon path.
-@property(assign, atomic) BOOL faviconFetched;
 // Index of the site's position in the most visited list.
 @property(assign, atomic) NSUInteger position;
 
@@ -42,7 +39,6 @@
       fallbackBackgroundColor:(UIColor*)fallbackTextColor
        fallbackIsDefaultColor:(BOOL)fallbackIsDefaultColor
              fallbackMonogram:(NSString*)fallbackMonogram
-               faviconFetched:(BOOL)faviconFetched
                      position:(NSUInteger)position;
 @end
 

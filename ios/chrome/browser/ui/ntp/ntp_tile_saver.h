@@ -14,25 +14,23 @@
 
 // These functions are used to save the ntp tiles (favicon and name) offline for
 // the use of the content widget. The most visited info and icon fallback data
-// are saved to userdefaults. The favicons are saved to a shared folder. Because
-// the favicons are fetched asynchronously, they are first saved in a temporary
-// folder which replaces the current favicons when all are fetched.
+// are saved to userdefaults. The favicons are saved to a shared directory.
 namespace ntp_tile_saver {
 
-// Saves the most visited sites to disk with icons in |favicons_folder|, using
-// |favicon_fetcher| to get the favicons.
+// Saves the most visited sites to disk with icons in |favicons_directory|,
+// using |favicon_fetcher| to get the favicons.
 void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& most_visited_data,
                            FaviconAttributesProvider* favicon_provider,
-                           NSURL* favicons_folder);
+                           NSURL* favicons_directory);
 
 // Read the current saved most visited sites from disk.
 NSDictionary* ReadSavedMostVisited();
 
 // Fetches the updated favicon for a single site and saves it in
-// |favicons_folder|.
+// |favicons_directory|.
 void UpdateSingleFavicon(const GURL& site_url,
                          FaviconAttributesProvider* favicon_provider,
-                         NSURL* favicons_folder);
+                         NSURL* favicons_directory);
 
 }  // namespace ntp_tile_saver
 
