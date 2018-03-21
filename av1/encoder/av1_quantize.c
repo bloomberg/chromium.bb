@@ -111,7 +111,8 @@ static void highbd_quantize_fp_helper_c(
           AOM_QM_BITS;
       const int coeff_sign = (coeff >> 31);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      const int64_t tmp = abs_coeff + (round_ptr[rc != 0] >> log_scale);
+      const int64_t tmp =
+          abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
       const int abs_qcoeff =
           (int)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
@@ -333,10 +334,12 @@ void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
       return;
     }
 
-    av1_highbd_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
-                           p->round_fp_QTX, p->quant_fp_QTX, p->quant_shift_QTX,
-                           qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
-                           sc->scan, sc->iscan, qparam->log_scale);
+    // TODO(yunqing): modify the optimized version to match the c version, and
+    // then turn on it and also enable its unit test.
+    av1_highbd_quantize_fp_c(
+        coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->round_fp_QTX,
+        p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
+        p->dequant_QTX, eob_ptr, sc->scan, sc->iscan, qparam->log_scale);
   }
 }
 

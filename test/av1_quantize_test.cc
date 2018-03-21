@@ -191,8 +191,8 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
   QuantizeFuncParams params_;
 };
 
-TEST_P(AV1QuantizeTest, BitExactCheck) { RunQuantizeTest(); }
-TEST_P(AV1QuantizeTest, EobVerify) { RunEobTest(); }
+TEST_P(AV1QuantizeTest, DISABLED_BitExactCheck) { RunQuantizeTest(); }
+TEST_P(AV1QuantizeTest, DISABLED_EobVerify) { RunEobTest(); }
 
 #if HAVE_SSE4_1
 const QuantizeFuncParams qfps[4] = {
