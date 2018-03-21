@@ -257,6 +257,7 @@ void MetricsService::InitializeMetricsRecordingState() {
       base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
                  base::Unretained(client_))));
 
+  // Init() has to be called after LogCrash() in order for LogCrash() to work.
   delegating_provider_.Init();
 }
 
