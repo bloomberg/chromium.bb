@@ -1504,10 +1504,12 @@ class PreCQLauncherStage(SyncStage):
     # If 'autotest-pre-cq' is part of the list, launch it differently, against
     # swarming.
     _SWARMING_TEST_CONFIG = 'chromeos-infra-puppet-pre-cq'
+
+    configs = configs[:]
     config_buildbucket_id_map = {}
 
     if _SWARMING_TEST_CONFIG in configs:
-      configs = configs.remove(_SWARMING_TEST_CONFIG)
+      configs.remove(_SWARMING_TEST_CONFIG)
       config_buildbucket_id_map.update(
           self._LaunchTrybotsReal(
               pool, [_SWARMING_TEST_CONFIG], plan, sanity_check_build,
