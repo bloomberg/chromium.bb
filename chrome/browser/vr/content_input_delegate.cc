@@ -118,8 +118,9 @@ void ContentInputDelegate::OnSwapContents(int new_content_id) {
 void ContentInputDelegate::UpdateGesture(
     const gfx::PointF& normalized_content_hit_point,
     blink::WebGestureEvent& gesture) {
-  gesture.x = content_tex_css_width_ * normalized_content_hit_point.x();
-  gesture.y = content_tex_css_height_ * normalized_content_hit_point.y();
+  gesture.SetPositionInWidget(ScalePoint(normalized_content_hit_point,
+                                         content_tex_css_width_,
+                                         content_tex_css_height_));
 }
 
 void ContentInputDelegate::SendGestureToContent(

@@ -798,8 +798,8 @@ void ExtractUnderlines(NSAttributedString* string,
     if (gestureBeginPinchSent_) {
       WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
       endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-      endEvent.source_device =
-          blink::WebGestureDevice::kWebGestureDeviceTouchpad;
+      endEvent.SetSourceDevice(
+          blink::WebGestureDevice::kWebGestureDeviceTouchpad);
       renderWidgetHostView_->SendGesturePinchEvent(&endEvent);
       gestureBeginPinchSent_ = NO;
     }
@@ -1120,8 +1120,8 @@ void ExtractUnderlines(NSAttributedString* string,
     }
     WebGestureEvent beginEvent(*gestureBeginEvent_);
     beginEvent.SetType(WebInputEvent::kGesturePinchBegin);
-    beginEvent.source_device =
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad;
+    beginEvent.SetSourceDevice(
+        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     renderWidgetHostView_->SendGesturePinchEvent(&beginEvent);
     gestureBeginPinchSent_ = YES;
   }

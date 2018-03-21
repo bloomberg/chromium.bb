@@ -439,8 +439,8 @@ void BrowserPluginGuest::ResendEventToEmbedder(
   if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
     blink::WebGestureEvent resent_gesture_event;
     memcpy(&resent_gesture_event, &event, sizeof(blink::WebGestureEvent));
-    resent_gesture_event.x += offset_from_embedder.x();
-    resent_gesture_event.y += offset_from_embedder.y();
+    resent_gesture_event.SetPositionInWidget(
+        resent_gesture_event.PositionInWidget() + offset_from_embedder);
     // Mark the resend source with the browser plugin's instance id, so the
     // correct browser_plugin will know to ignore the event.
     resent_gesture_event.resending_plugin_id = browser_plugin_instance_id_;

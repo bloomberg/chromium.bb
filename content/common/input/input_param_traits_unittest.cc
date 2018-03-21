@@ -105,7 +105,7 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
       blink::WebInputEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_event.x = -1;
+  gesture_event.SetPositionInWidget(gfx::PointF(-1, 0));
   events.push_back(std::make_unique<InputEvent>(gesture_event, latency));
 
   blink::WebTouchEvent touch_event(

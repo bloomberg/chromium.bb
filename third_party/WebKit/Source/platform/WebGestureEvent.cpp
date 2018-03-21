@@ -89,8 +89,9 @@ WebFloatSize WebGestureEvent::TapAreaInRootFrame() const {
 }
 
 WebFloatPoint WebGestureEvent::PositionInRootFrame() const {
-  return WebFloatPoint((x / frame_scale_) + frame_translate_.x,
-                       (y / frame_scale_) + frame_translate_.y);
+  return WebFloatPoint(
+      (position_in_widget_.x / frame_scale_) + frame_translate_.x,
+      (position_in_widget_.y / frame_scale_) + frame_translate_.y);
 }
 
 int WebGestureEvent::TapCount() const {
@@ -104,8 +105,10 @@ void WebGestureEvent::ApplyTouchAdjustment(WebFloatPoint root_frame_coords) {
   // client co-ordinates in a 'click' event should yield the target). The
   // global position is intentionally left unmodified because it's intended to
   // reflect raw co-ordinates unrelated to any content.
-  frame_translate_.x = root_frame_coords.x - (x / frame_scale_);
-  frame_translate_.y = root_frame_coords.y - (y / frame_scale_);
+  frame_translate_.x =
+      root_frame_coords.x - (position_in_widget_.x / frame_scale_);
+  frame_translate_.y =
+      root_frame_coords.y - (position_in_widget_.y / frame_scale_);
 }
 
 void WebGestureEvent::FlattenTransform() {
@@ -146,8 +149,7 @@ void WebGestureEvent::FlattenTransform() {
     }
   }
 
-  x = (x / frame_scale_) + frame_translate_.x;
-  y = (y / frame_scale_) + frame_translate_.y;
+  SetPositionInWidget(PositionInRootFrame());
   frame_translate_.x = 0;
   frame_translate_.y = 0;
   frame_scale_ = 1;

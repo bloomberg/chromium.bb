@@ -97,8 +97,8 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
     int modifiers) {
   DCHECK(WebInputEvent::IsGestureEventType(type));
   WebGestureEvent result(type, modifiers,
-                         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  result.source_device = source_device;
+                         ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+                         source_device);
   if (type == WebInputEvent::kGestureTap ||
       type == WebInputEvent::kGestureTapUnconfirmed ||
       type == WebInputEvent::kGestureDoubleTap) {
@@ -143,10 +143,8 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
   WebGestureEvent result =
       Build(WebInputEvent::kGesturePinchUpdate, source_device, modifiers);
   result.data.pinch_update.scale = scale;
-  result.x = anchor_x;
-  result.y = anchor_y;
-  result.global_x = anchor_x;
-  result.global_y = anchor_y;
+  result.SetPositionInWidget(blink::WebFloatPoint(anchor_x, anchor_y));
+  result.SetPositionInScreen(blink::WebFloatPoint(anchor_x, anchor_y));
   return result;
 }
 

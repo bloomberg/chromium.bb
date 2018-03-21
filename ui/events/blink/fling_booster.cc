@@ -59,7 +59,7 @@ bool FlingBooster::FilterGestureEventForFlingBoosting(
     return false;
 
   // Gestures from a different source should immediately interrupt the fling.
-  if (gesture_event.source_device != source_device_) {
+  if (gesture_event.SourceDevice() != source_device_) {
     *out_cancel_current_fling = true;
     return false;
   }
@@ -100,7 +100,7 @@ bool FlingBooster::FilterGestureEventForFlingBoosting(
       return true;
 
     case WebInputEvent::kGestureFlingStart: {
-      DCHECK_EQ(source_device_, gesture_event.source_device);
+      DCHECK_EQ(source_device_, gesture_event.SourceDevice());
       gfx::Vector2dF new_fling_velocity(
           gesture_event.data.fling_start.velocity_x,
           gesture_event.data.fling_start.velocity_y);

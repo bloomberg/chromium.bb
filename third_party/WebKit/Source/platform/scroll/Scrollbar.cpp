@@ -346,7 +346,7 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
       scroll_pos_ = pressed_pos_;
       return true;
     case WebInputEvent::kGestureScrollBegin:
-      switch (evt.source_device) {
+      switch (evt.SourceDevice()) {
         case kWebGestureDeviceSyntheticAutoscroll:
         case kWebGestureDeviceTouchpad:
           // Update the state on GSB for touchpad since GestureTapDown
@@ -366,7 +366,7 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
       }
       break;
     case WebInputEvent::kGestureScrollUpdate:
-      switch (evt.source_device) {
+      switch (evt.SourceDevice()) {
         case kWebGestureDeviceSyntheticAutoscroll:
         case kWebGestureDeviceTouchpad:
           return false;

@@ -49,8 +49,8 @@ class WebGestureEventBuilder {
  public:
   static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
                                       double time_sec,
-                                      int x,
-                                      int y);
+                                      float x,
+                                      float y);
 };
 
 }  // namespace content

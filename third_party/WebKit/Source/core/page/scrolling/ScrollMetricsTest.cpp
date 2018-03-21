@@ -51,15 +51,16 @@ class NonCompositedMainThreadScrollingReasonRecordTest
 
 class ScrollBeginEventBuilder : public WebGestureEvent {
  public:
-  ScrollBeginEventBuilder(IntPoint position,
+  ScrollBeginEventBuilder(FloatPoint position,
                           FloatPoint delta,
                           WebGestureDevice device)
-      : WebGestureEvent() {
-    type_ = WebInputEvent::kGestureScrollBegin;
-    x = global_x = position.X();
-    y = global_y = position.Y();
+      : WebGestureEvent(WebInputEvent::kGestureScrollBegin,
+                        WebInputEvent::kNoModifiers,
+                        CurrentTimeTicksInSeconds(),
+                        device) {
+    SetPositionInWidget(position);
+    SetPositionInScreen(position);
     data.scroll_begin.delta_y_hint = delta.Y();
-    source_device = device;
     frame_scale_ = 1;
   }
 };
@@ -101,8 +102,8 @@ void ScrollMetricsTest::Scroll(Element* element,
   DCHECK(element->getBoundingClientRect());
   DOMRect* rect = element->getBoundingClientRect();
   ScrollBeginEventBuilder scroll_begin(
-      IntPoint(rect->left() + rect->width() / 2,
-               rect->top() + rect->height() / 2),
+      FloatPoint(rect->left() + rect->width() / 2,
+                 rect->top() + rect->height() / 2),
       FloatPoint(0.f, 1.f), device);
   ScrollUpdateEventBuilder scroll_update;
   ScrollEndEventBuilder scroll_end;

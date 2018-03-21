@@ -22,8 +22,8 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
       click_count(click_count_param) {
   DCHECK_GE(type, kMouseTypeFirst);
   DCHECK_LE(type, kMouseTypeLast);
-  SetPositionInWidget(gesture_event.x, gesture_event.y);
-  SetPositionInScreen(gesture_event.global_x, gesture_event.global_y);
+  SetPositionInWidget(gesture_event.PositionInWidget());
+  SetPositionInScreen(gesture_event.PositionInScreen());
   SetFrameScale(gesture_event.FrameScale());
   SetFrameTranslate(gesture_event.FrameTranslate());
   SetMenuSourceType(gesture_event.GetType());
@@ -47,10 +47,7 @@ WebMouseEvent WebMouseEvent::FlattenTransform() const {
 }
 
 void WebMouseEvent::FlattenTransformSelf() {
-  position_in_widget_.x =
-      floor((position_in_widget_.x / frame_scale_) + frame_translate_.x);
-  position_in_widget_.y =
-      floor((position_in_widget_.y / frame_scale_) + frame_translate_.y);
+  position_in_widget_ = PositionInRootFrame();
   frame_translate_.x = 0;
   frame_translate_.y = 0;
   frame_scale_ = 1;

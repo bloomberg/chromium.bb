@@ -41,8 +41,7 @@ TEST_F(WebInputEventTraitsTest, ToString) {
   WebGestureEvent gesture(WebInputEvent::kGesturePinchBegin,
                           WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests());
-  gesture.x = 1;
-  gesture.y = 1;
+  gesture.SetPositionInWidget(gfx::PointF(1, 1));
   EXPECT_FALSE(WebInputEventTraits::ToString(gesture).empty());
 
   WebTouchEvent touch(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,

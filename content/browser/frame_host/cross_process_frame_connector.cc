@@ -216,8 +216,8 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   blink::WebGestureEvent resent_gesture_event(event);
   // TODO(kenrb, wjmaclean): Do we need to account for transforms here?
   // See https://crbug.com/626020.
-  resent_gesture_event.x += offset_from_parent.x();
-  resent_gesture_event.y += offset_from_parent.y();
+  resent_gesture_event.SetPositionInWidget(
+      resent_gesture_event.PositionInWidget() + offset_from_parent);
 
   if (view_->wheel_scroll_latching_enabled()) {
     if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {

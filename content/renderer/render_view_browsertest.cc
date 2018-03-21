@@ -517,10 +517,9 @@ static blink::WebCoalescedInputEvent FatTap(int x,
                                             int height) {
   blink::WebGestureEvent event(
       blink::WebInputEvent::kGestureTap, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
-  event.x = x;
-  event.y = y;
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(gfx::PointF(x, y));
   event.data.tap.width = width;
   event.data.tap.height = height;
   return blink::WebCoalescedInputEvent(event);
@@ -1524,8 +1523,7 @@ TEST_F(RenderViewImplTest, AndroidContextMenuSelectionOrdering) {
   WebGestureEvent gesture_event(
       WebInputEvent::kGestureLongPress, WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  gesture_event.x = 250;
-  gesture_event.y = 250;
+  gesture_event.SetPositionInWidget(gfx::PointF(250, 250));
 
   SendWebGestureEvent(gesture_event);
 

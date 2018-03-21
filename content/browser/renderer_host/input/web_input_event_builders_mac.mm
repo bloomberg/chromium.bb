@@ -523,15 +523,14 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
   blink::WebMouseEvent temp;
 
   SetWebEventLocationFromEventInView(&temp, event, view);
-  result.x = temp.PositionInWidget().x;
-  result.y = temp.PositionInWidget().y;
-  result.global_x = temp.PositionInScreen().x;
-  result.global_y = temp.PositionInScreen().y;
+  result.SetPositionInWidget(temp.PositionInWidget());
+  result.SetPositionInScreen(temp.PositionInScreen());
 
   result.SetModifiers(ModifiersFromEvent(event));
   result.SetTimeStampSeconds([event timestamp]);
 
-  result.source_device = blink::kWebGestureDeviceTouchpad;
+  result.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+
   switch ([event type]) {
     case NSEventTypeMagnify:
       result.SetType(blink::WebInputEvent::kGesturePinchUpdate);

@@ -55,8 +55,7 @@ GestureEventWithLatencyInfo CreateGestureEvent(WebInputEvent::Type type,
                                                float y = 0.0f) {
   GestureEventWithLatencyInfo gesture(type, WebInputEvent::kNoModifiers,
                                       timestamp, ui::LatencyInfo());
-  gesture.event.x = x;
-  gesture.event.y = y;
+  gesture.event.SetPositionInWidget(gfx::PointF(x, y));
   return gesture;
 }
 

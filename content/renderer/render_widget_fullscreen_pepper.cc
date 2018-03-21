@@ -71,7 +71,7 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
 
   // Only convert touch screen gesture events, do not convert
   // touchpad/mouse wheel gesture events. (crbug.com/620974)
-  if (gesture.source_device != blink::kWebGestureDeviceTouchscreen)
+  if (gesture.SourceDevice() != blink::kWebGestureDeviceTouchscreen)
     return WebMouseEvent();
 
   WebInputEvent::Type type = WebInputEvent::kUndefined;
@@ -103,8 +103,10 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
   mouse.click_count = (mouse.GetType() == WebInputEvent::kMouseDown ||
                        mouse.GetType() == WebInputEvent::kMouseUp);
 
-  mouse.SetPositionInWidget(gesture.x, gesture.y);
-  mouse.SetPositionInScreen(gesture.global_x, gesture.global_y);
+  mouse.SetPositionInWidget(gesture.PositionInWidget().x,
+                            gesture.PositionInWidget().y);
+  mouse.SetPositionInScreen(gesture.PositionInScreen().x,
+                            gesture.PositionInScreen().y);
 
   return mouse;
 }
@@ -177,9 +179,10 @@ class PepperWidget : public WebWidget {
           WebMouseEvent mouse(WebInputEvent::kMouseMove,
                               gesture_event->GetModifiers(),
                               gesture_event->TimeStampSeconds());
-          mouse.SetPositionInWidget(gesture_event->x, gesture_event->y);
-          mouse.SetPositionInScreen(gesture_event->global_x,
-                                    gesture_event->global_y);
+          mouse.SetPositionInWidget(gesture_event->PositionInWidget().x,
+                                    gesture_event->PositionInWidget().y);
+          mouse.SetPositionInScreen(gesture_event->PositionInScreen().x,
+                                    gesture_event->PositionInScreen().y);
           mouse.movement_x = 0;
           mouse.movement_y = 0;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);

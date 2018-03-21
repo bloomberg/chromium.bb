@@ -68,10 +68,10 @@ bool FlingController::ShouldForwardForTapSuppression(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.GetType()) {
     case WebInputEvent::kGestureFlingCancel:
-      if (gesture_event.event.source_device ==
+      if (gesture_event.event.SourceDevice() ==
           blink::kWebGestureDeviceTouchscreen) {
         touchscreen_tap_suppression_controller_.GestureFlingCancel();
-      } else if (gesture_event.event.source_device ==
+      } else if (gesture_event.event.SourceDevice() ==
                  blink::kWebGestureDeviceTouchpad) {
         touchpad_tap_suppression_controller_.GestureFlingCancel();
       }
@@ -85,7 +85,7 @@ bool FlingController::ShouldForwardForTapSuppression(
     case WebInputEvent::kGestureLongPress:
     case WebInputEvent::kGestureLongTap:
     case WebInputEvent::kGestureTwoFingerTap:
-      if (gesture_event.event.source_device ==
+      if (gesture_event.event.SourceDevice() ==
           blink::kWebGestureDeviceTouchscreen) {
         return !touchscreen_tap_suppression_controller_.FilterTapEvent(
             gesture_event);
@@ -105,7 +105,7 @@ bool FlingController::FilterGestureEventForFlingBoosting(
   // touchscreen fling is implemented, move the fling_controller_ from
   // GestureEventQueue to RednerWidgetHostImpl. This will gaurantee proper
   // gesture scroll event order in RednerWidgetHostImpl while boosting.
-  if (gesture_event.event.source_device == blink::kWebGestureDeviceTouchpad)
+  if (gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad)
     return false;
 
   bool cancel_current_fling;
@@ -137,7 +137,7 @@ void FlingController::OnGestureEventAck(
   bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   switch (acked_event.event.GetType()) {
     case WebInputEvent::kGestureFlingCancel: {
-      blink::WebGestureDevice source_device = acked_event.event.source_device;
+      blink::WebGestureDevice source_device = acked_event.event.SourceDevice();
       if (source_device == blink::kWebGestureDeviceTouchscreen) {
         touchscreen_tap_suppression_controller_.GestureFlingCancelAck(
             processed);
@@ -257,11 +257,9 @@ void FlingController::GenerateAndSendWheelEvents(
   synthetic_wheel.event.has_precise_scrolling_deltas = true;
   synthetic_wheel.event.momentum_phase = phase;
   synthetic_wheel.event.has_synthetic_phase = true;
-  synthetic_wheel.event.SetPositionInWidget(
-      current_fling_parameters_.point.x(), current_fling_parameters_.point.y());
+  synthetic_wheel.event.SetPositionInWidget(current_fling_parameters_.point);
   synthetic_wheel.event.SetPositionInScreen(
-      current_fling_parameters_.global_point.x(),
-      current_fling_parameters_.global_point.y());
+      current_fling_parameters_.global_point);
   // Send wheel end events nonblocking since they have zero delta and are not
   // sent to JS.
   if (phase == blink::WebMouseWheelEvent::kPhaseEnded) {
@@ -327,12 +325,10 @@ bool FlingController::UpdateCurrentFlingState(
   }
 
   current_fling_parameters_.velocity = velocity;
-  current_fling_parameters_.point =
-      gfx::Vector2d(fling_start_event.x, fling_start_event.y);
-  current_fling_parameters_.global_point =
-      gfx::Vector2d(fling_start_event.global_x, fling_start_event.global_y);
+  current_fling_parameters_.point = fling_start_event.PositionInWidget();
+  current_fling_parameters_.global_point = fling_start_event.PositionInScreen();
   current_fling_parameters_.modifiers = fling_start_event.GetModifiers();
-  current_fling_parameters_.source_device = fling_start_event.source_device;
+  current_fling_parameters_.source_device = fling_start_event.SourceDevice();
   current_fling_parameters_.start_time =
       base::TimeTicks() +
       base::TimeDelta::FromSecondsD(fling_start_event.TimeStampSeconds());

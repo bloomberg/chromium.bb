@@ -21,7 +21,7 @@ namespace test {
 class FlingBoosterTest : public testing::Test {
  public:
   FlingBoosterTest() : delta_time_(base::TimeDelta::FromMilliseconds(10)) {
-    gesture_scroll_event_.source_device = blink::kWebGestureDeviceTouchscreen;
+    gesture_scroll_event_.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   }
 
   WebGestureEvent CreateFlingStart(base::TimeTicks timestamp,
@@ -29,8 +29,8 @@ class FlingBoosterTest : public testing::Test {
                                    const gfx::Vector2dF& velocity,
                                    int modifiers) {
     WebGestureEvent fling_start(WebInputEvent::kGestureFlingStart, modifiers,
-                                EventTimeStampToSeconds(timestamp));
-    fling_start.source_device = source_device;
+                                EventTimeStampToSeconds(timestamp),
+                                source_device);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     return fling_start;
@@ -39,8 +39,8 @@ class FlingBoosterTest : public testing::Test {
   WebGestureEvent CreateFlingCancel(base::TimeTicks timestamp,
                                     WebGestureDevice source_device) {
     WebGestureEvent fling_cancel(WebInputEvent::kGestureFlingCancel, 0,
-                                 EventTimeStampToSeconds(timestamp));
-    fling_cancel.source_device = source_device;
+                                 EventTimeStampToSeconds(timestamp),
+                                 source_device);
     return fling_cancel;
   }
 

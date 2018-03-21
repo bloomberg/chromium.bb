@@ -109,11 +109,11 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ((timestamp - base::TimeTicks()).InSecondsF(),
             web_event.TimeStampSeconds());
-  EXPECT_EQ(gfx::ToFlooredInt(pos.x()), web_event.x);
-  EXPECT_EQ(gfx::ToFlooredInt(pos.y()), web_event.y);
-  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.x()), web_event.global_x);
-  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.y()), web_event.global_y);
-  EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, web_event.source_device);
+  EXPECT_EQ(pos.x(), web_event.PositionInWidget().x);
+  EXPECT_EQ(pos.y(), web_event.PositionInWidget().y);
+  EXPECT_EQ(raw_pos.x(), web_event.PositionInScreen().x);
+  EXPECT_EQ(raw_pos.y(), web_event.PositionInScreen().y);
+  EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, web_event.SourceDevice());
   EXPECT_EQ(delta.x(), web_event.data.scroll_update.delta_x);
   EXPECT_EQ(delta.y(), web_event.data.scroll_update.delta_y);
   EXPECT_TRUE(

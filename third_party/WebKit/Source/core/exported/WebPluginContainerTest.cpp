@@ -769,13 +769,12 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
 
   // First, send an event that doesn't hit the plugin to verify that the
   // plugin doesn't receive it.
-  event.x = 0;
-  event.y = 0;
+  event.SetPositionInWidget(WebFloatPoint(0, 0));
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
@@ -785,8 +784,8 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   // Next, send an event that does hit the plugin, and verify it does receive
   // it.
   WebRect rect = plugin_container_one_element.BoundsInViewport();
-  event.x = rect.x + rect.width / 2;
-  event.y = rect.y + rect.height / 2;
+  event.SetPositionInWidget(
+      WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();

@@ -26,7 +26,7 @@ bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
-  return gesture.source_device == blink::kWebGestureDeviceTouchpad;
+  return gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad;
 }
 
 float ClampAbsoluteValue(float value, float max_abs) {
@@ -335,7 +335,7 @@ bool OverscrollController::ProcessEventForOverscroll(
       event_processed = ProcessOverscroll(
           gesture.data.scroll_update.delta_x,
           gesture.data.scroll_update.delta_y,
-          gesture.source_device == blink::kWebGestureDeviceTouchpad);
+          gesture.SourceDevice() == blink::kWebGestureDeviceTouchpad);
       break;
     }
     case blink::WebInputEvent::kGestureFlingStart: {

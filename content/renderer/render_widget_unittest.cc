@@ -182,7 +182,7 @@ class InteractiveRenderWidget : public RenderWidget {
                                         event.data.scroll_update.delta_y),
                     blink::WebFloatSize(event.data.scroll_update.delta_x,
                                         event.data.scroll_update.delta_y),
-                    blink::WebFloatPoint(event.x, event.y),
+                    event.PositionInWidget(),
                     blink::WebFloatSize(event.data.scroll_update.velocity_x,
                                         event.data.scroll_update.velocity_y),
                     blink::WebOverscrollBehavior());
@@ -255,7 +255,7 @@ TEST_F(RenderWidgetUnittest, EventOverscroll) {
       blink::WebInputEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll.x = -10;
+  scroll.SetPositionInWidget(gfx::PointF(-10, 0));
   scroll.data.scroll_update.delta_y = 10;
   MockHandledEventCallback handled_event;
 

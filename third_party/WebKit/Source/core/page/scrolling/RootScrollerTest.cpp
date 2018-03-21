@@ -157,10 +157,8 @@ class RootScrollerTest : public ::testing::Test,
                                               int delta_x,
                                               int delta_y) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::GetStaticTimeStampForTests());
-    event.source_device = device;
-    event.x = 100;
-    event.y = 100;
+                          WebInputEvent::GetStaticTimeStampForTests(), device);
+    event.SetPositionInWidget(WebFloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;

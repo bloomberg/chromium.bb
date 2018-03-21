@@ -43,7 +43,7 @@ TouchActionFilter::TouchActionFilter()
       white_listed_touch_action_(cc::kTouchActionAuto) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
-  if (gesture_event->source_device != blink::kWebGestureDeviceTouchscreen)
+  if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
     return false;
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue

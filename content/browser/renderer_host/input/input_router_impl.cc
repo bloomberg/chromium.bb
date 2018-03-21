@@ -139,7 +139,7 @@ void InputRouterImpl::SendGestureEvent(
 
   wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
-  if (gesture_event.event.source_device ==
+  if (gesture_event.event.SourceDevice() ==
       blink::kWebGestureDeviceTouchscreen) {
     if (gesture_event.event.GetType() ==
         blink::WebInputEvent::kGestureScrollBegin) {

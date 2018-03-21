@@ -41,13 +41,13 @@ class EventHandlerSimTest : public SimTest {};
 
 class TapEventBuilder : public WebGestureEvent {
  public:
-  TapEventBuilder(IntPoint position, int tap_count)
+  TapEventBuilder(FloatPoint position, int tap_count)
       : WebGestureEvent(WebInputEvent::kGestureTap,
                         WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds()) {
-    x = global_x = position.X();
-    y = global_y = position.Y();
-    source_device = kWebGestureDeviceTouchscreen;
+                        CurrentTimeTicksInSeconds(),
+                        kWebGestureDeviceTouchscreen) {
+    SetPositionInWidget(position);
+    SetPositionInScreen(position);
     data.tap.tap_count = tap_count;
     data.tap.width = 5;
     data.tap.height = 5;
@@ -57,11 +57,13 @@ class TapEventBuilder : public WebGestureEvent {
 
 class LongPressEventBuilder : public WebGestureEvent {
  public:
-  LongPressEventBuilder(IntPoint position) : WebGestureEvent() {
-    type_ = WebInputEvent::kGestureLongPress;
-    x = global_x = position.X();
-    y = global_y = position.Y();
-    source_device = kWebGestureDeviceTouchscreen;
+  LongPressEventBuilder(FloatPoint position)
+      : WebGestureEvent(WebInputEvent::kGestureLongPress,
+                        WebInputEvent::kNoModifiers,
+                        CurrentTimeTicksInSeconds(),
+                        kWebGestureDeviceTouchscreen) {
+    SetPositionInWidget(position);
+    SetPositionInScreen(position);
     data.long_press.width = 5;
     data.long_press.height = 5;
     frame_scale_ = 1;
@@ -180,7 +182,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
 
   Node* line = GetDocument().getElementById("line")->firstChild();
 
-  TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
+  TapEventBuilder single_tap_event(FloatPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
@@ -188,7 +190,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
 
   // Multi-tap events on editable elements should trigger selection, just
   // like multi-click events.
-  TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
+  TapEventBuilder double_tap_event(FloatPoint(0, 0), 2);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       double_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
@@ -204,7 +206,7 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
     EXPECT_EQ("One", WebString(Selection().SelectedText()).Utf8());
   }
 
-  TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
+  TapEventBuilder triple_tap_event(FloatPoint(0, 0), 3);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       triple_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
@@ -221,20 +223,20 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
 
   Node* line = GetDocument().getElementById("line")->firstChild();
 
-  TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
+  TapEventBuilder single_tap_event(FloatPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 
   // As the text is readonly, multi-tap events should not trigger selection.
-  TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
+  TapEventBuilder double_tap_event(FloatPoint(0, 0), 2);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       double_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 
-  TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
+  TapEventBuilder triple_tap_event(FloatPoint(0, 0), 3);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       triple_tap_event);
   ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
@@ -584,7 +586,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
 TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
   SetHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
 
-  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  TapEventBuilder single_tap_event(FloatPoint(200, 200), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
@@ -595,7 +597,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
 TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
   SetHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
 
-  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  TapEventBuilder single_tap_event(FloatPoint(200, 200), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
@@ -606,7 +608,7 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
 TEST_F(EventHandlerTest, NewlineDivInsertionOnTap) {
   SetHtmlInnerHTML("<div contenteditable><br/></div>");
 
-  TapEventBuilder single_tap_event(IntPoint(10, 10), 1);
+  TapEventBuilder single_tap_event(FloatPoint(10, 10), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
@@ -617,7 +619,7 @@ TEST_F(EventHandlerTest, NewlineDivInsertionOnTap) {
 TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   SetHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
 
-  LongPressEventBuilder long_press_event(IntPoint(200, 200));
+  LongPressEventBuilder long_press_event(FloatPoint(200, 200));
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
@@ -625,7 +627,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Single Tap on an empty edit field should clear insertion handle
-  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  TapEventBuilder single_tap_event(FloatPoint(200, 200), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
@@ -636,7 +638,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
 TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
   SetHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
 
-  LongPressEventBuilder long_press_event(IntPoint(200, 200));
+  LongPressEventBuilder long_press_event(FloatPoint(200, 200));
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
@@ -648,7 +650,7 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   SetHtmlInnerHTML("<textarea cols=50  rows=10>Enter text</textarea>");
 
   // Show handle
-  LongPressEventBuilder long_press_event(IntPoint(200, 10));
+  LongPressEventBuilder long_press_event(FloatPoint(200, 10));
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
@@ -656,7 +658,7 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Tap away from text area should clear handle
-  TapEventBuilder single_tap_event(IntPoint(200, 350), 1);
+  TapEventBuilder single_tap_event(FloatPoint(200, 350), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
@@ -709,7 +711,7 @@ TEST_F(EventHandlerTest, MisspellingContextMenuEvent) {
 
   SetHtmlInnerHTML("<textarea cols=50 rows=50>Mispellinggg</textarea>");
 
-  TapEventBuilder single_tap_event(IntPoint(10, 10), 1);
+  TapEventBuilder single_tap_event(FloatPoint(10, 10), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 

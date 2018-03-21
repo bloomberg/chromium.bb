@@ -63,7 +63,7 @@ bool GestureEventQueue::QueueEvent(
   // and generates wheel events with momentum phase which are handled in the
   // renderer normally.
   if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart &&
-      gesture_event.event.source_device == blink::kWebGestureDeviceTouchpad) {
+      gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad) {
     fling_controller_.ProcessGestureFlingStart(gesture_event);
     fling_in_progress_ = true;
     return false;
@@ -176,7 +176,7 @@ void GestureEventQueue::ReportPossibleHang(
         "gesture-event-queue-hang-source-device",
         base::debug::CrashKeySize::Size32);
     base::debug::ScopedCrashKeyString device_key_value(
-        device_key, std::to_string(event.source_device));
+        device_key, std::to_string(event.SourceDevice()));
     static auto* size_key = base::debug::AllocateCrashKeyString(
         "gesture-event-queue-hang-queue-size",
         base::debug::CrashKeySize::Size32);

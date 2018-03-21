@@ -1065,19 +1065,17 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
   // open.
   ContextMenuWaiter menu_waiter(content::NotificationService::AllSources());
 
-  gfx::Point child_location(1, 1);
-  gfx::Point child_location_in_root =
-      child_rwhv->TransformPointToRootCoordSpace(child_location);
+  gfx::PointF child_location(1, 1);
+  gfx::PointF child_location_in_root =
+      child_rwhv->TransformPointToRootCoordSpaceF(child_location);
 
   blink::WebGestureEvent event(
       blink::WebInputEvent::kGestureTwoFingerTap,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
-  event.x = child_location.x();
-  event.y = child_location.y();
-  event.global_x = child_location_in_root.x();
-  event.global_y = child_location_in_root.y();
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(child_location);
+  event.SetPositionInScreen(child_location_in_root);
   event.data.two_finger_tap.first_finger_width = 10;
   event.data.two_finger_tap.first_finger_height = 10;
 
