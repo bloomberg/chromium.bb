@@ -156,23 +156,23 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   last_auto_wrap_ = auto_wrap_;
   EWhiteSpace whitespace = style->WhiteSpace();
   auto_wrap_ = ComputedStyle::AutoWrap(whitespace);
+  bool is_svg_text = layout_object && layout_object->IsSVGInlineText();
 
   if (!ComputedStyle::CollapseWhiteSpace(whitespace))
-    AppendWithoutWhiteSpaceCollapsing(string, style, layout_object);
-  else if (ComputedStyle::PreserveNewline(whitespace) && !is_svgtext_)
-    AppendWithPreservingNewlines(string, style, layout_object);
+    AppendPreserveWhitespace(string, style, layout_object);
+  else if (ComputedStyle::PreserveNewline(whitespace) && !is_svg_text)
+    AppendPreserveNewline(string, style, layout_object);
   else
-    AppendWithWhiteSpaceCollapsing(string, 0, string.length(), style,
-                                   layout_object);
+    AppendCollapseWhitespace(string, 0, string.length(), style, layout_object);
 }
 
 template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
-    AppendWithWhiteSpaceCollapsing(const String& string,
-                                   unsigned start,
-                                   unsigned end,
-                                   const ComputedStyle* style,
-                                   LayoutText* layout_object) {
+void NGInlineItemsBuilderTemplate<
+    OffsetMappingBuilder>::AppendCollapseWhitespace(const String& string,
+                                                    unsigned start,
+                                                    unsigned end,
+                                                    const ComputedStyle* style,
+                                                    LayoutText* layout_object) {
   DCHECK_GT(end, start);
 
   // Collapsed spaces are "zero advance width, invisible, but retains its soft
@@ -193,7 +193,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     if (c == kNewlineCharacter) {
       // LayoutBR does not set preserve_newline, but should be preserved.
       if (!i && end == 1 && layout_object && layout_object->IsBR()) {
-        AppendForcedBreak(style, layout_object);
+        AppendForcedBreakCollapseWhitespace(style, layout_object);
         return;
       }
 
@@ -245,17 +245,17 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 // Even when without whitespace collapsing, control characters (newlines and
 // tabs) are in their own control items to make the line breaker easier.
 template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
-    AppendWithoutWhiteSpaceCollapsing(const String& string,
-                                      const ComputedStyle* style,
-                                      LayoutText* layout_object) {
+void NGInlineItemsBuilderTemplate<
+    OffsetMappingBuilder>::AppendPreserveWhitespace(const String& string,
+                                                    const ComputedStyle* style,
+                                                    LayoutText* layout_object) {
   for (unsigned start = 0; start < string.length();) {
     UChar c = string[start];
     if (IsControlItemCharacter(c)) {
       if (c != kNewlineCharacter)
         Append(NGInlineItem::kControl, c, style, layout_object);
       else
-        AppendForcedBreakWithoutWhiteSpaceCollapsing(style, layout_object);
+        AppendForcedBreak(style, layout_object);
       start++;
       continue;
     }
@@ -277,13 +277,13 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 }
 
 template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
-    AppendWithPreservingNewlines(const String& string,
-                                 const ComputedStyle* style,
-                                 LayoutText* layout_object) {
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendPreserveNewline(
+    const String& string,
+    const ComputedStyle* style,
+    LayoutText* layout_object) {
   for (unsigned start = 0; start < string.length();) {
     if (string[start] == kNewlineCharacter) {
-      AppendForcedBreak(style, layout_object);
+      AppendForcedBreakCollapseWhitespace(style, layout_object);
       start++;
       continue;
     }
@@ -291,15 +291,15 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     size_t end = string.find(kNewlineCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
-    AppendWithWhiteSpaceCollapsing(string, start, end, style, layout_object);
+    AppendCollapseWhitespace(string, start, end, style, layout_object);
     start = end;
   }
 }
 
 template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
-    AppendForcedBreakWithoutWhiteSpaceCollapsing(const ComputedStyle* style,
-                                                 LayoutObject* layout_object) {
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
   // At the forced break, add bidi controls to pop all contexts.
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-embedding-breaks
   if (!bidi_context_.IsEmpty()) {
@@ -321,13 +321,13 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 }
 
 template <typename OffsetMappingBuilder>
-void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
-    const ComputedStyle* style,
-    LayoutObject* layout_object) {
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
+    AppendForcedBreakCollapseWhitespace(const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   // Remove collapsible spaces immediately before a preserved newline.
   RemoveTrailingCollapsibleSpaceIfExists();
 
-  AppendForcedBreakWithoutWhiteSpaceCollapsing(style, layout_object);
+  AppendForcedBreak(style, layout_object);
 
   // Remove collapsible spaces immediately after a preserved newline.
   last_collapsible_space_ = CollapsibleSpace::kSpace;
@@ -432,8 +432,9 @@ void NGInlineItemsBuilderTemplate<
       return;
     }
 
-    // AppendForcedBreak sets CollapsibleSpace::kSpace to ignore leading
-    // spaces. In this case, the trailing collapsible space does not exist.
+    // AppendForcedBreakCollapseWhitespace sets CollapsibleSpace::kSpace to
+    // ignore leading spaces. In this case, the trailing collapsible space does
+    // not exist.
     if (ch == kNewlineCharacter)
       return;
   }
