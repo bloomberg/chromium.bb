@@ -42,7 +42,6 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       const blink::WebURL& url,
       GURL* new_url) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
-  bool ShouldGatherSiteIsolationStats() const override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const content::WebPluginInfo& info,

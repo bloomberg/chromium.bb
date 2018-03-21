@@ -105,10 +105,6 @@ bool ShellContentRendererClient::IsExternalPepperPlugin(
 #endif
 }
 
-bool ShellContentRendererClient::ShouldGatherSiteIsolationStats() const {
-  return false;
-}
-
 content::BrowserPluginDelegate*
 ShellContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,

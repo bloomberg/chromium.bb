@@ -216,10 +216,6 @@ bool ContentRendererClient::ShouldReportDetailedMessageForSource(
   return false;
 }
 
-bool ContentRendererClient::ShouldGatherSiteIsolationStats() const {
-  return true;
-}
-
 std::unique_ptr<blink::WebContentSettingsClient>
 ContentRendererClient::CreateWorkerContentSettingsClient(
     RenderFrame* render_frame) {

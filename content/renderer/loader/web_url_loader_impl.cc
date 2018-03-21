@@ -739,9 +739,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
-        extra_data->frame_origin(), GetTrafficAnnotationTag(request),
-        sync_load_response, url_loader_factory_,
-        extra_data->TakeURLLoaderThrottles());
+        GetTrafficAnnotationTag(request), sync_load_response,
+        url_loader_factory_, extra_data->TakeURLLoaderThrottles());
     return;
   }
 
@@ -760,9 +759,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   base::OnceClosure continue_navigation_function;
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
-      extra_data->frame_origin(), GetTrafficAnnotationTag(request),
-      false /* is_sync */, std::move(peer), url_loader_factory_,
-      extra_data->TakeURLLoaderThrottles(),
+      GetTrafficAnnotationTag(request), false /* is_sync */, std::move(peer),
+      url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
       std::move(url_loader_client_endpoints), &continue_navigation_function);
   extra_data->set_continue_navigation_function(
       std::move(continue_navigation_function));

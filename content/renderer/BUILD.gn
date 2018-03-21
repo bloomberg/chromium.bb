@@ -243,8 +243,6 @@ target(link_target_type, "renderer") {
     "loader/resource_dispatcher.h",
     "loader/shared_memory_data_consumer_handle.cc",
     "loader/shared_memory_data_consumer_handle.h",
-    "loader/site_isolation_stats_gatherer.cc",
-    "loader/site_isolation_stats_gatherer.h",
     "loader/sync_load_context.cc",
     "loader/sync_load_context.h",
     "loader/sync_load_response.cc",

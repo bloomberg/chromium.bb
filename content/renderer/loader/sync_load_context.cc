@@ -21,7 +21,6 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
@@ -34,9 +33,9 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
 
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
-      frame_origin, traffic_annotation, true /* is_sync */,
-      base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), network::mojom::URLLoaderClientEndpointsPtr(),
+      traffic_annotation, true /* is_sync */, base::WrapUnique(context),
+      context->url_loader_factory_, std::move(throttles),
+      network::mojom::URLLoaderClientEndpointsPtr(),
       nullptr /* continue_for_navigation */);
 }
 

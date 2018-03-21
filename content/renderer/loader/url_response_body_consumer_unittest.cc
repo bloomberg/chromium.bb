@@ -150,7 +150,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
         std::move(request), 0,
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), url::Origin(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),

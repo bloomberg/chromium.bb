@@ -301,11 +301,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const;
 
-  // Returns true if we should gather stats during resource loads as if the
-  // cross-site document blocking policy were enabled. Does not actually block
-  // any pages.
-  virtual bool ShouldGatherSiteIsolationStats() const;
-
   // Creates a permission client for in-renderer worker.
   virtual std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(RenderFrame* render_frame);
