@@ -184,9 +184,44 @@ public class SavePasswordsPreferences
     private boolean mSearchRecorded;
     private Menu mMenuForTesting;
 
+    // Histogram values for "PasswordManager.Android.ExportPasswordsProgressBarUsage". Never remove
+    // or reuse them, only add new ones if needed (and update PROGRESS_COUNT), to keep past and
+    // future UMA reports compatible.
+    @VisibleForTesting
+    public static final int PROGRESS_NOT_SHOWN = 0;
+    @VisibleForTesting
+    public static final int PROGRESS_HIDDEN_DIRECTLY = 1;
+    @VisibleForTesting
+    public static final int PROGRESS_HIDDEN_DELAYED = 2;
+    // The number of the other PROGRESS_* constants.
+    private static final int PROGRESS_COUNT = 3;
+
+    /**
+     * Converts a {@link DialogManager.HideActions} value to a value for the
+     * "PasswordManager.Android.ExportPasswordsProgressBarUsage" histogram.
+     */
+    private int actionToHistogramValue(@DialogManager.HideActions int action) {
+        switch (action) {
+            case DialogManager.ACTION_NO_OP:
+                return PROGRESS_NOT_SHOWN;
+            case DialogManager.ACTION_HIDDEN_IMMEDIATELY:
+                return PROGRESS_HIDDEN_DIRECTLY;
+            case DialogManager.ACTION_HIDING_DELAYED:
+                return PROGRESS_HIDDEN_DELAYED;
+        }
+        // All cases should be covered by the above switch statement.
+        assert false;
+        return PROGRESS_NOT_SHOWN;
+    }
+
     // Takes care of displaying and hiding the progress bar for exporting, while avoiding
     // flickering.
-    private DialogManager mProgressBarManager = new DialogManager();
+    private final DialogManager mProgressBarManager =
+            new DialogManager((@DialogManager.HideActions int action) -> {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "PasswordManager.Android.ExportPasswordsProgressBarUsage",
+                        actionToHistogramValue(action), PROGRESS_COUNT);
+            });
 
     // If an error dialog should be shown, this contains the arguments for it, such as the error
     // message. If no error dialog should be shown, this is null.

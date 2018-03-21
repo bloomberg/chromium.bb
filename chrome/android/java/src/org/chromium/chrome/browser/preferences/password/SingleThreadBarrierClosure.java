@@ -35,4 +35,12 @@ public final class SingleThreadBarrierClosure implements Runnable {
         --mRemainingRuns;
         if (mRemainingRuns == 0) mCallback.run();
     }
+
+    /**
+     * Whether the next call to {@link #run} runs {@link #mCallback}.
+     * @return True if the next call to {@link #run} runs {@link #mCallback}, false otherwise.
+     */
+    public boolean isReady() {
+        return mRemainingRuns == 1;
+    }
 }

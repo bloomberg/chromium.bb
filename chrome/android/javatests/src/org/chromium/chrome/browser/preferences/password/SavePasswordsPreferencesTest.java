@@ -859,6 +859,10 @@ public class SavePasswordsPreferencesTest {
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
 
+        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
+                SavePasswordsPreferences.PROGRESS_NOT_SHOWN);
+
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -871,6 +875,7 @@ public class SavePasswordsPreferencesTest {
 
         Assert.assertEquals(1, successDelta.getDelta());
         Assert.assertEquals(1, countDelta.getDelta());
+        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
@@ -1121,6 +1126,10 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
+        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
+                SavePasswordsPreferences.PROGRESS_HIDDEN_DELAYED);
+
         // Now pretend that passwords have been serialized.
         mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
 
@@ -1139,6 +1148,7 @@ public class SavePasswordsPreferencesTest {
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
 
         Intents.release();
+        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
@@ -1178,6 +1188,10 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
+        MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.Android.ExportPasswordsProgressBarUsage",
+                SavePasswordsPreferences.PROGRESS_HIDDEN_DIRECTLY);
+
         // Now pretend that passwords have been serialized.
         allowProgressBarToBeHidden(preferences);
         mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
@@ -1192,6 +1206,7 @@ public class SavePasswordsPreferencesTest {
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
 
         Intents.release();
+        Assert.assertEquals(1, progressBarDelta.getDelta());
     }
 
     /**
