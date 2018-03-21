@@ -1103,11 +1103,8 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   struct loopfilter *lf = &cm->lf;
   if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->all_lossless) {
     // write default deltas to frame buffer
-    av1_set_default_ref_deltas(lf->ref_deltas);
-    av1_set_default_mode_deltas(lf->mode_deltas);
     av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
     av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
-    lf->sharpness_level = -1;
     return;
   }
   assert(!cm->all_lossless);
