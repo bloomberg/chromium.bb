@@ -39,8 +39,6 @@ static_library("test_support") {
   sources = [
     "test/app_list_presenter_impl_test_api.cc",
     "test/app_list_presenter_impl_test_api.h",
-    "test/test_app_list_view_delegate_factory.cc",
-    "test/test_app_list_view_delegate_factory.h",
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.

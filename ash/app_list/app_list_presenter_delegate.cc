@@ -20,7 +20,6 @@
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
@@ -54,10 +53,7 @@ bool IsSideShelf(aura::Window* root_window) {
 AppListPresenterDelegate::AppListPresenterDelegate(
     app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
-    : is_fullscreen_app_list_enabled_(
-          app_list::features::IsFullscreenAppListEnabled()),
-      presenter_(presenter),
-      view_delegate_factory_(view_delegate_factory) {
+    : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -124,40 +120,22 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  if (is_fullscreen_app_list_enabled_) {
-    int app_list_y = view_->GetBoundsInScreen().y();
-    return gfx::Vector2d(0, IsSideShelf(root_window)
-                                ? 0
-                                : shelf->GetIdealBounds().y() - app_list_y);
-  }
-
-  shelf->UpdateAutoHideState();
-  switch (shelf->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return gfx::Vector2d(0, kAnimationOffset);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Vector2d(-kAnimationOffset, 0);
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Vector2d(kAnimationOffset, 0);
-  }
-  NOTREACHED();
-  return gfx::Vector2d();
+  int app_list_y = view_->GetBoundsInScreen().y();
+  return gfx::Vector2d(0, IsSideShelf(root_window)
+                              ? 0
+                              : shelf->GetIdealBounds().y() - app_list_y);
 }
 
 base::TimeDelta AppListPresenterDelegate::GetVisibilityAnimationDuration(
     aura::Window* root_window,
     bool is_visible) {
-  if (is_fullscreen_app_list_enabled_) {
-    // If the view is below the shelf, just hide immediately.
-    if (view_->GetBoundsInScreen().y() >
-        Shelf::ForWindow(root_window)->GetIdealBounds().y())
-      return base::TimeDelta::FromMilliseconds(0);
-    return GetAnimationDurationFullscreen(IsSideShelf(root_window),
-                                          view_->is_fullscreen());
+  // If the view is below the shelf, just hide immediately.
+  if (view_->GetBoundsInScreen().y() >
+      Shelf::ForWindow(root_window)->GetIdealBounds().y()) {
+    return base::TimeDelta::FromMilliseconds(0);
   }
-  return is_visible ? base::TimeDelta::FromMilliseconds(0)
-                    : animation_duration();
+  return GetAnimationDurationFullscreen(IsSideShelf(root_window),
+                                        view_->is_fullscreen());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -226,16 +204,10 @@ void AppListPresenterDelegate::OnOverviewModeStarting() {
 }
 
 void AppListPresenterDelegate::OnTabletModeStarted() {
-  if (!is_fullscreen_app_list_enabled_)
-    return;
-
   view_->OnTabletModeChanged(true);
 }
 
 void AppListPresenterDelegate::OnTabletModeEnded() {
-  if (!is_fullscreen_app_list_enabled_)
-    return;
-
   view_->OnTabletModeChanged(false);
 }
 
