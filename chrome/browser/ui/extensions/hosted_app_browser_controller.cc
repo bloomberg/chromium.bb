@@ -67,6 +67,9 @@ const char kPwaWindowEngagementTypeHistogram[] =
 
 // static
 bool HostedAppBrowserController::IsForHostedApp(const Browser* browser) {
+  if (!browser)
+    return false;
+
   const std::string extension_id =
       web_app::GetExtensionIdFromApplicationName(browser->app_name());
   const Extension* extension =

@@ -346,6 +346,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
+  helper.CompleteInstallableCheck(kManifestUrl, content::Manifest(), false);
+
   std::map<GURL, std::vector<SkBitmap> > icon_map;
   icon_map[GURL(kAppUrl)].push_back(
       CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));

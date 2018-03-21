@@ -182,8 +182,14 @@ const base::Feature kDesktopIOSPromotion{"DesktopIOSPromotion",
 #endif
 
 // Enables or disables windowing related features for desktop PWAs.
-const base::Feature kDesktopPWAWindowing{"DesktopPWAWindowing",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDesktopPWAWindowing {
+  "DesktopPWAWindowing",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables or disables Desktop PWAs capturing links.
 const base::Feature kDesktopPWAsLinkCapturing{

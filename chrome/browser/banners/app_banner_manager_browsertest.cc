@@ -154,7 +154,8 @@ class AppBannerManagerTest : public AppBannerManager {
 class AppBannerManagerBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    feature_list_.InitAndDisableFeature(features::kExperimentalAppBanners);
+    feature_list_.InitWithFeatures({}, {features::kExperimentalAppBanners,
+                                        features::kDesktopPWAWindowing});
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(10);
     SiteEngagementScore::SetParamValuesForTesting();
     ASSERT_TRUE(embedded_test_server()->Start());
