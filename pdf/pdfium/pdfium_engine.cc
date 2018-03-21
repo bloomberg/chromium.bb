@@ -1108,7 +1108,7 @@ void PDFiumEngine::ScrolledToXPosition(int position) {
   int old_x = position_.x();
   position_.set_x(position);
   CalculateVisiblePages();
-  client_->Scroll(pp::Point(old_x - position, 0));
+  client_->DidScroll(pp::Point(old_x - position, 0));
 }
 
 void PDFiumEngine::ScrolledToYPosition(int position) {
@@ -1117,7 +1117,7 @@ void PDFiumEngine::ScrolledToYPosition(int position) {
   int old_y = position_.y();
   position_.set_y(position);
   CalculateVisiblePages();
-  client_->Scroll(pp::Point(0, old_y - position));
+  client_->DidScroll(pp::Point(0, old_y - position));
 }
 
 void PDFiumEngine::PrePaint() {
