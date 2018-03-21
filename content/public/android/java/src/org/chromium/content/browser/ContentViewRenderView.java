@@ -169,6 +169,7 @@ public class ContentViewRenderView extends FrameLayout {
 
         WebContents webContents = contentViewCore != null ? contentViewCore.getWebContents() : null;
         if (webContents != null) {
+            webContents.setSize(mWidth, mHeight);
             nativeOnPhysicalBackingSizeChanged(
                     mNativeContentViewRenderView, webContents, mWidth, mHeight);
         }
