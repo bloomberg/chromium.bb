@@ -387,6 +387,19 @@ static bool NeedsScrollNode(const LayoutObject& object) {
   return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
 }
 
+static CompositingReasons CompositingReasonsForScroll(const LayoutBox& box) {
+  CompositingReasons compositing_reasons = CompositingReason::kNone;
+  if (auto* scrollable_area = box.GetScrollableArea()) {
+    if (auto* layer = scrollable_area->Layer()) {
+      if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
+        compositing_reasons |= CompositingReason::kRootScroller;
+    }
+  }
+  // TODO(pdr): Set other compositing reasons for scroll here, see:
+  // PaintLayerScrollableArea::ComputeNeedsCompositedScrolling.
+  return compositing_reasons;
+}
+
 // True if a scroll translation is needed for static scroll offset (e.g.,
 // overflow hidden with scroll), or if a scroll node is needed for composited
 // scrolling.
@@ -1295,7 +1308,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
       auto element_id = scrollable_area->GetCompositorElementId();
 
-      // TODO(pdr): Set the correct compositing reasons here.
       OnUpdate(properties_->UpdateScroll(
           context_.current.scroll, container_rect, contents_rect,
           user_scrollable_horizontal, user_scrollable_vertical, reasons,
@@ -1312,10 +1324,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       TransformationMatrix scroll_offset_matrix =
           TransformationMatrix().Translate(-scroll_offset.Width(),
                                            -scroll_offset.Height());
+      CompositingReasons compositing_reasons = CompositingReasonsForScroll(box);
       OnUpdate(properties_->UpdateScrollTranslation(
           context_.current.transform, scroll_offset_matrix, FloatPoint3D(),
           context_.current.should_flatten_inherited_transform,
-          context_.current.rendering_context_id, CompositingReason::kNone,
+          context_.current.rendering_context_id, compositing_reasons,
           CompositorElementId(), properties_->Scroll()));
     } else {
       OnClear(properties_->ClearScrollTranslation());

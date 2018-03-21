@@ -8,16 +8,23 @@
     },
     {
       "name": "HorizontalScrollbar",
-      "bounds": [800, 600],
+      "position": [0, 585],
+      "bounds": [800, 15]
+    },
+    {
+      "name": "LayoutBlockFlow HTML",
+      "position": [-216, 0],
+      "bounds": [1016, 128],
+      "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 800, 128],
+          "rect": [0, 0, 1016, 128],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 800, 128],
+          "rect": [0, 0, 1016, 128],
           "reason": "style change"
         }
       ]

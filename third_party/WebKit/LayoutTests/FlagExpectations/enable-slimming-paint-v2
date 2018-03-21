@@ -1260,6 +1260,9 @@ Bug(none) fast/forms/textarea/textarea-scrolled-type.html [ Failure ]
 Bug(none) paint/invalidation/scroll/overflow-scroll-delete.html [ Failure ]
 Bug(none) paint/invalidation/overflow/vertical-overflow-child.html [ Failure ]
 Bug(none) fast/forms/textarea/textarea-scrolled-mask.html [ Failure ]
+Bug(none) fast/css/sticky/sticky-both-sides-top-left-constrained.html [ Failure ]
+Bug(none) fast/css/sticky/sticky-vertically-overconstrained.html [ Failure ]
+Bug(none) fast/css/sticky/sticky-overflowing.html [ Failure ]
 
 # Failures due to pixel snapping because the overflow clip rect is not snapped
 # in PaintPropertyTreeBuilder::UpdateOverflowClip but needs to be snapped to
@@ -1367,6 +1370,9 @@ Bug(none) css3/blending/mix-blend-mode-simple-text.html [ Pass Timeout ]
 crbug.com/529963 paint/invalidation/background/background-attachment-fixed-scrolled.html [ Failure Crash ]
 Bug(none) fast/multicol/hit-test-translate-z.html [ Failure ]
 
+# Invalidation is incorrect.
+crbug.com/693741 paint/invalidation/reflection/scroll-absolute-layer-with-reflection.html [ Failure ]
+
 # Failures accumulated during the bot was borrowed by spv175.
 Bug(none) compositing/columns/geometry-map-paginated-assert.html [ Crash ]
 Bug(none) compositing/geometry/fixed-position-composited-page-scale-scroll.html [ Crash ]
@@ -1446,5 +1452,4 @@ Bug(none) paint/invalidation/background/body-background-image.html [ Failure ]
 Bug(none) paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
-Bug(none) paint/overflow/background-paint-into-scrolling-contents-layer-with-root-layer-scrolls-offset.html [ Failure ]
 Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
