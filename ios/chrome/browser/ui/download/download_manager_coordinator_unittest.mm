@@ -157,6 +157,7 @@ TEST_F(DownloadManagerCoordinatorTest, Stop) {
 // animation.
 TEST_F(DownloadManagerCoordinatorTest, DelegateCreatedDownload) {
   auto task = CreateTestTask();
+  ASSERT_EQ(0, user_action_tester_.GetActionCount("MobileDownloadFileUIShown"));
   [coordinator_ downloadManagerTabHelper:&tab_helper_
                        didCreateDownload:task.get()
                        webStateIsVisible:YES];
@@ -180,6 +181,9 @@ TEST_F(DownloadManagerCoordinatorTest, DelegateCreatedDownload) {
   EXPECT_FALSE(viewController.actionButton.hidden);
   EXPECT_NSEQ(@"Download",
               [viewController.actionButton titleForState:UIControlStateNormal]);
+
+  // Verify that UMA action was logged.
+  EXPECT_EQ(1, user_action_tester_.GetActionCount("MobileDownloadFileUIShown"));
 }
 
 // Tests calling downloadManagerTabHelper:didCreateDownload:webStateIsVisible:

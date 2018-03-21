@@ -93,6 +93,7 @@
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                didCreateDownload:(nonnull web::DownloadTask*)download
                webStateIsVisible:(BOOL)webStateIsVisible {
+  base::RecordAction(base::UserMetricsAction("MobileDownloadFileUIShown"));
   if (!webStateIsVisible) {
     // Do nothing if a background Tab requested download UI presentation.
     return;
