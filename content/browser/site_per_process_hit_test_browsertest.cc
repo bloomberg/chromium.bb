@@ -1693,18 +1693,22 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(CursorMessageFilter);
 };
 
+namespace {
+
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CursorUpdateReceivedFromCrossSiteIframe) {
-  GURL main_url(embedded_test_server()->GetURL(
+void CursorUpdateReceivedFromCrossSiteIframeHelper(
+    Shell* shell,
+    net::test_server::EmbeddedTestServer* embedded_test_server) {
+  GURL main_url(embedded_test_server->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_TRUE(NavigateToURL(shell, main_url));
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  auto* web_contents = static_cast<WebContentsImpl*>(shell->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
 
   FrameTreeNode* child_node = root->child_at(0);
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+  EXPECT_NE(shell->web_contents()->GetSiteInstance(),
             child_node->current_frame_host()->GetSiteInstance());
 
   WaitForChildFrameSurfaceReady(child_node->current_frame_host());
@@ -1734,9 +1738,24 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   SetWebEventPositions(&mouse_event, gfx::Point(60, 60), root_view);
-  auto* router = web_contents()->GetInputEventRouter();
+  auto* router = web_contents->GetInputEventRouter();
+  RenderWidgetHostMouseEventMonitor child_monitor(
+      child_view->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor root_monitor(
+      root_view->GetRenderWidgetHost());
   RouteMouseEventAndWaitUntilDispatch(router, root_view, child_view,
                                       &mouse_event);
+  // The child_view should receive a mouse-move event.
+  EXPECT_TRUE(child_monitor.EventWasReceived());
+  EXPECT_EQ(blink::WebInputEvent::kMouseMove, child_monitor.event().GetType());
+  EXPECT_NEAR(10, child_monitor.event().PositionInWidget().x, 2);
+  EXPECT_NEAR(10, child_monitor.event().PositionInWidget().y, 2);
+
+  // The root_view should also receive a mouse-move event.
+  EXPECT_TRUE(root_monitor.EventWasReceived());
+  EXPECT_EQ(blink::WebInputEvent::kMouseMove, root_monitor.event().GetType());
+  EXPECT_EQ(60, root_monitor.event().PositionInWidget().x);
+  EXPECT_EQ(60, root_monitor.event().PositionInWidget().y);
 
   // CursorMessageFilter::Wait() implicitly tests whether we receive a
   // ViewHostMsg_SetCursor message from the renderer process, because it does
@@ -1753,9 +1772,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
     loop.Run();
   }
 
-  // The |root_view| ends up getting a mouse-leave event, causing it to send an
-  // updated cursor for the view.
-  EXPECT_TRUE(
+  // The root_view receives a mouse-move event on top of the iframe, which does
+  // not send a cursor update.
+  EXPECT_FALSE(
       root_view->GetCursorManager()->GetCursorForTesting(root_view, cursor));
   EXPECT_TRUE(
       root_view->GetCursorManager()->GetCursorForTesting(child_view, cursor));
@@ -1763,6 +1782,20 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   CursorInfo cursor_info;
   cursor.GetCursorInfo(&cursor_info);
   EXPECT_EQ(cursor_info.type, blink::WebCursorInfo::kTypeIBeam);
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       CursorUpdateReceivedFromCrossSiteIframe) {
+  CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
+                                                embedded_test_server());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
+                       CursorUpdateReceivedFromCrossSiteIframe) {
+  CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
+                                                embedded_test_server());
 }
 #endif  // !defined(OS_ANDROID)
 
