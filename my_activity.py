@@ -197,6 +197,11 @@ class MyActivity(object):
     self.check_cookies()
     self.google_code_auth_token = None
 
+  def show_progress(self, how='.'):
+    if sys.stdout.isatty():
+      sys.stdout.write(how)
+      sys.stdout.flush()
+
   # Check the codereview cookie jar to determine which Rietveld instances to
   # authenticate to.
   def check_cookies(self):
@@ -245,6 +250,7 @@ class MyActivity(object):
         reviewer=reviewer_email,
         modified_after=query_modified_after,
         with_messages=True)
+    self.show_progress()
 
     issues = filter(
         lambda i: (datetime_from_rietveld(i['created']) < self.modified_before),
@@ -294,6 +300,7 @@ class MyActivity(object):
       patchset_props = remote.get_patchset_properties(
           issue['issue'],
           issue['patchsets'][-1])
+      self.show_progress()
       ret['delta'] = '+%d,-%d' % (
           sum(f['num_added'] for f in patchset_props['files'].itervalues()),
           sum(f['num_removed'] for f in patchset_props['files'].itervalues()))
@@ -365,6 +372,7 @@ class MyActivity(object):
     filters = ['-age:%ss' % max_age, user_filter]
 
     issues = self.gerrit_changes_over_rest(instance, filters)
+    self.show_progress()
     issues = [self.process_gerrit_issue(instance, issue)
               for issue in issues]
 
@@ -443,6 +451,7 @@ class MyActivity(object):
     url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
            '/%s/issues/%s/comments?maxResults=10000') % (project, issue_id)
     _, body = http.request(url)
+    self.show_progress()
     content = json.loads(body)
     if not content:
       logging.error('Unable to parse %s response from monorail.', project)
@@ -462,6 +471,7 @@ class MyActivity(object):
     query_data = urllib.urlencode(query)
     url = url + '?' + query_data
     _, body = http.request(url)
+    self.show_progress()
     content = json.loads(body)
     if not content:
       logging.error('Unable to parse %s response from monorail.', project)
@@ -980,6 +990,7 @@ def main():
   logging.info('Using range %s to %s', options.begin, options.end)
 
   my_activity = MyActivity(options)
+  my_activity.show_progress('Loading data')
 
   if not (options.changes or options.reviews or options.issues or
           options.changes_by_issue):
@@ -1007,6 +1018,8 @@ def main():
       my_activity.get_referenced_issues()
   except auth.AuthenticationError as e:
     logging.error('auth.AuthenticationError: %s', e)
+
+  my_activity.show_progress('\n')
 
   output_file = None
   try:
