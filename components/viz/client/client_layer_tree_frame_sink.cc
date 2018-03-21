@@ -126,6 +126,10 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   if (!enable_surface_synchronization_) {
     local_surface_id_ =
         local_surface_id_provider_->GetLocalSurfaceIdForFrame(frame);
+  } else {
+    CHECK(local_surface_id_ != last_submitted_local_surface_id_ ||
+          (last_submitted_device_scale_factor_ == frame.device_scale_factor() &&
+           last_submitted_size_in_pixels_ == frame.size_in_pixels()));
   }
 
   TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
@@ -137,6 +141,10 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   mojom::HitTestRegionListPtr hit_test_region_list;
   if (hit_test_data_provider_)
     hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
+
+  last_submitted_local_surface_id_ = local_surface_id_;
+  last_submitted_device_scale_factor_ = frame.device_scale_factor();
+  last_submitted_size_in_pixels_ = frame.size_in_pixels();
 
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
