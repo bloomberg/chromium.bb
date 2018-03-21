@@ -254,6 +254,8 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     // Enable autoplay without requiring any user gesture.
     {switches::kAutoplayPolicy,
      switches::autoplay::kNoUserGestureRequiredPolicy},
+    // Disable pinch zoom gesture.
+    {switches::kDisablePinch, ""},
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
