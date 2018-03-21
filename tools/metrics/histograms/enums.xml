@@ -34209,6 +34209,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Clicked do not collect URL"/>
 </enum>
 
+<enum name="PasswordManagerAndroidExportPasswordsProgressBarUsage">
+  <int value="0" label="Not hidden because not shown"/>
+  <int value="1" label="Hidden directly"/>
+  <int value="2" label="Hidden with a delay"/>
+</enum>
+
 <enum name="PasswordManagerAndroidPasswordActions">
   <int value="0" label="Copied"/>
   <int value="1" label="Displayed"/>

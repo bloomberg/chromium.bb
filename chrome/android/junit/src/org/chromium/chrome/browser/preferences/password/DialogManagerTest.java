@@ -76,8 +76,12 @@ public class DialogManagerTest {
     /** Used to detect showing and hiding without actually triggering any UI. */
     private final FakeDialogFragment mDialogFragment = new FakeDialogFragment();
 
+    /** Used to test reporting from DialogManager. */
+    private final DialogManager.ActionsConsumer mMockActionsConsumer =
+            mock(DialogManager.ActionsConsumer.class);
+
     /** The object under test. */
-    private final DialogManager mDialogManager = new DialogManager();
+    private final DialogManager mDialogManager = new DialogManager(mMockActionsConsumer);
 
     /**
      * Delayer to replace the timed one in the tested class. This gives exact control over hiding
@@ -105,6 +109,23 @@ public class DialogManagerTest {
         mManualDelayer.runCallbacksSynchronously();
         verify(callback, times(1)).run();
         assertEquals(FakeDialogFragment.DISMISSED, mDialogFragment.getState());
+        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_HIDING_DELAYED);
+    }
+
+    /**
+     * Check that immediate hiding is notified properly.
+     */
+    @Test
+    public void testNotification() {
+        mDialogManager.show(mDialogFragment, null);
+
+        Runnable callback = mock(Runnable.class);
+        mManualDelayer.runCallbacksSynchronously();
+        mDialogManager.hide(callback);
+        Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
+        verify(callback, times(1)).run();
+        assertEquals(FakeDialogFragment.DISMISSED, mDialogFragment.getState());
+        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_HIDDEN_IMMEDIATELY);
     }
 
     /**
@@ -117,5 +138,6 @@ public class DialogManagerTest {
         Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
         verify(callback, times(1)).run();
         assertEquals(FakeDialogFragment.NEW, mDialogFragment.getState());
+        verify(mMockActionsConsumer, times(1)).consume(DialogManager.ACTION_NO_OP);
     }
 }

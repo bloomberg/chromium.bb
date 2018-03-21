@@ -6,9 +6,13 @@ package org.chromium.chrome.browser.preferences.password;
 
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * This class manages a {@link DialogFragment}.
@@ -50,6 +54,33 @@ public final class DialogManager {
     @Nullable
     private Runnable mCallback;
 
+    /** Possible actions taken on the dialog during {@link #hide}. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({ACTION_NO_OP, ACTION_HIDDEN_IMMEDIATELY, ACTION_HIDING_DELAYED})
+    public @interface HideActions {}
+    /** The dialog has not been shown, so it is not being hidden. */
+    public static final int ACTION_NO_OP = 0;
+    /** {@link #mBarrierClosure} was signalled so the dialog is hidden now. */
+    public static final int ACTION_HIDDEN_IMMEDIATELY = 1;
+    /** The hiding is being delayed until {@link #mBarrierClosure} is signalled further. */
+    public static final int ACTION_HIDING_DELAYED = 2;
+
+    /** Interface to notify, during @{link #hide}, which action was taken. */
+    public interface ActionsConsumer { void consume(@HideActions int action); }
+
+    /** The callback called everytime {@link #hide} is executed. */
+    @Nullable
+    private final ActionsConsumer mActionsConsumer;
+
+    /**
+     * Constructs a DialogManager, optionally with a callback to report which action was taken on
+     * hiding.
+     * @param actionsConsumer The callback called everytime {@link #hide} is executed.
+     */
+    public DialogManager(@Nullable ActionsConsumer actionsConsumer) {
+        mActionsConsumer = actionsConsumer;
+    }
+
     /**
      * Shows the dialog.
      * @param dialog to be shown.
@@ -76,6 +107,18 @@ public final class DialogManager {
      * @param callback is asynchronously called as soon as the dialog is no longer visible.
      */
     public void hide(Runnable callback) {
+        if (mActionsConsumer != null) {
+            @HideActions
+            final int action;
+            if (mBarrierClosure == null) {
+                action = ACTION_NO_OP;
+            } else if (mBarrierClosure.isReady()) {
+                action = ACTION_HIDDEN_IMMEDIATELY;
+            } else {
+                action = ACTION_HIDING_DELAYED;
+            }
+            mActionsConsumer.consume(action);
+        }
         mCallback = callback;
         // The barrier closure is null if the dialog was not shown. In that case don't wait before
         // confirming the hidden state.
