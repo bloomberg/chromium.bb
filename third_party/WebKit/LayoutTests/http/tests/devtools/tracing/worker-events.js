@@ -47,7 +47,6 @@
       return;
 
     ++workerMetadataEventCount;
-    TestRunner.assertEquals(PerformanceTestRunner.timelineModel()._sessionId, event.args['data']['sessionId']);
     TestRunner.addResult('Got DevTools worker metadata event(' + workerMetadataEventCount + '): ' + event.name);
   }
 })();

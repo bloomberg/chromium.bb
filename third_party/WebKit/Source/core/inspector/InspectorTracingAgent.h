@@ -18,7 +18,6 @@ namespace blink {
 
 class InspectedFrames;
 class WorkerInspectorProxy;
-class WorkerThread;
 
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
@@ -62,7 +61,6 @@ class CORE_EXPORT InspectorTracingAgent final
   void EmitMetadataEvents();
   void InnerDisable();
   bool IsStarted() const;
-  void WriteTimelineStartedEventForWorker(WorkerThread*);
 
   Client* client_;
   String session_id_;
