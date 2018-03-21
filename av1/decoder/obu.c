@@ -133,12 +133,13 @@ aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
 
 #if CONFIG_TRAILING_BITS
 // Checks that the remaining bits start with a 1 and ends with 0s.
-// May consume an additional byte, if already byte aligned before the check.
-static int check_trailing_bits(AV1Decoder *pbi,
-                               struct aom_read_bit_buffer *rb) {
+// It consumes an additional byte, if already byte aligned before the check.
+static int check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb,
+                               int *consumed_byte) {
   AV1_COMMON *const cm = &pbi->common;
   // bit_offset is set to 0 (mod 8) when the reader is already byte aligned
   int bits_before_alignment = 8 - rb->bit_offset % 8;
+  *consumed_byte = (bits_before_alignment == 8);
   int trailing = aom_rb_read_literal(rb, bits_before_alignment);
   if (trailing != (1 << (bits_before_alignment - 1))) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -504,12 +505,14 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     // Cannot check bit pattern at the end of frame, redundant frame headers,
     // tile group, metadata, padding or unrecognized OBUs
     // because the current code consumes or skips all bytes
+    int consumed_byte = 0;
     if (payload_size > 0 &&
         (obu_header.type == OBU_SEQUENCE_HEADER ||
          obu_header.type == OBU_FRAME_HEADER) &&
-        check_trailing_bits(pbi, &rb)) {
+        check_trailing_bits(pbi, &rb, &consumed_byte)) {
       return;
     }
+    decoded_payload_size += consumed_byte;
 #endif
 
     // Check that the signalled OBU size matches the actual amount of data read
