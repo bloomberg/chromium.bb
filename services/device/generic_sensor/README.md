@@ -71,8 +71,8 @@ platform.
 | GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel                            |                                       | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn                               |                                       | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE                          |                           |                                       |                                       |                                           |
-| ABSOLUTE_ORIENTATION_EULER_ANGLES | See below                 |                                       |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
-| ABSOLUTE_ORIENTATION_QUATERNION   | See below                 |                                       |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
+| ABSOLUTE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER and MAGNETOMETER (*)    |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
+| ABSOLUTE_ORIENTATION_QUATERNION   | See below                 | ABSOLUTE_ORIENTATION_EULER_ANGLES (*) |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
 | RELATIVE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER (*)                     | ACCELEROMETER (*)                     |                                           |
 | RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR | RELATIVE_ORIENTATION_EULER_ANGLES (*) | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
 
@@ -103,6 +103,10 @@ RELATIVE_ORIENTATION_QUATERNION to euler angles.
 Sensors are implemented by reading values from the IIO subsystem. The values in
 the "Linux" column of the table above are the prefix of the sysfs files Chrome
 searches for to provide data for a SensorType. The
+ABSOLUTE_ORIENTATION_EULER_ANGLES sensor type is provided by interpreting the
+value that can be read from the ACCELEROMETER and MAGNETOMETER. The
+ABSOLUTE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
+value that can be read from the ABSOLUTE_ORIENTATION_EULER_ANGLES. The
 RELATIVE_ORIENTATION_EULER_ANGLES sensor type is provided by interpreting the
 value that can be read from the ACCELEROMETER. The
 RELATIVE_ORIENTATION_QUATERNION sensor type is provided by interpreting the

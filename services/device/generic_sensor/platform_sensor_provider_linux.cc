@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
+#include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
@@ -26,6 +27,8 @@ namespace {
 bool IsFusionSensorType(mojom::SensorType type) {
   switch (type) {
     case mojom::SensorType::LINEAR_ACCELERATION:
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
     case mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION:
       return true;
@@ -251,6 +254,15 @@ void PlatformSensorProviderLinux::CreateFusionSensor(
     case mojom::SensorType::LINEAR_ACCELERATION:
       fusion_algorithm = std::make_unique<
           LinearAccelerationFusionAlgorithmUsingAccelerometer>();
+      break;
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+      fusion_algorithm = std::make_unique<
+          AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
+      break;
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
+      fusion_algorithm = std::make_unique<
+          OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+          true /* absolute */);
       break;
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
       fusion_algorithm = std::make_unique<
