@@ -8,7 +8,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -51,6 +50,9 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
                scoped_refptr<PingManager> ping_manager,
                const NotifyObserversCallback& notify_observers_callback);
 
+  // Returns true and the state of the component identified by |id|, if the
+  // component is found in any update context. Returns false if the component
+  // is not found.
   bool GetUpdateState(const std::string& id, CrxUpdateItem* update_state);
 
   void Update(bool is_foreground,
@@ -67,7 +69,7 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
   friend class base::RefCounted<UpdateEngine>;
   ~UpdateEngine();
 
-  using UpdateContexts = std::set<scoped_refptr<UpdateContext>>;
+  using UpdateContexts = std::map<std::string, scoped_refptr<UpdateContext>>;
 
   void UpdateComplete(scoped_refptr<UpdateContext> update_context, Error error);
 
@@ -168,7 +170,9 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   // is handling the next component in the queue.
   base::TimeDelta next_update_delay;
 
-  // The session id this context is associated with.
+  // The unique session id of this context. The session id is serialized in
+  // every protocol request. It is also used as a key in various data stuctures
+  // to uniquely identify an update context.
   const std::string session_id;
 
  private:
