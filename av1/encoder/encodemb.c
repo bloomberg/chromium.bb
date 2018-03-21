@@ -515,6 +515,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
   const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  // Assert not magic number (uninitialized).
+  assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
   if (x->blk_skip[plane][blk_row * bw + blk_col] && plane == 0) {
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;
