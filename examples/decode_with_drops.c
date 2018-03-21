@@ -116,9 +116,6 @@ int main(int argc, char **argv) {
     int skip;
     const unsigned char *frame =
         aom_video_reader_get_frame(reader, &frame_size);
-    if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL))
-      die_codec(&codec, "Failed to decode frame.");
-
     ++frame_cnt;
 
     skip = (is_range && frame_cnt >= n && frame_cnt <= m) ||
@@ -126,6 +123,8 @@ int main(int argc, char **argv) {
 
     if (!skip) {
       putc('.', stdout);
+      if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL))
+        die_codec(&codec, "Failed to decode frame.");
 
       while ((img = aom_codec_get_frame(&codec, &iter)) != NULL)
         aom_img_write(img, outfile);

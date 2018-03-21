@@ -54,8 +54,8 @@ decode_with_drops_av1() {
       file="${AOM_TEST_OUTPUT_DIR}/test_encode.ivf"
       encode_yuv_raw_input_av1 "${file}" --ivf
     fi
-    # Drop frames 2 and 3.
-    decode_with_drops "${file}" "av1" "2-3"
+    # Drop frames 3 and 4.
+    decode_with_drops "${file}" "av1" "3-4"
 
     # Test pattern mode: Drop 3 of every 4 frames.
     decode_with_drops "${file}" "av1" "3/4"
