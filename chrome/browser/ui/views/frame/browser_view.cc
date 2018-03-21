@@ -630,6 +630,10 @@ void BrowserView::Hide() {
   // Not implemented.
 }
 
+bool BrowserView::IsVisible() const {
+  return frame_->IsVisible();
+}
+
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
   ExitFullscreen();
   GetWidget()->SetBounds(bounds);

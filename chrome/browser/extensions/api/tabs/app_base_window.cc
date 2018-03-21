@@ -53,6 +53,10 @@ void AppBaseWindow::Hide() {
   GetBaseWindow()->Hide();
 }
 
+bool AppBaseWindow::IsVisible() const {
+  return GetBaseWindow()->IsVisible();
+}
+
 void AppBaseWindow::ShowInactive() {
   GetBaseWindow()->ShowInactive();
 }

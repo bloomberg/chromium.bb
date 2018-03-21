@@ -108,6 +108,10 @@ bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
   return false;
 }
 
+bool TestBrowserWindow::IsVisible() const {
+  return true;
+}
+
 LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }

@@ -52,6 +52,10 @@ void ShellNativeAppWindowAura::Hide() {
   GetNativeWindow()->Hide();
 }
 
+bool ShellNativeAppWindowAura::IsVisible() const {
+  return GetNativeWindow()->IsVisible();
+}
+
 void ShellNativeAppWindowAura::Activate() {
   aura::Window* window = GetNativeWindow();
   if (window)

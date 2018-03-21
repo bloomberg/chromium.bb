@@ -76,6 +76,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void Show() override;
   void ShowInactive() override;
   void Hide() override;
+  bool IsVisible() const override;
   void Close() override;
   void Activate() override;
   void Deactivate() override;

@@ -38,6 +38,7 @@ class TestBrowserWindow : public BrowserWindow {
   void Show() override {}
   void ShowInactive() override {}
   void Hide() override {}
+  bool IsVisible() const override;
   void SetBounds(const gfx::Rect& bounds) override {}
   void Close() override {}
   void Activate() override {}
