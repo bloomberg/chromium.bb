@@ -368,7 +368,6 @@
       'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
-      'Win SyzyASAN LKGR': 'syzyasan_no_pch_release_x86',
     },
 
     'chromium.mac': {
@@ -735,7 +734,6 @@
       'win_chromium_compile_dbg_ng': 'debug_trybot_x86_minimal_symbols',
       'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'win_chromium_dbg_ng': 'debug_trybot_x86_minimal_symbols',
-      'win_chromium_syzyasan_rel': 'syzyasan_no_pch_release_x86',
       'win_chromium_x64_rel_ng': 'release_trybot_minimal_symbols',
       'win_clang': 'win_clang_release_bot',
       'win-msvc-rel': 'win_msvc_release_bot_compile_only',
@@ -1649,14 +1647,6 @@
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
     ],
 
-    'syzyasan_no_pch_release_x86': [
-      'syzyasan', 'no_pch', 'release', 'x86',
-      # The SyzyASAN build may default dcheck_always_on to true to produce
-      # official builds with DCHECK on. To counter this, the flag is fixed
-      # here. For details see https://crbug.com/596231#c71.
-      'disable_dcheck_always_on',
-    ],
-
     'tsan_disable_nacl_debug_bot': [
       'tsan', 'disable_nacl', 'debug_bot',
     ],
@@ -1898,10 +1888,6 @@
 
     'dcheck_always_on': {
       'gn_args': 'dcheck_always_on=true',
-    },
-
-    'disable_dcheck_always_on': {
-      'gn_args': 'dcheck_always_on=false',
     },
 
     'debug': {
@@ -2162,11 +2148,6 @@
 
     'system_gbm_libdrm': {
       'gn_args': 'use_system_libdrm=true use_system_minigbm=true',
-    },
-
-    'syzyasan': {
-      # TODO(thakis): Figure out SyzyASan + clang story.
-      'gn_args': 'is_syzyasan=true is_clang=false',
     },
 
     'thin_lto': {
