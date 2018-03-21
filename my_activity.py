@@ -14,9 +14,6 @@ Example:
   - my_activity.py -jd to output stats for the week to json with deltas data.
 """
 
-# TODO(vadimsh): This script knows too much about ClientLogin and cookies. It
-# will stop to work on ~20 Apr 2015.
-
 # These services typically only provide a created time and a last modified time
 # for each item for general queries. This is not enough to determine if there
 # was activity in a given time period. So, we first query for all things created
@@ -25,12 +22,14 @@ Example:
 # This means that query time scales mostly with (today() - begin).
 
 import collections
+import contextlib
 from datetime import datetime
 from datetime import timedelta
 from functools import partial
 import itertools
 import json
 import logging
+from multiprocessing.pool import ThreadPool
 import optparse
 import os
 import subprocess
@@ -181,8 +180,8 @@ def datetime_from_rietveld(date_string):
     return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
 
 
-def datetime_from_google_code(date_string):
-  return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S.%fZ')
+def datetime_from_monorail(date_string):
+  return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
 
 
 class MyActivity(object):
@@ -417,12 +416,47 @@ class MyActivity(object):
       })
     return ret
 
-  def monorail_query_issues(self, project, query):
-    project_config = monorail_projects.get(project, {})
+  def monorail_get_auth_http(self):
     auth_config = auth.extract_auth_config_from_options(self.options)
     authenticator = auth.get_authenticator_for_host(
         'bugs.chromium.org', auth_config)
-    http = authenticator.authorize(httplib2.Http())
+    return authenticator.authorize(httplib2.Http())
+
+  def filter_modified_monorail_issue(self, issue):
+    """Precisely checks if an issue has been modified in the time range.
+
+    This fetches all issue comments to check if the issue has been modified in
+    the time range specified by user. This is needed because monorail only
+    allows filtering by last updated and published dates, which is not
+    sufficient to tell whether a given issue has been modified at some specific
+    time range. Any update to the issue is a reported as comment on Monorail.
+
+    Args:
+      issue: Issue dict as returned by monorail_query_issues method. In
+          particular, must have a key 'uid' formatted as 'project:issue_id'.
+
+    Returns:
+      Passed issue if modified, None otherwise.
+    """
+    http = self.monorail_get_auth_http()
+    project, issue_id = issue['uid'].split(':')
+    url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
+           '/%s/issues/%s/comments?maxResults=10000') % (project, issue_id)
+    _, body = http.request(url)
+    content = json.loads(body)
+    if not content:
+      logging.error('Unable to parse %s response from monorail.', project)
+      return issue
+
+    for item in content.get('items', []):
+      comment_published = datetime_from_monorail(item['published'])
+      if self.filter_modified(comment_published):
+        return issue
+
+    return None
+
+  def monorail_query_issues(self, project, query):
+    http = self.monorail_get_auth_http()
     url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
            '/%s/issues') % project
     query_data = urllib.urlencode(query)
@@ -430,10 +464,11 @@ class MyActivity(object):
     _, body = http.request(url)
     content = json.loads(body)
     if not content:
-      logging.error('Unable to parse %s response from projecthosting.', project)
+      logging.error('Unable to parse %s response from monorail.', project)
       return []
 
     issues = []
+    project_config = monorail_projects.get(project, {})
     for item in content.get('items', []):
       if project_config.get('shorturl'):
         protocol = project_config.get('short_url_protocol', 'http')
@@ -445,8 +480,8 @@ class MyActivity(object):
       issue = {
         'uid': '%s:%s' % (project, item['id']),
         'header': item['title'],
-        'created': dateutil.parser.parse(item['published']),
-        'modified': dateutil.parser.parse(item['updated']),
+        'created': datetime_from_monorail(item['published']),
+        'modified': datetime_from_monorail(item['updated']),
         'author': item['author']['name'],
         'url': item_url,
         'comments': [],
@@ -606,11 +641,17 @@ class MyActivity(object):
     pass
 
   def get_changes(self):
-    for instance in rietveld_instances:
-      self.changes += self.rietveld_search(instance, owner=self.user)
-
-    for instance in gerrit_instances:
-      self.changes += self.gerrit_search(instance, owner=self.user)
+    num_instances = len(rietveld_instances) + len(gerrit_instances)
+    with contextlib.closing(ThreadPool(num_instances)) as pool:
+      rietveld_changes = pool.map_async(
+          lambda instance: self.rietveld_search(instance, owner=self.user),
+          rietveld_instances)
+      gerrit_changes = pool.map_async(
+          lambda instance: self.gerrit_search(instance, owner=self.user),
+          gerrit_instances)
+      rietveld_changes = itertools.chain.from_iterable(rietveld_changes.get())
+      gerrit_changes = itertools.chain.from_iterable(gerrit_changes.get())
+      self.changes = list(rietveld_changes) + list(gerrit_changes)
 
   def print_changes(self):
     if self.changes:
@@ -619,13 +660,18 @@ class MyActivity(object):
           self.print_change(change)
 
   def get_reviews(self):
-    for instance in rietveld_instances:
-      self.reviews += self.rietveld_search(instance, reviewer=self.user)
-
-    for instance in gerrit_instances:
-      reviews = self.gerrit_search(instance, reviewer=self.user)
-      reviews = filter(lambda r: not username(r['owner']) == self.user, reviews)
-      self.reviews += reviews
+    num_instances = len(rietveld_instances) + len(gerrit_instances)
+    with contextlib.closing(ThreadPool(num_instances)) as pool:
+      rietveld_reviews = pool.map_async(
+          lambda instance: self.rietveld_search(instance, reviewer=self.user),
+          rietveld_instances)
+      gerrit_reviews = pool.map_async(
+          lambda instance: self.gerrit_search(instance, reviewer=self.user),
+          gerrit_instances)
+      rietveld_reviews = itertools.chain.from_iterable(rietveld_reviews.get())
+      gerrit_reviews = itertools.chain.from_iterable(gerrit_reviews.get())
+      gerrit_reviews = [r for r in gerrit_reviews if r['owner'] != self.user]
+      self.reviews = list(rietveld_reviews) + list(gerrit_reviews)
 
   def print_reviews(self):
     if self.reviews:
@@ -634,8 +680,15 @@ class MyActivity(object):
         self.print_review(review)
 
   def get_issues(self):
-    for project in monorail_projects:
-      self.issues += self.monorail_issue_search(project)
+    with contextlib.closing(ThreadPool(len(monorail_projects))) as pool:
+      monorail_issues = pool.map(
+          self.monorail_issue_search, monorail_projects.keys())
+      monorail_issues = list(itertools.chain.from_iterable(monorail_issues))
+
+    with contextlib.closing(ThreadPool(len(monorail_issues))) as pool:
+      filtered_issues = pool.map(
+          self.filter_modified_monorail_issue, monorail_issues)
+      self.issues = [issue for issue in filtered_issues if issue]
 
   def get_referenced_issues(self):
     if not self.issues:
