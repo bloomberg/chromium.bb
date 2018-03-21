@@ -31,10 +31,6 @@ bool DisableUpdateService() {
 bool ForceUIRefreshPhase1() {
   return false;
 }
-// TODO(crbug.com/818560) : Remove this hook.
-bool ForceTabSwitcherTabGrid() {
-  return false;
-}
 void SetUpTestsIfPresent() {}
 void RunTestsIfPresent() {}
 

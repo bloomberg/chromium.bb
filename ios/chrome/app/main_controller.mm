@@ -888,7 +888,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    if (IsTabSwitcherTabGridEnabled()) {
+    if (IsUIRefreshPhase1Enabled()) {
       TabGridCoordinator* tabGridCoordinator =
           [[TabGridCoordinator alloc] initWithWindow:self.window
                           applicationCommandEndpoint:self];
@@ -2483,12 +2483,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Creates and returns a tab switcher object according to the current
 // experimental flags and device idioms:
-// - If the tab grid experimental flag is enabled, the TabGridController's
+// - If the UI Refresh phase 1 flag is enabled, the TabGridController's
 //   TabSwitcher is returned.
 // - If the current device is an iPad, a new TabSwitcherController is returned.
 // - Otherwise, a new StackViewController is returned.
 - (id<TabSwitcher>)newTabSwitcher {
-  if (IsTabSwitcherTabGridEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     DCHECK(_mainCoordinator)
         << " Main coordinator not created when tab switcher needed.";
     TabGridCoordinator* tabGridCoordinator =

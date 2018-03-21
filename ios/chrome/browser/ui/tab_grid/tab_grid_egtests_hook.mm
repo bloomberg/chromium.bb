@@ -38,11 +38,6 @@ bool ForceUIRefreshPhase1() {
   return true;
 }
 
-// TODO(crbug.com/818560) : Remove this hook.
-bool ForceTabSwitcherTabGrid() {
-  return true;
-}
-
 void SetUpTestsIfPresent() {
   // No-op for Earl Grey.
 }

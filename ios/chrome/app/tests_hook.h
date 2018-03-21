@@ -36,11 +36,6 @@ bool DisableUpdateService();
 // overriding the flag value.
 bool ForceUIRefreshPhase1();
 
-// TODO(crbug.com/818560): Removes this hook.
-// Returns true if the tab grid will be displayed as the tab switcher,
-// overriding the flag value.
-bool ForceTabSwitcherTabGrid();
-
 // Global integration tests setup.  This is not used by EarlGrey-based
 // integration tests.
 void SetUpTestsIfPresent();
