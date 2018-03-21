@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -16,8 +17,8 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
-#include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/task_runner.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
@@ -71,7 +72,6 @@ class FakeAudioDecoder : public CmaBackend::AudioDecoder {
         pipeline_status_(PIPELINE_STATUS_OK),
         pending_push_(false),
         pushed_buffer_count_(0),
-        last_buffer_(nullptr),
         delegate_(nullptr) {}
   ~FakeAudioDecoder() override {}
 
@@ -80,8 +80,8 @@ class FakeAudioDecoder : public CmaBackend::AudioDecoder {
     DCHECK(delegate);
     delegate_ = delegate;
   }
-  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
-    last_buffer_ = buffer;
+  BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override {
+    last_buffer_ = std::move(buffer);
     ++pushed_buffer_count_;
 
     switch (pipeline_status_) {
@@ -126,7 +126,7 @@ class FakeAudioDecoder : public CmaBackend::AudioDecoder {
     rendering_delay_ = rendering_delay;
   }
   unsigned pushed_buffer_count() const { return pushed_buffer_count_; }
-  CastDecoderBuffer* last_buffer() { return last_buffer_; }
+  const DecoderBufferBase* last_buffer() { return last_buffer_.get(); }
 
  private:
   const MediaPipelineDeviceParams params_;
@@ -136,7 +136,7 @@ class FakeAudioDecoder : public CmaBackend::AudioDecoder {
   PipelineStatus pipeline_status_;
   bool pending_push_;
   int pushed_buffer_count_;
-  CastDecoderBuffer* last_buffer_;
+  scoped_refptr<DecoderBufferBase> last_buffer_;
   Delegate* delegate_;
   RenderingDelay rendering_delay_;
 };
@@ -387,7 +387,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   ::media::AudioParameters audio_params = GetAudioParams();
   const size_t expected_frame_size =
       static_cast<size_t>(audio_params.GetBytesPerBuffer());
-  const CastDecoderBuffer* buffer = audio_decoder->last_buffer();
+  const DecoderBufferBase* buffer = audio_decoder->last_buffer();
   EXPECT_TRUE(buffer->data());
   EXPECT_EQ(expected_frame_size, buffer->data_size());
   EXPECT_FALSE(buffer->decrypt_config());  // Null because of raw audio.

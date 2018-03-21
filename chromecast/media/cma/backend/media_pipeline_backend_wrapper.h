@@ -20,6 +20,7 @@ namespace media {
 
 enum class AudioContentType;
 class AudioDecoderWrapper;
+class VideoDecoderWrapper;
 class MediaPipelineBackend;
 class MediaPipelineBackendManager;
 
@@ -57,8 +58,8 @@ class MediaPipelineBackendWrapper : public CmaBackend {
   const AudioContentType content_type_;
 
   std::unique_ptr<AudioDecoderWrapper> audio_decoder_;
+  std::unique_ptr<VideoDecoderWrapper> video_decoder_;
 
-  bool have_video_decoder_;
   bool playing_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendWrapper);

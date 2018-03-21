@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/graphics_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,7 +35,7 @@ class MockCmaBackend : public CmaBackend {
     AudioDecoder();
     ~AudioDecoder() override;
     MOCK_METHOD1(SetDelegate, void(Delegate*));
-    MOCK_METHOD1(PushBuffer, BufferStatus(CastDecoderBuffer*));
+    MOCK_METHOD1(PushBuffer, BufferStatus(scoped_refptr<DecoderBufferBase>));
     MOCK_METHOD1(SetConfig, bool(const AudioConfig&));
     MOCK_METHOD1(SetVolume, bool(float));
     MOCK_METHOD0(GetRenderingDelay, RenderingDelay());
@@ -46,7 +48,7 @@ class MockCmaBackend : public CmaBackend {
     VideoDecoder();
     ~VideoDecoder() override;
     MOCK_METHOD1(SetDelegate, void(Delegate*));
-    MOCK_METHOD1(PushBuffer, BufferStatus(CastDecoderBuffer*));
+    MOCK_METHOD1(PushBuffer, BufferStatus(scoped_refptr<DecoderBufferBase>));
     MOCK_METHOD1(SetConfig, bool(const VideoConfig&));
     MOCK_METHOD1(GetStatistics, void(Statistics*));
   };

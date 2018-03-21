@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/memory/ref_counted.h"
+#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace chromecast {
@@ -20,11 +23,36 @@ namespace media {
 class CmaBackend {
  public:
   using BufferStatus = MediaPipelineBackend::BufferStatus;
-  using Decoder = MediaPipelineBackend::Decoder;
-  using VideoDecoder = MediaPipelineBackend::VideoDecoder;
 
-  class AudioDecoder : public MediaPipelineBackend::AudioDecoder {
+  class Decoder {
    public:
+    using BufferStatus = MediaPipelineBackend::BufferStatus;
+    using Delegate = MediaPipelineBackend::Decoder::Delegate;
+
+    // These methods have the same behavior as the corresponding methods on
+    // MediaPipelineBackend::Decoder.
+    // See chromecast/public/media/media_pipeline_backend.h for documentation.
+    virtual void SetDelegate(Delegate* delegate) = 0;
+    virtual BufferStatus PushBuffer(
+        scoped_refptr<DecoderBufferBase> buffer) = 0;
+
+   protected:
+    virtual ~Decoder() = default;
+  };
+
+  class AudioDecoder : public Decoder {
+   public:
+    using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
+    using Statistics = MediaPipelineBackend::AudioDecoder::Statistics;
+
+    // These methods have the same behavior as the corresponding methods on
+    // MediaPipelineBackend::AudioDecoder.
+    // See chromecast/public/media/media_pipeline_backend.h for documentation.
+    virtual bool SetConfig(const AudioConfig& config) = 0;
+    virtual bool SetVolume(float multiplier) = 0;
+    virtual RenderingDelay GetRenderingDelay() = 0;
+    virtual void GetStatistics(Statistics* statistics) = 0;
+
     // Returns true if the audio decoder requires that encrypted buffers be
     // decrypted before being passed to PushBuffer(). The return value may
     // change whenever SetConfig() is called or the backend is initialized.
@@ -32,6 +60,20 @@ class CmaBackend {
 
    protected:
     ~AudioDecoder() override = default;
+  };
+
+  class VideoDecoder : public Decoder {
+   public:
+    using Statistics = MediaPipelineBackend::VideoDecoder::Statistics;
+
+    // These methods have the same behavior as the corresponding methods on
+    // MediaPipelineBackend::VideoDecoder.
+    // See chromecast/public/media/media_pipeline_backend.h for documentation.
+    virtual bool SetConfig(const VideoConfig& config) = 0;
+    virtual void GetStatistics(Statistics* statistics) = 0;
+
+   protected:
+    ~VideoDecoder() override = default;
   };
 
   virtual ~CmaBackend() = default;

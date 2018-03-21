@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_WRAPPER_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
@@ -32,7 +33,7 @@ class AudioDecoderWrapper : public CmaBackend::AudioDecoder {
  private:
   // CmaBackend::AudioDecoder implementation:
   void SetDelegate(Delegate* delegate) override;
-  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override;
+  BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override;
   bool SetConfig(const AudioConfig& config) override;
   bool SetVolume(float multiplier) override;
   RenderingDelay GetRenderingDelay() override;

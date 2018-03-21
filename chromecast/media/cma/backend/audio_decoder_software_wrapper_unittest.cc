@@ -5,8 +5,9 @@
 #include "chromecast/media/cma/backend/audio_decoder_software_wrapper.h"
 
 #include "base/test/scoped_task_environment.h"
-#include "chromecast/media/cma/test/mock_cma_backend.h"
+#include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,13 +18,27 @@ using ::testing::_;
 namespace chromecast {
 namespace media {
 
+namespace {
+
+class MockAudioDecoder : public MediaPipelineBackend::AudioDecoder {
+ public:
+  MOCK_METHOD1(SetDelegate, void(Delegate*));
+  MOCK_METHOD1(PushBuffer, BufferStatus(CastDecoderBuffer*));
+  MOCK_METHOD1(SetConfig, bool(const AudioConfig&));
+  MOCK_METHOD1(SetVolume, bool(float));
+  MOCK_METHOD0(GetRenderingDelay, RenderingDelay());
+  MOCK_METHOD1(GetStatistics, void(Statistics*));
+};
+
+}  // namespace
+
 class AudioDecoderSoftwareWrapperTest : public ::testing::Test {
  public:
   AudioDecoderSoftwareWrapperTest()
       : audio_decoder_software_wrapper_(&audio_decoder_) {}
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MockCmaBackend::AudioDecoder audio_decoder_;
+  MockAudioDecoder audio_decoder_;
   AudioDecoderSoftwareWrapper audio_decoder_software_wrapper_;
 };
 

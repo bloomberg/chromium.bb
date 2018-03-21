@@ -57,14 +57,14 @@ void AudioDecoderWrapper::SetDelegate(Delegate* delegate) {
 }
 
 CmaBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
-    CastDecoderBuffer* buffer) {
+    scoped_refptr<DecoderBufferBase> buffer) {
   if (buffer_delegate_ && buffer_delegate_->IsActive()) {
     // Mute the decoder, we are sending audio to delegate.
     if (!delegate_active_) {
       delegate_active_ = true;
       decoder_.SetVolume(0.0);
     }
-    buffer_delegate_->OnPushBuffer(buffer);
+    buffer_delegate_->OnPushBuffer(buffer.get());
   } else {
     // Restore original volume.
     if (delegate_active_) {
@@ -75,7 +75,7 @@ CmaBackend::BufferStatus AudioDecoderWrapper::PushBuffer(
       }
     }
   }
-  return decoder_.PushBuffer(buffer);
+  return decoder_.PushBuffer(buffer.get());
 }
 
 bool AudioDecoderWrapper::SetConfig(const AudioConfig& config) {
