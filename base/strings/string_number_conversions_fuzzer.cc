@@ -27,6 +27,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   size_t out_size;
   base::StringToSizeT(string_piece_input, &out_size);
 
+  // Test for StringPiece16 if size is even.
+  if (size % 2 == 0) {
+    base::StringPiece16 string_piece_input16(
+        reinterpret_cast<const base::char16*>(data), size / 2);
+
+    base::StringToInt(string_piece_input16, &out_int);
+    base::StringToUint(string_piece_input16, &out_uint);
+    base::StringToInt64(string_piece_input16, &out_int64);
+    base::StringToUint64(string_piece_input16, &out_uint64);
+    base::StringToSizeT(string_piece_input16, &out_size);
+  }
+
   double out_double;
   base::StringToDouble(string_input, &out_double);
 
@@ -38,5 +50,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::HexStringToBytes(string_piece_input, &out_bytes);
 
   base::HexEncode(data, size);
+
+  // Convert the numbers back to strings.
+  base::NumberToString(out_int);
+  base::NumberToString16(out_int);
+  base::NumberToString(out_uint);
+  base::NumberToString16(out_uint);
+  base::NumberToString(out_int64);
+  base::NumberToString16(out_int64);
+  base::NumberToString(out_uint64);
+  base::NumberToString16(out_uint64);
+  base::NumberToString(out_double);
+  base::NumberToString16(out_double);
+
   return 0;
 }
