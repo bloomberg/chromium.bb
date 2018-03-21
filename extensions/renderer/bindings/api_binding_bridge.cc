@@ -101,6 +101,12 @@ void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
   v8::Local<v8::String> context_type =
       gin::StringToSymbol(isolate, context_type_);
   v8::Local<v8::Value> args[] = {hook_object, extension_id, context_type};
+
+  // TODO(devlin): The context should still be valid at this point - nothing
+  // above should be able to invalidate it. But let's make extra sure.
+  // This CHECK is helping to track down https://crbug.com/819968, and should be
+  // removed when that's fixed.
+  CHECK(binding::IsContextValid(context));
   JSRunner::Get(context)->RunJSFunction(function, context, arraysize(args),
                                         args);
 }
