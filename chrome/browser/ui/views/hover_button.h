@@ -49,8 +49,10 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   ~HoverButton() override;
 
   // views::MenuButton:
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void SetBorder(std::unique_ptr<views::Border> b) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool IsTriggerableEventType(const ui::Event& event) override;
 
   // Updates the title text, and applies the secondary style to the text
   // specified by |range|. If |range| is invalid, no style is applied. This
