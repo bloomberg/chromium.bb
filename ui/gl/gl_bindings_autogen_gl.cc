@@ -3146,16 +3146,16 @@ void GLApiBase::glGetBufferPointervRobustANGLEFn(GLenum target,
                                                params);
 }
 
-void GLApiBase::glGetDebugMessageLogFn(GLuint count,
-                                       GLsizei bufSize,
-                                       GLenum* sources,
-                                       GLenum* types,
-                                       GLuint* ids,
-                                       GLenum* severities,
-                                       GLsizei* lengths,
-                                       char* messageLog) {
-  driver_->fn.glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
-                                     severities, lengths, messageLog);
+GLuint GLApiBase::glGetDebugMessageLogFn(GLuint count,
+                                         GLsizei bufSize,
+                                         GLenum* sources,
+                                         GLenum* types,
+                                         GLuint* ids,
+                                         GLenum* severities,
+                                         GLsizei* lengths,
+                                         char* messageLog) {
+  return driver_->fn.glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
+                                            severities, lengths, messageLog);
 }
 
 GLenum GLApiBase::glGetErrorFn(void) {
@@ -5917,17 +5917,17 @@ void TraceGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                             params);
 }
 
-void TraceGLApi::glGetDebugMessageLogFn(GLuint count,
-                                        GLsizei bufSize,
-                                        GLenum* sources,
-                                        GLenum* types,
-                                        GLuint* ids,
-                                        GLenum* severities,
-                                        GLsizei* lengths,
-                                        char* messageLog) {
+GLuint TraceGLApi::glGetDebugMessageLogFn(GLuint count,
+                                          GLsizei bufSize,
+                                          GLenum* sources,
+                                          GLenum* types,
+                                          GLuint* ids,
+                                          GLenum* severities,
+                                          GLsizei* lengths,
+                                          char* messageLog) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetDebugMessageLog")
-  gl_api_->glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
-                                  severities, lengths, messageLog);
+  return gl_api_->glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
+                                         severities, lengths, messageLog);
 }
 
 GLenum TraceGLApi::glGetErrorFn(void) {
@@ -9310,14 +9310,14 @@ void DebugGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
                                             params);
 }
 
-void DebugGLApi::glGetDebugMessageLogFn(GLuint count,
-                                        GLsizei bufSize,
-                                        GLenum* sources,
-                                        GLenum* types,
-                                        GLuint* ids,
-                                        GLenum* severities,
-                                        GLsizei* lengths,
-                                        char* messageLog) {
+GLuint DebugGLApi::glGetDebugMessageLogFn(GLuint count,
+                                          GLsizei bufSize,
+                                          GLenum* sources,
+                                          GLenum* types,
+                                          GLuint* ids,
+                                          GLenum* severities,
+                                          GLsizei* lengths,
+                                          char* messageLog) {
   GL_SERVICE_LOG("glGetDebugMessageLog"
                  << "(" << count << ", " << bufSize << ", "
                  << static_cast<const void*>(sources) << ", "
@@ -9326,8 +9326,10 @@ void DebugGLApi::glGetDebugMessageLogFn(GLuint count,
                  << static_cast<const void*>(severities) << ", "
                  << static_cast<const void*>(lengths) << ", "
                  << static_cast<const void*>(messageLog) << ")");
-  gl_api_->glGetDebugMessageLogFn(count, bufSize, sources, types, ids,
-                                  severities, lengths, messageLog);
+  GLuint result = gl_api_->glGetDebugMessageLogFn(
+      count, bufSize, sources, types, ids, severities, lengths, messageLog);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
 }
 
 GLenum DebugGLApi::glGetErrorFn(void) {
@@ -12879,15 +12881,16 @@ void NoContextGLApi::glGetBufferPointervRobustANGLEFn(GLenum target,
   NoContextHelper("glGetBufferPointervRobustANGLE");
 }
 
-void NoContextGLApi::glGetDebugMessageLogFn(GLuint count,
-                                            GLsizei bufSize,
-                                            GLenum* sources,
-                                            GLenum* types,
-                                            GLuint* ids,
-                                            GLenum* severities,
-                                            GLsizei* lengths,
-                                            char* messageLog) {
+GLuint NoContextGLApi::glGetDebugMessageLogFn(GLuint count,
+                                              GLsizei bufSize,
+                                              GLenum* sources,
+                                              GLenum* types,
+                                              GLuint* ids,
+                                              GLenum* severities,
+                                              GLsizei* lengths,
+                                              char* messageLog) {
   NoContextHelper("glGetDebugMessageLog");
+  return 0U;
 }
 
 GLenum NoContextGLApi::glGetErrorFn(void) {

@@ -419,14 +419,14 @@ MOCK_METHOD5(GetBufferPointervRobustANGLE,
                   GLsizei* length,
                   void** params));
 MOCK_METHOD8(GetDebugMessageLog,
-             void(GLuint count,
-                  GLsizei bufSize,
-                  GLenum* sources,
-                  GLenum* types,
-                  GLuint* ids,
-                  GLenum* severities,
-                  GLsizei* lengths,
-                  char* messageLog));
+             GLuint(GLuint count,
+                    GLsizei bufSize,
+                    GLenum* sources,
+                    GLenum* types,
+                    GLuint* ids,
+                    GLenum* severities,
+                    GLsizei* lengths,
+                    char* messageLog));
 MOCK_METHOD0(GetError, GLenum());
 MOCK_METHOD3(GetFenceivNV, void(GLuint fence, GLenum pname, GLint* params));
 MOCK_METHOD2(GetFloatv, void(GLenum pname, GLfloat* params));

@@ -438,14 +438,14 @@ void glGetBufferPointervRobustANGLEFn(GLenum target,
                                       GLsizei bufSize,
                                       GLsizei* length,
                                       void** params) override {}
-void glGetDebugMessageLogFn(GLuint count,
-                            GLsizei bufSize,
-                            GLenum* sources,
-                            GLenum* types,
-                            GLuint* ids,
-                            GLenum* severities,
-                            GLsizei* lengths,
-                            char* messageLog) override {}
+GLuint glGetDebugMessageLogFn(GLuint count,
+                              GLsizei bufSize,
+                              GLenum* sources,
+                              GLenum* types,
+                              GLuint* ids,
+                              GLenum* severities,
+                              GLsizei* lengths,
+                              char* messageLog) override;
 GLenum glGetErrorFn() override;
 void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) override {}
 void glGetFloatvFn(GLenum pname, GLfloat* params) override {}

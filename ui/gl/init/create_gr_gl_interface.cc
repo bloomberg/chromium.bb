@@ -465,8 +465,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fDebugMessageCallback =
       reinterpret_cast<GrGLDebugMessageCallbackProc>(
           gl->glDebugMessageCallbackFn);
-  functions->fGetDebugMessageLog =
-      reinterpret_cast<GrGLGetDebugMessageLogProc>(gl->glGetDebugMessageLogFn);
+  functions->fGetDebugMessageLog = gl->glGetDebugMessageLogFn;
   functions->fPushDebugGroup = gl->glPushDebugGroupFn;
   functions->fPopDebugGroup = gl->glPopDebugGroupFn;
   functions->fObjectLabel = gl->glObjectLabelFn;

@@ -662,7 +662,7 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLenum pname, GLsizei bufSize, GLsizei* length, '
       'void** params', },
-{ 'return_type': 'void',
+{ 'return_type': 'GLuint',
   'versions': [{ 'name': 'glGetDebugMessageLog' },
                { 'name': 'glGetDebugMessageLogKHR',
                  'extensions': ['GL_KHR_debug'] }],

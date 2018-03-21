@@ -506,14 +506,14 @@ typedef void(GL_BINDING_CALL* glGetBufferPointervRobustANGLEProc)(
     GLsizei bufSize,
     GLsizei* length,
     void** params);
-typedef void(GL_BINDING_CALL* glGetDebugMessageLogProc)(GLuint count,
-                                                        GLsizei bufSize,
-                                                        GLenum* sources,
-                                                        GLenum* types,
-                                                        GLuint* ids,
-                                                        GLenum* severities,
-                                                        GLsizei* lengths,
-                                                        char* messageLog);
+typedef GLuint(GL_BINDING_CALL* glGetDebugMessageLogProc)(GLuint count,
+                                                          GLsizei bufSize,
+                                                          GLenum* sources,
+                                                          GLenum* types,
+                                                          GLuint* ids,
+                                                          GLenum* severities,
+                                                          GLsizei* lengths,
+                                                          char* messageLog);
 typedef GLenum(GL_BINDING_CALL* glGetErrorProc)(void);
 typedef void(GL_BINDING_CALL* glGetFenceivNVProc)(GLuint fence,
                                                   GLenum pname,
@@ -2434,14 +2434,14 @@ class GL_EXPORT GLApi {
                                                 GLsizei bufSize,
                                                 GLsizei* length,
                                                 void** params) = 0;
-  virtual void glGetDebugMessageLogFn(GLuint count,
-                                      GLsizei bufSize,
-                                      GLenum* sources,
-                                      GLenum* types,
-                                      GLuint* ids,
-                                      GLenum* severities,
-                                      GLsizei* lengths,
-                                      char* messageLog) = 0;
+  virtual GLuint glGetDebugMessageLogFn(GLuint count,
+                                        GLsizei bufSize,
+                                        GLenum* sources,
+                                        GLenum* types,
+                                        GLuint* ids,
+                                        GLenum* severities,
+                                        GLsizei* lengths,
+                                        char* messageLog) = 0;
   virtual GLenum glGetErrorFn(void) = 0;
   virtual void glGetFenceivNVFn(GLuint fence, GLenum pname, GLint* params) = 0;
   virtual void glGetFloatvFn(GLenum pname, GLfloat* params) = 0;
