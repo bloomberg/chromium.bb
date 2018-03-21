@@ -155,6 +155,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   std::unique_ptr<TestDialog> dialog = ShowModalDialog(web_contents);
+  // On Mac, animations cause this test to be flaky.
+  dialog->GetWidget()->SetVisibilityChangedAnimationsEnabled(false);
   EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 
   // Move the tab to a second browser window; but first create another tab.
@@ -181,6 +183,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, ClosesOnEscape) {
   std::unique_ptr<TestDialog> dialog =
       ShowModalDialog(browser()->tab_strip_model()->GetActiveWebContents());
+  // On Mac, animations cause this test to be flaky.
+  dialog->GetWidget()->SetVisibilityChangedAnimationsEnabled(false);
   EXPECT_TRUE(dialog->GetWidget()->IsVisible());
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                               false, false, false, false));
