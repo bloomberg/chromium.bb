@@ -27,8 +27,7 @@ void PlatformThread::SetName(const std::string& name) {
                                               name.data(), name.size());
   DCHECK_EQ(status, ZX_OK);
 
-  ThreadIdNameManager::GetInstance()->SetName(PlatformThread::CurrentId(),
-                                              name);
+  ThreadIdNameManager::GetInstance()->SetName(name);
 }
 
 // static

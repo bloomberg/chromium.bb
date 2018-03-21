@@ -19,9 +19,7 @@ void CCBlinkTestSuite::Initialize() {
 
   message_loop_.reset(new base::MessageLoop);
 
-  base::ThreadIdNameManager::GetInstance()->SetName(
-      base::PlatformThread::CurrentId(),
-      "Main");
+  base::ThreadIdNameManager::GetInstance()->SetName("Main");
 }
 
 void CCBlinkTestSuite::Shutdown() {

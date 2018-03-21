@@ -23,8 +23,7 @@ void VizTestSuite::Initialize() {
 
   message_loop_ = std::make_unique<base::MessageLoop>();
 
-  base::ThreadIdNameManager::GetInstance()->SetName(
-      base::PlatformThread::CurrentId(), "Main");
+  base::ThreadIdNameManager::GetInstance()->SetName("Main");
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 }

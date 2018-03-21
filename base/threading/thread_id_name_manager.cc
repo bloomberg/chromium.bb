@@ -9,7 +9,9 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_local.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 
 namespace base {
@@ -18,6 +20,10 @@ namespace {
 static const char kDefaultName[] = "";
 static std::string* g_default_name;
 
+ThreadLocalStorage::Slot& GetThreadNameTLS() {
+  static base::NoDestructor<base::ThreadLocalStorage::Slot> thread_name_tls;
+  return *thread_name_tls;
+}
 }
 
 ThreadIdNameManager::ThreadIdNameManager()
@@ -52,8 +58,8 @@ void ThreadIdNameManager::InstallSetNameCallback(SetNameCallback callback) {
   set_name_callback_ = std::move(callback);
 }
 
-void ThreadIdNameManager::SetName(PlatformThreadId id,
-                                  const std::string& name) {
+void ThreadIdNameManager::SetName(const std::string& name) {
+  PlatformThreadId id = PlatformThread::CurrentId();
   std::string* leaked_str = nullptr;
   {
     AutoLock locked(lock_);
@@ -68,6 +74,7 @@ void ThreadIdNameManager::SetName(PlatformThreadId id,
     ThreadIdToHandleMap::iterator id_to_handle_iter =
         thread_id_to_handle_.find(id);
 
+    GetThreadNameTLS().Set(const_cast<char*>(leaked_str->c_str()));
     if (set_name_callback_) {
       set_name_callback_.Run(leaked_str->c_str());
     }
@@ -105,6 +112,11 @@ const char* ThreadIdNameManager::GetName(PlatformThreadId id) {
   ThreadHandleToInternedNameMap::iterator handle_to_name_iter =
       thread_handle_to_interned_name_.find(id_to_handle_iter->second);
   return handle_to_name_iter->second->c_str();
+}
+
+const char* ThreadIdNameManager::GetNameForCurrentThread() {
+  const char* name = reinterpret_cast<const char*>(GetThreadNameTLS().Get());
+  return name ? name : kDefaultName;
 }
 
 void ThreadIdNameManager::RemoveName(PlatformThreadHandle::Handle handle,
