@@ -2181,12 +2181,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     const PaintLayer* layer) {
   non_composited_main_thread_scrolling_reasons_ = 0;
 
-  // The root scroller needs composited scrolling layers even if it doesn't
-  // actually have scrolling since CC has these assumptions baked in for the
-  // viewport. If we're in non-RootLayerScrolling mode, the root layer will be
-  // the global root scroller (by default) but it doesn't actually handle
-  // scrolls itself so we don't need composited scrolling for it.
-  if (RootScrollerUtil::IsGlobal(*layer) && !Layer()->IsScrolledByFrameView())
+  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
     return true;
 
   if (!layer->ScrollsOverflow())

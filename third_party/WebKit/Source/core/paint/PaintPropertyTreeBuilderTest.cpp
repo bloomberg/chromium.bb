@@ -551,7 +551,6 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
             transform_properties->PaintOffsetTranslation()->Parent());
 
   EXPECT_TRUE(transform_properties->Transform()->HasDirectCompositingReasons());
-  EXPECT_FALSE(FrameScrollTranslation()->HasDirectCompositingReasons());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
                           transform->GetLayoutObject(),
@@ -5275,6 +5274,49 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
     EXPECT_FALSE(rect->FirstFragment().PaintProperties()->MaskClip());
     EXPECT_FALSE(rect->FirstFragment().PaintProperties()->ClipPath());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
+  // TODO(pdr): Set compositing reasons for FrameView scrolling.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='forceScroll' style='height: 2000px'></div>
+  )HTML");
+
+  // When the root scrolls, there should be direct compositing reasons.
+  EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
+
+  // Remove scrolling from the root.
+  Element* force_scroll_element = GetDocument().getElementById("forceScroll");
+  force_scroll_element->setAttribute(HTMLNames::styleAttr, "");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  // Without scrolling, the root should not have direct compositing reasons or
+  // even a scroll node.
+  EXPECT_EQ(nullptr, FrameScrollTranslation());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
+  // TODO(pdr): Set compositing reasons for FrameView scrolling.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <iframe style='width: 200px; height: 200px;'></iframe>
+    <div id='forceScroll' style='height: 2000px'></div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <div id='forceInnerScroll' style='height: 2000px'></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(FrameScrollTranslation()->HasDirectCompositingReasons());
+
+  // When the child iframe scrolls, there should not be direct compositing
+  // reasons because only the root frame needs scrolling compositing reasons.
+  EXPECT_FALSE(FrameScrollTranslation(ChildDocument().View())
+                   ->HasDirectCompositingReasons());
 }
 
 }  // namespace blink
