@@ -36,11 +36,6 @@ Bug(none) external/wpt/service-workers/service-worker/request-end-to-end.https.h
 
 Bug(none) external/wpt/streams/readable-byte-streams/properties.serviceworker.https.html [ Timeout Pass ]
 Bug(none) external/wpt/wasm/wasm_service_worker_test.https.html [ Crash Timeout ]
-Bug(none) external/wpt/websockets/cookies/001.html [ Failure ]
-Bug(none) external/wpt/websockets/cookies/002.html [ Failure ]
-Bug(none) external/wpt/websockets/cookies/003.html [ Failure ]
-Bug(none) external/wpt/websockets/cookies/006.html?wss [ Crash ]
-Bug(none) external/wpt/websockets/opening-handshake/003.html?wss [ Pass Timeout ]
 
 Bug(none) fast/files/xhr-response-blob.html [ Crash Failure ]
 Bug(none) fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
@@ -76,9 +71,6 @@ Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failu
 Bug(none) http/tests/security/offscreen-canvas-worker-read-blocked-by-setting.html [ Crash Pass Timeout ]
 Bug(none) http/tests/serviceworker/chromium.update-served-from-cache.html [ Failure ]
 Bug(none) http/tests/serviceworker/chromium/register-error-messages.html [ Failure ]
-Bug(none) http/tests/websocket/cookie-document-to-ws.html [ Failure ]
-Bug(none) http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
-Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
 # Plugin throttle is not implemented.
@@ -95,11 +87,20 @@ crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeo
 # Started failing @ r529490
 Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 
+# http://crbug.com/721400 get WebSockets working with network service.
 # http://crbug.com/803958: Tests failing on bot but not in local checkout.
 crbug.com/803958 external/wpt/websockets/cookies/001.html?wss [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/002.html?wss [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/003.html?wss [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
+crbug.com/721400 external/wpt/websockets/cookies/001.html [ Failure ]
+crbug.com/721400 external/wpt/websockets/cookies/002.html [ Failure ]
+crbug.com/721400 external/wpt/websockets/cookies/003.html [ Failure ]
+crbug.com/721400 external/wpt/websockets/cookies/006.html?wss [ Crash ]
+crbug.com/721400 external/wpt/websockets/opening-handshake/003.html?wss [ Pass Timeout ]
+crbug.com/721400 http/tests/websocket/cookie-document-to-ws.html [ Failure ]
+crbug.com/721400 http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
+crbug.com/721400 http/tests/websocket/httponly-cookie.pl [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]
