@@ -5033,6 +5033,77 @@ TEST_P(QuicConnectionTest, SendConnectivityProbingWhenDisconnected) {
   }
 }
 
+TEST_P(QuicConnectionTest, WriteBlockedAfterClientSendsConnectivityProbe) {
+  EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
+  TestPacketWriter probing_writer(version(), &clock_);
+  // Block next write so that sending connectivity probe will encounter a
+  // blocked write when send a connectivity probe to the peer.
+  probing_writer.BlockOnNextWrite();
+  if (GetQuicReloadableFlag(quic_handle_write_results_for_connectivity_probe)) {
+    // Connection will not be marked as write blocked as connectivity probe only
+    // affects the probing_writer which is not the default.
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(0);
+  } else {
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
+  }
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(1);
+  connection_.SendConnectivityProbingPacket(&probing_writer,
+                                            connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, WriterBlockedAfterServerSendsConnectivityProbe) {
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+
+  // Block next write so that sending connectivity probe will encounter a
+  // blocked write when send a connectivity probe to the peer.
+  writer_->BlockOnNextWrite();
+  // Connection will be marked as write blocked as server uses the default
+  // writer to send connectivity probes.
+  EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(1);
+  connection_.SendConnectivityProbingPacket(writer_.get(),
+                                            connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, WriterErrorWhenClientSendsConnectivityProbe) {
+  EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
+  TestPacketWriter probing_writer(version(), &clock_);
+  probing_writer.SetShouldWriteFail();
+
+  if (GetQuicReloadableFlag(quic_handle_write_results_for_connectivity_probe)) {
+    // Connection should not be closed if a connectivity probe is failed to be
+    // sent.
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
+  }
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
+  connection_.SendConnectivityProbingPacket(&probing_writer,
+                                            connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, WriterErrorWhenServerSendsConnectivityProbe) {
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+
+  writer_->SetShouldWriteFail();
+  if (GetQuicReloadableFlag(quic_handle_write_results_for_connectivity_probe)) {
+    // Connection should not be closed if a connectivity probe is failed to be
+    // sent.
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
+  }
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
+  connection_.SendConnectivityProbingPacket(writer_.get(),
+                                            connection_.peer_address());
+}
+
 TEST_P(QuicConnectionTest, PublicReset) {
   QuicPublicResetPacket header;
   // Public reset packet in only built by server.

@@ -294,7 +294,9 @@ QuicConnection::QuicConnection(
       negotiate_version_early_(
           GetQuicReloadableFlag(quic_server_early_version_negotiation)),
       always_discard_packets_after_close_(
-          GetQuicReloadableFlag(quic_always_discard_packets_after_close)) {
+          GetQuicReloadableFlag(quic_always_discard_packets_after_close)),
+      handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
+          quic_handle_write_results_for_connectivity_probe)) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
@@ -2688,7 +2690,20 @@ bool QuicConnection::SendConnectivityProbingPacket(
   DCHECK(probing_writer);
 
   if (probing_writer->IsWriteBlocked()) {
-    QUIC_DLOG(INFO) << "Writer blocked when send connectivity probing packet";
+    QUIC_DLOG(INFO) << ENDPOINT
+                    << "Writer blocked when send connectivity probing packet.";
+    if (!handle_write_results_for_connectivity_probe_) {
+      visitor_->OnWriteBlocked();
+    } else {
+      QUIC_FLAG_COUNT_N(
+          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
+          1, 3);
+      if (probing_writer == writer_) {
+        // Visitor should not be write blocked if the probing writer is not the
+        // default packet writer.
+        visitor_->OnWriteBlocked();
+      }
+    }
     return true;
   }
 
@@ -2713,22 +2728,41 @@ bool QuicConnection::SendConnectivityProbingPacket(
       self_address().host(), peer_address, per_packet_options_);
 
   if (IsWriteError(result.status)) {
-    QUIC_DLOG(INFO) << "Write probing packet not finished with error = "
+    if (!handle_write_results_for_connectivity_probe_) {
+      OnWriteError(result.error_code);
+    } else {
+      QUIC_FLAG_COUNT_N(
+          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
+          2, 3);
+      // Write error for any connectivity probe should not affect the connection
+      // as it is sent on a different path.
+    }
+    QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet failed with error = "
                     << result.error_code;
     return false;
   }
 
-  // Call OnPacketSent regardless of the write result. This treats a blocked
-  // write the same as a packet loss.
+  // Call OnPacketSent regardless of the write result.
   sent_packet_manager_.OnPacketSent(
       probing_packet.get(), probing_packet->original_packet_number,
       packet_send_time, probing_packet->transmission_type,
       NO_RETRANSMITTABLE_DATA);
 
   if (result.status == WRITE_STATUS_BLOCKED) {
-    visitor_->OnWriteBlocked();
+    if (!handle_write_results_for_connectivity_probe_) {
+      visitor_->OnWriteBlocked();
+    } else {
+      QUIC_FLAG_COUNT_N(
+          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
+          3, 3);
+      if (probing_writer == writer_) {
+        // Visitor should not be write blocked if the probing writer is not the
+        // default packet writer.
+        visitor_->OnWriteBlocked();
+      }
+    }
     if (probing_writer->IsWriteBlockedDataBuffered()) {
-      QUIC_BUG << "Write probing packet blocked";
+      QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet blocked";
     }
   }
 
