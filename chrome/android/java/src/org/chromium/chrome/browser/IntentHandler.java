@@ -14,6 +14,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
@@ -412,6 +413,7 @@ public class IntentHandler {
 
         String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent);
         String extraHeaders = getExtraHeadersFromIntent(intent);
+        extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
 
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
@@ -677,6 +679,8 @@ public class IntentHandler {
             String key = keys.next();
             String value = bundleExtraHeaders.getString(key);
             if ("referer".equals(key.toLowerCase(Locale.US))) continue;
+            // Strip the custom header that can only be added by ourselves.
+            if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
             if (extraHeaders.length() != 0) extraHeaders.append("\n");
             extraHeaders.append(key);
             extraHeaders.append(": ");
@@ -1006,6 +1010,30 @@ public class IntentHandler {
         Uri data = intent.getData();
         return TextUtils.equals(data.getScheme(), UrlConstants.CUSTOM_TAB_SCHEME)
                 ? data.getQuery() : null;
+    }
+
+    @VisibleForTesting
+    static String maybeAddAdditionalExtraHeaders(Intent intent, String url, String extraHeaders) {
+        // On Oreo, ContentResolver.getType(contentUri) returns "application/octet-stream", instead
+        // of the registered MIME type when opening a document from Downloads. To work around this,
+        // we pass the intent type in extra headers such that content request job can get it.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return extraHeaders;
+        if (intent == null || url == null) return extraHeaders;
+
+        String scheme = getSanitizedUrlScheme(url);
+        if (!TextUtils.equals(scheme, UrlConstants.CONTENT_SCHEME)) return extraHeaders;
+
+        Uri uri = Uri.parse(url);
+        if (uri == null
+                || !"com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+            return extraHeaders;
+        }
+
+        String type = intent.getType();
+        if (type == null || type.isEmpty()) return extraHeaders;
+
+        String typeHeader = "X-Chrome-intent-type: " + type;
+        return (extraHeaders == null) ? typeHeader : (extraHeaders + "\n" + typeHeader);
     }
 
     /**

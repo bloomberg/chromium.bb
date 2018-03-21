@@ -9,6 +9,8 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_util.h"
@@ -87,6 +89,10 @@ bool URLRequestContentJob::IsRedirectResponse(GURL* location,
 
 bool URLRequestContentJob::GetMimeType(std::string* mime_type) const {
   DCHECK(request_);
+  if (!mime_type_from_intent_.empty()) {
+    *mime_type = mime_type_from_intent_;
+    return true;
+  }
   if (!meta_info_.mime_type.empty()) {
     *mime_type = meta_info_.mime_type;
     return true;
@@ -96,6 +102,15 @@ bool URLRequestContentJob::GetMimeType(std::string* mime_type) const {
 
 void URLRequestContentJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
+  const content::ResourceRequestInfo* resource_request_info =
+      content::ResourceRequestInfo::ForRequest(request());
+  if (resource_request_info && resource_request_info->GetResourceType() ==
+                                   content::RESOURCE_TYPE_MAIN_FRAME) {
+    std::string intent_type_header;
+    if (headers.GetHeader("X-Chrome-intent-type", &intent_type_header))
+      mime_type_from_intent_ = intent_type_header;
+  }
+
   std::string range_header;
   if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header))
     return;
