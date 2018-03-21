@@ -214,21 +214,6 @@ network::mojom::URLLoaderFactoryPtr GetBlobURLLoaderFactoryGetter() {
   return blob_loader_factory;
 }
 
-gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
-  switch (type) {
-    case blink::Platform::kWebGL1ContextType:
-      return gpu::CONTEXT_TYPE_WEBGL1;
-    case blink::Platform::kWebGL2ContextType:
-      return gpu::CONTEXT_TYPE_WEBGL2;
-    case blink::Platform::kGLES2ContextType:
-      return gpu::CONTEXT_TYPE_OPENGLES2;
-    case blink::Platform::kGLES3ContextType:
-      return gpu::CONTEXT_TYPE_OPENGLES3;
-  }
-  NOTREACHED();
-  return gpu::CONTEXT_TYPE_OPENGLES2;
-}
-
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -1139,8 +1124,12 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.fail_if_major_performance_caveat;
-
-  attributes.context_type = ToGpuContextType(web_attributes.context_type);
+  DCHECK_GT(web_attributes.web_gl_version, 0u);
+  DCHECK_LE(web_attributes.web_gl_version, 2u);
+  if (web_attributes.web_gl_version == 2)
+    attributes.context_type = gpu::CONTEXT_TYPE_WEBGL2;
+  else
+    attributes.context_type = gpu::CONTEXT_TYPE_WEBGL1;
 
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
@@ -1151,8 +1140,8 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           RenderThreadImpl::current()->GetGpuMemoryBufferManager(),
           kGpuStreamIdDefault, kGpuStreamPriorityDefault,
           gpu::kNullSurfaceHandle, GURL(top_document_web_url),
-          automatic_flushes, support_locking, web_attributes.support_grcontext,
-          gpu::SharedMemoryLimits(), attributes, share_context,
+          automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+          attributes, share_context,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider), is_software_rendering);

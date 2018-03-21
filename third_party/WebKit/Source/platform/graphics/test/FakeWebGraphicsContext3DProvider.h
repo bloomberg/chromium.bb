@@ -27,6 +27,9 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   ~FakeWebGraphicsContext3DProvider() override = default;
 
   GrContext* GetGrContext() override { return gr_context_.get(); }
+  void InvalidateGrContext(uint32_t state) override {
+    gr_context_->resetContext(state);
+  }
 
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;

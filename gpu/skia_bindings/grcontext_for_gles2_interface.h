@@ -12,7 +12,7 @@ class GrContext;
 
 namespace gpu {
 struct Capabilities;
-class ContextSupport;
+
 namespace gles2 {
 class GLES2Interface;
 }
@@ -33,21 +33,20 @@ class GrContextForGLES2Interface {
                                          size_t* max_glyph_cache_texture_bytes);
 
   explicit GrContextForGLES2Interface(gpu::gles2::GLES2Interface* gl,
-                                      gpu::ContextSupport* context_support,
                                       const gpu::Capabilities& capabilities,
                                       size_t max_resource_cache_bytes,
                                       size_t max_glyph_cache_texture_bytes);
 
   virtual ~GrContextForGLES2Interface();
 
-  GrContext* get();
+  GrContext* get() { return gr_context_.get(); }
 
   void OnLostContext();
+  void ResetContext(uint32_t state);
   void FreeGpuResources();
 
  private:
   sk_sp<class GrContext> gr_context_;
-  gpu::ContextSupport* context_support_;
 
   DISALLOW_COPY_AND_ASSIGN(GrContextForGLES2Interface);
 };

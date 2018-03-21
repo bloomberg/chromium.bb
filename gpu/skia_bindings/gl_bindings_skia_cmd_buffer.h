@@ -11,7 +11,6 @@
 struct GrGLInterface;
 
 namespace gpu {
-class ContextSupport;
 namespace gles2 {
 class GLES2Interface;
 }  // namespace gles2
@@ -21,9 +20,7 @@ namespace skia_bindings {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
 // initializes bindings for skia-gpu to a GLES2Interface object.
-sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
-    gpu::gles2::GLES2Interface*,
-    gpu::ContextSupport* context_support);
+sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(gpu::gles2::GLES2Interface*);
 
 }  // namespace skia_bindings
 
