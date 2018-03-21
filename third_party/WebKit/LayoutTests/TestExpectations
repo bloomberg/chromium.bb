@@ -2648,11 +2648,6 @@ crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
-# Awaiting rebaseline after skia roll.
-crbug.com/785931 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ NeedsManualRebaseline ]
-crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ NeedsManualRebaseline ]
-crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
-
 # crbug.com/736177: Failures likely related to different results on Mac with different GPUs
 crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] fast/forms/input-appearance-height.html [ Failure Pass ]
