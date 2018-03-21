@@ -16,6 +16,6 @@ struct LocalSurfaceId {
   // its own surface.
   uint32 child_sequence_number;
 
-  mojo.common.mojom.UnguessableToken nonce;
+  mojo.common.mojom.UnguessableToken embed_token;
 };
 

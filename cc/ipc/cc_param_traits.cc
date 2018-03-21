@@ -675,7 +675,7 @@ void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
   DCHECK(p.is_valid());
   WriteParam(m, p.parent_sequence_number());
   WriteParam(m, p.child_sequence_number());
-  WriteParam(m, p.nonce());
+  WriteParam(m, p.embed_token());
 }
 
 bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
@@ -689,12 +689,12 @@ bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &child_sequence_number))
     return false;
 
-  base::UnguessableToken nonce;
-  if (!ReadParam(m, iter, &nonce))
+  base::UnguessableToken embed_token;
+  if (!ReadParam(m, iter, &embed_token))
     return false;
 
-  *p =
-      viz::LocalSurfaceId(parent_sequence_number, child_sequence_number, nonce);
+  *p = viz::LocalSurfaceId(parent_sequence_number, child_sequence_number,
+                           embed_token);
   return p->is_valid();
 }
 
@@ -705,7 +705,7 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.child_sequence_number(), l);
   l->append(", ");
-  LogParam(p.nonce(), l);
+  LogParam(p.embed_token(), l);
   l->append(")");
 }
 

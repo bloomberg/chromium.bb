@@ -462,12 +462,12 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
       continue;
     }
 
-    // If the nonce doesn't match the primary or fallback's then the parent does
-    // not have permission to embed this surface.
-    if (local_surface_id.nonce() !=
-            fallback_surface_id.local_surface_id().nonce() &&
-        local_surface_id.nonce() !=
-            primary_surface_id.local_surface_id().nonce()) {
+    // If the embed_token doesn't match the primary or fallback's then the
+    // parent does not have permission to embed this surface.
+    if (local_surface_id.embed_token() !=
+            fallback_surface_id.local_surface_id().embed_token() &&
+        local_surface_id.embed_token() !=
+            primary_surface_id.local_surface_id().embed_token()) {
       continue;
     }
 
