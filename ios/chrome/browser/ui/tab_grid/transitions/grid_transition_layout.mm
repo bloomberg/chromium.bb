@@ -29,7 +29,7 @@
 }
 
 - (void)setSelectedItem:(GridTransitionLayoutItem*)selectedItem {
-  DCHECK([self.items containsObject:selectedItem]);
+  DCHECK(!selectedItem || [self.items containsObject:selectedItem]);
   _selectedItem = selectedItem;
 }
 
