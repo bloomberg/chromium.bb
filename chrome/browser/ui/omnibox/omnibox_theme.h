@@ -9,16 +9,24 @@
 
 // A part of the omnibox (location bar, location bar decoration, or dropdown).
 enum class OmniboxPart {
-  RESULTS_BACKGROUND,  // Background of the results dropdown.
-  RESULTS_SEPARATOR,   // Separator between the input row and the results rows.
+  LOCATION_BAR_BACKGROUND,
+  LOCATION_BAR_CLEAR_ALL,
+  LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND,
+  LOCATION_BAR_IME_AUTOCOMPLETE_TEXT,
+  LOCATION_BAR_SECURITY_CHIP,
+  LOCATION_BAR_SELECTED_KEYWORD,
+  LOCATION_BAR_TEXT_DEFAULT,
+  LOCATION_BAR_TEXT_DIMMED,
 
-  // Text styles.
-  TEXT_DEFAULT,
-  TEXT_DIMMED,
-  TEXT_INVISIBLE,
-  TEXT_NEGATIVE,
-  TEXT_POSITIVE,
-  TEXT_URL,
+  RESULTS_BACKGROUND,  // Background of the results dropdown.
+  RESULTS_ICON,
+  RESULTS_SEPARATOR,  // Separator between the input row and the results rows.
+  RESULTS_TEXT_DEFAULT,
+  RESULTS_TEXT_DIMMED,
+  RESULTS_TEXT_INVISIBLE,
+  RESULTS_TEXT_NEGATIVE,
+  RESULTS_TEXT_POSITIVE,
+  RESULTS_TEXT_URL,
 };
 
 // The tint of the omnibox theme. E.g. Incognito may use a DARK tint. NATIVE is
@@ -26,7 +34,17 @@ enum class OmniboxPart {
 enum class OmniboxTint { DARK, LIGHT, NATIVE };
 
 // An optional state for a given |OmniboxPart|.
-enum class OmniboxPartState { NORMAL, HOVERED, SELECTED, HOVERED_AND_SELECTED };
+enum class OmniboxPartState {
+  NORMAL,
+  HOVERED,
+  SELECTED,
+  HOVERED_AND_SELECTED,
+
+  // Applicable to LOCATION_BAR_SECURITY_CHIP only.
+  CHIP_DEFAULT,
+  CHIP_DANGEROUS,
+  CHIP_SECURE
+};
 
 // Returns the color for the given |part| and |tint|. An optional |state| can be
 // provided for OmniboxParts that support stateful colors.

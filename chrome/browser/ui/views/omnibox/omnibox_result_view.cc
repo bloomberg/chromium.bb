@@ -130,7 +130,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   keyword_icon_view_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_view_->SetImage(gfx::CreateVectorIcon(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetVectorIconColor()));
+      GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_icon_view_->SizeToPreferredSize();
 
   if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
@@ -192,7 +192,7 @@ void OmniboxResultView::Invalidate() {
   icon_view_->SetImage(GetIcon().ToImageSkia());
   keyword_icon_view_->SetImage(gfx::CreateVectorIcon(
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetVectorIconColor()));
+      GetColor(OmniboxPart::RESULTS_ICON)));
 
   if (match_.answer) {
     content_view_->SetText(match_.answer->first_line());
@@ -370,15 +370,7 @@ int OmniboxResultView::GetTextHeight() const {
 }
 
 gfx::Image OmniboxResultView::GetIcon() const {
-  return model_->GetMatchIcon(match_, GetVectorIconColor());
-}
-
-SkColor OmniboxResultView::GetVectorIconColor() const {
-  // For selected rows, paint the icon the same color as the text.
-  SkColor color = GetColor(OmniboxPart::TEXT_DEFAULT);
-  if (!IsSelected())
-    color = color_utils::DeriveDefaultIconColor(color);
-  return color;
+  return model_->GetMatchIcon(match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {
