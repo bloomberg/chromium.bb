@@ -149,15 +149,15 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
                         "--no-harmony-sharedarraybuffer");
 
-  SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");
   SetV8FlagIfFeature(features::kArrayPrototypeValues,
                      "--harmony-array-prototype-values");
   SetV8FlagIfNotFeature(features::kArrayPrototypeValues,
-                     "--no-harmony-array-prototype-values");
+                        "--no-harmony-array-prototype-values");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+    bool use_v8_signal_handler = false;
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(
             service_manager::switches::kDisableInProcessStackTraces)) {
@@ -169,8 +169,9 @@ RenderProcessImpl::RenderProcessImpl(
       // in-process stack traces are disabled then there will be no signal
       // handler. In this case, we fall back on V8's default handler
       // (https://crbug.com/798150).
-      v8::V8::RegisterDefaultSignalHandler();
+      use_v8_signal_handler = true;
     }
+    CHECK(v8::V8::EnableWebAssemblyTrapHandler(use_v8_signal_handler));
   }
 #endif
 
