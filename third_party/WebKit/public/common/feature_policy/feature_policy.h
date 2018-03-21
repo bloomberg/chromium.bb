@@ -113,12 +113,11 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // policy. This collection may be set to match every origin (corresponding to
   // the "*" syntax in the policy string, in which case the Contains() method
   // will always return true.
-  // TODO(crbug.com/822317): Rename to Allowlist
-  class BLINK_COMMON_EXPORT Whitelist final {
+  class BLINK_COMMON_EXPORT Allowlist final {
    public:
-    Whitelist();
-    Whitelist(const Whitelist& rhs);
-    ~Whitelist();
+    Allowlist();
+    Allowlist(const Allowlist& rhs);
+    ~Allowlist();
 
     // Adds a single origin to the allowlist.
     void Add(const url::Origin& origin);
@@ -180,7 +179,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
                                  const url::Origin& origin) const;
 
   // Returns the allowlist of a given feature by this policy.
-  const Whitelist GetWhitelistForFeature(
+  const Allowlist GetAllowlistForFeature(
       mojom::FeaturePolicyFeature feature) const;
 
   // Sets the declared policy from the parsed Feature-Policy HTTP header.
@@ -212,7 +211,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Map of feature names to declared allowlists. Any feature which is missing
   // from this map should use the inherited policy.
-  std::map<mojom::FeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
+  std::map<mojom::FeaturePolicyFeature, std::unique_ptr<Allowlist>> allowlists_;
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.

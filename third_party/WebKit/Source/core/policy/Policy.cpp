@@ -52,16 +52,16 @@ Vector<String> Policy::allowedFeatures() const {
 
 Vector<String> Policy::getAllowlistForFeature(const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
-    const FeaturePolicy::Whitelist whitelist =
-        GetPolicy()->GetWhitelistForFeature(
+    const FeaturePolicy::Allowlist allowlist =
+        GetPolicy()->GetAllowlistForFeature(
             GetDefaultFeatureNameMap().at(feature));
-    if (whitelist.MatchesAll())
+    if (allowlist.MatchesAll())
       return Vector<String>({"*"});
-    Vector<String> allowlist;
-    for (const auto& origin : whitelist.Origins()) {
-      allowlist.push_back(WTF::String::FromUTF8(origin.Serialize().c_str()));
+    Vector<String> result;
+    for (const auto& origin : allowlist.Origins()) {
+      result.push_back(WTF::String::FromUTF8(origin.Serialize().c_str()));
     }
-    return allowlist;
+    return result;
   }
 
   AddWarningForUnrecognizedFeature(feature);
