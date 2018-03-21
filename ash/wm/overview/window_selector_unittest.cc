@@ -328,6 +328,10 @@ class WindowSelectorTest : public AshTestBase {
     return window_selector()->text_filter_widget_.get();
   }
 
+  void SetGridBounds(WindowGrid* grid, const gfx::Rect& bounds) {
+    grid->bounds_ = bounds;
+  }
+
   gfx::Rect GetGridBounds() {
     if (window_selector())
       return window_selector()->grid_list_[0]->bounds_;
@@ -2746,6 +2750,76 @@ TEST_F(WindowSelectorTest, ExitInUnderlineMode) {
                                ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   GetEventGenerator().ReleaseKey(ui::VKEY_U,
                                  ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
+}
+
+// Tests that the shadows in overview mode are placed correctly.
+TEST_F(WindowSelectorTest, ShadowBounds) {
+  // Helper function to check if the bounds of a shadow owned by |shadow_parent|
+  // is contained within the bounds of |widget|.
+  auto contains = [](views::Widget* widget, WindowSelectorItem* shadow_parent) {
+    return gfx::Rect(widget->GetNativeWindow()->bounds().size())
+        .Contains(shadow_parent->GetShadowBoundsForTesting());
+  };
+
+  // Helper function which returns the ratio of the shadow owned by
+  // |shadow_parent| width and height.
+  auto shadow_ratio = [](WindowSelectorItem* shadow_parent) {
+    gfx::RectF boundsf = gfx::RectF(shadow_parent->GetShadowBoundsForTesting());
+    return boundsf.width() / boundsf.height();
+  };
+
+  // Add three windows which in overview mode will be considered wide, tall and
+  // normal. Set top view insets to 0, so it is easy to check the ratios of
+  // the shadows match the ratios of the untransformed windows.
+  UpdateDisplay("400x400");
+  std::unique_ptr<aura::Window> wide(CreateWindow(gfx::Rect(10, 10, 400, 100)));
+  std::unique_ptr<aura::Window> tall(CreateWindow(gfx::Rect(10, 10, 100, 400)));
+  std::unique_ptr<aura::Window> normal(
+      CreateWindow(gfx::Rect(10, 10, 200, 200)));
+  wide->SetProperty(aura::client::kTopViewInset, 0);
+  tall->SetProperty(aura::client::kTopViewInset, 0);
+  normal->SetProperty(aura::client::kTopViewInset, 0);
+
+  ToggleOverview();
+  RunAllPendingInMessageLoop();
+  WindowSelectorItem* wide_item = GetWindowItemForWindow(0, wide.get());
+  WindowSelectorItem* tall_item = GetWindowItemForWindow(0, tall.get());
+  WindowSelectorItem* normal_item = GetWindowItemForWindow(0, normal.get());
+
+  views::Widget* wide_widget = item_widget(wide_item);
+  views::Widget* tall_widget = item_widget(tall_item);
+  views::Widget* normal_widget = item_widget(normal_item);
+
+  WindowGrid* grid = window_selector()->grid_list_for_testing()[0].get();
+
+  // Verify all the shadows are within the bounds of their respective item
+  // widgets when the overview windows are positioned without animations.
+  SetGridBounds(grid, gfx::Rect(200, 400));
+  grid->PositionWindows(false);
+  EXPECT_TRUE(contains(wide_widget, wide_item));
+  EXPECT_TRUE(contains(tall_widget, tall_item));
+  EXPECT_TRUE(contains(normal_widget, normal_item));
+
+  // Verify the shadows preserve the ratios of the original windows.
+  EXPECT_NEAR(shadow_ratio(wide_item), 4.f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(tall_item), 0.25f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
+
+  // Verify all the shadows are within the bounds of their respective item
+  // widgets when the overview windows are positioned with animations.
+  SetGridBounds(grid, gfx::Rect(200, 400));
+  grid->PositionWindows(true);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(contains(wide_widget, wide_item));
+  EXPECT_TRUE(contains(tall_widget, tall_item));
+  EXPECT_TRUE(contains(normal_widget, normal_item));
+
+  EXPECT_NEAR(shadow_ratio(wide_item), 4.f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(tall_item), 0.25f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();

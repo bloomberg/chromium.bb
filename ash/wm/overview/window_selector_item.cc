@@ -788,6 +788,15 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // properly use the updated windows bounds.
   UpdateHeaderLayout(mode, animation_type);
 
+  // Shadow is normally set after an animation is finished. In the case of no
+  // animations, manually set the shadow. Shadow relies on both the window
+  // trasnform and |item_widget_|'s new bounds so set it after SetItemBounds
+  // and UpdateHeaderLayout.
+  if (animation_type == OVERVIEW_ANIMATION_NONE) {
+    SetShadowBounds(
+        base::make_optional(transform_window_.GetTransformedBounds()));
+  }
+
   UpdateBackdropBounds();
 }
 
@@ -1009,7 +1018,12 @@ void WindowSelectorItem::SetShadowBounds(
   if (!IsNewOverviewUi())
     return;
 
-  DCHECK(shadow_);
+  // Shadow is normally turned off during animations and reapplied when they
+  // are finished. On destruction, |shadow_| is cleaned up before
+  // |transform_window_|, which may call this function, so early exit if
+  // |shadow_| is nullptr.
+  if (!shadow_)
+    return;
 
   if (bounds_in_screen == base::nullopt) {
     shadow_->layer()->SetVisible(false);
@@ -1017,10 +1031,12 @@ void WindowSelectorItem::SetShadowBounds(
   }
 
   shadow_->layer()->SetVisible(true);
-  gfx::Rect bounds_in_item = caption_container_view_->GetLocalBounds();
+  gfx::Rect bounds_in_item =
+      gfx::Rect(item_widget_->GetNativeWindow()->GetTargetBounds().size());
   bounds_in_item.Inset(kWindowSelectorMargin, kWindowSelectorMargin);
   bounds_in_item.Inset(0, close_button_->GetPreferredSize().height(), 0, 0);
   bounds_in_item.ClampToCenteredSize(bounds_in_screen.value().size());
+
   shadow_->SetContentBounds(bounds_in_item);
 }
 
@@ -1066,6 +1082,13 @@ float WindowSelectorItem::GetCloseButtonOpacityForTesting() {
 
 float WindowSelectorItem::GetTitlebarOpacityForTesting() {
   return background_view_->layer()->opacity();
+}
+
+gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
+  if (!shadow_ || !shadow_->layer()->visible())
+    return gfx::Rect();
+
+  return shadow_->content_bounds();
 }
 
 gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
