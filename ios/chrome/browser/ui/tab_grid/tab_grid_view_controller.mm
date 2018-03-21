@@ -131,6 +131,18 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   self.regularTabsViewController.gridView.contentInset = contentInset;
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  auto animate = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    // Call the current page setter to sync the scroll view offset to the
+    // current page value.
+    self.currentPage = _currentPage;
+    [self configureViewControllerForCurrentSizeClassesAndPage];
+  };
+  [coordinator animateAlongsideTransition:animate completion:nil];
+}
+
 - (UIStatusBarStyle)preferredStatusBarStyle {
   return UIStatusBarStyleLightContent;
 }
