@@ -77,9 +77,9 @@ bool DOMStorageCachedArea::SetItem(int connection_id,
   virtual_time_pauser.PauseVirtualTime(true);
   ignore_key_mutations_[key]++;
   proxy_->SetItem(connection_id, key, value, old_value, page_url,
-                  base::Bind(&DOMStorageCachedArea::OnSetItemComplete,
-                             weak_factory_.GetWeakPtr(), key,
-                             base::Passed(std::move(virtual_time_pauser))));
+                  base::BindOnce(&DOMStorageCachedArea::OnSetItemComplete,
+                                 weak_factory_.GetWeakPtr(), key,
+                                 std::move(virtual_time_pauser)));
   return true;
 }
 
@@ -105,9 +105,9 @@ void DOMStorageCachedArea::RemoveItem(int connection_id,
   ignore_key_mutations_[key]++;
   proxy_->RemoveItem(connection_id, key,
                      base::NullableString16(old_value, false), page_url,
-                     base::Bind(&DOMStorageCachedArea::OnRemoveItemComplete,
-                                weak_factory_.GetWeakPtr(), key,
-                                base::Passed(std::move(virtual_time_pauser))));
+                     base::BindOnce(&DOMStorageCachedArea::OnRemoveItemComplete,
+                                    weak_factory_.GetWeakPtr(), key,
+                                    std::move(virtual_time_pauser)));
 }
 
 void DOMStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
@@ -121,9 +121,9 @@ void DOMStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
   virtual_time_pauser.PauseVirtualTime(true);
   ignore_all_mutations_ = true;
   proxy_->ClearArea(connection_id, page_url,
-                    base::Bind(&DOMStorageCachedArea::OnClearComplete,
-                               weak_factory_.GetWeakPtr(),
-                               base::Passed(std::move(virtual_time_pauser))));
+                    base::BindOnce(&DOMStorageCachedArea::OnClearComplete,
+                                   weak_factory_.GetWeakPtr(),
+                                   std::move(virtual_time_pauser)));
 }
 
 void DOMStorageCachedArea::ApplyMutation(
@@ -182,10 +182,9 @@ void DOMStorageCachedArea::Prime(int connection_id) {
   ignore_all_mutations_ = true;
   DOMStorageValuesMap values;
   base::TimeTicks before = base::TimeTicks::Now();
-  proxy_->LoadArea(connection_id,
-                   &values,
-                   base::Bind(&DOMStorageCachedArea::OnLoadComplete,
-                              weak_factory_.GetWeakPtr()));
+  proxy_->LoadArea(connection_id, &values,
+                   base::BindOnce(&DOMStorageCachedArea::OnLoadComplete,
+                                  weak_factory_.GetWeakPtr()));
   base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
   // Keeping this histogram named the same (without the ForRenderer suffix)
   // to maintain histogram continuity.
