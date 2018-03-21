@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/map_traits_stl.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/string_traits_stl.h"
-#include "mojo/public/cpp/bindings/string_traits_string16.h"
 #include "mojo/public/cpp/bindings/string_traits_string_piece.h"
 
 namespace mojo {

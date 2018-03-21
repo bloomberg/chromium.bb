@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -57,18 +58,18 @@ struct CredentialInfo {
 
   // An identifier (username, email address, etc). Corresponds to
   // WebCredential's id property.
-  base::string16 id;
+  base::Optional<base::string16> id;
 
   // An user-friendly name ("Jane Doe"). Corresponds to WebCredential's name
   // property.
-  base::string16 name;
+  base::Optional<base::string16> name;
 
   // The address of this credential's icon (e.g. the user's avatar).
   // Corresponds to WebCredential's icon property.
   GURL icon;
 
   // Corresponds to WebPasswordCredential's password property.
-  base::string16 password;
+  base::Optional<base::string16> password;
 
   // Corresponds to WebFederatedCredential's provider property.
   url::Origin federation;

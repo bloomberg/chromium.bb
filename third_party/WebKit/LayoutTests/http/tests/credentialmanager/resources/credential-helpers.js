@@ -1,5 +1,15 @@
 'use strict';
 
+// Converts an ECMAScript String object to an instance of
+// mojo_base.mojom.String16.
+function stringToMojoString16(string) {
+  let array = new Array(string.length);
+  for (var i = 0; i < string.length; ++i) {
+    array[i] = string.charCodeAt(i);
+  }
+  return { data: array }
+}
+
 // Mocks the CredentialManager interface defined in credential_manager.mojom.
 class MockCredentialManager {
   constructor() {
@@ -17,10 +27,10 @@ class MockCredentialManager {
   constructCredentialInfo_(type, id, password, name, icon) {
   return new passwordManager.mojom.CredentialInfo({
       type: type,
-      id: id,
-      name: name,
+      id: stringToMojoString16(id),
+      name: stringToMojoString16(name),
       icon: new url.mojom.Url({url: icon}),
-    password: password,
+      password: stringToMojoString16(password),
       federation: new url.mojom.Origin(
           {scheme: '', host: '', port: 0, unique: true})
     });
