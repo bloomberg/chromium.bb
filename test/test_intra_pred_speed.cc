@@ -612,16 +612,21 @@ INTRA_PRED_TEST(SSE2_4, TX_16X64, aom_dc_predictor_16x64_sse2,
 #if HAVE_SSSE3
 INTRA_PRED_TEST(SSSE3_1, TX_16X16, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x16_ssse3,
-                aom_smooth_predictor_16x16_ssse3, NULL, NULL)
+                aom_smooth_predictor_16x16_ssse3,
+                aom_smooth_v_predictor_16x16_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_2, TX_16X8, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x8_ssse3, aom_smooth_predictor_16x8_ssse3,
-                NULL, NULL)
+                aom_smooth_v_predictor_16x8_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_3, TX_16X32, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x32_ssse3,
-                aom_smooth_predictor_16x32_ssse3, NULL, NULL)
+                aom_smooth_predictor_16x32_ssse3,
+                aom_smooth_v_predictor_16x32_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_4, TX_16X64, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x64_ssse3,
-                aom_smooth_predictor_16x64_ssse3, NULL, NULL)
+                aom_smooth_predictor_16x64_ssse3,
+                aom_smooth_v_predictor_16x64_ssse3, NULL)
+INTRA_PRED_TEST(SSSE3_5, TX_16X4, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, aom_smooth_v_predictor_16x4_ssse3, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
@@ -707,13 +712,18 @@ INTRA_PRED_TEST(SSE2_3, TX_32X64, aom_dc_predictor_32x64_sse2,
 #if HAVE_SSSE3
 INTRA_PRED_TEST(SSSE3_1, TX_32X32, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_32x32_ssse3,
-                aom_smooth_predictor_32x32_ssse3, NULL, NULL)
+                aom_smooth_predictor_32x32_ssse3,
+                aom_smooth_v_predictor_32x32_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_2, TX_32X16, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_32x16_ssse3,
-                aom_smooth_predictor_32x16_ssse3, NULL, NULL)
+                aom_smooth_predictor_32x16_ssse3,
+                aom_smooth_v_predictor_32x16_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_3, TX_32X64, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_32x64_ssse3,
-                aom_smooth_predictor_32x64_ssse3, NULL, NULL)
+                aom_smooth_predictor_32x64_ssse3,
+                aom_smooth_v_predictor_32x64_ssse3, NULL)
+INTRA_PRED_TEST(SSSE3_4, TX_32X8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, aom_smooth_v_predictor_32x8_ssse3, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
@@ -795,13 +805,16 @@ INTRA_PRED_TEST(SSE2_6, TX_64X16, aom_dc_predictor_64x16_sse2,
 #if HAVE_SSSE3
 INTRA_PRED_TEST(SSSE3_4, TX_64X64, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_64x64_ssse3,
-                aom_smooth_predictor_64x64_ssse3, NULL, NULL)
+                aom_smooth_predictor_64x64_ssse3,
+                aom_smooth_v_predictor_64x64_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_5, TX_64X32, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_64x32_ssse3,
-                aom_smooth_predictor_64x32_ssse3, NULL, NULL)
+                aom_smooth_predictor_64x32_ssse3,
+                aom_smooth_v_predictor_64x32_ssse3, NULL)
 INTRA_PRED_TEST(SSSE3_6, TX_64X16, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_64x16_ssse3,
-                aom_smooth_predictor_64x16_ssse3, NULL, NULL)
+                aom_smooth_predictor_64x16_ssse3,
+                aom_smooth_v_predictor_64x16_ssse3, NULL)
 #endif
 
 #if HAVE_AVX2
