@@ -31,7 +31,7 @@ enum SignInStatus {
   HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP,
   // Sentinel file marks the successful completion of First Run. This records
   // the cases where sentinel creation failed. In most likelihood, user will
-  // go through First Run again at the next launch.
+  // go through First Run again at the next launch - deprecated.
   SENTINEL_CREATION_FAILED,
   // Number of First Run states.
   SIGNIN_SIZE

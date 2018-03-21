@@ -19025,6 +19025,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Others"/>
 </enum>
 
+<enum name="FirstRunSentinelResult">
+  <summary>Result of sentinel file has been written.</summary>
+  <int value="0" label="Written successfully"/>
+  <int value="1" label="Failed to get file path"/>
+  <int value="2" label="File exists"/>
+  <int value="3" label="File error"/>
+</enum>
+
 <enum name="FirstRunSignInResult">
   <summary>Result states for the first-run sign-in flow.</summary>
   <int value="0" label="Skipped Immediately"/>
@@ -19033,7 +19041,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Have SSO account, Skipped Immediately"/>
   <int value="4" label="Have SSO account, Successful"/>
   <int value="5" label="Have SSO account, Gave Up"/>
-  <int value="6" label="Could not create FirstRun Sentinel"/>
+  <int value="6" label="Could not create FirstRun Sentinel - deprecated"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -35245,6 +35253,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PlatformFileError">
+  <summary>Errors from base::File::Error</summary>
   <int value="0" label="OK"/>
   <int value="1" label="FAILED"/>
   <int value="2" label="IN_USE"/>
