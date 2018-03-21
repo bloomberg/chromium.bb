@@ -156,6 +156,10 @@ void BrowserWindowCocoa::Hide() {
   [window() orderOut:controller_];
 }
 
+bool BrowserWindowCocoa::IsVisible() const {
+  return [window() isVisible];
+}
+
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
 

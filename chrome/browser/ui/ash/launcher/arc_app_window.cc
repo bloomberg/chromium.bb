@@ -115,6 +115,11 @@ void ArcAppWindow::Hide() {
   NOTREACHED();
 }
 
+bool ArcAppWindow::IsVisible() const {
+  NOTREACHED();
+  return true;
+}
+
 void ArcAppWindow::Close() {
   arc::CloseTask(task_id_);
 }

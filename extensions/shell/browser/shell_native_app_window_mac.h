@@ -45,6 +45,7 @@ class ShellNativeAppWindowMac : public ShellNativeAppWindow {
   gfx::Rect GetBounds() const override;
   void Show() override;
   void Hide() override;
+  bool IsVisible() const override;
   void Activate() override;
   void Deactivate() override;
   void SetBounds(const gfx::Rect& bounds) override;

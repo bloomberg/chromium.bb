@@ -35,6 +35,7 @@ class AppBaseWindow : public ui::BaseWindow {
   gfx::Rect GetBounds() const override;
   void Show() override;
   void Hide() override;
+  bool IsVisible() const override;
   void ShowInactive() override;
   void Close() override;
   void Activate() override;

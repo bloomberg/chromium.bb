@@ -52,8 +52,7 @@ void Signout(SigninManager* signin_manager) {
 bool IsMatchingBrowser(Browser* browser, Profile* profile) {
   return browser->profile()->GetOriginalProfile() ==
              profile->GetOriginalProfile() &&
-         !browser->tab_strip_model()->empty() &&
-         BrowserView::GetBrowserViewForBrowser(browser)->frame()->IsVisible();
+         !browser->tab_strip_model()->empty() && browser->window()->IsVisible();
 }
 
 // Find a browser that is associated with |profile| to show the dialog for

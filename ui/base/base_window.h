@@ -66,6 +66,9 @@ class UI_BASE_EXPORT BaseWindow {
   // Hides the window.
   virtual void Hide() = 0;
 
+  // Returns whether the window is visible.
+  virtual bool IsVisible() const = 0;
+
   // Show the window, but do not activate it. Does nothing if window
   // is already visible.
   virtual void ShowInactive() = 0;

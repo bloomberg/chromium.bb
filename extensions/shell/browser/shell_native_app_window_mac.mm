@@ -95,6 +95,10 @@ void ShellNativeAppWindowMac::Hide() {
   NOTIMPLEMENTED();
 }
 
+bool ShellNativeAppWindowMac::IsVisible() const {
+  return [window() isVisible];
+}
+
 void ShellNativeAppWindowMac::Activate() {
   // TODO(yoz): Activate in front of other applications.
   [[window_controller_ window] makeKeyAndOrderFront:window_controller_];

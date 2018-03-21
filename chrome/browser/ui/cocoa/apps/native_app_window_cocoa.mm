@@ -470,6 +470,10 @@ void NativeAppWindowCocoa::Hide() {
   HideWithoutMarkingHidden();
 }
 
+bool NativeAppWindowCocoa::IsVisible() const {
+  return [window() isVisible];
+}
+
 void NativeAppWindowCocoa::Close() {
   [window() close];
 }

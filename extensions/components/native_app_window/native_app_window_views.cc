@@ -128,6 +128,10 @@ void NativeAppWindowViews::Hide() {
   widget_->Hide();
 }
 
+bool NativeAppWindowViews::IsVisible() const {
+  return widget_->IsVisible();
+}
+
 void NativeAppWindowViews::Close() {
   widget_->Close();
 }
