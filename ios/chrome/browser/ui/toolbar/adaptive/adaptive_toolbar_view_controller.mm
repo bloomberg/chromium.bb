@@ -67,7 +67,8 @@
   [self addStandardActionsForAllButtons];
 
   // Adds the layout guide to the buttons.
-  self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
+  self.view.toolsMenuButton.guideName = kToolsMenuGuide;
+  self.view.tabGridButton.guideName = kTabSwitcherGuide;
   self.view.forwardButton.guideName = kForwardButtonGuide;
   self.view.backButton.guideName = kBackButtonGuide;
 
