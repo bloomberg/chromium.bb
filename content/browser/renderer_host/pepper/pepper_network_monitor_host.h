@@ -21,7 +21,7 @@ class BrowserPpapiHostImpl;
 // The host for PPB_NetworkMonitor. This class lives on the IO thread.
 class CONTENT_EXPORT PepperNetworkMonitorHost
     : public ppapi::host::ResourceHost,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
                            PP_Instance instance,
@@ -29,8 +29,9 @@ class CONTENT_EXPORT PepperNetworkMonitorHost
 
   ~PepperNetworkMonitorHost() override;
 
-  // net::NetworkChangeNotifier::IPAddressObserver interface.
-  void OnIPAddressChanged() override;
+  // net::NetworkChangeNotifier::NetworkChangeObserver interface.
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
   void OnPermissionCheckResult(bool can_use_network_monitor);
