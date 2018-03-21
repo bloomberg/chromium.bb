@@ -7,6 +7,7 @@
 #ifndef IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 #define IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 
+#include "base/files/file.h"
 #include "base/macros.h"
 
 namespace base {
@@ -24,13 +25,28 @@ class PrefRegistrySyncable;
 // or explicitly skipped.
 class FirstRun {
  public:
+  // Result to create sentinel file. This enum is defined in
+  // src/tools/metrics/histograms/enums.xml
+  enum SentinelResult {
+    // No error.
+    SENTINEL_RESULT_SUCCESS,
+    // GetFirstRunSentinelFilePath() returned no file path.
+    SENTINEL_RESULT_FAILED_TO_GET_PATH,
+    // Sentinel file already exists.
+    SENTINEL_RESULT_FILE_PATH_EXISTS,
+    // File system error.
+    SENTINEL_RESULT_FILE_ERROR,
+    SENTINEL_RESULT_MAX,
+  };
+
   // Returns true if this is the first time chrome is run for this user.
   static bool IsChromeFirstRun();
 
-  // Creates the sentinel file that signals that chrome has been configured iff
-  // the file does not exist yet. Returns true if the file was created and false
-  // if the file already exists or could not be created.
-  static bool CreateSentinel();
+  // Creates the sentinel file that signals that chrome has been configured if
+  // the file does not exist yet. Returns SENTINEL_RESULT_SUCCESS if the file
+  // was created. If SENTINEL_RESULT_FILE_ERROR is returned, |error| is set to
+  // the file system error, if non-nil.
+  static SentinelResult CreateSentinel(base::File::Error* error);
 
   // Removes the sentinel file created in ConfigDone(). Returns false if the
   // sentinel file could not be removed.

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -77,43 +78,38 @@ NSString* InsertNewlineBeforeNthToLastWord(NSString* text, int index) {
 }
 
 // Trampoline method for Bind to create the sentinel file.
-bool CreateSentinel() {
-  return FirstRun::CreateSentinel();
+void CreateSentinel() {
+  base::File::Error file_error;
+  FirstRun::SentinelResult sentinel_created =
+      FirstRun::CreateSentinel(&file_error);
+  UMA_HISTOGRAM_ENUMERATION("FirstRun.Sentinel.Created", sentinel_created,
+                            FirstRun::SentinelResult::SENTINEL_RESULT_MAX);
+  if (sentinel_created == FirstRun::SentinelResult::SENTINEL_RESULT_FILE_ERROR)
+    UMA_HISTOGRAM_ENUMERATION("FirstRun.Sentinel.CreatedFileError", -file_error,
+                              -base::File::FILE_ERROR_MAX);
 }
 
-// Helper function for recording first run metrics. Takes an additional
-// |sentinel_created| argument which is the returned value from
-// CreateSentinel().
+// Helper function for recording first run metrics.
 void RecordFirstRunMetricsInternal(ios::ChromeBrowserState* browserState,
                                    bool sign_in_attempted,
-                                   bool has_sso_accounts,
-                                   bool sentinel_created) {
+                                   bool has_sso_accounts) {
   first_run::SignInStatus sign_in_status;
-  // |sentinel_created| is false if the sentinel file was not created which
-  // indicates that the sentinel already exists and metrics were already
-  // recorded.
-  // Note: If the user signs in and then signs out during first run, it will be
-  // recorded as a successful sign in.
-  if (!sentinel_created) {
-    sign_in_status = first_run::SENTINEL_CREATION_FAILED;
+  bool user_signed_in =
+      ios::SigninManagerFactory::GetForBrowserState(browserState)
+          ->IsAuthenticated();
+  if (user_signed_in) {
+    sign_in_status = has_sso_accounts
+                         ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
+                         : first_run::SIGNIN_SUCCESSFUL;
   } else {
-    bool user_signed_in =
-        ios::SigninManagerFactory::GetForBrowserState(browserState)
-            ->IsAuthenticated();
-    if (user_signed_in) {
+    if (sign_in_attempted) {
       sign_in_status = has_sso_accounts
-                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
-                           : first_run::SIGNIN_SUCCESSFUL;
+                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
+                           : first_run::SIGNIN_SKIPPED_GIVEUP;
     } else {
-      if (sign_in_attempted) {
-        sign_in_status = has_sso_accounts
-                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
-                             : first_run::SIGNIN_SKIPPED_GIVEUP;
-      } else {
-        sign_in_status = has_sso_accounts
-                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
-                             : first_run::SIGNIN_SKIPPED_QUICK;
-      }
+      sign_in_status = has_sso_accounts
+                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
+                           : first_run::SIGNIN_SKIPPED_QUICK;
     }
   }
   UMA_HISTOGRAM_ENUMERATION("FirstRun.SignIn", sign_in_status,
@@ -150,12 +146,11 @@ void WriteFirstRunSentinelAndRecordMetrics(
     ios::ChromeBrowserState* browserState,
     BOOL sign_in_attempted,
     BOOL has_sso_account) {
-  // Call CreateSentinel() and pass the result into RecordFirstRunMetrics().
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&CreateSentinel),
-      base::BindOnce(&RecordFirstRunMetricsInternal, browserState,
-                     sign_in_attempted, has_sso_account));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           base::BindOnce(&CreateSentinel));
+  RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
+                                has_sso_account);
 }
 
 void FinishFirstRun(ios::ChromeBrowserState* browserState,

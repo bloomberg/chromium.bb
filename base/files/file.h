@@ -78,9 +78,9 @@ class BASE_EXPORT File {
                                          // See DeleteOnClose() for details.
   };
 
-  // This enum has been recorded in multiple histograms. If the order of the
-  // fields needs to change, please ensure that those histograms are obsolete or
-  // have been moved to a different enum.
+  // This enum has been recorded in multiple histograms using PlatformFileError
+  // enum. If the order of the fields needs to change, please ensure that those
+  // histograms are obsolete or have been moved to a different enum.
   //
   // FILE_ERROR_ACCESS_DENIED is returned when a call fails because of a
   // filesystem restriction. FILE_ERROR_SECURITY is returned when a browser
