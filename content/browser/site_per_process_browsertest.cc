@@ -10859,6 +10859,63 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
 
   EXPECT_GT(height, 0);
 }
+// Test that a late swapout ACK won't incorrectly mark RenderViewHost as
+// inactive if it's already been reused and switched to active by another
+// navigation.  See https://crbug.com/823567.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RenderViewHostStaysActiveWithLateSwapoutACK) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup and navigate it to a.com.
+  Shell* popup = OpenPopup(
+      shell(), embedded_test_server()->GetURL("a.com", "/title2.html"), "foo");
+  WebContentsImpl* popup_contents =
+      static_cast<WebContentsImpl*>(popup->web_contents());
+  RenderFrameHostImpl* rfh = popup_contents->GetMainFrame();
+  RenderViewHostImpl* rvh = rfh->render_view_host();
+
+  // Disable the swapout ACK and the swapout timer.
+  scoped_refptr<SwapoutACKMessageFilter> filter = new SwapoutACKMessageFilter();
+  rfh->GetProcess()->AddFilter(filter.get());
+  rfh->DisableSwapOutTimerForTesting();
+
+  // Navigate popup to b.com.  Because there's an opener, the RVH for a.com
+  // stays around in swapped-out state.
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(
+      popup, embedded_test_server()->GetURL("b.com", "/title3.html")));
+  EXPECT_FALSE(rvh->is_active());
+
+  // The old RenderFrameHost is now pending deletion.
+  ASSERT_TRUE(rfh->IsRenderFrameLive());
+  ASSERT_FALSE(rfh->is_active());
+
+  // Kill the b.com process.
+  RenderProcessHost* b_process = popup_contents->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      b_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  b_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Go back in the popup from b.com to a.com/title2.html.  Because the current
+  // b.com RFH is dead, the new RFH is committed right away (without waiting
+  // for renderer to commit), so that users don't need to look at the sad tab.
+  TestNavigationObserver back_observer(popup_contents);
+  popup_contents->GetController().GoBack();
+
+  // Pretend that the original RFH in a.com now finishes running its unload
+  // handler and sends the swapout ACK.
+  rfh->OnSwappedOut();
+
+  // Wait for the new a.com navigation to finish.
+  back_observer.Wait();
+
+  // The RVH for a.com should've been reused, and it should be active.  Its
+  // main frame should've been updated to the RFH from the back navigation.
+  EXPECT_EQ(popup_contents->GetMainFrame()->render_view_host(), rvh);
+  EXPECT_TRUE(rvh->is_active());
+  EXPECT_EQ(rvh->GetMainFrame(), popup_contents->GetMainFrame());
+}
 
 // Check that when A opens a new window with B which embeds an A subframe, the
 // subframe is visible and generates paint events.  See
