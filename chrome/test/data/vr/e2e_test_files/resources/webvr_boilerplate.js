@@ -21,6 +21,7 @@ var frameData = null;
 var onMagicWindowAnimationFrameCallback = null;
 var onPresentingAnimationFrameCallback = null;
 var shouldSubmitFrame = true;
+var hasPresentedFrame = false;
 
 function onResize() {
   if (vrDisplay && vrDisplay.isPresenting) {
@@ -64,7 +65,10 @@ function onAnimationFrame(t) {
     gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5,
                 webglCanvas.height);
 
-    if (shouldSubmitFrame) vrDisplay.submitFrame();
+    if (shouldSubmitFrame) {
+      vrDisplay.submitFrame();
+      hasPresentedFrame = true;
+    }
   } else {
     if (onMagicWindowAnimationFrameCallback) {
       onMagicWindowAnimationFrameCallback();
