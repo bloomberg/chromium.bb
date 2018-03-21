@@ -213,6 +213,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   float GetCloseButtonOpacityForTesting();
   float GetTitlebarOpacityForTesting();
+  gfx::Rect GetShadowBoundsForTesting();
 
  private:
   class CaptionContainerView;
