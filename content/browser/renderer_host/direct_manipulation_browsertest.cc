@@ -163,6 +163,7 @@ IN_PROC_BROWSER_TEST_F(DirectManipulationBrowserTest, EventConvert) {
     ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
     EXPECT_EQ(1, wheel_event->x_offset());
     EXPECT_EQ(2, wheel_event->y_offset());
+    EXPECT_TRUE(wheel_event->flags() & ui::EF_PRECISION_SCROLLING_DELTA);
   }
 
   {
