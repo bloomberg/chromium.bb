@@ -90,10 +90,5 @@
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]
-  },
-  "Win SyzyASAN LKGR": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
   }
 }
