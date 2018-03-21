@@ -110,6 +110,7 @@ Browsing list:**
   **Restrict-View-Google** label
   * Change **Type-Bug-Security** label to **Type-Bug**
   * Add the **Security** component
+  * See below for reporting URLs to SafeBrowsing
 * **If the report is a potentially valid bug but is not a security vulnerability:**
   * remove the **Restrict-View-SecurityTeam** label. If necessary, add one of the
   other **Restrict-View-?** labels:
@@ -188,11 +189,11 @@ Generally, see [the Security Labels document](security-labels.md).
 **Ensure the comment adequately explains any status changes.** Severity,
 milestone, and priority assignment generally require explanatory text.
 
-* Report suspected malicious URLs to SafeBrowsing.
+* Report suspected malicious URLs to SafeBrowsing:
   * Public URL:
-  [https://www.google.com/safebrowsing/report_badware/](https://www.google.com/safebrowsing/report_badware/)
-  * Googlers: see instructions at [go/report-safe-browsing](go/report-safe-browsing)
-* Report suspected malicious file attachments to SafeBrowsing and VirusTotal.
+  [https://support.google.com/websearch/contact/safe_browsing](https://support.google.com/websearch/contact/safe_browsing)
+  * Googlers: see instructions at [go/safebrowsing-escalation](https://goto.google.com/safebrowsing-escalation)
+  * Report suspected malicious file attachments to SafeBrowsing and VirusTotal.
 * Make sure the report is properly forwarded when the vulnerability is in an
 upstream project, the OS, or some other dependency.
 * For vulnerabilities in services Chrome uses (e.g. Omaha, Chrome Web Store,
