@@ -53,15 +53,10 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_capturers_.clear();
 
-  // Delete any remaining owned CompositorFrameSinks.
-  sink_map_.clear();
-
-  // All BeginFrameSources should be deleted before FrameSinkManagerImpl
-  // destruction.
+  // All mojom::CompositorFrameSinks and BeginFrameSources should be deleted by
+  // this point.
+  DCHECK(sink_map_.empty());
   DCHECK(registered_sources_.empty());
-
-  // TODO(kylechar): Enforce that all CompositorFrameSinks are destroyed before
-  // ~FrameSinkManagerImpl() runs.
 
   surface_manager_.RemoveObserver(this);
   surface_manager_.RemoveObserver(&hit_test_manager_);
