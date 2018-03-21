@@ -699,7 +699,8 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
   ASSERT_EQ(session_id, reconnected_session_id);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
+// TODO(crbug.com/822337): Flaky on Linux_CFI bot.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
