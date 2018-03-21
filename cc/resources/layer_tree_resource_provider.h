@@ -287,15 +287,13 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                     GLenum texture_target,
                     const gfx::Size& size,
                     viz::ResourceFormat format,
-                    bool use_distance_field_text,
                     bool can_use_lcd_text,
                     int msaa_sample_count);
     ~ScopedSkSurface();
 
     SkSurface* surface() const { return surface_.get(); }
 
-    static SkSurfaceProps ComputeSurfaceProps(bool use_distance_field_text,
-                                              bool can_use_lcd_text);
+    static SkSurfaceProps ComputeSurfaceProps(bool can_use_lcd_text);
 
    private:
     sk_sp<SkSurface> surface_;

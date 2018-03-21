@@ -70,8 +70,8 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
 
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider,
-          resource_provider, false, false, 0,
-          viz::PlatformColor::BestTextureFormat(), gfx::Size(), false);
+          resource_provider, false, 0, viz::PlatformColor::BestTextureFormat(),
+          gfx::Size(), false);
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(gpu_memory_buffer_manager);

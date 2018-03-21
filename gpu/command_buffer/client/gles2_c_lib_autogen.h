@@ -1766,12 +1766,11 @@ GLES2BeginRasterCHROMIUM(GLuint texture_id,
                          GLuint sk_color,
                          GLuint msaa_sample_count,
                          GLboolean can_use_lcd_text,
-                         GLboolean use_distance_field_text,
                          GLint color_type,
                          GLuint color_space_transfer_cache_id) {
   gles2::GetGLContext()->BeginRasterCHROMIUM(
-      texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
-      use_distance_field_text, color_type, color_space_transfer_cache_id);
+      texture_id, sk_color, msaa_sample_count, can_use_lcd_text, color_type,
+      color_space_transfer_cache_id);
 }
 void* GL_APIENTRY GLES2MapRasterCHROMIUM(GLsizeiptr size) {
   return gles2::GetGLContext()->MapRasterCHROMIUM(size);

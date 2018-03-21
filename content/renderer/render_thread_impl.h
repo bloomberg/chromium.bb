@@ -250,7 +250,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
-  bool IsDistanceFieldTextEnabled() override;
   bool IsZeroCopyEnabled() override;
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
@@ -768,7 +767,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gpu_rasterization_forced_;
   int gpu_rasterization_msaa_sample_count_;
   bool is_lcd_text_enabled_;
-  bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;

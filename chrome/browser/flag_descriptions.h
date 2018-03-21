@@ -179,9 +179,6 @@ extern const char kDisallowDocWrittenScriptsUiDescription[];
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 
-extern const char kDistanceFieldTextName[];
-extern const char kDistanceFieldTextDescription[];
-
 extern const char kDriveSearchInChromeLauncherName[];
 extern const char kDriveSearchInChromeLauncherDescription[];
 

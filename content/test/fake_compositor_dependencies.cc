@@ -33,10 +33,6 @@ bool FakeCompositorDependencies::IsLcdTextEnabled() {
   return false;
 }
 
-bool FakeCompositorDependencies::IsDistanceFieldTextEnabled() {
-  return false;
-}
-
 bool FakeCompositorDependencies::IsZeroCopyEnabled() {
   return true;
 }

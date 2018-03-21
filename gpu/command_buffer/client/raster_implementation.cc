@@ -947,7 +947,6 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLboolean use_distance_field_text,
     GLint pixel_config,
     const cc::RasterColorSpace& raster_color_space) {
   NOTIMPLEMENTED();

@@ -2644,7 +2644,7 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
 
     return std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
-        resource_provider_.get(), settings_.use_distance_field_text,
+        resource_provider_.get(),
         settings_.resource_settings.use_gpu_memory_buffer_resources,
         msaa_sample_count, settings_.preferred_tile_format,
         settings_.max_gpu_raster_tile_size, oop_raster_enabled);

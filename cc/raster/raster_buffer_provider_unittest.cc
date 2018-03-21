@@ -181,7 +181,7 @@ class RasterBufferProviderTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
-            resource_provider_.get(), false, false, 0,
+            resource_provider_.get(), false, 0,
             viz::PlatformColor::BestTextureFormat(), gfx::Size(), false);
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),

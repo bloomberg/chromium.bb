@@ -22,7 +22,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
-  bool IsDistanceFieldTextEnabled() override;
   bool IsZeroCopyEnabled() override;
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;

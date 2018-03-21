@@ -48,7 +48,6 @@ class ScopedSkSurfaceForUnpremultiplyAndDither {
       const gfx::Size& max_tile_size,
       GLuint texture_id,
       const gfx::Size& texture_size,
-      bool use_distance_field_text,
       bool can_use_lcd_text,
       int msaa_sample_count)
       : context_provider_(context_provider),
@@ -75,7 +74,7 @@ class ScopedSkSurfaceForUnpremultiplyAndDither {
         intermediate_size.width(), intermediate_size.height());
     SkSurfaceProps surface_props =
         LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
-            use_distance_field_text, can_use_lcd_text);
+            can_use_lcd_text);
     surface_ = SkSurface::MakeRenderTarget(
         context_provider->GrContext(), SkBudgeted::kNo, n32Info,
         msaa_sample_count, kTopLeft_GrSurfaceOrigin, &surface_props);
@@ -121,7 +120,6 @@ static void RasterizeSourceOOP(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    bool use_distance_field_text,
     int msaa_sample_count) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   GLuint texture_id = ri->CreateAndConsumeTexture(
@@ -139,7 +137,7 @@ static void RasterizeSourceOOP(
   // use GL_TEXTURE_2D.
   ri->BeginRasterCHROMIUM(
       texture_id, raster_source->background_color(), msaa_sample_count,
-      playback_settings.use_lcd_text, use_distance_field_text,
+      playback_settings.use_lcd_text,
       viz::ResourceFormatToClosestSkColorType(resource_format),
       playback_settings.raster_color_space);
   float recording_to_raster_scale =
@@ -197,7 +195,6 @@ static void RasterizeSource(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    bool use_distance_field_text,
     int msaa_sample_count,
     bool unpremultiply_and_dither,
     const gfx::Size& max_tile_size) {
@@ -222,14 +219,13 @@ static void RasterizeSource(
     if (!unpremultiply_and_dither) {
       scoped_surface.emplace(context_provider->GrContext(), texture_id,
                              texture_target, resource_size, resource_format,
-                             use_distance_field_text,
                              playback_settings.use_lcd_text, msaa_sample_count);
       surface = scoped_surface->surface();
     } else {
       scoped_dither_surface.emplace(
           context_provider, playback_rect, raster_full_rect, max_tile_size,
-          texture_id, resource_size, use_distance_field_text,
-          playback_settings.use_lcd_text, msaa_sample_count);
+          texture_id, resource_size, playback_settings.use_lcd_text,
+          msaa_sample_count);
       surface = scoped_dither_surface->surface();
     }
 
@@ -355,7 +351,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     LayerTreeResourceProvider* resource_provider,
-    bool use_distance_field_text,
     bool use_gpu_memory_buffer_resources,
     int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat preferred_tile_format,
@@ -364,7 +359,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       resource_provider_(resource_provider),
-      use_distance_field_text_(use_distance_field_text),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       preferred_tile_format_(preferred_tile_format),
@@ -542,19 +536,19 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
   }
 
   if (enable_oop_rasterization_) {
-    RasterizeSourceOOP(
-        raster_source, resource_has_previous_content, mailbox, texture_target,
-        texture_is_overlay_candidate, texture_storage_allocated, resource_size,
-        resource_format, color_space, raster_full_rect, playback_rect,
-        transform, playback_settings, worker_context_provider_,
-        use_distance_field_text_, msaa_sample_count_);
+    RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
+                       texture_target, texture_is_overlay_candidate,
+                       texture_storage_allocated, resource_size,
+                       resource_format, color_space, raster_full_rect,
+                       playback_rect, transform, playback_settings,
+                       worker_context_provider_, msaa_sample_count_);
   } else {
     RasterizeSource(
         raster_source, resource_has_previous_content, mailbox, texture_target,
         texture_is_overlay_candidate, texture_storage_allocated, resource_size,
         resource_format, color_space, raster_full_rect, playback_rect,
         transform, playback_settings, worker_context_provider_,
-        use_distance_field_text_, msaa_sample_count_,
+        msaa_sample_count_,
         ShouldUnpremultiplyAndDitherResource(resource_format), max_tile_size_);
   }
 

@@ -5169,13 +5169,11 @@ error::Error GLES2DecoderImpl::HandleBeginRasterCHROMIUM(
   GLuint sk_color = static_cast<GLuint>(c.sk_color);
   GLuint msaa_sample_count = static_cast<GLuint>(c.msaa_sample_count);
   GLboolean can_use_lcd_text = static_cast<GLboolean>(c.can_use_lcd_text);
-  GLboolean use_distance_field_text =
-      static_cast<GLboolean>(c.use_distance_field_text);
   GLint color_type = static_cast<GLint>(c.color_type);
   GLuint color_space_transfer_cache_id =
       static_cast<GLuint>(c.color_space_transfer_cache_id);
   DoBeginRasterCHROMIUM(texture_id, sk_color, msaa_sample_count,
-                        can_use_lcd_text, use_distance_field_text, color_type,
+                        can_use_lcd_text, color_type,
                         color_space_transfer_cache_id);
   return error::kNoError;
 }

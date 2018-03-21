@@ -196,9 +196,6 @@ const char kDisableKillAfterBadIPC[]        = "disable-kill-after-bad-ipc";
 // Disables LCD text.
 const char kDisableLCDText[]                = "disable-lcd-text";
 
-// Disables distance field text.
-const char kDisableDistanceFieldText[]      = "disable-distance-field-text";
-
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";
 
@@ -337,10 +334,6 @@ const char kDumpBlinkRuntimeCallStats[] = "dump-blink-runtime-call-stats";
 
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
-
-// Enables using signed distance fields when rendering text.
-// Only valid if GPU rasterization is enabled as well.
-const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 
 // Enable the creation of compositing layers when it would prevent LCD text.
 const char kEnablePreferCompositingToLCDText[] =
