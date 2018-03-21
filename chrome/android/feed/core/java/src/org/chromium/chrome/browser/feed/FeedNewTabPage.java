@@ -12,12 +12,17 @@ import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
  */
 public class FeedNewTabPage extends BasicNativePage {
+    private final FeedActionHandler mActionHandler;
+
     private View mRootView;
     private String mTitle;
 
@@ -30,6 +35,14 @@ public class FeedNewTabPage extends BasicNativePage {
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost);
+
+        // Initialize Action Handler
+        Profile profile = nativePageHost.getActiveTab().getProfile();
+        SuggestionsNavigationDelegateImpl navigationDelegate =
+                new SuggestionsNavigationDelegateImpl(
+                        activity, profile, nativePageHost, tabModelSelector);
+        mActionHandler = new FeedActionHandler(navigationDelegate);
+        // TODO(huayinz): Pass the action handler into Stream.
     }
 
     @Override
