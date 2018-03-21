@@ -229,22 +229,32 @@ void LogChannelIDAndCookieStores(const GURL& url,
                             EPHEMERALITY_MAX);
 }
 
-void LogCookieAgeForNonSecureRequest(const net::CookieList& cookie_list,
-                                     const net::URLRequest& request) {
-  base::Time oldest = base::Time::Max();
-  for (const auto& cookie : cookie_list)
-    oldest = std::min(cookie.CreationDate(), oldest);
-  base::TimeDelta delta = base::Time::Now() - oldest;
+void LogCookieUMA(const net::CookieList& cookie_list,
+                  const net::URLRequest& request,
+                  const net::HttpRequestInfo& request_info) {
+  const bool secure_request = request_info.url.SchemeIsCryptographic();
+  const bool same_site = net::registry_controlled_domains::SameDomainOrHost(
+      request.url(), request.site_for_cookies(),
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          request.url(), request.site_for_cookies(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    UMA_HISTOGRAM_COUNTS_1000("Cookie.AgeForNonSecureSameSiteRequest",
-                              delta.InDays());
-  } else {
-    UMA_HISTOGRAM_COUNTS_1000("Cookie.AgeForNonSecureCrossSiteRequest",
-                              delta.InDays());
+  const base::Time now = base::Time::Now();
+  base::Time oldest = base::Time::Max();
+  for (const auto& cookie : cookie_list) {
+    const std::string histogram_name =
+        std::string("Cookie.AllAgesFor") +
+        (secure_request ? "Secure" : "NonSecure") +
+        (same_site ? "SameSite" : "CrossSite") + "Request";
+    const int age_in_days = (now - cookie.CreationDate()).InDays();
+    base::UmaHistogramCounts1000(histogram_name, age_in_days);
+
+    oldest = std::min(cookie.CreationDate(), oldest);
   }
+
+  const std::string histogram_name =
+      std::string("Cookie.AgeFor") + (secure_request ? "Secure" : "NonSecure") +
+      (same_site ? "SameSite" : "CrossSite") + "Request";
+  const int age_in_days = (now - oldest).InDays();
+  base::UmaHistogramCounts1000(histogram_name, age_in_days);
 }
 
 }  // namespace
@@ -680,8 +690,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
   if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
-    if (!request_info_.url.SchemeIsCryptographic())
-      LogCookieAgeForNonSecureRequest(cookie_list, *request_);
+    LogCookieUMA(cookie_list, *request_, request_info_);
 
     std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
     UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());

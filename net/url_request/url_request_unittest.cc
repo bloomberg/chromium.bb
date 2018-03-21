@@ -3318,23 +3318,54 @@ TEST_F(URLRequestTest, CookieAgeMetrics) {
   {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
-        http_server.GetURL(kHost, "/set-cookie?cookie=value"), DEFAULT_PRIORITY,
-        &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        http_server.GetURL(kHost, "/set-cookie?cookie=value&cookie2=value2"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
     base::RunLoop().Run();
-    ASSERT_EQ(1, network_delegate.set_cookie_count());
+    ASSERT_EQ(2, network_delegate.set_cookie_count());
   }
 
-  // Make a secure request to `example.test`: we shouldn't record data.
+  // Make a secure same-site request.
   {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         https_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(https_server.GetURL(kHost, "/"));
+    req->set_initiator(url::Origin::Create(https_server.GetURL(kHost, "/")));
     req->Start();
     base::RunLoop().Run();
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureCrossSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureCrossSiteRequest",
+                                0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureSameSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureCrossSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureSameSiteRequest", 2);
+  }
+
+  // Make a secure cross-site request.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        https_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(https_server.GetURL(kCrossHost, "/"));
+    req->set_initiator(
+        url::Origin::Create(https_server.GetURL(kCrossHost, "/")));
+    req->Start();
+    base::RunLoop().Run();
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureCrossSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureCrossSiteRequest",
+                                0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureSameSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureCrossSiteRequest", 2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureSameSiteRequest", 2);
   }
 
   // Make a non-secure same-site request.
@@ -3349,6 +3380,13 @@ TEST_F(URLRequestTest, CookieAgeMetrics) {
     base::RunLoop().Run();
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureCrossSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureCrossSiteRequest",
+                                0);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureSameSiteRequest", 2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureCrossSiteRequest", 2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureSameSiteRequest", 2);
   }
 
   // Make a non-secure cross-site request.
@@ -3364,6 +3402,13 @@ TEST_F(URLRequestTest, CookieAgeMetrics) {
     base::RunLoop().Run();
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 1);
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureCrossSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForSecureSameSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureCrossSiteRequest",
+                                2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForNonSecureSameSiteRequest", 2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureCrossSiteRequest", 2);
+    histograms.ExpectTotalCount("Cookie.AllAgesForSecureSameSiteRequest", 2);
   }
 }
 
