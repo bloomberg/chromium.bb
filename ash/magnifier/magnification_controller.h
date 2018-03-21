@@ -5,21 +5,47 @@
 #ifndef ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
 #define ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_
 
+#include <map>
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
+#include "ui/base/ime/input_method_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/event_rewriter.h"
+#include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
-}
+}  // namespace aura
+
+namespace ui {
+class GestureProviderAura;
+}  // namespace ui
 
 namespace ash {
 
-class ASH_EXPORT MagnificationController {
+// MagnificationController controls the Fullscreen Magnifier feature.
+// MagnificationController implements GestureConsumer as it has its own
+// GestureProvider to recognize gestures with screen coordinates of touches.
+// Logical coordinates of touches cannot be used as they are changed with
+// viewport change: scroll, zoom.
+// MagnificationController implements EventRewriter to see and rewrite touch
+// events. Once the controller detects two fingers pinch or scroll, it starts
+// consuming all touch events not to confuse an app or a browser on the screen.
+// It needs to rewrite events to dispatch touch cancel events.
+class ASH_EXPORT MagnificationController : public ui::EventHandler,
+                                           public ui::ImplicitAnimationObserver,
+                                           public aura::WindowObserver,
+                                           public ui::InputMethodObserver,
+                                           public ui::GestureConsumer,
+                                           public ui::EventRewriter {
  public:
   enum ScrollDirection {
     SCROLL_NONE,
@@ -29,29 +55,27 @@ class ASH_EXPORT MagnificationController {
     SCROLL_DOWN
   };
 
-  virtual ~MagnificationController() {}
-
-  // Creates a new MagnificationController. The caller takes ownership of the
-  // returned object.
-  static MagnificationController* CreateInstance();
+  MagnificationController();
+  ~MagnificationController() override;
 
   // Enables (or disables if |enabled| is false) screen magnifier feature.
-  virtual void SetEnabled(bool enabled) = 0;
+  void SetEnabled(bool enabled);
 
   // Returns if the screen magnifier is enabled or not.
-  virtual bool IsEnabled() const = 0;
+  bool IsEnabled() const;
 
   // Enables or disables the feature for keeping the text input focus centered.
-  virtual void SetKeepFocusCentered(bool keep_focus_centered) = 0;
+  void SetKeepFocusCentered(bool keep_focus_centered);
 
   // Returns true if magnifier will keep the focus centered in screen for text
   // input.
-  virtual bool KeepFocusCentered() const = 0;
+  bool KeepFocusCentered() const;
 
   // Sets the magnification ratio. 1.0f means no magnification.
-  virtual void SetScale(float scale, bool animate) = 0;
+  void SetScale(float scale, bool animate);
+
   // Returns the current magnification ratio.
-  virtual float GetScale() const = 0;
+  float GetScale() const { return scale_; }
 
   // Maps the current scale value to an index in the range between the minimum
   // and maximum scale values, and steps up or down the scale depending on the
@@ -59,47 +83,221 @@ class ASH_EXPORT MagnificationController {
   void StepToNextScaleValue(int delta_index);
 
   // Set the top-left point of the magnification window.
-  virtual void MoveWindow(int x, int y, bool animate) = 0;
-  virtual void MoveWindow(const gfx::Point& point, bool animate) = 0;
-  // Returns the current top-left point of the magnification window.
-  virtual gfx::Point GetWindowPosition() const = 0;
+  void MoveWindow(int x, int y, bool animate);
+  void MoveWindow(const gfx::Point& point, bool animate);
 
-  virtual void SetScrollDirection(ScrollDirection direction) = 0;
+  // Returns the current top-left point of the magnification window.
+  gfx::Point GetWindowPosition() const;
+
+  void SetScrollDirection(ScrollDirection direction);
 
   // Returns the view port(i.e. the current visible window)'s Rect in root
   // window coordinates.
-  virtual gfx::Rect GetViewportRect() const = 0;
+  gfx::Rect GetViewportRect() const;
 
   // Follows the focus on web page for non-editable controls.
-  virtual void HandleFocusedNodeChanged(
-      bool is_editable_node,
-      const gfx::Rect& node_bounds_in_screen) = 0;
-
-  // Returns |point_of_interest_in_root_| in MagnificationControllerImpl. This
-  // is the internal variable to stores the last mouse cursor (or last touched)
-  // location. This method is only for test purpose.
-  virtual gfx::Point GetPointOfInterestForTesting() = 0;
-
-  // Returns true if magnifier is still on animation for moving viewport.
-  // This is only used for testing purpose.
-  virtual bool IsOnAnimationForTesting() const = 0;
-
-  // Disables the delay for moving magnifier window in testing mode.
-  virtual void DisableMoveMagnifierDelayForTesting() = 0;
+  void HandleFocusedNodeChanged(bool is_editable_node,
+                                const gfx::Rect& node_bounds_in_screen);
 
   // Switch the magnified root window to |new_root_window|. This does following:
   //  - Unzoom the current root_window.
   //  - Zoom the given new root_window |new_root_window|.
   //  - Switch the target window from current window to |new_root_window|.
-  virtual void SwitchTargetRootWindow(aura::Window* new_root_window,
-                                      bool redraw_original_root) = 0;
+  void SwitchTargetRootWindow(aura::Window* new_root_window,
+                              bool redraw_original_root);
 
- protected:
-  MagnificationController() {}
+  // Returns the last mouse cursor (or last touched) location.
+  gfx::Point GetPointOfInterestForTesting() {
+    return point_of_interest_in_root_;
+  }
 
-  FRIEND_TEST_ALL_PREFIXES(MagnificationControllerTest, AdjustScaleFromScroll);
+  // Returns true if magnifier is still on animation for moving viewport.
+  bool IsOnAnimationForTesting() const { return is_on_animation_; }
+
+  // Disables the delay for moving magnifier window.
+  void DisableMoveMagnifierDelayForTesting() {
+    disable_move_magnifier_delay_ = true;
+  }
 
  private:
+  class GestureProviderClient;
+
+  enum LockedGestureType { NO_GESTURE, ZOOM, SCROLL };
+
+  // ui::ImplicitAnimationObserver overrides:
+  void OnImplicitAnimationsCompleted() override;
+
+  // aura::WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* root_window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+
+  // ui::EventHandler overrides:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+
+  // ui::EventRewriter overrides:
+  ui::EventRewriteStatus RewriteEvent(
+      const ui::Event& event,
+      std::unique_ptr<ui::Event>* new_event) override;
+  ui::EventRewriteStatus NextDispatchEvent(
+      const ui::Event& last_event,
+      std::unique_ptr<ui::Event>* new_event) override;
+
+  // ui::InputMethodObserver:
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowImeIfNeeded() override {}
+
+  // Redraws the magnification window with the given origin position and the
+  // given scale. Returns true if the window is changed; otherwise, false.
+  // These methods should be called internally just after the scale and/or
+  // the position are changed to redraw the window.
+  bool Redraw(const gfx::PointF& position, float scale, bool animate);
+
+  // Redraws the magnification window with the given origin position in dip and
+  // the given scale. Returns true if the window is changed; otherwise, false.
+  // The last two parameters specify the animation duration and tween type.
+  // If |animation_in_ms| is zero, there will be no animation, and |tween_type|
+  // will be ignored.
+  bool RedrawDIP(const gfx::PointF& position_in_dip,
+                 float scale,
+                 int animation_in_ms,
+                 gfx::Tween::Type tween_type);
+
+  // 1) If the screen is scrolling (i.e. animating) and should scroll further,
+  // it does nothing.
+  // 2) If the screen is scrolling (i.e. animating) and the direction is NONE,
+  // it stops the scrolling animation.
+  // 3) If the direction is set to value other than NONE, it starts the
+  // scrolling/ animation towards that direction.
+  void StartOrStopScrollIfNecessary();
+
+  // Redraw with the given zoom scale keeping the mouse cursor location. In
+  // other words, zoom (or unzoom) centering around the cursor.
+  // Ignore mouse position change after redrawing if |ignore_mouse_change| is
+  // true.
+  void RedrawKeepingMousePosition(float scale,
+                                  bool animate,
+                                  bool ignore_mouse_change);
+
+  void OnMouseMove(const gfx::Point& location);
+
+  // Move the mouse cursot to the given point. Actual move will be done when
+  // the animation is completed. This should be called after animation is
+  // started.
+  void AfterAnimationMoveCursorTo(const gfx::Point& location);
+
+  // Returns if the magnification scale is 1.0 or not (larger then 1.0).
+  bool IsMagnified() const;
+
+  // Returns the rect of the magnification window.
+  gfx::RectF GetWindowRectDIP(float scale) const;
+
+  // Returns the size of the root window.
+  gfx::Size GetHostSizeDIP() const;
+
+  // Correct the given scale value if necessary.
+  void ValidateScale(float* scale);
+
+  // Process pending gestures in |gesture_provider_|. This method returns true
+  // if the controller needs to cancel existing touches.
+  bool ProcessGestures();
+
+  // Moves the view port when |point| is located within
+  // |x_panning_margin| and |y_pannin_margin| to the edge of the visible
+  // window region. The view port will be moved so that the |point| will be
+  // moved to the point where it has |x_target_margin| and |y_target_margin|
+  // to the edge of the visible region.
+  void MoveMagnifierWindowFollowPoint(const gfx::Point& point,
+                                      int x_panning_margin,
+                                      int y_panning_margin,
+                                      int x_target_margin,
+                                      int y_target_margin);
+
+  // Moves the view port to center |point| in magnifier screen.
+  void MoveMagnifierWindowCenterPoint(const gfx::Point& point);
+
+  // Moves the viewport so that |rect| is fully visible. If |rect| is larger
+  // than the viewport horizontally or vertically, the viewport will be moved
+  // to center the |rect| in that dimension.
+  void MoveMagnifierWindowFollowRect(const gfx::Rect& rect);
+
+  // Invoked when |move_magnifier_timer_| fires to move the magnifier window to
+  // follow the caret.
+  void OnMoveMagnifierTimer();
+
+  // Target root window. This must not be NULL.
+  aura::Window* root_window_;
+
+  // True if the magnified window is currently animating a change. Otherwise,
+  // false.
+  bool is_on_animation_ = false;
+
+  bool is_enabled_ = false;
+
+  bool keep_focus_centered_ = false;
+
+  // True if the cursor needs to move the given position after the animation
+  // will be finished. When using this, set |position_after_animation_| as well.
+  bool move_cursor_after_animation_ = false;
+
+  // Stores the position of cursor to be moved after animation.
+  gfx::Point position_after_animation_;
+
+  // Stores the last mouse cursor (or last touched) location. This value is
+  // used on zooming to keep this location visible.
+  gfx::Point point_of_interest_in_root_;
+
+  // Current scale, origin (left-top) position of the magnification window.
+  float scale_;
+  gfx::PointF origin_;
+
+  float original_scale_;
+  gfx::PointF original_origin_;
+
+  ScrollDirection scroll_direction_ = SCROLL_NONE;
+
+  // MagnificationController locks gesture once user performs either scroll or
+  // pinch gesture above those thresholds.
+  LockedGestureType locked_gesture_ = NO_GESTURE;
+
+  // If true, MagnificationController consumes all touch events.
+  bool consume_touch_event_ = false;
+
+  // Number of touch points on the screen.
+  int32_t touch_points_ = 0;
+
+  // Map for holding ET_TOUCH_PRESS events. Those events are used to dispatch
+  // ET_TOUCH_CANCELLED events. Events will be removed from this map when press
+  // events are cancelled, i.e. size of this map can be different from number of
+  // touches on the screen. Key is pointer id.
+  std::map<int32_t, std::unique_ptr<ui::TouchEvent>> press_event_map_;
+
+  std::unique_ptr<GestureProviderClient> gesture_provider_client_;
+
+  // MagnificationCotroller owns its GestureProvider to detect gestures with
+  // screen coordinates of touch events. As MagnificationController changes zoom
+  // level and moves viewport, logical coordinates of touches cannot be used for
+  // gesture detection as they are changed if the controller reacts to gestures.
+  std::unique_ptr<ui::GestureProviderAura> gesture_provider_;
+
+  // Timer for moving magnifier window when it fires.
+  base::OneShotTimer move_magnifier_timer_;
+
+  // Most recent caret position in |root_window_| coordinates.
+  gfx::Point caret_point_;
+
+  // Flag for disabling moving magnifier delay. It can only be true in testing
+  // mode.
+  bool disable_move_magnifier_delay_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(MagnificationController);
 };
 
