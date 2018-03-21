@@ -1474,12 +1474,18 @@ const char kSpellingFeedbackFieldTrialDescription[] =
 const char kStopInBackgroundName[] = "Stop in background";
 const char kStopInBackgroundDescription[] =
     "Stop scheduler task queues, in the background, "
-    " after certain grace time.";
+    " after a grace period.";
 
 const char kStopLoadingInBackgroundName[] = "Stop loading in background";
 const char kStopLoadingInBackgroundDescription[] =
     "Stop loading tasks and loading "
     "resources, in the background, after certain grace time.";
+
+const char kStopNonTimersInBackgroundName[] =
+    "Stop non-timer task queues background";
+const char kStopNonTimersInBackgroundDescription[] =
+    "Stop non-timer task queues, in the background, "
+    "after a grace period.";
 
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";

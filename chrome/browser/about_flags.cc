@@ -3544,6 +3544,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopLoadingInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kStopLoadingInBackground)},
 
+    {"stop-non-timers-in-background",
+     flag_descriptions::kStopNonTimersInBackgroundName,
+     flag_descriptions::kStopNonTimersInBackgroundDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kStopNonTimersInBackground)},
+
     {"stop-in-background", flag_descriptions::kStopInBackgroundName,
      flag_descriptions::kStopInBackgroundDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kStopInBackground)},

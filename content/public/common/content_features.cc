@@ -371,6 +371,11 @@ const base::Feature kStopInBackground {
 const base::Feature kStopLoadingInBackground{"stop-loading-in-background",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Stop non-timer task queues in background, on Android,
+// after allowed grace time. Launch bug: https://crbug.com/822954.
+const base::Feature kStopNonTimersInBackground{
+    "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
