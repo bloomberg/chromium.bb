@@ -2750,6 +2750,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       cm->allow_intrabc = aom_rb_read_bit(rb);
     cm->use_ref_frame_mvs = 0;
+    cm->prev_frame = NULL;
   } else {
 #if CONFIG_EXPLICIT_ORDER_HINT
     // Read all ref frame order hints if error_resilient_mode == 1
