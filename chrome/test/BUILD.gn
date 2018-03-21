@@ -249,11 +249,20 @@ static_library("test_support") {
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
+      "../browser/ui/views/media_router/app_menu_test_api.h",
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
       "views/scoped_macviews_browser_mode.cc",
       "views/scoped_macviews_browser_mode.h",
     ]
+    if (is_mac) {
+      sources +=
+          [ "../browser/ui/views/media_router/app_menu_test_api_cocoa.mm" ]
+    }
+    if (!is_mac || mac_views_browser) {
+      sources +=
+          [ "../browser/ui/views/media_router/app_menu_test_api_views.cc" ]
+    }
   }
 
   if (enable_extensions) {

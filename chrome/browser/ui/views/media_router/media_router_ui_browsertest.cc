@@ -3,25 +3,21 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/media_router/app_menu_test_api.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
 #include "chrome/common/url_constants.h"
@@ -50,12 +46,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   ~MediaRouterUIBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    BrowserActionsContainer* browser_actions_container =
-        BrowserView::GetBrowserViewForBrowser(browser())
-            ->toolbar()
-            ->browser_actions();
-    ASSERT_TRUE(browser_actions_container);
-    toolbar_actions_bar_ = browser_actions_container->toolbar_actions_bar();
+    toolbar_actions_bar_ =
+        BrowserActionTestUtil::Create(browser(), true)->GetToolbarActionsBar();
 
     action_controller_ =
         MediaRouterUIService::Get(browser()->profile())->action_controller();
@@ -68,21 +60,19 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     content::TestNavigationObserver nav_observer(NULL);
     nav_observer.StartWatchingNewWebContents();
 
-    AppMenuButton* app_menu_button = GetAppMenuButton();
-
     // When the Media Router Action executes, it opens a dialog with web
     // contents to chrome://media-router.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction,
-                       base::Unretained(this), app_menu_button));
+                       base::Unretained(this)));
 
-    base::RunLoop run_loop;
-    app_menu_button->ShowMenu(false);
-    run_loop.RunUntilIdle();
+    std::unique_ptr<test::AppMenuTestApi> test_api =
+        test::AppMenuTestApi::Create(browser());
+    test_api->ShowMenu();
 
     nav_observer.Wait();
-    EXPECT_FALSE(app_menu_button->IsMenuShowing());
+    EXPECT_FALSE(test_api->IsMenuShowing());
     ASSERT_EQ(chrome::kChromeUIMediaRouterURL,
         nav_observer.last_navigation_url().spec());
     nav_observer.StopWatchingNewWebContents();
@@ -99,8 +89,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         GetMediaRouterAction()->GetContextMenu());
   }
 
-  void ExecuteMediaRouterAction(AppMenuButton* app_menu_button) {
-    EXPECT_TRUE(app_menu_button->IsMenuShowing());
+  void ExecuteMediaRouterAction() {
+    EXPECT_TRUE(test::AppMenuTestApi::Create(browser())->IsMenuShowing());
     GetMediaRouterAction()->ExecuteAction(true);
   }
 
@@ -113,12 +103,6 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   void SetAlwaysShowActionPref(bool always_show) {
     MediaRouterActionController::SetAlwaysShowActionPref(browser()->profile(),
                                                          always_show);
-  }
-
-  AppMenuButton* GetAppMenuButton() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->toolbar()
-        ->app_menu_button();
   }
 
   // Sets the old preference to show the toolbar action icon to |always_show|,
@@ -144,8 +128,10 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   MediaRouterActionController* action_controller_ = nullptr;
 };
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
 // Flaky on chromeos, linux, win: https://crbug.com/658005
+// Flaky on MacViews: https://crbug.com/817408
 #define MAYBE_OpenDialogWithMediaRouterAction \
         DISABLED_OpenDialogWithMediaRouterAction
 #else
@@ -214,22 +200,20 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromAppMenu) {
   // Start with one tab showing about:blank.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
-  AppMenuButton* menu_button = GetAppMenuButton();
-  base::RunLoop run_loop;
-  menu_button->ShowMenu(false);
-  run_loop.RunUntilIdle();
+  std::unique_ptr<test::AppMenuTestApi> app_menu_test_api =
+      test::AppMenuTestApi::Create(browser());
+  app_menu_test_api->ShowMenu();
 
   MediaRouterDialogController* dialog_controller =
       MediaRouterDialogController::GetOrCreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
-  AppMenu* menu = menu_button->app_menu_for_testing();
   ASSERT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
-  menu->ExecuteCommand(IDC_ROUTE_MEDIA, 0);
+  app_menu_test_api->ExecuteCommand(IDC_ROUTE_MEDIA);
   EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
 
   // Executing the command again should be a no-op, and there should only be one
   // dialog opened per tab.
-  menu->ExecuteCommand(IDC_ROUTE_MEDIA, 0);
+  app_menu_test_api->ExecuteCommand(IDC_ROUTE_MEDIA);
   EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
   dialog_controller->HideMediaRouterDialog();
   EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
