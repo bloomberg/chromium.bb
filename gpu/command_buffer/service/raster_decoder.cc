@@ -691,22 +691,17 @@ void RasterDecoderImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool RasterDecoderImpl::HasMoreIdleWork() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RasterDecoderImpl::PerformIdleWork() {
-  NOTIMPLEMENTED();
 }
 
 bool RasterDecoderImpl::HasPollingWork() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
-void RasterDecoderImpl::PerformPollingWork() {
-  NOTIMPLEMENTED();
-}
+void RasterDecoderImpl::PerformPollingWork() {}
 
 TextureBase* RasterDecoderImpl::GetTextureBase(uint32_t client_id) {
   NOTIMPLEMENTED();
@@ -752,13 +747,10 @@ void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
 }
 
 void RasterDecoderImpl::BeginDecoding() {
-  // TODO(backer): Add support the tracing commands.
   gpu_debug_commands_ = log_commands() || debug();
 }
 
-void RasterDecoderImpl::EndDecoding() {
-  NOTIMPLEMENTED();
-}
+void RasterDecoderImpl::EndDecoding() {}
 
 const char* RasterDecoderImpl::GetCommandName(unsigned int command_id) const {
   if (command_id >= kFirstRasterCommand && command_id < kNumCommands) {
@@ -1069,7 +1061,15 @@ error::Error RasterDecoderImpl::HandleLockDiscardableTextureCHROMIUM(
 error::Error RasterDecoderImpl::HandleInsertFenceSyncCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
+  const volatile gles2::cmds::InsertFenceSyncCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::InsertFenceSyncCHROMIUM*>(
+          cmd_data);
+
+  const uint64_t release_count = c.release_count();
+  client_->OnFenceSyncRelease(release_count);
+  // Exit inner command processing loop so that we check the scheduling state
+  // and yield if necessary as we may have unblocked a higher priority context.
+  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 
