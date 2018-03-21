@@ -339,6 +339,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
+#elif defined(OS_MACOSX)
+// No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
+#define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
 #else
 #define MAYBE_TestMenuKeyboardAccess TestMenuKeyboardAccess
 #endif
@@ -350,10 +353,12 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
+#elif defined(OS_MACOSX)
+// No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
+#define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
 #else
 #define MAYBE_TestAltMenuKeyboardAccess TestAltMenuKeyboardAccess
 #endif
-
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, false, false);
 }
