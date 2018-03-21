@@ -43,6 +43,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
     kCancel,         // Cancel multiple user sign-in.
     kBrowseAsGuest,  // Use in guest mode.
     kAddUser,        // Add a new user.
+    kShowWebUiLogin  // Show webui login.
   };
 
   explicit LoginShelfView(

@@ -96,6 +96,9 @@ void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
   // Login screen can only be used during login.
   if (Shell::Get()->session_controller()->GetSessionState() !=
       session_manager::SessionState::LOGIN_PRIMARY) {
+    LOG(ERROR) << "Not showing login screen since session state is "
+               << static_cast<int>(
+                      Shell::Get()->session_controller()->GetSessionState());
     std::move(on_shown).Run(false);
     return;
   }

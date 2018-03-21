@@ -183,6 +183,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
         Add Person
       </message>
+      <message name="IDS_ASH_SHOW_WEBUI_LOGIN_BUTTON" desc="Button on login/lock screen which reverts to the previous implementation.">
+        (TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)
+      </message>
 
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
         Keyboard overlay

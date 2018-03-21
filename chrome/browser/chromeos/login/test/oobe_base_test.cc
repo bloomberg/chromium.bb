@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/path_service.h"
@@ -138,6 +139,7 @@ void OobeBaseTest::TearDownOnMainThread() {
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
 
+  command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   if (!needs_background_networking_)
