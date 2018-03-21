@@ -131,6 +131,13 @@ int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
   return minimum_width;
 };
 
+// Returns true if |window| is currently snapped.
+bool IsSnapped(aura::Window* window) {
+  if (!window)
+    return false;
+  return wm::GetWindowState(window)->IsSnapped();
+}
+
 }  // namespace
 
 SplitViewController::SplitViewController() {
@@ -215,7 +222,6 @@ void SplitViewController::SnapWindow(aura::Window* window,
     splitview_start_time_ = base::Time::Now();
   }
 
-  State previous_state = state_;
   if (snap_position == LEFT) {
     if (left_window_ != window) {
       StopObserving(left_window_);
@@ -229,38 +235,32 @@ void SplitViewController::SnapWindow(aura::Window* window,
     }
     left_window_ = (window == left_window_) ? nullptr : left_window_;
   }
-
-  if (left_window_ && right_window_)
-    state_ = BOTH_SNAPPED;
-  else if (left_window_)
-    state_ = LEFT_SNAPPED;
-  else if (right_window_)
-    state_ = RIGHT_SNAPPED;
+  StartObserving(window);
 
   // Update the divider position and window bounds before snapping a new window.
   // Since the minimum size of |window| maybe larger than currently bounds in
   // |snap_position|.
-  MoveDividerToClosestFixedPosition();
-  UpdateSnappedWindowsAndDividerBounds();
-
-  StartObserving(window);
+  if (state_ != NO_SNAP) {
+    MoveDividerToClosestFixedPosition();
+    UpdateSnappedWindowsAndDividerBounds();
+  }
 
   if (wm::GetWindowState(window)->GetStateType() ==
       GetStateTypeFromSnapPostion(snap_position)) {
     // If the window has already been snapped, just activate it. Restore its
-    // transform if applicable.
+    // transform if applicable. Also update the split view state and notify the
+    // observers about the change.
+    UpdateSplitViewStateAndNotifyObservers();
     RestoreAndActivateSnappedWindow(window);
   } else {
-    // Otherwise, try to snap it. It will be activated later after the window is
-    // snapped.
+    // Otherwise, try to snap it first. It will be activated later after the
+    // window is snapped. The split view state will also be updated after the
+    // window is snapped.
     const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
                                                     : wm::WM_EVENT_SNAP_RIGHT);
     wm::GetWindowState(window)->OnWMEvent(&event);
   }
 
-  if (previous_state == NO_SNAP && previous_state != state_)
-    Shell::Get()->NotifySplitViewModeStarted();
-  NotifySplitViewStateChanged(previous_state, state_);
   base::RecordAction(base::UserMetricsAction("SplitView_SnapWindow"));
 }
 
@@ -475,11 +475,7 @@ void SplitViewController::EndSplitView() {
   default_snap_position_ = NONE;
   divider_position_ = -1;
 
-  State previous_state = state_;
-  state_ = NO_SNAP;
-  NotifySplitViewStateChanged(previous_state, state_);
-
-  Shell::Get()->NotifySplitViewModeEnded();
+  UpdateSplitViewStateAndNotifyObservers();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
   UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
                            base::Time::Now() - splitview_start_time_);
@@ -510,9 +506,8 @@ void SplitViewController::OnWindowDestroying(aura::Window* window) {
 void SplitViewController::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType old_type) {
-  DCHECK(IsSplitViewModeActive());
-
   if (window_state->IsSnapped()) {
+    UpdateSplitViewStateAndNotifyObservers();
     RestoreAndActivateSnappedWindow(window_state->window());
   } else if (window_state->IsFullscreen() || window_state->IsMaximized()) {
     // End split view mode if one of the snapped windows gets maximized /
@@ -696,6 +691,29 @@ void SplitViewController::StopObserving(aura::Window* window) {
   }
 }
 
+void SplitViewController::UpdateSplitViewStateAndNotifyObservers() {
+  State previous_state = state_;
+  if (IsSnapped(left_window_) && IsSnapped(right_window_))
+    state_ = BOTH_SNAPPED;
+  else if (IsSnapped(left_window_))
+    state_ = LEFT_SNAPPED;
+  else if (IsSnapped(right_window_))
+    state_ = RIGHT_SNAPPED;
+  else
+    state_ = NO_SNAP;
+
+  // We still notify observers even if |state_| doesn't change as it's possible
+  // to snap a window to a position that already has a snapped window.
+  NotifySplitViewStateChanged(previous_state, state_);
+
+  if (previous_state == state_)
+    return;
+  if (previous_state == NO_SNAP)
+    Shell::Get()->NotifySplitViewModeStarted();
+  else if (state_ == NO_SNAP)
+    Shell::Get()->NotifySplitViewModeEnded();
+}
+
 void SplitViewController::NotifySplitViewStateChanged(State previous_state,
                                                       State state) {
   // It's possible that |previous_state| equals to |state| (e.g., snap a window
@@ -703,10 +721,9 @@ void SplitViewController::NotifySplitViewStateChanged(State previous_state,
   // should notify its observers.
   for (Observer& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state);
-  mojo_observers_.ForAllPtrs(
-      [previous_state, state](mojom::SplitViewObserver* observer) {
-        observer->OnSplitViewStateChanged(ToMojomSplitViewState(state));
-      });
+  mojo_observers_.ForAllPtrs([state](mojom::SplitViewObserver* observer) {
+    observer->OnSplitViewStateChanged(ToMojomSplitViewState(state));
+  });
 }
 
 void SplitViewController::NotifyDividerPositionChanged() {
@@ -772,11 +789,11 @@ void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
   DCHECK(IsSplitViewModeActive());
 
   // Update the snapped windows' bounds.
-  if (left_window_ && wm::GetWindowState(left_window_)->IsSnapped()) {
+  if (IsSnapped(left_window_)) {
     const wm::WMEvent left_window_event(wm::WM_EVENT_SNAP_LEFT);
     wm::GetWindowState(left_window_)->OnWMEvent(&left_window_event);
   }
-  if (right_window_ && wm::GetWindowState(right_window_)->IsSnapped()) {
+  if (IsSnapped(right_window_)) {
     const wm::WMEvent right_window_event(wm::WM_EVENT_SNAP_RIGHT);
     wm::GetWindowState(right_window_)->OnWMEvent(&right_window_event);
   }
