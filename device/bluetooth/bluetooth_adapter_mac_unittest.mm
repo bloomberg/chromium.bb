@@ -207,6 +207,8 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1, NumDiscoverySessions());
@@ -224,6 +226,8 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1, NumDiscoverySessions());
@@ -233,6 +237,8 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
   EXPECT_TRUE(adapter_mac_->IsDiscovering());
 
   AddDiscoverySession(discovery_filter.get());
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(2, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -247,6 +253,8 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   AddDiscoverySession(discovery_filter.get());
+  EXPECT_TRUE(ui_task_runner_->HasPendingTask());
+  ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1, NumDiscoverySessions());
