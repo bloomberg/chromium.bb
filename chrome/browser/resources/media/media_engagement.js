@@ -80,7 +80,7 @@ function compareTableItem(sortKey, a, b) {
   if (sortKey == 'visits' || sortKey == 'mediaPlaybacks' ||
       sortKey == 'lastMediaPlaybackTime' || sortKey == 'totalScore' ||
       sortKey == 'audiblePlaybacks' || sortKey == 'significantPlaybacks' ||
-      sortKey == 'highScoreChanges') {
+      sortKey == 'highScoreChanges' || sortKey == 'isHigh') {
     return val1 - val2;
   }
 
