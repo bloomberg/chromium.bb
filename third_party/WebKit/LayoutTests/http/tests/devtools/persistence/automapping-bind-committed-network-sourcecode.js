@@ -1,25 +1,28 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Verify that dirty uiSourceCodes are not bound.\n`);
-  await TestRunner.loadModule('sources_test_runner');
-  await TestRunner.loadModule('console_test_runner');
+  TestRunner.addResult(`Verify that committed network uiSourceCode gets bound to
+      fileSystem, making fileSystem dirty with its content`);
   await TestRunner.loadModule('bindings_test_runner');
-  await TestRunner.addScriptTag('resources/foo.js');
   BindingsTestRunner.overrideNetworkModificationTime(
       {'http://127.0.0.1:8000/devtools/persistence/resources/foo.js': null});
-
+  TestRunner.addScriptTag('resources/foo.js');
   var networkUISourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.Network);
   var content = await networkUISourceCode.requestContent();
   content = content.replace(/foo/g, 'bar');
-  networkUISourceCode.setWorkingCopy(content);
+  networkUISourceCode.addRevision(content);
 
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   BindingsTestRunner.addFooJSFile(fs);
   fs.reportCreated(function() {});
-  var binding = await TestRunner.addSnifferPromise(Persistence.Automapping.prototype, '_prevalidationFailedForTest');
-  TestRunner.addResult('Failed to create binding: ' + binding);
+
+  var binding = await BindingsTestRunner.waitForBinding('foo.js');
+  TestRunner.addResult('Binding created: ' + binding);
+  TestRunner.addResult('FileSystem is dirty: ' + binding.fileSystem.isDirty());
+  TestRunner.addResult('FileSystem working copy: ');
+  TestRunner.addResult(binding.fileSystem.workingCopy());
+
   TestRunner.completeTest();
 })();
