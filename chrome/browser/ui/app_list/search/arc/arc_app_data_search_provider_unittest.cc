@@ -64,7 +64,7 @@ TEST_F(ArcAppDataSearchProviderTest, Basic) {
     SCOPED_TRACE(base::StringPrintf("Testing result %zu", i));
     EXPECT_EQ(base::UTF16ToUTF8(results[i]->title()),
               base::StringPrintf("Label %s %zu", kQuery, i));
-    EXPECT_EQ(SearchResult::DISPLAY_TILE, results[i]->display_type());
+    EXPECT_EQ(ash::SearchResultDisplayType::kTile, results[i]->display_type());
   }
 }
 

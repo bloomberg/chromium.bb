@@ -83,7 +83,7 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
       weak_ptr_factory_(this) {
   set_title(base::UTF8ToUTF16(label()));
   set_id(kAppDataSearchPrefix + launch_intent_uri());
-  set_display_type(DISPLAY_TILE);
+  set_display_type(ash::SearchResultDisplayType::kTile);
 
   icon_decode_request_ = std::make_unique<IconDecodeRequest>(
       base::BindOnce(&ArcAppDataSearchResult::SetIconToAvatarIcon,

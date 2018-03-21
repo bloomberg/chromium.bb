@@ -83,7 +83,7 @@ void CheckView(views::View* subview) {
 class TestStartPageSearchResult : public TestSearchResult {
  public:
   TestStartPageSearchResult() : menu_model_(nullptr) {
-    set_display_type(DISPLAY_RECOMMENDATION);
+    set_display_type(ash::SearchResultDisplayType::kRecommendation);
   }
   ~TestStartPageSearchResult() override {}
 
@@ -258,11 +258,12 @@ class AppListViewFocusTest : public views::ViewsTestBase,
                           bool card_result) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_TILE, tile_results_num));
+        std::make_pair(ash::SearchResultDisplayType::kTile, tile_results_num));
     if (card_result)
-      result_types.push_back(std::make_pair(SearchResult::DISPLAY_CARD, 1));
+      result_types.push_back(
+          std::make_pair(ash::SearchResultDisplayType::kCard, 1));
     result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_LIST, list_results_num));
+        std::make_pair(ash::SearchResultDisplayType::kList, list_results_num));
 
     SearchModel::SearchResults* results =
         delegate_->GetSearchModel()->results();

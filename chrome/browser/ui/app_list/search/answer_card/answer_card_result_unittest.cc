@@ -86,7 +86,7 @@ TEST_F(AnswerCardResultTest, Basic) {
 
   EXPECT_EQ(kResultUrl, result->id());
   EXPECT_EQ(base::ASCIIToUTF16(kResultTitle), result->title());
-  EXPECT_EQ(SearchResult::DISPLAY_CARD, result->display_type());
+  EXPECT_EQ(ash::SearchResultDisplayType::kCard, result->display_type());
   EXPECT_EQ(1, result->relevance());
   EXPECT_EQ(GetToken(), result->answer_card_contents_token());
 
@@ -97,7 +97,7 @@ TEST_F(AnswerCardResultTest, Basic) {
 
   EXPECT_EQ(kResultUrl, result1->id());
   EXPECT_EQ(base::ASCIIToUTF16(kResultTitle), result1->title());
-  EXPECT_EQ(SearchResult::DISPLAY_CARD, result1->display_type());
+  EXPECT_EQ(ash::SearchResultDisplayType::kCard, result1->display_type());
   EXPECT_EQ(1, result1->relevance());
   EXPECT_EQ(GetToken(), result1->answer_card_contents_token());
 }

@@ -8,6 +8,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 component("cpp") {
   sources = [
     "accessibility_types.h",
+    "app_list/app_list_types.cc",
     "app_list/app_list_types.h",
     "app_list/term_break_iterator.cc",
     "app_list/term_break_iterator.h",

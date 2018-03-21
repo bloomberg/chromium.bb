@@ -66,7 +66,7 @@ void ExtensionAppResult::Open(int event_flags) {
     return;
 
   // Record the search metrics if the SearchResult is not a suggested app.
-  if (display_type() != DISPLAY_RECOMMENDATION) {
+  if (display_type() != ash::SearchResultDisplayType::kRecommendation) {
     RecordHistogram(APP_SEARCH_RESULT);
     extensions::RecordAppListSearchLaunch(extension);
   }
@@ -81,7 +81,7 @@ void ExtensionAppResult::Open(int event_flags) {
 std::unique_ptr<SearchResult> ExtensionAppResult::Duplicate() const {
   std::unique_ptr<SearchResult> copy = std::make_unique<ExtensionAppResult>(
       profile(), app_id(), controller(),
-      display_type() == DISPLAY_RECOMMENDATION);
+      display_type() == ash::SearchResultDisplayType::kRecommendation);
   copy->set_title(title());
   copy->set_title_tags(title_tags());
   copy->set_relevance(relevance());

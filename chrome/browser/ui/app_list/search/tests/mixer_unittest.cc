@@ -74,7 +74,7 @@ class TestSearchProvider : public SearchProvider {
       : prefix_(prefix),
         count_(0),
         bad_relevance_range_(false),
-        display_type_(SearchResult::DISPLAY_LIST) {}
+        display_type_(ash::SearchResultDisplayType::kList) {}
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
@@ -283,7 +283,8 @@ TEST_F(MixerTest, KnownResultsPriority) {
 TEST_F(MixerTest, KnownResultsIgnoredForRecommendations) {
   // This gives omnibox 0 -- 5.
   omnibox_provider()->set_count(6);
-  omnibox_provider()->set_display_type(SearchResult::DISPLAY_RECOMMENDATION);
+  omnibox_provider()->set_display_type(
+      ash::SearchResultDisplayType::kRecommendation);
 
   // omnibox 1 -- 4 are "known results".
   AddKnownResult("omnibox1", PREFIX_SECONDARY);

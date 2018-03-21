@@ -184,7 +184,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
     title_->SetLineHeight(font.GetHeight());
     title_->SetEnabledColor(kGridTitleColor);
   } else {
-    DCHECK_EQ(SearchResult::DISPLAY_TILE, item_->display_type());
+    DCHECK_EQ(ash::SearchResultDisplayType::kTile, item_->display_type());
     // Set solid color background to avoid broken text. See crbug.com/746563.
     if (rating_) {
       rating_->SetBackground(
@@ -200,9 +200,9 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   }
 
   title_->SetMaxLines(2);
-  title_->SetMultiLine(item_->display_type() == SearchResult::DISPLAY_TILE &&
-                       item_->result_type() ==
-                           SearchResult::RESULT_INSTALLED_APP);
+  title_->SetMultiLine(
+      item_->display_type() == ash::SearchResultDisplayType::kTile &&
+      item_->result_type() == ash::SearchResultType::kInstalledApp);
 
   // Only refresh the icon if it's different from the old one. This prevents
   // flickering.
@@ -335,7 +335,7 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
     flags.setColor(kGridSelectedColor);
     canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
   } else {
-    DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
+    DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     const int kLeftRightPadding = (rect.width() - kIconSelectedSize) / 2;
     rect.Inset(kLeftRightPadding, 0);
     rect.set_height(kIconSelectedSize);
@@ -478,7 +478,8 @@ void SearchResultTileItemView::SetPrice(const base::string16& price) {
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTile() const {
-  return item_ && item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION;
+  return item_ &&
+         item_->display_type() == ash::SearchResultDisplayType::kRecommendation;
 }
 
 void SearchResultTileItemView::LogAppLaunch() const {
@@ -514,7 +515,7 @@ void SearchResultTileItemView::Layout() {
     rect.set_height(title_->GetPreferredSize().height());
     title_->SetBoundsRect(rect);
   } else {
-    DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
+    DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     rect.Inset(0, kSearchTileTopPadding, 0, 0);
     icon_->SetBoundsRect(rect);
 
@@ -571,7 +572,7 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
   if (IsSuggestedAppTile())
     return gfx::Size(kGridTileWidth, kGridTileHeight);
 
-  DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
+  DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
   return gfx::Size(kSearchTileWidth, kSearchTileHeight);
 }
 

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model_export.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -34,71 +35,12 @@ class TokenizedStringMatch;
 // default style.
 class APP_LIST_MODEL_EXPORT SearchResult {
  public:
-  // How the result should be displayed. Do not change the order of these as
-  // they are used for metrics.
-  enum DisplayType {
-    DISPLAY_NONE = 0,
-    DISPLAY_LIST,
-    DISPLAY_TILE,
-    DISPLAY_RECOMMENDATION,
-    DISPLAY_CARD,
-    // Add new values here.
-
-    DISPLAY_TYPE_LAST,
-  };
-
-  // Type of the search result. This should be set in corresponding subclass's
-  // constructor.
-  enum ResultType {
-    RESULT_UNKNOWN,        // Unknown type.
-    RESULT_INSTALLED_APP,  // Installed apps.
-    RESULT_PLAYSTORE_APP,  // Uninstalled apps from playstore.
-    RESULT_INSTANT_APP,    // Instant apps.
-    // Add new values here.
-  };
-
-  // A tagged range in search result text.
-  struct APP_LIST_MODEL_EXPORT Tag {
-    // Similar to ACMatchClassification::Style, the style values are not
-    // mutually exclusive.
-    enum Style {
-      NONE = 0,
-      URL = 1 << 0,
-      MATCH = 1 << 1,
-      DIM = 1 << 2,
-    };
-
-    Tag(int styles, size_t start, size_t end)
-        : styles(styles),
-          range(static_cast<uint32_t>(start), static_cast<uint32_t>(end)) {}
-
-    int styles;
-    gfx::Range range;
-  };
-  typedef std::vector<Tag> Tags;
-
-  // Data representing an action that can be performed on this search result.
-  // An action could be represented as an icon set or as a blue button with
-  // a label. Icon set is chosen if label text is empty. Otherwise, a blue
-  // button with the label text will be used.
-  struct APP_LIST_MODEL_EXPORT Action {
-    Action(const gfx::ImageSkia& base_image,
-           const gfx::ImageSkia& hover_image,
-           const gfx::ImageSkia& pressed_image,
-           const base::string16& tooltip_text);
-    Action(const base::string16& label_text,
-           const base::string16& tooltip_text);
-    Action(const Action& other);
-    ~Action();
-
-    gfx::ImageSkia base_image;
-    gfx::ImageSkia hover_image;
-    gfx::ImageSkia pressed_image;
-
-    base::string16 tooltip_text;
-    base::string16 label_text;
-  };
-  typedef std::vector<Action> Actions;
+  using ResultType = ash::SearchResultType;
+  using DisplayType = ash::SearchResultDisplayType;
+  using Tag = ash::SearchResultTag;
+  using Tags = ash::SearchResultTags;
+  using Action = ash::SearchResultAction;
+  using Actions = ash::SearchResultActions;
 
   SearchResult();
   virtual ~SearchResult();
@@ -238,9 +180,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // duplicates. May be empty, in which case |id_| will be used for comparison.
   std::string comparable_id_;
   double relevance_ = 0;
-  DisplayType display_type_ = DISPLAY_LIST;
+  DisplayType display_type_ = ash::SearchResultDisplayType::kList;
 
-  ResultType result_type_ = RESULT_UNKNOWN;
+  ResultType result_type_ = ash::SearchResultType::kUnknown;
 
   // The Manhattan distance from the origin of all search results to this
   // result. This is logged for UMA.

@@ -72,7 +72,8 @@ class Mixer::Group {
           // become dominated by previously clicked results. This happens
           // because the recommendation query is the empty string and the
           // clicked results get forever boosted.
-          if (result->display_type() != SearchResult::DISPLAY_RECOMMENDATION) {
+          if (result->display_type() !=
+              ash::SearchResultDisplayType::kRecommendation) {
             KnownResults::const_iterator known_it =
                 known_results.find(result->id());
             if (known_it != known_results.end()) {

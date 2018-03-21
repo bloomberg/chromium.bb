@@ -75,8 +75,8 @@ class SearchResultTileItemListViewTest
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
       result->set_result_id(base::StringPrintf("InstalledApp %d", i));
-      result->set_display_type(SearchResult::DISPLAY_TILE);
-      result->set_result_type(SearchResult::RESULT_INSTALLED_APP);
+      result->set_display_type(ash::SearchResultDisplayType::kTile);
+      result->set_result_type(ash::SearchResultType::kInstalledApp);
       result->set_title(
           base::UTF8ToUTF16(base::StringPrintf("InstalledApp %d", i)));
       results->Add(std::move(result));
@@ -88,8 +88,8 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id(base::StringPrintf("PlayStoreApp %d", i));
-        result->set_display_type(SearchResult::DISPLAY_TILE);
-        result->set_result_type(SearchResult::RESULT_PLAYSTORE_APP);
+        result->set_display_type(ash::SearchResultDisplayType::kTile);
+        result->set_result_type(ash::SearchResultType::kPlayStoreApp);
         result->set_title(
             base::UTF8ToUTF16(base::StringPrintf("PlayStoreApp %d", i)));
         result->SetRating(1 + i);

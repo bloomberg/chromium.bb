@@ -351,9 +351,9 @@ app_list::SearchResult* ChromeAppListModelUpdater::GetResultByTitle(
   //             have an attribute to do this when we refactor SearchResult.
   for (const auto& result : *search_model_->results()) {
     if (result->title() == target_title &&
-        result->result_type() == app_list::SearchResult::RESULT_INSTALLED_APP &&
+        result->result_type() == ash::SearchResultType::kInstalledApp &&
         result->display_type() !=
-            app_list::SearchResult::DISPLAY_RECOMMENDATION) {
+            ash::SearchResultDisplayType::kRecommendation) {
       return result.get();
     }
   }
