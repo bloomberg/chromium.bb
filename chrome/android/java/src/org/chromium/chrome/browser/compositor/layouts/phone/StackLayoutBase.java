@@ -818,15 +818,20 @@ public abstract class StackLayoutBase
         float switchDelta = getOrientation() == Orientation.PORTRAIT ? relativeX : relativeY;
 
         // In LTR portrait mode, the first stack can be swiped to the left to switch to the second
-        // stack, and the second stack can be swiped to the right to switch to the first stack. We
+        // stack, and the last stack can be swiped to the right to switch to the first stack. We
         // reverse the check for RTL portrait mode because increasing the stack index corresponds
-        // to a negative switchDelta.
+        // to a negative switchDelta. If there are more than two stacks, we do not currently support
+        // swiping to close on any of the stacks in the middle
         //
         // Landscape mode is like LTR portrait mode (increasing the stack index corresponds to a
         // positive switchDelta).
         final boolean isRtlPortraitMode =
                 (getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
-        if ((currentIndex == 0) ^ (switchDelta > 0) ^ isRtlPortraitMode) {
+        final boolean onLeftmostStack = (currentIndex == 0 && !isRtlPortraitMode)
+                || (currentIndex == mStacks.size() - 1 && isRtlPortraitMode);
+        final boolean onRightmostStack = (currentIndex == 0 && isRtlPortraitMode)
+                || (currentIndex == mStacks.size() - 1 && !isRtlPortraitMode);
+        if ((onLeftmostStack && switchDelta < 0) || (onRightmostStack && switchDelta > 0)) {
             // Dragging in a direction the stack cannot switch. Pass the drag to the Stack, which
             // will treat it as intending to discard a tab.
             return SWIPE_MODE_SEND_TO_STACK;
