@@ -42,7 +42,8 @@ struct FileNames {
 status::Code ApplyCommon(base::File&& old_file_handle,
                          base::File&& patch_file_handle,
                          base::File&& new_file_handle,
-                         const FileNames& names) {
+                         const FileNames& names,
+                         bool force_keep) {
   MappedFileReader patch_file(std::move(patch_file_handle));
   if (patch_file.HasError()) {
     LOG(ERROR) << "Error with file " << names.patch_name.value() << ": "
@@ -63,10 +64,6 @@ status::Code ApplyCommon(base::File&& old_file_handle,
                << old_file.error();
     return status::kStatusFileReadError;
   }
-  if (!patch_reader->CheckOldFile(old_file.region())) {
-    LOG(ERROR) << "Invalid old_file.";
-    return status::kStatusInvalidOldImage;
-  }
 
   zucchini::PatchHeader header = patch_reader->header();
   // By default, delete output on destruction, to avoid having lingering files
@@ -82,6 +79,9 @@ status::Code ApplyCommon(base::File&& old_file_handle,
                << new_file.error();
     return status::kStatusFileWriteError;
   }
+
+  if (force_keep)
+    new_file.Keep();
 
   zucchini::status::Code result =
       zucchini::Apply(old_file.region(), *patch_reader, new_file.region());
@@ -100,15 +100,17 @@ status::Code ApplyCommon(base::File&& old_file_handle,
 
 status::Code Apply(base::File&& old_file_handle,
                    base::File&& patch_file_handle,
-                   base::File&& new_file_handle) {
+                   base::File&& new_file_handle,
+                   bool force_keep) {
   const FileNames file_names;
   return ApplyCommon(std::move(old_file_handle), std::move(patch_file_handle),
-                     std::move(new_file_handle), file_names);
+                     std::move(new_file_handle), file_names, force_keep);
 }
 
 status::Code Apply(const base::FilePath& old_path,
                    const base::FilePath& patch_path,
-                   const base::FilePath& new_path) {
+                   const base::FilePath& new_path,
+                   bool force_keep) {
   using base::File;
   File old_file(old_path, File::FLAG_OPEN | File::FLAG_READ);
   File patch_file(patch_path, File::FLAG_OPEN | File::FLAG_READ);
@@ -117,7 +119,7 @@ status::Code Apply(const base::FilePath& old_path,
                               File::FLAG_CAN_DELETE_ON_CLOSE);
   const FileNames file_names(old_path, patch_path, new_path);
   return ApplyCommon(std::move(old_file), std::move(patch_file),
-                     std::move(new_file), file_names);
+                     std::move(new_file), file_names, force_keep);
 }
 
 }  // namespace zucchini

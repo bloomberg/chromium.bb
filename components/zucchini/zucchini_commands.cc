@@ -29,6 +29,7 @@ namespace {
 /******** Command-line Switches ********/
 
 constexpr char kSwitchDump[] = "dump";
+constexpr char kSwitchKeep[] = "keep";
 constexpr char kSwitchRaw[] = "raw";
 
 }  // namespace
@@ -79,6 +80,9 @@ zucchini::status::Code MainGen(MainParams params) {
     return zucchini::status::kStatusFileWriteError;
   }
 
+  if (params.command_line.HasSwitch(kSwitchKeep))
+    patch.Keep();
+
   if (!patch_writer.SerializeInto(patch.region()))
     return zucchini::status::kStatusPatchWriteError;
 
@@ -91,7 +95,8 @@ zucchini::status::Code MainGen(MainParams params) {
 zucchini::status::Code MainApply(MainParams params) {
   CHECK_EQ(3U, params.file_paths.size());
   return zucchini::Apply(params.file_paths[0], params.file_paths[1],
-                         params.file_paths[2]);
+                         params.file_paths[2],
+                         params.command_line.HasSwitch(kSwitchKeep));
 }
 
 zucchini::status::Code MainRead(MainParams params) {
