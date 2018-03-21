@@ -645,6 +645,13 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
       error_handler_.reset(nullptr);
     }
     SSLErrorHandler::ResetConfigForTesting();
+
+    // ChromeRenderViewHostTestHarness::TearDown() simulates shutdown and as
+    // such destroys parts of the task environment required in these
+    // destructors.
+    test_server_.reset();
+    tracker_.reset();
+
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

@@ -246,10 +246,14 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
 
   DCHECK(!wake_lock_);
   // Gets a service_manager::Connector first, then request a wake lock.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE, base::BindOnce(&GetServiceConnector),
-      base::BindOnce(&DesktopCaptureDevice::Core::RequestWakeLock,
-                     weak_factory_.GetWeakPtr()));
+  // TODO(https://crbug.com/823869): Fix DesktopCaptureDeviceTest and remove
+  // this conditional.
+  if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::UI, FROM_HERE, base::BindOnce(&GetServiceConnector),
+        base::BindOnce(&DesktopCaptureDevice::Core::RequestWakeLock,
+                       weak_factory_.GetWeakPtr()));
+  }
 
   desktop_capturer_->Start(this);
   // Assume it will be always started successfully for now.

@@ -4,10 +4,10 @@
 
 #include "content/browser/net/network_quality_observer_impl.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,8 @@ namespace content {
 namespace {
 
 TEST(NetworkQualityObserverImplTest, TestObserverNotified) {
-  base::MessageLoopForIO message_loop;
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::Options::IO_MAINLOOP);
 
   net::TestNetworkQualityEstimator estimator;
   estimator.SetStartTimeNullHttpRtt(base::TimeDelta::FromMilliseconds(1));

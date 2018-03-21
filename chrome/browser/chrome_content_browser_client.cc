@@ -995,7 +995,7 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // The common case is that this function is called early in Chrome startup
   // before any threads are created or registered. When there are no threads,
   // we can just set the string without worrying about threadsafety.
-  if (!BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+  if (!BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     g_io_thread_application_locale.Get() = locale;
     return;
   }

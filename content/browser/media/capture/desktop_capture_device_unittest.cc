@@ -19,7 +19,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"

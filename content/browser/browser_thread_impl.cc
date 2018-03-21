@@ -127,6 +127,12 @@ bool PostTaskHelper(BrowserThread::ID identifier,
   if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
+  // Posting tasks before BrowserThreads are initialized is incorrect as it
+  // would silently no-op. If you need to support posting early, gate it on
+  // BrowserThread::IsThreadInitialized(). If you hit this in unittests, you
+  // most likely posted a task outside the scope of a TestBrowserThreadBundle.
+  DCHECK_GE(globals.states[identifier], BrowserThreadState::RUNNING);
+
   const bool accepting_tasks =
       globals.states[identifier] == BrowserThreadState::RUNNING;
   if (accepting_tasks) {

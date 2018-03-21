@@ -18,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -29,6 +28,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -122,7 +122,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetRulesetService(nullptr);
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     PlatformTest::TearDown();
   }
 
@@ -171,13 +171,9 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   }
 
  protected:
-  void RunUntilIdle() {
-    scoped_task_environment_.RunUntilIdle();
-    base::RunLoop().RunUntilIdle();
-  }
+  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   base::ScopedTempDir component_install_dir_;
   base::ScopedTempDir ruleset_service_dir_;
@@ -198,7 +194,7 @@ TEST_F(SubresourceFilterComponentInstallerTest,
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
   RegisterSubresourceFilterComponent(component_updater.get());
-  RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest,
@@ -211,7 +207,7 @@ TEST_F(SubresourceFilterComponentInstallerTest,
       .Times(1)
       .WillOnce(testing::Return(true));
   RegisterSubresourceFilterComponent(component_updater.get());
-  RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyRuleset) {
