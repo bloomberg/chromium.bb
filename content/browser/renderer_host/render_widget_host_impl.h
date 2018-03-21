@@ -24,6 +24,7 @@
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -163,6 +164,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
+
+  void set_clock_for_testing(base::TickClock* clock) { clock_ = clock; }
 
   // Returns the viz::FrameSinkId that this object uses to put things on screen.
   // This value is constant throughout the lifetime of this object. Note that
@@ -872,6 +875,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The ID of the corresponding object in the Renderer Instance.
   const int routing_id_;
+
+  // The clock used; overridable for tests.
+  base::TickClock* clock_;
 
   // Indicates whether a page is loading or not.
   bool is_loading_;
