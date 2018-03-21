@@ -5,8 +5,7 @@
 #include "components/reading_list/core/reading_list_model_storage.h"
 
 ReadingListModelStorage::ReadingListModelStorage(
-    const ChangeProcessorFactory& change_processor_factory,
-    syncer::ModelType type)
-    : ModelTypeSyncBridge(change_processor_factory, type) {}
+    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
+    : ModelTypeSyncBridge(std::move(change_processor)) {}
 
 ReadingListModelStorage::~ReadingListModelStorage() {}

@@ -32,7 +32,8 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
                         const std::string& storage_key,
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntity(const EntityData& entity_data) override;
-  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
+  void ModelReadyToSync(ModelTypeSyncBridge* bridge,
+                        std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
 
   void SetIsTrackingMetadata(bool is_tracking);
@@ -55,12 +56,11 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   MetadataBatch* metadata() const { return metadata_.get(); }
 
-  // Returns a callback that constructs a processor and assigns a raw pointer to
-  // the given address. The caller must ensure that the address passed in is
-  // still valid whenever the callback is run. This can be useful for tests that
-  // want to verify the RecordingModelTypeChangeProcessor was given data by the
-  // bridge they are testing.
-  static ModelTypeSyncBridge::ChangeProcessorFactory FactoryForBridgeTest(
+  // Constructs the processor and assigns its raw pointer to the given address.
+  // This way, the tests can keep the raw pointer for verifying expectations
+  // while the unique pointer is owned by the bridge being tested.
+  static std::unique_ptr<ModelTypeChangeProcessor>
+  CreateProcessorAndAssignRawPointer(
       RecordingModelTypeChangeProcessor** processor_address,
       bool expect_error = false);
 

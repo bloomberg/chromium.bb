@@ -144,8 +144,9 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 
   void ResetBridge(bool expect_error = false) {
     bridge_.reset(new AutocompleteSyncBridge(
-        &backend_, RecordingModelTypeChangeProcessor::FactoryForBridgeTest(
-                       &processor_, expect_error)));
+        &backend_,
+        RecordingModelTypeChangeProcessor::CreateProcessorAndAssignRawPointer(
+            &processor_, expect_error)));
   }
 
   void SaveSpecificsToTable(

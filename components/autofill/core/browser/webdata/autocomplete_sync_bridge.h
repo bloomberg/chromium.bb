@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
+#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace autofill {
@@ -33,7 +34,7 @@ class AutocompleteSyncBridge
   AutocompleteSyncBridge();
   AutocompleteSyncBridge(
       AutofillWebDataBackend* backend,
-      const ChangeProcessorFactory& change_processor_factory);
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~AutocompleteSyncBridge() override;
 
   static void CreateForWebDataServiceAndBackend(

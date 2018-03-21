@@ -99,7 +99,8 @@ class UserEventServiceImplTest : public testing::Test {
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {
     return std::make_unique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_),
+        RecordingModelTypeChangeProcessor::CreateProcessorAndAssignRawPointer(
+            &processor_),
         &mapper_);
   }
 

@@ -69,9 +69,9 @@ std::unique_ptr<EntityData> CopyToEntityData(
 
 UserEventSyncBridge::UserEventSyncBridge(
     OnceModelTypeStoreFactory store_factory,
-    const ChangeProcessorFactory& change_processor_factory,
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     GlobalIdMapper* global_id_mapper)
-    : ModelTypeSyncBridge(change_processor_factory, USER_EVENTS),
+    : ModelTypeSyncBridge(std::move(change_processor)),
       global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
   std::move(store_factory)
@@ -214,7 +214,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError(*error);
   } else {
-    change_processor()->ModelReadyToSync(std::move(metadata_batch));
+    change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
   }
 }
 

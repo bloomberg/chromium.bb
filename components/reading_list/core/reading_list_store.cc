@@ -22,8 +22,8 @@
 
 ReadingListStore::ReadingListStore(
     syncer::OnceModelTypeStoreFactory create_store_callback,
-    const ChangeProcessorFactory& change_processor_factory)
-    : ReadingListModelStorage(change_processor_factory, syncer::READING_LIST),
+    std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
+    : ReadingListModelStorage(std::move(change_processor)),
       create_store_callback_(std::move(create_store_callback)),
       pending_transaction_count_(0) {}
 
@@ -156,7 +156,7 @@ void ReadingListStore::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError({FROM_HERE, "Failed to read metadata."});
   } else {
-    change_processor()->ModelReadyToSync(std::move(metadata_batch));
+    change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
   }
 }
 

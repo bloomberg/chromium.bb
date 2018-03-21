@@ -97,7 +97,7 @@ class UserEventSyncBridgeTest : public testing::Test {
   UserEventSyncBridgeTest() {
     bridge_ = std::make_unique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        mock_processor_.FactoryForBridgeTest(), &test_global_id_mapper_);
+        mock_processor_.CreateForwardingProcessor(), &test_global_id_mapper_);
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
     ON_CALL(*processor(), DisableSync()).WillByDefault(Invoke([this]() {
       bridge_->ApplyDisableSyncChanges({});
@@ -171,7 +171,7 @@ class UserEventSyncBridgeTest : public testing::Test {
 };
 
 TEST_F(UserEventSyncBridgeTest, MetadataIsInitialized) {
-  EXPECT_CALL(*processor(), DoModelReadyToSync(NotNull()));
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, NotNull()));
   base::RunLoop().RunUntilIdle();
 }
 

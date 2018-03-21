@@ -19,10 +19,12 @@
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "net/base/network_change_notifier.h"
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
+using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::ConflictResolution;
 using syncer::FakeModelTypeSyncBridge;
 using syncer::ModelTypeChangeProcessor;
@@ -66,9 +68,11 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   };
 
   TestModelTypeSyncBridge()
-      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create,
-                                           base::RepeatingClosure())) {
-    change_processor()->ModelReadyToSync(db().CreateMetadataBatch());
+      : FakeModelTypeSyncBridge(
+            std::make_unique<ClientTagBasedModelTypeProcessor>(
+                syncer::PREFERENCES,
+                /*dump_stack=*/base::RepeatingClosure())) {
+    change_processor()->ModelReadyToSync(this, db().CreateMetadataBatch());
   }
 
   base::Optional<syncer::ModelError> ApplySyncChanges(

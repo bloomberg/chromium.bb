@@ -207,7 +207,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
         provider_.get(),
         base::BindOnce(&ModelTypeStoreTestUtil::MoveStoreToCallback,
                        std::move(store_)),
-        mock_processor_.FactoryForBridgeTest());
+        mock_processor_.CreateForwardingProcessor());
     bridge_->AddObserver(this);
   }
 
@@ -374,12 +374,12 @@ TEST_F(DeviceInfoSyncBridgeTest, LocalProviderSubscription) {
 
 // Metadata shouldn't be loaded before the provider is initialized.
 TEST_F(DeviceInfoSyncBridgeTest, LocalProviderInitRace) {
-  EXPECT_CALL(*processor(), DoModelReadyToSync(_)).Times(0);
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, _)).Times(0);
   set_provider(std::make_unique<LocalDeviceInfoProviderMock>());
   InitializeAndPump();
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
 
-  EXPECT_CALL(*processor(), DoModelReadyToSync(_));
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, _));
   local_device()->Initialize(CreateModel(1));
   base::RunLoop().RunUntilIdle();
 
@@ -443,8 +443,9 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalDataAndMetadata) {
   ModelTypeState state = StateWithEncryption("ekn");
   WriteToStore({specifics}, state);
 
-  EXPECT_CALL(*processor(), DoModelReadyToSync(MetadataHasEncryptionKeyName(
-                                state.encryption_key_name())));
+  EXPECT_CALL(*processor(),
+              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
+                                        state.encryption_key_name())));
   InitializeAndPump();
 
   ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
@@ -543,8 +544,9 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesStore) {
   EXPECT_FALSE(error);
   EXPECT_EQ(2, change_count());
 
-  EXPECT_CALL(*processor(), DoModelReadyToSync(MetadataHasEncryptionKeyName(
-                                state.encryption_key_name())));
+  EXPECT_CALL(*processor(),
+              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
+                                        state.encryption_key_name())));
   RestartBridge();
 
   std::unique_ptr<DeviceInfo> info =
@@ -667,8 +669,9 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
   EXPECT_THAT(*bridge()->GetDeviceInfo(conflict_guid),
               ModelEqualsSpecifics(conflict_remote));
 
-  EXPECT_CALL(*processor(), DoModelReadyToSync(MetadataHasEncryptionKeyName(
-                                state.encryption_key_name())));
+  EXPECT_CALL(*processor(),
+              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
+                                        state.encryption_key_name())));
   RestartBridge();
 }
 
@@ -753,17 +756,17 @@ TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
 }
 
 TEST_F(DeviceInfoSyncBridgeTest, MultipleOnProviderInitialized) {
-  EXPECT_CALL(*processor(), DoModelReadyToSync(_)).Times(0);
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, _)).Times(0);
   set_provider(std::make_unique<LocalDeviceInfoProviderMock>());
   InitializeAndPump();
 
   // Verify the processor is given metadata.
-  EXPECT_CALL(*processor(), DoModelReadyToSync(NotNull()));
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, NotNull()));
   local_device()->Initialize(CreateModel(0));
   base::RunLoop().RunUntilIdle();
 
   // Initializing the provider again shouldn't trigger ModelReadyToSync() again.
-  EXPECT_CALL(*processor(), DoModelReadyToSync(_)).Times(0);
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, _)).Times(0);
   local_device()->Initialize(CreateModel(0));
   base::RunLoop().RunUntilIdle();
 }

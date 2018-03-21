@@ -14,8 +14,7 @@ namespace syncer {
 
 // static
 std::unique_ptr<ModelTypeChangeProcessor> FakeModelTypeChangeProcessor::Create(
-    ModelType type,
-    ModelTypeSyncBridge* bridge) {
+    ModelType type) {
   return base::WrapUnique(new FakeModelTypeChangeProcessor());
 }
 
@@ -44,6 +43,7 @@ void FakeModelTypeChangeProcessor::UntrackEntity(
     const EntityData& entity_data) {}
 
 void FakeModelTypeChangeProcessor::ModelReadyToSync(
+    ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(

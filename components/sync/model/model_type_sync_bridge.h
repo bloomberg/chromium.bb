@@ -36,11 +36,9 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
  public:
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
-  using ChangeProcessorFactory = base::RepeatingCallback<std::unique_ptr<
-      ModelTypeChangeProcessor>(ModelType type, ModelTypeSyncBridge* bridge)>;
 
-  ModelTypeSyncBridge(const ChangeProcessorFactory& change_processor_factory,
-                      ModelType type);
+  ModelTypeSyncBridge(
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
   virtual ~ModelTypeSyncBridge();
 
@@ -150,10 +148,6 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   ModelTypeChangeProcessor* change_processor() const;
 
  private:
-  const ModelType type_;
-
-  const ChangeProcessorFactory change_processor_factory_;
-
   std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
 };
 

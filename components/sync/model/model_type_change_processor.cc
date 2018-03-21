@@ -8,15 +8,6 @@
 
 namespace syncer {
 
-// static
-std::unique_ptr<ModelTypeChangeProcessor> ModelTypeChangeProcessor::Create(
-    const base::RepeatingClosure& dump_stack,
-    ModelType type,
-    ModelTypeSyncBridge* bridge) {
-  return std::make_unique<ClientTagBasedModelTypeProcessor>(
-      type, bridge, dump_stack, CommitOnlyTypes().Has(type));
-}
-
 ModelTypeChangeProcessor::ModelTypeChangeProcessor() {}
 ModelTypeChangeProcessor::~ModelTypeChangeProcessor() {}
 

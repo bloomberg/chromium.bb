@@ -34,9 +34,10 @@ namespace syncer {
 class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                              public DeviceInfoTracker {
  public:
-  DeviceInfoSyncBridge(LocalDeviceInfoProvider* local_device_info_provider,
-                       OnceModelTypeStoreFactory store_factory,
-                       const ChangeProcessorFactory& change_processor_factory);
+  DeviceInfoSyncBridge(
+      LocalDeviceInfoProvider* local_device_info_provider,
+      OnceModelTypeStoreFactory store_factory,
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
   ~DeviceInfoSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.

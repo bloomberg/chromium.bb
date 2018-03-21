@@ -23,8 +23,9 @@ class ReadingListModel;
 // A ReadingListModelStorage storing and syncing data in protobufs.
 class ReadingListStore : public ReadingListModelStorage {
  public:
-  ReadingListStore(syncer::OnceModelTypeStoreFactory create_store_callback,
-                   const ChangeProcessorFactory& change_processor_factory);
+  ReadingListStore(
+      syncer::OnceModelTypeStoreFactory create_store_callback,
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~ReadingListStore() override;
 
   std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() override;

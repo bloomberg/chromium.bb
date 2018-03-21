@@ -20,12 +20,14 @@
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/escape.h"
 
 using base::Optional;
 using base::Time;
 using sync_pb::AutofillSpecifics;
+using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
@@ -281,10 +283,11 @@ void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
     AutofillWebDataService* web_data_service,
     AutofillWebDataBackend* web_data_backend) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), std::make_unique<AutocompleteSyncBridge>(
-                         web_data_backend,
-                         base::BindRepeating(&ModelTypeChangeProcessor::Create,
-                                             base::RepeatingClosure())));
+      UserDataKey(),
+      std::make_unique<AutocompleteSyncBridge>(
+          web_data_backend,
+          std::make_unique<ClientTagBasedModelTypeProcessor>(
+              syncer::AUTOFILL, /*dump_stack=*/base::RepeatingClosure())));
 }
 
 // static
@@ -297,8 +300,8 @@ base::WeakPtr<ModelTypeSyncBridge> AutocompleteSyncBridge::FromWebDataService(
 
 AutocompleteSyncBridge::AutocompleteSyncBridge(
     AutofillWebDataBackend* backend,
-    const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeSyncBridge(change_processor_factory, syncer::AUTOFILL),
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(backend),
       scoped_observer_(this) {
   DCHECK(web_data_backend_);
@@ -456,7 +459,7 @@ void AutocompleteSyncBridge::LoadMetadata() {
         {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
     return;
   }
-  change_processor()->ModelReadyToSync(std::move(batch));
+  change_processor()->ModelReadyToSync(this, std::move(batch));
 }
 
 std::string AutocompleteSyncBridge::GetClientTag(

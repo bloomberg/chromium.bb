@@ -12,6 +12,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/user_events/no_op_user_event_service.h"
 #include "components/sync/user_events/user_event_service_impl.h"
 #include "components/sync/user_events/user_event_sync_bridge.h"
@@ -54,12 +55,11 @@ IOSUserEventServiceFactory::BuildServiceInstanceFor(
   syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           browser_state->GetStatePath());
-  syncer::ModelTypeSyncBridge::ChangeProcessorFactory processor_factory =
-      base::BindRepeating(&syncer::ModelTypeChangeProcessor::Create,
-                          base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                              ::GetChannel()));
   auto bridge = std::make_unique<syncer::UserEventSyncBridge>(
-      std::move(store_factory), std::move(processor_factory),
+      std::move(store_factory),
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::USER_EVENTS, /*dump_stack=*/base::BindRepeating(
+              &syncer::ReportUnrecoverableError, ::GetChannel())),
       sync_service->GetGlobalIdMapper());
   return std::make_unique<syncer::UserEventServiceImpl>(sync_service,
                                                         std::move(bridge));

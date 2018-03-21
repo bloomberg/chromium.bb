@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/user_events/global_id_mapper.h"
@@ -21,9 +22,10 @@ namespace syncer {
 
 class UserEventSyncBridge : public ModelTypeSyncBridge {
  public:
-  UserEventSyncBridge(OnceModelTypeStoreFactory store_factory,
-                      const ChangeProcessorFactory& change_processor_factory,
-                      GlobalIdMapper* global_id_mapper);
+  UserEventSyncBridge(
+      OnceModelTypeStoreFactory store_factory,
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor,
+      GlobalIdMapper* global_id_mapper);
   ~UserEventSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.

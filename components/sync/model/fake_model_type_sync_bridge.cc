@@ -157,8 +157,8 @@ void FakeModelTypeSyncBridge::Store::Reset() {
 }
 
 FakeModelTypeSyncBridge::FakeModelTypeSyncBridge(
-    const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeSyncBridge(change_processor_factory, PREFERENCES),
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    : ModelTypeSyncBridge(std::move(change_processor)),
       db_(std::make_unique<Store>()) {}
 
 FakeModelTypeSyncBridge::~FakeModelTypeSyncBridge() {
