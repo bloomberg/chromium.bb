@@ -173,3 +173,8 @@ UpgradeDetectorChromeos* UpgradeDetectorChromeos::GetInstance() {
 UpgradeDetector* UpgradeDetector::GetInstance() {
   return UpgradeDetectorChromeos::GetInstance();
 }
+
+// static
+base::TimeDelta UpgradeDetector::GetDefaultHighAnnoyanceThreshold() {
+  return base::TimeDelta::FromDays(kHighDaysThreshold);
+}
