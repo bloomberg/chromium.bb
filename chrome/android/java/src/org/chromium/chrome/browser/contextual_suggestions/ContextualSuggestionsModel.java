@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.contextualsuggestions;
+package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
