@@ -20,7 +20,7 @@ void OnUnsubscriptionRequestCompleted(const Status& status);
 // don't remove or reorder elements, only add new ones at the end (before
 // COUNT), and keep in sync with ContentSuggestionsBreakingNewsMessageAction in
 // enums.xml.
-enum ReceivedMessageAction {
+enum class ReceivedMessageAction {
   NO_ACTION = 0,
   INVALID_ACTION = 1,
   PUSH_BY_VALUE = 2,

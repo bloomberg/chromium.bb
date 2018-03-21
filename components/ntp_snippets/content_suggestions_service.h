@@ -92,7 +92,7 @@ class ContentSuggestionsService : public KeyedService,
     virtual ~Observer() = default;
   };
 
-  enum State {
+  enum class State {
     ENABLED,
     DISABLED,
   };

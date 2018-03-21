@@ -927,7 +927,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportMissingAction) {
       histogram_tester.GetAllSamples(
           "NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction"),
       ElementsAre(base::Bucket(
-          /*min=*/metrics::ReceivedMessageAction::NO_ACTION, /*count=*/1)));
+          /*min=*/static_cast<int>(metrics::ReceivedMessageAction::NO_ACTION),
+          /*count=*/1)));
 }
 
 TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportInvalidAction) {
@@ -953,7 +954,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportInvalidAction) {
       histogram_tester.GetAllSamples(
           "NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction"),
       ElementsAre(
-          base::Bucket(/*min=*/metrics::ReceivedMessageAction::INVALID_ACTION,
+          base::Bucket(/*min=*/static_cast<int>(
+                           metrics::ReceivedMessageAction::INVALID_ACTION),
                        /*count=*/1)));
 }
 
@@ -980,7 +982,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportPushToRefreshAction) {
       histogram_tester.GetAllSamples(
           "NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction"),
       ElementsAre(
-          base::Bucket(/*min=*/metrics::ReceivedMessageAction::PUSH_TO_REFRESH,
+          base::Bucket(/*min=*/static_cast<int>(
+                           metrics::ReceivedMessageAction::PUSH_TO_REFRESH),
                        /*count=*/1)));
 }
 
@@ -1008,7 +1011,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportPushByValueAction) {
       histogram_tester.GetAllSamples(
           "NewTabPage.ContentSuggestions.BreakingNews.ReceivedMessageAction"),
       ElementsAre(base::Bucket(
-          /*min=*/metrics::ReceivedMessageAction::PUSH_BY_VALUE, /*count=*/1)));
+          /*min=*/static_cast<int>(
+              metrics::ReceivedMessageAction::PUSH_BY_VALUE),
+          /*count=*/1)));
 }
 
 TEST_F(BreakingNewsGCMAppHandlerTest,

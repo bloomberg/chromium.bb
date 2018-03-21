@@ -63,7 +63,7 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
   bool enabled_ = true;
 };
 
-enum TestType {
+enum class TestType {
   kImageCallback,
   kImageDataCallback,
   kBothCallbacks,
@@ -103,11 +103,12 @@ class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
   }
 
   void Fetch(std::string expected_image_data, bool expect_image) {
-    fake_image_decoder()->SetEnabled(GetParam() != kImageDataCallback);
+    fake_image_decoder()->SetEnabled(GetParam() !=
+                                     TestType::kImageDataCallback);
     base::MockCallback<ImageFetchedCallback> image_callback;
     base::MockCallback<ImageDataFetchedCallback> image_data_callback;
     switch (GetParam()) {
-      case kImageCallback: {
+      case TestType::kImageCallback: {
         EXPECT_CALL(image_callback,
                     Run(Property(&gfx::Image::IsEmpty, Eq(!expect_image))));
         cached_image_fetcher()->FetchSuggestionImage(
@@ -115,13 +116,13 @@ class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
             image_callback.Get());
 
       } break;
-      case kImageDataCallback: {
+      case TestType::kImageDataCallback: {
         EXPECT_CALL(image_data_callback, Run(expected_image_data));
         cached_image_fetcher()->FetchSuggestionImage(
             kSuggestionID, GURL(kImageURL), image_data_callback.Get(),
             ImageFetchedCallback());
       } break;
-      case kBothCallbacks: {
+      case TestType::kBothCallbacks: {
         EXPECT_CALL(image_data_callback, Run(expected_image_data));
         EXPECT_CALL(image_callback,
                     Run(Property(&gfx::Image::IsEmpty, Eq(!expect_image))));
@@ -193,8 +194,8 @@ TEST_P(CachedImageFetcherTest, FetchNonExistingImage) {
 
 INSTANTIATE_TEST_CASE_P(,
                         CachedImageFetcherTest,
-                        testing::Values(kImageCallback,
-                                        kImageDataCallback,
-                                        kBothCallbacks));
+                        testing::Values(TestType::kImageCallback,
+                                        TestType::kImageDataCallback,
+                                        TestType::kBothCallbacks));
 
 }  // namespace ntp_snippets

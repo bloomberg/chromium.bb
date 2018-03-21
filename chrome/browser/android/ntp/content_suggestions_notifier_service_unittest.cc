@@ -65,7 +65,7 @@ class FakeContentSuggestionsService : public ContentSuggestionsService {
  public:
   FakeContentSuggestionsService(PrefService* prefs, base::Clock* clock)
       : ContentSuggestionsService(
-            ContentSuggestionsService::ENABLED,
+            ContentSuggestionsService::State::ENABLED,
             /*identity_manager=*/nullptr,
             /*history_service=*/nullptr,
             /*large_icon_cache=*/nullptr,

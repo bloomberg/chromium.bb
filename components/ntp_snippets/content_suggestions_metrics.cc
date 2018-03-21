@@ -79,7 +79,7 @@ const char kPerCategoryHistogramFormat[] = "%s.%s";
 // and contains exactly the values to be recorded in UMA. Don't remove or
 // reorder elements, only add new ones at the end (before COUNT), and keep in
 // sync with ContentSuggestionsCategory in histograms.xml.
-enum HistogramCategories {
+enum class HistogramCategories {
   EXPERIMENTAL,
   RECENT_TABS,
   DOWNLOADS,
