@@ -90,8 +90,12 @@ void LegacyNavigationManagerImpl::AddTransientItem(const GURL& url) {
   NavigationItem* item = GetPendingItem();
   if (!item)
     item = GetLastCommittedNonAppSpecificItem();
-  DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
-  GetTransientItem()->SetUserAgentType(item->GetUserAgentType());
+  // |item| may still be nullptr if NTP is the only entry in the session.
+  // See https://crbug.com/822908 for details.
+  if (item) {
+    DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
+    GetTransientItem()->SetUserAgentType(item->GetUserAgentType());
+  }
 }
 
 void LegacyNavigationManagerImpl::AddPendingItem(
