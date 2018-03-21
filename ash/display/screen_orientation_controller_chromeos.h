@@ -37,9 +37,13 @@ enum class OrientationLockType {
   kLandscapeSecondary
 };
 
+// Test if the orientation lock type is primary/landscape/portrait.
 bool IsPrimaryOrientation(OrientationLockType type);
 bool IsLandscapeOrientation(OrientationLockType type);
 bool IsPortraitOrientation(OrientationLockType type);
+
+ASH_EXPORT std::ostream& operator<<(std::ostream& out,
+                                    const OrientationLockType& lock);
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
@@ -84,10 +88,9 @@ class ASH_EXPORT ScreenOrientationController
   void RemoveObserver(Observer* observer);
 
   // Allows/unallows a window to lock the screen orientation.
-  void LockOrientationForWindow(
-      aura::Window* requesting_window,
-      OrientationLockType lock_orientation,
-      LockCompletionBehavior lock_completion_behavior);
+  void LockOrientationForWindow(aura::Window* requesting_window,
+                                OrientationLockType orientation_lock);
+
   void UnlockOrientationForWindow(aura::Window* window);
 
   // Unlock all and set the rotation back to the user specified rotation.
@@ -144,17 +147,15 @@ class ASH_EXPORT ScreenOrientationController
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
+  void OnTabletModeEnded() override;
 
  private:
   friend class ScreenOrientationControllerTestApi;
 
   struct LockInfo {
     LockInfo() {}
-    LockInfo(OrientationLockType orientation,
-             LockCompletionBehavior lock_completion_behavior)
-        : orientation(orientation),
-          lock_completion_behavior(lock_completion_behavior) {}
-
+    LockInfo(OrientationLockType orientation_lock)
+        : orientation(orientation_lock) {}
     OrientationLockType orientation = OrientationLockType::kAny;
     LockCompletionBehavior lock_completion_behavior =
         LockCompletionBehavior::None;
@@ -202,8 +203,8 @@ class ASH_EXPORT ScreenOrientationController
   // window, and applies it. If there is none, rotation lock will be removed.
   void ApplyLockForActiveWindow();
 
-  // Both |OrientationLockLandscape| and
-  // |OrientationLockPortrait| allow for rotation between the
+  // Both |OrientationLockType::kLandscape| and
+  // |OrientationLock::kPortrait| allow for rotation between the
   // two angles of the same screen orientation
   // (http://www.w3.org/TR/screen-orientation/). Returns true if |rotation| is
   // supported for the current |rotation_locked_orientation_|.

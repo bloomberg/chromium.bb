@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
@@ -63,7 +62,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -387,10 +385,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     model_observer_ = std::make_unique<TestShelfModelObserver>();
     model_ = std::make_unique<ash::ShelfModel>();
     model_->AddObserver(model_observer_.get());
-
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
-    tablet_mode_client_->InitForTesting(
-        fake_tablet_mode_controller_.CreateInterfacePtr());
 
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
@@ -916,7 +910,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void EnableTabletMode(bool enable) {
-    TabletModeClient::Get()->OnTabletModeToggled(enable);
+    // TODO(oshima|xutan): Remove this once orientation code is moved to
+    // exo. https://crbug.com/823634.
+    ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+        enable);
   }
 
   void ValidateArcState(bool arc_enabled,
@@ -1004,9 +1001,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   std::unique_ptr<TestChromeLauncherController> launcher_controller_;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
   std::unique_ptr<ash::ShelfModel> model_;
-
-  FakeTabletModeController fake_tablet_mode_controller_;
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
 
   // |item_delegate_manager_| owns |test_controller_|.
   ash::ShelfItemDelegate* test_controller_ = nullptr;

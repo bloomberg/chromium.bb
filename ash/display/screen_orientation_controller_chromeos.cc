@@ -157,6 +157,39 @@ bool IsPortraitOrientation(OrientationLockType type) {
          type == OrientationLockType::kPortraitSecondary;
 }
 
+std::ostream& operator<<(std::ostream& out, const OrientationLockType& lock) {
+  switch (lock) {
+    case OrientationLockType::kAny:
+      out << "any";
+      break;
+    case OrientationLockType::kNatural:
+      out << "natural";
+      break;
+    case OrientationLockType::kCurrent:
+      out << "current";
+      break;
+    case OrientationLockType::kPortrait:
+      out << "portrait";
+      break;
+    case OrientationLockType::kLandscape:
+      out << "landscape";
+      break;
+    case OrientationLockType::kPortraitPrimary:
+      out << "portrait-primary";
+      break;
+    case OrientationLockType::kPortraitSecondary:
+      out << "portrait-secondary";
+      break;
+    case OrientationLockType::kLandscapePrimary:
+      out << "landscape-primary";
+      break;
+    case OrientationLockType::kLandscapeSecondary:
+      out << "landscape-secondary";
+      break;
+  }
+  return out;
+}
+
 ScreenOrientationController::ScreenOrientationController()
     : natural_orientation_(GetDisplayNaturalOrientation()),
       ignore_display_configuration_updates_(false),
@@ -186,15 +219,19 @@ void ScreenOrientationController::RemoveObserver(Observer* observer) {
 
 void ScreenOrientationController::LockOrientationForWindow(
     aura::Window* requesting_window,
-    OrientationLockType lock_orientation,
-    LockCompletionBehavior lock_completion_behavior) {
-  if (lock_info_map_.empty())
-    Shell::Get()->activation_client()->AddObserver(this);
-
+    OrientationLockType orientation_lock) {
   if (!requesting_window->HasObserver(this))
     requesting_window->AddObserver(this);
-  lock_info_map_[requesting_window] =
-      LockInfo(lock_orientation, lock_completion_behavior);
+
+  if (orientation_lock == OrientationLockType::kCurrent &&
+      lock_info_map_.count(requesting_window)) {
+    // If the app previously requested an orientation,
+    // disable the sensor when that orientation is locked.
+    lock_info_map_[requesting_window].lock_completion_behavior =
+        LockCompletionBehavior::DisableSensor;
+  } else {
+    lock_info_map_[requesting_window] = LockInfo(orientation_lock);
+  }
 
   ApplyLockForActiveWindow();
 }
@@ -202,17 +239,11 @@ void ScreenOrientationController::LockOrientationForWindow(
 void ScreenOrientationController::UnlockOrientationForWindow(
     aura::Window* window) {
   lock_info_map_.erase(window);
-  if (lock_info_map_.empty())
-    Shell::Get()->activation_client()->RemoveObserver(this);
   window->RemoveObserver(this);
   ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::UnlockAll() {
-  for (auto pair : lock_info_map_)
-    pair.first->RemoveObserver(this);
-  lock_info_map_.clear();
-  Shell::Get()->activation_client()->RemoveObserver(this);
   SetRotationLockedInternal(false);
   if (user_rotation_ != current_rotation_) {
     SetDisplayRotation(user_rotation_,
@@ -333,6 +364,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
     LoadDisplayRotationProperties();
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
+  Shell::Get()->activation_client()->AddObserver(this);
 
   if (!display::Display::HasInternalDisplay())
     return;
@@ -344,6 +376,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
 void ScreenOrientationController::OnTabletModeEnding() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
   if (!display::Display::HasInternalDisplay())
     return;
 
@@ -355,6 +388,10 @@ void ScreenOrientationController::OnTabletModeEnding() {
   }
   for (auto& observer : observers_)
     observer.OnUserRotationLockChanged();
+}
+
+void ScreenOrientationController::OnTabletModeEnded() {
+  UnlockAll();
 }
 
 void ScreenOrientationController::SetDisplayRotation(
@@ -527,6 +564,9 @@ void ScreenOrientationController::LoadDisplayRotationProperties() {
 }
 
 void ScreenOrientationController::ApplyLockForActiveWindow() {
+  if (!ScreenOrientationProviderSupported())
+    return;
+
   MruWindowTracker::WindowList mru_windows(
       Shell::Get()->mru_window_tracker()->BuildMruWindowList());
 
@@ -535,14 +575,22 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
       continue;
     for (auto& pair : lock_info_map_) {
       if (pair.first->TargetVisibility() && window->Contains(pair.first)) {
-        LockRotationToOrientation(ResolveOrientationLock(
-            pair.second.orientation, user_locked_orientation_));
-        if (pair.second.lock_completion_behavior ==
-            LockCompletionBehavior::DisableSensor) {
+        if (pair.second.orientation == OrientationLockType::kCurrent) {
+          // If the app requested "current" without previously
+          // specifying a orientation, use the current rotation.
           pair.second.orientation =
               RotationToOrientation(natural_orientation_, current_rotation_);
-          pair.second.lock_completion_behavior = LockCompletionBehavior::None;
           LockRotationToOrientation(pair.second.orientation);
+
+        } else if (pair.second.lock_completion_behavior ==
+                   LockCompletionBehavior::DisableSensor) {
+          pair.second.lock_completion_behavior = LockCompletionBehavior::None;
+          pair.second.orientation = ResolveOrientationLock(
+              pair.second.orientation, user_locked_orientation_);
+          LockRotationToOrientation(pair.second.orientation);
+        } else {
+          LockRotationToOrientation(ResolveOrientationLock(
+              pair.second.orientation, user_locked_orientation_));
         }
         return;
       }
