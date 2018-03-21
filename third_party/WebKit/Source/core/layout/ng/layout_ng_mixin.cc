@@ -56,6 +56,21 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
   // Add overflow from the last layout cycle.
   if (Base::ChildrenInline()) {
     if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
+      bool has_width =
+          physical_fragment->Style().OverflowX() != EOverflow::kHidden;
+      bool has_height =
+          physical_fragment->Style().OverflowY() != EOverflow::kHidden;
+      if (has_width || has_height) {
+        for (const auto& child : physical_fragment->Children()) {
+          NGPhysicalOffsetRect child_rect(child->Offset(), child->Size());
+          if (!has_width)
+            child_rect.size.width = LayoutUnit();
+          if (!has_height)
+            child_rect.size.height = LayoutUnit();
+          Base::AddLayoutOverflow(child_rect.ToLayoutRect());
+        }
+      }
+
       // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
       // re-compute glyph bounding box. How to detect it and how to re-compute
       // is TBD.

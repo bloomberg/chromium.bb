@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 scrollHeight 1279
+layer at (0,0) size 800x600 scrollWidth 880 scrollHeight 1279
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x1279 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x1278.53
