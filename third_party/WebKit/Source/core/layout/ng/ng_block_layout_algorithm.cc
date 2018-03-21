@@ -959,12 +959,6 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
         std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
   }
 
-  // A line-box may have a list of floats which we add as children.
-  if (child.IsInline() &&
-      (container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset())) {
-    AddPositionedFloats(layout_result->PositionedFloats());
-  }
-
   // We have special behaviour for an empty block which gets pushed down due to
   // clearance, see comment inside ComputeInflowPosition.
   bool empty_block_affected_by_clearance = false;
@@ -1038,6 +1032,12 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     DCHECK(layout_result->ExclusionSpace());
     exclusion_space_ =
         std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
+  }
+
+  // A line-box may have a list of floats which we add as children.
+  if (child.IsInline() &&
+      (container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset())) {
+    AddPositionedFloats(layout_result->PositionedFloats());
   }
 
   // We must have an actual fragment at this stage.
