@@ -359,10 +359,13 @@ void BluetoothAdapterMac::AddDiscoverySession(
     // filter has changed.
     if (!StartDiscovery(discovery_filter)) {
       // TODO: Provide a more precise error here.
-      error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+      ui_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(error_callback,
+                         UMABluetoothDiscoverySessionOutcome::UNKNOWN));
       return;
     }
-    callback.Run();
+    ui_task_runner_->PostTask(FROM_HERE, callback);
     return;
   }
 
@@ -370,7 +373,10 @@ void BluetoothAdapterMac::AddDiscoverySession(
 
   if (!StartDiscovery(discovery_filter)) {
     // TODO: Provide a more precise error here.
-    error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(error_callback,
+                       UMABluetoothDiscoverySessionOutcome::UNKNOWN));
     return;
   }
 
@@ -378,7 +384,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
   num_discovery_sessions_++;
   for (auto& observer : observers_)
     observer.AdapterDiscoveringChanged(this, true);
-  callback.Run();
+  ui_task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void BluetoothAdapterMac::RemoveDiscoverySession(
