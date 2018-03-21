@@ -28,7 +28,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.R;
@@ -46,7 +45,6 @@ import java.util.concurrent.TimeUnit;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-@MainDex
 public class SelectFileDialog implements WindowAndroid.IntentCallback,
                                          WindowAndroid.PermissionCallback, PhotoPickerListener {
     private static final String TAG = "SelectFileDialog";
