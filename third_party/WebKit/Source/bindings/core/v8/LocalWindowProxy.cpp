@@ -77,9 +77,6 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // The embedder could run arbitrary code in response to the
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
-  // TODO(yukishiino): Apparently, we can create context for a detached frame
-  // (see comment in CreateContext), but then we do not dispose it. We should
-  // make sure that create/dispose operations are balanced.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.get());
 
@@ -173,12 +170,7 @@ void LocalWindowProxy::Initialize() {
                  GetFrame()->IsMainFrame());
     MainThreadDebugger::Instance()->ContextCreated(script_state_.get(),
                                                    GetFrame(), origin);
-    // TODO(yukishiino): Remove this client check, we should not create context
-    // on a frame without client.
-    if (GetFrame()->Client()) {
-      GetFrame()->Client()->DidCreateScriptContext(context,
-                                                   world_->GetWorldId());
-    }
+    GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
   }
 
   InstallConditionalFeatures();
@@ -197,9 +189,7 @@ void LocalWindowProxy::CreateContext() {
 
   Vector<const char*> extension_names;
   // Dynamically tell v8 about our extensions now.
-  // TODO(yukishiino): Remove this client check, we should not create context
-  // on a frame without client.
-  if (GetFrame()->Client() && GetFrame()->Client()->AllowScriptExtensions()) {
+  if (GetFrame()->Client()->AllowScriptExtensions()) {
     const V8Extensions& extensions = ScriptController::RegisteredExtensions();
     extension_names.ReserveInitialCapacity(extensions.size());
     for (const auto* extension : extensions)
