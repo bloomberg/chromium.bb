@@ -500,6 +500,13 @@ evdev_device_set_calibration(struct evdev_device *device)
 		udev_device_get_property_value(udev_device,
 					       "WL_CALIBRATION");
 
+	if (calibration_values) {
+		weston_log("Warning: input device %s has WL_CALIBRATION property set. "
+			   "Support for it will be removed in the future. "
+			   "Please use LIBINPUT_CALIBRATION_MATRIX instead.\n",
+			   sysname);
+	}
+
 	if (!calibration_values || sscanf(calibration_values,
 					  "%f %f %f %f %f %f",
 					  &calibration[0],
