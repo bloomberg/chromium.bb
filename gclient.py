@@ -765,16 +765,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     local_scope = {}
     if deps_content:
-      global_scope = {
-        'Var': lambda var_name: '{%s}' % var_name,
-        'deps_os': {},
-      }
       # Eval the content.
       try:
         if self._get_option('validate_syntax', False):
-          local_scope = gclient_eval.Exec(
-              deps_content, global_scope, local_scope, filepath)
+          local_scope = gclient_eval.Exec(deps_content, filepath)
         else:
+          global_scope = {
+            'Var': lambda var_name: '{%s}' % var_name,
+          }
           exec(deps_content, global_scope, local_scope)
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
@@ -2880,14 +2878,12 @@ def CMDsetdep(parser, args):
                          'file in the current directory.')
   (options, args) = parser.parse_args(args)
 
-  global_scope = {'Var': lambda var: '{%s}' % var}
-
   if not os.path.isfile(options.deps_file):
     raise gclient_utils.Error(
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(contents, global_scope, {})
+  local_scope = gclient_eval.Exec(contents)
 
   for var in options.vars:
     name, _, value = var.partition('=')
@@ -2909,7 +2905,7 @@ def CMDsetdep(parser, args):
             % (name, package))
       gclient_eval.SetCIPD(local_scope, name, package, value)
     else:
-      gclient_eval.SetRevision(local_scope, global_scope, name, value)
+      gclient_eval.SetRevision(local_scope, name, value)
 
   with open(options.deps_file, 'w') as f:
     f.write(gclient_eval.RenderDEPSFile(local_scope))

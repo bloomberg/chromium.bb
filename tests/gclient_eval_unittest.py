@@ -60,44 +60,44 @@ vars = {
 
 class GClientEvalTest(unittest.TestCase):
   def test_str(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"foo"', {}))
+    self.assertEqual('foo', gclient_eval._gclient_eval('"foo"'))
 
   def test_tuple(self):
-    self.assertEqual(('a', 'b'), gclient_eval._gclient_eval('("a", "b")', {}))
+    self.assertEqual(('a', 'b'), gclient_eval._gclient_eval('("a", "b")'))
 
   def test_list(self):
-    self.assertEqual(['a', 'b'], gclient_eval._gclient_eval('["a", "b"]', {}))
+    self.assertEqual(['a', 'b'], gclient_eval._gclient_eval('["a", "b"]'))
 
   def test_dict(self):
-    self.assertEqual({'a': 'b'}, gclient_eval._gclient_eval('{"a": "b"}', {}))
+    self.assertEqual({'a': 'b'}, gclient_eval._gclient_eval('{"a": "b"}'))
 
   def test_name_safe(self):
-    self.assertEqual(True, gclient_eval._gclient_eval('True', {}))
+    self.assertEqual(True, gclient_eval._gclient_eval('True'))
 
   def test_name_unsafe(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('UnsafeName', {'UnsafeName': 'foo'})
+      gclient_eval._gclient_eval('UnsafeName')
     self.assertIn('invalid name \'UnsafeName\'', str(cm.exception))
 
   def test_call(self):
     self.assertEqual(
-        'bar',
-        gclient_eval._gclient_eval('Foo("bar")', {'Foo': lambda x: x}))
+        '{bar}',
+        gclient_eval._gclient_eval('Var("bar")'))
 
   def test_plus(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"f" + "o" + "o"', {}))
+    self.assertEqual('foo', gclient_eval._gclient_eval('"f" + "o" + "o"'))
 
   def test_format(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"%s" % "foo"', {}))
+    self.assertEqual('foo', gclient_eval._gclient_eval('"%s" % "foo"'))
 
   def test_not_expression(self):
     with self.assertRaises(SyntaxError) as cm:
-      gclient_eval._gclient_eval('def foo():\n  pass', {})
+      gclient_eval._gclient_eval('def foo():\n  pass')
     self.assertIn('invalid syntax', str(cm.exception))
 
   def test_not_whitelisted(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('[x for x in [1, 2, 3]]', {})
+      gclient_eval._gclient_eval('[x for x in [1, 2, 3]]')
     self.assertIn(
         'unexpected AST node: <_ast.ListComp object', str(cm.exception))
 
@@ -105,42 +105,36 @@ class GClientEvalTest(unittest.TestCase):
     for test_case in itertools.permutations(range(4)):
       input_data = ['{'] + ['"%s": "%s",' % (n, n) for n in test_case] + ['}']
       expected = [(str(n), str(n)) for n in test_case]
-      result = gclient_eval._gclient_eval(''.join(input_data), {})
+      result = gclient_eval._gclient_eval(''.join(input_data))
       self.assertEqual(expected, result.items())
 
 
 class ExecTest(unittest.TestCase):
   def test_multiple_assignment(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval.Exec('a, b, c = "a", "b", "c"', {}, {})
+      gclient_eval.Exec('a, b, c = "a", "b", "c"')
     self.assertIn(
         'invalid assignment: target should be a name', str(cm.exception))
 
   def test_override(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval.Exec('a = "a"\na = "x"', {}, {})
+      gclient_eval.Exec('a = "a"\na = "x"')
     self.assertIn(
         'invalid assignment: overrides var \'a\'', str(cm.exception))
 
   def test_schema_wrong_type(self):
     with self.assertRaises(schema.SchemaError):
-      gclient_eval.Exec('include_rules = {}', {}, {}, '<string>')
+      gclient_eval.Exec('include_rules = {}', '<string>')
 
   def test_recursedeps_list(self):
-    local_scope = {}
     local_scope = gclient_eval.Exec(
         'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]',
-        {}, local_scope,
         '<string>')
     self.assertEqual(
         {'recursedeps': [['src/third_party/angle', 'DEPS.chromium']]},
         local_scope)
 
   def test_var(self):
-    local_scope = {}
-    global_scope = {
-        'Var': lambda var_name: '{%s}' % var_name,
-    }
     local_scope = gclient_eval.Exec('\n'.join([
         'vars = {',
         '  "foo": "bar",',
@@ -148,14 +142,14 @@ class ExecTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a" + Var("foo") + "b",',
         '}',
-    ]), global_scope, local_scope, '<string>')
+    ]), '<string>')
     self.assertEqual({
         'vars': collections.OrderedDict([('foo', 'bar')]),
         'deps': collections.OrderedDict([('a_dep', 'a{foo}b')]),
     }, local_scope)
 
   def test_empty_deps(self):
-    local_scope = gclient_eval.Exec('deps = {}', {}, {}, '<string>')
+    local_scope = gclient_eval.Exec('deps = {}', '<string>')
     self.assertEqual({'deps': {}}, local_scope)
 
 
@@ -211,7 +205,7 @@ class EvaluateConditionTest(unittest.TestCase):
 
 class SetVarTest(unittest.TestCase):
   def testSetVar(self):
-    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, {'Var': str}, {})
+    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE)
 
     gclient_eval.SetVar(local_scope, 'dep_2_rev', 'c0ffee')
     result = gclient_eval.RenderDEPSFile(local_scope)
@@ -223,7 +217,7 @@ class SetVarTest(unittest.TestCase):
 
 class SetCipdTest(unittest.TestCase):
   def testSetCIPD(self):
-    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE, {'Var': str}, {})
+    local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE)
 
     gclient_eval.SetCIPD(
         local_scope, 'src/cipd/package', 'another/cipd/package', '6.789')
@@ -234,27 +228,25 @@ class SetCipdTest(unittest.TestCase):
 
 class SetRevisionTest(unittest.TestCase):
   def setUp(self):
-    self.global_scope = {'Var': str}
-    self.local_scope = gclient_eval.Exec(
-        _SAMPLE_DEPS_FILE, self.global_scope, {})
+    self.local_scope = gclient_eval.Exec(_SAMPLE_DEPS_FILE)
 
   def testSetRevision(self):
     gclient_eval.SetRevision(
-        self.local_scope, self.global_scope, 'src/dep', 'deadfeed')
+        self.local_scope, 'src/dep', 'deadfeed')
     result = gclient_eval.RenderDEPSFile(self.local_scope)
 
     self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('deadbeef', 'deadfeed'))
 
   def testSetRevisionInUrl(self):
     gclient_eval.SetRevision(
-        self.local_scope, self.global_scope, 'src/dep_3', '0ff1ce')
+        self.local_scope, 'src/dep_3', '0ff1ce')
     result = gclient_eval.RenderDEPSFile(self.local_scope)
 
     self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('5p1e5', '0ff1ce'))
 
   def testSetRevisionInVars(self):
     gclient_eval.SetRevision(
-        self.local_scope, self.global_scope, 'src/android/dep_2', 'c0ffee')
+        self.local_scope, 'src/android/dep_2', 'c0ffee')
     result = gclient_eval.RenderDEPSFile(self.local_scope)
 
     self.assertEqual(result, _SAMPLE_DEPS_FILE.replace('1ced', 'c0ffee'))
