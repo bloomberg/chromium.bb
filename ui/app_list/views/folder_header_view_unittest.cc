@@ -60,13 +60,24 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
   // testing::Test overrides:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    model_.reset(new AppListTestModel);
+    model_ = std::make_unique<AppListTestModel>();
+    delegate_ = std::make_unique<TestFolderHeaderViewDelegate>();
 
-    delegate_.reset(new TestFolderHeaderViewDelegate);
-    folder_header_view_.reset(new FolderHeaderView(delegate_.get()));
+    // Create a widget so that the FolderNameView can be focused.
+    widget_ = std::make_unique<views::Widget>();
+    views::Widget::InitParams params = views::ViewsTestBase::CreateParams(
+        views::Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 650, 650);
+    widget_->Init(params);
+    widget_->Show();
+
+    folder_header_view_ = std::make_unique<FolderHeaderView>(delegate_.get());
+    widget_->SetContentsView(folder_header_view_.get());
   }
 
   void TearDown() override {
+    widget_->Close();
     folder_header_view_.reset();  // Release apps grid view before models.
     delegate_.reset();
     views::ViewsTestBase::TearDown();
@@ -90,6 +101,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<FolderHeaderView> folder_header_view_;
   std::unique_ptr<TestFolderHeaderViewDelegate> delegate_;
+  std::unique_ptr<views::Widget> widget_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderViewTest);
@@ -105,6 +117,20 @@ TEST_F(FolderHeaderViewTest, SetFolderName) {
   // Update UI to set folder name to "test folder".
   UpdateFolderName("test folder");
   EXPECT_EQ("test folder", delegate_->folder_name());
+}
+
+TEST_F(FolderHeaderViewTest, WhitespaceCollapsedWhenFolderNameViewLosesFocus) {
+  AppListFolderItem* folder_item = model_->CreateAndPopulateFolderWithApps(2);
+  folder_header_view_->SetFolderItem(folder_item);
+  views::View* name_view = folder_header_view_->GetFolderNameViewForTest();
+
+  name_view->RequestFocus();
+  UpdateFolderName("  N     A  ");
+  widget_->GetFocusManager()->ClearFocus();
+
+  // Expect that the folder name contains the same string with collapsed
+  // whitespace.
+  EXPECT_EQ("N A", delegate_->folder_name());
 }
 
 TEST_F(FolderHeaderViewTest, MaxFoldernNameLength) {
