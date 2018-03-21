@@ -1110,9 +1110,9 @@ void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
   gfx::Point cursor_location(location);
   gfx::Point cursor_root_location(root_location);
 
-  ui::MouseWheelEvent wheel_event(offset, cursor_location, cursor_root_location,
-                                  base::TimeTicks::Now(), ui::EF_NONE,
-                                  ui::EF_PRECISION_SCROLLING_DELTA);
+  ui::MouseWheelEvent wheel_event(
+      offset, cursor_location, cursor_root_location, base::TimeTicks::Now(),
+      ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
 
   delegate_->HandleMouseEvent(wheel_event);
 }
