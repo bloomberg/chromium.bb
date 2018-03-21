@@ -85,22 +85,21 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests());
-  touch_event.source_device = kWebGestureDeviceTouchscreen;
+                              WebInputEvent::GetStaticTimeStampForTests(),
+                              kWebGestureDeviceTouchscreen);
 
   // The coordinates below are linked to absolute positions in the referenced
   // .html file.
-  touch_event.x = 20;
-  touch_event.y = 20;
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   ASSERT_TRUE(
       web_view_impl->BestTapNode(GetTargetedEvent(web_view_impl, touch_event)));
 
-  touch_event.y = 40;
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 40));
   EXPECT_FALSE(
       web_view_impl->BestTapNode(GetTargetedEvent(web_view_impl, touch_event)));
 
-  touch_event.y = 20;
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
   // Shouldn't crash.
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
@@ -110,18 +109,19 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   EXPECT_TRUE(web_view_impl->GetLinkHighlight(0)->ClipLayer());
 
   // Find a target inside a scrollable div
-  touch_event.y = 100;
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 100));
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
   ASSERT_TRUE(web_view_impl->GetLinkHighlight(0));
 
   // Don't highlight if no "hand cursor"
-  touch_event.y = 220;  // An A-link with cross-hair cursor.
+  touch_event.SetPositionInWidget(
+      WebFloatPoint(20, 220));  // An A-link with cross-hair cursor.
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
   ASSERT_EQ(0U, web_view_impl->NumLinkHighlights());
 
-  touch_event.y = 260;  // A text input box.
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 260));  // A text input box.
   web_view_impl->EnableTapHighlightAtPoint(
       GetTargetedEvent(web_view_impl, touch_event));
   ASSERT_EQ(0U, web_view_impl->NumLinkHighlights());
@@ -143,10 +143,9 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests());
-  touch_event.source_device = kWebGestureDeviceTouchscreen;
-  touch_event.x = 20;
-  touch_event.y = 20;
+                              WebInputEvent::GetStaticTimeStampForTests(),
+                              kWebGestureDeviceTouchscreen);
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   GestureEventWithHitTestResults targeted_event =
       GetTargetedEvent(web_view_impl, touch_event);
@@ -183,10 +182,9 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests());
-  touch_event.source_device = kWebGestureDeviceTouchscreen;
-  touch_event.x = 20;
-  touch_event.y = 20;
+                              WebInputEvent::GetStaticTimeStampForTests(),
+                              kWebGestureDeviceTouchscreen);
+  touch_event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   GestureEventWithHitTestResults targeted_event =
       GetTargetedEvent(web_view_impl, touch_event);
@@ -217,16 +215,16 @@ TEST(LinkHighlightImplTest, multipleHighlights) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event;
-  touch_event.x = 50;
-  touch_event.y = 310;
+  touch_event.SetPositionInWidget(WebFloatPoint(50, 310));
   touch_event.data.tap.width = 30;
   touch_event.data.tap.height = 30;
 
   Vector<IntRect> good_targets;
   HeapVector<Member<Node>> highlight_nodes;
-  IntRect bounding_box(touch_event.x - touch_event.data.tap.width / 2,
-                       touch_event.y - touch_event.data.tap.height / 2,
-                       touch_event.data.tap.width, touch_event.data.tap.height);
+  IntRect bounding_box(
+      touch_event.PositionInWidget().x - touch_event.data.tap.width / 2,
+      touch_event.PositionInWidget().y - touch_event.data.tap.height / 2,
+      touch_event.data.tap.width, touch_event.data.tap.height);
   FindGoodTouchTargets(bounding_box, web_view_impl->MainFrameImpl()->GetFrame(),
                        good_targets, highlight_nodes);
 

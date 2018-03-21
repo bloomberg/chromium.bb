@@ -414,8 +414,7 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     // Coordinates need to be transferred to the fling cancel gesture only
     // for Surface-targeting to ensure that it is targeted to the correct
     // RenderWidgetHost.
-    gesture_event.x = event->x();
-    gesture_event.y = event->y();
+    gesture_event.SetPositionInWidget(event->location_f());
     blink::WebMouseWheelEvent mouse_wheel_event = ui::MakeWebMouseWheelEvent(
         *event, base::Bind(&GetScreenLocationFromEvent));
     if (host_view_->wheel_scroll_latching_enabled())
@@ -449,7 +448,7 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
       mouse_wheel_phase_handler_.ResetScrollSequence();
     } else if (event->type() == ui::ET_SCROLL_FLING_CANCEL) {
       // The user has put their fingers down.
-      DCHECK_EQ(blink::kWebGestureDeviceTouchpad, gesture_event.source_device);
+      DCHECK_EQ(blink::kWebGestureDeviceTouchpad, gesture_event.SourceDevice());
       mouse_wheel_phase_handler_.ScrollingMayBegin();
     }
   }
@@ -532,7 +531,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
     fling_cancel.SetType(blink::WebInputEvent::kGestureFlingCancel);
-    fling_cancel.source_device = blink::kWebGestureDeviceTouchscreen;
+    fling_cancel.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &fling_cancel,

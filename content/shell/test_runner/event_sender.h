@@ -137,7 +137,7 @@ class EventSender {
                          float velocity_y,
                          gin::Arguments* args);
   bool IsFlinging();
-  void GestureScrollFirstPoint(int x, int y);
+  void GestureScrollFirstPoint(float x, float y);
 
   void TouchStart(gin::Arguments* args);
   void TouchMove(gin::Arguments* args);
@@ -281,7 +281,7 @@ class EventSender {
   blink::WebDragData current_drag_data_;
 
   // Location of the touch point that initiated a gesture.
-  blink::WebPoint current_gesture_location_;
+  blink::WebFloatPoint current_gesture_location_;
 
   // Mouse-like pointer properties.
   struct PointerState {

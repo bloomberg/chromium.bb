@@ -164,7 +164,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // Used to send overscroll messages to the browser.
   // |bundle_overscroll_params_with_ack| means overscroll message should be
   // bundled with triggering event response, and won't fire |DidOverscroll|.
-  void HandleOverscroll(const gfx::Point& causal_event_viewport_point,
+  void HandleOverscroll(const gfx::PointF& causal_event_viewport_point,
                         const cc::InputHandlerScrollResult& scroll_result,
                         bool bundle_overscroll_params_with_ack);
 

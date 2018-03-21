@@ -1750,21 +1750,19 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   EXPECT_EQ(FloatSize(300, 200), visual_viewport.GetScrollOffset());
 
   // Send a scroll event on the main thread path.
-  WebGestureEvent gsb(WebInputEvent::kGestureScrollBegin,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests());
+  WebGestureEvent gsb(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
   gsb.SetFrameScale(1);
-  gsb.source_device = kWebGestureDeviceTouchpad;
   gsb.data.scroll_begin.delta_x_hint = -50;
   gsb.data.scroll_begin.delta_x_hint = -60;
   gsb.data.scroll_begin.delta_hint_units = WebGestureEvent::kPrecisePixels;
   GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
 
-  WebGestureEvent gsu(WebInputEvent::kGestureScrollUpdate,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests());
+  WebGestureEvent gsu(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
   gsu.SetFrameScale(1);
-  gsu.source_device = kWebGestureDeviceTouchpad;
   gsu.data.scroll_update.delta_x = -50;
   gsu.data.scroll_update.delta_y = -60;
   gsu.data.scroll_update.delta_units = WebGestureEvent::kPrecisePixels;
@@ -1904,12 +1902,10 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
   RegisterMockedHttpURLLoad("200-by-800-viewport.html");
   NavigateTo(base_url_ + "200-by-800-viewport.html");
 
-  WebGestureEvent pinch_update(WebInputEvent::kGesturePinchUpdate,
-                               WebInputEvent::kNoModifiers,
-                               WebInputEvent::GetStaticTimeStampForTests());
-  pinch_update.source_device = kWebGestureDeviceTouchpad;
-  pinch_update.x = 100;
-  pinch_update.y = 100;
+  WebGestureEvent pinch_update(
+      WebInputEvent::kGesturePinchUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+  pinch_update.SetPositionInWidget(FloatPoint(100, 100));
   pinch_update.data.pinch_update.scale = 2;
   pinch_update.data.pinch_update.zoom_disabled = false;
 

@@ -36,8 +36,8 @@ namespace blink {
 
 struct WebActiveFlingParameters {
   WebFloatPoint delta;
-  WebPoint point;
-  WebPoint global_point;
+  WebFloatPoint point;
+  WebFloatPoint global_point;
   int modifiers;
   WebGestureDevice source_device;
   WebSize cumulative_scroll;

@@ -1065,7 +1065,7 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
         static_cast<const WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
+    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
         !gesture_event.data.fling_start.velocity_x &&
         !gesture_event.data.fling_start.velocity_y) {
       consumed = true;

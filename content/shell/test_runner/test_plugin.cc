@@ -93,8 +93,9 @@ void PrintEventDetails(WebTestDelegate* delegate,
   } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
-    delegate->PrintMessage(
-        base::StringPrintf("* %d, %d\n", gesture.x, gesture.y));
+    delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f\n",
+                                              gesture.PositionInWidget().x,
+                                              gesture.PositionInWidget().y));
   }
 }
 

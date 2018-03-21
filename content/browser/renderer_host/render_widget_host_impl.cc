@@ -189,8 +189,7 @@ inline blink::WebGestureEvent CreateScrollBeginForWrapping(
 
   blink::WebGestureEvent wrap_gesture_scroll_begin(
       blink::WebInputEvent::kGestureScrollBegin, gesture_event.GetModifiers(),
-      gesture_event.TimeStampSeconds());
-  wrap_gesture_scroll_begin.source_device = gesture_event.source_device;
+      gesture_event.TimeStampSeconds(), gesture_event.SourceDevice());
   wrap_gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
   wrap_gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0;
   wrap_gesture_scroll_begin.resending_plugin_id =
@@ -207,8 +206,7 @@ inline blink::WebGestureEvent CreateScrollEndForWrapping(
 
   blink::WebGestureEvent wrap_gesture_scroll_end(
       blink::WebInputEvent::kGestureScrollEnd, gesture_event.GetModifiers(),
-      gesture_event.TimeStampSeconds());
-  wrap_gesture_scroll_end.source_device = gesture_event.source_device;
+      gesture_event.TimeStampSeconds(), gesture_event.SourceDevice());
   wrap_gesture_scroll_end.resending_plugin_id =
       gesture_event.resending_plugin_id;
   wrap_gesture_scroll_end.data.scroll_end.delta_units =
@@ -1186,16 +1184,16 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
-    DCHECK(!is_in_gesture_scroll_[gesture_event.source_device]);
-    is_in_gesture_scroll_[gesture_event.source_device] = true;
+    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+    is_in_gesture_scroll_[gesture_event.SourceDevice()] = true;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
-    DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
-    is_in_gesture_scroll_[gesture_event.source_device] = false;
+    DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+    is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     is_in_touchpad_gesture_fling_ = false;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
-    if (gesture_event.source_device ==
+    if (gesture_event.SourceDevice() ==
         blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
       // TODO(sahel): Remove the VR specific case when motion events are used
       // for Android VR event processing and VR touchpad scrolling is handled by
@@ -1204,18 +1202,18 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       if (GetView()->IsInVR()) {
         // Regardless of the state of the wheel scroll latching
         // WebContentsEventForwarder doesn't inject any GSE events before GFS.
-        DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
+        DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
 
         // Reset the is_in_gesture_scroll since while scrolling in Android VR
         // the first wheel event sent by the FlingController will cause a GSB
         // generation in MouseWheelEventQueue. This is because GSU events before
         // the GFS are directly injected to RWHI rather than being generated
         // from wheel events in MouseWheelEventQueue.
-        is_in_gesture_scroll_[gesture_event.source_device] = false;
+        is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
       } else if (GetView()->wheel_scroll_latching_enabled()) {
         // When wheel scroll latching is enabled, no GSE is sent before GFS, so
         // is_in_gesture_scroll must be true.
-        DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
+        DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
 
         // The FlingController handles GFS with touchpad source and sends wheel
         // events to progress the fling, the wheel events will get processed by
@@ -1230,14 +1228,14 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
         // When wheel scroll latching is disabled a GSE is sent before a GFS.
         // The GSE has already finished the scroll sequence.
-        DCHECK(!is_in_gesture_scroll_[gesture_event.source_device]);
+        DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()]);
       }
 
       is_in_touchpad_gesture_fling_ = true;
-    } else {  // gesture_event.source_device !=
+    } else {  // gesture_event.SourceDevice() !=
               // blink::WebGestureDevice::kWebGestureDeviceTouchpad
-      DCHECK(is_in_gesture_scroll_[gesture_event.source_device]);
-      is_in_gesture_scroll_[gesture_event.source_device] = false;
+      DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+      is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     }
   }
 
@@ -1247,7 +1245,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   scroll_update_needs_wrapping =
       gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       gesture_event.resending_plugin_id != -1 &&
-      !is_in_gesture_scroll_[gesture_event.source_device];
+      !is_in_gesture_scroll_[gesture_event.SourceDevice()];
 
   // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
   // Bubble to test the resending logic of gesture events.
@@ -2125,10 +2123,7 @@ void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
   WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureScrollBegin,
       blink::kWebGestureDeviceSyntheticAutoscroll);
-
-  scroll_begin.x = position.x();
-  scroll_begin.y = position.y();
-  scroll_begin.source_device = blink::kWebGestureDeviceSyntheticAutoscroll;
+  scroll_begin.SetPositionInWidget(position);
 
   input_router_->SendGestureEvent(GestureEventWithLatencyInfo(scroll_begin));
 }
@@ -2139,7 +2134,6 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
       blink::kWebGestureDeviceSyntheticAutoscroll);
   event.data.fling_start.velocity_x = velocity.x();
   event.data.fling_start.velocity_y = velocity.y();
-  event.source_device = blink::kWebGestureDeviceSyntheticAutoscroll;
 
   input_router_->SendGestureEvent(GestureEventWithLatencyInfo(event));
 }

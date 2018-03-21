@@ -462,17 +462,16 @@ WebInputEventResult WebFrameWidgetBase::HandleGestureFlingEvent(
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   switch (event.GetType()) {
     case WebInputEvent::kGestureFlingStart: {
-      if (event.source_device != kWebGestureDeviceSyntheticAutoscroll)
+      if (event.SourceDevice() != kWebGestureDeviceSyntheticAutoscroll)
         EndActiveFlingAnimation();
-      position_on_fling_start_ = WebPoint(event.x, event.y);
-      global_position_on_fling_start_ =
-          WebPoint(event.global_x, event.global_y);
+      position_on_fling_start_ = event.PositionInWidget();
+      global_position_on_fling_start_ = event.PositionInScreen();
       fling_modifier_ = event.GetModifiers();
-      fling_source_device_ = event.source_device;
+      fling_source_device_ = event.SourceDevice();
       DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
       std::unique_ptr<WebGestureCurve> fling_curve =
           Platform::Current()->CreateFlingAnimationCurve(
-              event.source_device,
+              event.SourceDevice(),
               WebFloatPoint(event.data.fling_start.velocity_x,
                             event.data.fling_start.velocity_y),
               WebSize());
@@ -512,13 +511,10 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
 WebGestureEvent WebFrameWidgetBase::CreateGestureScrollEventFromFling(
     WebInputEvent::Type type,
     WebGestureDevice source_device) const {
-  WebGestureEvent gesture_event(type, fling_modifier_,
-                                WTF::CurrentTimeTicksInSeconds());
-  gesture_event.source_device = source_device;
-  gesture_event.x = position_on_fling_start_.x;
-  gesture_event.y = position_on_fling_start_.y;
-  gesture_event.global_x = global_position_on_fling_start_.x;
-  gesture_event.global_y = global_position_on_fling_start_.y;
+  WebGestureEvent gesture_event(
+      type, fling_modifier_, WTF::CurrentTimeTicksInSeconds(), source_device);
+  gesture_event.SetPositionInWidget(position_on_fling_start_);
+  gesture_event.SetPositionInScreen(global_position_on_fling_start_);
   return gesture_event;
 }
 

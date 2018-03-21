@@ -32,13 +32,6 @@ class WebGestureEvent : public WebInputEvent {
     kLastPhase = kMomentumPhase,
   };
 
-  // TODO(mustaq): Make these coordinates private & fractional, as in
-  // WebMouseEvent.h .
-  int x;
-  int y;
-  int global_x;
-  int global_y;
-  WebGestureDevice source_device;
   bool is_source_touch_event_set_non_blocking;
 
   // The pointer type for the first touch point in the gesture.
@@ -163,23 +156,47 @@ class WebGestureEvent : public WebInputEvent {
     } pinch_update;
   } data;
 
-  WebGestureEvent(Type type, int modifiers, double time_stamp_seconds)
+ private:
+  // Widget coordinate, which is relative to the bound of current RenderWidget
+  // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
+  // coordinates but without DevTools emulation transform or overscroll applied.
+  WebFloatPoint position_in_widget_;
+
+  // Screen coordinate
+  WebFloatPoint position_in_screen_;
+
+  WebGestureDevice source_device_;
+
+ public:
+  WebGestureEvent(Type type,
+                  int modifiers,
+                  double time_stamp_seconds,
+                  WebGestureDevice device = kWebGestureDeviceUninitialized)
       : WebInputEvent(sizeof(WebGestureEvent),
                       type,
                       modifiers,
                       time_stamp_seconds),
-        source_device(kWebGestureDeviceUninitialized),
-        resending_plugin_id(-1) {}
+        resending_plugin_id(-1),
+        source_device_(device) {}
 
   WebGestureEvent()
       : WebInputEvent(sizeof(WebGestureEvent)),
-        source_device(kWebGestureDeviceUninitialized),
-        resending_plugin_id(-1) {}
+        resending_plugin_id(-1),
+        source_device_(kWebGestureDeviceUninitialized) {}
 
-  WebFloatPoint PositionInWidget() const { return WebFloatPoint(x, y); }
-  WebFloatPoint PositionInScreen() const {
-    return WebFloatPoint(global_x, global_y);
+  const WebFloatPoint& PositionInWidget() const { return position_in_widget_; }
+  const WebFloatPoint& PositionInScreen() const { return position_in_screen_; }
+
+  void SetPositionInWidget(const WebFloatPoint& point) {
+    position_in_widget_ = point;
   }
+
+  void SetPositionInScreen(const WebFloatPoint& point) {
+    position_in_screen_ = point;
+  }
+
+  WebGestureDevice SourceDevice() const { return source_device_; }
+  void SetSourceDevice(WebGestureDevice device) { source_device_ = device; }
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT float DeltaXInRootFrame() const;

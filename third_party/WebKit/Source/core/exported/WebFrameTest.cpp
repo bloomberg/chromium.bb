@@ -2148,7 +2148,7 @@ TEST_P(ParameterizedWebFrameTest,
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
-  IntPoint hit_point = IntPoint(30, 30);  // button size is 100x100
+  FloatPoint hit_point = FloatPoint(30, 30);  // button size is 100x100
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   Document* document = frame->GetFrame()->GetDocument();
@@ -2159,11 +2159,11 @@ TEST_P(ParameterizedWebFrameTest,
 
   WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                 WebInputEvent::kNoModifiers,
-                                WebInputEvent::GetStaticTimeStampForTests());
+                                WebInputEvent::GetStaticTimeStampForTests(),
+                                kWebGestureDeviceTouchscreen);
   gesture_event.SetFrameScale(1);
-  gesture_event.x = gesture_event.global_x = hit_point.X();
-  gesture_event.y = gesture_event.global_y = hit_point.Y();
-  gesture_event.source_device = kWebGestureDeviceTouchscreen;
+  gesture_event.SetPositionInWidget(hit_point);
+  gesture_event.SetPositionInScreen(hit_point);
   web_view_helper.GetWebView()
       ->MainFrameImpl()
       ->GetFrame()
@@ -6282,35 +6282,35 @@ class CompositedSelectionBoundsTest
                                                .As<v8::Int32>()
                                                ->Value();
 
-    IntPoint hit_point;
+    FloatPoint hit_point;
 
     if (expected_result.Length() >= 17) {
-      hit_point = IntPoint(expected_result.Get(context, 15)
-                               .ToLocalChecked()
-                               .As<v8::Int32>()
-                               ->Value(),
-                           expected_result.Get(context, 16)
-                               .ToLocalChecked()
-                               .As<v8::Int32>()
-                               ->Value());
+      hit_point = FloatPoint(expected_result.Get(context, 15)
+                                 .ToLocalChecked()
+                                 .As<v8::Int32>()
+                                 ->Value(),
+                             expected_result.Get(context, 16)
+                                 .ToLocalChecked()
+                                 .As<v8::Int32>()
+                                 ->Value());
     } else {
       hit_point =
-          IntPoint((start_edge_top_in_layer_x + start_edge_bottom_in_layer_x +
-                    end_edge_top_in_layer_x + end_edge_bottom_in_layer_x) /
-                       4,
-                   (start_edge_top_in_layer_y + start_edge_bottom_in_layer_y +
-                    end_edge_top_in_layer_y + end_edge_bottom_in_layer_y) /
-                           4 +
-                       3);
+          FloatPoint((start_edge_top_in_layer_x + start_edge_bottom_in_layer_x +
+                      end_edge_top_in_layer_x + end_edge_bottom_in_layer_x) /
+                         4,
+                     (start_edge_top_in_layer_y + start_edge_bottom_in_layer_y +
+                      end_edge_top_in_layer_y + end_edge_bottom_in_layer_y) /
+                             4 +
+                         3);
     }
 
     WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                   WebInputEvent::kNoModifiers,
-                                  WebInputEvent::GetStaticTimeStampForTests());
+                                  WebInputEvent::GetStaticTimeStampForTests(),
+                                  kWebGestureDeviceTouchscreen);
     gesture_event.SetFrameScale(1);
-    gesture_event.x = gesture_event.global_x = hit_point.X();
-    gesture_event.y = gesture_event.global_y = hit_point.Y();
-    gesture_event.source_device = kWebGestureDeviceTouchscreen;
+    gesture_event.SetPositionInWidget(hit_point);
+    gesture_event.SetPositionInScreen(hit_point);
 
     web_view_helper_.GetWebView()
         ->MainFrameImpl()
@@ -6487,10 +6487,9 @@ class DisambiguationPopupTestWebViewClient
 
 static WebCoalescedInputEvent FatTap(int x, int y, int diameter) {
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = x;
-  event.y = y;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(x, y));
   event.data.tap.width = diameter;
   event.data.tap.height = diameter;
   return WebCoalescedInputEvent(event);
@@ -10075,10 +10074,9 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest) {
   helper.GetWebView()->Resize(WebSize(1000, 1000));
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 20;
-  event.y = 20;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(20, 20));
   child_frame->FrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(child_widget_client.DidHandleGestureEvent());
 
@@ -10468,12 +10466,11 @@ class WebFrameOverscrollTest
                                        float delta_x = 0.0,
                                        float delta_y = 0.0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::GetStaticTimeStampForTests());
+                          WebInputEvent::GetStaticTimeStampForTests(),
+                          GetParam().second);
     // TODO(wjmaclean): Make sure that touchpad device is only ever used for
     // gesture scrolling event types.
-    event.source_device = GetParam().second;
-    event.x = 100;
-    event.y = 100;
+    event.SetPositionInWidget(WebFloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
@@ -11556,18 +11553,15 @@ TEST_P(ParameterizedWebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   document->documentElement()->SetLayoutObject(nullptr);
 
-  WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
-                              WebInputEvent::kNoModifiers,
-                              WebInputEvent::GetStaticTimeStampForTests());
-  begin_event.source_device = kWebGestureDeviceTouchpad;
-  WebGestureEvent update_event(WebInputEvent::kGestureScrollUpdate,
-                               WebInputEvent::kNoModifiers,
-                               WebInputEvent::GetStaticTimeStampForTests());
-  update_event.source_device = kWebGestureDeviceTouchpad;
-  WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
-                            WebInputEvent::kNoModifiers,
-                            WebInputEvent::GetStaticTimeStampForTests());
-  end_event.source_device = kWebGestureDeviceTouchpad;
+  WebGestureEvent begin_event(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+  WebGestureEvent update_event(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+  WebGestureEvent end_event(
+      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
   // seeing a Begin first doesn't break anything. (This currently happens).

@@ -168,14 +168,13 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
 
 WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
                                               double time_sec,
-                                              int x,
-                                              int y) {
+                                              float x,
+                                              float y) {
   DCHECK(WebInputEvent::IsGestureEventType(type));
-  WebGestureEvent result(type, WebInputEvent::kNoModifiers, time_sec);
+  WebGestureEvent result(type, WebInputEvent::kNoModifiers, time_sec,
+                         blink::kWebGestureDeviceTouchscreen);
 
-  result.x = x;
-  result.y = y;
-  result.source_device = blink::kWebGestureDeviceTouchscreen;
+  result.SetPositionInWidget(gfx::PointF(x, y));
 
   return result;
 }

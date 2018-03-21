@@ -85,6 +85,14 @@ class WebPointerProperties {
     position_in_screen_ = WebFloatPoint(x, y);
   }
 
+  void SetPositionInWidget(const WebFloatPoint& point) {
+    position_in_widget_ = point;
+  }
+
+  void SetPositionInScreen(const WebFloatPoint& point) {
+    position_in_screen_ = point;
+  }
+
   PointerId id;
 
   // The valid range is [0,1], with NaN meaning pressure is not supported by

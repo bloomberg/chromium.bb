@@ -1321,7 +1321,7 @@ bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
   possible_drag_event_info_.event_location =
-      gfx::Point(event.global_x, event.global_y);
+      gfx::ToFlooredPoint(event.PositionInScreen());
 
   return false;
 }

@@ -80,8 +80,7 @@ class FlingControllerTest : public testing::Test,
     scheduled_next_fling_progress_ = false;
     WebGestureEvent fling_start(
         WebInputEvent::kGestureFlingStart, 0,
-        ui::EventTimeStampToSeconds(base::TimeTicks::Now()));
-    fling_start.source_device = source_device;
+        ui::EventTimeStampToSeconds(base::TimeTicks::Now()), source_device);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
@@ -92,8 +91,7 @@ class FlingControllerTest : public testing::Test,
   void SimulateFlingCancel(blink::WebGestureDevice source_device) {
     WebGestureEvent fling_cancel(
         WebInputEvent::kGestureFlingCancel, 0,
-        ui::EventTimeStampToSeconds(base::TimeTicks::Now()));
-    fling_cancel.source_device = source_device;
+        ui::EventTimeStampToSeconds(base::TimeTicks::Now()), source_device);
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
     last_fling_cancel_filtered_ =
         fling_controller_->FilterGestureEvent(fling_cancel_with_latency);

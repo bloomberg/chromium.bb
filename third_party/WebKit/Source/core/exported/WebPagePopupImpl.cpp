@@ -473,7 +473,8 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
     return WebInputEventResult::kNotHandled;
   if ((event.GetType() == WebInputEvent::kGestureTap ||
        event.GetType() == WebInputEvent::kGestureTapDown) &&
-      !IsViewportPointInWindow(event.x, event.y)) {
+      !IsViewportPointInWindow(event.PositionInWidget().x,
+                               event.PositionInWidget().y)) {
     Cancel();
     return WebInputEventResult::kNotHandled;
   }

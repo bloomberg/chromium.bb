@@ -253,14 +253,14 @@ class LegacyInputRouterImplTest : public testing::Test {
 
   void SimulateGestureEvent(WebGestureEvent gesture) {
     if (gesture.GetType() == WebInputEvent::kGestureScrollBegin &&
-        gesture.source_device == blink::kWebGestureDeviceTouchscreen &&
+        gesture.SourceDevice() == blink::kWebGestureDeviceTouchscreen &&
         !gesture.data.scroll_begin.delta_x_hint &&
         !gesture.data.scroll_begin.delta_y_hint) {
       // Ensure non-zero scroll-begin offset-hint to make the event sane,
       // prevents unexpected filtering at TouchActionFilter.
       gesture.data.scroll_begin.delta_y_hint = 2.f;
     } else if (gesture.GetType() == WebInputEvent::kGestureFlingStart &&
-               gesture.source_device == blink::kWebGestureDeviceTouchscreen &&
+               gesture.SourceDevice() == blink::kWebGestureDeviceTouchscreen &&
                !gesture.data.fling_start.velocity_x &&
                !gesture.data.fling_start.velocity_y) {
       // Ensure non-zero touchscreen fling velocities, as the router will
@@ -1669,10 +1669,10 @@ TEST_F(LegacyInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(WebInputEvent::kGesturePinchUpdate, input_event->GetType());
   const WebGestureEvent* gesture_event =
       static_cast<const WebGestureEvent*>(input_event);
-  EXPECT_EQ(20, gesture_event->x);
-  EXPECT_EQ(25, gesture_event->y);
-  EXPECT_EQ(20, gesture_event->global_x);
-  EXPECT_EQ(25, gesture_event->global_y);
+  EXPECT_EQ(20, gesture_event->PositionInWidget().x);
+  EXPECT_EQ(25, gesture_event->PositionInWidget().y);
+  EXPECT_EQ(20, gesture_event->PositionInScreen().x);
+  EXPECT_EQ(25, gesture_event->PositionInScreen().y);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Indicate that the wheel event was unhandled.
@@ -2094,17 +2094,17 @@ class LegacyInputRouterImplScaleGestureEventTest
   LegacyInputRouterImplScaleGestureEventTest() {}
 
   WebGestureEvent BuildGestureEvent(WebInputEvent::Type type,
-                                    const gfx::Point& point) {
+                                    const gfx::PointF& point) {
     WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
         type, blink::kWebGestureDeviceTouchpad);
-    event.global_x = event.x = point.x();
-    event.global_y = event.y = point.y();
+    event.SetPositionInWidget(point);
+    event.SetPositionInScreen(point);
     return event;
   }
 
   void TestTap(const std::string& name, WebInputEvent::Type type) {
     SCOPED_TRACE(name);
-    const gfx::Point orig(10, 20), scaled(20, 40);
+    const gfx::PointF orig(10, 20), scaled(20, 40);
     WebGestureEvent event = BuildGestureEvent(type, orig);
     event.data.tap.width = 30;
     event.data.tap.height = 40;
@@ -2125,7 +2125,7 @@ class LegacyInputRouterImplScaleGestureEventTest
   }
 
   void TestLongPress(const std::string& name, WebInputEvent::Type type) {
-    const gfx::Point orig(10, 20), scaled(20, 40);
+    const gfx::PointF orig(10, 20), scaled(20, 40);
     WebGestureEvent event = BuildGestureEvent(type, orig);
     event.data.long_press.width = 30;
     event.data.long_press.height = 40;
@@ -2150,20 +2150,20 @@ class LegacyInputRouterImplScaleGestureEventTest
   }
 
   void TestLocationInSentEvent(const WebGestureEvent* sent_event,
-                               const gfx::Point& orig,
-                               const gfx::Point& scaled) {
-    EXPECT_EQ(20, sent_event->x);
-    EXPECT_EQ(40, sent_event->y);
-    EXPECT_EQ(10, sent_event->global_x);
-    EXPECT_EQ(20, sent_event->global_y);
+                               const gfx::PointF& orig,
+                               const gfx::PointF& scaled) {
+    EXPECT_EQ(20, sent_event->PositionInWidget().x);
+    EXPECT_EQ(40, sent_event->PositionInWidget().y);
+    EXPECT_EQ(10, sent_event->PositionInScreen().x);
+    EXPECT_EQ(20, sent_event->PositionInScreen().y);
   }
 
   void TestLocationInFilterEvent(const WebGestureEvent* filter_event,
-                                 const gfx::Point& point) {
-    EXPECT_EQ(10, filter_event->x);
-    EXPECT_EQ(20, filter_event->y);
-    EXPECT_EQ(10, filter_event->global_x);
-    EXPECT_EQ(20, filter_event->global_y);
+                                 const gfx::PointF& point) {
+    EXPECT_EQ(10, filter_event->PositionInWidget().x);
+    EXPECT_EQ(20, filter_event->PositionInWidget().y);
+    EXPECT_EQ(10, filter_event->PositionInScreen().x);
+    EXPECT_EQ(20, filter_event->PositionInScreen().y);
   }
 
  private:
@@ -2201,7 +2201,7 @@ TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureScrollBegin) {
 }
 
 TEST_F(LegacyInputRouterImplScaleGestureEventTest, GesturePinchUpdate) {
-  const gfx::Point orig(10, 20), scaled(20, 40);
+  const gfx::PointF orig(10, 20), scaled(20, 40);
   SimulateGesturePinchUpdateEvent(1.5f, orig.x(), orig.y(), 0,
                                   blink::kWebGestureDeviceTouchpad);
   FlushGestureEvent(WebInputEvent::kGesturePinchUpdate);
@@ -2216,7 +2216,7 @@ TEST_F(LegacyInputRouterImplScaleGestureEventTest, GesturePinchUpdate) {
 }
 
 TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureTapDown) {
-  const gfx::Point orig(10, 20), scaled(20, 40);
+  const gfx::PointF orig(10, 20), scaled(20, 40);
   WebGestureEvent event =
       BuildGestureEvent(WebInputEvent::kGestureTapDown, orig);
   event.data.tap_down.width = 30;
@@ -2242,7 +2242,7 @@ TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureTapOthers) {
 }
 
 TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureShowPress) {
-  const gfx::Point orig(10, 20), scaled(20, 40);
+  const gfx::PointF orig(10, 20), scaled(20, 40);
   WebGestureEvent event =
       BuildGestureEvent(WebInputEvent::kGestureShowPress, orig);
   event.data.show_press.width = 30;
@@ -2268,21 +2268,21 @@ TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureLongPress) {
 
 TEST_F(LegacyInputRouterImplScaleGestureEventTest, GestureTwoFingerTap) {
   WebGestureEvent event = BuildGestureEvent(WebInputEvent::kGestureTwoFingerTap,
-                                            gfx::Point(10, 20));
+                                            gfx::PointF(10, 20));
   event.data.two_finger_tap.first_finger_width = 30;
   event.data.two_finger_tap.first_finger_height = 40;
   SimulateGestureEvent(event);
 
   const WebGestureEvent* sent_event = GetSentWebInputEvent<WebGestureEvent>();
-  EXPECT_EQ(20, sent_event->x);
-  EXPECT_EQ(40, sent_event->y);
+  EXPECT_EQ(20, sent_event->PositionInWidget().x);
+  EXPECT_EQ(40, sent_event->PositionInWidget().y);
   EXPECT_EQ(60, sent_event->data.two_finger_tap.first_finger_width);
   EXPECT_EQ(80, sent_event->data.two_finger_tap.first_finger_height);
 
   const WebGestureEvent* filter_event =
       GetFilterWebInputEvent<WebGestureEvent>();
-  EXPECT_EQ(10, filter_event->x);
-  EXPECT_EQ(20, filter_event->y);
+  EXPECT_EQ(10, filter_event->PositionInWidget().x);
+  EXPECT_EQ(20, filter_event->PositionInWidget().y);
   EXPECT_EQ(30, filter_event->data.two_finger_tap.first_finger_width);
   EXPECT_EQ(40, filter_event->data.two_finger_tap.first_finger_height);
 }
@@ -2299,14 +2299,14 @@ TEST_F(LegacyInputRouterImplScaleGestureEventTest, MAYBE_GestureFlingStart) {
       10.f, 20.f, blink::kWebGestureDeviceTouchscreen));
   process_->sink().ClearMessages();
 
-  const gfx::Point orig(10, 20), scaled(20, 40);
+  const gfx::PointF orig(10, 20), scaled(20, 40);
   WebGestureEvent event =
       BuildGestureEvent(WebInputEvent::kGestureFlingStart, orig);
   // Set the source device to touchscreen to make sure that the event gets
   // dispatched to the renderer. When wheel scroll latching is enabled touchpad
   // flings are not dispatched to the renderer, instead they are handled on the
   // browser side.
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
+  event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   event.data.fling_start.velocity_x = 30;
   event.data.fling_start.velocity_y = 40;
   SimulateGestureEvent(event);

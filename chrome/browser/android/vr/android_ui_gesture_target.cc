@@ -45,7 +45,7 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       DCHECK(gesture->data.scroll_begin.delta_hint_units ==
              blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
 
-      SetPointer(gesture->x, gesture->y);
+      SetPointer(gesture->PositionInWidget().x, gesture->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
 
       float xdiff = gesture->data.scroll_begin.delta_x_hint;
@@ -59,8 +59,8 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
         ydiff *= touch_slop_ / dist;
       }
 
-      float xtarget = xdiff * scroll_ratio_ + gesture->x;
-      float ytarget = ydiff * scroll_ratio_ + gesture->y;
+      float xtarget = xdiff * scroll_ratio_ + gesture->PositionInWidget().x;
+      float ytarget = ydiff * scroll_ratio_ + gesture->PositionInWidget().y;
       scroll_x_ = xtarget > 0 ? std::ceil(xtarget) : std::floor(xtarget);
       scroll_y_ = ytarget > 0 ? std::ceil(ytarget) : std::floor(ytarget);
 
@@ -80,7 +80,7 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureTapDown:
-      SetPointer(gesture->x, gesture->y);
+      SetPointer(gesture->PositionInWidget().x, gesture->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;

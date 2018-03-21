@@ -440,13 +440,15 @@ TEST_P(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   ScrollableArea* scrollable_area =
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   DCHECK(scrollable_area->VerticalScrollbar());
-  WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
-                               WebInputEvent::kNoModifiers,
-                               CurrentTimeTicksInSeconds());
-  scroll_begin.x = scroll_begin.global_x =
-      scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2;
-  scroll_begin.y = scroll_begin.global_y = scrollable->OffsetTop();
-  scroll_begin.source_device = kWebGestureDeviceTouchpad;
+  WebGestureEvent scroll_begin(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      CurrentTimeTicksInSeconds(), kWebGestureDeviceTouchpad);
+  scroll_begin.SetPositionInWidget(
+      WebFloatPoint(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
+                    scrollable->OffsetTop()));
+  scroll_begin.SetPositionInScreen(
+      WebFloatPoint(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
+                    scrollable->OffsetTop()));
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
   scroll_begin.data.scroll_begin.delta_y_hint = 10;
   scroll_begin.SetFrameScale(1);

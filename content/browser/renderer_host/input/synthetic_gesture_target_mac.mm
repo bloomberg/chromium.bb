@@ -95,8 +95,9 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
       case WebInputEvent::kGesturePinchBegin: {
         id cocoa_event = [SyntheticPinchEvent
             eventWithMagnification:0.0f
-                  locationInWindow:NSMakePoint(gesture_event->x,
-                                               gesture_event->y)
+                  locationInWindow:NSMakePoint(
+                                       gesture_event->PositionInWidget().x,
+                                       gesture_event->PositionInWidget().y)
                              phase:NSEventPhaseBegan];
         [cocoa_view_ handleBeginGestureWithEvent:cocoa_event];
         return;
@@ -104,8 +105,9 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
       case WebInputEvent::kGesturePinchEnd: {
         id cocoa_event = [SyntheticPinchEvent
             eventWithMagnification:0.0f
-                  locationInWindow:NSMakePoint(gesture_event->x,
-                                               gesture_event->y)
+                  locationInWindow:NSMakePoint(
+                                       gesture_event->PositionInWidget().x,
+                                       gesture_event->PositionInWidget().y)
                              phase:NSEventPhaseEnded];
         [cocoa_view_ handleEndGestureWithEvent:cocoa_event];
         return;
@@ -113,8 +115,9 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
       case WebInputEvent::kGesturePinchUpdate: {
         id cocoa_event = [SyntheticPinchEvent
             eventWithMagnification:gesture_event->data.pinch_update.scale - 1.0f
-                  locationInWindow:NSMakePoint(gesture_event->x,
-                                               gesture_event->y)
+                  locationInWindow:NSMakePoint(
+                                       gesture_event->PositionInWidget().x,
+                                       gesture_event->PositionInWidget().y)
                              phase:NSEventPhaseChanged];
         [cocoa_view_ magnifyWithEvent:cocoa_event];
         return;

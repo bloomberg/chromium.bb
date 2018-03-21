@@ -42,7 +42,7 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
         error_msg->append("Scroll update outside of scroll\n");
       break;
     case WebInputEvent::kGestureFlingStart:
-      if (event.source_device == blink::kWebGestureDeviceTouchscreen &&
+      if (event.SourceDevice() == blink::kWebGestureDeviceTouchscreen &&
           !event.data.fling_start.velocity_x &&
           !event.data.fling_start.velocity_y) {
         error_msg->append("Zero velocity touchscreen fling\n");
@@ -105,7 +105,7 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
   // 'continuity check', requiring that all events between an initial tap-down
   // and whatever terminates the sequence to have the same source device type,
   // and that touchpad gestures are only found on ScrollEvents.
-  if (event.source_device == blink::kWebGestureDeviceUninitialized)
+  if (event.SourceDevice() == blink::kWebGestureDeviceUninitialized)
     error_msg->append("Gesture event source is uninitialized.\n");
 
   return error_msg->empty();

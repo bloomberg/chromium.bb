@@ -415,7 +415,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
       input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    if (gesture_event.source_device == blink::kWebGestureDeviceTouchpad) {
+    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad) {
       gfx::Vector2dF latest_overscroll_delta =
           event_overscroll ? event_overscroll->latest_overscroll_delta
                            : gfx::Vector2dF();

@@ -654,9 +654,9 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
           !visual_viewport.ShouldDisableDesktopWorkarounds() &&
           !screencast_enabled) {
         IntRect bounding_box(visual_viewport.ViewportToRootFrame(
-            IntRect(event.x - event.data.tap.width / 2,
-                    event.y - event.data.tap.height / 2, event.data.tap.width,
-                    event.data.tap.height)));
+            IntRect(event.PositionInWidget().x - event.data.tap.width / 2,
+                    event.PositionInWidget().y - event.data.tap.height / 2,
+                    event.data.tap.width, event.data.tap.height)));
 
         // TODO(bokan): We shouldn't pass details of the VisualViewport offset
         // to render_view_impl.  crbug.com/459591
@@ -787,11 +787,10 @@ void WebViewImpl::ResolveTapDisambiguation(double timestamp_seconds,
                                            bool is_long_press) {
   WebGestureEvent event(is_long_press ? WebInputEvent::kGestureLongPress
                                       : WebInputEvent::kGestureTap,
-                        WebInputEvent::kNoModifiers, timestamp_seconds);
+                        WebInputEvent::kNoModifiers, timestamp_seconds,
+                        blink::kWebGestureDeviceTouchscreen);
 
-  event.x = tap_viewport_offset.x;
-  event.y = tap_viewport_offset.y;
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
+  event.SetPositionInWidget(FloatPoint(tap_viewport_offset));
 
   {
     // Compute UMA stat about whether the node selected by disambiguation UI was
@@ -827,8 +826,10 @@ WebInputEventResult WebViewImpl::HandleSyntheticWheelFromTouchpadPinchEvent(
       WebInputEvent::kMouseWheel,
       pinch_event.GetModifiers() | WebInputEvent::kControlKey,
       pinch_event.TimeStampSeconds());
-  wheel_event.SetPositionInWidget(pinch_event.x, pinch_event.y);
-  wheel_event.SetPositionInScreen(pinch_event.global_x, pinch_event.global_y);
+  wheel_event.SetPositionInWidget(pinch_event.PositionInWidget().x,
+                                  pinch_event.PositionInWidget().y);
+  wheel_event.SetPositionInScreen(pinch_event.PositionInScreen().x,
+                                  pinch_event.PositionInScreen().y);
   wheel_event.delta_x = 0;
 
   // The function to convert scales to deltaY values is designed to be
@@ -2084,7 +2085,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     // For touchpad gestures synthesize a Windows-like wheel event
     // to send to any handlers that may exist. Not necessary for touchscreen
     // as touch events would have already been sent for the gesture.
-    if (pinch_event.source_device == kWebGestureDeviceTouchpad) {
+    if (pinch_event.SourceDevice() == kWebGestureDeviceTouchpad) {
       result = HandleSyntheticWheelFromTouchpadPinchEvent(pinch_event);
       if (result != WebInputEventResult::kNotHandled)
         return result;
@@ -2095,7 +2096,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
 
     if (GetPage()->GetVisualViewport().MagnifyScaleAroundAnchor(
             pinch_event.data.pinch_update.scale,
-            FloatPoint(pinch_event.x, pinch_event.y)))
+            pinch_event.PositionInWidget()))
       return WebInputEventResult::kHandledSystem;
   }
 
@@ -2104,11 +2105,11 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     const WebGestureEvent& pinch_event =
         static_cast<const WebGestureEvent&>(input_event);
     float min_scale = MinimumPageScaleFactor();
-    if (pinch_event.source_device == kWebGestureDeviceTouchpad &&
+    if (pinch_event.SourceDevice() == kWebGestureDeviceTouchpad &&
         PageScaleFactor() <= min_scale * maximumZoomForSnapToMinimum) {
       IntPoint target_position =
           MainFrameImpl()->GetFrameView()->ViewportToContents(
-              IntPoint(pinch_event.x, pinch_event.y));
+              FlooredIntPoint(pinch_event.PositionInWidget()));
       StartPageScaleAnimation(target_position, true, min_scale,
                               snapToMiminimumZoomAnimationDurationInSeconds);
     }
@@ -3457,13 +3458,11 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
   if (!page_->MainFrame()->IsLocalFrame())
     return HitTestResult();
 
-  WebGestureEvent tap_event(WebInputEvent::kGestureTap,
-                            WebInputEvent::kNoModifiers,
-                            WTF::CurrentTimeTicksInSeconds());
-  tap_event.x = tap_point_window_pos.x;
-  tap_event.y = tap_point_window_pos.y;
+  WebGestureEvent tap_event(
+      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+      WTF::CurrentTimeTicksInSeconds(), kWebGestureDeviceTouchscreen);
   // GestureTap is only ever from a touchscreen.
-  tap_event.source_device = kWebGestureDeviceTouchscreen;
+  tap_event.SetPositionInWidget(FloatPoint(tap_point_window_pos));
   tap_event.data.tap.tap_count = 1;
   tap_event.data.tap.width = tap_area.width;
   tap_event.data.tap.height = tap_area.height;

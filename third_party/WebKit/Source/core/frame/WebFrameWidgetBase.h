@@ -172,8 +172,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void CancelDrag();
 
   std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
-  WebPoint position_on_fling_start_;
-  WebPoint global_position_on_fling_start_;
+  WebFloatPoint position_on_fling_start_;
+  WebFloatPoint global_position_on_fling_start_;
   int fling_modifier_;
   WebGestureDevice fling_source_device_;
 

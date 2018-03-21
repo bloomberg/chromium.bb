@@ -378,17 +378,15 @@ void WheelScrollLatchingBrowserTest::
   blink::WebGestureEvent gesture_scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
               : blink::WebGestureEvent::ScrollUnits::kPixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -20.f;
-  gesture_scroll_begin.x = x;
-  gesture_scroll_begin.y = y;
-  gesture_scroll_begin.global_x = x;
-  gesture_scroll_begin.global_y = y;
+  gesture_scroll_begin.SetPositionInWidget(gfx::PointF(x, y));
+  gesture_scroll_begin.SetPositionInScreen(gfx::PointF(x, y));
   GetRootView()->ProcessGestureEvent(gesture_scroll_begin, ui::LatencyInfo());
 
   // Send the first GSU event.

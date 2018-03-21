@@ -46,8 +46,8 @@ class CONTENT_EXPORT FlingController {
 
   struct ActiveFlingParameters {
     gfx::Vector2dF velocity;
-    gfx::Vector2d point;
-    gfx::Vector2d global_point;
+    gfx::PointF point;
+    gfx::PointF global_point;
     int modifiers;
     blink::WebGestureDevice source_device;
     base::TimeTicks start_time;

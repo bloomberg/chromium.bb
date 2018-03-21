@@ -459,7 +459,7 @@ void TouchEmulator::PinchBegin(const WebGestureEvent& event) {
   DCHECK(InPinchGestureMode());
   DCHECK(!pinch_gesture_active_);
   pinch_gesture_active_ = true;
-  pinch_anchor_ = gfx::Point(event.x, event.y);
+  pinch_anchor_ = event.PositionInWidget();
   pinch_scale_ = 1.f;
   WebGestureEvent pinch_event =
       GetPinchGestureEvent(WebInputEvent::kGesturePinchBegin, event);
@@ -468,7 +468,7 @@ void TouchEmulator::PinchBegin(const WebGestureEvent& event) {
 
 void TouchEmulator::PinchUpdate(const WebGestureEvent& event) {
   DCHECK(pinch_gesture_active_);
-  int dy = pinch_anchor_.y() - event.y;
+  float dy = pinch_anchor_.y() - event.PositionInWidget().y;
   float scale = exp(dy * 0.002f);
   WebGestureEvent pinch_event =
       GetPinchGestureEvent(WebInputEvent::kGesturePinchUpdate, event);
@@ -486,10 +486,9 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
 }
 
 void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
-  WebGestureEvent scroll_event(WebInputEvent::kGestureScrollEnd,
-                               ModifiersWithoutMouseButtons(event),
-                               event.TimeStampSeconds());
-  scroll_event.source_device = blink::kWebGestureDeviceTouchscreen;
+  WebGestureEvent scroll_event(
+      WebInputEvent::kGestureScrollEnd, ModifiersWithoutMouseButtons(event),
+      event.TimeStampSeconds(), blink::kWebGestureDeviceTouchscreen);
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
 
@@ -497,10 +496,9 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
     WebInputEvent::Type type,
     const WebInputEvent& original_event) {
   WebGestureEvent event(type, ModifiersWithoutMouseButtons(original_event),
-                        original_event.TimeStampSeconds());
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
-  event.x = pinch_anchor_.x();
-  event.y = pinch_anchor_.y();
+                        original_event.TimeStampSeconds(),
+                        blink::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(pinch_anchor_);
   return event;
 }
 

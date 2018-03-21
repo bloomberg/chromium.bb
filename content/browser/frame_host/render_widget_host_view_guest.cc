@@ -622,12 +622,11 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     blink::WebGestureEvent gesture_tap_event(
         blink::WebGestureEvent::kGestureTapDown,
         blink::WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-    gesture_tap_event.source_device = blink::kWebGestureDeviceTouchscreen;
-    gesture_tap_event.x = position.x + offset.x();
-    gesture_tap_event.y = position.y + offset.y();
-    gesture_tap_event.global_x = screenPosition.x;
-    gesture_tap_event.global_y = screenPosition.y;
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+        blink::kWebGestureDeviceTouchscreen);
+    gesture_tap_event.SetPositionInWidget(
+        blink::WebFloatPoint(position.x + offset.x(), position.y + offset.y()));
+    gesture_tap_event.SetPositionInScreen(screenPosition);
     GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
         gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
 

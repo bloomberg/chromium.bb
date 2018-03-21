@@ -150,7 +150,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   bool suppress_next_fling_cancel_;
 
   // Point which does not move while pinch-zooming.
-  gfx::Point pinch_anchor_;
+  gfx::PointF pinch_anchor_;
   // The cumulative scale change from the start of pinch gesture.
   float pinch_scale_;
   bool pinch_gesture_active_;

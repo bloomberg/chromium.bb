@@ -171,8 +171,8 @@ blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
 
   blink::WebGestureEvent webkit_event(
       type, EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()));
-  webkit_event.source_device = blink::kWebGestureDeviceTouchpad;
+      EventTimeStampToSeconds(event.time_stamp()),
+      blink::kWebGestureDeviceTouchpad);
   if (event.type() == ET_SCROLL_FLING_START) {
     webkit_event.data.fling_start.velocity_x = event.x_offset();
     webkit_event.data.fling_start.velocity_y = event.y_offset();
@@ -332,13 +332,11 @@ blink::WebGestureEvent MakeWebGestureEvent(
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUIEvent(event);
 
-  gesture_event.x = event.x();
-  gesture_event.y = event.y();
+  gesture_event.SetPositionInWidget(event.location_f());
 
   const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
-  gesture_event.global_x = screen_point.x();
-  gesture_event.global_y = screen_point.y();
+  gesture_event.SetPositionInScreen(screen_point);
 
   return gesture_event;
 }
@@ -348,13 +346,11 @@ blink::WebGestureEvent MakeWebGestureEvent(
     const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUiEvent(event);
-  gesture_event.x = event.x();
-  gesture_event.y = event.y();
+  gesture_event.SetPositionInWidget(event.location_f());
 
   const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
-  gesture_event.global_x = screen_point.x();
-  gesture_event.global_y = screen_point.y();
+  gesture_event.SetPositionInScreen(screen_point);
 
   return gesture_event;
 }
@@ -363,10 +359,9 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers,
-      EventTimeStampToSeconds(EventTimeForNow()));
-
+      EventTimeStampToSeconds(EventTimeForNow()),
+      blink::kWebGestureDeviceTouchpad);
   // All other fields are ignored on a GestureFlingCancel event.
-  gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
   return gesture_event;
 }
 

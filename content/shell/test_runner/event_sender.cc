@@ -266,11 +266,8 @@ void InitMouseEvent(WebMouseEvent::Button b,
 
 void InitGestureEventFromMouseWheel(const WebMouseWheelEvent& wheel_event,
                                     WebGestureEvent* gesture_event) {
-  gesture_event->source_device = blink::kWebGestureDeviceTouchpad;
-  gesture_event->x = wheel_event.PositionInWidget().x;
-  gesture_event->y = wheel_event.PositionInWidget().y;
-  gesture_event->global_x = wheel_event.PositionInScreen().x;
-  gesture_event->global_y = wheel_event.PositionInScreen().y;
+  gesture_event->SetPositionInWidget(wheel_event.PositionInWidget());
+  gesture_event->SetPositionInScreen(wheel_event.PositionInScreen());
 }
 
 int GetKeyModifier(const std::string& modifier_name) {
@@ -610,7 +607,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
                          float velocity_y,
                          gin::Arguments* args);
   bool IsFlinging();
-  void GestureScrollFirstPoint(int x, int y);
+  void GestureScrollFirstPoint(float x, float y);
   void TouchStart(gin::Arguments* args);
   void TouchMove(gin::Arguments* args);
   void TouchCancel(gin::Arguments* args);
@@ -908,7 +905,7 @@ bool EventSenderBindings::IsFlinging() {
   return false;
 }
 
-void EventSenderBindings::GestureScrollFirstPoint(int x, int y) {
+void EventSenderBindings::GestureScrollFirstPoint(float x, float y) {
   if (sender_)
     sender_->GestureScrollFirstPoint(x, y);
 }
@@ -1359,7 +1356,7 @@ void EventSender::Reset() {
   touch_points_.clear();
   last_context_menu_data_.reset();
   weak_factory_.InvalidateWeakPtrs();
-  current_gesture_location_ = WebPoint(0, 0);
+  current_gesture_location_ = WebFloatPoint(0, 0);
   mouse_event_queue_.clear();
 
   time_offset_ms_ = 0;
@@ -1959,11 +1956,11 @@ void EventSender::DumpFilenameBeingDragged() {
 
 void EventSender::GestureFlingCancel() {
   WebGestureEvent event(WebInputEvent::kGestureFlingCancel,
-                        WebInputEvent::kNoModifiers, GetCurrentEventTimeSec());
+                        WebInputEvent::kNoModifiers, GetCurrentEventTimeSec(),
+                        blink::kWebGestureDeviceTouchpad);
   // Generally it won't matter what device we use here, and since it might
   // be cumbersome to expect all callers to specify a device, we'll just
   // choose Touchpad here.
-  event.source_device = blink::kWebGestureDeviceTouchpad;
 
   if (force_layout_on_events_)
     widget()->UpdateAllLifecyclePhases();
@@ -1984,9 +1981,9 @@ void EventSender::GestureFlingStart(float x,
     args->GetNext(&device_string);
 
   if (device_string == kSourceDeviceStringTouchpad) {
-    event.source_device = blink::kWebGestureDeviceTouchpad;
+    event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
   } else if (device_string == kSourceDeviceStringTouchscreen) {
-    event.source_device = blink::kWebGestureDeviceTouchscreen;
+    event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   } else {
     args->ThrowError();
     return;
@@ -2000,10 +1997,8 @@ void EventSender::GestureFlingStart(float x,
     return;
   }
 
-  event.x = x;
-  event.y = y;
-  event.global_x = event.x;
-  event.global_y = event.y;
+  event.SetPositionInWidget(WebFloatPoint(x, y));
+  event.SetPositionInScreen(WebFloatPoint(x, y));
 
   event.data.fling_start.velocity_x = velocity_x;
   event.data.fling_start.velocity_y = velocity_y;
@@ -2018,8 +2013,8 @@ bool EventSender::IsFlinging() {
   return mainFrameWidget()->IsFlinging();
 }
 
-void EventSender::GestureScrollFirstPoint(int x, int y) {
-  current_gesture_location_ = WebPoint(x, y);
+void EventSender::GestureScrollFirstPoint(float x, float y) {
+  current_gesture_location_ = WebFloatPoint(x, y);
 }
 
 void EventSender::TouchStart(gin::Arguments* args) {
@@ -2363,12 +2358,12 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 
 void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                        GetCurrentEventTimeSec());
+                        GetCurrentEventTimeSec(),
+                        blink::kWebGestureDeviceTouchscreen);
 
   // If the first argument is a string, it is to specify the device, otherwise
   // the device is assumed to be a touchscreen (since most tests were written
   // assuming this).
-  event.source_device = blink::kWebGestureDeviceTouchscreen;
   if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
     std::string device_string;
     if (!args->GetNext(&device_string)) {
@@ -2376,9 +2371,9 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       return;
     }
     if (device_string == kSourceDeviceStringTouchpad) {
-      event.source_device = blink::kWebGestureDeviceTouchpad;
+      event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
     } else if (device_string == kSourceDeviceStringTouchscreen) {
-      event.source_device = blink::kWebGestureDeviceTouchscreen;
+      event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
     } else {
       args->ThrowError();
       return;
@@ -2399,8 +2394,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
 
       event.data.scroll_update.delta_x = static_cast<float>(x);
       event.data.scroll_update.delta_y = static_cast<float>(y);
-      event.x = current_gesture_location_.x;
-      event.y = current_gesture_location_.y;
+      event.SetPositionInWidget(current_gesture_location_);
       current_gesture_location_.x =
           current_gesture_location_.x + event.data.scroll_update.delta_x;
       current_gesture_location_.y =
@@ -2408,20 +2402,17 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       break;
     }
     case WebInputEvent::kGestureScrollBegin:
-      current_gesture_location_ = WebPoint(x, y);
-      event.x = current_gesture_location_.x;
-      event.y = current_gesture_location_.y;
+      current_gesture_location_ = WebFloatPoint(x, y);
+      event.SetPositionInWidget(current_gesture_location_);
       break;
     case WebInputEvent::kGestureScrollEnd:
     case WebInputEvent::kGestureFlingStart:
-      event.x = current_gesture_location_.x;
-      event.y = current_gesture_location_.y;
+      event.SetPositionInWidget(current_gesture_location_);
       break;
     case WebInputEvent::kGesturePinchBegin:
     case WebInputEvent::kGesturePinchEnd:
-      current_gesture_location_ = WebPoint(x, y);
-      event.x = current_gesture_location_.x;
-      event.y = current_gesture_location_.y;
+      current_gesture_location_ = WebFloatPoint(x, y);
+      event.SetPositionInWidget(current_gesture_location_);
       break;
     case WebInputEvent::kGesturePinchUpdate: {
       float scale = 1;
@@ -2432,9 +2423,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
         }
       }
       event.data.pinch_update.scale = scale;
-      current_gesture_location_ = WebPoint(x, y);
-      event.x = current_gesture_location_.x;
-      event.y = current_gesture_location_.y;
+      current_gesture_location_ = WebFloatPoint(x, y);
+      event.SetPositionInWidget(current_gesture_location_);
       break;
     }
     case WebInputEvent::kGestureTap: {
@@ -2462,8 +2452,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       event.data.tap.tap_count = tap_count;
       event.data.tap.width = width;
       event.data.tap.height = height;
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       break;
     }
     case WebInputEvent::kGestureTapUnconfirmed:
@@ -2477,8 +2466,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       } else {
         event.data.tap.tap_count = 1;
       }
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       break;
     case WebInputEvent::kGestureTapDown: {
       float width = 30;
@@ -2495,8 +2483,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
           return;
         }
       }
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       event.data.tap_down.width = width;
       event.data.tap_down.height = height;
       break;
@@ -2516,20 +2503,17 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
           }
         }
       }
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       event.data.show_press.width = width;
       event.data.show_press.height = height;
       break;
     }
     case WebInputEvent::kGestureTapCancel:
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       break;
     case WebInputEvent::kGestureLongPress:
     case WebInputEvent::kGestureLongTap:
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       if (!args->PeekNext().IsEmpty()) {
         float width;
         if (!args->GetNext(&width)) {
@@ -2548,8 +2532,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       }
       break;
     case WebInputEvent::kGestureTwoFingerTap:
-      event.x = x;
-      event.y = y;
+      event.SetPositionInWidget(WebFloatPoint(x, y));
       if (!args->PeekNext().IsEmpty()) {
         float first_finger_width;
         if (!args->GetNext(&first_finger_width)) {
@@ -2575,8 +2558,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   if (!GetPointerType(args, false, event.primary_pointer_type))
     return;
 
-  event.global_x = event.x;
-  event.global_y = event.y;
+  event.SetPositionInScreen(event.PositionInWidget());
 
   if (force_layout_on_events_)
     widget()->UpdateAllLifecyclePhases();
@@ -2874,9 +2856,9 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
 
 void EventSender::SendGesturesForMouseWheelEvent(
     const WebMouseWheelEvent wheel_event) {
-  WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
-                              wheel_event.GetModifiers(),
-                              GetCurrentEventTimeSec());
+  WebGestureEvent begin_event(
+      WebInputEvent::kGestureScrollBegin, wheel_event.GetModifiers(),
+      GetCurrentEventTimeSec(), blink::kWebGestureDeviceTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
   begin_event.data.scroll_begin.delta_x_hint = wheel_event.delta_x;
   begin_event.data.scroll_begin.delta_y_hint = wheel_event.delta_y;
@@ -2903,9 +2885,9 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
   HandleInputEventOnViewOrPopup(begin_event);
 
-  WebGestureEvent update_event(WebInputEvent::kGestureScrollUpdate,
-                               wheel_event.GetModifiers(),
-                               GetCurrentEventTimeSec());
+  WebGestureEvent update_event(
+      WebInputEvent::kGestureScrollUpdate, wheel_event.GetModifiers(),
+      GetCurrentEventTimeSec(), blink::kWebGestureDeviceTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &update_event);
   update_event.data.scroll_update.delta_x =
       begin_event.data.scroll_begin.delta_x_hint;
@@ -2918,9 +2900,9 @@ void EventSender::SendGesturesForMouseWheelEvent(
     widget()->UpdateAllLifecyclePhases();
   HandleInputEventOnViewOrPopup(update_event);
 
-  WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
-                            wheel_event.GetModifiers(),
-                            GetCurrentEventTimeSec());
+  WebGestureEvent end_event(
+      WebInputEvent::kGestureScrollEnd, wheel_event.GetModifiers(),
+      GetCurrentEventTimeSec(), blink::kWebGestureDeviceTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &end_event);
   end_event.data.scroll_end.delta_units =
       begin_event.data.scroll_begin.delta_hint_units;

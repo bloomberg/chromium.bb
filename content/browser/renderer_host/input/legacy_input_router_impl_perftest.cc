@@ -140,16 +140,14 @@ Gestures BuildScrollSequence(size_t steps,
   WebGestureEvent gesture(WebInputEvent::kGestureScrollBegin,
                           WebInputEvent::kNoModifiers,
                           ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  gesture.x = origin.x();
-  gesture.y = origin.y();
+  gesture.SetPositionInWidget(gfx::PointF(origin.x(), origin.y()));
   gestures.push_back(gesture);
 
   gesture.SetType(WebInputEvent::kGestureScrollUpdate);
   gesture.data.scroll_update.delta_x = delta.x();
   gesture.data.scroll_update.delta_y = delta.y();
   for (size_t i = 0; i < steps; ++i) {
-    gesture.x += delta.x();
-    gesture.y += delta.y();
+    gesture.SetPositionInWidget(gesture.PositionInWidget() + delta);
     gestures.push_back(gesture);
   }
 

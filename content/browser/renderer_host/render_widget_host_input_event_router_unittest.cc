@@ -198,8 +198,8 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchscreen);
   gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
 
   rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
@@ -389,8 +389,8 @@ TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchscreen);
   gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
   rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));

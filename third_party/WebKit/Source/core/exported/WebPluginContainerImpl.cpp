@@ -996,12 +996,10 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
   WebGestureEvent translated_event = event->NativeEvent();
   WebFloatPoint absolute_root_frame_location =
       event->NativeEvent().PositionInRootFrame();
-  IntPoint local_point =
-      RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
-          absolute_root_frame_location, kUseTransforms));
+  FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
+      absolute_root_frame_location, kUseTransforms);
   translated_event.FlattenTransform();
-  translated_event.x = local_point.X();
-  translated_event.y = local_point.Y();
+  translated_event.SetPositionInWidget(local_point);
 
   WebCursorInfo cursor_info;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),

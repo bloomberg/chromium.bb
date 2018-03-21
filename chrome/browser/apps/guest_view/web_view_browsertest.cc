@@ -4090,21 +4090,19 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   ASSERT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
   ASSERT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
 
-  gfx::Point guest_scroll_location(1, 1);
-  gfx::Point guest_scroll_location_in_root =
-      guest_host_view->TransformPointToRootCoordSpace(guest_scroll_location);
+  gfx::PointF guest_scroll_location(1, 1);
+  gfx::PointF guest_scroll_location_in_root =
+      guest_host_view->TransformPointToRootCoordSpaceF(guest_scroll_location);
 
   // When the guest is already scrolled to the top, scroll up so that we bubble
   // scroll.
   blink::WebGestureEvent scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
-  scroll_begin.x = guest_scroll_location.x();
-  scroll_begin.y = guest_scroll_location.y();
-  scroll_begin.global_x = guest_scroll_location_in_root.x();
-  scroll_begin.global_y = guest_scroll_location_in_root.y();
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
+  scroll_begin.SetPositionInWidget(guest_scroll_location);
+  scroll_begin.SetPositionInScreen(guest_scroll_location_in_root);
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
   scroll_begin.data.scroll_begin.delta_y_hint = 5;
   content::SimulateGestureEvent(guest_contents, scroll_begin,
@@ -4123,12 +4121,10 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   blink::WebGestureEvent scroll_update(
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  scroll_update.source_device = scroll_begin.source_device;
-  scroll_update.x = scroll_begin.x;
-  scroll_update.y = scroll_begin.y;
-  scroll_update.global_x = scroll_begin.global_x;
-  scroll_update.global_y = scroll_begin.global_y;
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      scroll_begin.SourceDevice());
+  scroll_update.SetPositionInWidget(scroll_begin.PositionInWidget());
+  scroll_update.SetPositionInScreen(scroll_begin.PositionInScreen());
   scroll_update.data.scroll_update.delta_x =
       scroll_begin.data.scroll_begin.delta_x_hint;
   scroll_update.data.scroll_update.delta_y =

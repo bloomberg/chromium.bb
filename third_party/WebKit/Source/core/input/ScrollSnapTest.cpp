@@ -86,10 +86,10 @@ void ScrollSnapTest::ScrollBegin(double x,
                                  double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds());
-  event.x = event.global_x = x;
-  event.y = event.global_y = y;
-  event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
+                        CurrentTimeTicksInSeconds(),
+                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(x, y));
+  event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_begin.delta_x_hint = hint_x;
   event.data.scroll_begin.delta_y_hint = hint_y;
   event.data.scroll_begin.pointer_count = 1;
@@ -103,10 +103,10 @@ void ScrollSnapTest::ScrollUpdate(double x,
                                   double delta_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds());
-  event.x = event.global_x = x;
-  event.y = event.global_y = y;
-  event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
+                        CurrentTimeTicksInSeconds(),
+                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(x, y));
+  event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_update.delta_x = delta_x;
   event.data.scroll_update.delta_y = delta_y;
   event.SetFrameScale(1);
@@ -116,10 +116,10 @@ void ScrollSnapTest::ScrollUpdate(double x,
 void ScrollSnapTest::ScrollEnd(double x, double y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds());
-  event.x = event.global_x = x;
-  event.y = event.global_y = y;
-  event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
+                        CurrentTimeTicksInSeconds(),
+                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(x, y));
+  event.SetPositionInScreen(WebFloatPoint(x, y));
   GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(event);
 }
 

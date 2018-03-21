@@ -196,11 +196,11 @@ class TapHandlingWebViewClient : public FrameTestHelpers::TestWebViewClient {
   void DidHandleGestureEvent(const WebGestureEvent& event,
                              bool event_cancelled) override {
     if (event.GetType() == WebInputEvent::kGestureTap) {
-      tap_x_ = event.x;
-      tap_y_ = event.y;
+      tap_x_ = event.PositionInWidget().x;
+      tap_y_ = event.PositionInWidget().y;
     } else if (event.GetType() == WebInputEvent::kGestureLongPress) {
-      longpress_x_ = event.x;
-      longpress_y_ = event.y;
+      longpress_x_ = event.PositionInWidget().x;
+      longpress_y_ = event.PositionInWidget().y;
     }
   }
 
@@ -2537,20 +2537,18 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
 
   // TODO(bokan): Technically incorrect, event positions should be in viewport
   // space. crbug.com/371902.
-  IntPoint center =
+  FloatPoint center(
       web_view_helper_.GetWebView()
           ->MainFrameImpl()
           ->GetFrameView()
           ->ContentsToScreen(
               element->GetLayoutObject()->AbsoluteBoundingBoxRect())
-          .Center();
+          .Center());
 
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = center.X();
-  event.y = center.Y();
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(center);
 
   web_view_helper_.GetWebView()->HandleInputEvent(
       WebCoalescedInputEvent(event));
@@ -2582,18 +2580,16 @@ TEST_P(WebViewTest, ClientTapHandling) {
   WebView* web_view =
       web_view_helper_.InitializeAndLoad("about:blank", nullptr, &client);
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 3;
-  event.y = 8;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(3, 8));
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
   EXPECT_EQ(3, client.TapX());
   EXPECT_EQ(8, client.TapY());
   client.Reset();
   event.SetType(WebInputEvent::kGestureLongPress);
-  event.x = 25;
-  event.y = 7;
+  event.SetPositionInWidget(WebFloatPoint(25, 7));
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
   EXPECT_EQ(25, client.LongpressX());
@@ -2616,10 +2612,9 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
   blink::WebFrameWidget::Create(&web_widget_client, local_frame);
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 3;
-  event.y = 8;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(3, 8));
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
   web_view->Close();
@@ -2637,10 +2632,9 @@ TEST_P(WebViewTest, LongPressEmptyDiv) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 250;
-  event.y = 150;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2658,10 +2652,9 @@ TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 250;
-  event.y = 150;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2679,10 +2672,9 @@ TEST_P(WebViewTest, LongPressObject) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 10;
-  event.y = 10;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_NE(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2704,10 +2696,9 @@ TEST_P(WebViewTest, LongPressObjectFallback) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 10;
-  event.y = 10;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2729,10 +2720,9 @@ TEST_P(WebViewTest, LongPressImage) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 10;
-  event.y = 10;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2750,10 +2740,9 @@ TEST_P(WebViewTest, LongPressVideo) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 10;
-  event.y = 10;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2771,10 +2760,9 @@ TEST_P(WebViewTest, LongPressLink) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 500;
-  event.y = 300;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(500, 300));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2859,10 +2847,9 @@ TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 10;
-  event.y = 10;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
@@ -2879,10 +2866,9 @@ TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 300;
-  event.y = 300;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(300, 300));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
@@ -2965,10 +2951,9 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
 
   // Double-tap on carriage returns.
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 100;
-  event.y = 25;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(100, 25));
   event.data.tap.tap_count = 2;
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
@@ -3258,10 +3243,9 @@ TEST_P(WebViewTest, ShowPressOnTransformedLink) {
 
   WebGestureEvent event(WebInputEvent::kGestureShowPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests());
-  event.source_device = kWebGestureDeviceTouchscreen;
-  event.x = 20;
-  event.y = 20;
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   // Just make sure we don't hit any asserts.
   web_view_impl->HandleInputEvent(WebCoalescedInputEvent(event));

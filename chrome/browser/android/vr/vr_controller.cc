@@ -368,7 +368,7 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
     UpdateOverallVelocity();
 
   UpdateGestureFromTouchInfo(gesture.get());
-  gesture->source_device = blink::kWebGestureDeviceTouchpad;
+  gesture->SetSourceDevice(blink::kWebGestureDeviceTouchpad);
   gesture_list->push_back(std::move(gesture));
 
   if (gesture_list->back()->GetType() ==

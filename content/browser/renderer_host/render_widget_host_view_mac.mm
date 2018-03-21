@@ -1403,7 +1403,7 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
 void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
   DCHECK(WebInputEvent::IsPinchGestureEventType(event->GetType()));
   if (ShouldRouteEvent(*event)) {
-    DCHECK(event->source_device ==
+    DCHECK(event->SourceDevice() ==
            blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
@@ -1604,4 +1604,3 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 }  // namespace content
-

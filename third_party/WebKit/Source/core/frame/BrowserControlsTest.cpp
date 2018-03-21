@@ -102,10 +102,8 @@ class BrowserControlsTest : public ::testing::Test {
                                        int delta_x = 0,
                                        int delta_y = 0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::GetStaticTimeStampForTests());
-    event.source_device = kWebGestureDeviceTouchscreen;
-    event.x = 100;
-    event.y = 100;
+                          kWebGestureDeviceTouchscreen);
+    event.SetPositionInWidget(FloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
