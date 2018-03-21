@@ -41,6 +41,7 @@ class WebGraphicsContext3DProviderForTests
 
   // Not used by WebGL code.
   GrContext* GetGrContext() override { return nullptr; }
+  void InvalidateGrContext(uint32_t state) override {}
   bool BindToCurrentThread() override { return false; }
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;

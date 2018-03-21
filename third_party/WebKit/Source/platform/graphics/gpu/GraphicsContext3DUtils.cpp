@@ -74,6 +74,10 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
   gl->BindTexture(GL_TEXTURE_2D, 0);
   gl->ProduceTextureDirectCHROMIUM(texture_id, out_mailbox.name);
   image->getTexture()->textureParamsModified();
+
+  // We changed bound textures in ProduceTextureDirectCHROMIUM, so reset the
+  // GrContext.
+  gr->resetContext(kTextureBinding_GrGLBackendState);
 }
 
 void GraphicsContext3DUtils::RemoveCachedMailbox(GrTexture* gr_texture) {

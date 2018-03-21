@@ -49,7 +49,6 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
     bool support_locking,
     bool support_gles2_interface,
     bool support_raster_interface,
-    bool support_grcontext,
     ui::command_buffer_metrics::ContextType type) {
   constexpr bool kAutomaticFlushes = false;
 
@@ -69,7 +68,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
-      std::move(url), kAutomaticFlushes, support_locking, support_grcontext,
+      std::move(url), kAutomaticFlushes, support_locking,
       gpu::SharedMemoryLimits(), attributes, nullptr /* share_context */, type);
 }
 
@@ -520,11 +519,9 @@ bool VizProcessTransportFactory::CreateContextProviders(
   constexpr bool kSharedWorkerContextSupportsLocking = true;
   constexpr bool kSharedWorkerContextSupportsGLES2 = false;
   constexpr bool kSharedWorkerContextSupportsRaster = true;
-  constexpr bool kSharedWorkerContextSupportsGrContext = false;
   constexpr bool kCompositorContextSupportsLocking = false;
   constexpr bool kCompositorContextSupportsGLES2 = true;
   constexpr bool kCompositorContextSupportsRaster = false;
-  constexpr bool kCompositorContextSupportsGrContext = true;
 
   if (main_context_provider_ && IsContextLost(main_context_provider_.get())) {
     main_context_provider_->RemoveObserver(this);
@@ -540,7 +537,6 @@ bool VizProcessTransportFactory::CreateContextProviders(
         gpu_channel_host, GetGpuMemoryBufferManager(),
         kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
         kSharedWorkerContextSupportsRaster,
-        kSharedWorkerContextSupportsGrContext,
         ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
 
     // Don't observer context loss on |worker_context_provider_| here, that is
@@ -557,7 +553,7 @@ bool VizProcessTransportFactory::CreateContextProviders(
     main_context_provider_ = CreateContextProviderImpl(
         std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
-        kCompositorContextSupportsRaster, kCompositorContextSupportsGrContext,
+        kCompositorContextSupportsRaster,
         ui::command_buffer_metrics::UI_COMPOSITOR_CONTEXT);
     main_context_provider_->SetDefaultTaskRunner(resize_task_runner_);
     main_context_provider_->AddObserver(this);

@@ -4,51 +4,24 @@
 
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 
-#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 using gpu::gles2::GLES2Interface;
-using gpu::ContextSupport;
 
 namespace {
-
-class ScopedCallingGLFromSkia {
- public:
-  ScopedCallingGLFromSkia(ContextSupport* context_support)
-      : context_support_(context_support) {
-    context_support_->WillCallGLFromSkia();
-  }
-  ~ScopedCallingGLFromSkia() { context_support_->DidCallGLFromSkia(); }
-
- private:
-  ContextSupport* context_support_;
-};
-
 template <typename R, typename... Args>
 GrGLFunction<R (*)(Args...)> gles_bind(R (GLES2Interface::*func)(Args...),
-                                       GLES2Interface* gles2_interface,
-                                       ContextSupport* context_support) {
-  if (context_support->HasGrContextSupport()) {
-    return [func, context_support, gles2_interface](Args... args) {
-      ScopedCallingGLFromSkia guard(context_support);
-      return (gles2_interface->*func)(args...);
-    };
-  }
-
-  // This fallback binding should only be used by unit tests which do not care
-  // about GrContext::resetContext() getting called automatically.
-  return [func, gles2_interface](Args... args) {
-    return (gles2_interface->*func)(args...);
+                                       GLES2Interface* gles2Interface) {
+  return [func, gles2Interface](Args... args) {
+    return (gles2Interface->*func)(args...);
   };
 }
 }  // namespace
 
 namespace skia_bindings {
 
-sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
-    GLES2Interface* impl,
-    ContextSupport* context_support) {
+sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
   sk_sp<GrGLInterface> interface(new GrGLInterface);
   interface->fStandard = kGLES_GrGLStandard;
 
@@ -60,363 +33,269 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       return reinterpret_cast<const GLubyte*>("OpenGL ES 2.0 Chromium");
     return impl->GetString(name);
   };
-  auto get_stringi =
-      gles_bind(&GLES2Interface::GetStringi, impl, context_support);
-  auto get_integerv =
-      gles_bind(&GLES2Interface::GetIntegerv, impl, context_support);
+  auto get_stringi = gles_bind(&GLES2Interface::GetStringi, impl);
+  auto get_integerv = gles_bind(&GLES2Interface::GetIntegerv, impl);
   interface->fExtensions.init(kGLES_GrGLStandard, get_string, get_stringi,
                               get_integerv);
 
   GrGLInterface::Functions* functions = &interface->fFunctions;
-  functions->fActiveTexture =
-      gles_bind(&GLES2Interface::ActiveTexture, impl, context_support);
-  functions->fAttachShader =
-      gles_bind(&GLES2Interface::AttachShader, impl, context_support);
+  functions->fActiveTexture = gles_bind(&GLES2Interface::ActiveTexture, impl);
+  functions->fAttachShader = gles_bind(&GLES2Interface::AttachShader, impl);
   functions->fBindAttribLocation =
-      gles_bind(&GLES2Interface::BindAttribLocation, impl, context_support);
-  functions->fBindBuffer =
-      gles_bind(&GLES2Interface::BindBuffer, impl, context_support);
-  functions->fBindTexture =
-      gles_bind(&GLES2Interface::BindTexture, impl, context_support);
+      gles_bind(&GLES2Interface::BindAttribLocation, impl);
+  functions->fBindBuffer = gles_bind(&GLES2Interface::BindBuffer, impl);
+  functions->fBindTexture = gles_bind(&GLES2Interface::BindTexture, impl);
   functions->fBindVertexArray =
-      gles_bind(&GLES2Interface::BindVertexArrayOES, impl, context_support);
-  functions->fBlendBarrier =
-      gles_bind(&GLES2Interface::BlendBarrierKHR, impl, context_support);
-  functions->fBlendColor =
-      gles_bind(&GLES2Interface::BlendColor, impl, context_support);
-  functions->fBlendEquation =
-      gles_bind(&GLES2Interface::BlendEquation, impl, context_support);
-  functions->fBlendFunc =
-      gles_bind(&GLES2Interface::BlendFunc, impl, context_support);
-  functions->fBufferData =
-      gles_bind(&GLES2Interface::BufferData, impl, context_support);
-  functions->fBufferSubData =
-      gles_bind(&GLES2Interface::BufferSubData, impl, context_support);
-  functions->fClear = gles_bind(&GLES2Interface::Clear, impl, context_support);
-  functions->fClearColor =
-      gles_bind(&GLES2Interface::ClearColor, impl, context_support);
-  functions->fClearStencil =
-      gles_bind(&GLES2Interface::ClearStencil, impl, context_support);
-  functions->fClientWaitSync =
-      gles_bind(&GLES2Interface::ClientWaitSync, impl, context_support);
-  functions->fColorMask =
-      gles_bind(&GLES2Interface::ColorMask, impl, context_support);
-  functions->fCompileShader =
-      gles_bind(&GLES2Interface::CompileShader, impl, context_support);
+      gles_bind(&GLES2Interface::BindVertexArrayOES, impl);
+  functions->fBlendBarrier = gles_bind(&GLES2Interface::BlendBarrierKHR, impl);
+  functions->fBlendColor = gles_bind(&GLES2Interface::BlendColor, impl);
+  functions->fBlendEquation = gles_bind(&GLES2Interface::BlendEquation, impl);
+  functions->fBlendFunc = gles_bind(&GLES2Interface::BlendFunc, impl);
+  functions->fBufferData = gles_bind(&GLES2Interface::BufferData, impl);
+  functions->fBufferSubData = gles_bind(&GLES2Interface::BufferSubData, impl);
+  functions->fClear = gles_bind(&GLES2Interface::Clear, impl);
+  functions->fClearColor = gles_bind(&GLES2Interface::ClearColor, impl);
+  functions->fClearStencil = gles_bind(&GLES2Interface::ClearStencil, impl);
+  functions->fClientWaitSync = gles_bind(&GLES2Interface::ClientWaitSync, impl);
+  functions->fColorMask = gles_bind(&GLES2Interface::ColorMask, impl);
+  functions->fCompileShader = gles_bind(&GLES2Interface::CompileShader, impl);
   functions->fCompressedTexImage2D =
-      gles_bind(&GLES2Interface::CompressedTexImage2D, impl, context_support);
-  functions->fCompressedTexSubImage2D = gles_bind(
-      &GLES2Interface::CompressedTexSubImage2D, impl, context_support);
+      gles_bind(&GLES2Interface::CompressedTexImage2D, impl);
+  functions->fCompressedTexSubImage2D =
+      gles_bind(&GLES2Interface::CompressedTexSubImage2D, impl);
   functions->fCopyTexSubImage2D =
-      gles_bind(&GLES2Interface::CopyTexSubImage2D, impl, context_support);
-  functions->fCreateProgram =
-      gles_bind(&GLES2Interface::CreateProgram, impl, context_support);
-  functions->fCreateShader =
-      gles_bind(&GLES2Interface::CreateShader, impl, context_support);
-  functions->fCullFace =
-      gles_bind(&GLES2Interface::CullFace, impl, context_support);
-  functions->fDeleteBuffers =
-      gles_bind(&GLES2Interface::DeleteBuffers, impl, context_support);
-  functions->fDeleteProgram =
-      gles_bind(&GLES2Interface::DeleteProgram, impl, context_support);
-  functions->fDeleteShader =
-      gles_bind(&GLES2Interface::DeleteShader, impl, context_support);
-  functions->fDeleteSync =
-      gles_bind(&GLES2Interface::DeleteSync, impl, context_support);
-  functions->fDeleteTextures =
-      gles_bind(&GLES2Interface::DeleteTextures, impl, context_support);
+      gles_bind(&GLES2Interface::CopyTexSubImage2D, impl);
+  functions->fCreateProgram = gles_bind(&GLES2Interface::CreateProgram, impl);
+  functions->fCreateShader = gles_bind(&GLES2Interface::CreateShader, impl);
+  functions->fCullFace = gles_bind(&GLES2Interface::CullFace, impl);
+  functions->fDeleteBuffers = gles_bind(&GLES2Interface::DeleteBuffers, impl);
+  functions->fDeleteProgram = gles_bind(&GLES2Interface::DeleteProgram, impl);
+  functions->fDeleteShader = gles_bind(&GLES2Interface::DeleteShader, impl);
+  functions->fDeleteSync = gles_bind(&GLES2Interface::DeleteSync, impl);
+  functions->fDeleteTextures = gles_bind(&GLES2Interface::DeleteTextures, impl);
   functions->fDeleteVertexArrays =
-      gles_bind(&GLES2Interface::DeleteVertexArraysOES, impl, context_support);
-  functions->fDepthMask =
-      gles_bind(&GLES2Interface::DepthMask, impl, context_support);
-  functions->fDisable =
-      gles_bind(&GLES2Interface::Disable, impl, context_support);
-  functions->fDisableVertexAttribArray = gles_bind(
-      &GLES2Interface::DisableVertexAttribArray, impl, context_support);
+      gles_bind(&GLES2Interface::DeleteVertexArraysOES, impl);
+  functions->fDepthMask = gles_bind(&GLES2Interface::DepthMask, impl);
+  functions->fDisable = gles_bind(&GLES2Interface::Disable, impl);
+  functions->fDisableVertexAttribArray =
+      gles_bind(&GLES2Interface::DisableVertexAttribArray, impl);
   functions->fDiscardFramebuffer =
-      gles_bind(&GLES2Interface::DiscardFramebufferEXT, impl, context_support);
-  functions->fDrawArrays =
-      gles_bind(&GLES2Interface::DrawArrays, impl, context_support);
-  functions->fDrawArraysInstanced = gles_bind(
-      &GLES2Interface::DrawArraysInstancedANGLE, impl, context_support);
-  functions->fDrawBuffers =
-      gles_bind(&GLES2Interface::DrawBuffersEXT, impl, context_support);
-  functions->fDrawElements =
-      gles_bind(&GLES2Interface::DrawElements, impl, context_support);
-  functions->fDrawElementsInstanced = gles_bind(
-      &GLES2Interface::DrawElementsInstancedANGLE, impl, context_support);
+      gles_bind(&GLES2Interface::DiscardFramebufferEXT, impl);
+  functions->fDrawArrays = gles_bind(&GLES2Interface::DrawArrays, impl);
+  functions->fDrawArraysInstanced =
+      gles_bind(&GLES2Interface::DrawArraysInstancedANGLE, impl);
+  functions->fDrawBuffers = gles_bind(&GLES2Interface::DrawBuffersEXT, impl);
+  functions->fDrawElements = gles_bind(&GLES2Interface::DrawElements, impl);
+  functions->fDrawElementsInstanced =
+      gles_bind(&GLES2Interface::DrawElementsInstancedANGLE, impl);
   functions->fDrawRangeElements =
-      gles_bind(&GLES2Interface::DrawRangeElements, impl, context_support);
-  functions->fEnable =
-      gles_bind(&GLES2Interface::Enable, impl, context_support);
-  functions->fEnableVertexAttribArray = gles_bind(
-      &GLES2Interface::EnableVertexAttribArray, impl, context_support);
-  functions->fEndQuery =
-      gles_bind(&GLES2Interface::EndQueryEXT, impl, context_support);
-  functions->fFenceSync =
-      gles_bind(&GLES2Interface::FenceSync, impl, context_support);
-  functions->fFinish =
-      gles_bind(&GLES2Interface::Finish, impl, context_support);
-  functions->fFlush = gles_bind(&GLES2Interface::Flush, impl, context_support);
+      gles_bind(&GLES2Interface::DrawRangeElements, impl);
+  functions->fEnable = gles_bind(&GLES2Interface::Enable, impl);
+  functions->fEnableVertexAttribArray =
+      gles_bind(&GLES2Interface::EnableVertexAttribArray, impl);
+  functions->fEndQuery = gles_bind(&GLES2Interface::EndQueryEXT, impl);
+  functions->fFenceSync = gles_bind(&GLES2Interface::FenceSync, impl);
+  functions->fFinish = gles_bind(&GLES2Interface::Finish, impl);
+  functions->fFlush = gles_bind(&GLES2Interface::Flush, impl);
   functions->fFlushMappedBufferRange =
-      gles_bind(&GLES2Interface::FlushMappedBufferRange, impl, context_support);
-  functions->fFrontFace =
-      gles_bind(&GLES2Interface::FrontFace, impl, context_support);
-  functions->fGenBuffers =
-      gles_bind(&GLES2Interface::GenBuffers, impl, context_support);
-  functions->fGenTextures =
-      gles_bind(&GLES2Interface::GenTextures, impl, context_support);
+      gles_bind(&GLES2Interface::FlushMappedBufferRange, impl);
+  functions->fFrontFace = gles_bind(&GLES2Interface::FrontFace, impl);
+  functions->fGenBuffers = gles_bind(&GLES2Interface::GenBuffers, impl);
+  functions->fGenTextures = gles_bind(&GLES2Interface::GenTextures, impl);
   functions->fGenVertexArrays =
-      gles_bind(&GLES2Interface::GenVertexArraysOES, impl, context_support);
+      gles_bind(&GLES2Interface::GenVertexArraysOES, impl);
   functions->fGetBufferParameteriv =
-      gles_bind(&GLES2Interface::GetBufferParameteriv, impl, context_support);
-  functions->fGetError =
-      gles_bind(&GLES2Interface::GetError, impl, context_support);
+      gles_bind(&GLES2Interface::GetBufferParameteriv, impl);
+  functions->fGetError = gles_bind(&GLES2Interface::GetError, impl);
   functions->fGetIntegerv = get_integerv;
   functions->fGetInternalformativ =
-      gles_bind(&GLES2Interface::GetInternalformativ, impl, context_support);
+      gles_bind(&GLES2Interface::GetInternalformativ, impl);
   functions->fGetProgramInfoLog =
-      gles_bind(&GLES2Interface::GetProgramInfoLog, impl, context_support);
-  functions->fGetProgramiv =
-      gles_bind(&GLES2Interface::GetProgramiv, impl, context_support);
-  functions->fGetQueryiv =
-      gles_bind(&GLES2Interface::GetQueryivEXT, impl, context_support);
+      gles_bind(&GLES2Interface::GetProgramInfoLog, impl);
+  functions->fGetProgramiv = gles_bind(&GLES2Interface::GetProgramiv, impl);
+  functions->fGetQueryiv = gles_bind(&GLES2Interface::GetQueryivEXT, impl);
   functions->fGetQueryObjectuiv =
-      gles_bind(&GLES2Interface::GetQueryObjectuivEXT, impl, context_support);
+      gles_bind(&GLES2Interface::GetQueryObjectuivEXT, impl);
   functions->fGetShaderInfoLog =
-      gles_bind(&GLES2Interface::GetShaderInfoLog, impl, context_support);
-  functions->fGetShaderiv =
-      gles_bind(&GLES2Interface::GetShaderiv, impl, context_support);
-  functions->fGetShaderPrecisionFormat = gles_bind(
-      &GLES2Interface::GetShaderPrecisionFormat, impl, context_support);
+      gles_bind(&GLES2Interface::GetShaderInfoLog, impl);
+  functions->fGetShaderiv = gles_bind(&GLES2Interface::GetShaderiv, impl);
+  functions->fGetShaderPrecisionFormat =
+      gles_bind(&GLES2Interface::GetShaderPrecisionFormat, impl);
   functions->fGetString = get_string;
   functions->fGetStringi = get_stringi;
   functions->fGetUniformLocation =
-      gles_bind(&GLES2Interface::GetUniformLocation, impl, context_support);
+      gles_bind(&GLES2Interface::GetUniformLocation, impl);
   functions->fInsertEventMarker =
-      gles_bind(&GLES2Interface::InsertEventMarkerEXT, impl, context_support);
+      gles_bind(&GLES2Interface::InsertEventMarkerEXT, impl);
   functions->fInvalidateFramebuffer =
-      gles_bind(&GLES2Interface::InvalidateFramebuffer, impl, context_support);
-  functions->fInvalidateSubFramebuffer = gles_bind(
-      &GLES2Interface::InvalidateSubFramebuffer, impl, context_support);
-  functions->fIsSync =
-      gles_bind(&GLES2Interface::IsSync, impl, context_support);
-  functions->fIsTexture =
-      gles_bind(&GLES2Interface::IsTexture, impl, context_support);
-  functions->fLineWidth =
-      gles_bind(&GLES2Interface::LineWidth, impl, context_support);
-  functions->fLinkProgram =
-      gles_bind(&GLES2Interface::LinkProgram, impl, context_support);
-  functions->fMapBufferRange =
-      gles_bind(&GLES2Interface::MapBufferRange, impl, context_support);
-  functions->fMapBufferSubData = gles_bind(
-      &GLES2Interface::MapBufferSubDataCHROMIUM, impl, context_support);
-  functions->fMapTexSubImage2D = gles_bind(
-      &GLES2Interface::MapTexSubImage2DCHROMIUM, impl, context_support);
-  functions->fPixelStorei =
-      gles_bind(&GLES2Interface::PixelStorei, impl, context_support);
+      gles_bind(&GLES2Interface::InvalidateFramebuffer, impl);
+  functions->fInvalidateSubFramebuffer =
+      gles_bind(&GLES2Interface::InvalidateSubFramebuffer, impl);
+  functions->fIsSync = gles_bind(&GLES2Interface::IsSync, impl);
+  functions->fIsTexture = gles_bind(&GLES2Interface::IsTexture, impl);
+  functions->fLineWidth = gles_bind(&GLES2Interface::LineWidth, impl);
+  functions->fLinkProgram = gles_bind(&GLES2Interface::LinkProgram, impl);
+  functions->fMapBufferRange = gles_bind(&GLES2Interface::MapBufferRange, impl);
+  functions->fMapBufferSubData =
+      gles_bind(&GLES2Interface::MapBufferSubDataCHROMIUM, impl);
+  functions->fMapTexSubImage2D =
+      gles_bind(&GLES2Interface::MapTexSubImage2DCHROMIUM, impl);
+  functions->fPixelStorei = gles_bind(&GLES2Interface::PixelStorei, impl);
   functions->fPopGroupMarker =
-      gles_bind(&GLES2Interface::PopGroupMarkerEXT, impl, context_support);
+      gles_bind(&GLES2Interface::PopGroupMarkerEXT, impl);
   functions->fPushGroupMarker =
-      gles_bind(&GLES2Interface::PushGroupMarkerEXT, impl, context_support);
-  functions->fReadBuffer =
-      gles_bind(&GLES2Interface::ReadBuffer, impl, context_support);
-  functions->fReadPixels =
-      gles_bind(&GLES2Interface::ReadPixels, impl, context_support);
-  functions->fScissor =
-      gles_bind(&GLES2Interface::Scissor, impl, context_support);
-  functions->fShaderSource =
-      gles_bind(&GLES2Interface::ShaderSource, impl, context_support);
-  functions->fStencilFunc =
-      gles_bind(&GLES2Interface::StencilFunc, impl, context_support);
+      gles_bind(&GLES2Interface::PushGroupMarkerEXT, impl);
+  functions->fReadBuffer = gles_bind(&GLES2Interface::ReadBuffer, impl);
+  functions->fReadPixels = gles_bind(&GLES2Interface::ReadPixels, impl);
+  functions->fScissor = gles_bind(&GLES2Interface::Scissor, impl);
+  functions->fShaderSource = gles_bind(&GLES2Interface::ShaderSource, impl);
+  functions->fStencilFunc = gles_bind(&GLES2Interface::StencilFunc, impl);
   functions->fStencilFuncSeparate =
-      gles_bind(&GLES2Interface::StencilFuncSeparate, impl, context_support);
-  functions->fStencilMask =
-      gles_bind(&GLES2Interface::StencilMask, impl, context_support);
+      gles_bind(&GLES2Interface::StencilFuncSeparate, impl);
+  functions->fStencilMask = gles_bind(&GLES2Interface::StencilMask, impl);
   functions->fStencilMaskSeparate =
-      gles_bind(&GLES2Interface::StencilMaskSeparate, impl, context_support);
-  functions->fStencilOp =
-      gles_bind(&GLES2Interface::StencilOp, impl, context_support);
+      gles_bind(&GLES2Interface::StencilMaskSeparate, impl);
+  functions->fStencilOp = gles_bind(&GLES2Interface::StencilOp, impl);
   functions->fStencilOpSeparate =
-      gles_bind(&GLES2Interface::StencilOpSeparate, impl, context_support);
-  functions->fTexImage2D =
-      gles_bind(&GLES2Interface::TexImage2D, impl, context_support);
-  functions->fTexParameteri =
-      gles_bind(&GLES2Interface::TexParameteri, impl, context_support);
-  functions->fTexParameteriv =
-      gles_bind(&GLES2Interface::TexParameteriv, impl, context_support);
-  functions->fTexStorage2D =
-      gles_bind(&GLES2Interface::TexStorage2DEXT, impl, context_support);
-  functions->fTexSubImage2D =
-      gles_bind(&GLES2Interface::TexSubImage2D, impl, context_support);
-  functions->fUniform1f =
-      gles_bind(&GLES2Interface::Uniform1f, impl, context_support);
-  functions->fUniform1i =
-      gles_bind(&GLES2Interface::Uniform1i, impl, context_support);
-  functions->fUniform1fv =
-      gles_bind(&GLES2Interface::Uniform1fv, impl, context_support);
-  functions->fUniform1iv =
-      gles_bind(&GLES2Interface::Uniform1iv, impl, context_support);
-  functions->fUniform2f =
-      gles_bind(&GLES2Interface::Uniform2f, impl, context_support);
-  functions->fUniform2i =
-      gles_bind(&GLES2Interface::Uniform2i, impl, context_support);
-  functions->fUniform2fv =
-      gles_bind(&GLES2Interface::Uniform2fv, impl, context_support);
-  functions->fUniform2iv =
-      gles_bind(&GLES2Interface::Uniform2iv, impl, context_support);
-  functions->fUniform3f =
-      gles_bind(&GLES2Interface::Uniform3f, impl, context_support);
-  functions->fUniform3i =
-      gles_bind(&GLES2Interface::Uniform3i, impl, context_support);
-  functions->fUniform3fv =
-      gles_bind(&GLES2Interface::Uniform3fv, impl, context_support);
-  functions->fUniform3iv =
-      gles_bind(&GLES2Interface::Uniform3iv, impl, context_support);
-  functions->fUniform4f =
-      gles_bind(&GLES2Interface::Uniform4f, impl, context_support);
-  functions->fUniform4i =
-      gles_bind(&GLES2Interface::Uniform4i, impl, context_support);
-  functions->fUniform4fv =
-      gles_bind(&GLES2Interface::Uniform4fv, impl, context_support);
-  functions->fUniform4iv =
-      gles_bind(&GLES2Interface::Uniform4iv, impl, context_support);
+      gles_bind(&GLES2Interface::StencilOpSeparate, impl);
+  functions->fTexImage2D = gles_bind(&GLES2Interface::TexImage2D, impl);
+  functions->fTexParameteri = gles_bind(&GLES2Interface::TexParameteri, impl);
+  functions->fTexParameteriv = gles_bind(&GLES2Interface::TexParameteriv, impl);
+  functions->fTexStorage2D = gles_bind(&GLES2Interface::TexStorage2DEXT, impl);
+  functions->fTexSubImage2D = gles_bind(&GLES2Interface::TexSubImage2D, impl);
+  functions->fUniform1f = gles_bind(&GLES2Interface::Uniform1f, impl);
+  functions->fUniform1i = gles_bind(&GLES2Interface::Uniform1i, impl);
+  functions->fUniform1fv = gles_bind(&GLES2Interface::Uniform1fv, impl);
+  functions->fUniform1iv = gles_bind(&GLES2Interface::Uniform1iv, impl);
+  functions->fUniform2f = gles_bind(&GLES2Interface::Uniform2f, impl);
+  functions->fUniform2i = gles_bind(&GLES2Interface::Uniform2i, impl);
+  functions->fUniform2fv = gles_bind(&GLES2Interface::Uniform2fv, impl);
+  functions->fUniform2iv = gles_bind(&GLES2Interface::Uniform2iv, impl);
+  functions->fUniform3f = gles_bind(&GLES2Interface::Uniform3f, impl);
+  functions->fUniform3i = gles_bind(&GLES2Interface::Uniform3i, impl);
+  functions->fUniform3fv = gles_bind(&GLES2Interface::Uniform3fv, impl);
+  functions->fUniform3iv = gles_bind(&GLES2Interface::Uniform3iv, impl);
+  functions->fUniform4f = gles_bind(&GLES2Interface::Uniform4f, impl);
+  functions->fUniform4i = gles_bind(&GLES2Interface::Uniform4i, impl);
+  functions->fUniform4fv = gles_bind(&GLES2Interface::Uniform4fv, impl);
+  functions->fUniform4iv = gles_bind(&GLES2Interface::Uniform4iv, impl);
   functions->fUniformMatrix2fv =
-      gles_bind(&GLES2Interface::UniformMatrix2fv, impl, context_support);
+      gles_bind(&GLES2Interface::UniformMatrix2fv, impl);
   functions->fUniformMatrix3fv =
-      gles_bind(&GLES2Interface::UniformMatrix3fv, impl, context_support);
+      gles_bind(&GLES2Interface::UniformMatrix3fv, impl);
   functions->fUniformMatrix4fv =
-      gles_bind(&GLES2Interface::UniformMatrix4fv, impl, context_support);
-  functions->fUnmapBufferSubData = gles_bind(
-      &GLES2Interface::UnmapBufferSubDataCHROMIUM, impl, context_support);
-  functions->fUnmapTexSubImage2D = gles_bind(
-      &GLES2Interface::UnmapTexSubImage2DCHROMIUM, impl, context_support);
-  functions->fUseProgram =
-      gles_bind(&GLES2Interface::UseProgram, impl, context_support);
-  functions->fVertexAttrib1f =
-      gles_bind(&GLES2Interface::VertexAttrib1f, impl, context_support);
+      gles_bind(&GLES2Interface::UniformMatrix4fv, impl);
+  functions->fUnmapBufferSubData =
+      gles_bind(&GLES2Interface::UnmapBufferSubDataCHROMIUM, impl);
+  functions->fUnmapTexSubImage2D =
+      gles_bind(&GLES2Interface::UnmapTexSubImage2DCHROMIUM, impl);
+  functions->fUseProgram = gles_bind(&GLES2Interface::UseProgram, impl);
+  functions->fVertexAttrib1f = gles_bind(&GLES2Interface::VertexAttrib1f, impl);
   functions->fVertexAttrib2fv =
-      gles_bind(&GLES2Interface::VertexAttrib2fv, impl, context_support);
+      gles_bind(&GLES2Interface::VertexAttrib2fv, impl);
   functions->fVertexAttrib3fv =
-      gles_bind(&GLES2Interface::VertexAttrib3fv, impl, context_support);
+      gles_bind(&GLES2Interface::VertexAttrib3fv, impl);
   functions->fVertexAttrib4fv =
-      gles_bind(&GLES2Interface::VertexAttrib4fv, impl, context_support);
-  functions->fVertexAttribDivisor = gles_bind(
-      &GLES2Interface::VertexAttribDivisorANGLE, impl, context_support);
+      gles_bind(&GLES2Interface::VertexAttrib4fv, impl);
+  functions->fVertexAttribDivisor =
+      gles_bind(&GLES2Interface::VertexAttribDivisorANGLE, impl);
   functions->fVertexAttribPointer =
-      gles_bind(&GLES2Interface::VertexAttribPointer, impl, context_support);
+      gles_bind(&GLES2Interface::VertexAttribPointer, impl);
   functions->fVertexAttribIPointer =
-      gles_bind(&GLES2Interface::VertexAttribIPointer, impl, context_support);
-  functions->fViewport =
-      gles_bind(&GLES2Interface::Viewport, impl, context_support);
-  functions->fWaitSync =
-      gles_bind(&GLES2Interface::WaitSync, impl, context_support);
+      gles_bind(&GLES2Interface::VertexAttribIPointer, impl);
+  functions->fViewport = gles_bind(&GLES2Interface::Viewport, impl);
+  functions->fWaitSync = gles_bind(&GLES2Interface::WaitSync, impl);
   functions->fBindFramebuffer =
-      gles_bind(&GLES2Interface::BindFramebuffer, impl, context_support);
-  functions->fBeginQuery =
-      gles_bind(&GLES2Interface::BeginQueryEXT, impl, context_support);
+      gles_bind(&GLES2Interface::BindFramebuffer, impl);
+  functions->fBeginQuery = gles_bind(&GLES2Interface::BeginQueryEXT, impl);
   functions->fBindRenderbuffer =
-      gles_bind(&GLES2Interface::BindRenderbuffer, impl, context_support);
+      gles_bind(&GLES2Interface::BindRenderbuffer, impl);
   functions->fCheckFramebufferStatus =
-      gles_bind(&GLES2Interface::CheckFramebufferStatus, impl, context_support);
+      gles_bind(&GLES2Interface::CheckFramebufferStatus, impl);
   functions->fDeleteFramebuffers =
-      gles_bind(&GLES2Interface::DeleteFramebuffers, impl, context_support);
+      gles_bind(&GLES2Interface::DeleteFramebuffers, impl);
   functions->fDeleteQueries =
-      gles_bind(&GLES2Interface::DeleteQueriesEXT, impl, context_support);
+      gles_bind(&GLES2Interface::DeleteQueriesEXT, impl);
   functions->fDeleteRenderbuffers =
-      gles_bind(&GLES2Interface::DeleteRenderbuffers, impl, context_support);
-  functions->fFramebufferRenderbuffer = gles_bind(
-      &GLES2Interface::FramebufferRenderbuffer, impl, context_support);
+      gles_bind(&GLES2Interface::DeleteRenderbuffers, impl);
+  functions->fFramebufferRenderbuffer =
+      gles_bind(&GLES2Interface::FramebufferRenderbuffer, impl);
   functions->fFramebufferTexture2D =
-      gles_bind(&GLES2Interface::FramebufferTexture2D, impl, context_support);
+      gles_bind(&GLES2Interface::FramebufferTexture2D, impl);
   functions->fFramebufferTexture2DMultisample =
-      gles_bind(&GLES2Interface::FramebufferTexture2DMultisampleEXT, impl,
-                context_support);
+      gles_bind(&GLES2Interface::FramebufferTexture2DMultisampleEXT, impl);
   functions->fGenFramebuffers =
-      gles_bind(&GLES2Interface::GenFramebuffers, impl, context_support);
+      gles_bind(&GLES2Interface::GenFramebuffers, impl);
   functions->fGenRenderbuffers =
-      gles_bind(&GLES2Interface::GenRenderbuffers, impl, context_support);
+      gles_bind(&GLES2Interface::GenRenderbuffers, impl);
   functions->fGetFramebufferAttachmentParameteriv =
-      gles_bind(&GLES2Interface::GetFramebufferAttachmentParameteriv, impl,
-                context_support);
-  functions->fGetRenderbufferParameteriv = gles_bind(
-      &GLES2Interface::GetRenderbufferParameteriv, impl, context_support);
-  functions->fGenQueries =
-      gles_bind(&GLES2Interface::GenQueriesEXT, impl, context_support);
+      gles_bind(&GLES2Interface::GetFramebufferAttachmentParameteriv, impl);
+  functions->fGetRenderbufferParameteriv =
+      gles_bind(&GLES2Interface::GetRenderbufferParameteriv, impl);
+  functions->fGenQueries = gles_bind(&GLES2Interface::GenQueriesEXT, impl);
   functions->fRenderbufferStorage =
-      gles_bind(&GLES2Interface::RenderbufferStorage, impl, context_support);
+      gles_bind(&GLES2Interface::RenderbufferStorage, impl);
   functions->fRenderbufferStorageMultisample =
-      gles_bind(&GLES2Interface::RenderbufferStorageMultisampleCHROMIUM, impl,
-                context_support);
+      gles_bind(&GLES2Interface::RenderbufferStorageMultisampleCHROMIUM, impl);
   functions->fRenderbufferStorageMultisampleES2EXT =
-      gles_bind(&GLES2Interface::RenderbufferStorageMultisampleEXT, impl,
-                context_support);
-  functions->fBindFragDataLocation = gles_bind(
-      &GLES2Interface::BindFragDataLocationEXT, impl, context_support);
-  functions->fBindFragDataLocationIndexed = gles_bind(
-      &GLES2Interface::BindFragDataLocationIndexedEXT, impl, context_support);
-  functions->fBindUniformLocation = gles_bind(
-      &GLES2Interface::BindUniformLocationCHROMIUM, impl, context_support);
-  functions->fBlitFramebuffer = gles_bind(
-      &GLES2Interface::BlitFramebufferCHROMIUM, impl, context_support);
-  functions->fGenerateMipmap =
-      gles_bind(&GLES2Interface::GenerateMipmap, impl, context_support);
+      gles_bind(&GLES2Interface::RenderbufferStorageMultisampleEXT, impl);
+  functions->fBindFragDataLocation =
+      gles_bind(&GLES2Interface::BindFragDataLocationEXT, impl);
+  functions->fBindFragDataLocationIndexed =
+      gles_bind(&GLES2Interface::BindFragDataLocationIndexedEXT, impl);
+  functions->fBindUniformLocation =
+      gles_bind(&GLES2Interface::BindUniformLocationCHROMIUM, impl);
+  functions->fBlitFramebuffer =
+      gles_bind(&GLES2Interface::BlitFramebufferCHROMIUM, impl);
+  functions->fGenerateMipmap = gles_bind(&GLES2Interface::GenerateMipmap, impl);
   functions->fMatrixLoadf =
-      gles_bind(&GLES2Interface::MatrixLoadfCHROMIUM, impl, context_support);
-  functions->fMatrixLoadIdentity = gles_bind(
-      &GLES2Interface::MatrixLoadIdentityCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::MatrixLoadfCHROMIUM, impl);
+  functions->fMatrixLoadIdentity =
+      gles_bind(&GLES2Interface::MatrixLoadIdentityCHROMIUM, impl);
   functions->fPathCommands =
-      gles_bind(&GLES2Interface::PathCommandsCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::PathCommandsCHROMIUM, impl);
   functions->fPathParameteri =
-      gles_bind(&GLES2Interface::PathParameteriCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::PathParameteriCHROMIUM, impl);
   functions->fPathParameterf =
-      gles_bind(&GLES2Interface::PathParameterfCHROMIUM, impl, context_support);
-  functions->fGenPaths =
-      gles_bind(&GLES2Interface::GenPathsCHROMIUM, impl, context_support);
-  functions->fIsPath =
-      gles_bind(&GLES2Interface::IsPathCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::PathParameterfCHROMIUM, impl);
+  functions->fGenPaths = gles_bind(&GLES2Interface::GenPathsCHROMIUM, impl);
+  functions->fIsPath = gles_bind(&GLES2Interface::IsPathCHROMIUM, impl);
   functions->fDeletePaths =
-      gles_bind(&GLES2Interface::DeletePathsCHROMIUM, impl, context_support);
-  functions->fPathStencilFunc = gles_bind(
-      &GLES2Interface::PathStencilFuncCHROMIUM, impl, context_support);
-  functions->fStencilFillPath = gles_bind(
-      &GLES2Interface::StencilFillPathCHROMIUM, impl, context_support);
-  functions->fStencilStrokePath = gles_bind(
-      &GLES2Interface::StencilStrokePathCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::DeletePathsCHROMIUM, impl);
+  functions->fPathStencilFunc =
+      gles_bind(&GLES2Interface::PathStencilFuncCHROMIUM, impl);
+  functions->fStencilFillPath =
+      gles_bind(&GLES2Interface::StencilFillPathCHROMIUM, impl);
+  functions->fStencilStrokePath =
+      gles_bind(&GLES2Interface::StencilStrokePathCHROMIUM, impl);
   functions->fCoverFillPath =
-      gles_bind(&GLES2Interface::CoverFillPathCHROMIUM, impl, context_support);
-  functions->fCoverStrokePath = gles_bind(
-      &GLES2Interface::CoverStrokePathCHROMIUM, impl, context_support);
-  functions->fStencilThenCoverFillPath = gles_bind(
-      &GLES2Interface::StencilThenCoverFillPathCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::CoverFillPathCHROMIUM, impl);
+  functions->fCoverStrokePath =
+      gles_bind(&GLES2Interface::CoverStrokePathCHROMIUM, impl);
+  functions->fStencilThenCoverFillPath =
+      gles_bind(&GLES2Interface::StencilThenCoverFillPathCHROMIUM, impl);
   functions->fStencilThenCoverStrokePath =
-      gles_bind(&GLES2Interface::StencilThenCoverStrokePathCHROMIUM, impl,
-                context_support);
-  functions->fStencilFillPathInstanced = gles_bind(
-      &GLES2Interface::StencilFillPathInstancedCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::StencilThenCoverStrokePathCHROMIUM, impl);
+  functions->fStencilFillPathInstanced =
+      gles_bind(&GLES2Interface::StencilFillPathInstancedCHROMIUM, impl);
   functions->fStencilStrokePathInstanced =
-      gles_bind(&GLES2Interface::StencilStrokePathInstancedCHROMIUM, impl,
-                context_support);
-  functions->fCoverFillPathInstanced = gles_bind(
-      &GLES2Interface::CoverFillPathInstancedCHROMIUM, impl, context_support);
-  functions->fCoverStrokePathInstanced = gles_bind(
-      &GLES2Interface::CoverStrokePathInstancedCHROMIUM, impl, context_support);
-  functions->fStencilThenCoverFillPathInstanced =
-      gles_bind(&GLES2Interface::StencilThenCoverFillPathInstancedCHROMIUM,
-                impl, context_support);
-  functions->fStencilThenCoverStrokePathInstanced =
-      gles_bind(&GLES2Interface::StencilThenCoverStrokePathInstancedCHROMIUM,
-                impl, context_support);
+      gles_bind(&GLES2Interface::StencilStrokePathInstancedCHROMIUM, impl);
+  functions->fCoverFillPathInstanced =
+      gles_bind(&GLES2Interface::CoverFillPathInstancedCHROMIUM, impl);
+  functions->fCoverStrokePathInstanced =
+      gles_bind(&GLES2Interface::CoverStrokePathInstancedCHROMIUM, impl);
+  functions->fStencilThenCoverFillPathInstanced = gles_bind(
+      &GLES2Interface::StencilThenCoverFillPathInstancedCHROMIUM, impl);
+  functions->fStencilThenCoverStrokePathInstanced = gles_bind(
+      &GLES2Interface::StencilThenCoverStrokePathInstancedCHROMIUM, impl);
   functions->fProgramPathFragmentInputGen =
-      gles_bind(&GLES2Interface::ProgramPathFragmentInputGenCHROMIUM, impl,
-                context_support);
+      gles_bind(&GLES2Interface::ProgramPathFragmentInputGenCHROMIUM, impl);
   functions->fBindFragmentInputLocation =
-      gles_bind(&GLES2Interface::BindFragmentInputLocationCHROMIUM, impl,
-                context_support);
-  functions->fCoverageModulation = gles_bind(
-      &GLES2Interface::CoverageModulationCHROMIUM, impl, context_support);
+      gles_bind(&GLES2Interface::BindFragmentInputLocationCHROMIUM, impl);
+  functions->fCoverageModulation =
+      gles_bind(&GLES2Interface::CoverageModulationCHROMIUM, impl);
   functions->fWindowRectangles =
-      gles_bind(&GLES2Interface::WindowRectanglesEXT, impl, context_support);
+      gles_bind(&GLES2Interface::WindowRectanglesEXT, impl);
   return interface;
 }
 

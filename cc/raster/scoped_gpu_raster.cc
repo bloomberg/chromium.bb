@@ -29,6 +29,9 @@ void ScopedGpuRaster::BeginGpuRaster() {
   // Using push/pop functions directly incurs cost to evaluate function
   // arguments even when tracing is disabled.
   gl->TraceBeginCHROMIUM("ScopedGpuRaster", "GpuRasterization");
+
+  class GrContext* gr_context = context_provider_->GrContext();
+  gr_context->resetContext();
 }
 
 void ScopedGpuRaster::EndGpuRaster() {

@@ -38,6 +38,10 @@ GrContext* WebGraphicsContext3DProviderImpl::GetGrContext() {
   return provider_->GrContext();
 }
 
+void WebGraphicsContext3DProviderImpl::InvalidateGrContext(uint32_t state) {
+  return provider_->InvalidateGrContext(state);
+}
+
 const gpu::Capabilities& WebGraphicsContext3DProviderImpl::GetCapabilities()
     const {
   return provider_->ContextCapabilities();

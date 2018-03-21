@@ -35,7 +35,6 @@ component("gl_in_process_context") {
     "//gpu/config",
     "//gpu/ipc/client",
     "//gpu/ipc/service",
-    "//gpu/skia_bindings:skia_bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

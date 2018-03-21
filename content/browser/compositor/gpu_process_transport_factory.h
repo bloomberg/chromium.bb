@@ -139,7 +139,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       bool support_locking,
       bool support_gles2_interface,
       bool support_raster_interface,
-      bool support_grcontext,
       ui::command_buffer_metrics::ContextType type);
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;

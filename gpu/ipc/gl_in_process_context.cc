@@ -28,12 +28,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_image.h"
 
@@ -210,11 +210,10 @@ gpu::ContextResult GLInProcessContextImpl::Initialize(
   const bool support_client_side_arrays = false;
 
   // Create the object exposing the OpenGL API.
-  gles2_implementation_ =
-      std::make_unique<skia_bindings::GLES2ImplementationWithGrContextSupport>(
-          gles2_helper_.get(), share_group.get(), transfer_buffer_.get(),
-          bind_generates_resource, attribs.lose_context_when_out_of_memory,
-          support_client_side_arrays, command_buffer_.get());
+  gles2_implementation_ = std::make_unique<gles2::GLES2Implementation>(
+      gles2_helper_.get(), share_group.get(), transfer_buffer_.get(),
+      bind_generates_resource, attribs.lose_context_when_out_of_memory,
+      support_client_side_arrays, command_buffer_.get());
 
   result = gles2_implementation_->Initialize(mem_limits);
   return result;

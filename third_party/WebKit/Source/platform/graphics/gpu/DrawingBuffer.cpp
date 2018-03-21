@@ -496,11 +496,19 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
 
+  // This can be null if the context is lost before the first call to
+  // grContext().
+  GrContext* gr_context = ContextProvider()->GetGrContext();
+
   viz::TransferableResource transferable_resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  constexpr bool force_gpu_result = true;
-  if (!PrepareTransferableResourceInternal(
-          &transferable_resource, &release_callback, force_gpu_result)) {
+  bool success = false;
+  if (gr_context) {
+    bool force_gpu_result = true;
+    success = PrepareTransferableResourceInternal(
+        &transferable_resource, &release_callback, force_gpu_result);
+  }
+  if (!success) {
     // If we can't get a mailbox, return an transparent black ImageBitmap.
     // The only situation in which this could happen is when two or more calls
     // to transferToImageBitmap are made back-to-back, or when the context gets
