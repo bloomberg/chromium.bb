@@ -8,7 +8,10 @@ if (enable_feed_in_chrome) {
   # TODO(twellington): Add a dependency on //components/feed when an appropriate target is defined.
   feed_deps = [ "//third_party/feed:feed_java" ]
 
-  feed_java_sources = [ "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java" ]
+  feed_java_sources = [
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/action/FeedActionHandler.java",
+  ]
 } else {
   feed_deps = []
 
