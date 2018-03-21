@@ -31,8 +31,8 @@ static const int64_t kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 // Maximum number of packets retransmitted upon an RTO.
 static const size_t kMaxRetransmissionsOnTimeout = 2;
-// Minimum number of consecutive RTOs before path is considered to be degrading.
-const size_t kMinTimeoutsBeforePathDegrading = 2;
+// The path degrading delay is the sum of this number of consecutive RTO delays.
+const size_t kNumRetransmissionDelaysForPathDegradingDelay = 2;
 
 // Ensure the handshake timer isnt't faster than 10ms.
 // This limits the tenth retransmitted packet to 10s after the initial CHLO.
@@ -91,7 +91,9 @@ QuicSentPacketManager::QuicSentPacketManager(
       largest_packet_peer_knows_is_acked_(0),
       delayed_ack_time_(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
-      rtt_updated_(false) {
+      rtt_updated_(false),
+      use_path_degrading_alarm_(
+          GetQuicReloadableFlag(quic_path_degrading_alarm)) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -658,10 +660,13 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
     case RTO_MODE:
       ++stats_->rto_count;
       RetransmitRtoPackets();
-      if (!session_decides_what_to_write() &&
-          network_change_visitor_ != nullptr &&
-          consecutive_rto_count_ == kMinTimeoutsBeforePathDegrading) {
-        network_change_visitor_->OnPathDegrading();
+      if (!use_path_degrading_alarm_) {
+        if (!session_decides_what_to_write() &&
+            network_change_visitor_ != nullptr &&
+            consecutive_rto_count_ ==
+                kNumRetransmissionDelaysForPathDegradingDelay) {
+          network_change_visitor_->OnPathDegrading();
+        }
       }
       return;
   }
@@ -766,9 +771,12 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
     ++consecutive_rto_count_;
   }
   if (session_decides_what_to_write()) {
-    if (network_change_visitor_ != nullptr &&
-        consecutive_rto_count_ == kMinTimeoutsBeforePathDegrading) {
-      network_change_visitor_->OnPathDegrading();
+    if (!use_path_degrading_alarm_) {
+      if (network_change_visitor_ != nullptr &&
+          consecutive_rto_count_ ==
+              kNumRetransmissionDelaysForPathDegradingDelay) {
+        network_change_visitor_->OnPathDegrading();
+      }
     }
     for (QuicPacketNumber retransmission : retransmissions) {
       MarkForRetransmission(retransmission, RTO_RETRANSMISSION);
@@ -901,6 +909,17 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   return QuicTime::Zero();
 }
 
+const QuicTime::Delta QuicSentPacketManager::GetPathDegradingDelay() const {
+  QuicTime::Delta delay = QuicTime::Delta::Zero();
+  for (size_t i = 0; i < max_tail_loss_probes_; ++i) {
+    delay = delay + GetTailLossProbeDelay(i);
+  }
+  for (size_t i = 0; i < kNumRetransmissionDelaysForPathDegradingDelay; ++i) {
+    delay = delay + GetRetransmissionDelay(i);
+  }
+  return delay;
+}
+
 const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
     const {
   // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
@@ -920,9 +939,10 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
       delay_ms << consecutive_crypto_retransmission_count_);
 }
 
-const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
+const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay(
+    size_t consecutive_tlp_count) const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
-  if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
+  if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count == 0u) {
     return std::max(min_tlp_timeout_, srtt * 0.5);
   }
   if (ietf_style_tlp_) {
@@ -940,7 +960,12 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   return std::max(min_tlp_timeout_, 2 * srtt);
 }
 
-const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
+const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
+  return GetTailLossProbeDelay(consecutive_tlp_count_);
+}
+
+const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay(
+    size_t consecutive_rto_count) const {
   QuicTime::Delta retransmission_delay = QuicTime::Delta::Zero();
   if (rtt_stats_.smoothed_rtt().IsZero()) {
     // We are in the initial state, use default timeout values.
@@ -957,12 +982,16 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   // Calculate exponential back off.
   retransmission_delay =
       retransmission_delay *
-      (1 << std::min<size_t>(consecutive_rto_count_, kMaxRetransmissions));
+      (1 << std::min<size_t>(consecutive_rto_count, kMaxRetransmissions));
 
   if (retransmission_delay.ToMilliseconds() > kMaxRetransmissionTimeMs) {
     return QuicTime::Delta::FromMilliseconds(kMaxRetransmissionTimeMs);
   }
   return retransmission_delay;
+}
+
+const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
+  return GetRetransmissionDelay(consecutive_rto_count_);
 }
 
 const RttStats* QuicSentPacketManager::GetRttStats() const {

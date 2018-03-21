@@ -126,6 +126,19 @@ class SendAlarmDelegate : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(SendAlarmDelegate);
 };
 
+class PathDegradingAlarmDelegate : public QuicAlarm::Delegate {
+ public:
+  explicit PathDegradingAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
+
+  void OnAlarm() override { connection_->OnPathDegradingTimeout(); }
+
+ private:
+  QuicConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(PathDegradingAlarmDelegate);
+};
+
 class TimeoutAlarmDelegate : public QuicAlarm::Delegate {
  public:
   explicit TimeoutAlarmDelegate(QuicConnection* connection)
@@ -263,6 +276,9 @@ QuicConnection::QuicConnection(
       retransmittable_on_wire_alarm_(alarm_factory_->CreateAlarm(
           arena_.New<RetransmittableOnWireAlarmDelegate>(this),
           &arena_)),
+      path_degrading_alarm_(alarm_factory_->CreateAlarm(
+          arena_.New<PathDegradingAlarmDelegate>(this),
+          &arena_)),
       visitor_(nullptr),
       debug_visitor_(nullptr),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
@@ -296,7 +312,9 @@ QuicConnection::QuicConnection(
       always_discard_packets_after_close_(
           GetQuicReloadableFlag(quic_always_discard_packets_after_close)),
       handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
-          quic_handle_write_results_for_connectivity_probe)) {
+          quic_handle_write_results_for_connectivity_probe)),
+      use_path_degrading_alarm_(
+          GetQuicReloadableFlag(quic_path_degrading_alarm)) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
@@ -824,8 +842,8 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   }
 
   largest_seen_packet_with_ack_ = last_header_.packet_number;
-  sent_packet_manager_.OnIncomingAck(incoming_ack,
-                                     time_of_last_received_packet_);
+  bool acked_new_packet = sent_packet_manager_.OnIncomingAck(
+      incoming_ack, time_of_last_received_packet_);
   // If the incoming ack's packets set expresses missing packets: peer is still
   // waiting for a packet lower than a packet that we are no longer planning to
   // send.
@@ -833,7 +851,8 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   // acking packets which we never care about.
   // Send an ack to raise the high water mark.
   PostProcessAfterAckFrame(!incoming_ack.packets.Empty() &&
-                           GetLeastUnacked() > incoming_ack.packets.Min());
+                               GetLeastUnacked() > incoming_ack.packets.Min(),
+                           acked_new_packet);
 
   return connected_;
 }
@@ -903,7 +922,8 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
   if (!last_range) {
     return true;
   }
-  sent_packet_manager_.OnAckFrameEnd(time_of_last_received_packet_);
+  bool acked_new_packet =
+      sent_packet_manager_.OnAckFrameEnd(time_of_last_received_packet_);
   if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }
@@ -914,7 +934,7 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
   // If the incoming ack's packets set expresses received packets: peer is still
   // acking packets which we never care about.
   // Send an ack to raise the high water mark.
-  PostProcessAfterAckFrame(GetLeastUnacked() > start);
+  PostProcessAfterAckFrame(GetLeastUnacked() > start, acked_new_packet);
 
   return connected_;
 }
@@ -1945,6 +1965,14 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     // A retransmittable packet has been put on the wire, so no need for the
     // |retransmittable_on_wire_alarm_| to possibly send a PING.
     retransmittable_on_wire_alarm_->Cancel();
+    if (use_path_degrading_alarm_) {
+      if (!path_degrading_alarm_->IsSet()) {
+        // This is the first retransmittable packet on the wire after having
+        // none on the wire. Start the path degrading alarm.
+        SetPathDegradingAlarm();
+      }
+    }
+
     // Only adjust the last sent time (for the purpose of tracking the idle
     // timeout) if this is the first retransmittable packet sent after a
     // packet is received. If it were updated on every sent packet, then
@@ -2081,7 +2109,10 @@ void QuicConnection::OnCongestionChange() {
   }
 }
 
+// TODO(wangyix): remove this method once
+// FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
 void QuicConnection::OnPathDegrading() {
+  DCHECK(!use_path_degrading_alarm_);
   visitor_->OnPathDegrading();
 }
 
@@ -2145,6 +2176,11 @@ void QuicConnection::SendAck() {
   }
 
   visitor_->OnAckNeedsRetransmittableFrame();
+}
+
+void QuicConnection::OnPathDegradingTimeout() {
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm, 2, 4);
+  visitor_->OnPathDegrading();
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
@@ -2346,6 +2382,10 @@ void QuicConnection::CancelAllAlarms() {
   timeout_alarm_->Cancel();
   mtu_discovery_alarm_->Cancel();
   retransmittable_on_wire_alarm_->Cancel();
+  if (use_path_degrading_alarm_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm, 4, 4);
+    path_degrading_alarm_->Cancel();
+  }
 }
 
 QuicByteCount QuicConnection::max_packet_length() const {
@@ -2482,6 +2522,14 @@ void QuicConnection::SetRetransmissionAlarm() {
   }
   QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
   retransmission_alarm_->Update(retransmission_time,
+                                QuicTime::Delta::FromMilliseconds(1));
+}
+
+void QuicConnection::SetPathDegradingAlarm() {
+  DCHECK(use_path_degrading_alarm_);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm, 1, 4);
+  const QuicTime::Delta delay = sent_packet_manager_.GetPathDegradingDelay();
+  path_degrading_alarm_->Update(clock_->ApproximateNow() + delay,
                                 QuicTime::Delta::FromMilliseconds(1));
 }
 
@@ -2970,7 +3018,8 @@ void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
       enable_session_decides_what_to_write);
 }
 
-void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting) {
+void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
+                                              bool acked_new_packet) {
   if (no_stop_waiting_frames_) {
     received_packet_manager_.DontWaitForPacketsBefore(
         sent_packet_manager_.largest_packet_peer_knows_is_acked());
@@ -2979,9 +3028,24 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting) {
   // have a better estimate of the current rtt than when it was set.
   SetRetransmissionAlarm();
 
-  if (!sent_packet_manager_.HasUnackedPackets() &&
-      !retransmittable_on_wire_alarm_->IsSet()) {
-    SetRetransmittableOnWireAlarm();
+  if (!sent_packet_manager_.HasUnackedPackets()) {
+    // There are no retransmittable packets on the wire, so it may be
+    // necessary to send a PING to keep a retransmittable packet on the wire.
+    if (!retransmittable_on_wire_alarm_->IsSet()) {
+      SetRetransmittableOnWireAlarm();
+    }
+    // There are no retransmittable packets on the wire, so it's impossible to
+    // say if the connection has degraded.
+    if (use_path_degrading_alarm_) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm, 3, 4);
+      path_degrading_alarm_->Cancel();
+    }
+  } else if (acked_new_packet) {
+    // A previously-unacked packet has been acked, which means forward progress
+    // has been made. Push back the path degrading alarm.
+    if (use_path_degrading_alarm_) {
+      SetPathDegradingAlarm();
+    }
   }
 
   if (send_stop_waiting) {

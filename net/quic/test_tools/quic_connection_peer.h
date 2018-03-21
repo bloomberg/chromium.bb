@@ -85,6 +85,7 @@ class QuicConnectionPeer {
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
   static QuicAlarm* GetMtuDiscoveryAlarm(QuicConnection* connection);
   static QuicAlarm* GetRetransmittableOnWireAlarm(QuicConnection* connection);
+  static QuicAlarm* GetPathDegradingAlarm(QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
   // If |owns_writer| is true, takes ownership of |writer|.

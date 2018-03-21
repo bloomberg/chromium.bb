@@ -178,6 +178,12 @@ QuicAlarm* QuicConnectionPeer::GetRetransmittableOnWireAlarm(
 }
 
 // static
+QuicAlarm* QuicConnectionPeer::GetPathDegradingAlarm(
+    QuicConnection* connection) {
+  return connection->path_degrading_alarm_.get();
+}
+
+// static
 QuicPacketWriter* QuicConnectionPeer::GetWriter(QuicConnection* connection) {
   return connection->writer_;
 }

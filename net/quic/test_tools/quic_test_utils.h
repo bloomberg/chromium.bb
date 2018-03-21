@@ -854,6 +854,8 @@ class MockNetworkChangeVisitor
   ~MockNetworkChangeVisitor() override;
 
   MOCK_METHOD0(OnCongestionChange, void());
+  // TODO(wangyix): remove OnPathDegrading() once
+  // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
   MOCK_METHOD0(OnPathDegrading, void());
   MOCK_METHOD1(OnPathMtuIncreased, void(QuicPacketLength));
 

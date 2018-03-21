@@ -82,6 +82,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
     // Called with the path may be degrading. Note that the path may only be
     // temporarily degrading.
+    // TODO(wangyix): remove this once
+    // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
     virtual void OnPathDegrading() = 0;
 
     // Called when the Path MTU may have increased.
@@ -176,6 +178,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // either a tail loss probe or do a full RTO.  Returns QuicTime::Zero() if
   // there are no retransmittable packets.
   const QuicTime GetRetransmissionTime() const;
+
+  // Returns the current delay for the path degrading timer, which is used to
+  // notify the session that this connection is degrading.
+  const QuicTime::Delta GetPathDegradingDelay() const;
 
   const RttStats* GetRttStats() const;
 
@@ -309,13 +315,26 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // packets from flight.
   void RetransmitRtoPackets();
 
-  // Returns the timer for retransmitting crypto handshake packets.
+  // Returns the timeout for retransmitting crypto handshake packets.
   const QuicTime::Delta GetCryptoRetransmissionDelay() const;
 
-  // Returns the timer for a new tail loss probe.
+  // Returns the timeout for a new tail loss probe. |consecutive_tlp_count| is
+  // the number of consecutive tail loss probes that have already been sent.
+  const QuicTime::Delta GetTailLossProbeDelay(
+      size_t consecutive_tlp_count) const;
+
+  // Calls GetTailLossProbeDelay() with values from the current state of this
+  // packet manager as its params.
   const QuicTime::Delta GetTailLossProbeDelay() const;
 
   // Returns the retransmission timeout, after which a full RTO occurs.
+  // |consecutive_rto_count| is the number of consecutive RTOs that have already
+  // occurred.
+  const QuicTime::Delta GetRetransmissionDelay(
+      size_t consecutive_rto_count) const;
+
+  // Calls GetRetransmissionDelay() with values from the current state of this
+  // packet manager as its params.
   const QuicTime::Delta GetRetransmissionDelay() const;
 
   // Returns the newest transmission associated with a packet.
@@ -486,6 +505,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // TODO(fayang): This is redundant with packets in last_ack_frame_. Remove
   // this once we use optimized QuicIntervalSet in last_ack_frame.
   QuicIntervalSet<QuicPacketNumber> all_packets_acked_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_path_degrading_alarm
+  const bool use_path_degrading_alarm_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };
