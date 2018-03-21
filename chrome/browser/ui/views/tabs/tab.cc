@@ -330,10 +330,8 @@ SkColor Tab::GetCloseTabButtonColor(
       color_id = ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED;
       break;
     default:
-      color_id =
-          IsActive()
-              ? ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE
-              : ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE;
+      color_id = IsActive() ? ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE
+                            : ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE;
   }
   return theme_provider->GetColor(color_id);
 }
