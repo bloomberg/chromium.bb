@@ -61,7 +61,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other) =
 
 RichNotificationData::~RichNotificationData() = default;
 
-Notification::Notification() = default;
+Notification::Notification() : serial_number_(g_next_serial_number++) {}
 
 Notification::Notification(NotificationType type,
                            const std::string& id,
@@ -83,8 +83,6 @@ Notification::Notification(NotificationType type,
       notifier_id_(notifier_id),
       optional_fields_(optional_fields),
       serial_number_(g_next_serial_number++),
-      shown_as_popup_(false),
-      is_read_(false),
       delegate_(std::move(delegate)) {}
 
 Notification::Notification(const std::string& id, const Notification& other)
