@@ -3410,7 +3410,6 @@ split_static_library("ui") {
     deps += [
       "//ui/aura",
       "//ui/keyboard",
-      "//ui/keyboard:keyboard_with_content",
       "//ui/keyboard:resources",
       "//ui/wm",
     ]

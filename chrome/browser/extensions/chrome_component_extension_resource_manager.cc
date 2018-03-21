@@ -17,10 +17,7 @@
 #include "components/chrome_apps/chrome_apps_resource_util.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/keyboard/content/keyboard_content_util.h"
+#include "ui/keyboard/keyboard_resource_util.h"
 #endif
 
 namespace extensions {

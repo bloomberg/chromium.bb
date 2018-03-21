@@ -27,6 +27,8 @@ jumbo_component("keyboard") {
     "keyboard_layout_delegate.h",
     "keyboard_layout_manager.cc",
     "keyboard_layout_manager.h",
+    "keyboard_resource_util.cc",
+    "keyboard_resource_util.h",
     "keyboard_switches.cc",
     "keyboard_switches.h",
     "keyboard_ui.cc",
@@ -42,6 +44,7 @@ jumbo_component("keyboard") {
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
 
   deps = [
+    ":resources",
     "//base",
     "//ui/aura",
     "//ui/base",
@@ -58,27 +61,6 @@ jumbo_component("keyboard") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
-}
-
-jumbo_component("keyboard_with_content") {
-  sources = [
-    "content/keyboard.cc",
-    "content/keyboard.h",
-    "content/keyboard_constants.cc",
-    "content/keyboard_constants.h",
-    "content/keyboard_content_util.cc",
-    "content/keyboard_content_util.h",
-  ]
-
-  defines = [ "KEYBOARD_IMPLEMENTATION" ]
-
-  deps = [
-    ":keyboard",
-    ":resources",
-    "//base",
-    "//ui/base",
-    "//url",
-  ]
 
   data_deps = [
     ":resources",
@@ -165,7 +147,6 @@ test("keyboard_unittests") {
 
   deps = [
     ":keyboard",
-    ":keyboard_with_content",
     ":test_support",
     "//base",
     "//base/test:test_support",

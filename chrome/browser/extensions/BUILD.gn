@@ -1143,7 +1143,6 @@ static_library("extensions") {
     deps += [
       "//ui/aura",
       "//ui/keyboard",
-      "//ui/keyboard:keyboard_with_content",
       "//ui/keyboard:resources",
     ]
   }

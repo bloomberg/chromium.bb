@@ -1256,7 +1256,7 @@ component("ash_with_content") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/keyboard:keyboard_with_content",
+    "//ui/keyboard",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
