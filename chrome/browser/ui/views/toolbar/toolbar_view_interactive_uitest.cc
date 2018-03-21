@@ -276,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, MAYBE_ToolbarCycleFocus) {
 #else
 #define MAYBE_ToolbarCycleFocusWithBookmarkBar ToolbarCycleFocusWithBookmarkBar
 #endif
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
+                       MAYBE_ToolbarCycleFocusWithBookmarkBar) {
   CommandUpdater* updater = browser()->command_controller();
   updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);
 
