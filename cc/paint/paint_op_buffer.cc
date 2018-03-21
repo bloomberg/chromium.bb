@@ -1893,7 +1893,8 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
 
 // static
 bool PaintOp::QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
-  DCHECK(op->IsDrawOp());
+  if (!op->IsDrawOp())
+    return false;
 
   SkRect rect;
   if (!PaintOp::GetBounds(op, &rect))
@@ -1937,7 +1938,7 @@ void PaintOp::DestroyThis() {
 }
 
 bool PaintOpWithFlags::HasDiscardableImagesFromFlags() const {
-  return IsDrawOp() && flags.HasDiscardableImages();
+  return flags.HasDiscardableImages();
 }
 
 void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,

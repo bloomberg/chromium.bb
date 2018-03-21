@@ -186,6 +186,11 @@ size_t PaintShader::GetSerializedSize(const PaintShader* shader) {
 PaintShader::PaintShader(Type type) : shader_type_(type) {}
 PaintShader::~PaintShader() = default;
 
+bool PaintShader::has_discardable_images() const {
+  return (image_ && image_.IsLazyGenerated()) ||
+         (record_ && record_->HasDiscardableImages());
+}
+
 bool PaintShader::GetRasterizationTileRect(const SkMatrix& ctm,
                                            SkRect* tile_rect) const {
   DCHECK_EQ(shader_type_, Type::kPaintRecord);

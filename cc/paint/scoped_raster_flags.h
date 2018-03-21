@@ -37,6 +37,7 @@ class CC_PAINT_EXPORT ScopedRasterFlags {
  private:
   void DecodeImageShader(const SkMatrix& ctm);
   void DecodeRecordShader(const SkMatrix& ctm, bool create_skia_shader);
+  void DecodeFilter();
   void AdjustStrokeIfNeeded(const SkMatrix& ctm);
 
   PaintFlags* MutableFlags() {

@@ -8594,6 +8594,20 @@ class LayerTreeHostTestImageAnimationDrawRecordShader
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationDrawRecordShader);
 
+class LayerTreeHostTestImageAnimationPaintFilter
+    : public LayerTreeHostTestImageAnimation {
+  void AddImageOp(const PaintImage& image) override {
+    auto record = sk_make_sp<PaintOpBuffer>();
+    record->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
+    PaintFlags flags;
+    flags.setImageFilter(
+        sk_make_sp<RecordPaintFilter>(record, SkRect::MakeWH(500, 500)));
+    content_layer_client_.add_draw_rect(gfx::Rect(500, 500), flags);
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationPaintFilter);
+
 class LayerTreeHostTestImageAnimationSynchronousScheduling
     : public LayerTreeHostTestImageAnimationDrawImage {
  public:

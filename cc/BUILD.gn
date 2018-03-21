@@ -616,6 +616,7 @@ cc_test("cc_unittests") {
     "paint/display_item_list_unittest.cc",
     "paint/filter_operations_unittest.cc",
     "paint/oop_pixeltest.cc",
+    "paint/paint_filter_unittest.cc",
     "paint/paint_image_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",
     "paint/paint_op_helper_unittest.cc",

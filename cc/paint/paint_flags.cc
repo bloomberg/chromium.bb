@@ -199,13 +199,8 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
 }
 
 bool PaintFlags::HasDiscardableImages() const {
-  if (!shader_)
-    return false;
-  else if (shader_->shader_type() == PaintShader::Type::kImage)
-    return shader_->paint_image().IsLazyGenerated();
-  else if (shader_->shader_type() == PaintShader::Type::kPaintRecord)
-    return shader_->paint_record()->HasDiscardableImages();
-  return false;
+  return (shader_ && shader_->has_discardable_images()) ||
+         (image_filter_ && image_filter_->has_discardable_images());
 }
 
 size_t PaintFlags::GetSerializedSize() const {
