@@ -405,8 +405,10 @@ void NativeExtensionBindingsSystem::WillReleaseScriptContext(
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Local<v8::Context> v8_context = context->v8_context();
-  JSRunner::ClearInstanceForContext(v8_context);
   api_system_.WillReleaseContext(v8_context);
+  // Clear the JSRunner only after everything else has been notified that the
+  // context is being released.
+  JSRunner::ClearInstanceForContext(v8_context);
 }
 
 void NativeExtensionBindingsSystem::UpdateBindingsForContext(

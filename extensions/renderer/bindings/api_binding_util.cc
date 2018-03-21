@@ -9,6 +9,7 @@
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "extensions/renderer/bindings/get_per_context_data.h"
+#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/per_context_data.h"
 
@@ -75,7 +76,18 @@ bool IsContextValid(v8::Local<v8::Context> context) {
           ContextInvalidationData::kPerContextDataKey));
   // The context is valid if we've never created invalidation data for it, or if
   // we have and it hasn't been marked as invalid.
-  return !invalidation_data || invalidation_data->is_context_valid();
+  bool is_context_valid =
+      !invalidation_data || invalidation_data->is_context_valid();
+
+  if (is_context_valid) {
+    // As long as the context is valid, there should be an associated
+    // JSRunner.
+    // TODO(devlin): (Likely) Remove this once https://crbug.com/819968, since
+    // this shouldn't necessarily be a hard dependency. At least downgrade it
+    // to a DCHECK.
+    CHECK(JSRunner::Get(context));
+  }
+  return is_context_valid;
 }
 
 bool IsContextValidOrThrowError(v8::Local<v8::Context> context) {
