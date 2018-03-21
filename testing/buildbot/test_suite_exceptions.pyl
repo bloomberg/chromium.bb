@@ -1165,6 +1165,12 @@
           'shards': 4,
         },
       },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        # content_browsertests is slow on ASAN try bot. crbug.com/822461.
+        'swarming': {
+          'shards': 4,
+        }
+      },
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'shards': 2,
