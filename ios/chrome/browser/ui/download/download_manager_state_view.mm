@@ -23,14 +23,19 @@ const CGFloat kInProgressScale = 0.65f;
 }  // namespace
 
 @interface DownloadManagerStateView ()
-// CALayer that backs this view up.
-@property(nonatomic, readonly) CAShapeLayer* shapeLayer;
+// CALayer that backs this view up. Responsible for drawing the icon.
+@property(nonatomic, readonly) CAShapeLayer* iconLayer;
+
+// CALayer for error or done badge.
+@property(nonatomic, readonly) CALayer* badgeLayer;
+
 @end
 
 @implementation DownloadManagerStateView
 @synthesize state = _state;
 @synthesize downloadColor = _downloadColor;
 @synthesize documentColor = _documentColor;
+@synthesize badgeLayer = _badgeLayer;
 
 #pragma mark - UIView overrides
 
@@ -40,6 +45,14 @@ const CGFloat kInProgressScale = 0.65f;
 
 - (void)setBounds:(CGRect)bounds {
   [super setBounds:bounds];
+
+  CGImageRef badgeImage = [self completionBadgeImage];
+  CGFloat scale = UIScreen.mainScreen.scale;
+  self.badgeLayer.frame = CGRectMake(CGRectGetMidX(self.iconLayer.bounds),
+                                     CGRectGetMidY(self.iconLayer.bounds),
+                                     CGImageGetWidth(badgeImage) / scale,
+                                     CGImageGetHeight(badgeImage) / scale);
+
   [self updateUIAnimated:NO];
 }
 
@@ -62,41 +75,81 @@ const CGFloat kInProgressScale = 0.65f;
 
 #pragma mark - Private
 
+// Returns completion badge image approprivate for the state. The badge is
+// visible only in Succeeded and Failed states. Badge presentation is animated
+// by changing the badge scale.
+- (CGImageRef)completionBadgeImage {
+  NSString* const imageName =
+      _state == kDownloadManagerStateSucceeded ? @"done_badge" : @"error_badge";
+  return [UIImage imageNamed:imageName].CGImage;
+}
+
+// Updates CoreAnimation layers (icon and badge).
 - (void)updateUIAnimated:(BOOL)animated {
   NSTimeInterval animationDuration =
       animated ? kDownloadManagerAnimationDuration : 0.0;
 
   switch (_state) {
     case kDownloadManagerStateNotStarted:
-      self.shapeLayer.path = self.downloadPath.CGPath;
-      self.shapeLayer.fillColor = self.downloadColor.CGColor;
-      self.shapeLayer.strokeColor = self.downloadColor.CGColor;
-      self.shapeLayer.transform = CATransform3DIdentity;
+      self.iconLayer.path = self.downloadPath.CGPath;
+      self.iconLayer.fillColor = self.downloadColor.CGColor;
+      self.iconLayer.strokeColor = self.downloadColor.CGColor;
+      self.iconLayer.transform = CATransform3DIdentity;
+      self.badgeLayer.transform =
+          CATransform3DScale(CATransform3DIdentity, 0, 0, 1);
       break;
     case kDownloadManagerStateSucceeded:
     case kDownloadManagerStateFailed: {
-      self.shapeLayer.path = self.documentPath.CGPath;
-      self.shapeLayer.fillColor = self.documentColor.CGColor;
-      self.shapeLayer.strokeColor = self.documentColor.CGColor;
-      if (!CATransform3DIsIdentity(self.shapeLayer.transform)) {
+      self.badgeLayer.contents = (__bridge id)[self completionBadgeImage];
+      self.iconLayer.path = self.documentPath.CGPath;
+      self.iconLayer.fillColor = self.documentColor.CGColor;
+      self.iconLayer.strokeColor = self.documentColor.CGColor;
+      if (!CATransform3DIsIdentity(self.iconLayer.transform)) {
         [UIView animateWithDuration:animationDuration
-                         animations:^{
-                           self.shapeLayer.transform = CATransform3DIdentity;
-                         }];
+            animations:^{  // Resize the icon.
+              self.iconLayer.transform = CATransform3DIdentity;
+            }
+            completion:^(BOOL finished) {  // Resize the badge.
+              [CATransaction begin];
+              [CATransaction setAnimationDuration:animationDuration];
+              self.badgeLayer.transform = CATransform3DIdentity;
+              [CATransaction commit];
+            }];
       }
       break;
     }
     case kDownloadManagerStateInProgress:
-      self.shapeLayer.path = self.documentPath.CGPath;
-      self.shapeLayer.fillColor = self.documentColor.CGColor;
-      self.shapeLayer.strokeColor = self.documentColor.CGColor;
-      self.shapeLayer.transform = CATransform3DScale(
-          CATransform3DIdentity, kInProgressScale, kInProgressScale, 1);
+      if (CGPathEqualToPath(self.iconLayer.path, self.downloadPath.CGPath)) {
+        // There should be no animation when changing from downloadPath to
+        // documentPath.
+        animationDuration = 0;
+      }
+
+      self.iconLayer.path = self.documentPath.CGPath;
+      self.iconLayer.fillColor = self.documentColor.CGColor;
+      self.iconLayer.strokeColor = self.documentColor.CGColor;
+      if (CATransform3DIsIdentity(self.iconLayer.transform)) {
+        [CATransaction begin];  // Resize the badge.
+        [CATransaction setAnimationDuration:animationDuration];
+        self.badgeLayer.transform =
+            CATransform3DScale(CATransform3DIdentity, 0, 0, 1);
+        [CATransaction setCompletionBlock:^{
+          [UIView animateWithDuration:animationDuration
+                           animations:^{  // Resize the icon.
+                             self.iconLayer.transform = CATransform3DScale(
+                                 CATransform3DIdentity, kInProgressScale,
+                                 kInProgressScale, 1);
+                           }];
+        }];
+        [CATransaction commit];
+      }
+
       break;
   }
-  self.shapeLayer.lineWidth = kLineWidth;
+  self.iconLayer.lineWidth = kLineWidth;
 }
 
+// Used for all states except "not started" for icon layer.
 - (UIBezierPath*)documentPath {
   const CGFloat kVerticalMargin = 4;  // top and bottom margins
   const CGFloat kAspectRatio = 0.82;  // height is bigger than width
@@ -148,6 +201,7 @@ const CGFloat kInProgressScale = 0.65f;
   return path;
 }
 
+// Used for "not started" state for icon layer.
 - (UIBezierPath*)downloadPath {
   const CGFloat horizontalMargin = 6;  // left and right margins
   const CGFloat topMargin = 4;
@@ -188,8 +242,16 @@ const CGFloat kInProgressScale = 0.65f;
   return path;
 }
 
-- (CAShapeLayer*)shapeLayer {
+- (CAShapeLayer*)iconLayer {
   return base::mac::ObjCCastStrict<CAShapeLayer>(self.layer);
+}
+
+- (CALayer*)badgeLayer {
+  if (!_badgeLayer) {
+    _badgeLayer = [CALayer layer];
+    [self.iconLayer addSublayer:_badgeLayer];
+  }
+  return _badgeLayer;
 }
 
 @end

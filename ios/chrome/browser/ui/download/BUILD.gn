@@ -25,7 +25,9 @@ source_set("download") {
     "radial_progress_view.mm",
   ]
   deps = [
+    "resources:done_badge",
     "resources:download_manager_controller_xib",
+    "resources:error_badge",
     "resources:error_icon",
     "resources:file_icon_body",
     "resources:file_icon_fold",
