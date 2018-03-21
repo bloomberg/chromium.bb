@@ -359,9 +359,8 @@ MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled() {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // Adds icons to the overflow menu on the native media controls.
-// For experiment: crbug.com/763301
 const base::Feature kOverflowIconsForMediaControls{
-    "OverflowIconsForMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OverflowIconsForMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the new redesigned media controls.
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",

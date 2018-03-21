@@ -35,8 +35,8 @@ async_test(function(t) {
       assert_equals(internals.shadowPseudoId(innerButton), overflowButtonsCSS[i]);
       // Items should be visible
       assert_not_equals(getComputedStyle(child).display, "none");
-      // Buttons shouldn't be visible
-      assert_equals(getComputedStyle(innerButton).display, "none");
+      // Buttons should be visible
+      assert_equals(getComputedStyle(innerButton).display, "flex");
     }
   });
 });
