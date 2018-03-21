@@ -41,8 +41,11 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) {
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
-       child = child->NextSibling())
-    child->Paint(child_info, paint_offset);
+       child = child->NextSibling()) {
+    if (!child->IsBoxModelObject() ||
+        !ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
+      child->Paint(child_info, paint_offset);
+  }
 }
 
 void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,

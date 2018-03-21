@@ -2060,7 +2060,8 @@ class ComputedStyle : public ComputedStyleBase,
   // There are also other elements treated as stacking context during painting,
   // but not managed in stacks. See ObjectPainter::PaintAllPhasesAtomically().)
   CORE_EXPORT void UpdateIsStackingContext(bool is_document_element,
-                                           bool is_in_top_layer);
+                                           bool is_in_top_layer,
+                                           bool is_svg_stacking);
   bool IsStacked() const {
     return IsStackingContext() || GetPosition() != EPosition::kStatic;
   }

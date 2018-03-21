@@ -152,6 +152,29 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                   kHitTestChildBlockBackgrounds);
 }
 
+bool LayoutSVGForeignObject::NodeAtPoint(
+    HitTestResult& result,
+    const HitTestLocation& location_in_parent,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction hit_test_action) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    return NodeAtFloatPoint(result, FloatPoint(accumulated_offset),
+                            hit_test_action);
+  }
+  NOTREACHED();
+  return false;
+}
+
+PaintLayerType LayoutSVGForeignObject::LayerTypeRequired() const {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return LayoutBlockFlow::LayerTypeRequired();
+  return kNoPaintLayer;
+}
+
+bool LayoutSVGForeignObject::AllowsOverflowClip() const {
+  return RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
+}
+
 void LayoutSVGForeignObject::StyleDidChange(StyleDifference diff,
                                             const ComputedStyle* old_style) {
   LayoutSVGBlock::StyleDidChange(diff, old_style);

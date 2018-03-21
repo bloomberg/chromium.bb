@@ -906,7 +906,8 @@ static bool HasPropertyThatCreatesStackingContext(
 }
 
 void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
-                                            bool is_in_top_layer) {
+                                            bool is_in_top_layer,
+                                            bool is_svg_stacking) {
   if (IsStackingContext())
     return;
 
@@ -931,6 +932,9 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       ContainsPaint()) {
     SetIsStackingContext(true);
   }
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && is_svg_stacking)
+    SetIsStackingContext(true);
 }
 
 void ComputedStyle::AddCallbackSelector(const String& selector) {

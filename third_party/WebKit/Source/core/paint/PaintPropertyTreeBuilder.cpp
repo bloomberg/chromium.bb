@@ -426,6 +426,17 @@ static bool NeedsPaintOffsetTranslationForScrollbars(
 static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
+
+  // <foreignObject> inherits no paint offset, because there is no such
+  // concept within SVG. However, the foreign object can have its own paint
+  // offset due to the x and y parameters of the element. This affects the
+  // offset of painting of the <foreignObject> element and its children.
+  // However, <foreignObject> otherwise behaves like other SVG elements, in
+  // that the x and y offset is applied *after* any transform, instead of
+  // before. Therefore there is no paint offset translation needed.
+  if (object.IsSVGForeignObject())
+    return false;
+
   const LayoutBoxModelObject& box_model = ToLayoutBoxModelObject(object);
 
   if (box_model.IsLayoutView()) {
@@ -1028,7 +1039,7 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
   // special because it doesn't create a PaintLayer.
   // See LayoutSVGBlock::AllowsOverflowClip().
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      (object.IsSVGForeignObject() || object.IsSVGViewportContainer()) &&
+      object.IsSVGViewportContainer() &&
       SVGLayoutSupport::IsOverflowHidden(object))
     return true;
 
@@ -1143,7 +1154,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
     if (NeedsOverflowClip(object_)) {
       FloatRoundedRect clip_rect;
       FloatRoundedRect clip_rect_excluding_overlay_scrollbars;
-      if (object_.IsSVGForeignObject()) {
+      if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+          object_.IsSVGForeignObject()) {
         clip_rect = ToClipRect(ToLayoutBox(object_).FrameRect());
         clip_rect_excluding_overlay_scrollbars = clip_rect;
       } else if (object_.IsBox()) {
@@ -2302,6 +2314,7 @@ bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
     // trees, paint offset, etc.
     context_.fragments.clear();
     context_.fragments.Grow(1);
+    context_.has_svg_hidden_container_ancestor = true;
     PaintPropertyTreeBuilderFragmentContext& fragment_context =
         context_.fragments[0];
 
@@ -2310,6 +2323,11 @@ bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
             fragment_context.fixed_position.paint_offset_root = &object_;
 
     object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
+  }
+
+  if (object_.HasLayer()) {
+    ToLayoutBoxModelObject(object_).Layer()->SetIsUnderSVGHiddenContainer(
+        context_.has_svg_hidden_container_ancestor);
   }
 
   UpdateRepeatingPaintOffsetAdjustment();

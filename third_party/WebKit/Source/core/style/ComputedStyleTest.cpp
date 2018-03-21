@@ -8,6 +8,7 @@
 #include "core/style/ClipPathOperation.h"
 #include "core/style/ShapeValue.h"
 #include "core/style/StyleDifference.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -74,12 +75,25 @@ TEST(ComputedStyleTest, FocusRingOutset) {
 #endif
 }
 
+TEST(ComputedStyleTest, SVGStackingContext) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->UpdateIsStackingContext(false, false, true);
+  EXPECT_TRUE(style->IsStackingContext());
+}
+
+TEST(ComputedStyleTest, SVGStackingContextSPv1) {
+  ScopedSlimmingPaintV175ForTest spv175(false);
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->UpdateIsStackingContext(false, false, true);
+  EXPECT_FALSE(style->IsStackingContext());
+}
+
 TEST(ComputedStyleTest, Preserve3dForceStackingContext) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetTransformStyle3D(ETransformStyle3D::kPreserve3d);
   style->SetOverflowX(EOverflow::kHidden);
   style->SetOverflowY(EOverflow::kHidden);
-  style->UpdateIsStackingContext(false, false);
+  style->UpdateIsStackingContext(false, false, false);
   EXPECT_EQ(ETransformStyle3D::kFlat, style->UsedTransformStyle3D());
   EXPECT_TRUE(style->IsStackingContext());
 }

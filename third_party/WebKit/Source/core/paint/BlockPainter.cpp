@@ -61,7 +61,8 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
       original_phase != PaintPhase::kSelfOutlineOnly) {
     Optional<BoxClipper> clipper;
     // We have already applied clip in SVGForeignObjectClipper.
-    if (!layout_block_.IsSVGForeignObject()) {
+    if (!layout_block_.IsSVGForeignObject() ||
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       clipper.emplace(layout_block_, local_paint_info, adjusted_paint_offset,
                       contents_clip_behavior);
     }

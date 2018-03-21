@@ -148,6 +148,10 @@ struct PaintPropertyTreeBuilderContext {
   // object first appears.
   bool is_repeating_in_fragments = false;
 
+  // True if the current subtree is underneath a LayoutSVGHiddenContainer
+  // ancestor.
+  bool has_svg_hidden_container_ancestor = false;
+
   // The physical bounding box of all appearances of the repeating object
   // in the flow thread.
   LayoutRect repeating_bounding_box_in_flow_thread;

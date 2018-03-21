@@ -622,6 +622,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
   void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
 
+  void SetIsUnderSVGHiddenContainer(bool value) {
+    is_under_svg_hidden_container_ = value;
+  }
+  bool IsUnderSVGHiddenContainer() { return is_under_svg_hidden_container_; }
+
   CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
       const;
 
@@ -1225,6 +1230,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // that we need to update the filter field of the effect paint property node.
   // It's cleared when the effect paint property node is updated.
   unsigned filter_on_effect_node_dirty_ : 1;
+
+  // True if the current subtree is underneath a LayoutSVGHiddenContainer
+  // ancestor.
+  unsigned is_under_svg_hidden_container_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 

@@ -1265,6 +1265,29 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary) {
             div_with_transform_properties->Transform()->Parent()->Parent());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ForeignObjectWithTransformAndOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0px; } </style>
+    <svg id='svgWithTransform'>
+      <foreignObject id="foreignObject"
+          x="10" y="10" width="50" height="40" transform="scale(5)">
+        <div id='div'></div>
+      </foreignObject>
+    </svg>
+  )HTML");
+
+  LayoutObject& foreign_object = *GetLayoutObjectByElementId("foreignObject");
+  const ObjectPaintProperties* foreign_object_properties =
+      foreign_object.FirstFragment().PaintProperties();
+  EXPECT_EQ(TransformationMatrix().Scale(5),
+            foreign_object_properties->Transform()->Matrix());
+  EXPECT_EQ(LayoutPoint(10, 10), foreign_object.FirstFragment().PaintOffset());
+  EXPECT_EQ(nullptr, foreign_object_properties->PaintOffsetTranslation());
+
+  LayoutObject& div = *GetLayoutObjectByElementId("div");
+  EXPECT_EQ(LayoutPoint(10, 10), div.FirstFragment().PaintOffset());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
   SetBodyInnerHTML(R"HTML(
     <svg id='svg'
@@ -2537,13 +2560,12 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
   const auto* foreign_object_properties =
       foreign_object->FirstFragment().PaintProperties();
   EXPECT_EQ(nullptr, foreign_object_properties->PaintOffsetTranslation());
-  // Paint offset of foreignObject should be originated from SVG root and
-  // snapped to pixels.
+
   EXPECT_EQ(LayoutPoint(4, 5), foreign_object->FirstFragment().PaintOffset());
 
   const auto* div = GetLayoutObjectByElementId("div");
-  // Paint offset of descendant of foreignObject accumulates on paint offset of
-  // foreignObject.
+  // Paint offset of descendant of foreignObject accumulates on paint offset
+  // of foreignObject.
   EXPECT_EQ(LayoutPoint(LayoutUnit(4 + 5.6), LayoutUnit(5 + 7.3)),
             div->FirstFragment().PaintOffset());
 }

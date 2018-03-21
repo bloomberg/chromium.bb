@@ -35,30 +35,6 @@ namespace blink {
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
     : LayoutBlockFlow(element) {}
 
-bool LayoutSVGBlock::AllowsOverflowClip() const {
-  // LayoutSVGBlock, used by Layout(SVGText|ForeignObject), is not allowed to
-  // have overflow clip.
-  // LayoutBlock assumes a layer to be present when the overflow clip
-  // functionality is requested. Both Layout(SVGText|ForeignObject) return
-  // 'NoPaintLayer' on 'layerTypeRequired'.
-  // Fine for LayoutSVGText.
-  //
-  // If we want to support overflow rules for <foreignObject> we can choose
-  // between two solutions:
-  // a) make LayoutSVGForeignObject require layers and SVG layer aware
-  // b) refactor overflow logic out of Layer (as suggested by dhyatt), which is
-  //    a large task
-  //
-  // Until this is resolved, let this function return false, and create overflow
-  // clip in PaintPropertyTreeBuilder and apply overflow clip in
-  // SVGForeignObjectPainter.
-  //
-  // Note: This does NOT affect overflow handling on outer/inner <svg> elements
-  // - this is handled manually by LayoutSVGRoot - which owns the documents
-  // enclosing root layer and thus works fine.
-  return false;
-}
-
 void LayoutSVGBlock::AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
   // This code path should never be taken for SVG, as we're assuming
   // useTransforms=true everywhere, absoluteQuads should be used.
