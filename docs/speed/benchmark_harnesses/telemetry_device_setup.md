@@ -4,15 +4,17 @@
 
 ## Install extra python dependencies
 
-Telemetry depends on pustil version 2.6+. Make sure that you install psutil
-first.
-
-If you only use Telemetry through tools/perf/run_benchmark script,
-vpython should already automatically install all the required deps for you. e.g:
+If you only use Telemetry through `tools/perf/run_benchmark` script,
+`vpython` should already automatically install all the required deps for you,
+e.g:
 
 ```
 $ tools/perf/run_benchmark --browser=system dummy_benchmark.noisy_benchmark_1
 ```
+
+Otherwise have a look at the required catapult dependencies listed in the
+[.vpython](https://chromium.googlesource.com/chromium/src/+/master/.vpython)
+spec file.
 
 ## Desktop benchmarks
 
@@ -37,7 +39,7 @@ advice.
 To run Telemetry Android benchmarks, you need a host machine and an Android
 device attached to the host machine through USB.
 
-**WARNING:** it’s highly recommended that you don’t use your personal Android device
+> **WARNING:** it’s highly recommended that you don’t use your personal Android device
 for this. Some of the steps below will wipe out the phone completely.
 
 **Host machine:** we only support Linux Ubuntu as the host.
@@ -57,14 +59,13 @@ USB debugging.
     export CATAPULT=$CHROMIUM_SRC/third_party/catapult
     $CATAPULT/devil/devil/android/tools/provision_devices.py --disable-network --disable-java-debug
     ```
-*   Use one of the supported [`--browser` names](https://github.com/catapult-project/catapult/blob/02ec794ca7c836a14e6d6054e4e337d1ea3acd6f/telemetry/telemetry/internal/backends/chrome/android_browser_finder.py#L30)
+    If you are planning to test WebView on Android M or lower also add
+    `--remove-system-webview` to this command, otherwise Telemetry will
+    have trouble installing the required APKs. This should take care of
+    everything, but see [build instructions for WebView](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
+    if you run into problems.
+*   Finally, use one of the supported [`--browser` types](https://github.com/catapult-project/catapult/blob/d5b0db081b74c717effa1080ca06c4f679136b73/telemetry/telemetry/internal/backends/android_browser_backend_settings.py#L150)
     on your
-    [run_benchmark](https://cs.chromium.org/chromium/src/tools/perf/run_benchmark)
-    or [run_tests](https://cs.chromium.org/chromium/src/tools/perf/run_tests)
+    [`run_benchmark`](https://cs.chromium.org/chromium/src/tools/perf/run_benchmark)
+    or [`run_tests`](https://cs.chromium.org/chromium/src/tools/perf/run_tests)
     command.
-*   Running benchmarks on WebView?
-    1.  Add `--remove-system-webview` on the provision devices command above.
-    2.  Make sure to [build, install, and enable](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
-        the right WebView apk for your Android build. Also always install
-        SystemWebViewShell.apk.
-    3. Use `--browser=android-webview` in the `run_benchmark` command.
