@@ -23,6 +23,7 @@ class WebGestureEvent;
 }
 
 namespace content {
+class RenderWidgetHostNSViewClient;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
@@ -41,12 +42,19 @@ struct DidOverscrollParams;
 // RenderWidgetHostViewWin is both the view and the delegate. We split the roles
 // but that means that the view needs to own the delegate and will dispose of it
 // when it's removed from the view system.
+// TODO(ccameron): Hide this interface behind RenderWidgetHostNSViewBridge.
 @interface RenderWidgetHostViewCocoa
     : ToolTipBaseView<CommandDispatcherTarget,
                       RenderWidgetHostViewMacOwner,
                       NSTextInputClient> {
  @private
-  std::unique_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
+  // The communications channel to the RenderWidgetHostViewMac.
+  std::unique_ptr<content::RenderWidgetHostNSViewClient> client_;
+
+  // TODO(ccameron): Make all communication with the RenderWidgetHostView go
+  // through |client_| and delete this member variable.
+  content::RenderWidgetHostViewMac* renderWidgetHostView_;
+
   // This ivar is the cocoa delegate of the NSResponder.
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
       responderDelegate_;
@@ -207,7 +215,8 @@ struct DidOverscrollParams;
                                   targetView:(NSView*)targetView;
 
 // Methods previously marked as private.
-- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
+- (id)initWithClient:
+    (std::unique_ptr<content::RenderWidgetHostNSViewClient>)client;
 - (void)setResponderDelegate:
     (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event

@@ -25,6 +25,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#import "content/browser/renderer_host/render_widget_host_ns_view_bridge.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
@@ -224,7 +225,7 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
 // AcceleratedWidgetMacNSView, public:
 
 NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
-  return cocoa_view_;
+  return cocoa_view();
 }
 
 void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
@@ -260,22 +261,24 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
       weak_factory_(this) {
-  // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
-  // goes away.  Since we autorelease it, our caller must put
-  // |GetNativeView()| into the view hierarchy right after calling us.
-  cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
-                  initWithRenderWidgetHostViewMac:this] autorelease];
+  // The NSView on the other side of |ns_view_bridge_| owns us. We will
+  // be destroyed when it releases the unique_ptr that we pass to it here at
+  // creation.
+  // The NSView is autoreleased, so our caller must put |GetNativeView()| into
+  // the view hierarchy right after calling us.
+  ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(
+      std::unique_ptr<RenderWidgetHostNSViewClient>(this));
 
   background_layer_.reset([[CALayer alloc] init]);
-  [cocoa_view_ setLayer:background_layer_];
-  [cocoa_view_ setWantsLayer:YES];
+  [cocoa_view() setLayer:background_layer_];
+  [cocoa_view() setWantsLayer:YES];
 
   viz::FrameSinkId frame_sink_id = is_guest_view_hack_
                                        ? AllocateFrameSinkIdForGuestViewHack()
                                        : host()->GetFrameSinkId();
 
   browser_compositor_.reset(new BrowserCompositorMac(
-      this, this, host()->is_hidden(), [cocoa_view_ window], frame_sink_id));
+      this, this, host()->is_hidden(), [cocoa_view() window], frame_sink_id));
 
   display::Screen::GetScreen()->AddObserver(this);
 
@@ -319,9 +322,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   display::Screen::GetScreen()->RemoveObserver(this);
 
-  // This is being called from |cocoa_view_|'s destructor, so invalidate the
-  // pointer.
-  cocoa_view_ = nil;
+  // |this| is owned by RenderWidgetHostViewCocoa and is destroyed when the
+  // RenderWidgetHostViewCocoa is deallocated, so destroy the bridge to the
+  // RenderWidgetHostViewCocoa.
+  ns_view_bridge_.reset();
 
   UnlockMouse();
 
@@ -344,9 +348,15 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
     text_input_manager_->RemoveObserver(this);
 }
 
+RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
+  if (ns_view_bridge_)
+    return ns_view_bridge_->GetRenderWidgetHostViewCocoa();
+  return nil;
+}
+
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
-  [cocoa_view_ setResponderDelegate:delegate];
+  [cocoa_view() setResponderDelegate:delegate];
 }
 
 void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
@@ -387,8 +397,8 @@ void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
   bool activatable = popup_type_ == blink::kWebPopupTypeNone;
-  [cocoa_view_ setCloseOnDeactivate:YES];
-  [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
+  [cocoa_view() setCloseOnDeactivate:YES];
+  [cocoa_view() setCanBeKeyView:activatable ? YES : NO];
 
   NSPoint origin_global = NSPointFromCGPoint(pos.origin().ToCGPoint());
   origin_global.y = FlipYFromRectToScreen(origin_global.y, pos.height());
@@ -402,11 +412,11 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [popup_window_ setLevel:NSPopUpMenuWindowLevel];
   [popup_window_ setReleasedWhenClosed:NO];
   [popup_window_ makeKeyAndOrderFront:nil];
-  [[popup_window_ contentView] addSubview:cocoa_view_];
-  [cocoa_view_ setFrame:[[popup_window_ contentView] bounds]];
-  [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [[popup_window_ contentView] addSubview:cocoa_view()];
+  [cocoa_view() setFrame:[[popup_window_ contentView] bounds]];
+  [cocoa_view() setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   [[NSNotificationCenter defaultCenter]
-      addObserver:cocoa_view_
+      addObserver:cocoa_view()
          selector:@selector(popupWindowWillClose:)
              name:NSWindowWillCloseNotification
            object:popup_window_];
@@ -435,22 +445,22 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
                     defer:NO]);
   [pepper_fullscreen_window_ setLevel:NSFloatingWindowLevel];
   [pepper_fullscreen_window_ setReleasedWhenClosed:NO];
-  [cocoa_view_ setCanBeKeyView:YES];
-  [cocoa_view_ setFrame:[[pepper_fullscreen_window_ contentView] bounds]];
-  [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [cocoa_view() setCanBeKeyView:YES];
+  [cocoa_view() setFrame:[[pepper_fullscreen_window_ contentView] bounds]];
+  [cocoa_view() setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // If the pepper fullscreen window isn't opaque then there are performance
   // issues when it's on the discrete GPU and the Chrome window is being drawn
   // to. http://crbug.com/171911
   [pepper_fullscreen_window_ setOpaque:YES];
 
   // Note that this forms a reference cycle between the fullscreen window and
-  // the rwhvmac: The PepperFlashFullscreenWindow retains cocoa_view_,
-  // but cocoa_view_ keeps pepper_fullscreen_window_ in an instance variable.
+  // the rwhvmac: The PepperFlashFullscreenWindow retains cocoa_view(),
+  // but cocoa_view() keeps pepper_fullscreen_window_ in an instance variable.
   // This cycle is normally broken when -keyEvent: receives an <esc> key, which
   // explicitly calls Shutdown on the host(), which calls
   // Destroy() on RWHVMac, which drops the reference to
   // pepper_fullscreen_window_.
-  [[pepper_fullscreen_window_ contentView] addSubview:cocoa_view_];
+  [[pepper_fullscreen_window_ contentView] addSubview:cocoa_view()];
 
   // Note that this keeps another reference to pepper_fullscreen_window_.
   fullscreen_window_manager_.reset([[FullscreenWindowManager alloc]
@@ -472,7 +482,7 @@ void RenderWidgetHostViewMac::release_pepper_fullscreen_window_for_testing() {
 }
 
 int RenderWidgetHostViewMac::window_number() const {
-  NSWindow* window = [cocoa_view_ window];
+  NSWindow* window = [cocoa_view() window];
   if (!window)
     return -1;
   return [window windowNumber];
@@ -485,7 +495,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   if (is_vsync_disabled)
     return;
 
-  NSScreen* screen = [[cocoa_view_ window] screen];
+  NSScreen* screen = [[cocoa_view() window] screen];
   NSDictionary* screen_description = [screen deviceDescription];
   NSNumber* screen_number = [screen_description objectForKey:@"NSScreenNumber"];
   CGDirectDisplayID display_id = [screen_number unsignedIntValue];
@@ -558,7 +568,7 @@ void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
 
 void RenderWidgetHostViewMac::Show() {
   ScopedCAActionDisabler disabler;
-  [cocoa_view_ setHidden:NO];
+  [cocoa_view() setHidden:NO];
 
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
@@ -581,7 +591,7 @@ void RenderWidgetHostViewMac::Hide() {
     return;
 
   ScopedCAActionDisabler disabler;
-  [cocoa_view_ setHidden:YES];
+  [cocoa_view() setHidden:YES];
 
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
@@ -631,27 +641,27 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   // valid for resizing to be requested (e.g., during tab capture, to size the
   // view to screen-capture resolution). In this case, simply treat the view as
   // relative to the screen.
-  BOOL isRelativeToScreen = IsPopup() ||
-      ![[cocoa_view_ superview] isKindOfClass:[BaseView class]];
+  BOOL isRelativeToScreen =
+      IsPopup() || ![[cocoa_view() superview] isKindOfClass:[BaseView class]];
   if (isRelativeToScreen) {
     // The position of |rect| is screen coordinate system and we have to
     // consider Cocoa coordinate system is upside-down and also multi-screen.
     NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
     NSSize size = NSMakeSize(rect.width(), rect.height());
-    size = [cocoa_view_ convertSize:size toView:nil];
+    size = [cocoa_view() convertSize:size toView:nil];
     origin_global.y = FlipYFromRectToScreen(origin_global.y, size.height);
     NSRect frame = NSMakeRect(origin_global.x, origin_global.y,
                               size.width, size.height);
     if (IsPopup())
       [popup_window_ setFrame:frame display:YES];
     else
-      [cocoa_view_ setFrame:frame];
+      [cocoa_view() setFrame:frame];
   } else {
-    BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
-    gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view_ frame]];
+    BaseView* superview = static_cast<BaseView*>([cocoa_view() superview]);
+    gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view() frame]];
     rect2.set_width(rect.width());
     rect2.set_height(rect.height());
-    [cocoa_view_ setFrame:[superview flipRectToNSRect:rect2]];
+    [cocoa_view() setFrame:[superview flipRectToNSRect:rect2]];
   }
 }
 
@@ -660,19 +670,19 @@ gfx::Vector2dF RenderWidgetHostViewMac::GetLastScrollOffset() const {
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
-  return cocoa_view_;
+  return cocoa_view();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
-  return cocoa_view_;
+  return cocoa_view();
 }
 
 void RenderWidgetHostViewMac::Focus() {
-  [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
+  [[cocoa_view() window] makeFirstResponder:cocoa_view()];
 }
 
 bool RenderWidgetHostViewMac::HasFocus() const {
-  return [[cocoa_view_ window] firstResponder] == cocoa_view_;
+  return [[cocoa_view() window] firstResponder] == cocoa_view();
 }
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
@@ -681,19 +691,19 @@ bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {
-  return ![cocoa_view_ isHidden];
+  return ![cocoa_view() isHidden];
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
-  NSRect bounds = [cocoa_view_ bounds];
+  NSRect bounds = [cocoa_view() bounds];
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
   if (!enclosing_window)
     return gfx::Rect(gfx::Size(NSWidth(bounds), NSHeight(bounds)));
 
-  bounds = [cocoa_view_ convertRect:bounds toView:nil];
+  bounds = [cocoa_view() convertRect:bounds toView:nil];
   bounds = [enclosing_window convertRectToScreen:bounds];
   return FlipNSRectToRectScreen(bounds);
 }
@@ -704,7 +714,7 @@ void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
 
 void RenderWidgetHostViewMac::DisplayCursor(const WebCursor& cursor) {
   WebCursor web_cursor = cursor;
-  [cocoa_view_ updateCursor:web_cursor.GetNativeCursor()];
+  [cocoa_view() updateCursor:web_cursor.GetNativeCursor()];
 }
 
 CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
@@ -765,7 +775,7 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 void RenderWidgetHostViewMac::OnImeCancelComposition(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
-  [cocoa_view_ cancelComposition];
+  [cocoa_view() cancelComposition];
 }
 
 void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
@@ -777,7 +787,7 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
-  [cocoa_view_ setMarkedRange:info->range.ToNSRange()];
+  [cocoa_view() setMarkedRange:info->range.ToNSRange()];
 }
 
 void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
@@ -799,7 +809,7 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
   if (!region)
     return;
 
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
   if (!enclosing_window)
     return;
 
@@ -812,11 +822,11 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
 
   // Convert the caret rect to CG-style flipped widget-relative coordinates.
   NSRect caret_rect = NSRectFromCGRect(gfx_caret_rect.ToCGRect());
-  caret_rect.origin.y = NSHeight([cocoa_view_ bounds]) -
-      (caret_rect.origin.y + caret_rect.size.height);
+  caret_rect.origin.y = NSHeight([cocoa_view() bounds]) -
+                        (caret_rect.origin.y + caret_rect.size.height);
 
   // Now convert that to screen coordinates.
-  caret_rect = [cocoa_view_ convertRect:caret_rect toView:nil];
+  caret_rect = [cocoa_view() convertRect:caret_rect toView:nil];
   caret_rect = [enclosing_window convertRectToScreen:caret_rect];
 
   // Finally, flip it again because UAZoomChangeFocus wants unflipped screen
@@ -835,12 +845,12 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   if (!selection)
     return;
 
-  [cocoa_view_ setSelectedRange:selection->range().ToNSRange()];
+  [cocoa_view() setSelectedRange:selection->range().ToNSRange()];
   // Updates markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current
   // caret position.
-  if (![cocoa_view_ hasMarkedText]) {
-    [cocoa_view_ setMarkedRange:selection->range().ToNSRange()];
+  if (![cocoa_view() hasMarkedText]) {
+    [cocoa_view() setMarkedRange:selection->range().ToNSRange()];
   }
 }
 
@@ -854,14 +864,14 @@ void RenderWidgetHostViewMac::Destroy() {
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
   [[NSNotificationCenter defaultCenter]
-      removeObserver:cocoa_view_
+      removeObserver:cocoa_view()
                 name:NSWindowWillCloseNotification
               object:popup_window_];
 
   // We've been told to destroy.
-  [cocoa_view_ retain];
-  [cocoa_view_ removeFromSuperview];
-  [cocoa_view_ autorelease];
+  [cocoa_view() retain];
+  [cocoa_view() removeFromSuperview];
+  [cocoa_view() autorelease];
 
   [popup_window_ close];
   popup_window_.autorelease();
@@ -889,7 +899,7 @@ void RenderWidgetHostViewMac::Destroy() {
   mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
 
   // We get this call just before host() deletes
-  // itself.  But we are owned by |cocoa_view_|, which may be retained
+  // itself.  But we are owned by |cocoa_view()|, which may be retained
   // by some other code.  Examples are WebContentsViewMac's
   // |latent_focus_view_| and TabWindowController's
   // |cachedContentView_|.
@@ -901,7 +911,7 @@ void RenderWidgetHostViewMac::Destroy() {
 // of repeat work.
 void RenderWidgetHostViewMac::SetTooltipText(
     const base::string16& tooltip_text) {
-  if (tooltip_text != tooltip_text_ && [[cocoa_view_ window] isKeyWindow]) {
+  if (tooltip_text != tooltip_text_ && [[cocoa_view() window] isKeyWindow]) {
     tooltip_text_ = tooltip_text;
 
     // Clamp the tooltip length to kMaxTooltipLength. It's a DOS issue on
@@ -913,7 +923,7 @@ void RenderWidgetHostViewMac::SetTooltipText(
       display_text = tooltip_text_.substr(0, kMaxTooltipLength);
 
     NSString* tooltip_nsstring = base::SysUTF16ToNSString(display_text);
-    [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
+    [cocoa_view() setToolTipAtMousePoint:tooltip_nsstring];
   }
 }
 
@@ -1015,7 +1025,7 @@ void RenderWidgetHostViewMac::SpeakSelection() {
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   // Create a fake mouse event to inform the render widget that the mouse
   // left or entered.
-  NSWindow* window = [cocoa_view_ window];
+  NSWindow* window = [cocoa_view() window];
   // TODO(asvitkine): If the location outside of the event stream doesn't
   // correspond to the current event (due to delayed event processing), then
   // this may result in a cursor flicker if there are later mouse move events
@@ -1032,7 +1042,7 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
                                    eventNumber:0
                                     clickCount:0
                                       pressure:0];
-  WebMouseEvent web_event = WebMouseEventBuilder::Build(event, cocoa_view_);
+  WebMouseEvent web_event = WebMouseEventBuilder::Build(event, cocoa_view());
   web_event.SetModifiers(web_event.GetModifiers() |
                          WebInputEvent::kRelativeMotionEvent);
   ForwardMouseEvent(web_event);
@@ -1055,7 +1065,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
     host()->ForwardMouseEvent(event);
 
   if (event.GetType() == WebInputEvent::kMouseLeave) {
-    [cocoa_view_ setToolTipAtMousePoint:nil];
+    [cocoa_view() setToolTipAtMousePoint:nil];
     tooltip_text_.clear();
   }
 }
@@ -1082,7 +1092,7 @@ void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
 
 void RenderWidgetHostViewMac::KillSelf() {
   if (!weak_factory_.HasWeakPtrs()) {
-    [cocoa_view_ setHidden:YES];
+    [cocoa_view() setHidden:YES];
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&RenderWidgetHostViewMac::ShutdownHost,
                               weak_factory_.GetWeakPtr()));
@@ -1264,7 +1274,7 @@ bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
-  [cocoa_view_ cancelComposition];
+  [cocoa_view() cancelComposition];
 
   // If the Mac Zoom feature is enabled, update it with the bounds of the
   // current focused node so that it can ensure that it's scrolled into view.
@@ -1317,7 +1327,7 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
   if (!enclosing_window)
     return gfx::Rect();
 
@@ -1361,7 +1371,7 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollUpdate:
     case WebInputEvent::kGestureScrollEnd:
-      [cocoa_view_ processedGestureScrollEvent:event consumed:consumed];
+      [cocoa_view() processedGestureScrollEvent:event consumed:consumed];
       return;
     default:
       break;
@@ -1370,7 +1380,7 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
 
 void RenderWidgetHostViewMac::DidOverscroll(
     const ui::DidOverscrollParams& params) {
-  [cocoa_view_ processedOverscroll:params];
+  [cocoa_view() processedOverscroll:params];
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -1378,7 +1388,7 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host =
       RenderWidgetHostImpl::From(GetRenderWidgetHost());
   return std::unique_ptr<SyntheticGestureTarget>(
-      new SyntheticGestureTargetMac(host, cocoa_view_));
+      new SyntheticGestureTargetMac(host, cocoa_view()));
 }
 
 viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
@@ -1418,7 +1428,7 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     gfx::PointF* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
-  float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view_);
+  float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view());
   gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   if (!browser_compositor_->GetDelegatedFrameHost()
            ->TransformPointToLocalCoordSpace(point_in_pixels, original_surface,
@@ -1534,10 +1544,10 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
     const gfx::Rect& bounds) {
   NSPoint origin = NSMakePoint(bounds.x(), bounds.y());
   NSSize size = NSMakeSize(bounds.width(), bounds.height());
-  origin.y = NSHeight([cocoa_view_ bounds]) - origin.y;
-  NSPoint originInWindow = [cocoa_view_ convertPoint:origin toView:nil];
+  origin.y = NSHeight([cocoa_view() bounds]) - origin.y;
+  NSPoint originInWindow = [cocoa_view() convertPoint:origin toView:nil];
   NSPoint originInScreen =
-      ui::ConvertPointFromWindowToScreen([cocoa_view_ window], originInWindow);
+      ui::ConvertPointFromWindowToScreen([cocoa_view() window], originInWindow);
   originInScreen.y = originInScreen.y - size.height;
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
@@ -1594,9 +1604,16 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   display::Screen* screen = display::Screen::GetScreen();
-  if (display.id() != screen->GetDisplayNearestView(cocoa_view_).id())
+  if (display.id() != screen->GetDisplayNearestView(cocoa_view()).id())
     return;
   UpdateNSViewAndDisplayProperties();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostNSViewClient implementation:
+
+RenderWidgetHostViewMac* RenderWidgetHostViewMac::GetRenderWidgetHostViewMac() {
+  return this;
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {
