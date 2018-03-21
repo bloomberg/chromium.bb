@@ -929,9 +929,9 @@ size_t QuicSession::GetNumOpenIncomingStreams() const {
 }
 
 size_t QuicSession::GetNumOpenOutgoingStreams() const {
-  CHECK_GE(GetNumDynamicOutgoingStreams() +
-               GetNumLocallyClosedOutgoingStreamsHighestOffset(),
-           GetNumDrainingOutgoingStreams());
+  DCHECK_GE(GetNumDynamicOutgoingStreams() +
+                GetNumLocallyClosedOutgoingStreamsHighestOffset(),
+            GetNumDrainingOutgoingStreams());
   return GetNumDynamicOutgoingStreams() +
          GetNumLocallyClosedOutgoingStreamsHighestOffset() -
          GetNumDrainingOutgoingStreams();
