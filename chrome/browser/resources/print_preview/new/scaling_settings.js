@@ -47,7 +47,7 @@ Polymer({
       // is valid, 1 call will occur due to the change to |currentValue_|. If
       // not, 2 calls will occur, since |inputValid_| will also change.
       this.fitToPageFlag_ = this.inputValid_ ? 1 : 2;
-      this.currentValue_ = this.documentInfo.fitToPageScaling;
+      this.currentValue_ = this.documentInfo.fitToPageScaling.toString();
     }
   },
 

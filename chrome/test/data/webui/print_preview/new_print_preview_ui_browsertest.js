@@ -187,3 +187,76 @@ PrintPreviewModelTest = class extends NewPrintPreviewTest {
 TEST_F('PrintPreviewModelTest', 'SetStickySettings', function() {
   this.runMochaTest(model_test.TestNames.SetStickySettings);
 });
+
+PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'preview_generation_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return preview_generation_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'Color', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Color);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'CssBackground', function() {
+  this.runMochaTest(preview_generation_test.TestNames.CssBackground);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'FitToPage', function() {
+  this.runMochaTest(preview_generation_test.TestNames.FitToPage);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'HeaderFooter', function() {
+  this.runMochaTest(preview_generation_test.TestNames.HeaderFooter);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'Layout', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Layout);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'Margins', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Margins);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'MediaSize', function() {
+  this.runMochaTest(preview_generation_test.TestNames.MediaSize);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'PageRange', function() {
+  this.runMochaTest(preview_generation_test.TestNames.PageRange);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'SelectionOnly', function() {
+  this.runMochaTest(preview_generation_test.TestNames.SelectionOnly);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'Scaling', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Scaling);
+});
+
+GEN('#if !defined(OS_WIN) && !defined(OS_MACOSX)');
+TEST_F('PrintPreviewPreviewGenerationTest', 'Rasterize', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Rasterize);
+});
+GEN('#endif');
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'Destination', function() {
+  this.runMochaTest(preview_generation_test.TestNames.Destination);
+});

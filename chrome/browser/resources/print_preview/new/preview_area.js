@@ -361,7 +361,7 @@ Polymer({
     if (this.inFlightRequestId_ != previewResponseId)
       return;
     this.documentInfo.updatePageCount(pageCount);
-    this.documentInfo.fitToPageScaling_ = fitToPageScaling;
+    this.documentInfo.updateFitToPageScaling(fitToPageScaling);
     this.notifyPath('documentInfo.pageCount');
     this.notifyPath('documentInfo.fitToPageScaling');
   },

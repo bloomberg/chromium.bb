@@ -183,6 +183,16 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * Updates the fit to page scaling. Does not dispatch a CHANGE event, since
+     * this is only called in tests and in the new print preview UI, which uses
+     * data bindings to notify UI elements of the change.
+     * @param {number} scaleFactor The fit to page scale factor.
+     */
+    updateFitToPageScaling(scaleFactor) {
+      this.fitToPageScaling_ = scaleFactor;
+    }
+
+    /**
      * Updates information about each page and dispatches a CHANGE event.
      * @param {!print_preview.PrintableArea} printableArea Printable area of the
      *     document in points.
