@@ -689,39 +689,53 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   }
 }
 
-void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
-                                  NGInlineItemResult* item_result) {
-  DCHECK(!item_result->can_break_after);
-
+bool NGLineBreaker::ComputeOpenTagResult(
+    const NGInlineItem& item,
+    const NGConstraintSpace& constraint_space,
+    NGInlineItemResult* item_result) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kOpenTag);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
   item_result->has_edge = item.HasStartEdge();
   if (item.ShouldCreateBoxFragment() &&
       (style.HasBorder() || style.HasPadding() ||
        (style.HasMargin() && item_result->has_edge))) {
-    NGBoxStrut borders = ComputeBorders(constraint_space_, style);
-    NGBoxStrut paddings = ComputePadding(constraint_space_, style);
+    NGBoxStrut borders = ComputeBorders(constraint_space, style);
+    NGBoxStrut paddings = ComputePadding(constraint_space, style);
     item_result->padding = paddings;
     item_result->borders_paddings_block_start =
         borders.block_start + paddings.block_start;
     item_result->borders_paddings_block_end =
         borders.block_end + paddings.block_end;
     if (item_result->has_edge) {
-      item_result->margins = ComputeMarginsForSelf(constraint_space_, style);
+      item_result->margins = ComputeMarginsForSelf(constraint_space, style);
       item_result->inline_size = item_result->margins.inline_start +
                                  borders.inline_start + paddings.inline_start;
-      line_.position += item_result->inline_size;
-
-      // While the spec defines "non-zero margins, padding, or borders" prevents
-      // line boxes to be zero-height, tests indicate that only inline direction
-      // of them do so. See should_create_line_box_.
-      // Force to create a box, because such inline boxes affect line heights.
-      if (!line_.should_create_line_box &&
-          (item_result->inline_size ||
-           (item_result->margins.inline_start && !in_line_height_quirks_mode_)))
-        line_.should_create_line_box = true;
+      return true;
     }
   }
+  return false;
+}
+
+void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
+                                  NGInlineItemResult* item_result) {
+  DCHECK(!item_result->can_break_after);
+
+  if (ComputeOpenTagResult(item, constraint_space_, item_result)) {
+    line_.position += item_result->inline_size;
+
+    // While the spec defines "non-zero margins, padding, or borders" prevents
+    // line boxes to be zero-height, tests indicate that only inline direction
+    // of them do so. See should_create_line_box_.
+    // Force to create a box, because such inline boxes affect line heights.
+    if (!line_.should_create_line_box &&
+        (item_result->inline_size ||
+         (item_result->margins.inline_start && !in_line_height_quirks_mode_)))
+      line_.should_create_line_box = true;
+  }
+
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
   SetCurrentStyle(style);
   MoveToNextOf(item);
 }
@@ -1026,13 +1040,17 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 }
 
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
+    const NGLineInfo& line_info,
     std::unique_ptr<const NGInlineLayoutStateStack> state_stack) const {
   const Vector<NGInlineItem>& items = node_.Items();
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
-  return NGInlineBreakToken::Create(node_, current_style_.get(), item_index_,
-                                    offset_, line_.is_after_forced_break,
-                                    std::move(state_stack));
+  return NGInlineBreakToken::Create(
+      node_, current_style_.get(), item_index_, offset_,
+      ((line_.is_after_forced_break ? NGInlineBreakToken::kIsForcedBreak : 0) |
+       (line_info.UseFirstLineStyle() ? NGInlineBreakToken::kUseFirstLineStyle
+                                      : 0)),
+      std::move(state_stack));
 }
 
 }  // namespace blink

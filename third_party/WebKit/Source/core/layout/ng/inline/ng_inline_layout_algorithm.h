@@ -51,6 +51,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
+  void PrepareBoxStates(const NGLineInfo&, const NGInlineBreakToken*);
+
+  NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
+                                  const NGInlineItemResult&);
+
   void BidiReorder();
 
   void PlaceControlItem(const NGInlineItem&,

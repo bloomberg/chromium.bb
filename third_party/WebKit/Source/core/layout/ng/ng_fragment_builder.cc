@@ -118,7 +118,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
       // formatting context, rather than concluding that we're done with the
       // whole thing.
       inline_break_tokens_.push_back(NGInlineBreakToken::Create(
-          ToNGInlineNode(child), nullptr, 0, 0, false,
+          ToNGInlineNode(child), nullptr, 0, 0, NGInlineBreakToken::kDefault,
           std::make_unique<NGInlineLayoutStateStack>()));
     }
     return *this;
