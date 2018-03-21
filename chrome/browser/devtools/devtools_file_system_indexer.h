@@ -41,6 +41,7 @@ class DevToolsFileSystemIndexer
     friend class base::RefCountedThreadSafe<FileSystemIndexingJob>;
     friend class DevToolsFileSystemIndexer;
     FileSystemIndexingJob(const base::FilePath& file_system_path,
+                          const std::vector<base::FilePath>& excluded_folders,
                           const TotalWorkCallback& total_work_callback,
                           const WorkedCallback& worked_callback,
                           const DoneCallback& done_callback);
@@ -59,6 +60,9 @@ class DevToolsFileSystemIndexer
     void ReportWorked();
 
     base::FilePath file_system_path_;
+    std::vector<base::FilePath> excluded_folders_;
+
+    std::vector<base::FilePath> pending_folders_;
     TotalWorkCallback total_work_callback_;
     WorkedCallback worked_callback_;
     DoneCallback done_callback_;
@@ -83,6 +87,7 @@ class DevToolsFileSystemIndexer
   // progress callbacks.
   scoped_refptr<FileSystemIndexingJob> IndexPath(
       const std::string& file_system_path,
+      const std::vector<std::string>& excluded_folders,
       const TotalWorkCallback& total_work_callback,
       const WorkedCallback& worked_callback,
       const DoneCallback& done_callback);

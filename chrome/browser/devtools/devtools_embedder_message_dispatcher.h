@@ -53,7 +53,8 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void UpgradeDraggedFileSystemPermissions(
         const std::string& file_system_url) = 0;
     virtual void IndexPath(int index_request_id,
-                           const std::string& file_system_path) = 0;
+                           const std::string& file_system_path,
+                           const std::string& excluded_folders) = 0;
     virtual void StopIndexing(int index_request_id) = 0;
     virtual void LoadNetworkResource(const DispatchCallback& callback,
                                      const std::string& url,

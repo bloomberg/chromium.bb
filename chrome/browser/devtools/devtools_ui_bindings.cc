@@ -755,8 +755,10 @@ void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
                                   weak_factory_.GetWeakPtr()));
 }
 
-void DevToolsUIBindings::IndexPath(int index_request_id,
-                                   const std::string& file_system_path) {
+void DevToolsUIBindings::IndexPath(
+    int index_request_id,
+    const std::string& file_system_path,
+    const std::string& excluded_folders_message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
@@ -765,21 +767,30 @@ void DevToolsUIBindings::IndexPath(int index_request_id,
   }
   if (indexing_jobs_.count(index_request_id) != 0)
     return;
+  std::vector<std::string> excluded_folders;
+  std::unique_ptr<base::Value> parsed_excluded_folders =
+      base::JSONReader::Read(excluded_folders_message);
+  if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
+    const std::vector<base::Value>& folder_paths =
+        parsed_excluded_folders->GetList();
+    for (const base::Value& folder_path : folder_paths) {
+      if (folder_path.is_string())
+        excluded_folders.push_back(folder_path.GetString());
+    }
+  }
+
   indexing_jobs_[index_request_id] =
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>(
           file_system_indexer_->IndexPath(
-              file_system_path,
+              file_system_path, excluded_folders,
               Bind(&DevToolsUIBindings::IndexingTotalWorkCalculated,
-                   weak_factory_.GetWeakPtr(),
-                   index_request_id,
+                   weak_factory_.GetWeakPtr(), index_request_id,
                    file_system_path),
               Bind(&DevToolsUIBindings::IndexingWorked,
-                   weak_factory_.GetWeakPtr(),
-                   index_request_id,
+                   weak_factory_.GetWeakPtr(), index_request_id,
                    file_system_path),
               Bind(&DevToolsUIBindings::IndexingDone,
-                   weak_factory_.GetWeakPtr(),
-                   index_request_id,
+                   weak_factory_.GetWeakPtr(), index_request_id,
                    file_system_path)));
 }
 
