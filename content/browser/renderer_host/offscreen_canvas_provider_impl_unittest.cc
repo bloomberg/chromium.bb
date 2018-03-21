@@ -128,9 +128,10 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
                                                   &host_frame_sink_client_);
   }
   void TearDown() override {
+    host_frame_sink_manager_->InvalidateFrameSinkId(kFrameSinkParent);
     provider_.reset();
-    frame_sink_manager_.reset();
     host_frame_sink_manager_.reset();
+    frame_sink_manager_.reset();
   }
 
  private:
