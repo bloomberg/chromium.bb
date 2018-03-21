@@ -330,13 +330,14 @@ void CloseStorageAndDestroyTaskHelperOnUIThread(
 // - When |file_path| is a directory, base::File::FILE_ERROR_NOT_A_FILE is set.
 // - When |file_path| does not exist, base::File::FILE_ERROR_NOT_FOUND is set.
 // - For other error cases, base::File::FILE_ERROR_FAILED is set.
-std::pair<int, base::File::Error> OpenFileDescriptor(const char* file_path,
-                                                     const int flags) {
+std::pair<int, base::File::Error> OpenFileDescriptor(
+    const base::FilePath& file_path,
+    const int flags) {
   base::AssertBlockingAllowed();
 
-  if (base::DirectoryExists(base::FilePath(file_path)))
+  if (base::DirectoryExists(file_path))
     return std::make_pair(-1, base::File::FILE_ERROR_NOT_A_FILE);
-  int file_descriptor = open(file_path, flags);
+  int file_descriptor = open(file_path.value().c_str(), flags);
   if (file_descriptor >= 0)
     return std::make_pair(file_descriptor, base::File::FILE_OK);
   if (errno == ENOENT)
@@ -1516,8 +1517,7 @@ void MTPDeviceDelegateImplLinux::OnGetDestFileInfoErrorToCopyFileFromLocal(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&OpenFileDescriptor, source_file_path.value().c_str(),
-                 O_RDONLY),
+      base::Bind(&OpenFileDescriptor, source_file_path, O_RDONLY),
       base::Bind(&MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal,
                  weak_ptr_factory_.GetWeakPtr(), device_file_path,
                  success_callback, error_callback));
