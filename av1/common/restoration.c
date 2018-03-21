@@ -1135,7 +1135,6 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        AV1_COMMON *cm) {
-  assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
