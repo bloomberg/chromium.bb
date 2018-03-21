@@ -75,18 +75,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf</glob>
     </acceptfont>
     <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
     </acceptfont>
     <acceptfont>
@@ -260,6 +248,15 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     </edit>
   </match>
 
+  <match target="pattern">
+    <test qual="any" name="family">
+      <string>Georgia</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Gelasio</string>
+    </edit>
+  </match>
+
   <!-- TODO(thomasanderson): Move these configs to be test-specific. -->
   <match target="pattern">
     <test name="family" compare="eq">
@@ -278,7 +275,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>SlightHintedGeorgia</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Georgia</string>
+      <string>Gelasio</string>
     </edit>
     <edit name="hintstyle" mode="assign">
       <const>hintslight</const>

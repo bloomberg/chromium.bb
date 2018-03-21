@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (19.39,28.39) size 313.41x267.59
       LayoutSVGContainer {g} at (19.39,28.39) size 313.41x267.59
-        LayoutSVGText {text} at (19.39,57.80) size 196.19x27.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (19.39,57.80) size 196.19x27.59
+        LayoutSVGText {text} at (19.39,57.80) size 196.19x30 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (19.39,57.80) size 196.19x30
             chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 195.60: "A serifed face \x{753B}\x{50CF}"
         LayoutSVGText {text} at (19.39,138.39) size 232.80x27 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (19.39,138.39) size 232.80x27
