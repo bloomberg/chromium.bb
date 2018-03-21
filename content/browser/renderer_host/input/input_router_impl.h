@@ -38,6 +38,8 @@ namespace content {
 
 class InputDispositionHandler;
 
+class MockRenderWidgetHost;
+
 class CONTENT_EXPORT InputRouterImplClient : public InputRouterClient {
  public:
   virtual mojom::WidgetInputHandler* GetWidgetInputHandler() = 0;
@@ -102,6 +104,7 @@ class CONTENT_EXPORT InputRouterImpl
 
  private:
   friend class InputRouterImplTest;
+  friend class MockRenderWidgetHost;
 
   // Keeps track of last position of touch points and sets MovementXY for them.
   void SetMovementXYForTouchPoints(blink::WebTouchEvent* event);

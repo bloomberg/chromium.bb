@@ -221,6 +221,20 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     }
   }
 
+  void ExpectForceEnableZoom(bool enable) {
+    EXPECT_EQ(enable, force_enable_zoom_);
+
+    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+      InputRouterImpl* input_router =
+          static_cast<InputRouterImpl*>(input_router_.get());
+      EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
+    } else {
+      LegacyInputRouterImpl* input_router =
+          static_cast<LegacyInputRouterImpl*>(input_router_.get());
+      EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
+    }
+  }
+
   WebInputEvent::Type acked_touch_event_type() const {
     return acked_touch_event_type_;
   }
@@ -3053,6 +3067,26 @@ TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {
       std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
   host_->SetWidget(std::move(widget));
   EXPECT_EQ(0u, host_->in_flight_event_count());
+}
+
+TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {
+  SCOPED_TRACE("force_enable_zoom is false at start.");
+  host_->ExpectForceEnableZoom(false);
+
+  // Set force_enable_zoom true.
+  host_->SetForceEnableZoom(true);
+
+  SCOPED_TRACE("force_enable_zoom is true after set.");
+  host_->ExpectForceEnableZoom(true);
+
+  // Rebind should also update to the latest force_enable_zoom state.
+  mojom::WidgetPtr widget;
+  std::unique_ptr<MockWidgetImpl> widget_impl =
+      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+  host_->SetWidget(std::move(widget));
+
+  SCOPED_TRACE("force_enable_zoom is true after rebind.");
+  host_->ExpectForceEnableZoom(true);
 }
 
 TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {

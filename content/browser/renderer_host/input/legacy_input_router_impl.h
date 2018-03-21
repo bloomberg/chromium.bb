@@ -40,6 +40,8 @@ class InputDispositionHandler;
 class InputRouterClient;
 struct InputEventAck;
 
+class MockRenderWidgetHost;
+
 // An implementation for browser input event routing based on
 // Chrome IPC. This class is named "legacy" because it is largely tied to
 // Chrome IPC which is deprecated. This class will be replaced with a Mojo
@@ -93,6 +95,8 @@ class CONTENT_EXPORT LegacyInputRouterImpl
 
  private:
   friend class LegacyInputRouterImplTest;
+  friend class MockRenderWidgetHost;
+
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            SubframeTouchEventRouting);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,

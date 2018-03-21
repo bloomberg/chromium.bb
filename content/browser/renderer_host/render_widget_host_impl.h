@@ -1103,6 +1103,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool next_resize_needs_resize_ack_ = false;
 
+  bool force_enable_zoom_ = false;
+
   RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
 
   const viz::FrameSinkId frame_sink_id_;
