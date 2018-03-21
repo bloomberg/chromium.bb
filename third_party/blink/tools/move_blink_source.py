@@ -43,12 +43,15 @@ class FileType(object):
     TYPEMAP = 6
     BLINK_BUILD_PY = 7
     LAYOUT_TESTS_WITH_MOJOM = 8
+    BLINK_DEPS = 9
 
     @staticmethod
     def detect(path):
         slash_dir, basename = os.path.split(path)
         slash_dir = slash_dir.replace(os.path.sep, '/')
         if basename == 'DEPS':
+            if 'third_party/WebKit' in path:
+                return FileType.BLINK_DEPS
             return FileType.DEPS
         if basename == 'OWNERS':
             return FileType.OWNERS
@@ -402,6 +405,16 @@ Bug: 768828
             return content
         return self._update_basename(content)
 
+    def _update_blink_deps(self, content):
+        original_content = content
+        content = re.sub('(?<=[-+!])public', 'third_party/blink/public', content)
+        content = re.sub('(?<=[-+!])(bindings|controller|core|modules|platform)',
+                         'third_party/blink/renderer/\\1', content)
+        content = content.replace('third_party/WebKit', 'third_party/blink')
+        if original_content == content:
+            return content
+        return self._update_basename(content)
+
     def _update_mojom(self, content):
         content = content.replace('third_party/WebKit/public', 'third_party/blink/public')
         content = content.replace('third_party/WebKit/common', 'third_party/blink/common')
@@ -456,6 +469,8 @@ Bug: 768828
                     _log.info("Skip //DEPS")
                     continue
                 content = self._update_deps(content)
+            elif file_type == FileType.BLINK_DEPS:
+                content = self._update_blink_deps(content)
             elif file_type == FileType.MOJOM:
                 content = self._update_mojom(content)
             elif file_type == FileType.TYPEMAP:
