@@ -100,6 +100,11 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
     WebView().Scheduler()->EnableVirtualTime();
   }
 
+  void TearDown() override {
+    WebView().Scheduler()->DisableVirtualTimeForTesting();
+    ScrollbarsTest::TearDown();
+  }
+
   void TimeAdvance() {
     WebView().Scheduler()->SetVirtualTimePolicy(
         PageScheduler::VirtualTimePolicy::kAdvance);
