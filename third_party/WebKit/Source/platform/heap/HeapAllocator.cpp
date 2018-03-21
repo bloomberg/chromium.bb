@@ -27,10 +27,10 @@ void HeapAllocator::BackingFree(void* address) {
   // free is disabled for surviving backings during lazy sweeping.
   if (header->IsMarked())
     return;
-  state->CheckObjectNotInCallbackStacks(address);
-  NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
+  state->Heap().CheckObjectNotInCallbackStacks(address);
   state->Heap().PromptlyFreed(header->GcInfoIndex());
-  arena->PromptlyFreeObject(header);
+  static_cast<NormalPage*>(page)->ArenaForNormalPage()->PromptlyFreeObject(
+      header);
 }
 
 void HeapAllocator::FreeVectorBacking(void* address) {

@@ -236,6 +236,8 @@ class PLATFORM_EXPORT ThreadHeap {
   }
   CallbackStack* EphemeronStack() const { return ephemeron_stack_.get(); }
 
+  void CheckObjectNotInCallbackStacks(const void*);
+
   void VisitPersistentRoots(Visitor*);
   void VisitStackRoots(MarkingVisitor*);
   void EnterSafePoint(ThreadState*);
