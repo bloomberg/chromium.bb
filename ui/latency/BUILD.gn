@@ -16,6 +16,8 @@ jumbo_source_set("latency") {
     "latency_info.h",
     "latency_tracker.cc",
     "latency_tracker.h",
+    "windowed_analyzer.cc",
+    "windowed_analyzer.h",
   ]
 
   deps = [
@@ -46,6 +48,7 @@ test("latency_unittests") {
     "histograms_test_common.h",
     "histograms_unittest.cc",
     "latency_info_unittest.cc",
+    "windowed_analyzer_unittest.cc",
   ]
 
   deps = [

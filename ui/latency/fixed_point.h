@@ -21,7 +21,8 @@ constexpr int64_t kFixedPointMultiplier{1LL << kFixedPointShift};
 
 // kFixedPointRootMultiplier is used to shift the bits before taking the square
 // root and undoing that shift after squaring in the SMR calculation.
-constexpr int64_t kFixedPointRootMultiplier{1LL << 32};
+constexpr int kFixedPointRootShift = 32;
+constexpr int64_t kFixedPointRootMultiplier{1LL << kFixedPointRootShift};
 
 // We need a huge range to accumulate values for RMS calculations, which
 // need double the range internally compared to the range we are targeting
@@ -52,6 +53,15 @@ class Accumulator96b {
   uint64_t ms64b{0};
   uint32_t ls32b{0};
 };
+
+// Convenience function overloads for AsDouble, to help with templated code.
+inline double AsDouble(const Accumulator96b& value) {
+  return value.ToDouble();
+}
+
+inline double AsDouble(double value) {
+  return value;
+}
 
 }  // namespace frame_metrics
 }  // namespace ui
