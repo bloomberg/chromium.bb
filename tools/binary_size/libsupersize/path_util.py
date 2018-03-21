@@ -94,11 +94,9 @@ class ToolPrefixFinder(_PathFinder):
                            'Release+Asserts', 'bin', 'llvm-')
       else:
         # Auto-detect from build_vars.txt
-        build_vars_path = os.path.join(output_directory, 'build_vars.txt')
-        if os.path.exists(build_vars_path):
-          with open(build_vars_path) as f:
-            build_vars = dict(l.rstrip().split('=', 1) for l in f if '=' in l)
-          tool_prefix = build_vars['android_tool_prefix']
+        build_vars = _LoadBuildVars(output_directory)
+        tool_prefix = build_vars.get('android_tool_prefix')
+        if tool_prefix:
           ret = os.path.normpath(os.path.join(output_directory, tool_prefix))
           # Maintain a trailing '/' if needed.
           if tool_prefix.endswith(os.path.sep):
@@ -128,6 +126,14 @@ class ToolPrefixFinder(_PathFinder):
       raise Exception('Bad --%s. Path not found: %s' % (self._name, full_path))
 
 
+def _LoadBuildVars(output_directory):
+  build_vars_path = os.path.join(output_directory, 'build_vars.txt')
+  if os.path.exists(build_vars_path):
+    with open(build_vars_path) as f:
+      return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
+  return dict()
+
+
 def FromSrcRootRelative(path):
   ret = os.path.relpath(os.path.join(SRC_ROOT, path))
   # Need to maintain a trailing /.
@@ -152,6 +158,13 @@ def GetCppFiltPath(tool_prefix):
 
 def GetNmPath(tool_prefix):
   return tool_prefix + 'nm'
+
+
+def GetApkAnalyzerPath(output_directory):
+  build_vars = _LoadBuildVars(output_directory)
+  return os.path.normpath(os.path.join(
+      output_directory, build_vars['android_sdk_root'], 'tools', 'bin',
+      'apkanalyzer'))
 
 
 def GetObjDumpPath(tool_prefix):

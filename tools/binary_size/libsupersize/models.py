@@ -49,6 +49,7 @@ SECTION_BSS = '.bss'
 SECTION_DATA = '.data'
 SECTION_DATA_REL_RO = '.data.rel.ro'
 SECTION_DATA_REL_RO_LOCAL = '.data.rel.ro.local'
+SECTION_DEX = '.dex'
 SECTION_OTHER = '.other'
 SECTION_PAK_NONTRANSLATED = '.pak.nontranslated'
 SECTION_PAK_TRANSLATIONS = '.pak.translations'
@@ -75,6 +76,7 @@ SECTION_NAME_TO_SECTION = {
     SECTION_DATA: 'd',
     SECTION_DATA_REL_RO_LOCAL: 'R',
     SECTION_DATA_REL_RO: 'R',
+    SECTION_DEX: 'x',
     SECTION_OTHER: 'o',
     SECTION_PAK_NONTRANSLATED: 'P',
     SECTION_PAK_TRANSLATIONS: 'p',
@@ -89,6 +91,7 @@ SECTION_TO_SECTION_NAME = collections.OrderedDict((
     ('R', SECTION_DATA_REL_RO),
     ('d', SECTION_DATA),
     ('b', SECTION_BSS),
+    ('x', SECTION_DEX),
     ('p', SECTION_PAK_TRANSLATIONS),
     ('P', SECTION_PAK_NONTRANSLATED),
     ('o', SECTION_OTHER),
@@ -276,9 +279,17 @@ class BaseSymbol(object):
   def IsBss(self):
     return self.section_name == SECTION_BSS
 
+  def IsDex(self):
+    return self.section_name == SECTION_DEX
+
+  def IsOther(self):
+    return self.section_name == SECTION_OTHER
+
   def IsPak(self):
-    return (self.section_name == SECTION_PAK_TRANSLATIONS or
-        self.section_name == SECTION_PAK_NONTRANSLATED)
+    return self.section_name in PAK_SECTIONS
+
+  def IsNative(self):
+    return self.section_name in NATIVE_SECTIONS
 
   def IsGroup(self):
     return False

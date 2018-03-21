@@ -24,7 +24,7 @@ body {
 var treemap;
 var filterChanging = false;
 var savedSettings = {};
-var NUM_SYMBOL_TYPES = 9;
+var NUM_SYMBOL_TYPES = 10;
 
 function init() {
     if (window.metadata !== undefined && window.metadata.subtitle) {
@@ -443,9 +443,10 @@ function escape(str) {
                 <br><span class='swatch' id='swatch_3'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_3' value='t'>Code (.text)
                 <br><span class='swatch' id='swatch_4'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_4' value='v'>Vtable entries
                 <br><span class='swatch' id='swatch_5'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_5' value='!'>Generated Symbols (typeinfo, thunks, etc)
-                <br><span class='swatch' id='swatch_6'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_6' value='p'>Locale Pak Entries
-                <br><span class='swatch' id='swatch_7'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_7' value='P'>Non-Locale Pak Entries
-                <br><span class='swatch' id='swatch_8'>&nbsp;&nbsp;&nbsp;</span><input type='checkbox' id='check_8' value='o'>Other Entries
+                <br><span class='swatch' id='swatch_6'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_6' value='x'>Dex entries
+                <br><span class='swatch' id='swatch_7'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_7' value='p'>Locale Pak Entries
+                <br><span class='swatch' id='swatch_8'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_8' value='P'>Non-Locale Pak Entries
+                <br><span class='swatch' id='swatch_9'>&nbsp;&nbsp;&nbsp;</span><input type='checkbox' id='check_9' value='o'>Other Entries
             </td>
         </tr>
         <tr><td style='text-align: center; white-space: nowrap; padding-top: 1em;'>
