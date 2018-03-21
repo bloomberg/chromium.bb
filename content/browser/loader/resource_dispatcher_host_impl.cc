@@ -1116,6 +1116,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
     new_request->set_method(request_data.method);
     new_request->set_site_for_cookies(request_data.site_for_cookies);
+    new_request->set_attach_same_site_cookies(
+        request_data.attach_same_site_cookies);
 
     // The initiator should normally be present, unless this is a navigation.
     // Browser-initiated navigations don't have an initiator document, the

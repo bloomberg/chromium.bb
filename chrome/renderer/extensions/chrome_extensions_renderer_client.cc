@@ -27,6 +27,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -39,6 +40,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "url/origin.h"
 
 using extensions::Extension;
 
@@ -215,19 +217,40 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
   }
 }
 
-bool ChromeExtensionsRendererClient::WillSendRequest(
+void ChromeExtensionsRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    GURL* new_url) {
+    base::Optional<url::Origin> initiator_origin,
+    GURL* new_url,
+    bool* attach_same_site_cookies) {
+  if (initiator_origin &&
+      initiator_origin.value().scheme() == extensions::kExtensionScheme) {
+    const extensions::RendererExtensionRegistry* extension_registry =
+        extensions::RendererExtensionRegistry::Get();
+    const Extension* extension =
+        extension_registry->GetByID(initiator_origin.value().host());
+    if (extension) {
+      int tab_id = extensions::ExtensionFrameHelper::Get(
+                       content::RenderFrame::FromWebFrame(frame))
+                       ->tab_id();
+      GURL request_url(url);
+      if (extension->permissions_data()->GetPageAccess(extension, request_url,
+                                                       tab_id, nullptr) ==
+              extensions::PermissionsData::ACCESS_ALLOWED ||
+          extension->permissions_data()->GetContentScriptAccess(
+              extension, request_url, tab_id, nullptr) ==
+              extensions::PermissionsData::ACCESS_ALLOWED) {
+        *attach_same_site_cookies = true;
+      }
+    }
+  }
+
   if (url.ProtocolIs(extensions::kExtensionScheme) &&
       !resource_request_policy_->CanRequestResource(GURL(url), frame,
                                                     transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
-    return true;
   }
-
-  return false;
 }
 
 void ChromeExtensionsRendererClient::SetExtensionDispatcherForTest(
