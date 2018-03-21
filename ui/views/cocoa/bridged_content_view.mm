@@ -614,11 +614,16 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
-// Always refuse first responder. Note this does not prevent the view becoming
-// first responder via -[NSWindow makeFirstResponder:] when invoked during Init
-// or by FocusManager.
+// Refuse first responder, unless we are already first responder. Note this does
+// not prevent the view becoming first responder via -[NSWindow
+// makeFirstResponder:] when invoked during Init or by FocusManager.
+//
+// The condition is to work around an AppKit quirk. When a window is being
+// ordered front, if its current first responder returns |NO| for this method,
+// it resigns it if it can find another responder in the key loop that replies
+// |YES|.
 - (BOOL)acceptsFirstResponder {
-  return NO;
+  return [[self window] firstResponder] == self;
 }
 
 - (BOOL)becomeFirstResponder {
