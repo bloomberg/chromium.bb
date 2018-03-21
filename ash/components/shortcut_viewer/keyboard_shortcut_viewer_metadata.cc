@@ -725,7 +725,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |accelerator_ids|
        {},
        // |shortcut_key_codes|
-       {ui::VKEY_LWIN, ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_DOWN}},
+       {ui::VKEY_LMENU, ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_DOWN}},
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
