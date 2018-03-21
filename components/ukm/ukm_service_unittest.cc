@@ -1139,6 +1139,8 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
       {"http://google.ca/?foo=bar", "http://google.ca/?foo=bar"},
       {"https://google.ca/?foo=bar", "https://google.ca/?foo=bar"},
       {"ftp://google.ca/?foo=bar", "ftp://google.ca/?foo=bar"},
+      {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj/foo.html?a=b",
+       "chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj/"},
   };
 
   for (const auto& test : test_cases) {
@@ -1146,10 +1148,13 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
 
     UkmService service(&prefs_, &client_);
     TestRecordingHelper recorder(&service);
+    service.SetIsWebstoreExtensionCallback(
+        base::BindRepeating(&TestIsWebstoreExtension));
+
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
     task_runner_->RunUntilIdle();
-    service.EnableRecording(/*extensions=*/false);
+    service.EnableRecording(/*extensions=*/true);
     service.EnableReporting();
 
     auto id = GetWhitelistedSourceId(0);
