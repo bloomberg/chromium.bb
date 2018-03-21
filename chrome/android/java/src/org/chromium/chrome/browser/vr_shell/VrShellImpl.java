@@ -1015,6 +1015,11 @@ public class VrShellImpl
         return mPresentationView;
     }
 
+    @VisibleForTesting
+    public boolean isDisplayingDialogView() {
+        return mVrUiViewContainer.getChildCount() > 0;
+    }
+
     @Override
     public void showSoftInput(boolean show) {
         assert mNativeVrShell != 0;

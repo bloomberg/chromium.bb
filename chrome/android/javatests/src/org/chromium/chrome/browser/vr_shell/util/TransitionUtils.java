@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
 import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.VrShellImpl;
 import org.chromium.chrome.browser.vr_shell.VrTestFramework;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -221,5 +222,19 @@ public class TransitionUtils {
                 api.close();
             }
         });
+    }
+
+    /**
+     * Waits until either a JavaScript dialog or permission prompt is being displayed using the
+     * Android native UI in the VR browser.
+     */
+    public static void waitForNativeUiPrompt(final int timeout) {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                VrShellImpl vrShell = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
+                return vrShell.isDisplayingDialogView();
+            }
+        }, timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }

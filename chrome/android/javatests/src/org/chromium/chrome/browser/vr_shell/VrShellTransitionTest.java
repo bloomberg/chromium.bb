@@ -49,6 +49,7 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -456,5 +457,36 @@ public class VrShellTransitionTest {
                 Assert.assertFalse(context.startActivityIfNeeded(preferencesIntent, 0));
             }
         });
+    }
+
+    /**
+     * Tests that exiting VR while a permission prompt or JavaScript dialog is being displayed
+     * does not cause a browser crash. Regression test for https://crbug.com/821443.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @LargeTest
+    @CommandLineFlags.Add("enable-features=VrBrowsingNativeAndroidUi")
+    public void testExitVrWithPromptDisplayed() throws InterruptedException, TimeoutException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
+
+        // Test JavaScript dialogs.
+        Assert.assertTrue(TransitionUtils.forceEnterVr());
+        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        // Alerts block JavaScript execution until they're closed, so we can't use the normal
+        // runJavaScriptOrFail, as that will time out.
+        JavaScriptUtils.executeJavaScript(mVrTestFramework.getFirstTabWebContents(),
+                "alert('Please no crash')");
+        TransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
+        TransitionUtils.forceExitVr();
+
+        // Test permission prompts.
+        Assert.assertTrue(TransitionUtils.forceEnterVr());
+        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        VrTestFramework.runJavaScriptOrFail("navigator.getUserMedia({video: true}, ()=>{}, ()=>{})",
+                POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents());
+        TransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
+        TransitionUtils.forceExitVr();
     }
 }
