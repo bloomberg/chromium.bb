@@ -15,19 +15,21 @@ namespace content {
 
 class BrowserContext;
 
-// Interface for a logger of WebRTC events.
+// Interface for a logger of WebRTC events, which the embedding application may
+// subclass and instantiate. Only one instance may ever be created, and it must
+// live until the embedding application terminates.
 class CONTENT_EXPORT WebRtcEventLogger {
  public:
-  // Once set, the logger must remain valid (though not necessarily active)
-  // until the application shuts down, at which point it should be leaked.
-  // For unit tests only, we allow clearing, because we want to make sure that
-  // other units destructors would not satisfy expectations that might otherwise
-  // have not been fulfilled.
-  static void Set(WebRtcEventLogger* webrtc_event_logger);
+  // Get the only instance of WebRtcEventLogger, if one was instantiated, or
+  // nullptr otherwise.
   static WebRtcEventLogger* Get();
-  static void ClearForTesting();
 
-  virtual ~WebRtcEventLogger() = default;
+  // The embedding application may leak or destroy on shutdown. Either way,
+  // it may only be done on shutdown. It's up to the embedding application to
+  // only destroy at a time during shutdown when it is guaranteed that tasks
+  // posted earlier with a reference to the WebRtcEventLogger object, will
+  // not execute.
+  virtual ~WebRtcEventLogger();
 
   // TODO(eladalon): Change from using BrowserContext to using Profile.
   // https://crbug.com/775415
@@ -129,6 +131,9 @@ class CONTENT_EXPORT WebRtcEventLogger {
       const std::string& message,
       base::OnceCallback<void(std::pair<bool, bool>)> reply =
           base::OnceCallback<void(std::pair<bool, bool>)>()) = 0;
+
+ protected:
+  WebRtcEventLogger();
 };
 
 }  // namespace content

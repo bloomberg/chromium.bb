@@ -19,15 +19,20 @@
 // Explanation about the life cycle of a WebRtcEventLogUploaderImpl object, and
 // about why its use of base::Unretained is safe:
 // * WebRtcEventLogUploaderImpl objects are owned (indirectly) by
-//   WebRtcEventLogManager, which is a singleton object that is not destroyed
-//   during Chrome shutdown, but rather, is allowed to leak.
-// * Therefore, objects of type WebRtcEventLogUploaderImpl will only be
-//   destroyed when their owner explicitly decides to do so.
+//   WebRtcEventLogManager, which is a singleton object that is only destroyed
+//   during Chrome shutdown, from ~BrowserProcessImpl().
+//   When ~BrowserProcessImpl() executes, tasks previously posted to
+//   WebRtcEventLogManager's internal task will not execute, and anything posted
+//   later will be discarded. Deleting a WebRtcEventLogUploaderImpl will
+//   therefore have no adverse effects.
+// * Except for during Chrome shutdown, WebRtcEventLogUploaderImpl objects will
+//   only be destroyed when their owner explicitly decides to destroy them.
 // * The direct owner, WebRtcRemoteEventLogManager, only deletes a
 //   WebRtcEventLogUploaderImpl after it receives a notification
 //   of type OnWebRtcEventLogUploadComplete.
-// * OnWebRtcEventLogUploadComplete() is only ever called as the last step,
-//   there are no tasks pending which have a reference to this object.
+// * OnWebRtcEventLogUploadComplete() is only ever called as the last step in
+//   URLFetcher's lifecycle. When it is called, there are no tasks pending which
+//   have a reference to this WebRtcEventLogUploaderImpl object.
 // * The previous point follows from OnURLFetchComplete being guaranteed to
 //   be the last callback called on a URLFetcherDelegate.
 
@@ -168,13 +173,20 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
 }
 
 WebRtcEventLogUploaderImpl::~WebRtcEventLogUploaderImpl() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   // WebRtcEventLogUploaderImpl objects only deleted if either:
-  // 1. The upload was never started, meaning |url_fetcher_| was never set.
-  // 2. Upload started and finished.
-  // Therefore, we can be sure that when we destroy this object, there are no
-  // tasks pending that still hold a base::Unretained() reference to it.
-  DCHECK(!url_fetcher_);
+  // 1. Chrome shutdown - see the explanation at top of this file.
+  // 2. The upload was never started, meaning |url_fetcher_| was never set.
+  // 3. Upload started and finished - |url_fetcher_| should have been reset
+  //    so that we would be able to DCHECK and demonstrate that the determinant
+  //    is maintained.
+  // Therefore, we can be sure that when we destroy this object, there are
+  // either no tasks holding a reference to it, or they would not be allowed
+  // to run.
+  if (io_task_runner_->RunsTasksInCurrentSequence()) {
+    DCHECK(!url_fetcher_);
+  } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  }
 }
 
 bool WebRtcEventLogUploaderImpl::PrepareUploadData() {

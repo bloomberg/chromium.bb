@@ -127,7 +127,6 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   }
 
   void SetUp() override {
-    content::WebRtcEventLogger::Set(event_log_manager_.get());
     SetLocalLogsObserver(&local_observer_);
     SetRemoteLogsObserver(&remote_observer_);
     LoadProfiles();
@@ -141,7 +140,6 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
     // destroy |event_log_manager_|. However, we must also make sure that their
     // destructors do not attempt to access |event_log_manager_|, which in
     // normal code lives forever, but not in the unit tests.
-    content::WebRtcEventLogger::ClearForTesting();
     event_log_manager_.reset();
 
     // Guard against unexpected state changes.
@@ -519,7 +517,7 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
-    event_log_manager_.reset(WebRtcEventLogManager::CreateSingletonInstance());
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 
   void SetUp() override {
@@ -536,7 +534,7 @@ class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
     : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTestWithRemoteLoggingDisabled() {
-    event_log_manager_.reset(WebRtcEventLogManager::CreateSingletonInstance());
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 };
 
