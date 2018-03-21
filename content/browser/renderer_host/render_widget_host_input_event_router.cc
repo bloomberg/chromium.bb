@@ -363,7 +363,7 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
   if ((event.GetType() == blink::WebInputEvent::kMouseLeave ||
        event.GetType() == blink::WebInputEvent::kMouseMove) &&
       target != last_mouse_move_target_) {
-    SendMouseEnterOrLeaveEvents(event, target, root_view);
+    SendMouseEnterOrLeaveEvents(mouse_event, target, root_view);
     if (root_view->GetCursorManager())
       root_view->GetCursorManager()->UpdateViewUnderCursor(target);
   }
