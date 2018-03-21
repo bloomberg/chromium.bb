@@ -682,7 +682,9 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
       if not path.isdir(sln_dir):
         git('clone', '--no-checkout', '--local', '--shared', mirror_dir,
             sln_dir)
+        _git_disable_gc(sln_dir)
       else:
+        _git_disable_gc(sln_dir)
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
       for ref in refs:
@@ -707,6 +709,10 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
         remove(sln_dir, cleanup_dir)
       else:
         raise
+
+def _git_disable_gc(cwd):
+  git('config', 'gc.autodetach', '0', cwd=cwd)
+  git('config', 'gc.autopacklimit', '0', cwd=cwd)
 
 
 def _download(url):
