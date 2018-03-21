@@ -8,10 +8,10 @@ PASS CSSStyleValue interface: existence and properties of interface prototype ob
 PASS CSSStyleValue interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSStyleValue interface: existence and properties of interface prototype object's @@unscopables property
 PASS CSSStyleValue interface: stringifier
-PASS CSSStyleValue interface: operation parse(DOMString, DOMString)
-PASS Unscopable handled correctly for parse(DOMString, DOMString) on CSSStyleValue
-PASS CSSStyleValue interface: operation parseAll(DOMString, DOMString)
-PASS Unscopable handled correctly for parseAll(DOMString, DOMString) on CSSStyleValue
+PASS CSSStyleValue interface: operation parse(USVString, USVString)
+PASS Unscopable handled correctly for parse(USVString, USVString) on CSSStyleValue
+PASS CSSStyleValue interface: operation parseAll(USVString, USVString)
+PASS Unscopable handled correctly for parseAll(USVString, USVString) on CSSStyleValue
 PASS StylePropertyMapReadOnly interface: existence and properties of interface object
 PASS StylePropertyMapReadOnly interface object length
 PASS StylePropertyMapReadOnly interface object name
@@ -20,12 +20,12 @@ PASS StylePropertyMapReadOnly interface: existence and properties of interface p
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object's @@unscopables property
 PASS Testing Symbol.iterator property of iterable interface StylePropertyMapReadOnly
 PASS Testing pair iterable interface StylePropertyMapReadOnly
-PASS StylePropertyMapReadOnly interface: operation get(DOMString)
-PASS Unscopable handled correctly for get(DOMString) on StylePropertyMapReadOnly
-PASS StylePropertyMapReadOnly interface: operation getAll(DOMString)
-PASS Unscopable handled correctly for getAll(DOMString) on StylePropertyMapReadOnly
-PASS StylePropertyMapReadOnly interface: operation has(DOMString)
-PASS Unscopable handled correctly for has(DOMString) on StylePropertyMapReadOnly
+PASS StylePropertyMapReadOnly interface: operation get(USVString)
+PASS Unscopable handled correctly for get(USVString) on StylePropertyMapReadOnly
+PASS StylePropertyMapReadOnly interface: operation getAll(USVString)
+PASS Unscopable handled correctly for getAll(USVString) on StylePropertyMapReadOnly
+PASS StylePropertyMapReadOnly interface: operation has(USVString)
+PASS Unscopable handled correctly for has(USVString) on StylePropertyMapReadOnly
 PASS StylePropertyMapReadOnly interface: attribute size
 PASS Unscopable handled correctly for size property on StylePropertyMapReadOnly
 PASS StylePropertyMapReadOnly interface: operation entries()
@@ -42,12 +42,12 @@ PASS StylePropertyMap interface object name
 PASS StylePropertyMap interface: existence and properties of interface prototype object
 PASS StylePropertyMap interface: existence and properties of interface prototype object's "constructor" property
 PASS StylePropertyMap interface: existence and properties of interface prototype object's @@unscopables property
-PASS StylePropertyMap interface: operation set(DOMString, [object Object],[object Object])
-PASS Unscopable handled correctly for set(DOMString, [object Object],[object Object]) on StylePropertyMap
-PASS StylePropertyMap interface: operation append(DOMString, [object Object],[object Object])
-PASS Unscopable handled correctly for append(DOMString, [object Object],[object Object]) on StylePropertyMap
-PASS StylePropertyMap interface: operation delete(DOMString)
-PASS Unscopable handled correctly for delete(DOMString) on StylePropertyMap
+PASS StylePropertyMap interface: operation set(USVString, [object Object],[object Object])
+PASS Unscopable handled correctly for set(USVString, [object Object],[object Object]) on StylePropertyMap
+PASS StylePropertyMap interface: operation append(USVString, [object Object],[object Object])
+PASS Unscopable handled correctly for append(USVString, [object Object],[object Object]) on StylePropertyMap
+PASS StylePropertyMap interface: operation delete(USVString)
+PASS Unscopable handled correctly for delete(USVString) on StylePropertyMap
 PASS StylePropertyMap interface: operation clear()
 PASS Unscopable handled correctly for clear() on StylePropertyMap
 PASS CSSUnparsedValue interface: existence and properties of interface object
@@ -112,14 +112,14 @@ PASS CSSNumericValue interface: operation max(CSSNumberish)
 PASS Unscopable handled correctly for max(CSSNumberish) on CSSNumericValue
 PASS CSSNumericValue interface: operation equals(CSSNumberish)
 PASS Unscopable handled correctly for equals(CSSNumberish) on CSSNumericValue
-PASS CSSNumericValue interface: operation to(DOMString)
-PASS Unscopable handled correctly for to(DOMString) on CSSNumericValue
-PASS CSSNumericValue interface: operation toSum(DOMString)
-PASS Unscopable handled correctly for toSum(DOMString) on CSSNumericValue
+PASS CSSNumericValue interface: operation to(USVString)
+PASS Unscopable handled correctly for to(USVString) on CSSNumericValue
+PASS CSSNumericValue interface: operation toSum(USVString)
+PASS Unscopable handled correctly for toSum(USVString) on CSSNumericValue
 PASS CSSNumericValue interface: operation type()
 PASS Unscopable handled correctly for type() on CSSNumericValue
-PASS CSSNumericValue interface: operation parse(DOMString)
-PASS Unscopable handled correctly for parse(DOMString) on CSSNumericValue
+PASS CSSNumericValue interface: operation parse(USVString)
+PASS Unscopable handled correctly for parse(USVString) on CSSNumericValue
 PASS CSSUnitValue interface: existence and properties of interface object
 PASS CSSUnitValue interface object length
 PASS CSSUnitValue interface object name
