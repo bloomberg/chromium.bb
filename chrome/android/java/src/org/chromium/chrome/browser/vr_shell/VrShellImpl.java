@@ -117,6 +117,7 @@ public class VrShellImpl
     private VrViewContainer mVrUiViewContainer;
     private FrameLayout mUiView;
     private ModalDialogManager mNonVrModalDialogManager;
+    private ModalDialogManager mVrModalDialogManager;
     private VrModalPresenter mVrModalPresenter;
 
     public VrShellImpl(
@@ -280,8 +281,9 @@ public class VrShellImpl
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
         mNonVrModalDialogManager.cancelAllDialogs();
         mVrModalPresenter = new VrModalPresenter(this);
-        mActivity.setModalDialogManager(
-                new ModalDialogManager(mVrModalPresenter, ModalDialogManager.APP_MODAL));
+        mVrModalDialogManager =
+                new ModalDialogManager(mVrModalPresenter, ModalDialogManager.APP_MODAL);
+        mActivity.setModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -655,6 +657,11 @@ public class VrShellImpl
     @Override
     public void shutdown() {
         if (mVrBrowsingEnabled) {
+            if (mVrModalDialogManager != null) {
+                mVrModalDialogManager.cancelAllDialogs();
+                mActivity.setModalDialogManager(mNonVrModalDialogManager);
+                mVrModalDialogManager = null;
+            }
             mNonVrViews.destroy();
             if (mVrUiViewContainer != null) mVrUiViewContainer.destroy();
             removeVrRootView();
@@ -690,10 +697,6 @@ public class VrShellImpl
         ChromeFullscreenManager manager = mActivity.getFullscreenManager();
         manager.getBrowserVisibilityDelegate().showControlsTransient();
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
-            mActivity.getModalDialogManager().cancelAllDialogs();
-            mActivity.setModalDialogManager(mNonVrModalDialogManager);
-        }
 
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mUiView);
