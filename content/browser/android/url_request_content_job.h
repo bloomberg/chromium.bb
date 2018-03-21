@@ -86,6 +86,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
 
   std::unique_ptr<net::FileStream> stream_;
   ContentMetaInfo meta_info_;
+  std::string mime_type_from_intent_;
   const scoped_refptr<base::TaskRunner> content_task_runner_;
 
   net::HttpByteRange byte_range_;

@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,7 +116,7 @@ class URLRequestContentJobTest : public testing::Test {
   // contents out of it. If a Range is provided, this function will add the
   // appropriate Range http header to the request and verify the bytes
   // retrieved.
-  void RunRequest(const Range* range);
+  void RunRequest(const Range* range, const char* intent_type);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   JobObserverImpl observer_;
@@ -125,7 +126,8 @@ class URLRequestContentJobTest : public testing::Test {
 
 URLRequestContentJobTest::URLRequestContentJobTest() {}
 
-void URLRequestContentJobTest::RunRequest(const Range* range) {
+void URLRequestContentJobTest::RunRequest(const Range* range,
+                                          const char* intent_type) {
   base::FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("content");
@@ -148,6 +150,19 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
 
   std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
       GURL(path.value()), net::DEFAULT_PRIORITY, &delegate_));
+
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,       // context
+                                          0,             // render_process_id
+                                          0,             // render_view_id
+                                          0,             // render_frame_id
+                                          true,          // is_main_frame
+                                          false,         // allow_download
+                                          true,          // is_async
+                                          PREVIEWS_OFF,  // previews_state
+                                          nullptr);      // navigation_ui_data
+
   int expected_length = file_size;
   if (range) {
     ASSERT_GE(range->start, 0);
@@ -164,6 +179,12 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
       expected_length = 0;
     }
   }
+  std::string expected_mime_type("image/png");
+  if (intent_type) {
+    request->SetExtraRequestHeaderByName("X-Chrome-intent-type", intent_type,
+                                         true /*overwrite*/);
+    expected_mime_type = intent_type;
+  }
   request->Start();
 
   base::RunLoop loop;
@@ -172,29 +193,37 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
   EXPECT_FALSE(delegate_.request_failed());
   ASSERT_EQ(1, observer_.num_jobs_created());
   EXPECT_EQ(expected_length, delegate_.bytes_received());
+
+  std::string mime_type;
+  request->GetMimeType(&mime_type);
+  EXPECT_EQ(expected_mime_type, mime_type);
 }
 
 // Disabled: http://crbug.com/807045.
 TEST_F(URLRequestContentJobTest, DISABLED_ContentURIWithoutRange) {
-  RunRequest(NULL);
+  RunRequest(NULL, NULL);
 }
 
 // Disabled: http://crbug.com/807045.
 TEST_F(URLRequestContentJobTest, DISABLED_ContentURIWithSmallRange) {
   Range range(1, 10);
-  RunRequest(&range);
+  RunRequest(&range, NULL);
 }
 
 // Disabled: http://crbug.com/807045.
 TEST_F(URLRequestContentJobTest, DISABLED_ContentURIWithLargeRange) {
   Range range(1, 100000);
-  RunRequest(&range);
+  RunRequest(&range, NULL);
 }
 
 // Disabled: http://crbug.com/807045.
 TEST_F(URLRequestContentJobTest, DISABLED_ContentURIWithZeroRange) {
   Range range(0, 0);
-  RunRequest(&range);
+  RunRequest(&range, NULL);
+}
+
+TEST_F(URLRequestContentJobTest, ContentURIWithIntentTypeHeader) {
+  RunRequest(NULL, "text/html");
 }
 
 }  // namespace
