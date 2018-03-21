@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_JNI_JNI_OAUTH_TOKEN_GETTER_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/base/oauth_token_getter.h"
 
@@ -33,9 +34,13 @@ class JniOAuthTokenGetter : public OAuthTokenGetter {
   void CallWithToken(const TokenCallback& on_access_token) override;
   void InvalidateCache() override;
 
+  base::WeakPtr<JniOAuthTokenGetter> GetWeakPtr();
+
  private:
   THREAD_CHECKER(thread_checker_);
 
+  base::WeakPtr<JniOAuthTokenGetter> weak_ptr_;
+  base::WeakPtrFactory<JniOAuthTokenGetter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(JniOAuthTokenGetter);
 };
 

@@ -74,7 +74,7 @@ NSString* const kUserInfo = @"kUserInfo";
     _lastFetchFailureReason = HostListFetchFailureReasonNoFailure;
     _clientRuntimeDelegate =
         new remoting::IosClientRuntimeDelegate();
-    [self runtime]->SetDelegate(_clientRuntimeDelegate);
+    [self runtime]->Init(_clientRuntimeDelegate);
   }
   return self;
 }
@@ -175,12 +175,6 @@ NSString* const kUserInfo = @"kUserInfo";
   if (user) {
     userInfo = [NSDictionary dictionaryWithObject:user forKey:kUserInfo];
     [self requestHostListFetch];
-    [_authentication
-        callbackWithAccessToken:^(RemotingAuthenticationStatus status,
-                                  NSString* userEmail, NSString* accessToken) {
-          _clientRuntimeDelegate->SetAuthToken(
-              base::SysNSStringToUTF8(accessToken));
-        }];
   } else {
     _hosts = nil;
   }
