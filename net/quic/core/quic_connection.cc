@@ -2673,9 +2673,6 @@ bool QuicConnection::SendConnectivityProbingPacket(
     QuicPacketWriter* probing_writer,
     const QuicSocketAddress& peer_address) {
   DCHECK(peer_address.IsInitialized());
-  // TODO(zhongyi): remove this histogram once the cause of the INTERNAL_ERROR
-  // increase is determined.
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SentConnectivityProbe", true);
   if (always_discard_packets_after_close_ && !connected_) {
     QUIC_FLAG_COUNT_N(
         quic_reloadable_flag_quic_always_discard_packets_after_close, 2, 2);
