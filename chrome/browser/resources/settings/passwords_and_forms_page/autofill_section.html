@@ -114,8 +114,8 @@
               </paper-icon-button-light>
             </template>
             <template is="dom-if" if="[[!item.metadata.isLocal]]">
-              <paper-icon-button-light class="icon-external">
-                <button on-click="onRemoteEditAddressTap_" actionable></button>
+              <paper-icon-button-light actionable class="icon-external">
+                <button on-click="onRemoteEditAddressTap_"></button>
               </paper-icon-button-light>
             </template>
           </div>
@@ -180,9 +180,9 @@
                   </paper-icon-button-light>
                 </template>
                 <template is="dom-if" if="[[!showDots_(item.metadata)]]">
-                  <paper-icon-button-light class="icon-external">
+                  <paper-icon-button-light actionable class="icon-external">
                     <button id="remoteCreditCardLink"
-                        on-click="onRemoteEditCreditCardTap_" actionable>
+                        on-click="onRemoteEditCreditCardTap_">
                     </button>
                   </paper-icon-button-light>
                 </template>
