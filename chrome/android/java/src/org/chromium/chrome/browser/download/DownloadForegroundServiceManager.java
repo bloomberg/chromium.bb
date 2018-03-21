@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 
 import com.google.ipc.invalidation.util.Preconditions;
@@ -49,11 +50,23 @@ public class DownloadForegroundServiceManager {
     }
 
     private static final String TAG = "DownloadFg";
+    // Delay to ensure start/stop foreground doesn't happen too quickly (b/74236718).
+    private static final int WAIT_TIME_MS = 100;
 
-    @VisibleForTesting
-    final Map<Integer, DownloadUpdate> mDownloadUpdateQueue = new HashMap<>();
     // Used to track existing notifications for UMA stats.
     private final List<Integer> mExistingNotifications = new ArrayList<>();
+
+    // Variables used to ensure start/stop foreground doesn't happen too quickly (b/74236718).
+    private final Handler mHandler = new Handler();
+    private final Runnable mMaybeStopServiceRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mStopServiceDelayed = false;
+            processDownloadUpdateQueue(false /* not isProcessingPending */);
+            mHandler.removeCallbacks(mMaybeStopServiceRunnable);
+        }
+    };
+    private boolean mStopServiceDelayed = false;
 
     private int mPinnedNotificationId = INVALID_NOTIFICATION_ID;
 
@@ -61,6 +74,9 @@ public class DownloadForegroundServiceManager {
     private boolean mIsServiceBound;
     // This is non-null when onServiceConnected has been called (aka service is active).
     private DownloadForegroundService mBoundService;
+
+    @VisibleForTesting
+    final Map<Integer, DownloadUpdate> mDownloadUpdateQueue = new HashMap<>();
 
     public DownloadForegroundServiceManager() {}
 
@@ -115,14 +131,20 @@ public class DownloadForegroundServiceManager {
         if (isProcessingPending) {
             startOrUpdateForegroundService(
                     downloadUpdate.mNotificationId, downloadUpdate.mNotification);
+
+            // Post a delayed task to eventually check to see if service needs to be stopped.
+            postMaybeStopServiceRunnable();
         }
 
         // If the selected downloadUpdate is not active, there are no active downloads left.
         // Stop the foreground service.
         // In the pending case, this will stop the foreground immediately after it was started.
         if (!isActive(downloadUpdate.mDownloadStatus)) {
-            stopAndUnbindService(downloadUpdate.mDownloadStatus);
-            cleanDownloadUpdateQueue();
+            // Only stop the service if not waiting for delay (ie. WAIT_TIME_MS has transpired).
+            if (!mStopServiceDelayed) {
+                stopAndUnbindService(downloadUpdate.mDownloadStatus);
+                cleanDownloadUpdateQueue();
+            }
             return;
         }
 
@@ -285,5 +307,13 @@ public class DownloadForegroundServiceManager {
     @VisibleForTesting
     void setBoundService(DownloadForegroundService service) {
         mBoundService = service;
+    }
+
+    // Allow testing methods to skip posting the delayed runnable.
+    @VisibleForTesting
+    void postMaybeStopServiceRunnable() {
+        mHandler.removeCallbacks(mMaybeStopServiceRunnable);
+        mHandler.postDelayed(mMaybeStopServiceRunnable, WAIT_TIME_MS);
+        mStopServiceDelayed = true;
     }
 }
