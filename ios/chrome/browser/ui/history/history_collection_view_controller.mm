@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
@@ -880,6 +881,8 @@ const CGFloat kSeparatorInset = 10;
 
 - (void)openURL:(const GURL&)URL {
   GURL copiedURL(URL);
+  new_tab_page_uma::RecordAction(_browserState,
+                                 new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   [self.delegate historyCollectionViewController:self
                        shouldCloseWithCompletion:^{
                          [self.URLLoader

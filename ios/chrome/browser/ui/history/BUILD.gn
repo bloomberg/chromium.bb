@@ -50,6 +50,7 @@ source_set("history") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui",
