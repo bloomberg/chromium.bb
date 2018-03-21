@@ -1161,7 +1161,7 @@ void av1_set_default_mode_deltas(int8_t *mode_deltas) {
   assert(mode_deltas != NULL);
 
   mode_deltas[0] = 0;
-  mode_deltas[0] = 0;
+  mode_deltas[1] = 0;
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {
