@@ -90,6 +90,7 @@ crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-p
 # Timing out consistenly on WebKit Linux Trusty MSAN
 crbug.com/798957 [ Linux ] http/tests/devtools/audits2/audits2-limited-run.js [ Skip ]
 crbug.com/798957 [ Linux ] http/tests/devtools/audits2/audits2-successful-run.js [ Skip ]
+crbug.com/824455 [ Linux ] external/wpt/webaudio/idlharness.https.html [ Skip ]
 
 # Memory allocation hooks are disabled on ASAN/MSAN
 crbug.com/803276 inspector-protocol/memory/sampling-native-profile.js [ Skip ]
