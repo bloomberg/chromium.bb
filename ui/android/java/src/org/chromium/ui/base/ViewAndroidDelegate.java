@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
@@ -337,6 +338,13 @@ public abstract class ViewAndroidDelegate {
     private void requestDisallowInterceptTouchEvent() {
         ViewGroup container = getContainerView();
         if (container != null) container.requestDisallowInterceptTouchEvent(true);
+    }
+
+    @CalledByNative
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void requestUnbufferedDispatch(MotionEvent event) {
+        ViewGroup container = getContainerView();
+        if (container != null) container.requestUnbufferedDispatch(event);
     }
 
     @CalledByNative

@@ -106,10 +106,6 @@ class ContentViewCore : public WebContentsObserver {
       const base::android::JavaParamRef<jstring>& textTrackTextShadow,
       const base::android::JavaParamRef<jstring>& textTrackTextSize);
 
-  jboolean UsingSynchronousCompositing(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
