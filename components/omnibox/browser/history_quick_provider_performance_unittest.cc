@@ -121,9 +121,17 @@ void HQPPerfTestOnePopularURL::TearDown() {
 }
 
 void HQPPerfTestOnePopularURL::PrepareData() {
-  // Adding fake urls to db must be done before RebuildFromHistory(). This will
-  // ensure that the index is properly populated with data from the database.
+// Adding fake urls to db must be done before RebuildFromHistory(). This will
+// ensure that the index is properly populated with data from the database.
+// Note: on debug builds these tests can be slow. Use a smaller data set in
+// that case. See crbug.com/822624.
+#if defined NDEBUG
   constexpr size_t kSimilarUrlCount = 10000;
+#else
+  LOG(ERROR) << "HQP performance test is running on a debug build, results may "
+                "not be accurate.";
+  constexpr size_t kSimilarUrlCount = 100;
+#endif
   for (size_t i = 0; i < kSimilarUrlCount; ++i)
     AddFakeURLToHistoryDB(history_backend()->db(), GeneratePopularURLRow());
 
