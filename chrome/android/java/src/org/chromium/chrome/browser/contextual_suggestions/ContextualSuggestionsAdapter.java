@@ -64,7 +64,7 @@ class ContextualSuggestionsAdapter
      */
     ContextualSuggestionsAdapter(Context context, Profile profile, UiConfig uiConfig,
             SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model) {
-        super(model);
+        super(model.mSuggestionsList);
 
         setViewBinder(new ContextualSuggestionsViewBinder());
 

@@ -495,7 +495,8 @@ public class BottomSheet
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
-        mToolbarHeight = mDefaultToolbarView.getHeight();
+        mToolbarHeight = activity.getResources().getDimensionPixelSize(
+                R.dimen.bottom_control_container_height);
 
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(mActivity, this);
@@ -590,9 +591,6 @@ public class BottomSheet
                 if (bottom - top == oldBottom - oldTop && right - left == oldRight - oldLeft) {
                     return;
                 }
-
-                mToolbarHeight = bottom - top;
-                updateSheetStateRatios();
 
                 if (!mGestureDetector.isScrolling()) {
                     cancelAnimation();

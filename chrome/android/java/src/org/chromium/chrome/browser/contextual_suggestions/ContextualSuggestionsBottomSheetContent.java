@@ -10,15 +10,20 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
 
 /** A {@link BottomSheetContent} that displays contextual suggestions. */
 public class ContextualSuggestionsBottomSheetContent implements BottomSheetContent {
-    private ContentCoordinator mContentCoordinator;
+    private final ContentCoordinator mContentCoordinator;
+    private final ToolbarCoordinator mToolbarCoordinator;
 
     /**
      * Construct a new {@link ContextualSuggestionsBottomSheetContent}.
      * @param contentCoordinator The {@link ContentCoordinator} that manages content to be
      *                           displayed.
+     * @param toolbarCoordinator The {@link ToolbarCoordinator} that manages the toolbar to be
+     *                           displayed.
      */
-    ContextualSuggestionsBottomSheetContent(ContentCoordinator contentCoordinator) {
+    ContextualSuggestionsBottomSheetContent(
+            ContentCoordinator contentCoordinator, ToolbarCoordinator toolbarCoordinator) {
         mContentCoordinator = contentCoordinator;
+        mToolbarCoordinator = toolbarCoordinator;
     }
 
     @Override
@@ -28,7 +33,7 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
 
     @Override
     public View getToolbarView() {
-        return null;
+        return mToolbarCoordinator.getView();
     }
 
     @Override
@@ -37,9 +42,7 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     }
 
     @Override
-    public void destroy() {
-        mContentCoordinator = null;
-    }
+    public void destroy() {}
 
     @Override
     public boolean applyDefaultTopPadding() {

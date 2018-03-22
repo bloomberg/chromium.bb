@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -22,17 +24,16 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
  * They share a {@link ContextualSuggestionsMediator} and {@link ContextualSuggestionsModel}.
  */
 public class ContextualSuggestionsCoordinator {
-    private ChromeActivity mActivity;
-    private BottomSheet mBottomSheet;
-    private Profile mProfile;
+    private final ChromeActivity mActivity;
+    private final BottomSheet mBottomSheet;
+    private final Profile mProfile;
+    private final ContextualSuggestionsModel mModel;
+    private final ContextualSuggestionsMediator mMediator;
+    private final SuggestionsUiDelegateImpl mUiDelegate;
 
-    private ContextualSuggestionsModel mModel;
-    private ContextualSuggestionsMediator mMediator;
-    private ContentCoordinator mContentCoordinator;
-
-    private SuggestionsUiDelegateImpl mUiDelegate;
-
-    private ContextualSuggestionsBottomSheetContent mBottomSheetContent;
+    private @Nullable ToolbarCoordinator mToolbarCoordinator;
+    private @Nullable ContentCoordinator mContentCoordinator;
+    private @Nullable ContextualSuggestionsBottomSheetContent mBottomSheetContent;
 
     /**
      * Construct a new {@link ContextualSuggestionsCoordinator}.
@@ -62,6 +63,7 @@ public class ContextualSuggestionsCoordinator {
     public void destroy() {
         mMediator.destroy();
 
+        if (mToolbarCoordinator != null) mToolbarCoordinator.destroy();
         if (mContentCoordinator != null) mContentCoordinator.destroy();
         if (mBottomSheetContent != null) mBottomSheetContent.destroy();
     }
@@ -73,24 +75,30 @@ public class ContextualSuggestionsCoordinator {
         // TODO(twellington): Introduce another method that creates bottom sheet content with only
         // a toolbar view when suggestions are fist available, and use this method to construct the
         // content view when the sheet is opened.
+        mToolbarCoordinator = new ToolbarCoordinator(mActivity, mBottomSheet, mModel);
         mContentCoordinator =
                 new ContentCoordinator(mActivity, mBottomSheet, mProfile, mUiDelegate, mModel);
-        mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(mContentCoordinator);
+        mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
+                mContentCoordinator, mToolbarCoordinator);
         mBottomSheet.showContent(mBottomSheetContent);
     }
 
     /** Removes contextual suggestions from the {@link BottomSheet}. */
     void removeSuggestions() {
+        if (mToolbarCoordinator != null) {
+            mToolbarCoordinator.destroy();
+            mToolbarCoordinator = null;
+        }
+
         if (mContentCoordinator != null) {
             mContentCoordinator.destroy();
             mContentCoordinator = null;
         }
 
-        if (mBottomSheetContent == null) return;
-
-        mBottomSheet.showContent(null);
-
-        mBottomSheetContent.destroy();
-        mBottomSheetContent = null;
+        if (mBottomSheetContent != null) {
+            mBottomSheet.showContent(null);
+            mBottomSheetContent.destroy();
+            mBottomSheetContent = null;
+        }
     }
 }
