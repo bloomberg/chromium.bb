@@ -172,4 +172,14 @@ interface LoginScreenClient {
 
   // Try to remove |account_id|.
   RemoveUser(signin.mojom.AccountId account_id);
+
+  // Launch a public session for user with |account_id|.
+  // |locale|:       Locale for this user.
+  //                 The value is language code like "en-US", "zh-CN"
+  // |input_method|: Input method for this user.
+  //                 This is the id of InputMethodDescriptor like
+  //                 "t:latn-post", "pinyin".
+  LaunchPublicSession(signin.mojom.AccountId account_id,
+                      string locale,
+                      string input_method);
 };

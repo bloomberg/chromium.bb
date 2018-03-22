@@ -65,6 +65,9 @@ class LoginDisplayHostViews : public LoginDisplayHostCommon,
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
   void HandleLoginAsGuest() override;
+  void HandleLaunchPublicSession(const AccountId& account_id,
+                                 const std::string& locale,
+                                 const std::string& input_method) override;
 
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
@@ -77,6 +80,9 @@ class LoginDisplayHostViews : public LoginDisplayHostCommon,
   void SetUsers(const user_manager::UserList& users);
 
  private:
+  // Initialize the dialog widget for webui (for gaia and post login screens).
+  void InitWidgetAndView();
+
   // Callback that should be executed the authentication result is available.
   AuthenticateUserCallback on_authenticated_;
 

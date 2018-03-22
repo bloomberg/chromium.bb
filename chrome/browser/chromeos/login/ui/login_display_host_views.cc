@@ -20,10 +20,15 @@
 
 namespace chromeos {
 
-LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {}
+LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {
+  // Preload the WebUI for post-login screens.
+  InitWidgetAndView();
+}
 
 LoginDisplayHostViews::~LoginDisplayHostViews() {
   LoginScreenClient::Get()->SetDelegate(nullptr);
+  if (dialog_)
+    dialog_->Close();
 }
 
 LoginDisplay* LoginDisplayHostViews::CreateLoginDisplay(
@@ -59,11 +64,16 @@ void LoginDisplayHostViews::SetStatusAreaVisible(bool visible) {
 }
 
 void LoginDisplayHostViews::StartWizard(OobeScreen first_screen) {
-  if (!GetOobeUI())
-    return;
+  DCHECK(GetOobeUI());
 
+  // Dtor of the old WizardController should be called before ctor of the
+  // new one to ensure only one |ExistingUserController| instance at a time.
+  wizard_controller_.reset();
   wizard_controller_.reset(new WizardController(this, GetOobeUI()));
   wizard_controller_->Init(first_screen);
+
+  // Post login screens should not be closable by escape key.
+  dialog_->Show(false /*closable_by_esc*/);
 }
 
 WizardController* LoginDisplayHostViews::GetWizardController() {
@@ -129,12 +139,9 @@ bool LoginDisplayHostViews::IsVoiceInteractionOobe() {
 }
 
 void LoginDisplayHostViews::UpdateGaiaDialogVisibility(bool visible) {
-  if (visible == !!dialog_)
-    return;
-
+  DCHECK(dialog_);
   if (visible) {
-    dialog_ = new GaiaDialogDelegate(weak_factory_.GetWeakPtr());
-    dialog_->Show();
+    dialog_->Show(true /*closable_by_esc*/);
     return;
   }
 
@@ -145,7 +152,7 @@ void LoginDisplayHostViews::UpdateGaiaDialogVisibility(bool visible) {
     return;
   }
 
-  dialog_->Close();
+  dialog_->Hide();
 }
 
 void LoginDisplayHostViews::UpdateGaiaDialogSize(int width, int height) {
@@ -211,6 +218,16 @@ void LoginDisplayHostViews::HandleLoginAsGuest() {
                                    chromeos::SigninSpecifics());
 }
 
+void LoginDisplayHostViews::HandleLaunchPublicSession(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::string& input_method) {
+  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
+  context.SetPublicSessionLocale(locale);
+  context.SetPublicSessionInputMethod(input_method);
+  existing_user_controller_->Login(context, chromeos::SigninSpecifics());
+}
+
 void LoginDisplayHostViews::OnAuthFailure(const AuthFailure& error) {
   if (on_authenticated_)
     std::move(on_authenticated_).Run(false);
@@ -231,6 +248,14 @@ void LoginDisplayHostViews::OnDialogDestroyed(
 
 void LoginDisplayHostViews::SetUsers(const user_manager::UserList& users) {
   users_ = users;
+}
+
+void LoginDisplayHostViews::InitWidgetAndView() {
+  if (dialog_)
+    return;
+
+  dialog_ = new GaiaDialogDelegate(weak_factory_.GetWeakPtr());
+  dialog_->Init();
 }
 
 }  // namespace chromeos

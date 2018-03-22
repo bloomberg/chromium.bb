@@ -327,6 +327,15 @@ void LoginScreenController::RemoveUser(const AccountId& account_id) {
   login_screen_client_->RemoveUser(account_id);
 }
 
+void LoginScreenController::LaunchPublicSession(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::string& input_method) {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->LaunchPublicSession(account_id, locale, input_method);
+}
+
 void LoginScreenController::AddLockScreenAppsFocusObserver(
     LockScreenAppsFocusObserver* observer) {
   lock_screen_apps_focus_observers_.AddObserver(observer);

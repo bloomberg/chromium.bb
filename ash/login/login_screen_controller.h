@@ -94,6 +94,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void ShowGaiaSignin();
   void OnRemoveUserWarningShown();
   void RemoveUser(const AccountId& account_id);
+  void LaunchPublicSession(const AccountId& account_id,
+                           const std::string& locale,
+                           const std::string& input_method);
 
   // Methods to manage lock screen apps focus observers.
   // The observers will be notified when lock screen apps focus changes are

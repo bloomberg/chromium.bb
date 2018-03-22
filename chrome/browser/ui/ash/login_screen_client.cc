@@ -129,6 +129,13 @@ void LoginScreenClient::RemoveUser(const AccountId& account_id) {
                                                nullptr /*delegate*/);
 }
 
+void LoginScreenClient::LaunchPublicSession(const AccountId& account_id,
+                                            const std::string& locale,
+                                            const std::string& input_method) {
+  if (delegate_)
+    delegate_->HandleLaunchPublicSession(account_id, locale, input_method);
+}
+
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }

@@ -245,6 +245,13 @@ void ViewsScreenLocker::HandleLoginAsGuest() {
   NOTREACHED();
 }
 
+void ViewsScreenLocker::HandleLaunchPublicSession(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::string& input_method) {
+  NOTREACHED();
+}
+
 void ViewsScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
   for (user_manager::User* user :
        user_manager::UserManager::Get()->GetUnlockUsers()) {
