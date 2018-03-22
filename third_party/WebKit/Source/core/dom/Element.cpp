@@ -2550,8 +2550,10 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
 
 bool Element::CanAttachShadowRoot() const {
   const AtomicString& tag_name = localName();
-  return IsV0CustomElement() ||
-         GetCustomElementState() != CustomElementState::kUncustomized ||
+  // Checking Is{V0}CustomElement() here is just an optimization
+  // because IsValidName is not cheap.
+  return (IsCustomElement() && CustomElement::IsValidName(tag_name)) ||
+         (IsV0CustomElement() && V0CustomElement::IsValidName(tag_name)) ||
          tag_name == HTMLNames::articleTag || tag_name == HTMLNames::asideTag ||
          tag_name == HTMLNames::blockquoteTag ||
          tag_name == HTMLNames::bodyTag || tag_name == HTMLNames::divTag ||
@@ -2616,7 +2618,6 @@ ShadowRoot& Element::CreateUserAgentShadowRoot() {
 ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
                                               bool delegates_focus) {
   DCHECK(CanAttachShadowRoot());
-  DCHECK(AreAuthorShadowsAllowed());
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed)
       << type;
   DCHECK(!AlwaysCreateUserAgentShadowRoot());
