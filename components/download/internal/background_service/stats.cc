@@ -91,6 +91,8 @@ std::string ClientToHistogramSuffix(DownloadClient client) {
       return "BackgroundFetch";
     case DownloadClient::DEBUGGING:
       return "Debugging";
+    case DownloadClient::MOUNTAIN_INTERNAL:
+      return "MountainInternal";
     case DownloadClient::BOUNDARY:
       NOTREACHED();
       break;

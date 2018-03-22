@@ -37,7 +37,9 @@ enum class DownloadClient {
   // Used by debug surfaces in the app (the WebUI, for example).
   DEBUGGING = 3,
 
-  BOUNDARY = 4,
+  MOUNTAIN_INTERNAL = 4,
+
+  BOUNDARY = 5,
 };
 
 using DownloadClientMap = std::map<DownloadClient, std::unique_ptr<Client>>;
