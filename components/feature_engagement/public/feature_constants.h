@@ -27,7 +27,6 @@ extern const base::Feature kIPHDownloadHomeFeature;
 extern const base::Feature kIPHDownloadPageFeature;
 extern const base::Feature kIPHDownloadPageScreenshotFeature;
 extern const base::Feature kIPHChromeHomeExpandFeature;
-extern const base::Feature kIPHChromeHomeMenuHeaderFeature;
 extern const base::Feature kIPHChromeHomePullToRefreshFeature;
 extern const base::Feature kIPHMediaDownloadFeature;
 extern const base::Feature kIPHContextualSearchWebSearchFeature;

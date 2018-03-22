@@ -5662,6 +5662,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyEvent.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>
@@ -5857,6 +5858,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyUsedEvent.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>
@@ -6053,6 +6055,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>
@@ -6288,6 +6291,7 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>
@@ -6518,6 +6522,7 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>
@@ -6729,6 +6734,7 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_ChromeHomeMenuHeader">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <description>

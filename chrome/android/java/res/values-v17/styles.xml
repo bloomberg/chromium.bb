@@ -310,28 +310,6 @@
             @drawable/distilled_page_prefs_button_bg
         </item>
     </style>
-    <style name="OverflowMenuHeaderLayout">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@color/modern_light_grey</item>
-        <item name="android:orientation">horizontal</item>
-        <item name="android:paddingStart">16dp</item>
-    </style>
-        <!-- Top and bottom padding is used to achieve layout that best matches
-         UX spec. While the text matches @style/BlankHint2, text size and color
-         are set explicitly. When shown in the overflow menu, the header
-         is inflated using the OverflowMenuTheme. The theme's textAppearance
-         will override any textAppearance set on this element. -->
-    <style name="OverflowMenuHeaderText">
-        <item name="android:layout_weight">1</item>
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:paddingTop">9dp</item>
-        <item name="android:paddingBottom">9dp</item>
-        <item name="android:textColor">@color/black_alpha_54</item>
-        <item name="android:textSize">@dimen/text_size_medium</item>
-    </style>
 
     <!-- Button bar styles -->
     <style name="ButtonBarTopSpacerLight">
