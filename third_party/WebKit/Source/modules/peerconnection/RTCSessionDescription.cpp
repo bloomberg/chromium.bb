@@ -65,7 +65,7 @@ RTCSessionDescription::RTCSessionDescription(
     WebRTCSessionDescription web_session_description)
     : web_session_description_(web_session_description) {}
 
-String RTCSessionDescription::type() {
+String RTCSessionDescription::type() const {
   return web_session_description_.GetType();
 }
 
@@ -73,7 +73,7 @@ void RTCSessionDescription::setType(const String& type) {
   web_session_description_.SetType(type);
 }
 
-String RTCSessionDescription::sdp() {
+String RTCSessionDescription::sdp() const {
   return web_session_description_.Sdp();
 }
 

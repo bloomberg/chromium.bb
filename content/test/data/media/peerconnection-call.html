@@ -238,10 +238,10 @@
     createConnections(null);
     setOfferSdpTransform(removeCrypto);
     setOnLocalDescriptionError(function(error) {
-      var expectedMsg = 'Failed to set local offer sdp:' +
-          ' Called with SDP without DTLS fingerprint.';
-
-      assertEquals(expectedMsg, error.message);
+      // Note: Per spec, error should be 'IllegalModificationError'
+      // https://crbug.com/823036
+      var expectedError = 'OperationError';
+      assertEquals(expectedError, error.name);
       reportTestSuccess();
     });
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
