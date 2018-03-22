@@ -702,6 +702,9 @@ cr.define('wallpapers', function() {
       // The active thumbnail maybe deleted in the above redraw(). Sets it again
       // to make sure checkmark shows correctly.
       this.updateActiveThumb_();
+      // Show the info bar only when the scroll bar is at the top.
+      $('current-wallpaper-info-bar')
+          .classList.toggle('show-info-bar', this.scrollTop == 0);
     }
   };
 
