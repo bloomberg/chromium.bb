@@ -108,10 +108,6 @@ class TrayAccessibilityTest : public AshTestBase {
     return tray_item_->detailed_menu_->sticky_keys_view_;
   }
 
-  bool IsTapDraggingMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->tap_dragging_view_;
-  }
-
   // In material design we show the help button but theme it as disabled if
   // it is not possible to load the help page.
   bool IsHelpAvailableOnDetailMenu() {
@@ -246,7 +242,6 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
 
   // Simulate screen lock.
@@ -266,7 +261,6 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 
@@ -287,7 +281,6 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 }

@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -67,18 +65,6 @@ TouchDevicesController::TouchDevicesController() {
 
 TouchDevicesController::~TouchDevicesController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-}
-
-void TouchDevicesController::SetTapDraggingEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
-    return;
-  prefs->SetBoolean(prefs::kTapDraggingEnabled, enabled);
-  prefs->CommitPendingWrite();
-}
-
-bool TouchDevicesController::GetTapDraggingEnabled() const {
-  return tap_dragging_enabled_;
 }
 
 void TouchDevicesController::ToggleTouchpad() {
@@ -166,12 +152,6 @@ void TouchDevicesController::UpdateTapDraggingEnabled() {
   tap_dragging_enabled_ = enabled;
 
   UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Changed", enabled);
-
-  // Tap dragging is listed as a11y feature, so notifying a11y status changed.
-  // TODO(warx): tap dragging is considered to be removed from a11y feature.
-  // https://crbug.com/164273, https://crbug.com/724501.
-  Shell::Get()->accessibility_controller()->NotifyAccessibilityStatusChanged(
-      A11Y_NOTIFICATION_NONE);
 
   if (!GetInputDeviceControllerClient())
     return;  // Happens in tests.

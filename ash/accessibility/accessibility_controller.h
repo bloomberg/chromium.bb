@@ -82,9 +82,6 @@ class ASH_EXPORT AccessibilityController
   void SetStickyKeysEnabled(bool enabled);
   bool IsStickyKeysEnabled() const;
 
-  void SetTapDraggingEnabled(bool enabled);
-  bool IsTapDraggingEnabled() const;
-
   void SetVirtualKeyboardEnabled(bool enabled);
   bool IsVirtualKeyboardEnabled() const;
 
@@ -129,8 +126,8 @@ class ASH_EXPORT AccessibilityController
   // countdown.
   void PlaySpokenFeedbackToggleCountdown(int tick_count);
 
-  // Public because a11y features like screen magnifier and tap dragging are
-  // managed outside of this controller.
+  // Public because a11y features like screen magnifier are managed outside of
+  // this controller.
   void NotifyAccessibilityStatusChanged(
       AccessibilityNotificationVisibility notify);
 

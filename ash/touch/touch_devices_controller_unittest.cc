@@ -39,6 +39,13 @@ bool GetGlobalTouchscreenEnabled() {
       TouchscreenEnabledSource::GLOBAL);
 }
 
+void SetTapDraggingEnabled(bool enabled) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kTapDraggingEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
 class TouchDevicesControllerSigninTest : public NoSessionAshTestBase {
  public:
   TouchDevicesControllerSigninTest() = default;
@@ -82,18 +89,18 @@ TEST_F(TouchDevicesControllerSigninTest, PrefsAreRegistered) {
 
 TEST_F(TouchDevicesControllerSigninTest, SetTapDraggingEnabled) {
   auto* controller = Shell::Get()->touch_devices_controller();
-  ASSERT_FALSE(controller->GetTapDraggingEnabled());
-  controller->SetTapDraggingEnabled(true);
-  EXPECT_TRUE(controller->GetTapDraggingEnabled());
+  ASSERT_FALSE(controller->tap_dragging_enabled_for_test());
+  SetTapDraggingEnabled(true);
+  EXPECT_TRUE(controller->tap_dragging_enabled_for_test());
 
   // Switch to user 2 and switch back.
   SwitchActiveUser(kUser2Email);
-  EXPECT_FALSE(controller->GetTapDraggingEnabled());
+  EXPECT_FALSE(controller->tap_dragging_enabled_for_test());
   SwitchActiveUser(kUser1Email);
-  EXPECT_TRUE(controller->GetTapDraggingEnabled());
+  EXPECT_TRUE(controller->tap_dragging_enabled_for_test());
 
-  controller->SetTapDraggingEnabled(false);
-  EXPECT_FALSE(controller->GetTapDraggingEnabled());
+  SetTapDraggingEnabled(false);
+  EXPECT_FALSE(controller->tap_dragging_enabled_for_test());
 }
 
 // Tests that touchpad enabled user pref works properly under debug accelerator.
@@ -148,7 +155,7 @@ using TouchDevicesControllerPrefsTest = NoSessionAshTestBase;
 // time pref changes.
 TEST_F(TouchDevicesControllerPrefsTest, RecordUma) {
   auto* controller = Shell::Get()->touch_devices_controller();
-  ASSERT_FALSE(controller->GetTapDraggingEnabled());
+  ASSERT_FALSE(controller->tap_dragging_enabled_for_test());
 
   TestSessionControllerClient* session = GetSessionControllerClient();
   // Disable auto-provision of PrefService.
@@ -172,8 +179,8 @@ TEST_F(TouchDevicesControllerPrefsTest, RecordUma) {
   histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 1);
   histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Changed", 0);
 
-  EXPECT_FALSE(controller->GetTapDraggingEnabled());
-  controller->SetTapDraggingEnabled(true);
+  EXPECT_FALSE(controller->tap_dragging_enabled_for_test());
+  SetTapDraggingEnabled(true);
   histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 1);
   histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Changed", 1);
 }

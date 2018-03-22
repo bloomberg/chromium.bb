@@ -73,7 +73,6 @@ class AccessibilityDetailedView : public TrayDetailsView {
   HoverHighlightView* highlight_mouse_cursor_view_ = nullptr;
   HoverHighlightView* highlight_keyboard_focus_view_ = nullptr;
   HoverHighlightView* sticky_keys_view_ = nullptr;
-  HoverHighlightView* tap_dragging_view_ = nullptr;
   views::Button* help_view_ = nullptr;
   views::Button* settings_view_ = nullptr;
 
@@ -91,7 +90,6 @@ class AccessibilityDetailedView : public TrayDetailsView {
   bool highlight_mouse_cursor_enabled_ = false;
   bool highlight_keyboard_focus_enabled_ = false;
   bool sticky_keys_enabled_ = false;
-  bool tap_dragging_enabled_ = false;
 
   LoginStatus login_;
 
