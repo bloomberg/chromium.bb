@@ -201,17 +201,21 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   void AddAuraWindow() {
     webrtc::DesktopCapturer::Source window;
     window.title = "Test window";
+
     // Create a aura native widow through a widget.
     desktop_widgets_.push_back(CreateDesktopWidget());
+    aura::WindowTreeHost* const host =
+        desktop_widgets_.back()->GetNativeWindow()->GetHost();
+    aura::Window* const aura_window = host->window();
+
     // Get the native window's id.
-    aura::Window* aura_window = desktop_widgets_.back()->GetNativeWindow();
-    gfx::AcceleratedWidget widget =
-        aura_window->GetHost()->GetAcceleratedWidget();
+    gfx::AcceleratedWidget widget = host->GetAcceleratedWidget();
 #if defined(OS_WIN)
     window.id = reinterpret_cast<DesktopMediaID::Id>(widget);
 #else
     window.id = widget;
 #endif
+
     // Get the aura window's id.
     DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
         DesktopMediaID::TYPE_WINDOW, aura_window);
