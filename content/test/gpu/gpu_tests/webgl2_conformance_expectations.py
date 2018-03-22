@@ -233,9 +233,25 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd', 'd3d11'], bug=483282) # owner:jmadill
 
-    # Keep a separate set of failures for the R7 240, since it can use a new
-    # and updated driver. The older drivers won't ever get fixes from AMD.
-    # Use ['win', ('amd', 0x6613)] for the R7 240 devices.
+    # Recent AMD drivers seem to have a regression with 3D textures.
+    self.Fail('conformance2/textures/canvas_sub_rectangle/tex-3d-*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('conformance2/textures/image_data/tex-3d-*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('conformance2/textures/video/tex-3d-*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/shadertexturefunction/*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage3d_pbo_3d*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
 
     # Have seen this time out. Think it may be because it's currently
     # the first test that runs in the shard, and the browser might not
