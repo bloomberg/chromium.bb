@@ -69,7 +69,7 @@ void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
     return;
 
   // Create page data exists for this Page CU.
-  auto* page_cu = static_cast<const PageCoordinationUnitImpl*>(cu);
+  auto* page_cu = PageCoordinationUnitImpl::FromCoordinationUnitBase(cu);
   DCHECK(!base::ContainsKey(page_data_, page_cu)); // No data should exist yet.
   page_data_[page_cu].load_idle_state = kLoadingNotStarted;
 }
@@ -83,7 +83,7 @@ void PageSignalGeneratorImpl::OnBeforeCoordinationUnitDestroyed(
   if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
     return;
 
-  auto* page_cu = static_cast<const PageCoordinationUnitImpl*>(cu);
+  auto* page_cu = PageCoordinationUnitImpl::FromCoordinationUnitBase(cu);
   size_t count = page_data_.erase(page_cu);
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
 }

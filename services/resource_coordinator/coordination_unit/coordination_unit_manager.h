@@ -30,7 +30,7 @@ class CoordinationUnitProviderImpl;
 // The CoordinationUnitManager is a singleton that encapsulates all
 // aspects of Coordination Units within the resource_coordinator service.
 // All functionality for dealing with CoordinationUnits should be contained
-// within this class or classes that are owned by it
+// within this class or classes that are owned by it.
 class CoordinationUnitManager {
  public:
   CoordinationUnitManager();

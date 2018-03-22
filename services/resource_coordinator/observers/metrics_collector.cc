@@ -117,7 +117,7 @@ void MetricsCollector::OnPagePropertyChanged(
   const auto page_cu_id = page_cu->id();
   if (property_type == mojom::PropertyType::kVisible) {
     if (value) {
-      // The page becomes visible again, clear all record in order to
+      // The page becomes visible again, clear all records in order to
       // report metrics when page becomes invisible next time.
       ResetMetricsReportRecord(page_cu_id);
       return;

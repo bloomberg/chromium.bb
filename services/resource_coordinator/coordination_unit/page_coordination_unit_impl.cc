@@ -25,8 +25,9 @@ PageCoordinationUnitImpl::~PageCoordinationUnitImpl() {
 
 void PageCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id.type == CoordinationUnitType::kFrame);
-  FrameCoordinationUnitImpl* frame_cu = static_cast<FrameCoordinationUnitImpl*>(
-      CoordinationUnitBase::GetCoordinationUnitByID(cu_id));
+  FrameCoordinationUnitImpl* frame_cu =
+      FrameCoordinationUnitImpl::FromCoordinationUnitBase(
+          CoordinationUnitBase::GetCoordinationUnitByID(cu_id));
   if (!frame_cu)
     return;
   if (AddFrame(frame_cu))
