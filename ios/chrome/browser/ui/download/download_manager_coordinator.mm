@@ -120,6 +120,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 - (void)stop {
   if (_viewController) {
     [self.presenter dismissAnimated:YES];
+    // Prevent delegate callbacks for stopped coordinator.
+    _viewController.delegate = nil;
     _viewController = nil;
   }
   [_confirmationDialog dismissViewControllerAnimated:YES completion:nil];
