@@ -4,6 +4,7 @@
 
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 
+#include <stdint.h>
 #include <algorithm>
 
 #include "base/bind.h"
@@ -17,18 +18,15 @@ AudioMirroringManager* AudioMirroringManager::GetInstance() {
   return manager;
 }
 
-AudioMirroringManager::AudioMirroringManager() {
-  // Only *after* construction, check that AudioMirroringManager is being
-  // invoked on the same single thread.
-  thread_checker_.DetachFromThread();
-}
+AudioMirroringManager::AudioMirroringManager() {}
 
 AudioMirroringManager::~AudioMirroringManager() {}
 
 void AudioMirroringManager::AddDiverter(
     int render_process_id, int render_frame_id, Diverter* diverter) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(diverter);
+
+  base::AutoLock scoped_lock(lock_);
 
   // DCHECK(diverter not already in routes_)
 #ifndef NDEBUG
@@ -49,7 +47,7 @@ void AudioMirroringManager::AddDiverter(
 }
 
 void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock scoped_lock(lock_);
 
   // Find and remove the entry from the routing table.  If the stream is being
   // diverted, it is stopped.
@@ -70,8 +68,9 @@ void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
 }
 
 void AudioMirroringManager::StartMirroring(MirroringDestination* destination) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(destination);
+
+  base::AutoLock scoped_lock(lock_);
 
   // Insert an entry into the set of active mirroring sessions, if this is a
   // previously-unknown destination.
@@ -99,7 +98,7 @@ void AudioMirroringManager::StartMirroring(MirroringDestination* destination) {
 }
 
 void AudioMirroringManager::StopMirroring(MirroringDestination* destination) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock scoped_lock(lock_);
 
   // Stop diverting each audio stream in the mirroring session being stopped.
   // Each stopped stream becomes a candidate to be diverted to another
@@ -129,10 +128,38 @@ void AudioMirroringManager::StopMirroring(MirroringDestination* destination) {
   sessions_.erase(dest_it);
 }
 
+AudioMirroringManager::AddDiverterCallback
+AudioMirroringManager::GetAddDiverterCallback() {
+  return base::BindRepeating(
+      [](AudioMirroringManager* self,
+         const base::UnguessableToken& guessable_token, Diverter* diverter) {
+        const int render_process_id =
+            static_cast<int>(guessable_token.GetHighForSerialization());
+        const int render_frame_id =
+            static_cast<int>(guessable_token.GetLowForSerialization());
+        self->AddDiverter(render_process_id, render_frame_id, diverter);
+      },
+      base::Unretained(this));
+}
+
+AudioMirroringManager::RemoveDiverterCallback
+AudioMirroringManager::GetRemoveDiverterCallback() {
+  return base::BindRepeating(&AudioMirroringManager::RemoveDiverter,
+                             base::Unretained(this));
+}
+
+// static
+base::UnguessableToken AudioMirroringManager::ToGroupId(int render_process_id,
+                                                        int render_frame_id) {
+  return base::UnguessableToken::Deserialize(
+      static_cast<uint64_t>(render_process_id),
+      static_cast<uint64_t>(render_frame_id));
+}
+
 void AudioMirroringManager::InitiateQueriesToFindNewDestination(
     MirroringDestination* old_destination,
     const std::set<SourceFrameRef>& candidates) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  lock_.AssertAcquired();
 
   for (Destinations::const_iterator it = sessions_.begin();
        it != sessions_.end(); ++it) {
@@ -151,6 +178,8 @@ void AudioMirroringManager::UpdateRoutesToDestination(
     bool add_only,
     const std::set<SourceFrameRef>& matches,
     bool is_duplicate) {
+  base::AutoLock scoped_lock(lock_);
+
   if (is_duplicate)
     UpdateRoutesToDuplicateDestination(destination, add_only, matches);
   else
@@ -161,7 +190,7 @@ void AudioMirroringManager::UpdateRoutesToDivertDestination(
     MirroringDestination* destination,
     bool add_only,
     const std::set<SourceFrameRef>& matches) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  lock_.AssertAcquired();
 
   if (std::find(sessions_.begin(), sessions_.end(), destination) ==
           sessions_.end()) {
@@ -195,7 +224,8 @@ void AudioMirroringManager::UpdateRoutesToDuplicateDestination(
     MirroringDestination* destination,
     bool add_only,
     const std::set<SourceFrameRef>& matches) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  lock_.AssertAcquired();
+
   if (std::find(sessions_.begin(), sessions_.end(), destination) ==
       sessions_.end()) {
     return;  // Query result callback invoked after StopMirroring().

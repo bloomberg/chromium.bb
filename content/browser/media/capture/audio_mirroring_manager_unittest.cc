@@ -11,7 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +72,9 @@ class MockMirroringDestination
             candidates.end()) {
       result.insert(SourceFrameRef(render_process_id_, render_frame_id_));
     }
-    results_callback.Run(result, is_duplication_);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(results_callback, std::move(result), is_duplication_));
   }
 
   media::AudioOutputStream* SimulateAddInput(
@@ -141,6 +145,7 @@ class AudioMirroringManagerTest : public testing::Test {
 
     mirroring_manager_.AddDiverter(
         render_process_id, render_frame_id, diverter);
+    RunAllPendingInMessageLoop();
 
     return diverter;
   }
@@ -173,10 +178,12 @@ class AudioMirroringManagerTest : public testing::Test {
     }
 
     mirroring_manager_.StartMirroring(dest.get());
+    RunAllPendingInMessageLoop();
   }
 
   void StopMirroringTo(const std::unique_ptr<MockMirroringDestination>& dest) {
     mirroring_manager_.StopMirroring(dest.get());
+    RunAllPendingInMessageLoop();
   }
 
   int CountStreamsDivertedTo(

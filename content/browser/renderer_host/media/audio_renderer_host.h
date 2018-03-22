@@ -65,7 +65,6 @@ class AudioSystem;
 
 namespace content {
 
-class AudioMirroringManager;
 class MediaStreamManager;
 
 class CONTENT_EXPORT AudioRendererHost
@@ -76,7 +75,6 @@ class CONTENT_EXPORT AudioRendererHost
   AudioRendererHost(int render_process_id,
                     media::AudioManager* audio_manager,
                     media::AudioSystem* audio_system,
-                    AudioMirroringManager* mirroring_manager,
                     MediaStreamManager* media_stream_manager);
 
   // BrowserMessageFilter implementation.
@@ -186,7 +184,6 @@ class CONTENT_EXPORT AudioRendererHost
   const int render_process_id_;
 
   media::AudioManager* const audio_manager_;
-  AudioMirroringManager* const mirroring_manager_;
 
   // Used to access to AudioInputDeviceManager.
   MediaStreamManager* media_stream_manager_;

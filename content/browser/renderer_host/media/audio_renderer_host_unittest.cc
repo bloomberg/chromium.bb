@@ -105,12 +105,10 @@ class MockAudioRendererHost : public AudioRendererHost {
                         int render_process_id,
                         media::AudioManager* audio_manager,
                         media::AudioSystem* audio_system,
-                        AudioMirroringManager* mirroring_manager,
                         MediaStreamManager* media_stream_manager)
       : AudioRendererHost(render_process_id,
                           audio_manager,
                           audio_system,
-                          mirroring_manager,
                           media_stream_manager),
         shared_memory_length_(0),
         auth_run_loop_(auth_run_loop) {}
@@ -224,6 +222,9 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
     audio_manager_ =
         std::make_unique<FakeAudioManagerWithAssociations>(&log_factory_);
+    audio_manager_->SetDiverterCallbacks(
+        mirroring_manager_.GetAddDiverterCallback(),
+        mirroring_manager_.GetRemoveDiverterCallback());
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
@@ -231,7 +232,7 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
     auth_run_loop_ = std::make_unique<base::RunLoop>();
     host_ = base::MakeRefCounted<MockAudioRendererHost>(
         auth_run_loop_.get(), process()->GetID(), audio_manager_.get(),
-        audio_system_.get(), &mirroring_manager_, media_stream_manager_.get());
+        audio_system_.get(), media_stream_manager_.get());
 
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());

@@ -74,6 +74,7 @@
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
+#include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/memory/swap_metrics_delegate_uma.h"
@@ -1729,6 +1730,12 @@ void BrowserMainLoop::CreateAudioManager() {
                                     MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
+
+  AudioMirroringManager* const mirroring_manager =
+      AudioMirroringManager::GetInstance();
+  audio_manager_->SetDiverterCallbacks(
+      mirroring_manager->GetAddDiverterCallback(),
+      mirroring_manager->GetRemoveDiverterCallback());
 
   TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
                        TRACE_EVENT_SCOPE_THREAD);

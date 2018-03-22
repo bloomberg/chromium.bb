@@ -67,6 +67,10 @@
 // AudioSourceCallback interface. AudioOutputController uses the SyncReader
 // passed to it via construction to synchronously fulfill this read request.
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace media {
 
 class MEDIA_EXPORT AudioOutputController
@@ -122,8 +126,11 @@ class MEDIA_EXPORT AudioOutputController
   // The |output_device_id| can be either empty (default device) or specify a
   // specific hardware device for audio output.
   static scoped_refptr<AudioOutputController> Create(
-      AudioManager* audio_manager, EventHandler* event_handler,
-      const AudioParameters& params, const std::string& output_device_id,
+      AudioManager* audio_manager,
+      EventHandler* event_handler,
+      const AudioParameters& params,
+      const std::string& output_device_id,
+      const base::UnguessableToken& group_id,
       SyncReader* sync_reader);
 
   // Indicates whether audio power level analysis will be performed.  If false,

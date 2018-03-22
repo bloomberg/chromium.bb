@@ -100,7 +100,6 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     EventHandler* handler,
     media::AudioManager* audio_manager,
     media::mojom::AudioLogPtr audio_log,
-    AudioMirroringManager* mirroring_manager,
     MediaObserver* media_observer,
     int stream_id,
     int render_frame_id,
@@ -117,9 +116,8 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
 
   return std::make_unique<AudioOutputDelegateImpl>(
       std::move(reader), std::move(socket), handler, audio_manager,
-      std::move(audio_log), mirroring_manager, media_observer, stream_id,
-      render_frame_id, render_process_id, params, std::move(observer),
-      output_device_id);
+      std::move(audio_log), media_observer, stream_id, render_frame_id,
+      render_process_id, params, std::move(observer), output_device_id);
 }
 
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
@@ -128,7 +126,6 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     EventHandler* handler,
     media::AudioManager* audio_manager,
     media::mojom::AudioLogPtr audio_log,
-    AudioMirroringManager* mirroring_manager,
     MediaObserver* media_observer,
     int stream_id,
     int render_frame_id,
@@ -140,17 +137,13 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
       audio_log_(std::move(audio_log)),
       reader_(std::move(reader)),
       foreign_socket_(std::move(foreign_socket)),
-      mirroring_manager_(mirroring_manager),
       stream_id_(stream_id),
-      render_frame_id_(render_frame_id),
-      render_process_id_(render_process_id),
       observer_(std::move(observer)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(subscriber_);
   DCHECK(audio_manager);
   DCHECK(audio_log_);
-  DCHECK(mirroring_manager_);
   DCHECK(reader_);
   DCHECK(observer_);
   // Since the event handler never directly calls functions on |this| but rather
@@ -160,12 +153,11 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
       weak_factory_.GetWeakPtr(), stream_id_);
   controller_ = media::AudioOutputController::Create(
       audio_manager, controller_event_handler_.get(), params, output_device_id,
+      AudioMirroringManager::ToGroupId(render_process_id, render_frame_id),
       reader_.get());
   DCHECK(controller_);
   if (media_observer)
     media_observer->OnCreatingAudioStream(render_process_id, render_frame_id);
-  mirroring_manager_->AddDiverter(render_process_id, render_frame_id,
-                                  controller_.get());
 }
 
 AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
@@ -178,26 +170,14 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
   // the IO thread) when it's done closing, and it is only after that call that
   // we can delete |controller_event_handler_| and |reader_|. By giving the
   // closure ownership of these, we keep them alive until |controller_| is
-  // closed. |mirroring_manager_| is a lazy instance, so passing it is safe.
+  // closed.
   controller_->Close(base::BindOnce(
-      [](AudioMirroringManager* mirroring_manager,
-         std::unique_ptr<ControllerEventHandler> event_handler,
+      [](std::unique_ptr<ControllerEventHandler> event_handler,
          std::unique_ptr<media::AudioSyncReader> reader,
          scoped_refptr<media::AudioOutputController> controller) {
-        // De-register the controller from the AudioMirroringManager now that
-        // the controller has closed the AudioOutputStream and shut itself down.
-        // This ensures that calling RemoveDiverter() here won't trigger the
-        // controller to re-start the default AudioOutputStream and cause a
-        // brief audio blip to come out the user's speakers.
-        // http://crbug.com/474432
-        //
-        // It's fine if this task is canceled during shutdown, since the
-        // mirroring manager doesn't require that all diverters are
-        // removed.
-        mirroring_manager->RemoveDiverter(controller.get());
+        // Objects pointed to by the arguments are deleted on out-of-scope here.
       },
-      mirroring_manager_, std::move(controller_event_handler_),
-      std::move(reader_), controller_));
+      std::move(controller_event_handler_), std::move(reader_), controller_));
 }
 
 int AudioOutputDelegateImpl::GetStreamId() {

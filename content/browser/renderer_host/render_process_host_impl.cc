@@ -1798,7 +1798,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     AddFilter(base::MakeRefCounted<AudioRendererHost>(
                   GetID(), audio_manager,
                   BrowserMainLoop::GetInstance()->audio_system(),
-                  AudioMirroringManager::GetInstance(), media_stream_manager)
+                  media_stream_manager)
                   .get());
   }
   AddFilter(
