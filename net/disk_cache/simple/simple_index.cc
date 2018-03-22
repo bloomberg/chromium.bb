@@ -155,6 +155,9 @@ SimpleIndex::SimpleIndex(
       max_size_(0),
       high_watermark_(0),
       low_watermark_(0),
+      max_files_(0),
+      files_high_watermark_(0),
+      files_low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
       init_method_(INITIALIZE_METHOD_MAX),
@@ -347,7 +350,10 @@ bool SimpleIndex::UseIfExists(uint64_t entry_hash) {
 
 void SimpleIndex::StartEvictionIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (eviction_in_progress_ || cache_size_ <= high_watermark_)
+  uint64_t cache_files = entries_set_.size();
+  if (eviction_in_progress_ ||
+      (cache_size_ <= high_watermark_ &&
+       (files_high_watermark_ == 0 || cache_files <= files_high_watermark_)))
     return;
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
@@ -378,13 +384,21 @@ void SimpleIndex::StartEvictionIfNeeded() {
   }
 
   uint64_t evicted_so_far_size = 0;
-  const uint64_t amount_to_evict = cache_size_ - low_watermark_;
+  const uint64_t amount_to_evict =
+      (cache_size_ > low_watermark_) ? cache_size_ - low_watermark_ : 0;
+  uint64_t evicted_files_count = 0;
+  const uint64_t file_amount_to_evict =
+      (files_low_watermark_ > 0 && cache_files > files_low_watermark_)
+          ? cache_files - files_low_watermark_
+          : 0;
   std::vector<uint64_t> entry_hashes;
   std::sort(entries.begin(), entries.end());
   for (const auto& score_metadata_pair : entries) {
-    if (evicted_so_far_size >= amount_to_evict)
+    if (evicted_so_far_size >= amount_to_evict &&
+        evicted_files_count >= file_amount_to_evict)
       break;
     evicted_so_far_size += score_metadata_pair.second->second.GetEntrySize();
+    evicted_files_count++;
     entry_hashes.push_back(score_metadata_pair.second->first);
   }
 
@@ -529,6 +543,10 @@ void SimpleIndex::MergeInitializingSet(
     io_thread_->PostTask(FROM_HERE, base::Bind((*it), net::OK));
   }
   to_run_when_initialized_.clear();
+  if (!update_max_files_cb_.is_null()) {
+    std::move(update_max_files_cb_).Run();
+    CHECK(update_max_files_cb_.is_null());
+  }
 }
 
 #if defined(OS_ANDROID)
@@ -579,6 +597,25 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
 
   index_file_->WriteToDisk(reason, entries_set_, cache_size_, start,
                            app_on_background_, after_write);
+}
+
+void SimpleIndex::UpdateMaxFiles(uint64_t available, uint64_t total) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (!initialized_) {
+    update_max_files_cb_ = base::BindOnce(&SimpleIndex::UpdateMaxFiles,
+                                          AsWeakPtr(), available, total);
+    return;
+  }
+
+  auto cache_files = entries_set_.size();
+  uint64_t max_files = static_cast<uint64_t>((cache_files + available) * 0.3);
+  if (max_files_ == max_files)
+    return;
+
+  max_files_ = max_files;
+  files_high_watermark_ = max_files_ - max_files_ / kEvictionMarginDivisor;
+  files_low_watermark_ = max_files_ - 2 * (max_files_ / kEvictionMarginDivisor);
+  StartEvictionIfNeeded();
 }
 
 }  // namespace disk_cache

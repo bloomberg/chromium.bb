@@ -32,7 +32,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
 #include "net/disk_cache/cache_util.h"
@@ -73,6 +72,11 @@ base::TaskPriority PriorityToUse() {
 
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+// Period to check the maximum count of files available
+constexpr int kUpdateIntervalInSeconds = 10 * 60;  // 10 min
+#endif
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
@@ -640,6 +644,18 @@ void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,
                                         const DiskStatResult& result) {
   if (result.net_error == net::OK) {
     index_->SetMaxSize(result.max_size);
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+    int64_t available = base::SysInfo::AmountOfAvailableDiskInode(path_);
+    int64_t total = base::SysInfo::AmountOfMaxDiskInode(path_);
+    if (available != -1 && total != -1) {
+      index_->UpdateMaxFiles(available, total);
+      if (!update_timer_.IsRunning())
+        update_timer_.Start(
+            FROM_HERE, base::TimeDelta::FromSeconds(kUpdateIntervalInSeconds),
+            base::BindRepeating(&SimpleBackendImpl::OnUpdateMaxFiles,
+                                AsWeakPtr()));
+    }
+#endif
     index_->Initialize(result.cache_dir_mtime);
   }
   callback.Run(result.net_error);
@@ -850,5 +866,14 @@ void SimpleBackendImpl::FlushWorkerPoolForTesting() {
   // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
   base::TaskScheduler::GetInstance()->FlushForTesting();
 }
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+void SimpleBackendImpl::OnUpdateMaxFiles() {
+  int64_t available = base::SysInfo::AmountOfAvailableDiskInode(path_);
+  int64_t total = base::SysInfo::AmountOfMaxDiskInode(path_);
+  if (available != -1 && total != -1)
+    index_->UpdateMaxFiles(available, total);
+}
+#endif
 
 }  // namespace disk_cache
