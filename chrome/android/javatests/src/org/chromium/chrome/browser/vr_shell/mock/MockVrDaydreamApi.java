@@ -87,9 +87,6 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     }
 
     @Override
-    public void close() {}
-
-    @Override
     public Intent setupVrIntent(Intent intent) {
         if (mForwardSetupIntent) {
             return DaydreamApi.setupVrIntent(intent);
@@ -103,4 +100,12 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
 
     @Override
     public void launchGvrSettings() {}
+
+    @Override
+    public boolean isInVrSession() {
+        return true;
+    }
+
+    @Override
+    public void close() {}
 }

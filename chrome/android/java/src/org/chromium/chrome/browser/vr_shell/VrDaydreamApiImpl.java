@@ -145,6 +145,11 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
+    public boolean isInVrSession() {
+        return DaydreamApi.isInVrSession(mContext);
+    }
+
+    @Override
     public void close() {
         if (mDaydreamApi == null) return;
         mDaydreamApi.close();

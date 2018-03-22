@@ -205,8 +205,9 @@ public class TransitionUtils {
         final Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), VrMainActivity.class);
         intent.setData(Uri.parse(url));
-        intent.putExtra(VrIntentUtils.DAYDREAM_VR_EXTRA, true);
+        intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
         DaydreamApi.setupVrIntent(intent);
+
         if (autopresent) {
             // Daydream removes this category for deep-linked URLs for legacy reasons.
             intent.removeCategory(VrIntentUtils.DAYDREAM_CATEGORY);
