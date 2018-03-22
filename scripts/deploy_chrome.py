@@ -513,8 +513,9 @@ def _ParseCommandLine(argv):
   if options.build_dir and any([options.gs_path, options.local_pkg_path]):
     parser.error('Cannot specify both --build_dir and '
                  '--gs-path/--local-pkg-patch')
-  if options.build_dir and not options.board:
-    parser.error('--board is required when --build-dir is specified.')
+  if (not options.board and options.build_dir and options.dostrip and
+      not options.strip_bin):
+    parser.error('--board is required for stripping.')
   if options.gs_path and options.local_pkg_path:
     parser.error('Cannot specify both --gs-path and --local-pkg-path')
   if not (options.staging_only or options.to):

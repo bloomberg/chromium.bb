@@ -63,9 +63,18 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
       self.assertRaises2(SystemExit, _ParseCommandLine, argv,
                          check_attrs={'code': 2})
 
-  def testNoBoardBuildDir(self):
+  def testNoBoard(self):
+    """Test cases where --board is not specified."""
     argv = ['--staging-only', '--build-dir=/path/to/nowhere']
     self.assertParseError(argv)
+
+    # Don't need --board if no stripping is necessary.
+    argv_nostrip = argv + ['--nostrip']
+    _ParseCommandLine(argv_nostrip)
+
+    # Don't need --board if strip binary is provided.
+    argv_strip_bin = argv + ['--strip-bin', 'strip.bin']
+    _ParseCommandLine(argv_strip_bin)
 
   def testMountOptionSetsTargetDir(self):
     argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount']
