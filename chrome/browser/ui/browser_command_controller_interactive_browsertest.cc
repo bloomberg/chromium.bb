@@ -495,9 +495,17 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_NO_FATAL_FAILURE(FinishTestAndVerifyResult());
 }
 
+#if defined(OS_MACOSX)
+// Triggers a DCHECK in MacViews: http://crbug.com/823478
+#define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11 \
+    DISABLED_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
+#else
+#define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11 \
+    KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
+#endif
 IN_PROC_BROWSER_TEST_F(
     BrowserCommandControllerInteractiveTest,
-    KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11) {
+    MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
 
   ASSERT_NO_FATAL_FAILURE(SendJsFullscreenShortcutAndWait());
