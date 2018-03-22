@@ -688,6 +688,10 @@
       name: "ModernMediaControls",
     },
     {
+      name: "ModuleDedicatedWorker",
+      status: "experimental",
+    },
+    {
       name: "ModulePreload",
       status: "stable",
     },
