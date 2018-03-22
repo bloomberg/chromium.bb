@@ -25,9 +25,9 @@ class FileManagerUITest : public InProcessBrowserTest {
     base::FilePath root_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
 
-    // Load test/main.html.
+    // Load test.html.
     const GURL url = net::FilePathToFileURL(root_path.Append(
-        FILE_PATH_LITERAL("ui/file_manager/file_manager/test/main.html")));
+        FILE_PATH_LITERAL("ui/file_manager/file_manager/test.html")));
     content::WebContents* const web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
