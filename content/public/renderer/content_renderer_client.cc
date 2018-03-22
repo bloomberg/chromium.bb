@@ -134,13 +134,13 @@ bool ContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   return false;
 }
 
-void ContentRendererClient::WillSendRequest(
+bool ContentRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    base::Optional<url::Origin> initiator_origin,
-    GURL* new_url,
-    bool* attach_same_site_cookies) {}
+    GURL* new_url) {
+  return false;
+}
 
 bool ContentRendererClient::IsPrefetchOnly(
     RenderFrame* render_frame,

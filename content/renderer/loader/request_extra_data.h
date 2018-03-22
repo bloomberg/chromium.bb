@@ -140,13 +140,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     navigation_initiated_by_renderer_ = navigation_by_renderer;
   }
 
-  // Determines whether SameSite cookies will be attached to the request
-  // even when the request looks cross-site.
-  bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
-  void set_attach_same_site_cookies(bool attach) {
-    attach_same_site_cookies_ = attach;
-  }
-
   std::vector<std::unique_ptr<URLLoaderThrottle>> TakeURLLoaderThrottles() {
     return std::move(url_loader_throttles_);
   }
@@ -177,7 +170,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   bool download_to_network_cache_only_;
   bool block_mixed_plugin_content_;
   bool navigation_initiated_by_renderer_;
-  bool attach_same_site_cookies_;
   std::vector<std::unique_ptr<URLLoaderThrottle>> url_loader_throttles_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
