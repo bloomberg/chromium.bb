@@ -465,11 +465,6 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
 #endif
-#if defined(USE_AURA)
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_FLING_CURVE_PARAMETERS_CHANGED,
-                 content::NotificationService::AllSources());
-#endif
 }
 
 PrefsTabHelper::~PrefsTabHelper() {
@@ -578,13 +573,6 @@ void PrefsTabHelper::Observe(int type,
     return;
   }
 #endif
-
-#if defined(USE_AURA)
-  if (type == chrome::NOTIFICATION_BROWSER_FLING_CURVE_PARAMETERS_CHANGED) {
-    UpdateRendererPreferences();
-    return;
-  }
-#endif  // defined(USE_AURA)
 
   NOTREACHED();
 }
