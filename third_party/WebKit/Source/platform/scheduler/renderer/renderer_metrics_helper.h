@@ -83,37 +83,30 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
   using TaskDurationPerQueueTypeMetricReporter =
       TaskDurationMetricReporter<MainThreadTaskQueue::QueueType>;
 
-  TaskDurationPerQueueTypeMetricReporter per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      foreground_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      foreground_first_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      foreground_second_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      foreground_third_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      foreground_after_third_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_first_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_second_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_third_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_fourth_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_fifth_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      background_after_fifth_minute_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      hidden_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      visible_per_queue_type_task_duration_reporter_;
-  TaskDurationPerQueueTypeMetricReporter
-      hidden_music_per_queue_type_task_duration_reporter_;
+  struct PerQueueTypeDurationReporters {
+    PerQueueTypeDurationReporters();
+
+    TaskDurationPerQueueTypeMetricReporter overall;
+    TaskDurationPerQueueTypeMetricReporter foreground;
+    TaskDurationPerQueueTypeMetricReporter foreground_first_minute;
+    TaskDurationPerQueueTypeMetricReporter foreground_second_minute;
+    TaskDurationPerQueueTypeMetricReporter foreground_third_minute;
+    TaskDurationPerQueueTypeMetricReporter foreground_after_third_minute;
+    TaskDurationPerQueueTypeMetricReporter background;
+    TaskDurationPerQueueTypeMetricReporter background_first_minute;
+    TaskDurationPerQueueTypeMetricReporter background_second_minute;
+    TaskDurationPerQueueTypeMetricReporter background_third_minute;
+    TaskDurationPerQueueTypeMetricReporter background_fourth_minute;
+    TaskDurationPerQueueTypeMetricReporter background_fifth_minute;
+    TaskDurationPerQueueTypeMetricReporter background_after_fifth_minute;
+    TaskDurationPerQueueTypeMetricReporter
+        background_keep_active_after_fifth_minute;
+    TaskDurationPerQueueTypeMetricReporter hidden;
+    TaskDurationPerQueueTypeMetricReporter visible;
+    TaskDurationPerQueueTypeMetricReporter hidden_music;
+  };
+
+  PerQueueTypeDurationReporters per_queue_type_reporters_;
 
   TaskDurationMetricReporter<FrameStatus> per_frame_status_duration_reporter_;
 
