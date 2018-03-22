@@ -63,6 +63,7 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
     output = FilterStream(process.stdout, package_name,
                           symbolizer_config, output_dir)
   else:
+    logging.warn('Symbolization is DISABLED.')
     output = process.stdout
 
   for next_line in output:

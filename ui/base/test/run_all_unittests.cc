@@ -49,10 +49,10 @@ void UIBaseTestSuite::Initialize() {
 
   ui::RegisterPathProvider();
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   base::FilePath exe_path;
   PathService::Get(base::DIR_EXE, &exe_path);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
   mock_cr_app::RegisterMockCrApp();
 
   // On Mac, a test Framework bundle is created that links locale.pak and
@@ -73,12 +73,14 @@ void UIBaseTestSuite::Initialize() {
   // On other platforms, the (hardcoded) paths for chrome_100_percent.pak and
   // locale.pak get populated by later build steps. To avoid clobbering them,
   // load the test .pak files directly.
+  base::FilePath assets_path;
+  PathService::Get(base::DIR_ASSETS, &assets_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      exe_path.AppendASCII("ui_test.pak"));
+      assets_path.AppendASCII("ui_test.pak"));
 
   // ui_base_unittests can't depend on the locales folder which Chrome will make
   // later, so use the path created by ui_test_pak.
-  PathService::Override(ui::DIR_LOCALES, exe_path.AppendASCII("ui"));
+  PathService::Override(ui::DIR_LOCALES, assets_path.AppendASCII("ui"));
 #endif
 }
 
