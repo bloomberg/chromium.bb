@@ -1,14 +1,13 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WALLPAPER_WALLPAPER_INFO_H_
-#define COMPONENTS_WALLPAPER_WALLPAPER_INFO_H_
+#ifndef ASH_PUBLIC_CPP_WALLPAPER_TYPES_H_
+#define ASH_PUBLIC_CPP_WALLPAPER_TYPES_H_
 
-#include "base/time/time.h"
-#include "components/wallpaper/wallpaper_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
-namespace wallpaper {
+namespace ash {
 
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
@@ -48,34 +47,19 @@ enum WallpaperType {
   WALLPAPER_TYPE_COUNT = 8
 };
 
-struct WALLPAPER_EXPORT WallpaperInfo {
-  WallpaperInfo()
-      : layout(WALLPAPER_LAYOUT_CENTER), type(WALLPAPER_TYPE_COUNT) {}
+// The color profile type, ordered as the color profiles applied in
+// ash::WallpaperController.
+enum class ColorProfileType {
+  DARK_VIBRANT = 0,
+  NORMAL_VIBRANT,
+  LIGHT_VIBRANT,
+  DARK_MUTED,
+  NORMAL_MUTED,
+  LIGHT_MUTED,
 
-  WallpaperInfo(const std::string& in_location,
-                WallpaperLayout in_layout,
-                WallpaperType in_type,
-                const base::Time& in_date)
-      : location(in_location),
-        layout(in_layout),
-        type(in_type),
-        date(in_date) {}
-
-  ~WallpaperInfo() {}
-
-  bool operator==(const WallpaperInfo& other) const {
-    return (location == other.location) && (layout == other.layout) &&
-           (type == other.type);
-  }
-
-  // Either file name of migrated wallpaper including first directory level
-  // (corresponding to user wallpaper_files_id) or online wallpaper URL.
-  std::string location;
-  WallpaperLayout layout;
-  WallpaperType type;
-  base::Time date;
+  NUM_OF_COLOR_PROFILES,
 };
 
-}  // namespace wallpaper
+}  // namespace ash
 
-#endif  // COMPONENTS_WALLPAPER_WALLPAPER_INFO_H_
+#endif  // ASH_PUBLIC_CPP_WALLPAPER_TYPES_H_

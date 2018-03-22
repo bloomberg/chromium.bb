@@ -146,10 +146,10 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   // Scale the image while maintaining the aspect ratio, cropping as necessary
   // to fill the wallpaper. Ideally the image should be larger than the largest
   // display supported, if not we will scale and center it if the layout is
-  // wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED.
+  // WALLPAPER_LAYOUT_CENTER_CROPPED.
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
-  wallpaper::WallpaperLayout layout = controller->GetWallpaperLayout();
+  WallpaperLayout layout = controller->GetWallpaperLayout();
 
   // Wallpapers with png format could be partially transparent. Fill the canvas
   // with black to make it opaque before painting the wallpaper.
@@ -165,7 +165,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   }
 
   switch (layout) {
-    case wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED: {
+    case WALLPAPER_LAYOUT_CENTER_CROPPED: {
       // The dimension with the smallest ratio must be cropped, the other one
       // is preserved. Both are set in gfx::Size cropped_size.
       double horizontal_ratio =
@@ -193,19 +193,19 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
           width(), height(), true, flags);
       break;
     }
-    case wallpaper::WALLPAPER_LAYOUT_TILE: {
+    case WALLPAPER_LAYOUT_TILE: {
       canvas->TileImageInt(wallpaper, 0, 0, 0, 0, width(), height(), 1.0f,
                            &flags);
       break;
     }
-    case wallpaper::WALLPAPER_LAYOUT_STRETCH: {
+    case WALLPAPER_LAYOUT_STRETCH: {
       // This is generally not recommended as it may show artifacts.
       canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
                            wallpaper.height(), 0, 0, width(), height(), true,
                            flags);
       break;
     }
-    case wallpaper::WALLPAPER_LAYOUT_CENTER: {
+    case WALLPAPER_LAYOUT_CENTER: {
       float image_scale = canvas->image_scale();
       gfx::Rect wallpaper_rect(0, 0, wallpaper.width() / image_scale,
                                wallpaper.height() / image_scale);

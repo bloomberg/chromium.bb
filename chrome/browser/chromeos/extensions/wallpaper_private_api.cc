@@ -41,7 +41,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/wallpaper/wallpaper_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -153,21 +152,20 @@ const user_manager::User* GetUserFromBrowserContext(
   return user;
 }
 
-wallpaper::WallpaperType getWallpaperType(
-    wallpaper_private::WallpaperSource source) {
+ash::WallpaperType getWallpaperType(wallpaper_private::WallpaperSource source) {
   switch (source) {
     case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
-      return wallpaper::ONLINE;
+      return ash::ONLINE;
     case wallpaper_private::WALLPAPER_SOURCE_DAILY:
-      return wallpaper::DAILY;
+      return ash::DAILY;
     case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
-      return wallpaper::CUSTOMIZED;
+      return ash::CUSTOMIZED;
     case wallpaper_private::WALLPAPER_SOURCE_OEM:
-      return wallpaper::DEFAULT;
+      return ash::DEFAULT;
     case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
-      return wallpaper::THIRDPARTY;
+      return ash::THIRDPARTY;
     default:
-      return wallpaper::ONLINE;
+      return ash::ONLINE;
   }
 }
 
@@ -393,9 +391,9 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
   // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
 
-  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
   WallpaperControllerClient::Get()->SetOnlineWallpaper(
@@ -432,7 +430,7 @@ void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
   wallpaper_ = image;
   // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
 
   GetBlockingTaskRunner()->PostTask(
       FROM_HERE,
@@ -463,9 +461,9 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
     ash::WallpaperController::ResizeAndSaveWallpaper(
-        wallpaper_, file_path, wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+        wallpaper_, file_path, ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
         ash::WallpaperController::kSmallWallpaperMaxWidth,
-        ash::WallpaperController::kSmallWallpaperMaxHeight, NULL);
+        ash::WallpaperController::kSmallWallpaperMaxHeight, nullptr);
   } else {
     std::string error = base::StringPrintf(
         "Failed to create/write wallpaper to %s.", file_name.c_str());
@@ -478,7 +476,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
 
 void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
     std::unique_ptr<gfx::ImageSkia> image) {
-  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
   WallpaperControllerClient::Get()->SetOnlineWallpaper(
@@ -527,16 +525,16 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   base::FilePath thumbnail_path =
       ash::WallpaperController::GetCustomWallpaperPath(
           ash::WallpaperController::kThumbnailWallpaperSubDir,
-          wallpaper_files_id_.id(), params->file_name);
+          wallpaper_files_id_, params->file_name);
 
-  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
   WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params->file_name, layout, image,
       params->preview_mode);
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
 
   if (params->generate_thumbnail) {
     image.EnsureRepsForSupportedScales();
@@ -562,9 +560,9 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
 
   scoped_refptr<base::RefCountedBytes> data;
   ash::WallpaperController::ResizeImage(
-      *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      *image, ash::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kWallpaperThumbnailWidth,
-      ash::WallpaperController::kWallpaperThumbnailHeight, &data, NULL);
+      ash::WallpaperController::kWallpaperThumbnailHeight, &data, nullptr);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
@@ -590,7 +588,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
       set_custom_wallpaper_layout::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  wallpaper::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
+  ash::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(new_layout);
   WallpaperControllerClient::Get()->UpdateCustomWallpaperLayout(
@@ -815,9 +813,9 @@ WallpaperPrivateRecordWallpaperUMAFunction::Run() {
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  wallpaper::WallpaperType source = getWallpaperType(params->source);
+  ash::WallpaperType source = getWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
-                            wallpaper::WALLPAPER_TYPE_COUNT);
+                            ash::WALLPAPER_TYPE_COUNT);
   return RespondNow(NoArguments());
 }
 

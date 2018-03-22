@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/776464): Move this file elsewhere and delete this directory.
+// Also remove the ash dependencies.
+
 #include <stdint.h>
 
 #include <memory>
@@ -50,7 +53,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
-#include "components/wallpaper/wallpaper_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -246,7 +248,7 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
   }
 
   // Runs the loop until wallpaper has changed to the specified type.
-  void RunUntilWallpaperChangeType(wallpaper::WallpaperType type) {
+  void RunUntilWallpaperChangeType(ash::WallpaperType type) {
     while (ash::Shell::Get()->wallpaper_controller()->GetWallpaperType() !=
            type) {
       run_loop_.reset(new base::RunLoop);
@@ -318,15 +320,6 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
         ->ShouldSetDevicePolicyWallpaper();
   }
 
-  // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
-  void GetUserWallpaperInfo(int user_number,
-                            wallpaper::WallpaperInfo* wallpaper_info) {
-    ash::Shell::Get()->wallpaper_controller()->GetUserWallpaperInfo(
-        testUsers_[user_number], wallpaper_info,
-        user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-            testUsers_[user_number]) /*is_ephemeral=*/);
-  }
-
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
   int wallpaper_change_count_;
@@ -352,7 +345,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // reverts to default.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   SetSystemSalt();
-  wallpaper::WallpaperInfo info;
   LoginUser(testUsers_[0]);
 
   // First user: Stores the average color of the default wallpaper (set
@@ -366,23 +358,23 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   // First user: Set wallpaper policy to red image and verify average color.
   InjectPolicy(0, kRedImageFileName);
   RunUntilWallpaperChangeCount(1);
-  GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(wallpaper::POLICY, info.type);
+  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
+            ash::POLICY);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
   RunUntilWallpaperChangeCount(2);
-  GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(wallpaper::POLICY, info.type);
+  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
+            ash::POLICY);
   ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // First user: Clear wallpaper policy and verify that the default wallpaper is
   // set again.
   InjectPolicy(0, "");
   RunUntilWallpaperChangeCount(3);
-  GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(wallpaper::DEFAULT, info.type);
+  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
+            ash::DEFAULT);
   ASSERT_EQ(original_wallpaper_color, GetAverageWallpaperColor());
 
   // Check wallpaper change count to ensure that setting the second user's
@@ -430,19 +422,19 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
   // Set the device wallpaper policy. Test that the device policy controlled
   // wallpaper shows up in the login screen.
   InjectDevicePolicy(kRedImageFileName);
-  RunUntilWallpaperChangeType(wallpaper::DEVICE);
+  RunUntilWallpaperChangeType(ash::DEVICE);
   EXPECT_TRUE(ShouldSetDeviceWallpaper());
   EXPECT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // Log in a test user. The default wallpaper should be shown to replace the
   // device policy wallpaper.
   LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeType(wallpaper::DEFAULT);
+  RunUntilWallpaperChangeType(ash::DEFAULT);
 
   // Now set the user wallpaper policy. The user policy controlled wallpaper
   // should show up in the user session.
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeType(wallpaper::POLICY);
+  RunUntilWallpaperChangeType(ash::POLICY);
   EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // Set the device wallpaper policy inside the user session. That that the

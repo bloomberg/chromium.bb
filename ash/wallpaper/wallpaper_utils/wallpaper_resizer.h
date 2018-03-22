@@ -1,19 +1,20 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WALLPAPER_WALLPAPER_RESIZER_H_
-#define COMPONENTS_WALLPAPER_WALLPAPER_RESIZER_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_RESIZER_H_
+#define ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_RESIZER_H_
 
 #include <stdint.h>
 
+#include "ash/ash_export.h"
+#include "ash/wallpaper/wallpaper_info.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/wallpaper/wallpaper_info.h"
-#include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,12 +25,12 @@ namespace base {
 class TaskRunner;
 }
 
-namespace wallpaper {
+namespace ash {
 
 class WallpaperResizerObserver;
 
 // Stores the current wallpaper data and resize it to |target_size| if needed.
-class WALLPAPER_EXPORT WallpaperResizer {
+class ASH_EXPORT WallpaperResizer {
  public:
   // Returns a unique identifier corresponding to |image|, suitable for
   // comparison against the value returned by original_image_id(). If the image
@@ -85,6 +86,6 @@ class WALLPAPER_EXPORT WallpaperResizer {
   DISALLOW_COPY_AND_ASSIGN(WallpaperResizer);
 };
 
-}  // namespace wallpaper
+}  // namespace ash
 
-#endif  // COMPONENTS_WALLPAPER_WALLPAPER_RESIZER_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_RESIZER_H_

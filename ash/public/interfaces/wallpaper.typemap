@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 mojom = "//ash/public/interfaces/wallpaper.mojom"
-public_headers = [ "//components/wallpaper/wallpaper_info.h" ]
+public_headers = [ "//ash/public/cpp/wallpaper_types.h" ]
 traits_headers = [ "//ash/public/cpp/wallpaper_struct_traits.h" ]
-type_mappings = [ "ash.mojom.WallpaperLayout=wallpaper::WallpaperLayout" ]
+type_mappings = [ "ash.mojom.WallpaperLayout=ash::WallpaperLayout" ]

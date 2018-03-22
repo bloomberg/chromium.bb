@@ -17,8 +17,6 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/wallpaper/wallpaper_files_id.h"
-#include "components/wallpaper/wallpaper_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -206,12 +204,12 @@ void ArcWallpaperService::OnWallpaperDecoded(const gfx::ImageSkia& image,
                                              int32_t android_id) {
   const AccountId account_id =
       UserManager::Get()->GetPrimaryUser()->GetAccountId();
-  const wallpaper::WallpaperFilesId wallpaper_files_id =
+  const std::string wallpaper_files_id =
       WallpaperControllerClient::Get()->GetFilesId(account_id);
 
   WallpaperControllerClient::Get()->SetThirdPartyWallpaper(
       account_id, wallpaper_files_id, kAndroidWallpaperFilename,
-      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED, image,
+      ash::WALLPAPER_LAYOUT_CENTER_CROPPED, image,
       base::BindOnce(&ArcWallpaperService::OnSetThirdPartyWallpaperCallback,
                      weak_ptr_factory_.GetWeakPtr(), android_id));
 }

@@ -41,7 +41,7 @@ void TestWallpaperController::SetCustomWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id,
     const std::string& file_name,
-    wallpaper::WallpaperLayout layout,
+    ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     bool preview_mode) {
   set_custom_wallpaper_count_++;
@@ -51,7 +51,7 @@ void TestWallpaperController::SetOnlineWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const gfx::ImageSkia& image,
     const std::string& url,
-    wallpaper::WallpaperLayout layout,
+    ash::WallpaperLayout layout,
     bool preview_mode) {
   NOTIMPLEMENTED();
 }
@@ -84,7 +84,7 @@ void TestWallpaperController::SetThirdPartyWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id,
     const std::string& file_name,
-    wallpaper::WallpaperLayout layout,
+    ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback) {
   std::move(callback).Run(true /*allowed=*/, dummy_image_id);
@@ -101,7 +101,7 @@ void TestWallpaperController::CancelPreviewWallpaper() {
 
 void TestWallpaperController::UpdateCustomWallpaperLayout(
     ash::mojom::WallpaperUserInfoPtr user_info,
-    wallpaper::WallpaperLayout layout) {
+    ash::WallpaperLayout layout) {
   NOTIMPLEMENTED();
 }
 

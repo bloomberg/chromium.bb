@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/wallpaper/wallpaper_info.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -20,11 +20,11 @@ namespace wallpaper_api_util {
 
 extern const char kCancelWallpaperMessage[];
 
-wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout);
+ash::WallpaperLayout GetLayoutEnum(const std::string& layout);
 
 // This is used to record the wallpaper layout when the user sets a custom
 // wallpaper or changes the existing custom wallpaper's layout.
-void RecordCustomWallpaperLayout(const wallpaper::WallpaperLayout& layout);
+void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout);
 
 }  // namespace wallpaper_api_util
 

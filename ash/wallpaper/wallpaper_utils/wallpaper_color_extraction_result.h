@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WALLPAPER_WALLPAPER_COLOR_EXTRACTION_RESULT_H_
-#define COMPONENTS_WALLPAPER_WALLPAPER_COLOR_EXTRACTION_RESULT_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_EXTRACTION_RESULT_H_
+#define ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_EXTRACTION_RESULT_H_
 
-namespace wallpaper {
+namespace ash {
 
 // This enum is used to back a histogram, and should therefore be treated as
 // append-only.
@@ -40,6 +40,6 @@ enum WallpaperColorExtractionResult {
   NUM_COLOR_EXTRACTION_RESULTS,
 };
 
-}  // namespace wallpaper
+}  // namespace ash
 
-#endif  // COMPONENTS_WALLPAPER_WALLPAPER_COLOR_EXTRACTION_RESULT_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_EXTRACTION_RESULT_H_

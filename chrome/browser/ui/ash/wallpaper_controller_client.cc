@@ -24,7 +24,6 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_system.h"
@@ -75,8 +74,7 @@ ash::mojom::WallpaperUserInfoPtr AccountIdToWallpaperUserInfo(
 //    and we may lose user => wallpaper files mapping at that point.
 // So this function gives WallpaperManager independent hashing method to break
 // this dependency.
-wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
-    const std::string& files_id_unhashed) {
+std::string HashWallpaperFilesIdStr(const std::string& files_id_unhashed) {
   chromeos::SystemSaltGetter* salt_getter = chromeos::SystemSaltGetter::Get();
   DCHECK(salt_getter);
 
@@ -95,7 +93,7 @@ wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
   base::SHA1HashBytes(data.data(), data.size(), binmd);
   std::string result = base::HexEncode(binmd, sizeof(binmd));
   std::transform(result.begin(), result.end(), result.begin(), ::tolower);
-  return wallpaper::WallpaperFilesId::FromString(result);
+  return result;
 }
 
 // Returns true if wallpaper files id can be returned successfully.
@@ -163,27 +161,27 @@ WallpaperControllerClient* WallpaperControllerClient::Get() {
   return g_wallpaper_controller_client_instance;
 }
 
-wallpaper::WallpaperFilesId WallpaperControllerClient::GetFilesId(
+std::string WallpaperControllerClient::GetFilesId(
     const AccountId& account_id) const {
   DCHECK(CanGetFilesId());
   std::string stored_value;
   if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
                                               &stored_value)) {
-    return wallpaper::WallpaperFilesId::FromString(stored_value);
+    return stored_value;
   }
 
-  const wallpaper::WallpaperFilesId wallpaper_files_id =
+  const std::string wallpaper_files_id =
       HashWallpaperFilesIdStr(account_id.GetUserEmail());
   user_manager::known_user::SetStringPref(account_id, kWallpaperFilesId,
-                                          wallpaper_files_id.id());
+                                          wallpaper_files_id);
   return wallpaper_files_id;
 }
 
 void WallpaperControllerClient::SetCustomWallpaper(
     const AccountId& account_id,
-    const wallpaper::WallpaperFilesId& wallpaper_files_id,
+    const std::string& wallpaper_files_id,
     const std::string& file_name,
-    wallpaper::WallpaperLayout layout,
+    ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     bool preview_mode) {
   ash::mojom::WallpaperUserInfoPtr user_info =
@@ -191,16 +189,15 @@ void WallpaperControllerClient::SetCustomWallpaper(
   if (!user_info)
     return;
   wallpaper_controller_->SetCustomWallpaper(std::move(user_info),
-                                            wallpaper_files_id.id(), file_name,
+                                            wallpaper_files_id, file_name,
                                             layout, image, preview_mode);
 }
 
-void WallpaperControllerClient::SetOnlineWallpaper(
-    const AccountId& account_id,
-    const gfx::ImageSkia& image,
-    const std::string& url,
-    wallpaper::WallpaperLayout layout,
-    bool preview_mode) {
+void WallpaperControllerClient::SetOnlineWallpaper(const AccountId& account_id,
+                                                   const gfx::ImageSkia& image,
+                                                   const std::string& url,
+                                                   ash::WallpaperLayout layout,
+                                                   bool preview_mode) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
@@ -228,7 +225,7 @@ void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
   }
 
   wallpaper_controller_->SetDefaultWallpaper(
-      std::move(user_info), GetFilesId(account_id).id(), show_wallpaper);
+      std::move(user_info), GetFilesId(account_id), show_wallpaper);
 }
 
 void WallpaperControllerClient::SetCustomizedDefaultWallpaperPaths(
@@ -259,14 +256,14 @@ void WallpaperControllerClient::SetPolicyWallpaper(
   }
 
   wallpaper_controller_->SetPolicyWallpaper(std::move(user_info),
-                                            GetFilesId(account_id).id(), *data);
+                                            GetFilesId(account_id), *data);
 }
 
 void WallpaperControllerClient::SetThirdPartyWallpaper(
     const AccountId& account_id,
-    const wallpaper::WallpaperFilesId& wallpaper_files_id,
+    const std::string& wallpaper_files_id,
     const std::string& file_name,
-    wallpaper::WallpaperLayout layout,
+    ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback) {
   ash::mojom::WallpaperUserInfoPtr user_info =
@@ -274,7 +271,7 @@ void WallpaperControllerClient::SetThirdPartyWallpaper(
   if (!user_info)
     return;
   wallpaper_controller_->SetThirdPartyWallpaper(
-      std::move(user_info), wallpaper_files_id.id(), file_name, layout, image,
+      std::move(user_info), wallpaper_files_id, file_name, layout, image,
       std::move(callback));
 }
 
@@ -288,7 +285,7 @@ void WallpaperControllerClient::CancelPreviewWallpaper() {
 
 void WallpaperControllerClient::UpdateCustomWallpaperLayout(
     const AccountId& account_id,
-    wallpaper::WallpaperLayout layout) {
+    ash::WallpaperLayout layout) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
@@ -328,7 +325,7 @@ void WallpaperControllerClient::RemoveUserWallpaper(
   }
 
   wallpaper_controller_->RemoveUserWallpaper(std::move(user_info),
-                                             GetFilesId(account_id).id());
+                                             GetFilesId(account_id));
 }
 
 void WallpaperControllerClient::RemovePolicyWallpaper(
@@ -350,7 +347,7 @@ void WallpaperControllerClient::RemovePolicyWallpaper(
   }
 
   wallpaper_controller_->RemovePolicyWallpaper(std::move(user_info),
-                                               GetFilesId(account_id).id());
+                                               GetFilesId(account_id));
 }
 
 void WallpaperControllerClient::SetAnimationDuration(

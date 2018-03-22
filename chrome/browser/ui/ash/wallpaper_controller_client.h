@@ -5,16 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_H_
 
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/wallpaper_policy_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
-
-namespace wallpaper {
-class WallpaperFilesId;
-enum WallpaperLayout;
-enum WallpaperType;
-}  // namespace wallpaper
 
 // Handles method calls sent from ash to chrome. Also sends messages from chrome
 // to ash.
@@ -33,19 +28,19 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   static WallpaperControllerClient* Get();
 
   // Returns files identifier for the |account_id|.
-  wallpaper::WallpaperFilesId GetFilesId(const AccountId& account_id) const;
+  std::string GetFilesId(const AccountId& account_id) const;
 
   // Wrappers around the ash::mojom::WallpaperController interface.
   void SetCustomWallpaper(const AccountId& account_id,
-                          const wallpaper::WallpaperFilesId& wallpaper_files_id,
+                          const std::string& wallpaper_files_id,
                           const std::string& file_name,
-                          wallpaper::WallpaperLayout layout,
+                          ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode);
   void SetOnlineWallpaper(const AccountId& account_id,
                           const gfx::ImageSkia& image,
                           const std::string& url,
-                          wallpaper::WallpaperLayout layout,
+                          ash::WallpaperLayout layout,
                           bool preview_mode);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);
   void SetCustomizedDefaultWallpaperPaths(
@@ -55,15 +50,15 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           std::unique_ptr<std::string> data);
   void SetThirdPartyWallpaper(
       const AccountId& account_id,
-      const wallpaper::WallpaperFilesId& wallpaper_files_id,
+      const std::string& wallpaper_files_id,
       const std::string& file_name,
-      wallpaper::WallpaperLayout layout,
+      ash::WallpaperLayout layout,
       const gfx::ImageSkia& image,
       ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback);
   void ConfirmPreviewWallpaper();
   void CancelPreviewWallpaper();
   void UpdateCustomWallpaperLayout(const AccountId& account_id,
-                                   wallpaper::WallpaperLayout layout);
+                                   ash::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);

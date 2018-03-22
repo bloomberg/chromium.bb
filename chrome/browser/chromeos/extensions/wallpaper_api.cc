@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/wallpaper/wallpaper_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "net/base/load_flags.h"
@@ -151,16 +151,16 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   base::FilePath thumbnail_path =
       ash::WallpaperController::GetCustomWallpaperPath(
           ash::WallpaperController::kThumbnailWallpaperSubDir,
-          wallpaper_files_id_.id(), params_->details.filename);
+          wallpaper_files_id_, params_->details.filename);
 
-  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       extensions::api::wallpaper::ToString(params_->details.layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
   WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
       image, false /*preview_mode=*/);
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
 
   if (!params_->details.thumbnail)
     SendResponse(true);
@@ -186,14 +186,14 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
 
   scoped_refptr<base::RefCountedBytes> original_data;
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
+  ash::WallpaperController::ResizeImage(*image, ash::WALLPAPER_LAYOUT_STRETCH,
+                                        image->width(), image->height(),
+                                        &original_data, nullptr);
   ash::WallpaperController::ResizeImage(
-      *image, wallpaper::WALLPAPER_LAYOUT_STRETCH, image->width(),
-      image->height(), &original_data, NULL);
-  ash::WallpaperController::ResizeImage(
-      *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      *image, ash::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kWallpaperThumbnailWidth,
       ash::WallpaperController::kWallpaperThumbnailHeight, &thumbnail_data,
-      NULL);
+      nullptr);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WallpaperSetWallpaperFunction::ThumbnailGenerated, this,
