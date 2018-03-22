@@ -7,6 +7,9 @@ import("//build/config/android/rules.gni")
 
 android_library("boundary_interface_java") {
   java_files = [
+    "src/org/chromium/support_lib_boundary/ServiceWorkerClientBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/ServiceWorkerControllerBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/ServiceWorkerWebSettingsBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/StaticsBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/SupportLibraryInfoBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/VisualStateCallbackBoundaryInterface.java",

@@ -15,4 +15,5 @@ public interface WebViewProviderFactoryBoundaryInterface {
     /* SupportLibWebkitToCompatConverter */ InvocationHandler getWebkitToCompatConverter();
     /* StaticsAdapter */ InvocationHandler getStatics();
     String[] getSupportedFeatures();
+    /* SupportLibraryServiceWorkerController */ InvocationHandler getServiceWorkerController();
 }
