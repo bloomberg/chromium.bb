@@ -38,7 +38,7 @@ class ArcAppDataSearchResult : public SearchResult {
     return data_->launch_intent_uri;
   }
   const std::string& label() const { return data_->label; }
-  const std::vector<uint8_t>& icon_png_data() const {
+  const base::Optional<std::vector<uint8_t>>& icon_png_data() const {
     return data_->icon_png_data;
   }
 

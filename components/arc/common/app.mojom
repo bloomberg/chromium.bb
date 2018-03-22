@@ -139,8 +139,8 @@ struct AppDataResult {
   string launch_intent_uri;
   // Label for the result.
   string label;
-  // Icon information in png format.
-  array<uint8> icon_png_data;
+  // Icon information in png format. It could be null if not provided.
+  array<uint8>? icon_png_data;
 };
 
 // Describes the status of an app data search request, including completed
