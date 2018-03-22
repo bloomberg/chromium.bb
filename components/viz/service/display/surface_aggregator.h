@@ -160,8 +160,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const SharedQuadState* source_sqs,
       const gfx::Transform& scaled_quad_to_target_transform,
       const gfx::Transform& target_transform,
-      const gfx::Rect& quad_layer_rect,
-      const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
       float x_scale,

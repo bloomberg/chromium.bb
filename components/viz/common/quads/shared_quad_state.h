@@ -45,9 +45,6 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // Transforms quad rects into the target content space.
   gfx::Transform quad_to_target_transform;
   // The rect of the quads' originating layer in the space of the quad rects.
-  // Note that the |quad_layer_rect| represents the union of the |rect| of
-  // DrawQuads in this SharedQuadState. If it does not hold, then
-  // |are_contents_opaque| needs to be set to false.
   gfx::Rect quad_layer_rect;
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
@@ -55,7 +52,7 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
   bool is_clipped;
-  // Indicates whether the content in |quad_layer_rect| are fully opaque.
+  // Indicates whether the quads share this sqs contains opaque content.
   bool are_contents_opaque;
   float opacity;
   SkBlendMode blend_mode;
