@@ -12,6 +12,7 @@ import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;
 
 /**
@@ -44,6 +45,11 @@ public class VrInputMethodManagerWrapper implements InputMethodManagerWrapper {
 
     public VrInputMethodManagerWrapper(Context context, BrowserKeyboardInterface keyboard) {
         mContext = context;
+        mKeyboard = keyboard;
+    }
+
+    @VisibleForTesting
+    public void setBrowserKeyboardInterfaceForTesting(BrowserKeyboardInterface keyboard) {
         mKeyboard = keyboard;
     }
 

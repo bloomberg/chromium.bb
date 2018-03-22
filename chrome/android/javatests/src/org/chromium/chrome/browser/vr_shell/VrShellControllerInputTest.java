@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
-import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 
@@ -207,11 +206,7 @@ public class VrShellControllerInputTest {
                 VrTestFramework.getHtmlTestFile("test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
 
-        // pressReleaseTouchpadButton() appears to be flaky for clicking on things, as sometimes
-        // it happens too fast for Chrome to register. So, manually press and release with a delay
-        mController.sendClickButtonToggleEvent();
-        SystemClock.sleep(50);
-        mController.sendClickButtonToggleEvent();
+        mController.performControllerClick();
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
                 VrTestFramework.getHtmlTestFile("test_navigation_2d_page"));
     }

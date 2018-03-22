@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell.keyboard;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.vr_shell.TextEditActionType;
@@ -25,8 +26,9 @@ public class TextEditAction {
         return new TextEditAction[size];
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private TextEditAction(@TextEditActionType int type, String text, int newCursorPosition) {
+    public TextEditAction(@TextEditActionType int type, String text, int newCursorPosition) {
         mType = type;
         mText = text;
         mNewCursorPosition = newCursorPosition;
