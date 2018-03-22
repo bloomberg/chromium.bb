@@ -816,6 +816,9 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
 def _ExecuteCommand(target, command):
   """Runs a single command and generates a profraw data file."""
   # Per Clang "Source-based Code Coverage" doc:
+  #
+  # "%p" expands out to the process ID.
+  #
   # "%Nm" expands out to the instrumented binary's signature. When this pattern
   # is specified, the runtime creates a pool of N raw profiles which are used
   # for on-line profile merging. The runtime takes care of selecting a raw
@@ -824,10 +827,15 @@ def _ExecuteCommand(target, command):
   # N must be between 1 and 9. The merge pool specifier can only occur once per
   # filename pattern.
   #
-  # 4 is chosen because it creates some level of parallelism, but it's not too
-  # big to consume too much computing resource or disk space.
+  # "%p" is used when tests run in single process, however, it can't be used for
+  # multi-process because each process produces an intermediate dump, which may
+  # consume hundreds of gigabytes of disk space.
+  #
+  # For "%Nm", 4 is chosen because it creates some level of parallelism, but
+  # it's not too big to consume too much computing resource or disk space.
+  profile_pattern_string = '%p' if _IsFuzzerTarget(target) else '%4m'
   expected_profraw_file_name = os.extsep.join(
-      [target, '%4m', PROFRAW_FILE_EXTENSION])
+      [target, profile_pattern_string, PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(OUTPUT_DIR,
                                             expected_profraw_file_name)
 
@@ -840,6 +848,14 @@ def _ExecuteCommand(target, command):
     logging.warning('Command: "%s" exited with non-zero return code', command)
 
   return output
+
+
+def _IsFuzzerTarget(target):
+  """Returns true if the target is a fuzzer target."""
+  build_args = _GetBuildArgs()
+  use_libfuzzer = ('use_libfuzzer' in build_args and
+                   build_args['use_libfuzzer'] == 'true')
+  return use_libfuzzer and target.endswith('_fuzzer')
 
 
 def _ExecuteIOSCommand(target, command):
