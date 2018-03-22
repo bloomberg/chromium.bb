@@ -91,6 +91,7 @@ class ArcNotificationContentView
   void OnBlur() override;
   views::FocusTraversable* GetFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnAccessibilityEvent(ax::mojom::Event event) override;
 
   // aura::WindowObserver
   void OnWindowBoundsChanged(aura::Window* window,

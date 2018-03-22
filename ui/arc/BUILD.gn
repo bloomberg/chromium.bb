@@ -52,6 +52,19 @@ static_library("arc") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "notification/mock_arc_notification_item.cc",
+    "notification/mock_arc_notification_item.h",
+  ]
+
+  deps = [
+    ":arc",
+    "//ui/gl:test_support",
+  ]
+}
+
 test("ui_arc_unittests") {
   testonly = true
   sources = [
@@ -63,6 +76,7 @@ test("ui_arc_unittests") {
 
   deps = [
     ":arc",
+    ":test_support",
     "//ash:test_support_without_content",
     "//base",
     "//base/test:test_support",

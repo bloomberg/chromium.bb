@@ -2165,6 +2165,7 @@ source_set("unit_tests") {
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
     "//third_party/leveldatabase",
+    "//ui/arc:test_support",
     "//ui/base/ime",
     "//ui/chromeos/resources",
   ]

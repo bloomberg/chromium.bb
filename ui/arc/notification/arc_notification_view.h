@@ -75,6 +75,7 @@ class ArcNotificationView : public message_center::MessageView,
  private:
   friend class ArcNotificationContentViewTest;
   friend class ArcNotificationViewTest;
+  friend class ArcAccessibilityHelperBridgeTest;
 
   // TODO(yoshiki): Mmove this to message_center::MessageView.
   void UpdateControlButtonsVisibilityWithNotification(

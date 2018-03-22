@@ -683,6 +683,19 @@ void ArcNotificationContentView::GetAccessibleNodeData(
   node_data->SetName(accessible_name_);
 }
 
+void ArcNotificationContentView::OnAccessibilityEvent(ax::mojom::Event event) {
+  if (event == ax::mojom::Event::kTextSelectionChanged) {
+    // Activate and request focus on notification content view. If text
+    // selection changed event is dispatched, it indicates that user is going to
+    // type something inside Android notification. Widget of message center is
+    // not activated by default. We need to activate the widget. If other view
+    // in message center has focus, it can consume key event. We need to request
+    // focus to move it to this content view.
+    Activate();
+    RequestFocus();
+  }
+}
+
 void ArcNotificationContentView::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
