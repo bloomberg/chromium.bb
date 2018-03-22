@@ -57,6 +57,7 @@
           "description": "<i>Deprecated since Chrome M59.</i> Docked windows are no longer supported. This state will be converted to \"normal\"."
         }, {
           "name": "locked-fullscreen",
+          "nodoc": true,
           "description": "Locked fullscreen window state. This fullscreen state cannot be exited by user action. It is available only to whitelisted extensions on Chrome OS."
         }]
       },
