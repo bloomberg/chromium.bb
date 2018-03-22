@@ -254,6 +254,12 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
 
     // Don't request a chrome memory dump at all if the client wants only the
     // processes' vm regions, which are retrieved via RequestOSMemoryDump().
+    //
+    // This must occur before the call to RequestOSMemoryDump, as
+    // ClientProcessImpl will [for macOS], delay the calculations for the
+    // OSMemoryDump until the Chrome memory dump is finished. See
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=812346#c16 for more
+    // details.
     if (request->wants_chrome_dumps()) {
       request->pending_responses.insert({client, ResponseType::kChromeDump});
       client->RequestChromeMemoryDump(request->GetRequestArgs(),

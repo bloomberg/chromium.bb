@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -75,6 +76,7 @@ void ClientProcessImpl::RequestChromeMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestChromeMemoryDumpCallback& callback) {
   DCHECK(!callback.is_null());
+  most_recent_chrome_memory_dump_guid_ = args.dump_guid;
   auto it_and_inserted =
       pending_chrome_callbacks_.emplace(args.dump_guid, std::move(callback));
   DCHECK(it_and_inserted.second) << "Duplicated request id " << args.dump_guid;
@@ -94,6 +96,14 @@ void ClientProcessImpl::OnChromeMemoryDumpDone(
 
   auto callback = std::move(callback_it->second);
   pending_chrome_callbacks_.erase(callback_it);
+
+  auto it = delayed_os_memory_dump_callbacks_.find(dump_guid);
+  if (it != delayed_os_memory_dump_callbacks_.end()) {
+    for (auto& args : it->second) {
+      PerformOSMemoryDump(std::move(args));
+    }
+    delayed_os_memory_dump_callbacks_.erase(it);
+  }
 
   if (!process_memory_dump) {
     callback.Run(false, dump_guid, nullptr);
@@ -129,19 +139,40 @@ void ClientProcessImpl::RequestOSMemoryDump(
     bool want_mmaps,
     const std::vector<base::ProcessId>& pids,
     const RequestOSMemoryDumpCallback& callback) {
+  OSMemoryDumpArgs args;
+  args.want_mmaps = want_mmaps;
+  args.pids = pids;
+  args.callback = callback;
+
+#if defined(OS_MACOSX)
+  // If the most recent chrome memory dump hasn't finished, wait for that to
+  // finish.
+  if (most_recent_chrome_memory_dump_guid_.has_value()) {
+    uint64_t guid = most_recent_chrome_memory_dump_guid_.value();
+    auto it = pending_chrome_callbacks_.find(guid);
+    if (it != pending_chrome_callbacks_.end()) {
+      delayed_os_memory_dump_callbacks_[guid].push_back(std::move(args));
+      return;
+    }
+  }
+#endif
+  PerformOSMemoryDump(std::move(args));
+}
+
+void ClientProcessImpl::PerformOSMemoryDump(OSMemoryDumpArgs args) {
   bool global_success = true;
   std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
-  for (const base::ProcessId& pid : pids) {
+  for (const base::ProcessId& pid : args.pids) {
     mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
     result->platform_private_footprint = mojom::PlatformPrivateFootprint::New();
     bool success = OSMetrics::FillOSMemoryDump(pid, result.get());
-    if (want_mmaps)
+    if (args.want_mmaps)
       success = success && OSMetrics::FillProcessMemoryMaps(pid, result.get());
     if (success)
       results[pid] = std::move(result);
     global_success = global_success && success;
   }
-  callback.Run(global_success, std::move(results));
+  args.callback.Run(global_success, std::move(results));
 }
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,
@@ -152,5 +183,10 @@ ClientProcessImpl::Config::Config(service_manager::Connector* connector,
       process_type(process_type) {}
 
 ClientProcessImpl::Config::~Config() {}
+
+ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs() = default;
+ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs(const OSMemoryDumpArgs&) =
+    default;
+ClientProcessImpl::OSMemoryDumpArgs::~OSMemoryDumpArgs() = default;
 
 }  // namespace memory_instrumentation
