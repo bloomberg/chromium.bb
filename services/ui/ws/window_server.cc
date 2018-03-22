@@ -845,6 +845,11 @@ void WindowServer::CreateFrameSinkManager() {
       std::move(frame_sink_manager));
 }
 
+AsyncEventDispatcher* WindowServer::GetAsyncEventDispatcherById(
+    ClientSpecificId id) {
+  return GetTreeWithId(id);
+}
+
 ServerWindow* WindowServer::GetRootWindowForDrawn(const ServerWindow* window) {
   Display* display = display_manager_->GetDisplayContaining(window);
   return display ? display->root_window() : nullptr;

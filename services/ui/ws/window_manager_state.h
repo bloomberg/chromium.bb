@@ -12,13 +12,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/ws/cursor_state.h"
 #include "services/ui/ws/cursor_state_delegate.h"
-#include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/event_dispatcher_delegate.h"
+#include "services/ui/ws/event_dispatcher_impl.h"
 #include "services/ui/ws/event_processor.h"
 #include "services/ui/ws/event_processor_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
@@ -32,6 +32,7 @@ namespace ui {
 namespace ws {
 
 class DisplayManager;
+class EventDispatcherImpl;
 class PlatformDisplay;
 class WindowManagerDisplayRoot;
 class WindowTree;
@@ -46,7 +47,7 @@ class WindowManagerStateTestApi;
 class WindowManagerState : public EventProcessorDelegate,
                            public ServerWindowObserver,
                            public CursorStateDelegate,
-                           public EventDispatcher {
+                           public EventDispatcherDelegate {
  public:
   explicit WindowManagerState(WindowTree* window_tree);
   ~WindowManagerState() override;
@@ -104,10 +105,6 @@ class WindowManagerState : public EventProcessorDelegate,
   // |event|, but it may modify it.
   void ProcessEvent(ui::Event* event, int64_t display_id);
 
-  // Returns true if actively processing an event. This includes waiting for a
-  // client to ack an event.
-  bool IsProcessingEvent() const;
-
   // Notifies |closure| once done processing currently queued events. This
   // notifies |closure| immediately if IsProcessingEvent() returns false.
   void ScheduleCallbackWhenDoneProcessingEvents(base::OnceClosure closure);
@@ -117,7 +114,6 @@ class WindowManagerState : public EventProcessorDelegate,
   }
 
  private:
-  class ProcessedEventTarget;
   friend class Display;
   friend class test::WindowManagerStateTestApi;
 
@@ -138,38 +134,6 @@ class WindowManagerState : public EventProcessorDelegate,
     int event_flags;
   };
 
-  enum class EventDispatchPhase {
-    // Not actively dispatching.
-    NONE,
-
-    // A PRE_TARGET accelerator has been encountered and we're awaiting the ack.
-    PRE_TARGET_ACCELERATOR,
-
-    // Dispatching to the target, awaiting the ack.
-    TARGET,
-  };
-
-  struct EventTask;
-
-  // Tracks state associated with an event being dispatched to a client.
-  struct InFlightEventDispatchDetails {
-    InFlightEventDispatchDetails(WindowManagerState* window_manager_state,
-                                 WindowTree* tree,
-                                 int64_t display_id,
-                                 const Event& event,
-                                 EventDispatchPhase phase);
-    ~InFlightEventDispatchDetails();
-
-    base::OneShotTimer timer;
-    WindowTree* tree;
-    int64_t display_id;
-    std::unique_ptr<Event> event;
-    EventDispatchPhase phase;
-    base::WeakPtr<Accelerator> post_target_accelerator;
-    // Used for callbacks/timer specific to processing |event|.
-    base::WeakPtrFactory<WindowManagerState> weak_factory;
-  };
-
   const WindowServer* window_server() const;
   WindowServer* window_server();
 
@@ -188,14 +152,6 @@ class WindowManagerState : public EventProcessorDelegate,
   // |window|. |window| corresponds to the root of a Display.
   ServerWindow* GetWindowManagerRootForDisplayRoot(ServerWindow* window);
 
-  // Called from the callback supplied to WindowTree::OnAccelerator().
-  void OnAcceleratorAck(
-      mojom::EventResult result,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties);
-
-  // Called from the callback supplied to WindowTree::DispatchInputEvent().
-  void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
-
   // Called if the client doesn't ack an event in the appropriate amount of
   // time.
   void OnEventAckTimeout(ClientSpecificId client_id);
@@ -204,11 +160,6 @@ class WindowManagerState : public EventProcessorDelegate,
   // handles debug accelerators and forwards to EventProcessor.
   void ProcessEventImpl(const Event& event,
                         const EventLocation& event_location);
-
-  // Schedules an event to be processed later.
-  void QueueEvent(const Event& event,
-                  std::unique_ptr<ProcessedEventTarget> processed_event_target,
-                  const EventLocation& event_location);
 
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
@@ -226,13 +177,6 @@ class WindowManagerState : public EventProcessorDelegate,
 
   // Runs the specified debug accelerator.
   void HandleDebugAccelerator(DebugAcceleratorType type, int64_t display_id);
-
-  // Called when waiting for an event or accelerator to be processed by |tree|.
-  void ScheduleInputEventTimeout(WindowTree* tree,
-                                 ServerWindow* target,
-                                 int64_t display_id,
-                                 const Event& event,
-                                 EventDispatchPhase phase);
 
   // Processes queued event tasks until there are no more, or we're waiting on
   // a client or the EventDisptacher to complete processing.
@@ -274,22 +218,23 @@ class WindowManagerState : public EventProcessorDelegate,
   ServerWindow* GetWindowFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) override;
 
-  // EventDispatcher:
-  void DispatchInputEventToWindow(ServerWindow* target,
-                                  ClientSpecificId client_id,
-                                  const EventLocation& event_location,
-                                  const Event& event,
-                                  Accelerator* accelerator) override;
-  void OnAccelerator(uint32_t accelerator_id,
-                     int64_t display_id,
-                     const Event& event,
-                     AcceleratorPhase phase) override;
-
   // ServerWindowObserver:
   void OnWindowEmbeddedAppDisconnected(ServerWindow* window) override;
 
   // CursorStateDelegate:
   void OnCursorTouchVisibleChanged(bool enabled) override;
+
+  // EventDispatcherDelegate:
+  ServerWindow* OnWillDispatchInputEvent(ServerWindow* target,
+                                         ClientSpecificId client_id,
+                                         const EventLocation& event_location,
+                                         const Event& event) override;
+  void OnEventDispatchTimedOut(
+      AsyncEventDispatcher* async_event_dipsatcher) override;
+  void OnAsyncEventDispatcherHandledAccelerator(const Event& event,
+                                                int64_t display_id) override;
+  void OnWillProcessEvent(const ui::Event& event,
+                          const EventLocation& event_location) override;
 
   // The single WindowTree this WindowManagerState is associated with.
   // |window_tree_| owns this.
@@ -299,17 +244,9 @@ class WindowManagerState : public EventProcessorDelegate,
   bool got_frame_decoration_values_ = false;
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
-  // Used for any event related tasks that need to be processed. Tasks are added
-  // to the queue anytime work comes in while waiting for a client to respond,
-  // or waiting for async hit-testing processing to complete.
-  base::queue<std::unique_ptr<EventTask>> event_tasks_;
-
   std::vector<DebugAccelerator> debug_accelerators_;
 
-  // If non-null we're actively waiting for a response from a client for an
-  // event.
-  std::unique_ptr<InFlightEventDispatchDetails>
-      in_flight_event_dispatch_details_;
+  EventDispatcherImpl event_dispatcher_;
 
   EventProcessor event_processor_;
 

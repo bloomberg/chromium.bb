@@ -85,3 +85,29 @@ still very much a work in progress.
 
 FrameSinkId is derived from the embedded client, where as LocalSurfaceId
 comes from the embedder.
+
+### Event Processing
+
+One of the key operations of the Window Service is event processing. This
+includes maintaining state associated with the current input devices (such
+as the location of the mouse cursor) as well dispatching to the appropriate
+client. Event processing includes the following classes, see each for more
+details:
+. EventDispatcherImpl: events received from the platform are sent here first.
+  If not already processing an event EventDispatcherImpl forwards the event to
+  EventProcessor. If EventDispatcherImpl is processing an event it queues the
+  event for later processing.
+. EventProcessor: maintains state related to event processing, passing the
+  appropriate events and targets to EventDispatcher for dispatch.
+. AsyncEventDispatcher: dispatches an event to the client, notifying a callback
+  when done. This interface is largely for testing with WindowTree providing
+  the implementation.
+. EventTargeter: used by EventProcessor to determine the ServerWindow to send an
+  event to. Targetting is potentially asynchronous.
+
+EventDispatcherImpl and EventProcessor both have delegates that can impact
+targetting, as well as being notified during the lifecycle of processing.
+
+RemoteEventDispatcher is not a core part of event processing. It allows remote
+clients to inject events for testing and remoting. Events injected via
+RemoteEventDispatcher end up going to EventProcessor.

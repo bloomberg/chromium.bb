@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws/async_event_dispatcher_lookup.h"
 #include "services/ui/ws/gpu_host_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/operation.h"
@@ -59,7 +60,8 @@ struct WindowTreeAndWindowId {
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
                      public GpuHostDelegate,
-                     public UserDisplayManagerDelegate {
+                     public UserDisplayManagerDelegate,
+                     public AsyncEventDispatcherLookup {
  public:
   WindowServer(WindowServerDelegate* delegate, bool should_host_viz);
   ~WindowServer() override;
@@ -325,6 +327,10 @@ class WindowServer : public ServerWindowDelegate,
                                              ServerWindow* window);
 
   void CreateFrameSinkManager();
+
+  // AsyncEventDispatcherLookup:
+  AsyncEventDispatcher* GetAsyncEventDispatcherById(
+      ClientSpecificId id) override;
 
   // Overridden from ServerWindowDelegate:
   ServerWindow* GetRootWindowForDrawn(const ServerWindow* window) override;
