@@ -39,7 +39,7 @@ class CSSValue;
 // Inputs: PropertyID, isImportant bool, CSSParserTokenRange.
 // Outputs: Vector of CSSProperties
 
-class CSSPropertyParser {
+class CORE_EXPORT CSSPropertyParser {
   STACK_ALLOCATED();
 
  public:

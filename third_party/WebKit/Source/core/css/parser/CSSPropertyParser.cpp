@@ -89,6 +89,10 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   CSSParserTokenRange original_range = range_;
   CSSPropertyID property_id = resolveCSSPropertyID(unresolved_property);
   const CSSProperty& property = CSSProperty::Get(property_id);
+  // If a CSSPropertyID is only a known descriptor (@fontface, @viewport), not a
+  // style property, it will not be a valid declaration.
+  if (!property.IsProperty())
+    return false;
   bool is_shorthand = property.IsShorthand();
   DCHECK(context_);
   if (is_shorthand) {
