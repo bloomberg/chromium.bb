@@ -14,11 +14,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -30,6 +32,7 @@
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "sql/connection.h"
@@ -41,11 +44,13 @@
 
 namespace content {
 
-// Hard coded default when not using quota management.
-static const int kDefaultQuota = 5 * 1024 * 1024;
+const int kMB = 1024 * 1024;
 
-static const int kMaxAppCacheDiskCacheSize = 250 * 1024 * 1024;
-static const int kMaxAppCacheMemDiskCacheSize = 10 * 1024 * 1024;
+// Hard coded default when not using quota management.
+static const int kDefaultQuota = 5 * kMB;
+
+static const int kMaxAppCacheDiskCacheSize = 250 * kMB;
+static const int kMaxAppCacheMemDiskCacheSize = 10 * kMB;
 static const base::FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
 
@@ -1869,9 +1874,21 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
                      base::Unretained(this)));
     } else {
       expecting_cleanup_complete_on_disable_ = true;
+
+      const base::CommandLine& command_line =
+          *base::CommandLine::ForCurrentProcess();
+      unsigned int max_appcache_disk_cache_size = kMaxAppCacheDiskCacheSize;
+      if (command_line.HasSwitch(switches::kMaxAppCacheDiskCacheSizeMb)) {
+        if (base::StringToUint(command_line.GetSwitchValueASCII(
+                                   switches::kMaxAppCacheDiskCacheSizeMb),
+                               &max_appcache_disk_cache_size)) {
+          max_appcache_disk_cache_size *= kMB;
+        }
+      }
+
       rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.Append(kDiskCacheDirectoryName),
-          kMaxAppCacheDiskCacheSize, false,
+          max_appcache_disk_cache_size, false,
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheCleanupComplete,
                          weak_factory_.GetWeakPtr()),
           base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
