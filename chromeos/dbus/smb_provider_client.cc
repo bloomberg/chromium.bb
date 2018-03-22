@@ -229,6 +229,16 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleGetDeleteListCallback, &callback);
   }
 
+  void GetShares(const base::FilePath& server_url,
+                 ReadDirectoryCallback callback) override {
+    smbprovider::GetSharesOptionsProto options;
+    options.set_server_url(server_url.value());
+    CallMethod(smbprovider::kGetSharesMethod, options,
+               &SmbProviderClientImpl::HandleProtoCallback<
+                   smbprovider::DirectoryEntryListProto>,
+               &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
