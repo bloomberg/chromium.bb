@@ -120,6 +120,13 @@ if (widevine_cdm_binary_files != []) {
 }
 
 group("cdm") {
+  # Needed at run time by tests, e.g. swarming tests to generate isolate.
+  # See https://crbug.com/824493 for context.
+  data_deps = [
+    ":widevine_cdm_binary",
+    ":widevine_cdm_manifest",
+  ]
+  # Needed at build time e.g. for mac bundle (//chrome:chrome_framework).
   public_deps = [
     ":widevine_cdm_binary",
     ":widevine_cdm_manifest",
