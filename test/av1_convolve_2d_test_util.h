@@ -36,6 +36,7 @@ typedef std::tr1::tuple<convolve_2d_func, int, int, BLOCK_SIZE> Convolve2DParam;
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
     convolve_2d_func filter, int subx_exist, int suby_exist);
 
+#if !CONFIG_LOWPRECISION_BLEND
 class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
   virtual ~AV1Convolve2DTest();
@@ -49,6 +50,7 @@ class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
   libaom_test::ACMRandom rnd_;
 };
+#endif  // !CONFIG_LOWPRECISION_BLEND
 
 class AV1Convolve2DSrTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
@@ -64,7 +66,6 @@ class AV1Convolve2DSrTest : public ::testing::TestWithParam<Convolve2DParam> {
   libaom_test::ACMRandom rnd_;
 };
 
-#if CONFIG_LOWPRECISION_BLEND
 class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
   virtual ~AV1JntConvolve2DTest();
@@ -77,7 +78,6 @@ class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
   libaom_test::ACMRandom rnd_;
 };
-#endif
 }  // namespace AV1Convolve2D
 
 namespace AV1HighbdConvolve2D {
@@ -93,6 +93,7 @@ typedef std::tr1::tuple<int, highbd_convolve_2d_func, int, int, BLOCK_SIZE>
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
     highbd_convolve_2d_func filter, int subx_exist, int suby_exist);
 
+#if !CONFIG_LOWPRECISION_BLEND
 class AV1HighbdConvolve2DTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {
  public:
@@ -106,6 +107,7 @@ class AV1HighbdConvolve2DTest
 
   libaom_test::ACMRandom rnd_;
 };
+#endif  // !CONFIG_LOWPRECISION_BLEND
 
 class AV1HighbdConvolve2DSrTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {
@@ -122,7 +124,6 @@ class AV1HighbdConvolve2DSrTest
   libaom_test::ACMRandom rnd_;
 };
 
-#if CONFIG_LOWPRECISION_BLEND
 class AV1HighbdJntConvolve2DTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {
  public:
@@ -137,7 +138,6 @@ class AV1HighbdJntConvolve2DTest
 
   libaom_test::ACMRandom rnd_;
 };
-#endif
 }  // namespace AV1HighbdConvolve2D
 
 }  // namespace libaom_test

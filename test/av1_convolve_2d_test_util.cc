@@ -31,11 +31,11 @@ namespace AV1Convolve2D {
                             ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 AV1Convolve2DTest::~AV1Convolve2DTest() {}
 void AV1Convolve2DTest::SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
 
 void AV1Convolve2DTest::TearDown() { libaom_test::ClearSystemState(); }
-#if !CONFIG_LOWPRECISION_BLEND
 void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int has_subx = GET_PARAM(1);
@@ -94,7 +94,6 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
     }
   }
 }
-#endif  // CONFIG_LOWPRECISION_BLEND
 
 void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
@@ -134,6 +133,7 @@ void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
   printf("%d,%d convolve %3dx%-3d: %7.2f us\n", has_subx, has_suby, out_w,
          out_h, 1000.0 * elapsed_time / num_loops);
 }
+#endif  // CONFIG_LOWPRECISION_BLEND
 
 AV1Convolve2DSrTest::~AV1Convolve2DSrTest() {}
 void AV1Convolve2DSrTest::SetUp() {
@@ -256,7 +256,6 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
   }
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 AV1JntConvolve2DTest::~AV1JntConvolve2DTest() {}
 void AV1JntConvolve2DTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -396,11 +395,9 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
     }
   }
 }
-#endif  // CONFIG_LOWPRECISION_BLEND
 }  // namespace AV1Convolve2D
 
 namespace AV1HighbdConvolve2D {
-
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
     highbd_convolve_2d_func filter, int has_subx, int has_suby) {
   return ::testing::Combine(
@@ -409,6 +406,7 @@ namespace AV1HighbdConvolve2D {
       ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
 
+#if !CONFIG_LOWPRECISION_BLEND
 AV1HighbdConvolve2DTest::~AV1HighbdConvolve2DTest() {}
 void AV1HighbdConvolve2DTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -416,7 +414,6 @@ void AV1HighbdConvolve2DTest::SetUp() {
 
 void AV1HighbdConvolve2DTest::TearDown() { libaom_test::ClearSystemState(); }
 
-#if !CONFIG_LOWPRECISION_BLEND
 void AV1HighbdConvolve2DTest::RunCheckOutput(
     highbd_convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
@@ -479,7 +476,7 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
     }
   }
 }
-#endif  // CONFIG_LOWPRECISION_BLEND
+#endif  // !CONFIG_LOWPRECISION_BLEND
 
 AV1HighbdConvolve2DSrTest::~AV1HighbdConvolve2DSrTest() {}
 void AV1HighbdConvolve2DSrTest::SetUp() {
@@ -617,7 +614,6 @@ void AV1HighbdConvolve2DSrTest::RunCheckOutput(
   }
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 AV1HighbdJntConvolve2DTest::~AV1HighbdJntConvolve2DTest() {}
 void AV1HighbdJntConvolve2DTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -812,6 +808,5 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
     }
   }
 }
-#endif  // CONFIG_LOWPRECISION_BLEND
 }  // namespace AV1HighbdConvolve2D
 }  // namespace libaom_test

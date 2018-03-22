@@ -228,9 +228,9 @@ if (CONFIG_AV1_ENCODER)
         set(AOM_UNIT_TEST_ENCODER_SOURCES
             ${AOM_UNIT_TEST_ENCODER_SOURCES}
             "${AOM_ROOT}/test/av1_convolve_scale_test.cc"
-			"${AOM_ROOT}/test/warp_filter_test_util.cc"
-			"${AOM_ROOT}/test/warp_filter_test_util.h"
-			"${AOM_ROOT}/test/warp_filter_test.cc")
+            "${AOM_ROOT}/test/warp_filter_test_util.cc"
+            "${AOM_ROOT}/test/warp_filter_test_util.h"
+            "${AOM_ROOT}/test/warp_filter_test.cc")
       endif ()
     endif ()
 
