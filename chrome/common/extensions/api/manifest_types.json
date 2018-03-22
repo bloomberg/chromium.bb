@@ -130,34 +130,6 @@
         }
       },
       {
-        "id": "automation",
-        "description": "This API provides programmatic access to the user interface elements of Chrome. This includes everything in the web view, and optionally Chrome's full user interface.",
-        "choices": [
-          { "type": "boolean",
-            "description": "If true, enables non-interactive access to the automation tree only for the sites for which the extension has a <a href='https://developer.chrome.com/extensions/declare_permissions#host-permissions'>host permission</a> or <a href='https://developer.chrome.com/extensions/declare_permissions#activeTab'>activeTab permission</a>)." },
-          { "type": "object",
-            "properties": {
-              "desktop": {
-                "description": "Whether to request permission to the whole ChromeOS desktop. If granted, this gives the extension access to every aspect of the desktop, and every site and app. If this permission is requested, all other permissions are implicitly included and do not need to be requested separately.",
-                "optional": true,
-                "type": "boolean"
-              },
-              "matches": {
-                "description": "A list of URL patterns for which this extension may request an automation tree. If not specified, automation permission will be granted for the sites for which the extension has a <a href='https://developer.chrome.com/extensions/declare_permissions#host-permissions'>host permission</a> or <a href='https://developer.chrome.com/extensions/declare_permissions#activeTab'>activeTab permission</a>).",
-                "optional": true,
-                "type": "array",
-                "items": { "type": "string" }
-              },
-              "interact": {
-                "description": "Whether the extension is allowed interactive access (true) or read-only access (false; default) to the automation tree.",
-                "optional": true,
-                "type": "boolean"
-              }
-            }
-          }
-        ]
-      },
-      {
         "id": "FileSystemProviderSource",
         "type": "string",
         "description": "For <code>\"file\"</code> the source is a file passed via <code>onLaunched</code> event. For <code>\"device\"</code> contents are fetched from an external device (eg. plugged via USB), without using <code>file_handlers</code>. Finally, for <code>\"network\"</code> source, contents should be fetched via network.",

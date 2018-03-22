@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_AUTOMATION_H_
-#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_AUTOMATION_H_
+#ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_AUTOMATION_H_
+#define EXTENSIONS_COMMON_MANIFEST_HANDLERS_AUTOMATION_H_
 
 #include <memory>
 #include <string>
@@ -17,10 +17,10 @@
 namespace extensions {
 
 namespace api {
-namespace manifest_types {
+namespace extensions_manifest_types {
 struct Automation;
 }
-}
+}  // namespace api
 
 class URLPatternSet;
 class AutomationManifestPermission;
@@ -32,7 +32,7 @@ extern const char kErrorDesktopTrueMatchesSpecified[];
 extern const char kErrorURLMalformed[];
 extern const char kErrorInvalidMatch[];
 extern const char kErrorNoMatchesProvided[];
-}
+}  // namespace automation_errors
 
 // The parsed form of the automation manifest entry.
 struct AutomationInfo : public Extension::ManifestData {
@@ -61,8 +61,8 @@ struct AutomationInfo : public Extension::ManifestData {
   AutomationInfo();
   AutomationInfo(bool desktop, const URLPatternSet& matches, bool interact);
 
-  static std::unique_ptr<api::manifest_types::Automation> AsManifestType(
-      const AutomationInfo& info);
+  static std::unique_ptr<api::extensions_manifest_types::Automation>
+  AsManifestType(const AutomationInfo& info);
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInfo);
   friend class AutomationManifestPermission;
@@ -89,4 +89,4 @@ class AutomationHandler : public ManifestHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_AUTOMATION_H_
+#endif  // EXTENSIONS_COMMON_MANIFEST_HANDLERS_AUTOMATION_H_

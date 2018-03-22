@@ -179,6 +179,8 @@ if (enable_extensions) {
       "manifest_handler_helpers.h",
       "manifest_handlers/app_isolation_info.cc",
       "manifest_handlers/app_isolation_info.h",
+      "manifest_handlers/automation.cc",
+      "manifest_handlers/automation.h",
       "manifest_handlers/background_info.cc",
       "manifest_handlers/background_info.h",
       "manifest_handlers/content_capabilities_handler.cc",

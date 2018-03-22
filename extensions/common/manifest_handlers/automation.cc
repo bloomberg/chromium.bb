@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_handlers/automation.h"
+#include "extensions/common/manifest_handlers/automation.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/api/manifest_types.h"
+#include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
@@ -32,11 +32,11 @@ const char kErrorDesktopTrueMatchesSpecified[] =
     "matches will be ignored.";
 const char kErrorInvalidMatch[] = "Invalid match pattern '*': *";
 const char kErrorNoMatchesProvided[] = "No valid match patterns provided.";
-}
+}  // namespace automation_errors
 
 namespace errors = manifest_errors;
 namespace keys = extensions::manifest_keys;
-using api::manifest_types::Automation;
+using api::extensions_manifest_types::Automation;
 
 class AutomationManifestPermission : public ManifestPermission {
  public:
@@ -102,9 +102,9 @@ PermissionIDSet AutomationManifestPermission::GetPermissions() const {
 
 bool AutomationManifestPermission::FromValue(const base::Value* value) {
   base::string16 error;
-  automation_info_.reset(AutomationInfo::FromValue(*value,
-                                                   NULL /* install_warnings */,
-                                                   &error).release());
+  automation_info_.reset(
+      AutomationInfo::FromValue(*value, NULL /* install_warnings */, &error)
+          .release());
   return error.empty();
 }
 
@@ -154,11 +154,9 @@ ManifestPermission* AutomationManifestPermission::Intersect(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
 
-AutomationHandler::AutomationHandler() {
-}
+AutomationHandler::AutomationHandler() {}
 
-AutomationHandler::~AutomationHandler() {
-}
+AutomationHandler::~AutomationHandler() {}
 
 bool AutomationHandler::Parse(Extension* extension, base::string16* error) {
   const base::Value* automation = NULL;
@@ -211,12 +209,12 @@ std::unique_ptr<AutomationInfo> AutomationInfo::FromValue(
     base::string16* error) {
   std::unique_ptr<Automation> automation = Automation::FromValue(value, error);
   if (!automation)
-    return std::unique_ptr<AutomationInfo>();
+    return nullptr;
 
   if (automation->as_boolean) {
     if (*automation->as_boolean)
       return base::WrapUnique(new AutomationInfo());
-    return std::unique_ptr<AutomationInfo>();
+    return nullptr;
   }
   const Automation::Object& automation_object = *automation->as_object;
 
@@ -245,8 +243,7 @@ std::unique_ptr<AutomationInfo> AutomationInfo::FromValue(
 
       for (std::vector<std::string>::iterator it =
                automation_object.matches->begin();
-           it != automation_object.matches->end();
-           ++it) {
+           it != automation_object.matches->end(); ++it) {
         // TODO(aboxhall): Refactor common logic from content_scripts_handler,
         // manifest_url_handler and user_script.cc into a single location and
         // re-use here.
@@ -257,8 +254,7 @@ std::unique_ptr<AutomationInfo> AutomationInfo::FromValue(
         if (parse_result != URLPattern::PARSE_SUCCESS) {
           install_warnings->push_back(
               InstallWarning(ErrorUtils::FormatErrorMessage(
-                  automation_errors::kErrorInvalidMatch,
-                  *it,
+                  automation_errors::kErrorInvalidMatch, *it,
                   URLPattern::GetParseResultString(parse_result))));
           continue;
         }
@@ -299,15 +295,13 @@ std::unique_ptr<Automation> AutomationInfo::AsManifestType(
   return automation;
 }
 
-AutomationInfo::AutomationInfo() : desktop(false), interact(false) {
-}
+AutomationInfo::AutomationInfo() : desktop(false), interact(false) {}
 
 AutomationInfo::AutomationInfo(bool desktop,
                                const URLPatternSet& matches,
                                bool interact)
     : desktop(desktop), matches(matches), interact(interact) {}
 
-AutomationInfo::~AutomationInfo() {
-}
+AutomationInfo::~AutomationInfo() {}
 
 }  // namespace extensions
