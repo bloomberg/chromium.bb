@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -26,7 +27,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/native_widget_types.h"
+
+class GrContext;
 
 #if defined(OS_CHROMEOS)
 namespace arc {
@@ -69,6 +73,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                           base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
+  bool CreateGrContextIfNecessary(gl::GLSurface* surface);
+
   bool is_initialized() const { return !!gpu_host_; }
 
   media::MediaGpuChannelManager* media_gpu_channel_manager() {
@@ -93,6 +99,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   }
 
   gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
+  gpu::Scheduler* scheduler() { return scheduler_.get(); }
 
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 
@@ -108,6 +115,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   const gpu::GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
   }
+
+  gpu::SequenceId skia_output_surface_sequence_id() const {
+    return skia_output_surface_sequence_id_;
+  }
+  gl::GLContext* context_for_skia() { return context_for_skia_.get(); }
+  GrContext* gr_context() { return gr_context_.get(); }
 
  private:
   void RecordLogMessage(int severity,
@@ -214,6 +227,15 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::SyncPointManager* sync_point_manager_ = nullptr;
 
   std::unique_ptr<gpu::Scheduler> scheduler_;
+
+  // sequence id for running tasks from SkiaOutputSurface;
+  gpu::SequenceId skia_output_surface_sequence_id_;
+
+  // A GLContext for |gr_context_|. It can only be accessed by Skia.
+  scoped_refptr<gl::GLContext> context_for_skia_;
+
+  // A GrContext for SkiaOutputSurface (maybe raster as well).
+  sk_sp<GrContext> gr_context_;
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

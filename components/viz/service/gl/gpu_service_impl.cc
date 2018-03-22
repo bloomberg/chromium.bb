@@ -43,9 +43,14 @@
 #include "media/mojo/services/mojo_jpeg_encode_accelerator_service.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
 
@@ -139,6 +144,15 @@ GpuServiceImpl::~GpuServiceImpl() {
           FROM_HERE, base::Bind(&DestroyBinding, bindings_.get(), &wait))) {
     wait.Wait();
   }
+
+  // The sequence id and scheduler_ could be null for unit tests.
+  if (!skia_output_surface_sequence_id_.is_null()) {
+    DCHECK(scheduler_);
+    scheduler_->DestroySequence(skia_output_surface_sequence_id_);
+  }
+
+  gr_context_ = nullptr;
+  context_for_skia_ = nullptr;
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -205,6 +219,9 @@ void GpuServiceImpl::InitializeWithHost(
   scheduler_ = std::make_unique<gpu::Scheduler>(
       base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
 
+  skia_output_surface_sequence_id_ =
+      scheduler_->CreateSequence(gpu::SchedulingPriority::kHigh);
+
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
@@ -228,6 +245,37 @@ void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
     return;
   }
   bindings_->AddBinding(this, std::move(request));
+}
+
+bool GpuServiceImpl::CreateGrContextIfNecessary(gl::GLSurface* surface) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  DCHECK(surface);
+
+  if (!gr_context_) {
+    DCHECK(!context_for_skia_);
+    gl::GLContextAttribs attribs;
+    // TODO(penghuang) set attribs.
+    context_for_skia_ = gl::init::CreateGLContext(
+        gpu_channel_manager_->share_group(), surface, attribs);
+    DCHECK(context_for_skia_);
+    gpu_feature_info_.ApplyToGLContext(context_for_skia_.get());
+    if (!context_for_skia_->MakeCurrent(surface)) {
+      LOG(FATAL) << "Failed to make current.";
+      // TODO(penghuang): handle the failure.
+    }
+    auto native_interface =
+        GrGLMakeAssembledInterface(nullptr, [](void* ctx, const char name[]) {
+          return gl::GetGLProcAddress(name);
+        });
+    DCHECK(native_interface);
+
+    GrContextOptions options;
+    options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
+    options.fUseGLBufferDataNullHint = GrContextOptions::Enable::kYes;
+    gr_context_ = GrContext::MakeGL(std::move(native_interface), options);
+    DCHECK(gr_context_);
+  }
+  return !!gr_context_;
 }
 
 gpu::ImageFactory* GpuServiceImpl::gpu_image_factory() {
