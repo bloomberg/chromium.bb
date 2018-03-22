@@ -18,12 +18,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -34,7 +38,12 @@
 
 class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
  public:
-  TabUnderBlockerBrowserTest() {}
+  TabUnderBlockerBrowserTest() {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
   ~TabUnderBlockerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
@@ -42,6 +51,16 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
         TabUnderNavigationThrottle::kBlockTabUnders);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void UpdatePolicy(bool enable_protection) {
+    policy::PolicyMap policy;
+    policy.Set(policy::key::kTabUnderProtectionEnabled,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(enable_protection),
+               nullptr /* external_data_fetcher */);
+    provider_.UpdateChromePolicy(policy);
   }
 
   static std::string GetError(const GURL& blocked_url) {
@@ -63,6 +82,7 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  policy::MockConfigurationPolicyProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TabUnderBlockerBrowserTest);
 };
@@ -173,4 +193,49 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   navigation_observer.Wait();
   tab_under_observer.Wait();
   EXPECT_FALSE(tab_under_observer.last_navigation_succeeded());
+}
+
+IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
+                       ControlledByEnterprisePolicy) {
+  // Disable the enterprise policy, should disable tab-under blocking.
+  UpdatePolicy(false /* enable_protection */);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
+  navigation_observer.Wait();
+
+  // First tab-under attempt should succeed.
+  {
+    content::TestNavigationObserver tab_under_observer(opener, 1);
+    const GURL cross_origin_url =
+        embedded_test_server()->GetURL("a.com", "/title1.html");
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        opener, base::StringPrintf("window.location = '%s';",
+                                   cross_origin_url.spec().c_str())));
+    tab_under_observer.Wait();
+
+    EXPECT_TRUE(tab_under_observer.last_navigation_succeeded());
+    EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
+  }
+
+  // Enable the policy and try to tab-under again in the background tab. Should
+  // fail to navigate.
+  {
+    UpdatePolicy(true /* enable_protection */);
+    content::TestNavigationObserver tab_under_observer(opener, 1);
+    const GURL cross_origin_url =
+        embedded_test_server()->GetURL("b.com", "/title1.html");
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        opener, base::StringPrintf("window.location = '%s';",
+                                   cross_origin_url.spec().c_str())));
+    tab_under_observer.Wait();
+
+    EXPECT_FALSE(tab_under_observer.last_navigation_succeeded());
+    EXPECT_TRUE(IsUiShownForUrl(opener, cross_origin_url));
+  }
 }

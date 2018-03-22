@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 431
+#   For your editing convenience: highest ID currently used: 432
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -11542,6 +11542,26 @@
       If the AutoplayAllowed policy is set to False then any URL patterns set in this policy will still be allowed to play.
 
       Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behavior.''',
+    },
+    {
+      'name': 'TabUnderProtectionEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 432,
+      'caption': '''Enables tab-under protection''',
+      'tags': [],
+      'desc': '''Enables tab-under protection, which blocks navigations detected as tab-unders.
+
+      For an explanation on tab-unders, see https://www.chromestatus.com/features/5675755719622656.
+      If this policy is set to True, navigations which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> detects are tab-unders will be blocked.
+      If this policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow sites to perform tab-under navigations.
+      By default, this policy is set to True.''',
     }
   ],
 

@@ -3645,6 +3645,16 @@
     ]
   },
 
+  "TabUnderProtectionEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "TabUnderProtectionEnabled": false
+    },
+    "pref_mappings": [
+      { "pref": "tab_under_protection"}
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
