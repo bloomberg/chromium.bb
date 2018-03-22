@@ -27,6 +27,12 @@ void MessageViewContextMenuController::ShowContextMenuForView(
   Notification* notification =
       MessageCenter::Get()->FindVisibleNotificationById(
           message_view->notification_id());
+
+  // Notification is null if the notification view is being removed or some
+  // invalid status. In this case, just returns.
+  if (!notification)
+    return;
+
   menu_model_ = std::make_unique<NotificationMenuModel>(*notification);
 
   if (!menu_model_ || menu_model_->GetItemCount() == 0)
