@@ -127,7 +127,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
     : identity_manager_(identity_manager),
       sync_service_(sync_service),
       sync_service_observer_(this),
-      sync_state_(INITIALIZED_ENABLED_HISTORY),
+      history_sync_state_(syncer::UploadState::INITIALIZING),
       url_request_context_(url_request_context),
       suggestions_store_(std::move(suggestions_store)),
       thumbnail_manager_(std::move(thumbnail_manager)),
@@ -152,7 +152,7 @@ SuggestionsServiceImpl::~SuggestionsServiceImpl() {}
 bool SuggestionsServiceImpl::FetchSuggestionsData() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If sync state allows, issue a network request to refresh the suggestions.
-  if (sync_state_ != INITIALIZED_ENABLED_HISTORY) {
+  if (history_sync_state_ != syncer::UploadState::ACTIVE) {
     return false;
   }
   IssueRequestIfNoneOngoing(BuildSuggestionsURL());
@@ -192,7 +192,7 @@ void SuggestionsServiceImpl::GetPageThumbnailWithURL(
 bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(treib): Do we need to check |sync_state_| here?
+  // TODO(treib): Do we need to check |history_sync_state_| here?
 
   if (!blacklist_store_->BlacklistUrl(candidate_url))
     return false;
@@ -211,7 +211,7 @@ bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
 bool SuggestionsServiceImpl::UndoBlacklistURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(treib): Do we need to check |sync_state_| here?
+  // TODO(treib): Do we need to check |history_sync_state_| here?
 
   TimeDelta time_delta;
   if (blacklist_store_->GetTimeUntilURLReadyForUpload(url, &time_delta) &&
@@ -229,7 +229,7 @@ bool SuggestionsServiceImpl::UndoBlacklistURL(const GURL& url) {
 void SuggestionsServiceImpl::ClearBlacklist() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(treib): Do we need to check |sync_state_| here?
+  // TODO(treib): Do we need to check |history_sync_state_| here?
 
   blacklist_store_->ClearBlacklist();
   callback_list_.Notify(
@@ -308,55 +308,41 @@ GURL SuggestionsServiceImpl::BuildSuggestionsBlacklistClearURL() {
                                  kDeviceType));
 }
 
-SuggestionsServiceImpl::SyncState SuggestionsServiceImpl::ComputeSyncState()
-    const {
-  if (!sync_service_ || !sync_service_->CanSyncStart() ||
-      sync_service_->IsLocalSyncEnabled() ||
-      sync_service_->GetAuthError().IsPersistentError()) {
-    return SYNC_OR_HISTORY_SYNC_DISABLED;
-  }
-  if (!sync_service_->IsSyncActive() || !sync_service_->ConfigurationDone()) {
-    return NOT_INITIALIZED_ENABLED;
-  }
-  return sync_service_->GetActiveDataTypes().Has(
-             syncer::HISTORY_DELETE_DIRECTIVES)
-             ? INITIALIZED_ENABLED_HISTORY
-             : SYNC_OR_HISTORY_SYNC_DISABLED;
-}
-
 SuggestionsServiceImpl::RefreshAction
-SuggestionsServiceImpl::RefreshSyncState() {
-  SyncState new_sync_state = ComputeSyncState();
-  if (sync_state_ == new_sync_state) {
+SuggestionsServiceImpl::RefreshHistorySyncState() {
+  syncer::UploadState new_sync_state = syncer::GetUploadToGoogleState(
+      sync_service_, syncer::HISTORY_DELETE_DIRECTIVES);
+  if (history_sync_state_ == new_sync_state)
     return NO_ACTION;
-  }
 
-  SyncState old_sync_state = sync_state_;
-  sync_state_ = new_sync_state;
+  syncer::UploadState old_sync_state = history_sync_state_;
+  history_sync_state_ = new_sync_state;
 
   switch (new_sync_state) {
-    case NOT_INITIALIZED_ENABLED:
-      break;
-    case INITIALIZED_ENABLED_HISTORY:
-      // If the user just signed in, we fetch suggestions, so that hopefully the
-      // next NTP will already get them.
-      if (old_sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
+    case syncer::UploadState::INITIALIZING:
+      // In this state, we do not issue server requests, but we will serve from
+      // cache if available -> no action required.
+      return NO_ACTION;
+    case syncer::UploadState::ACTIVE:
+      // If history sync was just enabled, immediately fetch suggestions, so
+      // that hopefully the next NTP will already get them.
+      if (old_sync_state == syncer::UploadState::NOT_ACTIVE)
         return FETCH_SUGGESTIONS;
-      }
-      break;
-    case SYNC_OR_HISTORY_SYNC_DISABLED:
+      // Otherwise, this just means sync initialization finished.
+      return NO_ACTION;
+    case syncer::UploadState::NOT_ACTIVE:
       // If the user signed out (or disabled history sync), we have to clear
       // everything.
       return CLEAR_SUGGESTIONS;
   }
-  // Otherwise, there's nothing to do.
+  NOTREACHED();
   return NO_ACTION;
 }
 
 void SuggestionsServiceImpl::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(sync_service_ == sync);
 
-  switch (RefreshSyncState()) {
+  switch (RefreshHistorySyncState()) {
     case NO_ACTION:
       break;
     case CLEAR_SUGGESTIONS:
