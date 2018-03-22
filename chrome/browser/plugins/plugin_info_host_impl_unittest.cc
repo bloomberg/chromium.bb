@@ -310,6 +310,23 @@ TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
   EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 }
 
+TEST_F(PluginInfoHostImplTest, PluginsAllowedInWhitelistedSchemes) {
+  VerifyPluginContentSetting(GURL("http://example.com"), "foo",
+                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
+                             false);
+  VerifyPluginContentSetting(GURL("https://example.com"), "foo",
+                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
+                             false);
+  VerifyPluginContentSetting(GURL("file://foobar/"), "foo",
+                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
+                             false);
+  VerifyPluginContentSetting(GURL("chrome-extension://extension-id"), "foo",
+                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
+                             false);
+  VerifyPluginContentSetting(GURL("unknown-scheme://foobar"), "foo",
+                             CONTENT_SETTING_BLOCK, true, false);
+}
+
 TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());

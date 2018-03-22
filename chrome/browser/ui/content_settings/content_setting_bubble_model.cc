@@ -672,7 +672,8 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   GURL url = web_contents->GetURL();
   std::unique_ptr<base::Value> value =
       map->GetWebsiteSetting(url, url, content_type(), std::string(), &info);
-  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
+  ContentSetting setting = PluginUtils::GetFlashPluginContentSetting(
+      map, url::Origin::Create(url), url, nullptr);
 
   // If the setting is not managed by the user, hide the "Manage" button.
   if (info.source != SETTING_SOURCE_USER)
