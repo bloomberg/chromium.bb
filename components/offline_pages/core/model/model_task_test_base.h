@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MODEL_TASK_TEST_BASE_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MODEL_TASK_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -28,6 +31,8 @@ class ModelTaskTestBase : public TaskTestBase,
   void TearDown() override;
 
   const base::FilePath& TemporaryDir();
+  const base::FilePath& PrivateDir();
+  const base::FilePath& PublicDir();
 
   // Calls generator()->CreateItemWithTempFile() and inserts the item into the
   // database.
@@ -36,17 +41,25 @@ class ModelTaskTestBase : public TaskTestBase,
   // Calls generator()->CreateItem() and inserts the item into the database.
   OfflinePageItem AddPageWithoutFile();
 
+  // Calls generator()->CreateItemWithTempFile() but will not insert the item
+  // into database.
+  OfflinePageItem AddPageWithoutDBEntry();
+
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }
   OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
   OfflinePageItemGenerator* generator() { return &generator_; }
+  ArchiveManager* archive_manager() { return archive_manager_.get(); }
   ClientPolicyController* policy_controller() { return &policy_controller_; }
 
  private:
   OfflinePageMetadataStoreTestUtil store_test_util_;
   OfflinePageItemGenerator generator_;
   base::ScopedTempDir temporary_dir_;
+  base::ScopedTempDir private_dir_;
+  base::ScopedTempDir public_dir_;
+  std::unique_ptr<ArchiveManager> archive_manager_;
   ClientPolicyController policy_controller_;
 };
 
