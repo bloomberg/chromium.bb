@@ -48,6 +48,16 @@ enum CookieLoadProblem {
   COOKIE_LOAD_PROBLEM_LAST_ENTRY
 };
 
+// Used to report a histogram on status of cookie commit to disk.
+//
+// Please do not reorder or remove entries. New entries must be added to the
+// end of the list, just before BACKING_STORE_RESULTS_LAST_ENTRY.
+enum BackingStoreResults {
+  BACKING_STORE_RESULTS_SUCCESS = 0,
+  BACKING_STORE_RESULTS_FAILURE = 1,
+  BACKING_STORE_RESULTS_LAST_ENTRY
+};
+
 void RecordCookieLoadProblem(CookieLoadProblem event) {
   UMA_HISTOGRAM_ENUMERATION("Cookie.LoadProblem", event,
                             COOKIE_LOAD_PROBLEM_LAST_ENTRY);
@@ -1323,8 +1333,10 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     }
   }
   bool succeeded = transaction.Commit();
-  UMA_HISTOGRAM_ENUMERATION("Cookie.BackingStoreUpdateResults",
-                            succeeded ? 0 : 1, 2);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Cookie.BackingStoreUpdateResults",
+      succeeded ? BACKING_STORE_RESULTS_SUCCESS : BACKING_STORE_RESULTS_FAILURE,
+      BACKING_STORE_RESULTS_LAST_ENTRY);
 }
 
 void SQLitePersistentCookieStore::Backend::SetBeforeFlushCallback(
