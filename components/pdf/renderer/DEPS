@@ -1,8 +1,10 @@
 include_rules = [
+  "+content/public/renderer",
   "+components/strings/grit/components_strings.h",
-  "+gin",
   "+mojo/public/cpp/bindings",
+  "+ppapi",
   "+skia/ext",
+  "+third_party/WebKit/public",
   "+ui/accessibility",
-  "+ui/gfx",
+  "+ui/base",
 ]
