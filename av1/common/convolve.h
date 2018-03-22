@@ -63,21 +63,12 @@ typedef void (*aom_highbd_convolve_fn_t)(
 
 static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
                                                   InterpFilterParams *params_x,
-                                                  InterpFilterParams *params_y
-#if CONFIG_SHORT_FILTER
-                                                  ,
-                                                  int w, int h
-#endif
-) {
+                                                  InterpFilterParams *params_y,
+                                                  int w, int h) {
   InterpFilter filter_x = av1_extract_interp_filter(interp_filters, 1);
   InterpFilter filter_y = av1_extract_interp_filter(interp_filters, 0);
-#if CONFIG_SHORT_FILTER
   *params_x = av1_get_interp_filter_params_with_block_size(filter_x, w);
   *params_y = av1_get_interp_filter_params_with_block_size(filter_y, h);
-#else
-  *params_x = av1_get_interp_filter_params(filter_x);
-  *params_y = av1_get_interp_filter_params(filter_y);
-#endif
 }
 
 struct AV1Common;

@@ -913,13 +913,8 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
   (void)dst_stride;
 
   InterpFilterParams filter_params_x, filter_params_y;
-#if CONFIG_SHORT_FILTER
   av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                  &filter_params_y, w, h);
-#else
-  av1_get_convolve_filter_params(interp_filters, &filter_params_x,
-                                 &filter_params_y);
-#endif
 
   if (scaled)
     convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
@@ -1750,13 +1745,8 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 
   const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
   InterpFilterParams filter_params_x, filter_params_y;
-#if CONFIG_SHORT_FILTER
   av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                  &filter_params_y, w, h);
-#else
-  av1_get_convolve_filter_params(interp_filters, &filter_params_x,
-                                 &filter_params_y);
-#endif
 
   if (scaled) {
 #if CONFIG_LOWPRECISION_BLEND

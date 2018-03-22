@@ -83,10 +83,8 @@ InterpFilterParams av1_get_interp_filter_params(
 
 const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter);
 
-#if CONFIG_SHORT_FILTER
 InterpFilterParams av1_get_interp_filter_params_with_block_size(
     const InterpFilter interp_filter, const int w);
-#endif
 
 static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
     const InterpFilterParams filter_params, const int subpel) {

@@ -73,8 +73,6 @@ static const InterpFilterParams
         BILINEAR }
     };
 
-#if CONFIG_SHORT_FILTER
-
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_4[SUBPEL_SHIFTS]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },     { 0, 0, -4, 126, 8, -2, 0, 0 },
@@ -104,14 +102,12 @@ static const InterpFilterParams av1_interp_4tap[2] = {
   { (const int16_t *)sub_pel_filters_4smooth, SUBPEL_TAPS, SUBPEL_SHIFTS,
     EIGHTTAP_SMOOTH },
 };
-#endif
 
 InterpFilterParams av1_get_interp_filter_params(
     const InterpFilter interp_filter) {
   return av1_interp_filter_params_list[interp_filter];
 }
 
-#if CONFIG_SHORT_FILTER
 InterpFilterParams av1_get_interp_filter_params_with_block_size(
     const InterpFilter interp_filter, const int w) {
   if (w <= 4 &&
@@ -122,7 +118,6 @@ InterpFilterParams av1_get_interp_filter_params_with_block_size(
 
   return av1_interp_filter_params_list[interp_filter];
 }
-#endif
 
 const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter) {
   return (const int16_t *)av1_interp_filter_params_list[interp_filter]
