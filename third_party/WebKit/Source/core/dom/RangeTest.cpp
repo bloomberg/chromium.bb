@@ -62,6 +62,42 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
       << "DOM mutation event handler should be executed.";
 }
 
+// http://crbug.com/822510
+TEST_F(RangeTest, IntersectsNode) {
+  SetBodyContent(
+      "<div>"
+      "<span id='s0'>s0</span>"
+      "<span id='s1'>s1</span>"
+      "<span id='s2'>s2</span>"
+      "</div>");
+  Element* const div = GetDocument().QuerySelector("div");
+  Element* const s0 = GetDocument().getElementById("s0");
+  Element* const s1 = GetDocument().getElementById("s1");
+  Element* const s2 = GetDocument().getElementById("s2");
+  Range& range = *Range::Create(GetDocument());
+
+  // Range encloses s0
+  range.setStart(div, 0);
+  range.setEnd(div, 1);
+  EXPECT_TRUE(range.intersectsNode(s0, ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(range.intersectsNode(s1, ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(range.intersectsNode(s2, ASSERT_NO_EXCEPTION));
+
+  // Range encloses s1
+  range.setStart(div, 1);
+  range.setEnd(div, 2);
+  EXPECT_FALSE(range.intersectsNode(s0, ASSERT_NO_EXCEPTION));
+  EXPECT_TRUE(range.intersectsNode(s1, ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(range.intersectsNode(s2, ASSERT_NO_EXCEPTION));
+
+  // Range encloses s2
+  range.setStart(div, 2);
+  range.setEnd(div, 3);
+  EXPECT_FALSE(range.intersectsNode(s0, ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(range.intersectsNode(s1, ASSERT_NO_EXCEPTION));
+  EXPECT_TRUE(range.intersectsNode(s2, ASSERT_NO_EXCEPTION));
+}
+
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
 
