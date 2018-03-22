@@ -16,6 +16,7 @@ import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
@@ -128,6 +129,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     private BrowserActionsTestDelegate mTestDelegate;
     private int mPendingItemId;
     private boolean mIsNativeInitialized;
+    private boolean mShouldFinishActivity;
 
     public BrowserActionsContextMenuHelper(Activity activity, ContextMenuParams params,
             List<BrowserActionItem> customItems, String sourcePackageName,
@@ -135,6 +137,8 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mActivity = activity;
         mCurrentContextMenuParams = params;
         mOnMenuShownListener = listener;
+        mShouldFinishActivity = true;
+
         mOnMenuShown = new Runnable() {
             @Override
             public void run() {
@@ -147,7 +151,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mOnMenuClosed = new Runnable() {
             @Override
             public void run() {
-                if (mPendingItemId == 0) {
+                if (mPendingItemId == 0 && mShouldFinishActivity) {
                     mActivity.finish();
                 }
             }
@@ -161,7 +165,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mOnShareClickedRunnable = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean isShareLink) {
-                mMenuItemDelegate.share(true, mCurrentContextMenuParams.getLinkUrl());
+                mMenuItemDelegate.share(true, mCurrentContextMenuParams.getLinkUrl(), false);
             }
         };
         ShareContextMenuItem shareItem = new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
@@ -274,7 +278,11 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
             mMenuItemDelegate.onSaveToClipboard(mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_COPY);
         } else if (itemId == R.id.browser_actions_share) {
-            mMenuItemDelegate.share(false, mCurrentContextMenuParams.getLinkUrl());
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+                mShouldFinishActivity = false;
+            }
+            mMenuItemDelegate.share(
+                    false, mCurrentContextMenuParams.getLinkUrl(), !mShouldFinishActivity);
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_SHARE);
         } else if (mCustomItemActionMap.indexOfKey(itemId) >= 0) {
             mMenuItemDelegate.onCustomItemSelected(mCustomItemActionMap.get(itemId));
@@ -379,7 +387,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
             dismissProgressDialog();
             onItemSelected(mPendingItemId, false);
             mPendingItemId = 0;
-            mActivity.finish();
+            if (mShouldFinishActivity) mActivity.finish();
         }
     }
 
