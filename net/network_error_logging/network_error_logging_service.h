@@ -74,6 +74,12 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kElapsedTimeKey[];
   static const char kTypeKey[];
 
+  static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();
+  static void RecordHeaderDiscardedForInvalidSSLInfo();
+  static void RecordHeaderDiscardedForCertStatusError();
+
+  static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
+
   static std::unique_ptr<NetworkErrorLoggingService> Create(
       std::unique_ptr<NetworkErrorLoggingDelegate> delegate);
 

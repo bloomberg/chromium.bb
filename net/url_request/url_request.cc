@@ -1166,8 +1166,11 @@ void URLRequest::OnCallToDelegateComplete() {
 void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   NetworkErrorLoggingService* service =
       context()->network_error_logging_service();
-  if (!service)
+  if (!service) {
+    NetworkErrorLoggingService::
+        RecordRequestDiscardedForNoNetworkErrorLoggingService();
     return;
+  }
 
   // TODO(juliatuttle): Figure out whether we should be ignoring errors from
   // non-HTTPS origins.
