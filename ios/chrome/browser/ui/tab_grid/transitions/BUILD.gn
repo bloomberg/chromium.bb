@@ -10,6 +10,8 @@ source_set("transitions") {
     "grid_to_hidden_tab_animator.mm",
     "grid_to_visible_tab_animator.h",
     "grid_to_visible_tab_animator.mm",
+    "grid_transition_animation.h",
+    "grid_transition_animation.mm",
     "grid_transition_layout.h",
     "grid_transition_layout.mm",
     "grid_transition_state_providing.h",
