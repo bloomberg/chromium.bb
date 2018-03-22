@@ -50,6 +50,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   struct Callbacks {
     Callbacks();
+    Callbacks(const Callbacks& other);
     ~Callbacks();
 
     // Executed whenever an authentication result is available, such as when the
@@ -102,6 +103,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   const mojom::LoginUserInfoPtr& current_user() const;
 
   LoginPasswordView* password_view() { return password_view_; }
+  LoginUserView* user_view() { return user_view_; }
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

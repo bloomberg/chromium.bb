@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_keyboard_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 
@@ -21,8 +22,8 @@ TEST_F(LockWindowVirtualKeyboardTest, VirtualKeyboardDoesNotCoverAuthView) {
 
   LoadUsers(1);
 
-  LoginAuthUserView* auth_view =
-      MakeLockContentsViewTestApi(lock_contents).primary_auth();
+  LoginBigUserView* auth_view =
+      MakeLockContentsViewTestApi(lock_contents).primary_big_view();
   ASSERT_NE(nullptr, auth_view);
 
   ASSERT_NO_FATAL_FAILURE(ShowKeyboard());

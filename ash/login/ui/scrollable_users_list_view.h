@@ -60,6 +60,9 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView {
     return user_views_[index];
   }
 
+  // Returns user view with |account_id| if it exists or nullptr otherwise.
+  LoginUserView* GetUserView(const AccountId& account_id);
+
   // views::View:
   void Layout() override;
   void OnPaintBackground(gfx::Canvas* canvas) override;

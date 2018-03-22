@@ -13,6 +13,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/public/cpp/config.h"
@@ -117,9 +118,13 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LoginAuthUserView::AuthMethods auth_method = LoginAuthUserView::AUTH_PASSWORD;
-  AccountId primary_user =
-      test_api.primary_auth()->current_user()->basic_user_info->account_id;
-  EXPECT_EQ(test_api.primary_auth()->auth_methods(), auth_method);
+  AccountId primary_user = test_api.primary_big_view()
+                               ->GetCurrentUser()
+                               ->basic_user_info->account_id;
+
+  EXPECT_NE(nullptr, test_api.primary_big_view()->auth_user());
+  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
+            auth_method);
   EXPECT_CALL(*client, AuthenticateUser_(primary_user, testing::_, testing::_,
                                          false, testing::_));
   EXPECT_CALL(*client, OnFocusPod(primary_user));
@@ -142,9 +147,9 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
       static_cast<int>(LoginMetricsRecorder::AuthMethod::kPassword), 1);
 
   // Authentication attempt with pin "1111"
-  test_api.primary_auth()->SetAuthMethods(auth_method |
-                                          LoginAuthUserView::AUTH_PIN);
-  EXPECT_EQ(test_api.primary_auth()->auth_methods(),
+  test_api.primary_big_view()->auth_user()->SetAuthMethods(
+      auth_method | LoginAuthUserView::AUTH_PIN);
+  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
             (auth_method | LoginAuthUserView::AUTH_PIN));
   EXPECT_CALL(*client, AuthenticateUser_(primary_user, testing::_, testing::_,
                                          true, testing::_));
@@ -164,9 +169,9 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
       static_cast<int>(LoginMetricsRecorder::AuthMethod::kPin), 1);
 
   // Authentication attempt with easy unlock tap.
-  test_api.primary_auth()->SetAuthMethods(auth_method |
-                                          LoginAuthUserView::AUTH_TAP);
-  EXPECT_EQ(test_api.primary_auth()->auth_methods(),
+  test_api.primary_big_view()->auth_user()->SetAuthMethods(
+      auth_method | LoginAuthUserView::AUTH_TAP);
+  EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
             (auth_method | LoginAuthUserView::AUTH_TAP));
   EXPECT_CALL(*client, AttemptUnlock(primary_user));
   generator.MoveMouseTo(MakeLoginAuthTestApi(contents, AuthTarget::kPrimary)
