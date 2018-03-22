@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace content {
 
@@ -30,6 +31,12 @@ class RenderWidgetHostNSViewBridge {
   // goal of this class is to eliminate this direct communication (so this
   // method is expected to go away).
   virtual RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() = 0;
+
+  // Set the background color of the hosted CALayer.
+  virtual void SetBackgroundColor(SkColor color) = 0;
+
+  // Call the -[NSView setHidden:] method.
+  virtual void SetVisible(bool visible) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);

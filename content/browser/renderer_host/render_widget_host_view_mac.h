@@ -257,9 +257,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
-  // The background CoreAnimation layer which is hosted by |cocoa_view_|.
-  base::scoped_nsobject<CALayer> background_layer_;
-
   // Delegated frame management and compositor interface.
   std::unique_ptr<BrowserCompositorMac> browser_compositor_;
   BrowserCompositorMac* BrowserCompositorForTesting() const {
@@ -282,10 +279,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   }
 
   CONTENT_EXPORT void release_pepper_fullscreen_window_for_testing();
-
-  RenderWidgetHostViewMac* fullscreen_parent_host_view() const {
-    return fullscreen_parent_host_view_;
-  }
 
   int window_number() const;
 
@@ -384,6 +377,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Interface through which the NSView is to be manipulated.
   std::unique_ptr<RenderWidgetHostNSViewBridge> ns_view_bridge_;
+
+  // State tracked by Show/Hide/IsShowing.
+  bool is_visible_ = false;
 
   // Indicates if the page is loading.
   bool is_loading_;

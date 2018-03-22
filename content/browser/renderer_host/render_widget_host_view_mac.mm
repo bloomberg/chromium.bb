@@ -259,7 +259,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
-      fullscreen_parent_host_view_(nullptr),
       weak_factory_(this) {
   // The NSView on the other side of |ns_view_bridge_| owns us. We will
   // be destroyed when it releases the unique_ptr that we pass to it here at
@@ -268,10 +267,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // the view hierarchy right after calling us.
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(
       std::unique_ptr<RenderWidgetHostNSViewClient>(this));
-
-  background_layer_.reset([[CALayer alloc] init]);
-  [cocoa_view() setLayer:background_layer_];
-  [cocoa_view() setWantsLayer:YES];
 
   viz::FrameSinkId frame_sink_id = is_guest_view_hack_
                                        ? AllocateFrameSinkIdForGuestViewHack()
@@ -429,11 +424,11 @@ void RenderWidgetHostViewMac::InitAsPopup(
 // will enter fullscreen instead.
 void RenderWidgetHostViewMac::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  fullscreen_parent_host_view_ =
+  RenderWidgetHostViewMac* parent_view =
       static_cast<RenderWidgetHostViewMac*>(reference_host_view);
   NSWindow* parent_window = nil;
-  if (reference_host_view)
-    parent_window = [reference_host_view->GetNativeView() window];
+  if (parent_view)
+    parent_window = [parent_view->cocoa_view() window];
   NSScreen* screen = [parent_window screen];
   if (!screen)
     screen = [NSScreen mainScreen];
@@ -567,9 +562,8 @@ void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
 }
 
 void RenderWidgetHostViewMac::Show() {
-  ScopedCAActionDisabler disabler;
-  [cocoa_view() setHidden:NO];
-
+  is_visible_ = true;
+  ns_view_bridge_->SetVisible(is_visible_);
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
   ui::LatencyInfo renderer_latency_info;
@@ -590,9 +584,8 @@ void RenderWidgetHostViewMac::Hide() {
   if (!browser_compositor_)
     return;
 
-  ScopedCAActionDisabler disabler;
-  [cocoa_view() setHidden:YES];
-
+  is_visible_ = false;
+  ns_view_bridge_->SetVisible(is_visible_);
   host()->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
@@ -691,7 +684,7 @@ bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
 }
 
 bool RenderWidgetHostViewMac::IsShowing() {
-  return ![cocoa_view() isHidden];
+  return is_visible_;
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
@@ -1526,11 +1519,7 @@ void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
   if (color == background_layer_color_)
     return;
   background_layer_color_ = color;
-
-  ScopedCAActionDisabler disabler;
-  base::ScopedCFTypeRef<CGColorRef> cg_color(
-      skia::CGColorCreateFromSkColor(color));
-  [background_layer_ setBackgroundColor:cg_color];
+  ns_view_bridge_->SetBackgroundColor(color);
 }
 
 BrowserAccessibilityManager*
