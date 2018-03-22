@@ -157,5 +157,10 @@ void MetricsMemoryDetails::UpdateHistograms() {
   SiteDetails::UpdateHistograms(browser.site_data, all_renderer_count,
                                 non_renderer_count);
 
+  UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
+                           static_cast<int>(browser.processes.size()));
+  UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
+  UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
+
   leveldb_chrome::UpdateHistograms();
 }
