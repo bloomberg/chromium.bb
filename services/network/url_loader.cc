@@ -513,6 +513,9 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
+  // Do not account header bytes when reporting received body bytes to client.
+  reported_total_encoded_bytes_ = url_request_->GetTotalReceivedBytes();
+
   if (resource_scheduler_client_ && url_request->was_fetched_via_proxy() &&
       url_request->was_fetched_via_spdy() &&
       url_request->url().SchemeIs(url::kHttpScheme)) {
@@ -607,8 +610,20 @@ void URLLoader::ReadMore() {
 }
 
 void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
-  if (num_bytes > 0)
+  if (num_bytes > 0) {
     pending_write_buffer_offset_ += num_bytes;
+
+    // Only notify client of download progress in case DevTools are attached
+    // and we're done sniffing and started sending response.
+    if (report_raw_headers_ && !consumer_handle_.is_valid()) {
+      int64_t total_encoded_bytes = url_request_->GetTotalReceivedBytes();
+      int64_t delta = total_encoded_bytes - reported_total_encoded_bytes_;
+      DCHECK_LE(0, delta);
+      if (delta)
+        url_loader_client_->OnTransferSizeUpdated(delta);
+      reported_total_encoded_bytes_ = total_encoded_bytes;
+    }
+  }
   if (update_body_read_before_paused_) {
     update_body_read_before_paused_ = false;
     body_read_before_paused_ = url_request_->GetRawBodyBytes();
