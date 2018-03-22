@@ -802,7 +802,8 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
 void WindowSelectorItem::SetSelected(bool selected) {
   selected_ = selected;
-  background_view_->AnimateBackgroundOpacity(selected ? 0.f : kHeaderOpacity);
+  if (!IsNewOverviewUi())
+    background_view_->AnimateBackgroundOpacity(selected ? 0.f : kHeaderOpacity);
 }
 
 void WindowSelectorItem::SendAccessibleSelectionEvent() {

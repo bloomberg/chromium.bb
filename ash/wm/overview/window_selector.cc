@@ -314,6 +314,8 @@ void WindowSelector::Init(const WindowList& windows,
       }
       window_grid->PrepareForOverview();
       window_grid->PositionWindows(/*animate=*/true);
+      if (num_items_ == 0 && IsNewOverviewUi())
+        window_grid->ShowNoRecentsWindowMessage(true);
       // Reset |should_animate_when_entering_| in order to animate during
       // overview mode, such as dragging animations.
       if (IsNewOverviewAnimationsEnabled())
@@ -428,16 +430,46 @@ void WindowSelector::CancelSelection() {
 
 void WindowSelector::OnGridEmpty(WindowGrid* grid) {
   size_t index = 0;
-  for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
-    if (grid == (*iter).get()) {
-      grid->Shutdown();
-      index = iter - grid_list_.begin();
-      grid_list_.erase(iter);
-      break;
+  if (IsNewOverviewUi()) {
+    // If there are no longer any items on any of the grids, shutdown,
+    // otherwise the empty grids will remain blurred but will have no items.
+    bool other_grids_has_items = false;
+    for (const auto& grid : grid_list_) {
+      other_grids_has_items = !grid->empty();
+      if (other_grids_has_items)
+        break;
+    }
+    if (!other_grids_has_items) {
+      // Shutdown all grids if no grids have any items. Set |index| to -1 so
+      // that it does not attempt to select any items.
+      for (const auto& grid : grid_list_)
+        grid->Shutdown();
+
+      index = -1;
+      grid_list_.clear();
+    } else {
+      for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
+        if (grid == (*iter).get()) {
+          index = iter - grid_list_.begin();
+          break;
+        }
+      }
+    }
+  } else {
+    for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
+      if (grid == (*iter).get()) {
+        grid->Shutdown();
+        index = iter - grid_list_.begin();
+        grid_list_.erase(iter);
+        break;
+      }
     }
   }
   if (index > 0 && selected_grid_index_ >= index) {
-    selected_grid_index_--;
+    // If the grid closed is not the one with the selected item, we do not need
+    // to move the selected item.
+    if (!IsNewOverviewUi() || selected_grid_index_ == index)
+      --selected_grid_index_;
     // If the grid which became empty was the one with the selected window, we
     // need to select a window on the newly selected grid.
     if (selected_grid_index_ == index - 1)

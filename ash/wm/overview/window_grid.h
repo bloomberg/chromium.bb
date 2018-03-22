@@ -125,6 +125,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // when it is dragged.
   void SetSelectionWidgetVisibility(bool visible);
 
+  void ShowNoRecentsWindowMessage(bool visible);
+
   void UpdateCannotSnapWarningVisibility();
 
   // Called when any WindowSelectorItem on any WindowGrid has started/ended

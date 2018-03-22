@@ -1523,9 +1523,9 @@ TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
 TEST_F(WindowSelectorTest, ThreeMonitor) {
   UpdateDisplay("400x400,400x400,400x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  gfx::Rect bounds1(0, 0, 100, 100);
-  gfx::Rect bounds2(400, 0, 100, 100);
-  gfx::Rect bounds3(800, 0, 100, 100);
+  const gfx::Rect bounds1(0, 0, 100, 100);
+  const gfx::Rect bounds2(400, 0, 100, 100);
+  const gfx::Rect bounds3(800, 0, 100, 100);
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds3));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
@@ -2048,31 +2048,75 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
 }
 
 // Verify that when opening overview mode with multiple displays, the no items
-// indicator appears on the grid(s) if it has no windows.
+// indicator on the primary grid if there are no windows. Also verify that
+// we do not exit overview mode until all the grids are empty.
 TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
-  // Create two windows, one each on the first two monitors.
+  // Helper function to help reduce lines of code. Returns the list of grids
+  // in overview mode.
+  auto grids = [this]() -> const std::vector<std::unique_ptr<WindowGrid>>& {
+    EXPECT_TRUE(window_selector());
+    return window_selector()->grid_list_for_testing();
+  };
+
   UpdateDisplay("400x400,400x400,400x400");
+
+  // Enter overview mode. Verify that the no windows indicator is visible on the
+  // primary display but not on the other two.
+  ToggleOverview();
+  RunAllPendingInMessageLoop();
+  ASSERT_TRUE(window_selector());
+  EXPECT_TRUE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
+  ToggleOverview();
+
+  // Create two windows with widgets (widgets are needed to close the windows
+  // later in the test), one each on the first two monitors.
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  const gfx::Rect bounds1(0, 0, 100, 100);
-  const gfx::Rect bounds2(400, 0, 100, 100);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
+  const gfx::Rect bounds(100, 100);
+  std::unique_ptr<views::Widget> widget1(CreateWindowWidget(bounds));
+  std::unique_ptr<views::Widget> widget2(CreateWindowWidget(bounds));
+  aura::Window* window1 = widget1->GetNativeWindow();
+  aura::Window* window2 = widget2->GetNativeWindow();
+  ASSERT_TRUE(wm::MoveWindowToDisplay(window2, GetSecondaryDisplay().id()));
   ASSERT_EQ(root_windows[0], window1->GetRootWindow());
   ASSERT_EQ(root_windows[1], window2->GetRootWindow());
 
-  // Enter overview mode. Verify the no windows indicator is visible on the
-  // third display but not on the first two.
+  // Enter overview mode. Verify that the no windows indicator is not visible on
+  // any display.
   ToggleOverview();
+  RunAllPendingInMessageLoop();
   ASSERT_TRUE(window_selector());
-  EXPECT_FALSE(window_selector()
-                   ->grid_list_for_testing()[0]
-                   ->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_FALSE(window_selector()
-                   ->grid_list_for_testing()[1]
-                   ->IsNoItemsIndicatorLabelVisibleForTesting());
-  EXPECT_TRUE(window_selector()
-                  ->grid_list_for_testing()[2]
-                  ->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_EQ(3u, grids().size());
+  EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[0]->empty());
+  EXPECT_FALSE(grids()[1]->empty());
+  EXPECT_TRUE(grids()[2]->empty());
+
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1);
+  WindowSelectorItem* item2 = GetWindowItemForWindow(1, window2);
+  ASSERT_TRUE(item1 && item2);
+
+  // Close |item2|. Verify that we are still in overview mode because |window1|
+  // is still open. The non primary root grids are empty however.
+  item2->CloseWindow();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(window_selector());
+  EXPECT_EQ(3u, grids().size());
+  EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(grids()[0]->empty());
+  EXPECT_TRUE(grids()[1]->empty());
+  EXPECT_TRUE(grids()[2]->empty());
+
+  // Close |item1|. Verify that since no windows are open, we exit overview
+  // mode.
+  item1->CloseWindow();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(window_selector());
 }
 
 // Verify that pressing and releasing keys does not show the overview textbox
