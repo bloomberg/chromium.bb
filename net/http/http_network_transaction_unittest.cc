@@ -576,8 +576,6 @@ class HttpNetworkTransactionTest : public PlatformTest {
 
   void ConnectStatusHelper(const MockRead& status);
 
-  void BypassHostCacheOnRefreshHelper(int load_flags);
-
   void CheckErrorIsPassedBack(int error, IoMode mode);
 
   SpdyTestUtil spdy_util_;
@@ -10404,14 +10402,12 @@ TEST_F(HttpNetworkTransactionTest, ReconsiderProxyAfterFailedConnection) {
   EXPECT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
 }
 
-// Base test to make sure that when the load flags for a request specify to
-// bypass the cache, the DNS cache is not used.
-void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
-    int load_flags) {
+// LOAD_BYPASS_CACHE should trigger the host cache bypass.
+TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh) {
   // Issue a request, asking to bypass the cache(s).
   HttpRequestInfo request_info;
   request_info.method = "GET";
-  request_info.load_flags = load_flags;
+  request_info.load_flags = LOAD_BYPASS_CACHE;
   request_info.url = GURL("http://www.example.org/");
   request_info.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -10462,20 +10458,6 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   // If we bypassed the cache, we would have gotten a failure while resolving
   // "www.example.org".
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
-}
-
-// There are multiple load flags that should trigger the host cache bypass.
-// Test each in isolation:
-TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh1) {
-  BypassHostCacheOnRefreshHelper(LOAD_BYPASS_CACHE);
-}
-
-TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh2) {
-  BypassHostCacheOnRefreshHelper(LOAD_VALIDATE_CACHE);
-}
-
-TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh3) {
-  BypassHostCacheOnRefreshHelper(LOAD_DISABLE_CACHE);
 }
 
 // Make sure we can handle an error when writing the request.
