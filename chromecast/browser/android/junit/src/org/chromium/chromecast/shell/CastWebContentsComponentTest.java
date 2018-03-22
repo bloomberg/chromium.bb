@@ -202,7 +202,7 @@ public class CastWebContentsComponentTest {
         CastWebContentsComponent component =
                 new CastWebContentsComponent(INSTANCE_ID, null, null, callback, false, false);
         component.start(mStartParams);
-        CastWebContentsComponent.onVisiblityChange(INSTANCE_ID, 2);
+        CastWebContentsComponent.onVisibilityChange(INSTANCE_ID, 2);
         component.stop(mActivity);
 
         verify(callback).onVisibilityChange(2);

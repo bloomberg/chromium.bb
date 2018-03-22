@@ -79,6 +79,14 @@ public class CastWebContentsIntentUtilsTest {
         int type = CastWebContentsIntentUtils.getGestureType(in);
         Assert.assertEquals(1, type);
         Assert.assertTrue(CastWebContentsIntentUtils.isIntentOfGesturing(in));
+
+        in = CastWebContentsIntentUtils.onGestureWithUriString(EXPECTED_URI, 2);
+        uri = in.getDataString();
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(EXPECTED_URI, uri);
+        type = CastWebContentsIntentUtils.getGestureType(in);
+        Assert.assertEquals(2, type);
+        Assert.assertTrue(CastWebContentsIntentUtils.isIntentOfGesturing(in));
     }
 
     @Test
@@ -94,13 +102,21 @@ public class CastWebContentsIntentUtilsTest {
 
     @Test
     public void testOnVisibilityChange() {
-        Intent in = CastWebContentsIntentUtils.onVisiblityChange(INSTANCE_ID, 3);
+        Intent in = CastWebContentsIntentUtils.onVisibilityChange(INSTANCE_ID, 3);
         String uri = in.getDataString();
         Assert.assertNotNull(uri);
         Assert.assertEquals(EXPECTED_URI, uri);
         int type = CastWebContentsIntentUtils.getVisibilityType(in);
         Assert.assertEquals(3, type);
-        Assert.assertTrue(CastWebContentsIntentUtils.isIntentOfVisiblityChange(in));
+        Assert.assertTrue(CastWebContentsIntentUtils.isIntentOfVisibilityChange(in));
+
+        in = CastWebContentsIntentUtils.onVisibilityChangeWithUriString(EXPECTED_URI, 2);
+        uri = in.getDataString();
+        Assert.assertNotNull(uri);
+        Assert.assertEquals(EXPECTED_URI, uri);
+        type = CastWebContentsIntentUtils.getVisibilityType(in);
+        Assert.assertEquals(2, type);
+        Assert.assertTrue(CastWebContentsIntentUtils.isIntentOfVisibilityChange(in));
     }
 
     @Test
