@@ -54,6 +54,7 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
 
   switch (style) {
     case STYLE_EMPHASIZED:
+    case STYLE_EMPHASIZED_SECONDARY:
       font_weight = gfx::Font::Weight::BOLD;
       break;
   }
@@ -66,8 +67,10 @@ SkColor LegacyTypographyProvider::GetColor(const views::View& view,
                                            int context,
                                            int style) const {
   // Use "disabled grey" for HINT and SECONDARY when Harmony is disabled.
-  if (style == STYLE_HINT || style == STYLE_SECONDARY)
+  if (style == STYLE_HINT || style == STYLE_SECONDARY ||
+      style == STYLE_EMPHASIZED_SECONDARY) {
     style = views::style::STYLE_DISABLED;
+  }
 
   return DefaultTypographyProvider::GetColor(view, context, style);
 }
