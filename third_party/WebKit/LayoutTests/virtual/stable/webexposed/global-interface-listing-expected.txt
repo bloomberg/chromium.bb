@@ -3631,7 +3631,6 @@ interface MediaCapabilities
     attribute @@toStringTag
     method constructor
     method decodingInfo
-    method encodingInfo
 interface MediaCapabilitiesInfo
     attribute @@toStringTag
     getter powerEfficient

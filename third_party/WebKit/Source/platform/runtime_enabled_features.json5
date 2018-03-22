@@ -624,6 +624,10 @@
       status: "stable",
     },
     {
+      name: "MediaCapabilitiesEncodingInfo",
+      status: "experimental",
+    },
+    {
       name: "MediaCapture",
     },
     {
