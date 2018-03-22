@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/sad_tab_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/sad_tab.h"
@@ -132,8 +133,14 @@ class SadTabViewInteractiveUITest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SadTabViewInteractiveUITest);
 };
 
+#if defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_SadTabKeyboardAccessibility DISABLED_SadTabKeyboardAccessibility
+#else
+#define MAYBE_SadTabKeyboardAccessibility SadTabKeyboardAccessibility
+#endif
 IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
-                       SadTabKeyboardAccessibility) {
+                       MAYBE_SadTabKeyboardAccessibility) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/links.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -167,7 +174,14 @@ IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
   ASSERT_TRUE(IsFocusedViewInsideBrowserToolbar());
 }
 
-IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest, ReloadMultipleSadTabs) {
+#if defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_ReloadMultipleSadTabs DISABLED_ReloadMultipleSadTabs
+#else
+#define MAYBE_ReloadMultipleSadTabs ReloadMultipleSadTabs
+#endif
+IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
+                       MAYBE_ReloadMultipleSadTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/links.html"));
   ui_test_utils::NavigateToURL(browser(), url);

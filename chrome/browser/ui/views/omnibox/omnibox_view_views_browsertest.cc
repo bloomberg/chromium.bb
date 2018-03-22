@@ -332,7 +332,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
+#if defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_CloseOmniboxPopupOnTextDrag DISABLED_CloseOmniboxPopupOnTextDrag
+#else
+#define MAYBE_CloseOmniboxPopupOnTextDrag CloseOmniboxPopupOnTextDrag
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
+                       MAYBE_CloseOmniboxPopupOnTextDrag) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   OmniboxViewViews* omnibox_view_views =

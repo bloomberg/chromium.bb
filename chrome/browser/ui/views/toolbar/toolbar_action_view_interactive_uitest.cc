@@ -280,6 +280,10 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 // Fails on Win debug; see https;//crbug.com/788112.
 #define MAYBE_DoubleClickToolbarActionToClose \
     DISABLED_DoubleClickToolbarActionToClose
+#elif defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_DoubleClickToolbarActionToClose \
+    DISABLED_DoubleClickToolbarActionToClose
 #else
 #define MAYBE_DoubleClickToolbarActionToClose DoubleClickToolbarActionToClose
 #endif
