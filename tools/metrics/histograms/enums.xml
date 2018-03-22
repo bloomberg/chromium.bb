@@ -12668,6 +12668,7 @@ Called by update_net_error_codes.py.-->
   <int value="429" label="SafeBrowsingExtendedReportingEnabled"/>
   <int value="430" label="AutoplayAllowed"/>
   <int value="431" label="AutoplayWhitelist"/>
+  <int value="432" label="TabUnderProtectionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
