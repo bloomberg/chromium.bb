@@ -27,8 +27,7 @@ function loadData() {
         resolve();
       };
       req.open(
-          'GET',
-          '../../../../chrome/test/data/chromeos/file_manager/' + filename);
+          'GET', '../../../chrome/test/data/chromeos/file_manager/' + filename);
       req.send();
     });
   }));
