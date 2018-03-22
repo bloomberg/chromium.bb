@@ -1135,7 +1135,7 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
   menu_model_.AddItem(
       IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
       l10n_util::GetStringFUTF16(open_in_app_string_id,
-                                 base::ASCIIToUTF16(pwa->short_name())));
+                                 base::UTF8ToUTF16(pwa->short_name())));
 
   MenuManager* menu_manager = MenuManager::Get(browser_context_);
   gfx::Image icon = menu_manager->GetIconForExtension(pwa->id());

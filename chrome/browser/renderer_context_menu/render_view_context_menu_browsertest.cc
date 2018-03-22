@@ -176,8 +176,9 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     WebApplicationInfo web_app_info;
     web_app_info.app_url = app_url;
     web_app_info.scope = app_url;
-    web_app_info.title = base::UTF8ToUTF16("Test app");
-    web_app_info.description = base::UTF8ToUTF16("Test description");
+    web_app_info.title = base::UTF8ToUTF16("Test app \xF0\x9F\x90\x90");
+    web_app_info.description =
+        base::UTF8ToUTF16("Test description \xF0\x9F\x90\x90");
     web_app_info.open_as_window = open_as_window;
 
     return extensions::browsertest_util::InstallBookmarkApp(
