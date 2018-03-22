@@ -28,6 +28,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
 
 #if defined(OS_CHROMEOS)
   void PopulateLocalStateSettings(SystemLogsResponse* response);
+  void PopulateMonitorInfo(SystemLogsResponse* response);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
