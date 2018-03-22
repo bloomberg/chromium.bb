@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -138,9 +139,14 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
 }
 
 TemplateURL* TemplateURLTableModel::GetTemplateURL(int index) {
-  // Sanity check for https://crbug.com/781703.
+  // Sanity checks for https://crbug.com/781703.
   CHECK_GE(index, 0);
   CHECK_LT(static_cast<size_t>(index), entries_.size());
+  CHECK(base::ContainsValue(template_url_service_->GetTemplateURLs(),
+                            entries_[index]))
+      << "TemplateURLTableModel is returning a pointer to a TemplateURL "
+         "that has already been freed by TemplateURLService.";
+
   return entries_[index];
 }
 
