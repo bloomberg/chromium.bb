@@ -12,7 +12,6 @@
  */
 Polymer({
   is: 'cr-link-row',
-  extends: 'button',
 
   behaviors: [Polymer.PaperRippleBehavior],
 
@@ -25,6 +24,11 @@ Polymer({
       type: String,
       /* Value used for noSubLabel attribute. */
       value: '',
+    },
+
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
     },
   },
 

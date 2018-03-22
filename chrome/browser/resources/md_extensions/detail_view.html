@@ -159,10 +159,6 @@
         margin: 0;
       }
 
-      button[is='cr-link-row'] {
-        width: 100%;
-      }
-
       #options-section .control-line:first-child {
         border-top: var(--cr-separator-line);
       }
@@ -380,20 +376,20 @@
             </template>
           </div>
         </template>
-        <button class="hr" is="cr-link-row" id="extensions-options"
+        <cr-link-row class="hr" is="" id="extensions-options"
             disabled="[[!isEnabled_(data.state)]]"
             hidden="[[!shouldShowOptionsLink_(data.*)]]"
             icon-class="icon-external" label="$i18n{itemOptions}"
             on-click="onExtensionOptionsTap_">
-        </button>
-        <button class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
-            is="cr-link-row" icon-class="icon-external" id="extensionWebsite"
+        </cr-link-row>
+        <cr-link-row class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
+            icon-class="icon-external" id="extensionWebsite"
             label="$i18n{extensionWebsite}" on-click="onExtensionWebSiteTap_">
-        </button>
-        <button class="hr" hidden="[[!data.webStoreUrl.length]]"
-            is="cr-link-row" icon-class="icon-external" id="viewInStore"
+        </cr-link-row>
+        <cr-link-row class="hr" hidden="[[!data.webStoreUrl.length]]"
+            icon-class="icon-external" id="viewInStore"
             label="$i18n{viewInStore}" on-click="onViewInStoreTap_">
-        </button>
+        </cr-link-row>
         <div class="section block">
           <div class="section-title">$i18n{itemSource}</div>
           <div id="source" class="section-content">
@@ -407,11 +403,11 @@
             </a>
           </div>
         </div>
-        <button class="hr" is="cr-link-row"
+        <cr-link-row class="hr"
             hidden="[[isControlled_(data.controlledInfo)]]"
             icon-class="subpage-arrow" id="remove-extension"
             label="$i18n{itemRemoveExtension}" on-click="onRemoveTap_">
-        </button>
+        </cr-link-row>
       </div>
     </div>
   </template>

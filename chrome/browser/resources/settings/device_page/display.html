@@ -209,11 +209,11 @@
         </div>
       </template>
 
-      <button is="cr-link-row" icon-class="subpage-arrow" class="indented hr"
+      <cr-link-row icon-class="subpage-arrow" class="indented hr"
           id="overscan" label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
           hidden$="[[!showOverscanSetting_(selectedDisplay)]]">
-      </button>
+      </cr-link-row>
 
       <settings-display-overscan-dialog id="displayOverscan"
           display-id="{{overscanDisplayId}}"
