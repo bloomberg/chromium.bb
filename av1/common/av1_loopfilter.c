@@ -555,8 +555,14 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
     } else {
       delta_lf = mbmi->current_delta_lf_from_base;
     }
-    int lvl_seg =
-        clamp(delta_lf + cm->lf.filter_level[dir_idx], 0, MAX_LOOP_FILTER);
+    int base_level;
+    if (plane == 0)
+      base_level = cm->lf.filter_level[dir_idx];
+    else if (plane == 1)
+      base_level = cm->lf.filter_level_u;
+    else
+      base_level = cm->lf.filter_level_v;
+    int lvl_seg = clamp(delta_lf + base_level, 0, MAX_LOOP_FILTER);
     assert(plane >= 0 && plane <= 2);
     const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir_idx];
     if (segfeature_active(&cm->seg, segment_id, seg_lf_feature_id)) {
