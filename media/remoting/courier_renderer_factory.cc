@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "build/buildflag.h"
 #include "media/base/overlay_info.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
 #include "media/remoting/courier_renderer.h"  // nogncheck

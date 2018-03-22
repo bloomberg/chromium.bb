@@ -28,7 +28,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/cdm/json_web_key.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
 #include "media/test/mock_media_source.h"

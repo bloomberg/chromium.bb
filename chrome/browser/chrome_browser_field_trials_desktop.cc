@@ -30,7 +30,7 @@
 #include "components/metrics/persistent_system_profile.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/pe_image.h"

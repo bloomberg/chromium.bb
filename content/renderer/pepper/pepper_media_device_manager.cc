@@ -15,7 +15,7 @@
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 

@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "media/cdm/cdm_paths.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"

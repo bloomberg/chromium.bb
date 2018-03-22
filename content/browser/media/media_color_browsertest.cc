@@ -6,7 +6,7 @@
 #include "content/browser/media/media_browsertest.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace content {
 

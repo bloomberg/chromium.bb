@@ -25,7 +25,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/service_manager/public/cpp/identity.h"

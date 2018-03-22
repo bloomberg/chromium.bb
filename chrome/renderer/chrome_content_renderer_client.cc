@@ -103,7 +103,7 @@
 #include "extensions/common/constants.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/features/features.h"

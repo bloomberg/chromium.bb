@@ -9,7 +9,7 @@ include_rules = [
   "+extensions/common",
   "+extensions/renderer",
   "+media/base",
-  "+media/media_features.h",
+  "+media/media_buildflags.h",
   "+media/renderers",
   "+mojo/public",
   "+services/service_manager/public",

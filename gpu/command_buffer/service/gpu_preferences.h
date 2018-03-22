@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {

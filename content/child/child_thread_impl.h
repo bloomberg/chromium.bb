@@ -24,7 +24,7 @@
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
-#include "ipc/ipc_features.h"  // For BUILDFLAG(IPC_MESSAGE_LOG_ENABLED).
+#include "ipc/ipc_buildflags.h"  // For BUILDFLAG(IPC_MESSAGE_LOG_ENABLED).
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"

@@ -18,7 +18,7 @@
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "gpu/vulkan/features.h"
+#include "gpu/vulkan/buildflags.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/latency/latency_info.h"

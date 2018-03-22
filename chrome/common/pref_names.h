@@ -13,7 +13,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "rlz/features/features.h"
 

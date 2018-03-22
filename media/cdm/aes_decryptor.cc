@@ -26,7 +26,7 @@
 #include "media/base/video_frame.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

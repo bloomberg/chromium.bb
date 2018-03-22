@@ -10,8 +10,8 @@ import("//testing/test.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-buildflag_header("ipc_features") {
-  header = "ipc_features.h"
+buildflag_header("ipc_buildflags") {
+  header = "ipc_buildflags.h"
 
   flags = [ "IPC_MESSAGE_LOG_ENABLED=$enable_ipc_logging" ]
 }
@@ -78,7 +78,7 @@ component("ipc") {
   defines = [ "IS_IPC_IMPL" ]
 
   public_deps = [
-    ":ipc_features",
+    ":ipc_buildflags",
     ":message_support",
     ":mojom",
     ":native_handle_type_converters",
@@ -143,7 +143,7 @@ component("message_support") {
   defines = [ "IPC_MESSAGE_SUPPORT_IMPL" ]
 
   public_deps = [
-    ":ipc_features",
+    ":ipc_buildflags",
     ":param_traits",
     "//base",
     "//mojo/public/cpp/system",

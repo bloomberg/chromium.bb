@@ -13,7 +13,7 @@
 #include "base/scoped_native_library.h"
 #include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"

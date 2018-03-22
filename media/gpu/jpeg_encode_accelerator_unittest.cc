@@ -29,7 +29,7 @@
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/features.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encode_accelerator.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_encode_accelerator.h"

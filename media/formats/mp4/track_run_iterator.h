@@ -17,7 +17,7 @@
 #include "media/base/media_log.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/box_definitions.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

@@ -1753,11 +1753,11 @@ jumbo_split_static_library("browser") {
     "//google_apis",
     "//gpu/config",
     "//media",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//media/capture",
     "//media/cast:net",
     "//media/midi",
-    "//media/mojo:features",
+    "//media/mojo:buildflags",
     "//media/mojo/common",
     "//media/mojo/interfaces:mirror_service_remoting",
     "//media/mojo/interfaces:remoting",
@@ -3850,7 +3850,7 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser",
-      "//media:media_features",
+      "//media:media_buildflags",
       "//ppapi/features",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",

@@ -41,7 +41,7 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "media/gpu/features.h"
+#include "media/gpu/buildflags.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/events/platform/platform_event_source.h"

@@ -183,7 +183,7 @@
 #include "ipc/ipc_logging.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"

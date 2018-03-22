@@ -31,7 +31,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/fourccs.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

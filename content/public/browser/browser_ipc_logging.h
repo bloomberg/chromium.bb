@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_IPC_LOGGING_H_
 
 #include "content/common/content_export.h"
-#include "ipc/ipc_features.h"
+#include "ipc/ipc_buildflags.h"
 
 namespace content {
 

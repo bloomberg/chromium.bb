@@ -373,7 +373,7 @@ cc_component("cc") {
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/skia_bindings:skia_bindings",
-    "//gpu/vulkan:features",
+    "//gpu/vulkan:buildflags",
     "//media",
     "//mojo/public/cpp/bindings:struct_traits",
     "//services/metrics/public/cpp:ukm_builders",

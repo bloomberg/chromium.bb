@@ -29,7 +29,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

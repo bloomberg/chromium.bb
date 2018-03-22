@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

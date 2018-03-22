@@ -4,7 +4,7 @@
 
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

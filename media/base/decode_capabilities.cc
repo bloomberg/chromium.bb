@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/libaom/av1_features.h"
 #include "ui/display/display_switches.h"
 

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

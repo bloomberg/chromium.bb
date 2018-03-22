@@ -38,7 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"

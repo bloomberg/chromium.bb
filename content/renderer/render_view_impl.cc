@@ -97,7 +97,7 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"

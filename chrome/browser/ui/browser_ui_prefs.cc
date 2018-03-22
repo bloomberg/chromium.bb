@@ -16,7 +16,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

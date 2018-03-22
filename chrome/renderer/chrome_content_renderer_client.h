@@ -26,7 +26,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

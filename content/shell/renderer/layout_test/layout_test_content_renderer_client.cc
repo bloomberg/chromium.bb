@@ -35,7 +35,7 @@
 #include "content/test/mock_webclipboard_impl.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"

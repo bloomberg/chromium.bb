@@ -21,7 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "printing/features/features.h"
 
 class BackgroundModeManager;

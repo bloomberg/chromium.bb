@@ -47,7 +47,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 

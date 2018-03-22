@@ -25,7 +25,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "services/audio/public/cpp/debug_recording_session_factory.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"

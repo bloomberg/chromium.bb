@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "media/base/key_system_properties.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace cdm {
 

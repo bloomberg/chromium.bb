@@ -572,7 +572,7 @@ static_library("constants") {
     "//components/nacl/common:switches",
     "//components/offline_pages/buildflags",
     "//device/vr/buildflags",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//media/cdm:cdm_paths",  # Needed by chrome_paths.cc.
     "//ppapi/features",
     "//third_party/widevine/cdm:headers",

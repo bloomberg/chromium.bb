@@ -5,7 +5,7 @@
 #include "media/mojo/services/media_service.h"
 
 #include "base/logging.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/interface_factory_impl.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "services/service_manager/public/cpp/connector.h"

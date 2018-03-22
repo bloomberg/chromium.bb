@@ -27,7 +27,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"

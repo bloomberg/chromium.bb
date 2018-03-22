@@ -12,7 +12,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and

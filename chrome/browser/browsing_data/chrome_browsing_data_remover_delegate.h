@@ -23,7 +23,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/browsing_data_remover_delegate.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -56,7 +56,7 @@ source_set("ppapi_plugin_sources") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//gin",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//ppapi/c",
     "//ppapi/proxy",
     "//ppapi/proxy:ipc",

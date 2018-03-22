@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/buildflag.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/remoting/renderer_controller.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"

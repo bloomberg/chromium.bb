@@ -33,7 +33,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 class ExtensionPreferenceApiTest : public ExtensionApiTest {
  protected:

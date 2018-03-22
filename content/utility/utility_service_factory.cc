@@ -18,7 +18,7 @@
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"

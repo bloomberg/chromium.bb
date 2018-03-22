@@ -9,7 +9,7 @@
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/viz_common_export.h"
-#include "gpu/vulkan/features.h"
+#include "gpu/vulkan/buildflags.h"
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #endif

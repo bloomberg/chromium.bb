@@ -33,7 +33,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
-#include "media/mojo/features.h"
+#include "media/mojo/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"

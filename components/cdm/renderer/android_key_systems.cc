@@ -13,7 +13,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 

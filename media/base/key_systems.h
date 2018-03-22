@@ -12,7 +12,7 @@
 
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

@@ -9,8 +9,8 @@ import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
 
   flags = [
     "USE_VAAPI=$use_vaapi",
@@ -106,8 +106,8 @@ component("gpu") {
   ]
 
   public_deps = [
+    ":buildflags",
     ":common",
-    ":features",
     "//base",
     "//gpu",
     "//media",
@@ -187,7 +187,7 @@ component("gpu") {
     ]
     deps += [
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
-      "//media/mojo:features",
+      "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
     ]
     if (enable_webrtc) {
@@ -331,7 +331,7 @@ source_set("common") {
   }
 
   deps = [
-    ":features",
+    ":buildflags",
     "//base",
     "//media",
     "//ui/gfx:buffer_types",

@@ -38,7 +38,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"

@@ -33,7 +33,7 @@
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"

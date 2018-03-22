@@ -13,7 +13,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {

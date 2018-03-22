@@ -42,7 +42,7 @@
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/promotion_hint_aggregator_impl.h"
 #include "media/gpu/shared_memory_region.h"
-#include "media/mojo/features.h"
+#include "media/mojo/buildflags.h"
 #include "media/video/picture.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "ui/gl/android/scoped_java_surface.h"

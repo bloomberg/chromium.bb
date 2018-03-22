@@ -55,7 +55,7 @@
 #include "content/public/common/zygote_buildflags.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"

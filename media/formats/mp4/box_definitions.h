@@ -20,7 +20,7 @@
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_reader.h"
 #include "media/formats/mp4/fourccs.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 namespace mp4 {

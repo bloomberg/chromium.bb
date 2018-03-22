@@ -18,7 +18,7 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/memory_data_source.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"

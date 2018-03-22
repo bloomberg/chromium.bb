@@ -41,7 +41,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/grit/shell_resources.h"
-#include "media/mojo/features.h"
+#include "media/mojo/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -15,7 +15,7 @@
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "ipc/ipc_features.h"
+#include "ipc/ipc_buildflags.h"
 #include "ipc/ipc_message_support_export.h"
 
 namespace mojo {

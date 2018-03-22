@@ -12,7 +12,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/video_decoder.h"
-#include "media/gpu/features.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 
 #if defined(OS_ANDROID)

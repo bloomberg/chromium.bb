@@ -17,7 +17,7 @@
 #include "media/base/key_systems.h"
 #include "media/base/media.h"
 #include "media/base/media_client.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 

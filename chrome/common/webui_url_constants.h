@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/common/url_constants.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "printing/features/features.h"
 
 namespace chrome {

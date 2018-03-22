@@ -15,7 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_util.h"
 

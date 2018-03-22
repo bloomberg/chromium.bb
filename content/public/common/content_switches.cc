@@ -5,7 +5,7 @@
 #include "content/public/common/content_switches.h"
 
 #include "build/build_config.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace switches {
 

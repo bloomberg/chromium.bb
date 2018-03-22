@@ -184,7 +184,7 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"

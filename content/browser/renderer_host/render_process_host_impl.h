@@ -46,7 +46,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

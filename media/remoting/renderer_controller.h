@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "media/base/media_observer.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/remoting/metrics.h"
 #include "mojo/public/cpp/bindings/binding.h"

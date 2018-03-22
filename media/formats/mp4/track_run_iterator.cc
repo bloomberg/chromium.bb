@@ -16,7 +16,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 namespace mp4 {

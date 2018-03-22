@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "media/base/cdm_factory.h"
 #include "media/cdm/cdm_module.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "services/service_manager/public/cpp/connector.h"

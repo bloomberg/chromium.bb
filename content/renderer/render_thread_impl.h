@@ -49,7 +49,7 @@
 #include "content/renderer/media/audio_output_ipc_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_channel.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"

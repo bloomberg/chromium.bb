@@ -34,7 +34,7 @@
 // TODO(crbug.com/676224): When EnabledIf attribute is supported in mojom files,
 // move CdmProxy related code into #if BUILDFLAG(ENABLE_LIBRARY_CDMS).
 #include "media/cdm/cdm_proxy.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
 
 // Enum traits.

@@ -5,7 +5,7 @@
 #ifndef IPC_IPC_LOGGING_H_
 #define IPC_IPC_LOGGING_H_
 
-#include "ipc/ipc_features.h"
+#include "ipc/ipc_buildflags.h"
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 

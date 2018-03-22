@@ -7,7 +7,7 @@
 
 #include "base/feature_list.h"
 #include "content/public/common/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace content {
 

@@ -16,7 +16,7 @@
 #include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

@@ -8,7 +8,7 @@
 // IPC_MESSAGE_LOG_ENABLED. We need to use it to define
 // IPC_MESSAGE_MACROS_LOG_ENABLED so render_messages.h will generate the
 // ViewMsgLog et al. functions.
-#include "ipc/ipc_features.h"
+#include "ipc/ipc_buildflags.h"
 
 // On Windows, the about:ipc dialog shows IPCs; on POSIX, we hook up a
 // logger in this file.  (We implement about:ipc on Mac but implement

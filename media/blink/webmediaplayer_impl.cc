@@ -53,7 +53,7 @@
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebLocalizedString.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
