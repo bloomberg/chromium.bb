@@ -30,8 +30,8 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/event_injector.h"
 #include "services/ui/ws/gpu_host.h"
-#include "services/ui/ws/remote_event_dispatcher.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -312,8 +312,8 @@ void Service::OnStart() {
     registry_.AddInterface<WindowServerTest>(base::BindRepeating(
         &Service::BindWindowServerTestRequest, base::Unretained(this)));
   }
-  registry_.AddInterface<mojom::RemoteEventDispatcher>(base::BindRepeating(
-      &Service::BindRemoteEventDispatcherRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::EventInjector>(base::BindRepeating(
+      &Service::BindEventInjectorRequest, base::Unretained(this)));
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
@@ -508,10 +508,9 @@ void Service::BindWindowServerTestRequest(
       std::move(request));
 }
 
-void Service::BindRemoteEventDispatcherRequest(
-    mojom::RemoteEventDispatcherRequest request) {
+void Service::BindEventInjectorRequest(mojom::EventInjectorRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<ws::RemoteEventDispatcherImpl>(window_server_.get()),
+      std::make_unique<ws::EventInjector>(window_server_.get()),
       std::move(request));
 }
 

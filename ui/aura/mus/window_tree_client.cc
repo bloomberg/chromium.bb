@@ -2341,8 +2341,8 @@ void WindowTreeClient::InjectEvent(const ui::Event& event, int64_t display_id) {
   // Check event_injector_ so we don't crash if access to the interface was
   // refused.
   if (event_injector_) {
-    event_injector_->DispatchEvent(display_id, ui::Event::Clone(event),
-                                   base::DoNothing());
+    event_injector_->InjectEvent(display_id, ui::Event::Clone(event),
+                                 base::DoNothing());
   }
 }
 

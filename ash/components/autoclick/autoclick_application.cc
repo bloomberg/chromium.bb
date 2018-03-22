@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/base/ui_base_types.h"
@@ -181,9 +181,9 @@ void AutoclickApplication::DoAutoclick(const gfx::Point& point_in_screen,
       gfx::ScaleToFlooredPoint(point_in_root, display.device_scale_factor());
 
   // Connect to the window service event generation interface.
-  ui::mojom::RemoteEventDispatcherPtr remote_event_dispatcher;
+  ui::mojom::EventInjectorPtr event_injector;
   context()->connector()->BindInterface(ui::mojom::kServiceName,
-                                        &remote_event_dispatcher);
+                                        &event_injector);
 
   // Inject a synthetic click.
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, point_in_pixels,
@@ -194,14 +194,14 @@ void AutoclickApplication::DoAutoclick(const gfx::Point& point_in_screen,
                                point_in_pixels, ui::EventTimeForNow(),
                                mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
-  remote_event_dispatcher->DispatchEvent(
+  event_injector->InjectEvent(
       display.id(), std::make_unique<ui::PointerEvent>(press_event),
       base::BindOnce([](bool result) { DCHECK(result); }));
   // Don't check the next dispatch result because it's possible the first event
   // will initiate shutdown.
-  remote_event_dispatcher->DispatchEvent(
-      display.id(), std::make_unique<ui::PointerEvent>(release_event),
-      base::DoNothing());
+  event_injector->InjectEvent(display.id(),
+                              std::make_unique<ui::PointerEvent>(release_event),
+                              base::DoNothing());
 }
 
 void AutoclickApplication::OnAutoclickCanceled() {

@@ -55,11 +55,11 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
         event->AsLocatedEvent()->location_f());
   }
 
-  if (!remote_event_dispatcher_) {
+  if (!event_injector_) {
     env->window_tree_client_->connector()->BindInterface(
-        ui::mojom::kServiceName, &remote_event_dispatcher_);
+        ui::mojom::kServiceName, &event_injector_);
   }
-  remote_event_dispatcher_->DispatchEvent(
+  event_injector_->InjectEvent(
       host->GetDisplayId(), MapEvent(*event),
       base::BindOnce([](bool result) { DCHECK(result); }));
   return ui::EventDispatchDetails();
