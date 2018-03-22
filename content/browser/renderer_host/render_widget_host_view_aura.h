@@ -167,6 +167,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetMainFrameAXTreeID(ui::AXTreeIDRegistry::AXTreeID id) override;
   bool LockMouse() override;
   void UnlockMouse() override;
+  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  void UnlockKeyboard() override;
+  bool IsKeyboardLocked() override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;

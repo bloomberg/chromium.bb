@@ -5,8 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 
-#include <memory>
-
+#include "base/containers/flat_set.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -162,6 +162,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void UnlockMouse() = 0;
   // Returns true if the mouse pointer is currently locked.
   virtual bool IsMouseLocked() = 0;
+
+  // Start/Stop intercepting future system keyboard events.
+  virtual bool LockKeyboard(base::Optional<base::flat_set<int>> keys) = 0;
+  virtual void UnlockKeyboard() = 0;
+  // Returns true if keyboard lock is active.
+  virtual bool IsKeyboardLocked() = 0;
 
   // Retrives the size of the viewport for the visible region. May be smaller
   // than the view size if a portion of the view is obstructed (e.g. by a

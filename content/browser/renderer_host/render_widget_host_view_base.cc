@@ -43,7 +43,6 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
       is_fullscreen_(false),
       popup_type_(blink::kWebPopupTypeNone),
-      mouse_locked_(false),
       current_device_scale_factor_(0),
       current_display_rotation_(display::Display::ROTATE_0),
       text_input_manager_(nullptr),
@@ -57,6 +56,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
+  DCHECK(!keyboard_locked_);
   DCHECK(!mouse_locked_);
   // We call this here to guarantee that observers are notified before we go
   // away. However, some subclasses may wish to call this earlier in their
@@ -196,6 +196,20 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {
   return mouse_locked_;
+}
+
+bool RenderWidgetHostViewBase::LockKeyboard(
+    base::Optional<base::flat_set<int>> keys) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void RenderWidgetHostViewBase::UnlockKeyboard() {
+  NOTIMPLEMENTED();
+}
+
+bool RenderWidgetHostViewBase::IsKeyboardLocked() {
+  return keyboard_locked_;
 }
 
 InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(

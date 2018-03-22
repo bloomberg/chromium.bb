@@ -16,12 +16,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/time/tick_clock.h"
@@ -486,6 +488,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     allow_privileged_mouse_lock_ = allow;
   }
 
+  // Called when the response to a pending keyboard lock request has arrived.
+  // |allowed| should be true if the current tab is in tab initiated fullscreen
+  // mode.
+  void GotResponseToKeyboardLockRequest(bool allowed);
+
   // Resets state variables related to tracking pending size and painting.
   //
   // We need to reset these flags when we want to repaint the contents of
@@ -678,6 +685,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetScreenOrientationForTesting(uint16_t angle,
                                       ScreenOrientationValues type);
 
+  // Requests Keyboard lock.  Note: the lock may not take effect until later.
+  // If |keys_to_lock| has no value then all keys will be locked, otherwise only
+  // the keys specified will be intercepted and routed to the web page.
+  void RequestKeyboardLock(base::Optional<base::flat_set<int>> keys_to_lock);
+
+  // Cancels a previous keyboard lock request.
+  void CancelKeyboardLock();
+
+  // Indicates whether keyboard lock is active.
+  bool IsKeyboardLocked() const;
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -850,6 +868,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const RenderWidgetSurfaceProperties& first,
       const RenderWidgetSurfaceProperties& second) const;
 
+  // Start intercepting system keyboard events.
+  bool LockKeyboard();
+
+  // Stop intercepting system keyboard events.
+  void UnlockKeyboard();
+
 #if defined(OS_MACOSX)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -979,6 +1003,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool pending_mouse_lock_request_;
   bool allow_privileged_mouse_lock_;
+
+  // Stores the keyboard keys to lock while waiting for a pending lock request.
+  base::Optional<base::flat_set<int>> keyboard_keys_to_lock_;
+  bool keyboard_lock_requested_ = false;
+  bool keyboard_lock_allowed_ = false;
 
   // Used when locking to indicate when a target application has voluntarily
   // unlocked and desires to relock the mouse. If the mouse is unlocked due

@@ -21,6 +21,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
@@ -238,6 +239,27 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
     cursor_client->ShowCursor();
   }
   host_->LostMouseLock();
+}
+
+bool RenderWidgetHostViewEventHandler::LockKeyboard(
+    base::Optional<base::flat_set<int>> keys) {
+  aura::Window* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return false;
+
+  // Remove existing hook, if registered.
+  UnlockKeyboard();
+  scoped_keyboard_hook_ = root_window->CaptureSystemKeyEvents(std::move(keys));
+
+  return IsKeyboardLocked();
+}
+
+void RenderWidgetHostViewEventHandler::UnlockKeyboard() {
+  scoped_keyboard_hook_.reset();
+}
+
+bool RenderWidgetHostViewEventHandler::IsKeyboardLocked() const {
+  return scoped_keyboard_hook_ != nullptr;
 }
 
 void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {

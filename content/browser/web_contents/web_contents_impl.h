@@ -722,6 +722,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           bool user_gesture,
                           bool last_unlocked_by_target,
                           bool privileged) override;
+  bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host) override;
+  void CancelKeyboardLock(RenderWidgetHostImpl* render_widget_host) override;
+  RenderWidgetHostImpl* GetKeyboardLockWidget() override;
   // The following function is already listed under WebContents overrides:
   // bool IsFullscreenForCurrentTab() const override;
   blink::WebDisplayMode GetDisplayMode(
@@ -1672,7 +1675,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Stores the RenderWidgetHost that currently holds a mouse lock or nullptr if
   // there's no RenderWidgetHost holding a lock.
-  RenderWidgetHostImpl* mouse_lock_widget_;
+  RenderWidgetHostImpl* mouse_lock_widget_ = nullptr;
+
+  // Stores the RenderWidgetHost that currently holds a keyboard lock or nullptr
+  // if no RenderWidgetHost has the keyboard locked.
+  RenderWidgetHostImpl* keyboard_lock_widget_ = nullptr;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;

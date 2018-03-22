@@ -520,7 +520,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if !defined(OS_ANDROID)
       page_scale_factor_is_one_(true),
 #endif  // !defined(OS_ANDROID)
-      mouse_lock_widget_(nullptr),
       is_overlay_content_(false),
       showing_context_menu_(false),
       loading_weak_factory_(this),
@@ -1957,6 +1956,8 @@ void WebContentsImpl::RenderWidgetDeleted(
 
   if (render_widget_host == mouse_lock_widget_)
     LostMouseLock(mouse_lock_widget_);
+
+  CancelKeyboardLock(keyboard_lock_widget_);
 }
 
 void WebContentsImpl::RenderWidgetGotFocus(
@@ -2124,6 +2125,9 @@ void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
         ->ShutdownAndDestroyWidget(true);
   }
 
+  if (keyboard_lock_widget_)
+    keyboard_lock_widget_->GotResponseToKeyboardLockRequest(true);
+
   if (delegate_)
     delegate_->EnterFullscreenModeForTab(this, origin);
 
@@ -2145,6 +2149,9 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   if (video_view != NULL)
     video_view->ExitFullscreen();
 #endif
+
+  if (keyboard_lock_widget_)
+    keyboard_lock_widget_->GotResponseToKeyboardLockRequest(false);
 
   if (delegate_)
     delegate_->ExitFullscreenModeForTab(this);
@@ -2259,6 +2266,45 @@ RenderWidgetHostImpl* WebContentsImpl::GetMouseLockWidget() {
     return mouse_lock_widget_;
 
   return nullptr;
+}
+
+bool WebContentsImpl::RequestKeyboardLock(
+    RenderWidgetHostImpl* render_widget_host) {
+  DCHECK(render_widget_host);
+  if (render_widget_host == keyboard_lock_widget_)
+    return true;
+
+  if (render_widget_host->delegate()->GetAsWebContents() != this) {
+    NOTREACHED();
+    return false;
+  }
+
+  // KeyboardLock is only supported when called by the top-level browsing
+  // context and is not supported in embedded content scenarios.
+  if (GetOuterWebContents())
+    return false;
+
+  keyboard_lock_widget_ = render_widget_host;
+
+  if (IsFullscreen())
+    render_widget_host->GotResponseToKeyboardLockRequest(true);
+
+  return true;
+}
+
+void WebContentsImpl::CancelKeyboardLock(
+    RenderWidgetHostImpl* render_widget_host) {
+  if (!keyboard_lock_widget_ || render_widget_host != keyboard_lock_widget_)
+    return;
+
+  RenderWidgetHostImpl* old_keyboard_lock_widget = keyboard_lock_widget_;
+  keyboard_lock_widget_ = nullptr;
+
+  old_keyboard_lock_widget->CancelKeyboardLock();
+}
+
+RenderWidgetHostImpl* WebContentsImpl::GetKeyboardLockWidget() {
+  return keyboard_lock_widget_;
 }
 
 void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {

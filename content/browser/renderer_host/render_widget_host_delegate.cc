@@ -74,6 +74,14 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetMouseLockWidget() {
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::RequestKeyboardLock(RenderWidgetHostImpl* host) {
+  return false;
+}
+
+RenderWidgetHostImpl* RenderWidgetHostDelegate::GetKeyboardLockWidget() {
+  return nullptr;
+}
+
 TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
   return nullptr;
 }

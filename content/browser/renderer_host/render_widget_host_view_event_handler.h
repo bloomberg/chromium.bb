@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -17,6 +19,7 @@
 #include "ui/latency/latency_info.h"
 
 namespace aura {
+class ScopedKeyboardHook;
 class Window;
 }  // namespace aura
 
@@ -140,6 +143,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   bool LockMouse();
   void UnlockMouse();
 
+  // Start/Stop processing of future system keyboard events.
+  bool LockKeyboard(base::Optional<base::flat_set<int>> keys);
+  void UnlockKeyboard();
+  bool IsKeyboardLocked() const;
+
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -209,6 +217,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // corresponding touch sequence, as would be required by
   // RenderWidgetHostInputEventRouter.
   bool disable_input_event_router_for_testing_;
+
+  // Deactivates keyboard lock when destroyed.
+  std::unique_ptr<aura::ScopedKeyboardHook> scoped_keyboard_hook_;
 
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known
