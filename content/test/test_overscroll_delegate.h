@@ -38,9 +38,8 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode,
-                              OverscrollSource source) override;
-  void OnOverscrollBehaviorUpdate(
-      cc::OverscrollBehavior overscroll_behavior) override {}
+                              OverscrollSource source,
+                              cc::OverscrollBehavior behavior) override;
   base::Optional<float> GetMaxOverscrollDelta() const override;
 
   gfx::Size display_size_;

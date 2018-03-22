@@ -43,14 +43,16 @@ void OverscrollWindowDelegate::StartOverscroll(OverscrollSource source) {
     overscroll_mode_ = OVERSCROLL_EAST;
   else
     overscroll_mode_ = OVERSCROLL_WEST;
-  delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
+  delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source,
+                                    cc::OverscrollBehavior());
 }
 
 void OverscrollWindowDelegate::ResetOverscroll() {
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return;
   delegate_->OnOverscrollModeChange(overscroll_mode_, OVERSCROLL_NONE,
-                                    OverscrollSource::NONE);
+                                    OverscrollSource::NONE,
+                                    cc::OverscrollBehavior());
   overscroll_mode_ = OVERSCROLL_NONE;
   delta_x_ = 0;
 }

@@ -152,8 +152,7 @@ void OverscrollController::OnDidOverscroll(
     const ui::DidOverscrollParams& params) {
   // TODO(sunyunjia): We should also decide whether to trigger overscroll,
   // update scroll_state_ here. See https://crbug.com/799467.
-  if (delegate_)
-    delegate_->OnOverscrollBehaviorUpdate(params.overscroll_behavior);
+  behavior_ = params.overscroll_behavior;
 }
 
 void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,
@@ -499,8 +498,10 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode,
     scroll_state_ = ScrollState::OVERSCROLLING;
     locked_mode_ = overscroll_mode_;
   }
-  if (delegate_)
-    delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
+  if (delegate_) {
+    delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source,
+                                      behavior_);
+  }
 }
 
 void OverscrollController::ResetScrollState() {

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -127,6 +128,10 @@ class CONTENT_EXPORT OverscrollController {
 
   // Helper function to reset |scroll_state_| and |locked_mode_|.
   void ResetScrollState();
+
+  // Current value of overscroll-behavior CSS property for the root element of
+  // the page.
+  cc::OverscrollBehavior behavior_;
 
   // The current state of overscroll gesture.
   OverscrollMode overscroll_mode_ = OVERSCROLL_NONE;

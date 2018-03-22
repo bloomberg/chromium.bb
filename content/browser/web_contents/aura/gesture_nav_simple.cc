@@ -597,7 +597,8 @@ void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
 
 void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
                                               OverscrollMode new_mode,
-                                              OverscrollSource source) {
+                                              OverscrollSource source,
+                                              cc::OverscrollBehavior behavior) {
   DCHECK_EQ(mode_, old_mode);
   if (mode_ == new_mode)
     return;

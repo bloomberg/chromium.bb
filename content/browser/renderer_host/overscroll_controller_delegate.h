@@ -26,12 +26,6 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   // delegate.
   virtual gfx::Size GetDisplaySize() const = 0;
 
-  // This is called whenever an overscroll event is generated on the renderer
-  // side, and is called before OnOverscrollUpdate. The params contains an
-  // OverscrollBehavior that can prevent overscroll navigation.
-  virtual void OnOverscrollBehaviorUpdate(
-      cc::OverscrollBehavior overscroll_behavior) = 0;
-
   // This is called for each update in the overscroll amount. Returns true if
   // the delegate consumed the event.
   virtual bool OnOverscrollUpdate(float delta_x, float delta_y) = 0;
@@ -42,10 +36,12 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   // This is called when the direction of the overscroll changes. When a new
   // overscroll is started (i.e. when |new_mode| is not equal to
   // OVERSCROLL_NONE), |source| will be set to the device that triggered the
-  // overscroll gesture.
+  // overscroll gesture. |behavior| is the value of overscroll-behavior CSS
+  // property for the root element.
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,
                                       OverscrollMode new_mode,
-                                      OverscrollSource source) = 0;
+                                      OverscrollSource source,
+                                      cc::OverscrollBehavior behavior) = 0;
 
   // Returns the optional maximum amount allowed for the absolute value of
   // overscroll delta corresponding to the current overscroll mode.
