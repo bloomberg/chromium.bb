@@ -14,14 +14,13 @@ touching. Any committer can review code, but an owner must provide a review
 for each directory you are touching. If you have doubts, look at the git blame
 for the file and the `OWNERS` files (see below).
 
-To indicate a positive review, the reviewer chooses "+1" in Code-Review field
-on Gerrit, or types "LGTM" (case insensitive) into a comment on Rietveld. This
-stands for "Looks Good To Me." "-1" in Code-Review field on Gerrit or the text
-"not LGTM" on Rietveld will cancel out a previous positive review.
+To indicate a positive review, the reviewer provides a "Code-Review +1" in
+Gerrit, also known as an LGTM ("Looks Good To Me"). A score of "-1" indicates
+the change should not be submitted as-is.
 
-If you have multiple reviewers, make it clear in the message you send
-requesting review what you expect from each reviewer. Otherwise people might
-assume their input is not required or waste time with redundant reviews.
+If you have multiple reviewers, provide a message indicating what you expect
+from each reviewer. Otherwise people might assume their input is not required
+or waste time with redundant reviews.
 
 Please also read [Respectful Changes](cl_respect.md) and
 [Respectful Code Reviews](cr_respect.md).
@@ -29,15 +28,15 @@ Please also read [Respectful Changes](cl_respect.md) and
 #### Expectations for all reviewers
 
   * Aim to provide some kind of actionable response within 24 hours of receipt
-    (not counting weekends and holidays). This doesn't mean you have to have
-    done a complete review, but you should be able to give some initial
-    feedback, request more time, or suggest another reviewer.
+    (not counting weekends and holidays). This doesn't mean you have to do a
+    complete review, but you should be able to give some initial feedback,
+    request more time, or suggest another reviewer.
 
-  * It can be nice to indicate if you're away in your name in the code review
-    tool. If you do this, indicate when you'll be back.
+  * Use the status field in Gerrit settings to indicate if you're away and when
+  * you'll be back.
 
   * Don't generally discourage people from sending you code reviews. This
-    includes writing a blanket ("slow") after your name in the review tool.
+    includes using a blanket "slow" in your status field.
 
 ## OWNERS files
 
@@ -129,8 +128,6 @@ Otherwise the reviewer won't know to review the patch.
     reviewer1: Please review changes to foo/
     reviewer2: Please review changes to bar/
     ```
-
-  * Push the "send mail" button.
 
 ### TBR-ing certain types of mechanical changes
 
