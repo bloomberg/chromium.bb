@@ -71,6 +71,13 @@
       toolbarButton:self.viewController.toolsMenuButton];
 }
 
+- (void)stop {
+  [super stop];
+  self.toolsMenuButtonObserverBridge = nil;
+  [self.mediator disconnect];
+  self.mediator = nil;
+}
+
 #pragma mark - SideSwipeToolbarSnapshotProviding
 
 - (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
