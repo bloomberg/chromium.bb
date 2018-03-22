@@ -43,6 +43,10 @@ ScopedVirtualU2fDevice::ScopedVirtualU2fDevice()
     : state_(new VirtualU2fDevice::State) {}
 ScopedVirtualU2fDevice::~ScopedVirtualU2fDevice() = default;
 
+VirtualU2fDevice::State* ScopedVirtualU2fDevice::mutable_state() {
+  return state_.get();
+}
+
 std::unique_ptr<FidoDiscovery> ScopedVirtualU2fDevice::CreateFidoDiscovery(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {

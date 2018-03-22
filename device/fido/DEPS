@@ -3,5 +3,6 @@ include_rules = [
   "+components/cbor",
   "+crypto",
   "+net/base",
+  "+net/cert",
   "+third_party/boringssl/src/include",
 ]

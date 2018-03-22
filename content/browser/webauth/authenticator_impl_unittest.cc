@@ -16,6 +16,8 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/cbor/cbor_reader.h"
+#include "components/cbor/cbor_values.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
@@ -30,6 +32,9 @@ namespace content {
 
 using ::testing::_;
 
+using cbor::CBORValue;
+using cbor::CBORReader;
+using webauth::mojom::AttestationConveyancePreference;
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorSelectionCriteria;
 using webauth::mojom::AuthenticatorSelectionCriteriaPtr;
@@ -252,6 +257,11 @@ class TestMakeCredentialCallback {
   }
 
   AuthenticatorStatus GetResponseStatus() { return response_.first; }
+
+  const MakeCredentialAuthenticatorResponsePtr& response() const {
+    CHECK_EQ(AuthenticatorStatus::SUCCESS, response_.first);
+    return response_.second;
+  }
 
  private:
   std::pair<AuthenticatorStatus, MakeCredentialAuthenticatorResponsePtr>
@@ -665,4 +675,233 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   cb.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
 }
+
+namespace {
+
+enum class IndividualAttestation {
+  REQUESTED,
+  NOT_REQUESTED,
+};
+
+enum class AttestationConsent {
+  GRANTED,
+  DENIED,
+};
+
+// Implements ContentBrowserClient and allows webauthn-related calls to be
+// mocked.
+class AuthenticatorTestContentBrowserClient : public ContentBrowserClient {
+ public:
+  bool ShouldPermitIndividualAttestationForWebauthnRPID(
+      content::BrowserContext* browser_context,
+      const std::string& rp_id) override {
+    return individual_attestation == IndividualAttestation::REQUESTED;
+  }
+
+  void ShouldReturnAttestationForWebauthnRPID(
+      content::RenderFrameHost* rfh,
+      const std::string& rp_id,
+      const url::Origin& origin,
+      base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(attestation_consent == AttestationConsent::GRANTED);
+  }
+
+  IndividualAttestation individual_attestation =
+      IndividualAttestation::NOT_REQUESTED;
+  AttestationConsent attestation_consent = AttestationConsent::DENIED;
+};
+
+// A test class that installs and removes an
+// |AuthenticatorTestContentBrowserClient| automatically.
+class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
+ public:
+  AuthenticatorContentBrowserClientTest() = default;
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ protected:
+  AuthenticatorTestContentBrowserClient test_client_;
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthenticatorContentBrowserClientTest);
+};
+
+const char* AttestationConveyancePreferenceToString(
+    AttestationConveyancePreference v) {
+  switch (v) {
+    case AttestationConveyancePreference::NONE:
+      return "none";
+    case AttestationConveyancePreference::INDIRECT:
+      return "indirect";
+    case AttestationConveyancePreference::DIRECT:
+      return "direct";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+// Expects that |map| contains the given key with a string-value equal to
+// |expected|.
+void ExpectMapHasKeyWithStringValue(const CBORValue::MapValue& map,
+                                    const char* key,
+                                    const char* expected) {
+  const auto it = map.find(CBORValue(key));
+  ASSERT_TRUE(it != map.end()) << "No such key '" << key << "'";
+  const auto& value = it->second;
+  EXPECT_TRUE(value.is_string())
+      << "Value of '" << key << "' has type " << static_cast<int>(value.type())
+      << ", but expected to find a string";
+  EXPECT_EQ(std::string(expected), value.GetString())
+      << "Value of '" << key << "' is '" << value.GetString()
+      << "', but expected to find '" << expected << "'";
+}
+
+// Asserts that the webauthn attestation CBOR map in |attestation| contains a
+// single X.509 certificate containing |substring|.
+void ExpectCertificateContainingSubstring(
+    const CBORValue::MapValue& attestation,
+    const std::string& substring) {
+  const auto& attestation_statement_it = attestation.find(CBORValue("attStmt"));
+  ASSERT_TRUE(attestation_statement_it != attestation.end());
+  ASSERT_TRUE(attestation_statement_it->second.is_map());
+  const auto& attestation_statement = attestation_statement_it->second.GetMap();
+  const auto& x5c_it = attestation_statement.find(CBORValue("x5c"));
+  ASSERT_TRUE(x5c_it != attestation_statement.end());
+  ASSERT_TRUE(x5c_it->second.is_array());
+  const auto& x5c = x5c_it->second.GetArray();
+  ASSERT_EQ(1u, x5c.size());
+  ASSERT_TRUE(x5c[0].is_bytestring());
+  base::StringPiece cert = x5c[0].GetBytestringAsString();
+  EXPECT_TRUE(cert.find(substring) != cert.npos);
+}
+
+}  // anonymous namespace
+
+TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
+  const char kStandardCommonName[] = "U2F Attestation";
+  const char kIndividualCommonName[] = "Individual Cert";
+
+  const struct {
+    AttestationConveyancePreference attestation_requested;
+    IndividualAttestation individual_attestation;
+    AttestationConsent attestation_consent;
+    AuthenticatorStatus expected_status;
+    const char* expected_attestation_format;
+    const char* expected_certificate_substring;
+  } kTests[] = {
+      {
+          AttestationConveyancePreference::NONE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS, "none", "",
+      },
+      {
+          AttestationConveyancePreference::NONE,
+          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS, "none", "",
+      },
+      {
+          AttestationConveyancePreference::INDIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::INDIRECT,
+          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::INDIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+      },
+      {
+          AttestationConveyancePreference::INDIRECT,
+          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kIndividualCommonName,
+      },
+      {
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+      },
+      {
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kIndividualCommonName,
+      },
+  };
+
+  TestServiceManagerContext smc;
+  device::test::ScopedVirtualU2fDevice virtual_device;
+  virtual_device.mutable_state()->attestation_cert_common_name =
+      kStandardCommonName;
+  virtual_device.mutable_state()->individual_attestation_cert_common_name =
+      kIndividualCommonName;
+  NavigateAndCommit(GURL("https://example.com"));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  for (size_t i = 0; i < arraysize(kTests); i++) {
+    const auto& test = kTests[i];
+    SCOPED_TRACE(test.attestation_consent == AttestationConsent::GRANTED
+                     ? "consent granted"
+                     : "consent denied");
+    SCOPED_TRACE(test.individual_attestation == IndividualAttestation::REQUESTED
+                     ? "individual attestation"
+                     : "no individual attestation");
+    SCOPED_TRACE(
+        AttestationConveyancePreferenceToString(test.attestation_requested));
+
+    test_client_.individual_attestation = test.individual_attestation;
+    test_client_.attestation_consent = test.attestation_consent;
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party->id = "example.com";
+    options->adjusted_timeout = base::TimeDelta::FromSeconds(1);
+    options->attestation = test.attestation_requested;
+    TestMakeCredentialCallback cb;
+    authenticator->MakeCredential(std::move(options), cb.callback());
+    cb.WaitForCallback();
+    ASSERT_EQ(test.expected_status, cb.GetResponseStatus());
+
+    if (test.expected_status != AuthenticatorStatus::SUCCESS) {
+      ASSERT_STREQ("", test.expected_attestation_format);
+      continue;
+    }
+
+    base::Optional<CBORValue> attestation_value =
+        CBORReader::Read(cb.response()->attestation_object);
+    ASSERT_TRUE(attestation_value);
+    ASSERT_TRUE(attestation_value->is_map());
+    const auto& attestation = attestation_value->GetMap();
+    ExpectMapHasKeyWithStringValue(attestation, "fmt",
+                                   test.expected_attestation_format);
+    if (strlen(test.expected_certificate_substring) > 0) {
+      ExpectCertificateContainingSubstring(attestation,
+                                           test.expected_certificate_substring);
+    }
+  }
+}
+
 }  // namespace content
