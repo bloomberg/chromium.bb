@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -115,6 +114,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetIsInVR(bool is_in_vr) override;
   base::string16 GetSelectedText() override;
   bool IsMouseLocked() override;
+  bool LockKeyboard(base::Optional<base::flat_set<int>> keys) override;
+  void UnlockKeyboard() override;
+  bool IsKeyboardLocked() override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
   bool IsSurfaceAvailableForCopy() const override;
@@ -548,12 +550,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // autofill...).
   blink::WebPopupType popup_type_;
 
+  // Indicates whether keyboard lock is active for this view.
+  bool keyboard_locked_ = false;
+
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known
   // mouse position just as mouse lock was entered; the movement they report
   // indicates what the change in position of the mouse would be had it not been
   // locked.
-  bool mouse_locked_;
+  bool mouse_locked_ = false;
 
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;

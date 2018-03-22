@@ -567,6 +567,7 @@ void RenderWidgetHostImpl::InitForFrame() {
 }
 
 void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
+  CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
   if (process_->HasConnection()) {
@@ -909,8 +910,13 @@ void RenderWidgetHostImpl::SetPageFocus(bool focused) {
     if (IsMouseLocked())
       view_->UnlockMouse();
 
+    if (IsKeyboardLocked())
+      UnlockKeyboard();
+
     if (touch_emulator_)
       touch_emulator_->CancelTouch();
+  } else if (keyboard_lock_allowed_) {
+    LockKeyboard();
   }
 
   GetWidgetInputHandler()->SetFocus(focused);
@@ -945,6 +951,7 @@ void RenderWidgetHostImpl::SendMouseLockLost() {
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {
+  CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
   // TODO(evanm): tracking this may no longer be necessary;
@@ -1868,6 +1875,10 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   }
 }
 
+bool RenderWidgetHostImpl::IsKeyboardLocked() const {
+  return view_ ? view_->IsKeyboardLocked() : false;
+}
+
 bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
 }
@@ -2264,6 +2275,36 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
     is_last_unlocked_by_target_ = true;
 }
 
+void RenderWidgetHostImpl::RequestKeyboardLock(
+    base::Optional<base::flat_set<int>> keys_to_lock) {
+  if (!delegate_) {
+    CancelKeyboardLock();
+    return;
+  }
+
+  // If keyboard lock is already active, then skip the request and just update
+  // the set of keys used for the lock.  Otherwise call through the delegate to
+  // request keyboard lock.  Cancel the request if we don't have a delegate.
+  DCHECK(!keys_to_lock.has_value() || !keys_to_lock.value().empty());
+  keyboard_keys_to_lock_ = std::move(keys_to_lock);
+  keyboard_lock_requested_ = true;
+  if (IsKeyboardLocked())
+    LockKeyboard();
+  else if (!delegate_->RequestKeyboardLock(this))
+    CancelKeyboardLock();
+}
+
+void RenderWidgetHostImpl::CancelKeyboardLock() {
+  if (delegate_)
+    delegate_->CancelKeyboardLock(this);
+
+  UnlockKeyboard();
+
+  keyboard_lock_allowed_ = false;
+  keyboard_lock_requested_ = false;
+  keyboard_keys_to_lock_.reset();
+}
+
 void RenderWidgetHostImpl::OnShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const gfx::Size& size,
@@ -2520,6 +2561,16 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 
   Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
   return true;
+}
+
+void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
+  DCHECK(keyboard_lock_requested_);
+  keyboard_lock_allowed_ = allowed;
+
+  if (keyboard_lock_allowed_)
+    LockKeyboard();
+  else
+    UnlockKeyboard();
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {
@@ -3104,6 +3155,22 @@ bool RenderWidgetHostImpl::SurfacePropertiesMismatch(
   // For non-Android or when surface synchronization is not enabled, just use a
   // basic comparison.
   return first != second;
+}
+
+bool RenderWidgetHostImpl::LockKeyboard() {
+  if (!keyboard_lock_allowed_ || !is_focused_ || !view_)
+    return false;
+
+  // KeyboardLock can be activated and deactivated several times per request,
+  // for example when a fullscreen tab loses and gains focus multiple times,
+  // so we need to retain a copy of the keys requested.
+  base::Optional<base::flat_set<int>> copy_of_keys = keyboard_keys_to_lock_;
+  return view_->LockKeyboard(std::move(copy_of_keys));
+}
+
+void RenderWidgetHostImpl::UnlockKeyboard() {
+  if (IsKeyboardLocked())
+    view_->UnlockKeyboard();
 }
 
 }  // namespace content

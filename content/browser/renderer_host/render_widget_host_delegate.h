@@ -193,6 +193,17 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // locked.
   virtual RenderWidgetHostImpl* GetMouseLockWidget();
 
+  // Requests to lock the keyboard. Once the request is approved or rejected,
+  // GotResponseToKeyboardLockRequest() will be called on the requesting render
+  // widget host.
+  virtual bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host);
+
+  // Cancels a previous keyboard lock request.
+  virtual void CancelKeyboardLock(RenderWidgetHostImpl* render_widget_host) {}
+
+  // Returns the widget that holds the keyboard lock or nullptr if not locked.
+  virtual RenderWidgetHostImpl* GetKeyboardLockWidget();
+
   // Called when the visibility of the RenderFrameProxyHost in outer
   // WebContents changes. This method is only called on an inner WebContents and
   // will eventually notify all the RenderWidgetHostViews belonging to that
