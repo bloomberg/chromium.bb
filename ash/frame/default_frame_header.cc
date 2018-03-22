@@ -306,6 +306,13 @@ void DefaultFrameHeader::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
 
 void DefaultFrameHeader::UpdateAllButtonImages() {
   caption_button_container_->SetUseLightImages(ShouldUseLightImages());
+  if (back_button_) {
+    back_button_->set_use_light_images(ShouldUseLightImages());
+    back_button_->SetImage(CAPTION_BUTTON_ICON_BACK,
+                           FrameCaptionButton::ANIMATE_NO,
+                           kWindowControlBackIcon);
+  }
+
   caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
                                             kWindowControlMinimizeIcon);
 

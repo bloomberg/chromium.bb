@@ -138,9 +138,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
-  FrameCaptionButton* minimize_button_;
-  FrameCaptionButton* size_button_;
-  FrameCaptionButton* close_button_;
+  FrameCaptionButton* minimize_button_ = nullptr;
+  FrameCaptionButton* size_button_ = nullptr;
+  FrameCaptionButton* close_button_ = nullptr;
 
   // Mapping of the image needed to paint a button for each of the values of
   // CaptionButtonIcon.

@@ -114,10 +114,7 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame)
-    : frame_(frame),
-      minimize_button_(NULL),
-      size_button_(NULL),
-      close_button_(NULL) {
+    : frame_(frame) {
   constexpr int kTouchOptimizedCaptionButtonsSpacing = 8;
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
