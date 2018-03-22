@@ -264,13 +264,6 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
   dict->SetBoolean("useNewWallpaperPicker", IsUsingNewWallpaperPicker());
-
-  bool show_backdrop_wallpapers = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  show_backdrop_wallpapers = IsUsingNewWallpaperPicker();
-#endif
-  dict->SetBoolean("showBackdropWallpapers", show_backdrop_wallpapers);
-
   dict->SetString("highResolutionSuffix", IsUsingNewWallpaperPicker()
                                               ? GetBackdropWallpaperSuffix()
                                               : kHighResolutionSuffix);

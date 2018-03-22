@@ -18,16 +18,16 @@
 function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.document_ = dialogDom.ownerDocument;
+  this.useNewWallpaperPicker_ =
+      loadTimeData.getBoolean('useNewWallpaperPicker');
   this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL') ||
-      loadTimeData.getBoolean('showBackdropWallpapers');
+      this.useNewWallpaperPicker_;
   this.selectedItem_ = null;
   this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
   this.wallpaperRequest_ = null;
   this.wallpaperDirs_ = WallpaperDirectories.getInstance();
-  this.useNewWallpaperPicker_ =
-      loadTimeData.getBoolean('useNewWallpaperPicker');
   this.preDownloadDomInit_();
 
   // Uses the redesigned wallpaper picker if |useNewWallpaperPicker| is true.
@@ -37,15 +37,15 @@ function WallpaperManager(dialogDom) {
   // displayed.
   // The new wallpaper picker has two steps: it first fetches a list of
   // collection names (ie. categories such as Art, Landscape etc.) via extension
-  // API, and then use 'lazy loading': it fetches the info specific to each
-  // collection only after user clicks on that collection.
+  // API, and then fetches the info specific to each collection and caches the
+  // info in a map.
   // After the url and relevant info of the images are fetched, the two share
   // the same path, ie. pass the info to |WallpaperThumbnailsGridItem| for
   // actual image rendering.
   this.document_.body.classList.toggle('v2', this.useNewWallpaperPicker_);
   this.placeWallpaperPicker_();
 
-  if (loadTimeData.getBoolean('showBackdropWallpapers')) {
+  if (this.useNewWallpaperPicker_) {
     // |collectionsInfo_| represents the list of wallpaper collections. Each
     // collection contains the display name and a unique id.
     this.collectionsInfo_ = null;
@@ -216,15 +216,57 @@ WallpaperManager.prototype.getCollectionsInfo_ = function() {
       // error messages.
       this.showError_(str('connectionFailed'));
       $('wallpaper-grid').classList.add('image-picker-offline');
+      this.postDownloadDomInit_();
+      return;
     }
+
     this.collectionsInfo_ = collectionsInfo;
-    this.postDownloadDomInit_();
+    var getIndividualCollectionInfo = index => {
+      var collectionId = this.collectionsInfo_[index]['collectionId'];
+
+      chrome.wallpaperPrivate.getImagesInfo(collectionId, imagesInfo => {
+        var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
+
+        if (!chrome.runtime.lastError) {
+          for (var i = 0; i < imagesInfo.length; ++i) {
+            var wallpaperInfo = {
+              // Use the next available unique id.
+              wallpaperId: this.imagesInfoCount_,
+              baseURL: imagesInfo[i]['imageUrl'],
+              layout: Constants.WallpaperThumbnailDefaultLayout,
+              source: Constants.WallpaperSourceEnum.Online,
+              availableOffline: false,
+              displayText: imagesInfo[i]['displayText'],
+              authorWebsite: imagesInfo[i]['actionUrl'],
+              collectionName: this.collectionsInfo_[index]['collectionName']
+            };
+            wallpapersDataModel.push(wallpaperInfo);
+            ++this.imagesInfoCount_;
+          }
+        }
+        // Save info to the map. The data model is empty if there's an error
+        // fetching it.
+        this.imagesInfoMap_[collectionId] = wallpapersDataModel;
+
+        // If fetching info is completed for all the collections, start
+        // initializing elements that depend on the fetched info (e.g. the
+        // "current wallpaper" info bar), otherwise fetch the info for the next
+        // collection.
+        ++index;
+        if (index >= this.collectionsInfo_.length)
+          this.postDownloadDomInit_();
+        else
+          getIndividualCollectionInfo(index);
+      });
+    };
+
+    getIndividualCollectionInfo(0 /*index=*/);
   });
 };
 
 /**
- * Fetches info for the images belonging to the specific wallpaper collection
- * and pass the info to |WallpaperThumbnailsGrid| to display the images.
+ * Displays images that belong to the particular collection on the new wallpaper
+ * picker.
  * @param {number} index The index of the collection in |collectionsInfo_| list.
  * @private
  */
@@ -232,45 +274,16 @@ WallpaperManager.prototype.showCollection_ = function(index) {
   // Clear the 'no images' message if there's any.
   this.document_.body.classList.remove('no-images');
   var collectionId = this.collectionsInfo_[index]['collectionId'];
-  // Check if the info for this collection has already been fetched. If so,
-  // directly show the images.
-  if (collectionId in this.imagesInfoMap_) {
-    this.wallpaperGrid_.dataModel = this.imagesInfoMap_[collectionId];
+  if (!(collectionId in this.imagesInfoMap_)) {
+    console.error('Attempt to display images with an unknown collection id.');
     return;
   }
-
-  chrome.wallpaperPrivate.getImagesInfo(collectionId, imagesInfo => {
-    if (chrome.runtime.lastError) {
-      // TODO(crbug.com/800945): Show error message.
-      return;
-    }
-    if (imagesInfo.length == 0) {
-      // Show a 'no images' message to user.
-      this.document_.body.classList.add('no-images');
-      return;
-    }
-
-    var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
-    for (var i = 0; i < imagesInfo.length; ++i) {
-      var wallpaperInfo = {
-        // Use the next available unique id.
-        wallpaperId: this.imagesInfoCount_,
-        baseURL: imagesInfo[i]['imageUrl'],
-        layout: Constants.WallpaperThumbnailDefaultLayout,
-        source: Constants.WallpaperSourceEnum.Online,
-        availableOffline: false,
-        imageTitle: imagesInfo[i]['displayText'][0],
-        authorWebsite: imagesInfo[i]['actionUrl'],
-        collectionName: this.collectionsInfo_[index]['collectionName']
-      };
-      wallpapersDataModel.push(wallpaperInfo);
-      this.imagesInfoCount_++;
-    }
-    // Displays the images.
-    this.wallpaperGrid_.dataModel = wallpapersDataModel;
-    // Caches the info.
-    this.imagesInfoMap_[collectionId] = wallpapersDataModel;
-  });
+  if (this.imagesInfoMap_[collectionId].length == 0) {
+    // Show a 'no images' message to user.
+    this.document_.body.classList.add('no-images');
+    return;
+  }
+  this.wallpaperGrid_.dataModel = this.imagesInfoMap_[collectionId];
 };
 
 /**
@@ -285,6 +298,13 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
   var totalHeight = this.document_.body.offsetHeight;
   $('top-header').style.left =
       (totalWidth - $('top-header').offsetWidth) / 2 + 'px';
+
+  var setSuccessfullyMessage = $('set-successfully-message');
+  setSuccessfullyMessage.style.left =
+      (totalWidth - setSuccessfullyMessage.offsetWidth) / 2 + 'px';
+  setSuccessfullyMessage.style.top =
+      (totalWidth - setSuccessfullyMessage.offsetHeight) / 2 + 'px';
+
   var dialogContainer = this.document_.querySelector('.dialog-container');
   dialogContainer.style.left =
       (totalWidth - dialogContainer.offsetWidth) / 2 + 'px';
@@ -362,6 +382,11 @@ WallpaperManager.prototype.toggleSurpriseMe = function() {
       WallpaperUtil.saveToLocalStorage(
           Constants.AccessLocalSurpriseMeEnabledKey, shouldEnable, onSuccess);
   });
+
+  // Show a success message and quit after the user enables surprime me on
+  // the new picker.
+  if (shouldEnable && this.useNewWallpaperPicker_)
+    this.showSuccessMessageAndQuit_();
 };
 
 /**
@@ -578,17 +603,17 @@ WallpaperManager.prototype.onCommandCanExecute_ = function(event) {
  * Preset to the category which contains current wallpaper.
  */
 WallpaperManager.prototype.presetCategory_ = function() {
+  // |currentWallpaper| is either a url containing |highResolutionSuffix| or a
+  // custom wallpaper file name.
+  this.currentWallpaper_ = str('currentWallpaper');
   if (this.useNewWallpaperPicker_) {
     // TODO(crbug.com/812725): Implement preset category for the new picker. For
     // now, autoselect the first category.
     this.categoriesList_.selectionModel.selectedIndex = 0;
+    this.decorateCurrentWallpaperInfoBar_();
     return;
   }
 
-  this.currentWallpaper_ = str('currentWallpaper');
-  // The currentWallpaper_ is either a url contains HightResolutionSuffix or a
-  // custom wallpaper file name converted from an integer value represent
-  // time (e.g., 13006377367586070).
   if (!this.enableOnlineWallpaper_ ||
       (this.currentWallpaper_ &&
        this.currentWallpaper_.indexOf(str('highResolutionSuffix')) == -1)) {
@@ -631,6 +656,57 @@ WallpaperManager.prototype.presetCategory_ = function() {
       presetCategoryInner();
     });
   }
+};
+
+/**
+ * Decorate the info bar for current wallpaper which shows the image thumbnail,
+ * title and description.
+ * @private
+ */
+WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
+  // TODO(crbug.com/811619): Replace with i18n strings.
+  $('currently-set-message').textContent = 'Currently set';
+  var image = $('current-wallpaper-image');
+  var currentWallpaperInfo;
+  Object.values(this.imagesInfoMap_).forEach(imagesInfo => {
+    for (var i = 0; i < imagesInfo.length; ++i) {
+      if (this.currentWallpaper_.includes(imagesInfo.item(i).baseURL))
+        currentWallpaperInfo = imagesInfo.item(i);
+    }
+  });
+  if (currentWallpaperInfo) {
+    WallpaperUtil.displayThumbnail(
+        image, currentWallpaperInfo.baseURL,
+        Constants.WallpaperSourceEnum.Online);
+    $('current-wallpaper-title').textContent =
+        currentWallpaperInfo.displayText[0];
+    for (var i = 1; i < currentWallpaperInfo.displayText.length; ++i) {
+      $('current-wallpaper-description')
+          .appendChild(
+              document.createTextNode(currentWallpaperInfo.displayText[i]));
+    }
+    $('current-wallpaper-explore-link').href =
+        currentWallpaperInfo.authorWebsite;
+    return;
+  }
+
+  // Show a placeholder as the image title if the current wallpaper is not found
+  // in the list.
+  $('current-wallpaper-title').textContent = str('customCategoryLabel');
+  $('current-wallpaper-explore').hidden = true;
+  var onSuccess = fileEntry => {
+    image.src = fileEntry.toURL();
+  };
+  var onError = e => {
+    console.error('Can not get thumbnail data for the current wallpaper.');
+    // TODO(crbug.com/824453): Decide the right UI when this error happens.
+  };
+  wallpaperDirectories.getDirectory(
+      Constants.WallpaperDirNameEnum.THUMBNAIL, dirEntry => {
+        dirEntry.getFile(
+            getBaseName(this.currentWallpaper_), {create: false}, onSuccess,
+            onError);
+      }, onError);
 };
 
 /**
@@ -712,9 +788,9 @@ WallpaperManager.prototype.setSelectedWallpaper_ = function(selectedItem) {
       this.setSelectedCustomWallpaper_(
           selectedItem, (imageData, optThumbnailData) => {
             this.onWallpaperChanged_(selectedItem, selectedItem.baseURL);
-            // Save the image data to the sync file system.
-            WallpaperUtil.storeWallpaperToSyncFS(
-                selectedItem.baseURL, imageData);
+            this.saveCustomWallpaperToSyncFS_(
+                selectedItem.baseURL, getSelectedLayout(), imageData,
+                optThumbnailData, this.onFileSystemError_.bind(this));
           });
       break;
     case Constants.WallpaperSourceEnum.OEM:
@@ -777,13 +853,13 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnNewPicker_ = function(
         }
 
         chrome.wallpaperPrivate.setCustomWallpaper(
-            imageData, selectedItem.layout, false /*generateThumbnail=*/,
+            imageData, selectedItem.layout, true /*generateThumbnail=*/,
             selectedItem.baseURL, true /*previewMode=*/, optThumbnailData => {
               if (chrome.runtime.lastError) {
                 onPreviewCustomWallpaperFailure();
               } else {
-                this.onPreviewModeStarted_(successCallback.bind(
-                    null, imageData, null /*optThumbnailData=*/));
+                this.onPreviewModeStarted_(
+                    successCallback.bind(null, imageData, optThumbnailData));
               }
             });
       });
@@ -913,7 +989,7 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
   var onConfirmClicked = () => {
     chrome.wallpaperPrivate.confirmPreviewWallpaper(() => {
       confirmPreviewWallpaperCallback();
-      window.close();
+      this.showSuccessMessageAndQuit_();
     });
   };
   $('confirm-preview-wallpaper').addEventListener('click', onConfirmClicked);
@@ -923,6 +999,8 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
         .removeEventListener('click', onConfirmClicked);
     $('cancel-preview-wallpaper').removeEventListener('click', onCancelClicked);
     chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {
+      // Deselect the image.
+      this.wallpaperGrid_.selectedItem = null;
       this.document_.body.classList.remove('preview-mode');
     });
   };
@@ -947,6 +1025,20 @@ WallpaperManager.prototype.removeOldestWallpaper_ = function() {
     this.removeCustomWallpaper(item.baseURL);
     this.wallpaperGrid_.dataModel.splice(oldestIndex, 1);
   }
+};
+
+/*
+ * Shows a success message and closes the window.
+ * @private
+ */
+WallpaperManager.prototype.showSuccessMessageAndQuit_ = function() {
+  // TODO(crbug.com/811619): Replace with i18n strings.
+  $('set-successfully-message').textContent = 'Wallpaper set successfully';
+  this.document_.body.classList.add('wallpaper-set-successfully');
+  // Close the window after showing the success message.
+  window.setTimeout(() => {
+    window.close();
+  }, 2000);
 };
 
 /*
@@ -1014,9 +1106,10 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
  */
 WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
   if (this.useNewWallpaperPicker_) {
-    $('image-title').textContent = selectedItem.imageTitle;
+    // The first element in |displayText| is used as title.
+    if (selectedItem.displayText)
+      $('image-title').textContent = selectedItem.displayText[0];
     $('collection-name').textContent = selectedItem.collectionName;
-    $('explore').href = selectedItem.authorWebsite;
     var topHeaderContents =
         this.document_.querySelector('.top-header-contents');
     topHeaderContents.classList.toggle(
@@ -1042,31 +1135,8 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
   $('author-website').textContent = $('author-website').href =
       selectedItem.authorWebsite;
   var img = $('attribute-image');
-  chrome.wallpaperPrivate.getThumbnail(
-      selectedItem.baseURL, selectedItem.source, data => {
-        if (data) {
-          WallpaperUtil.displayImage(img, data, null /*opt_callback=*/);
-        } else {
-          // The only known case for hitting this branch is when showing the
-          // wallpaper picker for the first time after OOBE, the |saveThumbnail|
-          // operation within |WallpaperThumbnailsGridItem.decorate| hasn't
-          // completed. See http://crbug.com/792829.
-          var xhr = new XMLHttpRequest();
-          xhr.open(
-              'GET',
-              selectedItem.baseURL +
-                  WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
-              true);
-          xhr.responseType = 'arraybuffer';
-          xhr.send(null);
-          xhr.addEventListener('load', function(e) {
-            if (xhr.status === 200) {
-              WallpaperUtil.displayImage(
-                  img, xhr.response, null /*opt_callback=*/);
-            }
-          });
-        }
-      });
+  WallpaperUtil.displayThumbnail(
+      img, selectedItem.baseURL, selectedItem.source);
   img.hidden = false;
   $('wallpaper-attribute').hidden = false;
 };
@@ -1141,38 +1211,6 @@ WallpaperManager.prototype.onFileSelectorChanged_ = function() {
   var self = this;
   var errorHandler = this.onFileSystemError_.bind(this);
   var setSelectedFile = function(file, layout, fileName) {
-    var saveThumbnail = function(thumbnail) {
-      var success = function(dirEntry) {
-        dirEntry.getFile(fileName, {create: true}, function(fileEntry) {
-          fileEntry.createWriter(function(fileWriter) {
-            fileWriter.onwriteend = function(e) {
-              $('set-wallpaper-layout').disabled = false;
-              var wallpaperInfo = {
-                baseURL: fileName,
-                layout: layout,
-                source: Constants.WallpaperSourceEnum.Custom,
-                availableOffline: true
-              };
-              self.wallpaperGrid_.dataModel.splice(0, 0, wallpaperInfo);
-              self.wallpaperGrid_.selectedItem = wallpaperInfo;
-              self.onWallpaperChanged_(wallpaperInfo, fileName);
-              WallpaperUtil.saveToLocalStorage(self.currentWallpaper_, layout);
-            };
-
-            fileWriter.onerror = errorHandler;
-            fileWriter.write(WallpaperUtil.createPngBlob(thumbnail));
-          }, errorHandler);
-        }, errorHandler);
-      };
-      self.wallpaperDirs_.getDirectory(
-          Constants.WallpaperDirNameEnum.THUMBNAIL, success, errorHandler);
-    };
-    var onCustomWallpaperSuccess = function(thumbnailData, wallpaperData) {
-      WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaperData);
-      WallpaperUtil.storeWallpaperToSyncFS(
-          fileName + Constants.CustomWallpaperThumbnailSuffix, thumbnailData);
-      saveThumbnail(thumbnailData);
-    };
     var success = function(dirEntry) {
       dirEntry.getFile(fileName, {create: true}, function(fileEntry) {
         fileEntry.createWriter(function(fileWriter) {
@@ -1185,7 +1223,9 @@ WallpaperManager.prototype.onFileSelectorChanged_ = function() {
                   e.target.result, layout, true /*generateThumbnail=*/,
                   fileName,
                   function(thumbnail) {
-                    onCustomWallpaperSuccess(thumbnail, e.target.result);
+                    self.saveCustomWallpaperToSyncFS_(
+                        fileName, layout, e.target.result, thumbnail,
+                        errorHandler);
                   },
                   function() {
                     self.removeCustomWallpaper(fileName);
@@ -1273,6 +1313,50 @@ WallpaperManager.prototype.onWallpaperLayoutChanged_ = function() {
 };
 
 /**
+ * Saves the custom wallpaper and thumbnail (if any) to the sync file system.
+ * @param {string} fileName The file name of the wallpaper.
+ * @param {string} layout The desired layout of the wallpaper.
+ * @param {string} wallpaperData The data of the full-size wallpaper.
+ * @param {?string} optThumbnailData The data of the thumbnail-size wallpaper.
+ * @param {?function} optErrorCallbacka The error callback. Must be non-null if
+ *     optThumbnailData is non-null.
+ * @private
+ */
+WallpaperManager.prototype.saveCustomWallpaperToSyncFS_ = function(
+    fileName, layout, wallpaperData, optThumbnailData, optErrorCallback) {
+  WallpaperUtil.storeWallpaperToSyncFS(fileName, wallpaperData);
+  if (!optThumbnailData)
+    return;
+  WallpaperUtil.storeWallpaperToSyncFS(
+      fileName + Constants.CustomWallpaperThumbnailSuffix, optThumbnailData);
+
+  var success = dirEntry => {
+    dirEntry.getFile(fileName, {create: true}, fileEntry => {
+      fileEntry.createWriter(fileWriter => {
+        fileWriter.onwriteend = e => {
+          $('set-wallpaper-layout').disabled = false;
+          var wallpaperInfo = {
+            baseURL: fileName,
+            layout: layout,
+            source: Constants.WallpaperSourceEnum.Custom,
+            availableOffline: true
+          };
+          this.wallpaperGrid_.dataModel.splice(0, 0, wallpaperInfo);
+          this.wallpaperGrid_.selectedItem = wallpaperInfo;
+          this.onWallpaperChanged_(wallpaperInfo, fileName);
+          WallpaperUtil.saveToLocalStorage(this.currentWallpaper_, layout);
+        };
+
+        fileWriter.onerror = optErrorCallback;
+        fileWriter.write(WallpaperUtil.createPngBlob(optThumbnailData));
+      }, optErrorCallback);
+    }, optErrorCallback);
+  };
+  this.wallpaperDirs_.getDirectory(
+      Constants.WallpaperDirNameEnum.THUMBNAIL, success, optErrorCallback);
+};
+
+/**
  * Implementation of |onWallpaperLayoutChanged_|. A wrapper of the
  * |setCustomWallpaperLayout| api.
  * @param {string} layout The user selected wallpaper layout.
@@ -1349,8 +1433,6 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
             layout: Constants.WallpaperThumbnailDefaultLayout,
             source: Constants.WallpaperSourceEnum.Custom,
             availableOffline: true,
-            // The file name is displayed as the image title.
-            imageTitle: imagePath.split(/[/\\]/).pop(),
             collectionName: str('customCategoryLabel')
           };
           wallpapersDataModel.push(wallpaperInfo);
@@ -1441,8 +1523,6 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
   } else {
     this.document_.body.removeAttribute('custom');
 
-    // If the new wallpaper picker is enabled, initiate the fetch of the
-    // images info that belong to this collection.
     if (this.useNewWallpaperPicker_ && this.collectionsInfo_) {
       this.showCollection_(selectedIndex);
       return;

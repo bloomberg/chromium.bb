@@ -459,6 +459,37 @@ WallpaperUtil.getSurpriseMeCheckboxValue = function() {
 };
 
 /**
+ * A convenience wrapper for displaying the thumbnail image.
+ * @param {Object} imageElement The image element.
+ * @param {string} url The base url of the wallpaper.
+ * @param {string} source The source of the wallpaper corresponding to
+ *     |WallpaperSourceEnum|.
+ */
+WallpaperUtil.displayThumbnail = function(imageElement, url, source) {
+  chrome.wallpaperPrivate.getThumbnail(url, source, data => {
+    if (data) {
+      WallpaperUtil.displayImage(imageElement, data, null /*opt_callback=*/);
+    } else {
+      // The only known case for hitting this branch is when showing the
+      // wallpaper picker for the first time after OOBE, the |saveThumbnail|
+      // operation within |WallpaperThumbnailsGridItem.decorate| hasn't
+      // completed. See http://crbug.com/792829.
+      var xhr = new XMLHttpRequest();
+      xhr.open(
+          'GET', url + WallpaperUtil.getOnlineWallpaperThumbnailSuffix(), true);
+      xhr.responseType = 'arraybuffer';
+      xhr.send(null);
+      xhr.addEventListener('load', function(e) {
+        if (xhr.status === 200) {
+          WallpaperUtil.displayImage(
+              imageElement, xhr.response, null /*opt_callback=*/);
+        }
+      });
+    }
+  });
+};
+
+/**
  * Runs chrome.test.sendMessage in test environment. Does nothing if running
  * in production environment.
  *
