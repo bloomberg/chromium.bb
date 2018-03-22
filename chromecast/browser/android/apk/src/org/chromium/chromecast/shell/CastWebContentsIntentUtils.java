@@ -133,12 +133,21 @@ public class CastWebContentsIntentUtils {
         return intent;
     }
 
-    // Host acitivity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
+    // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
     public static Intent onGesture(String instanceId, int gestureType) {
-        if (DEBUG) Log.d(TAG, "onGesture");
+        return onGesture(getInstanceUri(instanceId), gestureType);
+    }
 
-        Intent intent = new Intent(ACTION_ON_GESTURE, getInstanceUri(instanceId));
+    // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
+    // -> CastContentWindowAndroid
+    public static Intent onGestureWithUriString(String uri, int gestureType) {
+        return onGesture(Uri.parse(uri), gestureType);
+    }
+
+    private static Intent onGesture(Uri uri, int gestureType) {
+        if (DEBUG) Log.d(TAG, "onGesture with uri:" + uri + " type:" + gestureType);
+        Intent intent = new Intent(ACTION_ON_GESTURE, uri);
         intent.putExtra(INTENT_EXTRA_GESTURE_TYPE, gestureType);
         return intent;
     }
@@ -151,22 +160,34 @@ public class CastWebContentsIntentUtils {
         return intent;
     }
 
-    // Host acitivity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
+    // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
-    public static Intent onVisiblityChange(String instanceId, int visibilityType) {
-        Intent intent = new Intent(ACTION_ON_VISIBILITY_CHANGE, getInstanceUri(instanceId));
+    public static Intent onVisibilityChange(String instanceId, int visibilityType) {
+        return onVisibilityChange(getInstanceUri(instanceId), visibilityType);
+    }
+
+    // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
+    // -> CastContentWindowAndroid
+    public static Intent onVisibilityChangeWithUriString(String uri, int visibilityType) {
+        return onVisibilityChange(Uri.parse(uri), visibilityType);
+    }
+
+    private static Intent onVisibilityChange(Uri uri, int visibilityType) {
+        if (DEBUG) Log.d(TAG, "onVisibilityChange with uri:" + uri + " type:" + visibilityType);
+
+        Intent intent = new Intent(ACTION_ON_VISIBILITY_CHANGE, uri);
         intent.putExtra(INTENT_EXTRA_VISIBILITY_TYPE, visibilityType);
         return intent;
     }
 
-    // CastContentWindowAndroid -> Host acitivity of CastWebContentsFragment
+    // CastContentWindowAndroid -> Host activity of CastWebContentsFragment
     public static Intent requestMoveOut(String instanceId) {
         Intent intent = new Intent(ACTION_REQUEST_MOVE_OUT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         return intent;
     }
 
-    // CastContentWindowAndroid -> Host acitivity of CastWebContentsFragment
+    // CastContentWindowAndroid -> Host activity of CastWebContentsFragment
     public static Intent requestVisibilityPriority(String instanceId, int visibilityPriority) {
         Intent intent = new Intent(ACTION_REQUEST_VISIBILITY_PRIORITY);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
@@ -174,7 +195,7 @@ public class CastWebContentsIntentUtils {
         return intent;
     }
 
-    // CastWebContentsComponent.Receiver -> Host acitivity of CastWebContentsFragment
+    // CastWebContentsComponent.Receiver -> Host activity of CastWebContentsFragment
     public static Intent gestureConsumed(String instanceId, int gestureType, boolean consumed) {
         Intent intent = new Intent(ACTION_GESTURE_CONSUMED);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
@@ -230,7 +251,7 @@ public class CastWebContentsIntentUtils {
         return in.getAction().equals(ACTION_KEY_EVENT);
     }
 
-    public static boolean isIntentOfVisiblityChange(Intent in) {
+    public static boolean isIntentOfVisibilityChange(Intent in) {
         return in.getAction().equals(ACTION_ON_VISIBILITY_CHANGE);
     }
 

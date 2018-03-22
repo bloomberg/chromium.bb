@@ -201,26 +201,34 @@ public class CastWebContentsComponent {
 
     private void onReceiveIntent(Intent intent) {
         if (CastWebContentsIntentUtils.isIntentOfActivityStopped(intent)) {
-            if (DEBUG) Log.d(TAG, "onReceive ACTION_ACTIVITY_STOPPED");
+            if (DEBUG) Log.d(TAG, "onReceive ACTION_ACTIVITY_STOPPED instance=" + mInstanceId);
             if (mComponentClosedHandler != null) mComponentClosedHandler.onComponentClosed();
         } else if (CastWebContentsIntentUtils.isIntentOfKeyEvent(intent)) {
-            if (DEBUG) Log.d(TAG, "onReceive ACTION_KEY_EVENT");
+            if (DEBUG) Log.d(TAG, "onReceive ACTION_KEY_EVENT instance=" + mInstanceId);
             int keyCode = CastWebContentsIntentUtils.getKeyCode(intent);
             if (mKeyDownHandler != null) mKeyDownHandler.onKeyDown(keyCode);
-        } else if (CastWebContentsIntentUtils.isIntentOfVisiblityChange(intent)) {
-            if (DEBUG) Log.d(TAG, "onReceive ACTION_ON_VISIBILITY_CHANGE");
+        } else if (CastWebContentsIntentUtils.isIntentOfVisibilityChange(intent)) {
             int visibilityType = CastWebContentsIntentUtils.getVisibilityType(intent);
+            if (DEBUG) {
+                Log.d(TAG, "onReceive ACTION_ON_VISIBILITY_CHANGE instance=" + mInstanceId
+                        + "; visibility=" + visibilityType);
+            }
             if (mSurfaceEventHandler != null) {
                 mSurfaceEventHandler.onVisibilityChange(visibilityType);
             }
         } else if (CastWebContentsIntentUtils.isIntentOfGesturing(intent)) {
-            if (DEBUG) Log.d(TAG, "onReceive ACTION_ON_GESTURE");
             int gestureType = CastWebContentsIntentUtils.getGestureType(intent);
+            if (DEBUG) {
+                Log.d(TAG, "onReceive ACTION_ON_VISIBILITY_CHANGE instance=" + mInstanceId
+                        + "; gesture=" + gestureType);
+            }
             if (mSurfaceEventHandler != null) {
                 if (mSurfaceEventHandler.consumeGesture(gestureType)) {
+                    if (DEBUG) Log.d(TAG, "send gesture consumed instance=" + mInstanceId);
                     sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
                             mInstanceId, gestureType, true));
                 } else {
+                    if (DEBUG) Log.d(TAG, "send gesture NOT consumed instance=" + mInstanceId);
                     sendIntentSync(CastWebContentsIntentUtils.gestureConsumed(
                             mInstanceId, gestureType, false));
                 }
@@ -272,13 +280,14 @@ public class CastWebContentsComponent {
     }
 
     public void requestVisibilityPriority(int visibilityPriority) {
-        if (DEBUG) Log.d(TAG, "requestVisibilityPriority");
+        if (DEBUG) Log.d(TAG, "requestVisibilityPriority: " + mInstanceId + "; Visibility:"
+                + visibilityPriority);
         sendIntentSync(CastWebContentsIntentUtils.requestVisibilityPriority(
                 mInstanceId, visibilityPriority));
     }
 
     public void requestMoveOut() {
-        if (DEBUG) Log.d(TAG, "requestMoveOut");
+        if (DEBUG) Log.d(TAG, "requestMoveOut: " + mInstanceId);
         sendIntentSync(CastWebContentsIntentUtils.requestMoveOut(mInstanceId));
     }
 
@@ -297,13 +306,13 @@ public class CastWebContentsComponent {
         sendIntentSync(CastWebContentsIntentUtils.onKeyDown(instanceId, keyCode));
     }
 
-    public static void onVisiblityChange(String instanceId, int visibilityType) {
-        if (DEBUG) Log.d(TAG, "onVisiblityChange");
-        sendIntentSync(CastWebContentsIntentUtils.onVisiblityChange(instanceId, visibilityType));
+    public static void onVisibilityChange(String instanceId, int visibilityType) {
+        if (DEBUG) Log.d(TAG, "onVisibilityChange");
+        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(instanceId, visibilityType));
     }
 
     public static void onGesture(String instanceId, int gestureType) {
-        if (DEBUG) Log.d(TAG, "onGesture");
+        if (DEBUG) Log.d(TAG, "onGesture: " + instanceId + "; gestureType: "+ gestureType);
         sendIntentSync(CastWebContentsIntentUtils.onGesture(instanceId, gestureType));
     }
 

@@ -87,12 +87,14 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     @SuppressWarnings("unused")
     @CalledByNative
     private void requestVisibilityPriority(int visisbilityPriority) {
+        if (DEBUG) Log.d(TAG, "requestVisibilityPriority visibility=" + visisbilityPriority);
         mComponent.requestVisibilityPriority(visisbilityPriority);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void requestMoveOut() {
+        if (DEBUG) Log.d(TAG, "requestMoveOut");
         mComponent.requestMoveOut();
     }
 
@@ -114,7 +116,7 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
 
     @Override
     public void onVisibilityChange(int visibilityType) {
-        if (DEBUG) Log.d(TAG, "onVisibilityChange");
+        if (DEBUG) Log.d(TAG, "onVisibilityChange type=" + visibilityType);
         if (mNativeCastContentWindowAndroid != 0) {
             nativeOnVisibilityChange(mNativeCastContentWindowAndroid, visibilityType);
         }
@@ -122,7 +124,7 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
 
     @Override
     public boolean consumeGesture(int gestureType) {
-        if (DEBUG) Log.d(TAG, "onVisibilityChange");
+        if (DEBUG) Log.d(TAG, "onVisibilityChange type=" + gestureType);
         if (mNativeCastContentWindowAndroid != 0) {
             return nativeConsumeGesture(mNativeCastContentWindowAndroid, gestureType);
         }
