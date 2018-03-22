@@ -2761,18 +2761,35 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
-  // Drag the first window. Verify that the mask disappears.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Drag the first window. Verify that the mask still exists for both items as
+  // we do not apply any animation to the window items at this point.
   const gfx::Point start_drag = item1->target_bounds().CenterPoint();
   GetEventGenerator().MoveMouseTo(start_drag);
   GetEventGenerator().PressLeftButton();
-  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
   // Drag to origin and then back to the start to avoid activating the window or
-  // entering splitview. Verify that the mask is visible on both items.
+  // entering splitview. Verify that the mask is invisible on both items during
+  // animation.
   GetEventGenerator().MoveMouseTo(gfx::Point());
   GetEventGenerator().MoveMouseTo(start_drag);
   GetEventGenerator().ReleaseLeftButton();
+  EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item2));
+
+  // Verify that the mask is visble again after animation is finished.
+  window1->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+  RunAllPendingInMessageLoop();
   EXPECT_TRUE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
