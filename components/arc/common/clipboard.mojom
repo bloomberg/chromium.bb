@@ -37,17 +37,8 @@ struct ClipData {
 };
 
 // Next method ID: 4
-// IDs to be removed 18 weeks after being up revved: 0, 1
+// Deprecated method IDs: 0, 1
 interface ClipboardHost {
-  // Tells the host to change its content, usually when the user initiates
-  // a 'copy' action.
-  SetTextContentDeprecated@0(string text);
-
-  // Tells the host to return its content, usually when the user initiates
-  // a 'paste' action or when the instance needs to re-sync its clipboard
-  // content with the host.
-  GetTextContentDeprecated@1();
-
   // Tells the host to update its clipboard content, usually when the user
   // initiates a 'copy' action.
   [MinVersion=1] SetClipContent@2(ClipData data);
@@ -59,16 +50,13 @@ interface ClipboardHost {
 };
 
 // Next method ID: 4
-// IDs to be removed 18 weeks after being up revved: 1
+// Deprecated method IDs: 1
 interface ClipboardInstance {
   // DEPRECATED: Please use Init@3 instead.
   InitDeprecated@0(ClipboardHost host_ptr);
 
   // Establishes full-duplex communication with the host.
   [MinVersion=2] Init@3(ClipboardHost host_ptr) => ();
-
-  // Passes the result of ClipboardHost.GetTextContentDeprecated().
-  OnGetTextContentDeprecated@1(string returned_text);
 
   // Tells that the Host clipboard has been updated.
   [MinVersion=1] OnHostClipboardUpdated@2();
