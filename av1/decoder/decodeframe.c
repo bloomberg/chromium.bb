@@ -1567,9 +1567,7 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
   av1_calculate_tile_rows(cm);
 }
 
-static void read_tile_info(AV1Decoder *const pbi,
-                           struct aom_read_bit_buffer *const rb) {
-  AV1_COMMON *const cm = &pbi->common;
+static void set_single_tile_decoding_mode(AV1_COMMON *const cm) {
   cm->single_tile_decoding = 0;
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
@@ -1585,6 +1583,13 @@ static void read_tile_info(AV1Decoder *const pbi,
     assert(IMPLIES(cm->coded_lossless, no_loopfilter && no_cdef));
     assert(IMPLIES(cm->all_lossless, no_restoration));
     cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
+  }
+}
+
+static void read_tile_info(AV1Decoder *const pbi,
+                           struct aom_read_bit_buffer *const rb) {
+  AV1_COMMON *const cm = &pbi->common;
+  if (cm->large_scale_tile) {
     // Read the tile width/height
     if (cm->seq_params.sb_size == BLOCK_128X128) {
       cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
@@ -3166,6 +3171,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 #endif
 
+  set_single_tile_decoding_mode(&pbi->common);
   return 0;
 }
 
