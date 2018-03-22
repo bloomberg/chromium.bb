@@ -57,15 +57,14 @@ void StartDisplayingBlockingPage(
 
 UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    const ProfileIOData* profile_io_data)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
       threat_types_(
           CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
                                  safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                                 safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})),
-      profile_io_data_(profile_io_data) {}
+                                 safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})) {
+}
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
@@ -89,10 +88,7 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
-  return profile_io_data_
-             ? safe_browsing::IsURLWhitelistedByPolicy(
-                   url, profile_io_data_->safe_browsing_whitelist_domains())
-             : false;
+  return false;
 }
 
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(

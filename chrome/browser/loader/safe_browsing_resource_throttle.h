@@ -28,7 +28,7 @@ content::ResourceThrottle* MaybeCreateSafeBrowsingResourceThrottle(
     net::URLRequest* request,
     content::ResourceType resource_type,
     safe_browsing::SafeBrowsingService* sb_service,
-    ProfileIOData* io_data);
+    const ProfileIOData* io_data);
 
 // SafeBrowsingParallelResourceThrottle uses a Chrome-specific
 // safe_browsing::UrlCheckerDelegate implementation with its base class
@@ -40,13 +40,12 @@ class SafeBrowsingParallelResourceThrottle
       net::URLRequest* request,
       content::ResourceType resource_type,
       safe_browsing::SafeBrowsingService* sb_service,
-      ProfileIOData* io_data);
+      const ProfileIOData* io_data);
 
   SafeBrowsingParallelResourceThrottle(
       const net::URLRequest* request,
       content::ResourceType resource_type,
-      safe_browsing::SafeBrowsingService* sb_service,
-      ProfileIOData* io_data);
+      safe_browsing::SafeBrowsingService* sb_service);
 
   ~SafeBrowsingParallelResourceThrottle() override;
 
