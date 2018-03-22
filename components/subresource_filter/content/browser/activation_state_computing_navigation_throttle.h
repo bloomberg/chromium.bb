@@ -30,8 +30,9 @@ class AsyncDocumentSubresourceFilter;
 //
 // Note: for performance, activation computation for subframes is done
 // speculatively at navigation start and at every redirect. This is to reduce
-// the wait time (most likely to 0) by WillProcessResponse time.
-// TODO(crbug.com/809504): Implement speculation for main frames as well.
+// the wait time (most likely to 0) by WillProcessResponse time. For main
+// frames, speculation will be done at the next navigation stage after
+// NotifyPageActivationWithRuleset is called.
 class ActivationStateComputingNavigationThrottle
     : public content::NavigationThrottle {
  public:
@@ -58,6 +59,10 @@ class ActivationStateComputingNavigationThrottle
   // navigation for main frames.
   //
   // Should never be called with DISABLED activation.
+  //
+  // Note: can be called multiple times, at any point in the navigation to
+  // update the page state. |page_activation_state| will be merged into any
+  // previously computed activation state.
   void NotifyPageActivationWithRuleset(
       VerifiedRuleset::Handle* ruleset_handle,
       const ActivationState& page_activation_state);
@@ -88,6 +93,13 @@ class ActivationStateComputingNavigationThrottle
  private:
   void CheckActivationState();
   void OnActivationStateComputed(ActivationState state);
+
+  // In the case when main frame navigations get notified of ActivationState
+  // multiple times, a method is needed for overriding previously computed
+  // results with a more accurate ActivationState.
+  //
+  // This must be called at the end of the WillProcessResponse stage.
+  void UpdateWithMoreAccurateState();
 
   void LogDelayMetrics(base::TimeDelta delay) const;
 

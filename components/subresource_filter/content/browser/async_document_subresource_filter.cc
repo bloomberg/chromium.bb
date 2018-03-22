@@ -58,6 +58,9 @@ ActivationState ComputeActivationState(
                  url_pattern_index::proto::ACTIVATION_TYPE_GENERICBLOCK)) {
     activation_state.generic_blocking_rules_disabled = true;
   }
+
+  // Careful note: any new state computed for ActivationState in this method
+  // must also update UpdateWithMoreAccurateState..
   return activation_state;
 }
 
@@ -156,6 +159,24 @@ void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
 void AsyncDocumentSubresourceFilter::ReportDisallowedLoad() {
   if (!first_disallowed_load_callback_.is_null())
     std::move(first_disallowed_load_callback_).Run();
+}
+
+void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
+    const ActivationState& updated_page_state) {
+  // DISABLED activation level implies that the ruleset is somehow invalid. Make
+  // sure that we don't update the state in that case.
+  if (activation_state_->activation_level == ActivationLevel::DISABLED)
+    return;
+
+  // TODO(csharrison): Split ActivationState into multiple structs, with one
+  // that includes members that are inherited from the parent without change,
+  // and one that includes members that need to be computed.
+  bool filtering_disabled = activation_state_->filtering_disabled_for_document;
+  bool generic_disabled = activation_state_->generic_blocking_rules_disabled;
+
+  activation_state_ = updated_page_state;
+  activation_state_->filtering_disabled_for_document = filtering_disabled;
+  activation_state_->generic_blocking_rules_disabled = generic_disabled;
 }
 
 const ActivationState& AsyncDocumentSubresourceFilter::activation_state()
