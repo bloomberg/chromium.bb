@@ -15,6 +15,7 @@ namespace ash {
 
 class FeaturePodControllerBase;
 class SystemTray;
+class SystemTrayItem;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
 class UnifiedSystemTrayView;
@@ -47,6 +48,8 @@ class ASH_EXPORT UnifiedSystemTrayController {
   void ShowBluetoothDetailedView();
   // Show the detailed view of accessibility. Called from the view.
   void ShowAccessibilityDetailedView();
+  // Show the detailed view of VPN. Called from the view.
+  void ShowVPNDetailedView();
   // Show the detailed view of IME. Called from the view.
   void ShowIMEDetailedView();
 
@@ -57,6 +60,11 @@ class ASH_EXPORT UnifiedSystemTrayController {
 
   // Add the feature pod controller and its view.
   void AddFeaturePodItem(std::unique_ptr<FeaturePodControllerBase> controller);
+
+  // Show detailed view of SystemTray.
+  // TODO(tetsui): Remove when detailed views are implemented on
+  // UnifiedSystemTray.
+  void ShowSystemTrayDetailedView(SystemTrayItem* system_tray_item);
 
   // Only used to show detailed views which are still not implemented on
   // UnifiedSystemTray. Unowned.

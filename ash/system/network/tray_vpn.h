@@ -17,7 +17,12 @@ class TrayNetworkStateObserver;
 namespace tray {
 class VPNListView;
 class VpnDefaultView;
-}
+
+extern bool IsVPNVisibleInSystemTray();
+extern bool IsVPNEnabled();
+extern bool IsVPNConnected();
+
+}  // namespace tray
 
 class TrayVPN : public SystemTrayItem,
                 public TrayNetworkStateObserver::Delegate {
