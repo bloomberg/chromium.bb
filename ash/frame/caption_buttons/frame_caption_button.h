@@ -65,6 +65,10 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
 
   CaptionButtonIcon icon() const { return icon_; }
 
+  const gfx::VectorIcon* icon_definition_for_test() const {
+    return icon_definition_;
+  }
+
  protected:
   // views::Button override:
   void PaintButtonContents(gfx::Canvas* canvas) override;

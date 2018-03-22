@@ -329,6 +329,10 @@ void DefaultFrameHeader::UpdateAllButtonImages() {
 }
 
 void DefaultFrameHeader::UpdateSizeButtonImages() {
+  // When |frame_| minimized, avoid tablet mode toggling to update caption
+  // buttons as it would cause mismatch beteen window state and size button.
+  if (frame_->IsMinimized())
+    return;
   const gfx::VectorIcon& icon = frame_->IsMaximized() || frame_->IsFullscreen()
                                     ? kWindowControlRestoreIcon
                                     : kWindowControlMaximizeIcon;

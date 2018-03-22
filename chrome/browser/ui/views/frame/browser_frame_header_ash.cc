@@ -280,6 +280,10 @@ void BrowserFrameHeaderAsh::PaintTitleBar(gfx::Canvas* canvas) {
 }
 
 void BrowserFrameHeaderAsh::UpdateCaptionButtons() {
+  // When |frame_| minimized, avoid tablet mode toggling to update caption
+  // buttons as it would cause mismatch beteen window state and size button.
+  if (frame_->IsMinimized())
+    return;
   caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_MINIMIZE,
                                             ash::kWindowControlMinimizeIcon);
   caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_CLOSE,
