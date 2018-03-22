@@ -251,19 +251,23 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * {@link #mBottombarButtons} and {@link #mToolbarButtons}.
      */
     private void retrieveCustomButtons(Intent intent, Context context) {
-        mCustomButtonParams = CustomButtonParams.fromIntent(context, intent, isTrustedIntent());
-        if (mCustomButtonParams != null) {
-            for (CustomButtonParams params : mCustomButtonParams) {
-                if (!params.showOnToolbar()) {
-                    mBottombarButtons.add(params);
-                } else if (mToolbarButtons.size() < MAX_CUSTOM_TOOLBAR_ITEMS) {
-                    mToolbarButtons.add(params);
-                } else {
-                    Log.w(TAG, "Only %d items are allowed in the toolbar",
-                            MAX_CUSTOM_TOOLBAR_ITEMS);
-                }
+        assert mCustomButtonParams == null;
+        mCustomButtonParams = CustomButtonParams.fromIntent(context, intent);
+        for (CustomButtonParams params : mCustomButtonParams) {
+            if (!params.showOnToolbar()) {
+                mBottombarButtons.add(params);
+            } else if (mToolbarButtons.size() < getMaxCustomToolbarItems()) {
+                mToolbarButtons.add(params);
+            } else {
+                Log.w(TAG, "Only %d items are allowed in the toolbar", getMaxCustomToolbarItems());
             }
         }
+    }
+
+    private int getMaxCustomToolbarItems() {
+        if (!isTrustedIntent()) return 1;
+
+        return MAX_CUSTOM_TOOLBAR_ITEMS;
     }
 
     /**

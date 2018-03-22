@@ -154,11 +154,9 @@ public class CustomButtonParams {
     /**
      * Parses a list of {@link CustomButtonParams} from the intent sent by clients.
      * @param intent The intent sent by the client.
-     * @param isTrustedIntent whether the intent is trusted.
      * @return A list of parsed {@link CustomButtonParams}. Return an empty list if input is invalid
      */
-    public static List<CustomButtonParams> fromIntent(
-            Context context, Intent intent, boolean isTrustedIntent) {
+    public static List<CustomButtonParams> fromIntent(Context context, Intent intent) {
         List<CustomButtonParams> paramsList = new ArrayList<>(1);
         if (intent == null) return paramsList;
 
