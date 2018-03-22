@@ -180,29 +180,6 @@ void ArcClipboardBridge::OnClipboardDataChanged() {
   clipboard_instance->OnHostClipboardUpdated();
 }
 
-void ArcClipboardBridge::SetTextContentDeprecated(const std::string& text) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Order is important. AutoReset should outlive ScopedClipboardWriter.
-  base::AutoReset<bool> auto_reset(&event_originated_at_instance_, true);
-  ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  writer.WriteText(base::UTF8ToUTF16(text));
-}
-
-void ArcClipboardBridge::GetTextContentDeprecated() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  base::string16 text;
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
-
-  mojom::ClipboardInstance* clipboard_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->clipboard(), OnGetTextContentDeprecated);
-  if (!clipboard_instance)
-    return;
-  clipboard_instance->OnGetTextContentDeprecated(base::UTF16ToUTF8(text));
-}
-
 void ArcClipboardBridge::SetClipContent(mojom::ClipDataPtr clip_data) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
