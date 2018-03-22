@@ -92,6 +92,9 @@ class MutableProfileOAuth2TokenServiceDelegate
                   const std::string& refresh_token);
     ~AccountStatus() override;
 
+    // Must be called after the account has been added to the AccountStatusMap.
+    void Initialize();
+
     const std::string& refresh_token() const { return refresh_token_; }
     void set_refresh_token(const std::string& token) { refresh_token_ = token; }
 
@@ -166,9 +169,15 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   std::string GetRefreshToken(const std::string& account_id) const;
 
+  // Creates a new AccountStatus and adds it to the AccountStatusMap.
+  // The account must not be already in the map.
+  void AddAccountStatus(const std::string& account_id,
+                        const std::string& refresh_token);
+
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountStatus>> AccountStatusMap;
+  typedef std::map<std::string, std::unique_ptr<AccountStatus>>
+      AccountStatusMap;
   // In memory refresh token store mapping account_id to refresh_token.
   AccountStatusMap refresh_tokens_;
 

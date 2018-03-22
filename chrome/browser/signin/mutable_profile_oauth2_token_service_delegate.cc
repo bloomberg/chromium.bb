@@ -252,6 +252,9 @@ MutableProfileOAuth2TokenServiceDelegate::AccountStatus::AccountStatus(
       last_auth_error_(GoogleServiceAuthError::NONE) {
   DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::AccountStatus::Initialize() {
   signin_error_controller_->AddProvider(this);
 }
 
@@ -495,8 +498,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
       load_credentials_state_ =
           LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT;
     }
-    refresh_tokens_[loading_primary_account_id_].reset(new AccountStatus(
-        signin_error_controller_, loading_primary_account_id_, std::string()));
+    AddAccountStatus(loading_primary_account_id_, std::string());
   }
 
   // If we don't have a refresh token for a known account, signal an error.
@@ -688,8 +690,7 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
   } else {
     VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
             << "account_id=" << account_id;
-    refresh_tokens_[account_id].reset(
-        new AccountStatus(signin_error_controller_, account_id, refresh_token));
+    AddAccountStatus(account_id, refresh_token);
   }
 
   UpdateAuthError(account_id,
@@ -719,9 +720,13 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
   CancelWebTokenFetch();
-  AccountStatusMap tokens = refresh_tokens_;
-  for (auto& token : tokens)
-    RevokeCredentials(token.first);
+
+  // Make a temporary copy of the account ids.
+  std::vector<std::string> accounts;
+  for (const auto& token : refresh_tokens_)
+    accounts.push_back(token.first);
+  for (const std::string& account : accounts)
+    RevokeCredentials(account);
 
   DCHECK_EQ(0u, refresh_tokens_.size());
 
@@ -795,4 +800,14 @@ void MutableProfileOAuth2TokenServiceDelegate::OnNetworkChanged(
 const net::BackoffEntry*
     MutableProfileOAuth2TokenServiceDelegate::BackoffEntry() const {
   return &backoff_entry_;
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  DCHECK_EQ(0u, refresh_tokens_.count(account_id));
+  AccountStatus* status =
+      new AccountStatus(signin_error_controller_, account_id, refresh_token);
+  refresh_tokens_[account_id].reset(status);
+  status->Initialize();
 }

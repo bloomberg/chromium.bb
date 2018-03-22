@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -1089,4 +1090,42 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       oauth2_service_delegate_->RefreshTokenIsAvailable(primary_account));
   EXPECT_TRUE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
+}
+
+// Regression test for https://crbug.com/823707
+// Checks that OnErrorChanged() is called during UpdateCredentials(), and that
+// RefreshTokenIsAvailable() can be used at this time.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnErrorChanged) {
+  class ErrorObserver : public SigninErrorController::Observer {
+   public:
+    explicit ErrorObserver(MutableProfileOAuth2TokenServiceDelegate* delegate)
+        : delegate_(delegate) {}
+
+    void OnErrorChanged() override {
+      error_changed_ = true;
+      EXPECT_TRUE(delegate_->RefreshTokenIsAvailable("account_id"));
+    }
+
+    MutableProfileOAuth2TokenServiceDelegate* delegate_;
+    bool error_changed_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(ErrorObserver);
+  };
+
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+
+  // Start with the SigninErrorController in error state, so that it calls
+  // OnErrorChanged() from AddProvider().
+  oauth2_service_delegate_->UpdateCredentials(
+      "error_account_id",
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+
+  ErrorObserver observer(oauth2_service_delegate_.get());
+  signin_error_controller_.AddObserver(&observer);
+
+  ASSERT_FALSE(observer.error_changed_);
+  oauth2_service_delegate_->UpdateCredentials("account_id", "token");
+  EXPECT_TRUE(observer.error_changed_);
+
+  signin_error_controller_.RemoveObserver(&observer);
 }
