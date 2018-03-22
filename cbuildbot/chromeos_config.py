@@ -748,6 +748,7 @@ _waterfall_config_map = {
         'amd64-generic-full',
         'arm-generic-full',
         'daisy-full',
+        'kevin-full',
         'lakitu-full',
         'oak-full',
         'tatl-full',
