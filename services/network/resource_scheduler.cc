@@ -72,7 +72,7 @@ const int kYieldMsDefault = 0;
 // may also throttle delayable requests based on the number of non-delayable
 // requests in-flight times a weighting factor.
 const base::Feature kThrottleDelayable{"ThrottleDelayable",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 enum StartMode { START_SYNC, START_ASYNC };
 

@@ -383,12 +383,13 @@ class ResourceSchedulerTest : public testing::Test {
 
     std::unique_ptr<base::FeatureList> feature_list(
         std::make_unique<base::FeatureList>());
-    feature_list->RegisterFieldTrialOverride(
-        "ThrottleDelayable",
-        experiment_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
-                           : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-        field_trial);
-    scoped_feature_list->InitWithFeatureList(std::move(feature_list));
+
+    if (experiment_enabled) {
+      feature_list->RegisterFieldTrialOverride(
+          "ThrottleDelayable", base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+          field_trial);
+      scoped_feature_list->InitWithFeatureList(std::move(feature_list));
+    }
 
     ResourceScheduler::ParamsForNetworkQualityContainer
         params_network_quality_container =
@@ -1828,6 +1829,67 @@ TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
             params_network_quality_container[1].effective_connection_type);
   EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
   EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
+}
+
+TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+  const char kTrialName[] = "TrialName";
+  const char kGroupName[] = "GroupName";
+
+  base::FieldTrial* field_trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  std::unique_ptr<base::FeatureList> feature_list(
+      std::make_unique<base::FeatureList>());
+
+  feature_list->RegisterFieldTrialOverride(
+      "ThrottleDelayable", base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+      field_trial);
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  ResourceScheduler::ParamsForNetworkQualityContainer
+      params_network_quality_container =
+          ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
+
+  EXPECT_EQ(2u, params_network_quality_container.size());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+            params_network_quality_container[0].effective_connection_type);
+  EXPECT_EQ(8u, params_network_quality_container[0].max_delayable_requests);
+  EXPECT_EQ(3.0, params_network_quality_container[0].non_delayable_weight);
+
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params_network_quality_container[1].effective_connection_type);
+  EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
+  EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
+
+  InitializeScheduler();
+  network_quality_estimator_.set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
+  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  // Insert one non-delayable request. This should not affect the number of
+  // delayable requests started.
+  std::unique_ptr<TestRequest> medium(
+      NewRequest("http://host/medium", net::MEDIUM));
+  ASSERT_TRUE(medium->started());
+  // Start |kDefaultMaxNumDelayableRequestsPerClient| delayable requests and
+  // verify that they all started.
+  // When one high priority request is in flight, the number of low priority
+  // requests allowed in flight are |max_delayable_requests| -
+  // |non_delayable_weight|  = 8 - 3 = 5.
+  std::vector<std::unique_ptr<TestRequest>> delayable_requests;
+  for (int i = 0; i < 5; ++i) {
+    delayable_requests.push_back(NewRequest(
+        base::StringPrintf("http://host%d/low", i).c_str(), net::LOWEST));
+    EXPECT_TRUE(delayable_requests.back()->started());
+  }
+
+  delayable_requests.push_back(
+      NewRequest("http://host/low-blocked", net::LOWEST));
+  EXPECT_FALSE(delayable_requests.back()->started());
 }
 
 // Test that the default limit is used for delayable requests when the
