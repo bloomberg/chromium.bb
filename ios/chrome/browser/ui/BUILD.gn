@@ -417,6 +417,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/voice",
     "//ios/chrome/browser/upgrade",
+    "//ios/chrome/browser/voice:voice",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/chrome/browser/web:web_internal",

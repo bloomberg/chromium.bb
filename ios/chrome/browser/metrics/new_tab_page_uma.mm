@@ -39,7 +39,12 @@ void RecordAction(ios::ChromeBrowserState* browserState, ActionType type) {
 
 void RecordActionFromOmnibox(ios::ChromeBrowserState* browserState,
                              const GURL& url,
-                             ui::PageTransition transition) {
+                             ui::PageTransition transition,
+                             bool isExpectingVoiceSearch) {
+  if (isExpectingVoiceSearch) {
+    RecordAction(browserState, ACTION_NAVIGATED_USING_VOICE_SEARCH);
+    return;
+  }
   ui::PageTransition coreTransition = static_cast<ui::PageTransition>(
       transition & ui::PAGE_TRANSITION_CORE_MASK);
   if (PageTransitionCoreTypeIs(coreTransition, ui::PAGE_TRANSITION_GENERATED)) {

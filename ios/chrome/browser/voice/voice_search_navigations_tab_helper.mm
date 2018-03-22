@@ -41,6 +41,10 @@ void VoiceSearchNavigationTabHelper::WillLoadVoiceSearchResult() {
   will_navigate_to_voice_search_result_ = true;
 }
 
+bool VoiceSearchNavigationTabHelper::IsExpectingVoiceSearch() const {
+  return will_navigate_to_voice_search_result_;
+}
+
 bool VoiceSearchNavigationTabHelper::IsNavigationFromVoiceSearch(
     const web::NavigationItem* item) const {
   DCHECK(item);

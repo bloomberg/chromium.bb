@@ -226,6 +226,7 @@
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
@@ -4131,7 +4132,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
   if (transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
-    new_tab_page_uma::RecordActionFromOmnibox(_browserState, url, transition);
+    BOOL isExpectingVoiceSearch = NO;
+    web::WebState* webState = [_model currentTab].webState;
+    if (webState) {
+      isExpectingVoiceSearch =
+          VoiceSearchNavigationTabHelper::FromWebState(webState)
+              ->IsExpectingVoiceSearch();
+    }
+    new_tab_page_uma::RecordActionFromOmnibox(_browserState, url, transition,
+                                              isExpectingVoiceSearch);
   }
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from

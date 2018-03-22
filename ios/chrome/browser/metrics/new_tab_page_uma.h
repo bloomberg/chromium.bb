@@ -30,13 +30,15 @@ enum ActionType {
   ACTION_OPENED_LEARN_MORE,
   ACTION_OPENED_PROMO,
   ACTION_OPENED_HISTORY_ENTRY,
+  ACTION_NAVIGATED_USING_VOICE_SEARCH,
   NUM_ACTION_TYPES,
 };
 
 void RecordAction(ios::ChromeBrowserState* browserState, ActionType action);
 void RecordActionFromOmnibox(ios::ChromeBrowserState* browserState,
                              const GURL& url,
-                             ui::PageTransition transition);
+                             ui::PageTransition transition,
+                             bool isExpectingVoiceSearch);
 }  // namespace new_tab_page_uma
 
 #endif  // IOS_CHROME_BROWSER_METRICS_NEW_TAB_PAGE_UMA_H_
