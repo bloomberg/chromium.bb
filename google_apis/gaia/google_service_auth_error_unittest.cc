@@ -7,49 +7,73 @@
 #include <memory>
 #include <string>
 
-#include "base/test/values_test_util.h"
-#include "base/values.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-using base::ExpectDictStringValue;
+TEST(GoogleServiceAuthErrorTest, State) {
+  for (GoogleServiceAuthError::State i = GoogleServiceAuthError::NONE;
+       i < GoogleServiceAuthError::NUM_STATES;
+       i = GoogleServiceAuthError::State(i + 1)) {
+    GoogleServiceAuthError error(i);
+    EXPECT_EQ(i, error.state());
+    EXPECT_TRUE(error.error_message().empty());
 
-class GoogleServiceAuthErrorTest : public testing::Test {};
+    if (i == GoogleServiceAuthError::CONNECTION_FAILED)
+      EXPECT_EQ(net::ERR_FAILED, error.network_error());
+    else
+      EXPECT_EQ(net::OK, error.network_error());
 
-void TestSimpleState(GoogleServiceAuthError::State state) {
-  GoogleServiceAuthError error(state);
-  std::unique_ptr<base::DictionaryValue> value(error.ToValue());
-  EXPECT_EQ(1u, value->size());
-  std::string state_str;
-  EXPECT_TRUE(value->GetString("state", &state_str));
-  EXPECT_FALSE(state_str.empty());
-  EXPECT_NE("CONNECTION_FAILED", state_str);
-  EXPECT_NE("CAPTCHA_REQUIRED", state_str);
-}
+    if (i == GoogleServiceAuthError::NONE) {
+      EXPECT_FALSE(error.IsTransientError());
+      EXPECT_FALSE(error.IsPersistentError());
+    } else if ((i == GoogleServiceAuthError::CONNECTION_FAILED) ||
+               (i == GoogleServiceAuthError::SERVICE_UNAVAILABLE) ||
+               (i == GoogleServiceAuthError::REQUEST_CANCELED)) {
+      EXPECT_TRUE(error.IsTransientError());
+      EXPECT_FALSE(error.IsPersistentError());
+    } else {
+      EXPECT_FALSE(error.IsTransientError());
+      EXPECT_TRUE(error.IsPersistentError());
+    }
 
-TEST_F(GoogleServiceAuthErrorTest, SimpleToValue) {
-  for (int i = GoogleServiceAuthError::NONE;
-       i <= GoogleServiceAuthError::USER_NOT_SIGNED_UP; ++i) {
-    TestSimpleState(static_cast<GoogleServiceAuthError::State>(i));
+    if (i == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+      EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::UNKNOWN,
+                error.GetInvalidGaiaCredentialsReason());
+    }
   }
 }
 
-TEST_F(GoogleServiceAuthErrorTest, None) {
-  GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
-  std::unique_ptr<base::DictionaryValue> value(error.ToValue());
-  EXPECT_EQ(1u, value->size());
-  ExpectDictStringValue("NONE", *value, "state");
+TEST(GoogleServiceAuthErrorTest, FromConnectionError) {
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT);
+  EXPECT_EQ(GoogleServiceAuthError::CONNECTION_FAILED, error.state());
+  EXPECT_EQ(net::ERR_TIMED_OUT, error.network_error());
 }
 
-TEST_F(GoogleServiceAuthErrorTest, ConnectionFailed) {
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::FromConnectionError(net::OK));
-  std::unique_ptr<base::DictionaryValue> value(error.ToValue());
-  EXPECT_EQ(2u, value->size());
-  ExpectDictStringValue("CONNECTION_FAILED", *value, "state");
-  ExpectDictStringValue("net::OK", *value, "networkError");
+TEST(GoogleServiceAuthErrorTest, FromServiceError) {
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromServiceError("Foo");
+  EXPECT_EQ(GoogleServiceAuthError::SERVICE_ERROR, error.state());
+  EXPECT_EQ("Foo", error.error_message());
+}
+
+TEST(GoogleServiceAuthErrorTest, FromInvalidGaiaCredentialsReason) {
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER);
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error.state());
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_SERVER,
+            error.GetInvalidGaiaCredentialsReason());
+  EXPECT_EQ("Invalid credentials (1).", error.ToString());
+}
+
+TEST(GoogleServiceAuthErrorTest, AuthErrorNone) {
+  EXPECT_EQ(GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+            GoogleServiceAuthError::AuthErrorNone());
 }
 
 }  // namespace
