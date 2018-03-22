@@ -62,7 +62,8 @@ similar effect to the various `memlog` flags.
 
  3. Scroll down all the way to _Heap Details_.
 
- 4. Pinpoint the memory bug and live happily ever after.
+ 4. To navigate allocations, select a frame in the right-side pane and press
+    Enter/Return. To pop up the stack, press Backspace/Delete.
 
 [memory-infra]:    README.md
 [m-purple]:        https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
