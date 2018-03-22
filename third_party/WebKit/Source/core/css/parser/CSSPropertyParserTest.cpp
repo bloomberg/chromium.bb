@@ -9,6 +9,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSTokenizer.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
@@ -24,6 +25,18 @@ static int ComputeNumberOfTracks(const CSSValueList* value_list) {
     ++number_of_tracks;
   }
   return number_of_tracks;
+}
+
+static bool IsValidPropertyValueForStyleRule(CSSPropertyID property_id,
+                                             const String& value) {
+  CSSTokenizer tokenizer(value);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
+  HeapVector<CSSPropertyValue, 256> parsed_properties;
+  return CSSPropertyParser::ParseValue(
+      property_id, false, range,
+      StrictCSSParserContext(SecureContextMode::kSecureContext),
+      parsed_properties, StyleRule::RuleType::kStyle);
 }
 
 TEST(CSSPropertyParserTest, CSSPaint_Functions) {
@@ -422,6 +435,22 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
       "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
       "url('to.png'), 0.2); }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST(CSSPropertyParserTest, DropViewportDescriptor) {
+  EXPECT_FALSE(
+      IsValidPropertyValueForStyleRule(CSSPropertyOrientation, "portrait"));
+  EXPECT_FALSE(
+      IsValidPropertyValueForStyleRule(CSSPropertyOrientation, "inherit"));
+  EXPECT_FALSE(
+      IsValidPropertyValueForStyleRule(CSSPropertyOrientation, "var(--dummy)"));
+}
+
+TEST(CSSPropertyParserTest, DropFontfaceDescriptor) {
+  EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertySrc, "url(blah)"));
+  EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertySrc, "inherit"));
+  EXPECT_FALSE(
+      IsValidPropertyValueForStyleRule(CSSPropertySrc, "var(--dummy)"));
 }
 
 }  // namespace blink
