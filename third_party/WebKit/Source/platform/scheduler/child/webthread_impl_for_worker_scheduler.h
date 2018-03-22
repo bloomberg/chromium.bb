@@ -70,6 +70,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   void ShutdownOnThread(base::WaitableEvent* completion);
 
   std::unique_ptr<base::Thread> thread_;
+  const WebThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
   std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   std::unique_ptr<scheduler::WebSchedulerImpl> web_scheduler_;

@@ -29,7 +29,8 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
                                             public IdleHelper::Delegate,
                                             public TaskTimeObserver {
  public:
-  WorkerSchedulerImpl(std::unique_ptr<TaskQueueManager> task_queue_manager,
+  WorkerSchedulerImpl(WebThreadType thread_type,
+                      std::unique_ptr<TaskQueueManager> task_queue_manager,
                       WorkerSchedulerProxy* proxy);
   ~WorkerSchedulerImpl() override;
 
@@ -59,8 +60,6 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
-
-  void SetThreadType(WebThreadType thread_type) override;
 
   // Virtual for test.
   virtual void OnThrottlingStateChanged(

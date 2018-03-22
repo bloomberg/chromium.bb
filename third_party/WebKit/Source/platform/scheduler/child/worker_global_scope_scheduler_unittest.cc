@@ -32,6 +32,7 @@ class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
   WorkerGlobalScopeSchedulerTest()
       : mock_task_runner_(new base::TestSimpleTaskRunner()),
         scheduler_(new WorkerSchedulerImpl(
+            WebThreadType::kTestThread,
             TaskQueueManagerForTest::Create(nullptr,
                                             mock_task_runner_,
                                             &clock_),

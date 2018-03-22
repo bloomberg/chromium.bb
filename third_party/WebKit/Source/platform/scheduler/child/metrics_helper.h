@@ -44,8 +44,6 @@ class PLATFORM_EXPORT MetricsHelper {
                                base::TimeTicks end_time,
                                base::Optional<base::TimeDelta> thread_time);
 
-  void SetThreadType(WebThreadType thread_type);
-
  protected:
   WebThreadType thread_type_;
 

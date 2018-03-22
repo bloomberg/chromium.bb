@@ -40,7 +40,6 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
                        base::TimeTicks start,
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time) override;
-  void SetThreadType(WebThreadType thread_type) override;
 
   // ChildScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;

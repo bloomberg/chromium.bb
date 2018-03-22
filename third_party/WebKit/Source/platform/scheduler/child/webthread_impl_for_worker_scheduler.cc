@@ -21,6 +21,7 @@ namespace scheduler {
 WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
     const WebThreadCreationParams& params)
     : thread_(new base::Thread(params.name ? params.name : std::string())),
+      thread_type_(params.thread_type),
       worker_scheduler_proxy_(
           params.frame_scheduler
               ? std::make_unique<WorkerSchedulerProxy>(params.frame_scheduler)
@@ -86,7 +87,7 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
 
 std::unique_ptr<WorkerScheduler>
 WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
-  return WorkerScheduler::Create(worker_scheduler_proxy_.get());
+  return WorkerScheduler::Create(thread_type_, worker_scheduler_proxy_.get());
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {

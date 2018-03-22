@@ -46,6 +46,7 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
 }  // namespace
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
+    WebThreadType thread_type,
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     WorkerSchedulerProxy* proxy)
     : WorkerScheduler(
@@ -64,6 +65,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
       throttling_state_(
           proxy ? proxy->throttling_state()
                 : WebFrameScheduler::ThrottlingState::kNotThrottled),
+      worker_metrics_helper_(thread_type),
       weak_factory_(this) {
   thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
@@ -180,11 +182,6 @@ void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
   base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
 
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
-}
-
-void WorkerSchedulerImpl::SetThreadType(WebThreadType thread_type) {
-  DCHECK_NE(thread_type, WebThreadType::kMainThread);
-  worker_metrics_helper_.SetThreadType(thread_type);
 }
 
 void WorkerSchedulerImpl::OnThrottlingStateChanged(
