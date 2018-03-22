@@ -579,6 +579,8 @@ component("ash") {
     "system/network/tray_network_state_observer.h",
     "system/network/tray_vpn.cc",
     "system/network/tray_vpn.h",
+    "system/network/vpn_feature_pod_controller.cc",
+    "system/network/vpn_feature_pod_controller.h",
     "system/network/vpn_list.cc",
     "system/network/vpn_list.h",
     "system/network/vpn_list_view.cc",

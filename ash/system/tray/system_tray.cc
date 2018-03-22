@@ -270,7 +270,8 @@ void SystemTray::CreateItems() {
       std::make_unique<TrayPower>(this, message_center::MessageCenter::Get()));
   tray_network_ = new TrayNetwork(this);
   AddTrayItem(base::WrapUnique(tray_network_));
-  AddTrayItem(std::make_unique<TrayVPN>(this));
+  tray_vpn_ = new TrayVPN(this);
+  AddTrayItem(base::WrapUnique(tray_vpn_));
   tray_bluetooth_ = new TrayBluetooth(this);
   AddTrayItem(base::WrapUnique(tray_bluetooth_));
   tray_cast_ = new TrayCast(this);
@@ -413,6 +414,10 @@ TrayBluetooth* SystemTray::GetTrayBluetooth() const {
 
 TrayAccessibility* SystemTray::GetTrayAccessibility() const {
   return tray_accessibility_;
+}
+
+TrayVPN* SystemTray::GetTrayVPN() const {
+  return tray_vpn_;
 }
 
 TrayIME* SystemTray::GetTrayIME() const {

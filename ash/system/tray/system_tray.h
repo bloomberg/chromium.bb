@@ -40,6 +40,7 @@ class TraySystemInfo;
 class TrayTiles;
 class TrayTracing;
 class TrayUpdate;
+class TrayVPN;
 class WebNotificationTray;
 
 // There are different methods for creating bubble views.
@@ -127,6 +128,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   TrayBluetooth* GetTrayBluetooth() const;
   // Returns TrayAccessibility object if present or null otherwise.
   TrayAccessibility* GetTrayAccessibility() const;
+  // Returns TrayVPN object if present or null otherwise.
+  TrayVPN* GetTrayVPN() const;
   // Returns TrayIME object if present or null otherwise.
   TrayIME* GetTrayIME() const;
 
@@ -230,6 +233,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   TrayEnterprise* tray_enterprise_ = nullptr;
   TrayIME* tray_ime_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;
+  TrayVPN* tray_vpn_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
   TrayScale* tray_scale_ = nullptr;
   TraySessionLengthLimit* tray_session_length_limit_ = nullptr;
