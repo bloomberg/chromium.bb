@@ -162,7 +162,7 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   ui::OverlayPlane plane2(
       scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
       1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-      gfx::RectF(kDefaultModeSizeF), base::kInvalidPlatformFile);
+      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -187,7 +187,7 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
   ui::OverlayPlane plane2(
       scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
       1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-      gfx::RectF(kDefaultModeSizeF), base::kInvalidPlatformFile);
+      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -226,7 +226,7 @@ TEST_F(HardwareDisplayControllerTest, AcceptUnderlays) {
       scoped_refptr<ui::ScanoutBuffer>(
           new ui::MockScanoutBuffer(kDefaultModeSize)),
       -1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
-      gfx::RectF(kDefaultModeSizeF), base::kInvalidPlatformFile);
+      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -428,7 +428,7 @@ TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlane) {
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
                           1, gfx::OVERLAY_TRANSFORM_NONE,
                           gfx::Rect(kDefaultModeSize), gfx::RectF(0, 0, 1, 1),
-                          base::kInvalidPlatformFile);
+                          true, base::kInvalidPlatformFile);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -487,7 +487,7 @@ TEST_F(HardwareDisplayControllerTest, Disable) {
 
   ui::OverlayPlane plane2(new ui::MockScanoutBuffer(kOverlaySize), 1,
                           gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-                          gfx::RectF(kDefaultModeSizeF),
+                          gfx::RectF(kDefaultModeSizeF), true,
                           base::kInvalidPlatformFile);
   std::vector<ui::OverlayPlane> planes;
   planes.push_back(plane1);

@@ -123,7 +123,7 @@ TEST_F(CodecImageTest, ScheduleOverlayPlaneIsInvalidForSurfaceTextureImages) {
   auto i = NewImage(kSurfaceTexture);
   ASSERT_FALSE(i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0,
                                        gfx::OverlayTransform(), gfx::Rect(),
-                                       gfx::RectF()));
+                                       gfx::RectF(), true));
 }
 
 TEST_F(CodecImageTest, CopyTexImageFailsIfTargetIsNotOES) {
@@ -185,7 +185,7 @@ TEST_F(CodecImageTest, ScheduleOverlayPlaneTriggersFrontBufferRendering) {
   PromotionHintAggregator::Hint hint(gfx::Rect(1, 2, 3, 4), true);
   EXPECT_CALL(promotion_hint_receiver_, OnPromotionHint(hint));
   i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0, gfx::OverlayTransform(),
-                          hint.screen_rect, gfx::RectF());
+                          hint.screen_rect, gfx::RectF(), true);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
 
@@ -281,12 +281,12 @@ TEST_F(CodecImageTest, ScheduleOverlayPlaneDoesntSendDuplicateHints) {
   EXPECT_CALL(promotion_hint_receiver_, OnPromotionHint(hint1)).Times(1);
   EXPECT_CALL(promotion_hint_receiver_, OnPromotionHint(hint2)).Times(1);
   i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0, gfx::OverlayTransform(),
-                          hint1.screen_rect, gfx::RectF());
+                          hint1.screen_rect, gfx::RectF(), true);
   i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0, gfx::OverlayTransform(),
-                          hint1.screen_rect, gfx::RectF());
+                          hint1.screen_rect, gfx::RectF(), true);
   // Sending a different rectangle should send another hint.
   i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0, gfx::OverlayTransform(),
-                          hint2.screen_rect, gfx::RectF());
+                          hint2.screen_rect, gfx::RectF(), true);
 }
 
 }  // namespace media

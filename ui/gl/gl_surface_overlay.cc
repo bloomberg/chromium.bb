@@ -16,12 +16,14 @@ GLSurfaceOverlay::GLSurfaceOverlay(int z_order,
                                    gfx::OverlayTransform transform,
                                    GLImage* image,
                                    const gfx::Rect& bounds_rect,
-                                   const gfx::RectF& crop_rect)
+                                   const gfx::RectF& crop_rect,
+                                   bool enable_blend)
     : z_order_(z_order),
       transform_(transform),
       image_(image),
       bounds_rect_(bounds_rect),
-      crop_rect_(crop_rect) {}
+      crop_rect_(crop_rect),
+      enable_blend_(enable_blend) {}
 
 GLSurfaceOverlay::GLSurfaceOverlay(const GLSurfaceOverlay& other) = default;
 
@@ -30,7 +32,7 @@ GLSurfaceOverlay::~GLSurfaceOverlay() {}
 bool GLSurfaceOverlay::ScheduleOverlayPlane(
     gfx::AcceleratedWidget widget) const {
   return image_->ScheduleOverlayPlane(widget, z_order_, transform_,
-                                      bounds_rect_, crop_rect_);
+                                      bounds_rect_, crop_rect_, enable_blend_);
 }
 
 void GLSurfaceOverlay::Flush() const {

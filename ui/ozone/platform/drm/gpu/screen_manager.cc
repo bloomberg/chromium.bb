@@ -378,7 +378,8 @@ OverlayPlane ScreenManager::GetModesetBuffer(
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),
-                        gfx::RectF(), base::kInvalidPlatformFile);
+                        gfx::RectF(), /* enable_blend */ true,
+                        base::kInvalidPlatformFile);
   }
 
   FillModesetBuffer(drm, controller, buffer.get());

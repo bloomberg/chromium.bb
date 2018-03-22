@@ -57,7 +57,8 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
                             gfx::OverlayTransform transform,
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect) override;
+                            const gfx::RectF& crop_rect,
+                            bool enable_blend) override;
   bool ScheduleCALayer(const ui::CARendererLayerParams& params) override;
   void ScheduleCALayerInUseQuery(
       std::vector<CALayerInUseQuery> queries) override;

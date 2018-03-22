@@ -54,7 +54,7 @@ bool OverlayStrategyFullscreen::Attempt(
       render_pass->output_rect.size() != candidate.resource_size_in_pixels) {
     return false;
   }
-
+  candidate.is_opaque = true;
   candidate.plane_z_order = 0;
   candidate.overlay_handled = true;
   cc::OverlayCandidateList new_candidate_list;

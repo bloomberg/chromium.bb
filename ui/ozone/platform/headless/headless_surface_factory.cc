@@ -92,7 +92,8 @@ class TestPixmap : public gfx::NativePixmap {
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,
                             const gfx::Rect& display_bounds,
-                            const gfx::RectF& crop_rect) override {
+                            const gfx::RectF& crop_rect,
+                            bool enable_blend) override {
     return true;
   }
   gfx::NativePixmapHandle ExportHandle() override {

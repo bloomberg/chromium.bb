@@ -183,7 +183,8 @@ class ContextSupportStub : public ContextSupport {
                             gfx::OverlayTransform plane_transform,
                             unsigned overlay_texture_id,
                             const gfx::Rect& display_bounds,
-                            const gfx::RectF& uv_rect) override {}
+                            const gfx::RectF& uv_rect,
+                            bool enable_blend) override {}
   uint64_t ShareGroupTracingGUID() const override { return 0; }
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)> callback) override {}

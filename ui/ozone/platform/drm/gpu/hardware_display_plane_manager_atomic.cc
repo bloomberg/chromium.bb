@@ -142,7 +142,7 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
     CrtcController* crtc) {
   HardwareDisplayPlaneAtomic* atomic_plane =
       static_cast<HardwareDisplayPlaneAtomic*>(hw_plane);
-  uint32_t framebuffer_id = overlay.z_order
+  uint32_t framebuffer_id = overlay.enable_blend
                                 ? overlay.buffer->GetFramebufferId()
                                 : overlay.buffer->GetOpaqueFramebufferId();
   if (!atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(),

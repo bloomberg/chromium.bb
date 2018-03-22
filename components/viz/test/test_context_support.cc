@@ -82,7 +82,8 @@ void TestContextSupport::ScheduleOverlayPlane(
     gfx::OverlayTransform plane_transform,
     unsigned overlay_texture_id,
     const gfx::Rect& display_bounds,
-    const gfx::RectF& uv_rect) {
+    const gfx::RectF& uv_rect,
+    bool enable_blend) {
   if (!schedule_overlay_plane_callback_.is_null()) {
     schedule_overlay_plane_callback_.Run(plane_z_order, plane_transform,
                                          overlay_texture_id, display_bounds,

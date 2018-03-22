@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modified Date: April 2, 2014
+    Last Modified Date: March 18, 2018
 
 Dependencies
 
@@ -52,7 +52,8 @@ New Procedures and Functions
                                         GLfloat uv_x,
                                         GLfloat uv_y,
                                         GLfloat uv_width,
-                                        GLfloat uv_height);
+                                        GLfloat uv_height
+					GLboolean enable_blend);
 
     Sets the overlay plane to be presented synchronously along with the primary
     framebuffer during the call to swap buffers.
@@ -65,6 +66,8 @@ New Procedures and Functions
     supposed to be on the screen.
     <uv_x>, <uv_y>, <uv_width>, <uv_height> specify the region within the
     buffer to be placed inside the bounds.
+    <enable_blend> specifies whether alpha blending should be enabled or
+    disabled when the buffer is presented.
 
 Errors
 

@@ -23,7 +23,8 @@ class GL_EXPORT GLSurfaceOverlay {
                    gfx::OverlayTransform transform,
                    GLImage* image,
                    const gfx::Rect& bounds_rect,
-                   const gfx::RectF& crop_rect);
+                   const gfx::RectF& crop_rect,
+                   bool enable_blend);
   GLSurfaceOverlay(const GLSurfaceOverlay& other);
   ~GLSurfaceOverlay();
 
@@ -39,6 +40,7 @@ class GL_EXPORT GLSurfaceOverlay {
   scoped_refptr<GLImage> image_;
   gfx::Rect bounds_rect_;
   gfx::RectF crop_rect_;
+  bool enable_blend_;
 };
 
 }  // namespace gl

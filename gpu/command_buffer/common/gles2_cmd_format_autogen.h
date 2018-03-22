@@ -13501,7 +13501,8 @@ struct ScheduleOverlayPlaneCHROMIUM {
             GLfloat _uv_x,
             GLfloat _uv_y,
             GLfloat _uv_width,
-            GLfloat _uv_height) {
+            GLfloat _uv_height,
+            GLboolean _enable_blend) {
     SetHeader();
     plane_z_order = _plane_z_order;
     plane_transform = _plane_transform;
@@ -13514,6 +13515,7 @@ struct ScheduleOverlayPlaneCHROMIUM {
     uv_y = _uv_y;
     uv_width = _uv_width;
     uv_height = _uv_height;
+    enable_blend = _enable_blend;
   }
 
   void* Set(void* cmd,
@@ -13527,11 +13529,12 @@ struct ScheduleOverlayPlaneCHROMIUM {
             GLfloat _uv_x,
             GLfloat _uv_y,
             GLfloat _uv_width,
-            GLfloat _uv_height) {
-    static_cast<ValueType*>(cmd)->Init(_plane_z_order, _plane_transform,
-                                       _overlay_texture_id, _bounds_x,
-                                       _bounds_y, _bounds_width, _bounds_height,
-                                       _uv_x, _uv_y, _uv_width, _uv_height);
+            GLfloat _uv_height,
+            GLboolean _enable_blend) {
+    static_cast<ValueType*>(cmd)->Init(
+        _plane_z_order, _plane_transform, _overlay_texture_id, _bounds_x,
+        _bounds_y, _bounds_width, _bounds_height, _uv_x, _uv_y, _uv_width,
+        _uv_height, _enable_blend);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -13547,10 +13550,11 @@ struct ScheduleOverlayPlaneCHROMIUM {
   float uv_y;
   float uv_width;
   float uv_height;
+  uint32_t enable_blend;
 };
 
-static_assert(sizeof(ScheduleOverlayPlaneCHROMIUM) == 48,
-              "size of ScheduleOverlayPlaneCHROMIUM should be 48");
+static_assert(sizeof(ScheduleOverlayPlaneCHROMIUM) == 52,
+              "size of ScheduleOverlayPlaneCHROMIUM should be 52");
 static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, header) == 0,
               "offset of ScheduleOverlayPlaneCHROMIUM header should be 0");
 static_assert(
@@ -13580,6 +13584,9 @@ static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_width) == 40,
               "offset of ScheduleOverlayPlaneCHROMIUM uv_width should be 40");
 static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
               "offset of ScheduleOverlayPlaneCHROMIUM uv_height should be 44");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, enable_blend) == 48,
+    "offset of ScheduleOverlayPlaneCHROMIUM enable_blend should be 48");
 
 struct ScheduleCALayerSharedStateCHROMIUM {
   typedef ScheduleCALayerSharedStateCHROMIUM ValueType;
