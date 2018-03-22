@@ -507,8 +507,19 @@ void SetDeviceColorSpace(RenderView* render_view,
       ->SetDeviceColorSpaceForTesting(color_space);
 }
 
-void SetTestBluetoothScanDuration() {
-  BluetoothDeviceChooserController::SetTestScanDurationForTesting();
+void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
+  switch (setting) {
+    case BluetoothTestScanDurationSetting::kImmediateTimeout:
+      BluetoothDeviceChooserController::SetTestScanDurationForTesting(
+          BluetoothDeviceChooserController::TestScanDurationSetting::
+              IMMEDIATE_TIMEOUT);
+      break;
+    case BluetoothTestScanDurationSetting::kNeverTimeout:
+      BluetoothDeviceChooserController::SetTestScanDurationForTesting(
+          BluetoothDeviceChooserController::TestScanDurationSetting::
+              NEVER_TIMEOUT);
+      break;
+  }
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {

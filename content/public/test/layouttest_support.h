@@ -153,8 +153,12 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name);
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space);
 
-// Sets the scan duration to 0.
-void SetTestBluetoothScanDuration();
+// Sets the scan duration to reflect the given setting.
+enum class BluetoothTestScanDurationSetting {
+  kImmediateTimeout,  // Set the scan duration to 0 seconds.
+  kNeverTimeout,  // Set the scan duration to base::TimeDelta::Max() seconds.
+};
+void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting);
 
 // Enables or disables synchronous resize mode. When enabled, all window-sizing
 // machinery is short-circuited inside the renderer. This mode is necessary for
