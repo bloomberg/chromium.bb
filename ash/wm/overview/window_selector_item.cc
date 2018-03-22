@@ -299,6 +299,7 @@ WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
   const int length = IsNewOverviewUi() ? kHeaderHeightDp : kOldHeaderHeightDp;
   SetMinimumImageSize(gfx::Size(length, length));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 }
 
 WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() = default;
