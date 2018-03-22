@@ -142,6 +142,7 @@ enum UiElementName {
   kControllerTrackpadRepositionLabel,
   kControllerExitButtonLabel,
   kControllerBackButtonLabel,
+  kControllerRepositionFinishLabel,
   kControllerTouchpadButton,
   kControllerAppButton,
   kControllerHomeButton,
