@@ -12,8 +12,8 @@
 #include <numeric>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -72,7 +72,8 @@ class TestPopupAlignmentDelegate : public DesktopPopupAlignmentDelegate {
 
 namespace test {
 
-class MessagePopupCollectionTest : public views::ViewsTestBase {
+class MessagePopupCollectionTest : public views::ViewsTestBase,
+                                   public views::WidgetObserver {
  public:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
@@ -87,7 +88,6 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     SetDisplayInfo(gfx::Rect(0, 0, 1920, 1070),  // taskbar at the bottom.
                    gfx::Rect(0, 0, 1920, 1080));
     id_ = 0;
-    PrepareForWait();
   }
 
   void TearDown() override {
@@ -122,7 +122,6 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     dummy_display.set_bounds(display_bounds);
     dummy_display.set_work_area(work_area);
     alignment_delegate_->RecomputeAlignment(dummy_display);
-    PrepareForWait();
   }
 
   gfx::Rect GetWorkArea() {
@@ -162,26 +161,30 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     return id;
   }
 
-  void PrepareForWait() { collection_->CreateRunLoopForTest(); }
-
-  // Assumes there is non-zero pending work.
-  void WaitForTransitionsDone() {
-    collection_->WaitForTest();
-    collection_->CreateRunLoopForTest();
-  }
-
   void CloseAllToasts() {
     // Assumes there is at least one toast to close.
     EXPECT_TRUE(GetToastCounts() > 0);
-    MessageCenter::Get()->RemoveAllNotifications(
-        false /* by_user */, MessageCenter::RemoveType::ALL);
+
+    auto toasts = collection_->toasts_;
+    for (ToastContentsView* toast : toasts) {
+      toast->GetWidget()->CloseNow();
+    }
   }
 
   gfx::Rect GetToastRectAt(size_t index) {
     return collection_->GetToastRectAt(index);
   }
 
-  void DecrementDeferCounter() { collection_->DecrementDeferCounter(); }
+  void RemoveToastAndWaitForClose(const std::string& id) {
+    GetWidget(id)->AddObserver(this);
+    MessageCenter::Get()->RemoveNotification(id, true /* by_user */);
+    widget_close_run_loop_.Run();
+  }
+
+  // views::WidgetObserver
+  void OnWidgetDestroyed(views::Widget* widget) override {
+    widget_close_run_loop_.Quit();
+  }
 
   // Checks:
   //  1) sizes of toast and corresponding widget are equal;
@@ -190,6 +193,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   class CheckedAnimationDelegate : public gfx::AnimationDelegate {
    public:
     explicit CheckedAnimationDelegate(MessagePopupCollectionTest* test);
+    ~CheckedAnimationDelegate() override;
 
     // returns first encountered error
     const base::Optional<std::string>& error_msg() const { return error_msg_; }
@@ -227,6 +231,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
       const MessagePopupCollection::Toasts& toasts);
 
  private:
+  base::RunLoop widget_close_run_loop_;
   std::unique_ptr<MessagePopupCollection> collection_;
   std::unique_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
   int id_;
@@ -237,6 +242,11 @@ MessagePopupCollectionTest::CheckedAnimationDelegate::CheckedAnimationDelegate(
     : toasts_(&test->collection_->toasts_) {
   DCHECK(!toasts_->empty());
   animation_delegate().bounds_animation_->set_delegate(this);
+}
+
+MessagePopupCollectionTest::CheckedAnimationDelegate::
+    ~CheckedAnimationDelegate() {
+  animation_delegate().bounds_animation_->set_delegate(&animation_delegate());
 }
 
 void MessagePopupCollectionTest::CheckedAnimationDelegate::AnimationEnded(
@@ -347,21 +357,18 @@ TEST_F(MessagePopupCollectionTest, DismissOnClick) {
 
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
-  WaitForTransitionsDone();
 
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotification(id2);
-  WaitForTransitionsDone();
 
   EXPECT_EQ(1u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotificationButton(id1, 0);
-  WaitForTransitionsDone();
   EXPECT_EQ(0u, GetToastCounts());
   EXPECT_FALSE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
@@ -372,21 +379,20 @@ TEST_F(MessagePopupCollectionTest, DismissOnClick) {
 TEST_F(MessagePopupCollectionTest, NotDismissedOnClick) {
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
-  WaitForTransitionsDone();
 
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotification(id2);
-  collection()->DoUpdateIfPossible();
+  collection()->DoUpdate();
 
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotificationButton(id1, 0);
-  collection()->DoUpdateIfPossible();
+  collection()->DoUpdate();
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
@@ -400,7 +406,6 @@ TEST_F(MessagePopupCollectionTest, NotDismissedOnClick) {
 TEST_F(MessagePopupCollectionTest, ShutdownDuringShowing) {
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
-  WaitForTransitionsDone();
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
@@ -418,7 +423,6 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioning) {
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
   std::string id3 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -449,7 +453,6 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioning) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
@@ -460,7 +463,6 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
                  gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -476,7 +478,6 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
@@ -485,7 +486,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
                  gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -501,7 +501,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
@@ -513,7 +512,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
                  gfx::Rect(0, 0, 600, 400));   // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -529,7 +527,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
@@ -541,7 +538,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
                  gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -557,7 +553,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
@@ -566,7 +561,6 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
                  gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   gfx::Rect r0 = GetToastRectAt(0);
   gfx::Rect r1 = GetToastRectAt(1);
@@ -585,21 +579,17 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 // Regression test for https://crbug.com/679397
 TEST_F(MessagePopupCollectionTest, MultipleNotificationHeight) {
   std::string id0 = AddNotification();
-  WaitForTransitionsDone();
   std::string id1 = AddImageNotification();
-  WaitForTransitionsDone();
   EXPECT_EQ(2u, GetToastCounts());
 
   gfx::Rect r0 = GetToast(id0)->bounds();
 
-  MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
-  DecrementDeferCounter();
+  RemoveToastAndWaitForClose(id0);
   EXPECT_EQ(1u, GetToastCounts());
 
   gfx::Rect r1 = GetToast(id1)->bounds();
@@ -612,13 +602,11 @@ TEST_F(MessagePopupCollectionTest, MultipleNotificationHeight) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   views::WidgetDelegateView* toast0 = GetToast(id0);
   EXPECT_TRUE(toast0 != NULL);
@@ -654,7 +642,6 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
 TEST_F(MessagePopupCollectionTest, DetectMouseHoverWithUserClose) {
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
-  WaitForTransitionsDone();
 
   views::WidgetDelegateView* toast0 = GetToast(id0);
   EXPECT_TRUE(toast0 != NULL);
@@ -664,18 +651,15 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHoverWithUserClose) {
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                        ui::EventTimeForNow(), 0, 0);
   toast1->OnMouseEntered(event);
-  static_cast<MessageCenterObserver*>(collection())->OnNotificationRemoved(
-      id1, true);
+  RemoveToastAndWaitForClose(id1);
 
   EXPECT_FALSE(MouseInCollection());
   std::string id2 = AddNotification();
 
-  WaitForTransitionsDone();
   views::WidgetDelegateView* toast2 = GetToast(id2);
   EXPECT_TRUE(toast2 != NULL);
 
   CloseAllToasts();
-  WaitForTransitionsDone();
 }
 
 TEST_F(MessagePopupCollectionTest, ManyPopupNotifications) {
@@ -686,7 +670,6 @@ TEST_F(MessagePopupCollectionTest, ManyPopupNotifications) {
     ids[i] = AddNotification();
   }
 
-  WaitForTransitionsDone();
 
   for (size_t i = 0; i < notifications_to_add - 1; ++i) {
     EXPECT_TRUE(IsToastShown(ids[i])) << "Should show the " << i << "th ID";
@@ -694,7 +677,6 @@ TEST_F(MessagePopupCollectionTest, ManyPopupNotifications) {
   EXPECT_FALSE(IsToastShown(ids[notifications_to_add - 1]));
 
   CloseAllToasts();
-  WaitForTransitionsDone();
 }
 
 #if defined(OS_CHROMEOS)
@@ -712,7 +694,6 @@ TEST_F(MessagePopupCollectionTest, CloseNonClosableNotifications) {
 
   // Add a pinned notification.
   MessageCenter::Get()->AddNotification(std::move(notification));
-  WaitForTransitionsDone();
 
   // Confirms that there is a toast.
   EXPECT_EQ(1u, GetToastCounts());
@@ -726,7 +707,6 @@ TEST_F(MessagePopupCollectionTest, CloseNonClosableNotifications) {
   toast1->OnMouseEntered(event);
   static_cast<MessageCenterObserver*>(collection())
       ->OnNotificationRemoved(kNotificationId, true);
-  WaitForTransitionsDone();
 
   // Confirms that there is no toast.
   EXPECT_EQ(0u, GetToastCounts());
@@ -767,7 +747,6 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
     }
   }
 
-  WaitForTransitionsDone();
 
   // Confirms that there are 2 toasts of 3 notifications.
   EXPECT_EQ(3u, GetToastCounts());
@@ -781,8 +760,6 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
 
       CheckedAnimationDelegate checked_animation(this);
 
-      WaitForTransitionsDone();
-
       EXPECT_FALSE(checked_animation.error_msg())
           << "Animation error, test case: " << id << ' ' << update.name << ":\n"
           << *checked_animation.error_msg();
@@ -790,37 +767,7 @@ TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
   }
 
   CloseAllToasts();
-  WaitForTransitionsDone();
 }
-
-// Regression test for https://crbug.com/804389 where notifications are added
-// and removed at the same time when UpdateWidgets is called.
-#if defined(OS_CHROMEOS)
-TEST_F(MessagePopupCollectionTest, AddedAndRemovedAtSameTime) {
-  collection()->IncrementDeferCounter();
-  std::vector<std::string> notification_ids;
-  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
-    notification_ids.push_back(AddNotification());
-  collection()->DecrementDeferCounter();
-  WaitForTransitionsDone();
-
-  // Depending on the timing of ScopedNotificationsIterationLock, it is possible
-  // that a new notificaiton is added before the observer method of
-  // MarkSinglePopupAsShown are called.
-  // To reproduce the similar state in the unit test, it removes observer.
-  // TODO(tetsui): Remove this workaround with ScopedNotificationsIterationLock.
-  MessageCenter::Get()->RemoveObserver(collection());
-  for (auto& notification_id : notification_ids)
-    MessageCenter::Get()->MarkSinglePopupAsShown(notification_id, false);
-  MessageCenter::Get()->AddObserver(collection());
-
-  AddNotification();
-  WaitForTransitionsDone();
-
-  CloseAllToasts();
-  WaitForTransitionsDone();
-}
-#endif
 
 }  // namespace test
 }  // namespace message_center

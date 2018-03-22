@@ -33,7 +33,7 @@ message_center::MessageCenter* PopupsOnlyUiDelegate::message_center() {
 
 bool PopupsOnlyUiDelegate::ShowPopups() {
   alignment_delegate_->StartObserving(display::Screen::GetScreen());
-  popup_collection_->DoUpdateIfPossible();
+  popup_collection_->DoUpdate();
   return true;
 }
 
