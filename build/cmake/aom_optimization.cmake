@@ -45,6 +45,7 @@ function (add_intrinsics_object_library flag opt_name target_to_update sources
   endif ()
 
   if (flag)
+    separate_arguments(flag)
     target_compile_options(${target_name} PUBLIC ${flag})
   endif ()
 
