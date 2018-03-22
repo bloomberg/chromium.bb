@@ -23,6 +23,8 @@ class ScopedVirtualU2fDevice
   ScopedVirtualU2fDevice();
   ~ScopedVirtualU2fDevice() override;
 
+  VirtualU2fDevice::State* mutable_state();
+
  protected:
   std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
       U2fTransportProtocol transport,

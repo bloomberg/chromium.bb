@@ -34,6 +34,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
    public:
     State();
 
+    // The common name in the attestation certificate.
+    std::string attestation_cert_common_name;
+
+    // The common name in the attestation certificate if individual attestation
+    // is requested.
+    std::string individual_attestation_cert_common_name;
+
    private:
     friend class ::device::VirtualU2fDevice;
     friend class base::RefCounted<State>;
