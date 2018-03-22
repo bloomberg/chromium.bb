@@ -123,12 +123,27 @@ class TestBrowserThreadBundle {
   // DONT_CREATE_BROWSER_THREADS option was used when the bundle was created.
   void CreateBrowserThreads();
 
-  // Runs all tasks posted to TaskScheduler and main thread until idle. Note: at
-  // the momment, this will not process BrowserThread::IO if this
-  // TestBrowserThreadBundle is using a REAL_IO_THREAD. TODO(robliao): fix this
-  // by making TaskScheduler aware of all MessageLoops.
-  // Prefer this to the equivalent content::RunAllTasksUntilIdle().
+  // Runs all tasks posted to TaskScheduler and main thread until idle.
+  // Note: At the moment, this will not process BrowserThread::IO if this
+  // TestBrowserThreadBundle is using a REAL_IO_THREAD.
+  // TODO(robliao): fix this by making TaskScheduler aware of all MessageLoops.
+  //
+  // Note that this is not the cleanest way to run until idle as it will return
+  // early if it depends on an async condition that isn't guaranteed to have
+  // occurred yet. The best way to run until a condition is met is with RunLoop:
+  //
+  //   void KickoffAsyncFoo(base::OnceClosure on_done);
+  //
+  //   base::RunLoop run_loop;
+  //   KickoffAsyncFoo(run_loop.QuitClosure());
+  //   run_loop.Run();
+  //
   void RunUntilIdle();
+
+  // Flush the IO thread. Replacement for RunLoop::RunUntilIdle() for tests that
+  // have a REAL_IO_THREAD. As with RunUntilIdle() above, prefer using
+  // RunLoop+QuitClosure() to await an async condition.
+  void RunIOThreadUntilIdle();
 
   ~TestBrowserThreadBundle();
 

@@ -454,7 +454,7 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bbase::Bind\(',
       (
-          'Please consider using base::Bind{Once,Repeating} instead '
+          'Please consider using base::Bind{Once,Repeating} instead',
           'of base::Bind. (crbug.com/714018)',
       ),
       False,
@@ -463,7 +463,7 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bbase::Callback<',
       (
-          'Please consider using base::{Once,Repeating}Callback instead '
+          'Please consider using base::{Once,Repeating}Callback instead',
           'of base::Callback. (crbug.com/714018)',
       ),
       False,
@@ -472,8 +472,61 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bbase::Closure\b',
       (
-          'Please consider using base::{Once,Repeating}Closure instead '
+          'Please consider using base::{Once,Repeating}Closure instead',
           'of base::Closure. (crbug.com/714018)',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'RunMessageLoop',
+      (
+          'RunMessageLoop is deprecated, use RunLoop instead.',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'RunThisRunLoop',
+      (
+          'RunThisRunLoop is deprecated, use RunLoop directly instead.',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'RunAllPendingInMessageLoop()',
+      (
+          "Prefer RunLoop over RunAllPendingInMessageLoop, please contact gab@",
+          "if you're convinced you need this.",
+      ),
+      False,
+      (),
+    ),
+    (
+      r'RunAllPendingInMessageLoop(BrowserThread',
+      (
+          'RunAllPendingInMessageLoop is deprecated. Use RunLoop for',
+          'BrowserThread::UI, TestBrowserThreadBundle::RunIOThreadUntilIdle',
+          'for BrowserThread::IO, and prefer RunLoop::QuitClosure to observe',
+          'async events instead of flushing threads.',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'MessageLoopRunner',
+      (
+          'MessageLoopRunner is deprecated, use RunLoop instead.',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'GetDeferredQuitTaskForRunLoop',
+      (
+          "GetDeferredQuitTaskForRunLoop shouldn't be needed, please contact",
+          "gab@ if you found a use case where this is the only solution.",
       ),
       False,
       (),

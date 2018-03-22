@@ -39,34 +39,36 @@ namespace content {
 class RenderFrameHost;
 class TestServiceManagerContext;
 
-// Turns on nestable tasks, runs the message loop, then resets nestable tasks
-// to what they were originally. Prefer this over MessageLoop::Run for in
-// process browser tests that need to block until a condition is met.
+// Deprecated: Use RunLoop::Run(). Use RunLoop::Type::kNestableTasksAllowed to
+// force nesting in browser tests.
 void RunMessageLoop();
 
-// Variant of RunMessageLoop that takes RunLoop.
+// Deprecated: Invoke |run_loop->Run()| directly.
 void RunThisRunLoop(base::RunLoop* run_loop);
 
-// Turns on nestable tasks, runs all pending tasks in the message loop,
-// then resets nestable tasks to what they were originally. Prefer this
-// over MessageLoop::RunAllPending for in process browser tests to run
-// all pending tasks. Can only be called from the UI thread.
+// Turns on nestable tasks, runs all pending tasks in the message loop, then
+// resets nestable tasks to what they were originally. Can only be called from
+// the UI thread. Only use this instead of RunLoop::RunUntilIdle() to work
+// around cases where a task keeps reposting itself and prevents the loop from
+// going idle.
+// TODO(gab): Assess whether this API is really needed. If you find yourself
+// needing this, post a comment on https://crbug.com/824431.
 void RunAllPendingInMessageLoop();
 
-// Blocks the current thread until all the pending messages in the loop of the
-// thread |thread_id| have been processed. Can only be called from the UI
-// thread.
+// Deprecated: For BrowserThread::IO use
+// TestBrowserThreadBundle::RunIOThreadUntilIdle. For the main thread use
+// RunLoop. In non-unit-tests use RunLoop::QuitClosure to observe async events
+// rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Runs until the task scheduler and the current message loop are all empty
-// (have no more immediate tasks, delayed tasks may still exist). Tasks may
-// still be running from sources outside of the task scheduler and the current
-// message loop.
-// Prefer TestBrowserThreadBundle::RunUntilIdle() over this static method.
+// Deprecated: Use TestBrowserThreadBundle::RunUntilIdle().
 void RunAllTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
 // tasks to run as opposed to run_loop->QuitClosure().
+// Prefer RunLoop::RunUntilIdle() to this.
+// TODO(gab): Assess the need for this API (see comment on
+// RunAllPendingInMessageLoop() above).
 base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
 
 // Executes the specified JavaScript in the specified frame, and runs a nested
@@ -119,9 +121,8 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
 //
 // DEPRECATED. Consider using base::RunLoop, in most cases MessageLoopRunner is
 // not needed.  If you need to defer quitting the loop, use
-// GetDeferredQuitTaskForRunLoop directly.
-// If you found a case where base::RunLoop is inconvenient or can not be used at
-// all, please post details in a comment on https://crbug.com/668707.
+// RunLoop::RunUntilIdle() and if you really think you need deferred quit (can't
+// reach idle, please post details in a comment on https://crbug.com/668707).
 class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
  public:
   enum class QuitMode {

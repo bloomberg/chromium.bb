@@ -132,4 +132,24 @@ void TestBrowserThreadBundle::RunUntilIdle() {
   scoped_task_environment_->RunUntilIdle();
 }
 
+void TestBrowserThreadBundle::RunIOThreadUntilIdle() {
+  // Use a RunLoop to run until idle if already on BrowserThread::IO (which is
+  // the main thread unless using Options::REAL_IO_THREAD).
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  base::WaitableEvent io_thread_idle(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          [](base::WaitableEvent* io_thread_idle) {
+            base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed)
+                .RunUntilIdle();
+            io_thread_idle->Signal();
+          },
+          Unretained(&io_thread_idle)));
+  io_thread_idle.Wait();
+}
+
 }  // namespace content

@@ -100,6 +100,38 @@ TEST(TestBrowserThreadBundleTest, RunUntilIdle) {
   EXPECT_EQ(kNumTasks * kNumHops, base::subtle::NoBarrier_Load(&tasks_run));
 }
 
+namespace {
+
+void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
+  // All iterations but the first come from a task that was posted.
+  if (iteration > 0)
+    (*tasks_run)++;
+
+  if (iteration == kNumHops)
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PostRecurringTaskToIOThread, iteration + 1, tasks_run));
+}
+
+}  // namespace
+
+TEST(TestBrowserThreadBundleTest, RunIOThreadUntilIdle) {
+  TestBrowserThreadBundle test_browser_thread_bundle(
+      TestBrowserThreadBundle::Options::REAL_IO_THREAD);
+
+  int tasks_run = 0;
+
+  for (int i = 0; i < kNumTasks; ++i) {
+    PostRecurringTaskToIOThread(0, &tasks_run);
+  }
+
+  test_browser_thread_bundle.RunIOThreadUntilIdle();
+
+  EXPECT_EQ(kNumTasks * kNumHops, tasks_run);
+}
+
 TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
   base::MessageLoopForUI message_loop;
 
