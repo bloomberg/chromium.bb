@@ -84,9 +84,11 @@ LocalStorageCachedArea::LocalStorageCachedArea(
 
   mojom::LevelDBWrapperAssociatedPtrInfo wrapper_ptr_info;
   session_namespace->OpenArea(origin_, mojo::MakeRequest(&wrapper_ptr_info));
-  leveldb_.Bind(std::move(wrapper_ptr_info));
+  leveldb_.Bind(std::move(wrapper_ptr_info),
+                renderer_scheduler->IPCTaskRunner());
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
+  binding_.Bind(mojo::MakeRequest(&ptr_info),
+                renderer_scheduler->IPCTaskRunner());
   leveldb_->AddObserver(std::move(ptr_info));
 }
 
@@ -104,9 +106,11 @@ LocalStorageCachedArea::LocalStorageCachedArea(
   mojom::LevelDBWrapperPtrInfo wrapper_ptr_info;
   storage_partition_service->OpenLocalStorage(
       origin_, mojo::MakeRequest(&wrapper_ptr_info));
-  leveldb_.Bind(std::move(wrapper_ptr_info));
+  leveldb_.Bind(std::move(wrapper_ptr_info),
+                renderer_scheduler->IPCTaskRunner());
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
+  binding_.Bind(mojo::MakeRequest(&ptr_info),
+                renderer_scheduler->IPCTaskRunner());
   leveldb_->AddObserver(std::move(ptr_info));
 }
 
