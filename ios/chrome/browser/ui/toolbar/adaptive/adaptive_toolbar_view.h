@@ -29,6 +29,10 @@
 @property(nonatomic, strong, readonly) ToolbarButton* backButton;
 // Buttons to navigate forward.
 @property(nonatomic, strong, readonly) ToolbarButton* forwardButton;
+// Button to navigate forward, positioned on the trailing side of the toolbar
+// relatively to the omnibox.
+@property(nonatomic, strong, readonly)
+    ToolbarButton* forwardButtonTrailingPosition;
 // Button to display the TabGrid.
 @property(nonatomic, strong, readonly) ToolbarTabGridButton* tabGridButton;
 // Button to stop the loading of the page.

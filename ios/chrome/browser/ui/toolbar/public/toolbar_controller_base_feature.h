@@ -5,10 +5,24 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_BASE_FEATURE_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_BASE_FEATURE_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/feature_list.h"
+
+// Enum for the different positions of the toolbars' buttons.
+typedef NS_ENUM(NSUInteger, ToolbarButtonPosition) {
+  ToolbarButtonPositionNavigationBottomNoTop,
+  ToolbarButtonPositionNavigationBottomShareTop,
+  ToolbarButtonPositionNavigationTop,
+};
 
 // Feature to choose whether to use the memex prototype tab switcher or the
 // regular native tab switcher.
 extern const base::Feature kMemexTabSwitcher;
+
+// Switch with different values for the layout of the toolbar buttons.
+extern const char kToolbarButtonPositionsSwitch[];
+
+ToolbarButtonPosition PositionForCurrentProcess();
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_BASE_FEATURE_H_

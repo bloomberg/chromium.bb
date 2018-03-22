@@ -140,6 +140,22 @@ const int styleCount = 2;
   return forwardButton;
 }
 
+- (ToolbarButton*)forwardButtonTrailingPosition {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  ToolbarButton* forwardButton = [ToolbarButton
+      toolbarButtonWithImage:[[UIImage imageNamed:@"toolbar_forward"]
+                                 imageFlippedForRightToLeftLayoutDirection]];
+  [self configureButton:forwardButton width:kAdaptiveToolbarButtonWidth];
+  forwardButton.visibilityMask =
+      self.visibilityConfiguration.forwardButtonTrailingPositionVisibility;
+  forwardButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
+  [forwardButton addTarget:self.dispatcher
+                    action:@selector(goForward)
+          forControlEvents:UIControlEventTouchUpInside];
+  return forwardButton;
+}
+
 - (ToolbarTabGridButton*)tabGridButton {
   DCHECK(IsUIRefreshPhase1Enabled());
   ToolbarTabGridButton* tabGridButton = [ToolbarTabGridButton
