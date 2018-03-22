@@ -28,6 +28,7 @@
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 #include "ui/arc/notification/arc_notification_view.h"
+#include "ui/arc/notification/mock_arc_notification_item.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -45,7 +46,6 @@ namespace arc {
 
 namespace {
 
-constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 constexpr gfx::Rect kNotificationSurfaceBounds(100, 100, 300, 300);
 
 class MockKeyboardDelegate : public exo::KeyboardDelegate {
@@ -68,68 +68,6 @@ aura::Window* GetFocusedWindow() {
 }
 
 }  // anonymous namespace
-
-class MockArcNotificationItem : public ArcNotificationItem {
- public:
-  MockArcNotificationItem(const std::string& notification_key)
-      : notification_key_(notification_key),
-        notification_id_(kNotificationIdPrefix + notification_key),
-        weak_factory_(this) {}
-
-  // Methods for testing.
-  size_t count_close() { return count_close_; }
-  base::WeakPtr<MockArcNotificationItem> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // Overriding methods for testing.
-  void Close(bool by_user) override { count_close_++; }
-  const gfx::ImageSkia& GetSnapshot() const override { return snapshot_; }
-  const std::string& GetNotificationKey() const override {
-    return notification_key_;
-  }
-  const std::string& GetNotificationId() const override {
-    return notification_id_;
-  }
-
-  // Overriding methods for returning dummy data or doing nothing.
-  void OnClosedFromAndroid() override {}
-  void Click() override {}
-  void ToggleExpansion() override {}
-  void OpenSettings() override {}
-  void AddObserver(Observer* observer) override {}
-  void RemoveObserver(Observer* observer) override {}
-  void IncrementWindowRefCount() override {}
-  void DecrementWindowRefCount() override {}
-  bool IsOpeningSettingsSupported() const override { return true; }
-  mojom::ArcNotificationType GetNotificationType() const override {
-    return mojom::ArcNotificationType::SIMPLE;
-  }
-  mojom::ArcNotificationExpandState GetExpandState() const override {
-    return mojom::ArcNotificationExpandState::FIXED_SIZE;
-  }
-  mojom::ArcNotificationShownContents GetShownContents() const override {
-    return mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
-  }
-  gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
-  const base::string16& GetAccessibleName() const override {
-    return base::EmptyString16();
-  }
-
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
-                            const std::string& app_id) override {}
-  bool IsManuallyExpandedOrCollapsed() const override { return false; }
-
- private:
-  std::string notification_key_;
-  std::string notification_id_;
-  gfx::ImageSkia snapshot_;
-  size_t count_close_ = 0;
-
-  base::WeakPtrFactory<MockArcNotificationItem> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
-};
 
 class DummyEvent : public ui::Event {
  public:
