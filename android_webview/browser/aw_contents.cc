@@ -500,8 +500,8 @@ void AwContents::GenerateMHTML(JNIEnv* env,
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jpath));
   web_contents_->GenerateMHTML(
       content::MHTMLGenerationParams(target_path),
-      base::Bind(&GenerateMHTMLCallback,
-                 ScopedJavaGlobalRef<jobject>(env, callback), target_path));
+      base::BindOnce(&GenerateMHTMLCallback,
+                     ScopedJavaGlobalRef<jobject>(env, callback), target_path));
 }
 
 void AwContents::CreatePdfExporter(JNIEnv* env,
