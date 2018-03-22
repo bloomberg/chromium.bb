@@ -228,8 +228,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
-  decoder.reset(
-      new VTVideoDecodeAccelerator(make_context_current_cb_, bind_image_cb_));
+  decoder.reset(new VTVideoDecodeAccelerator(bind_image_cb_));
   return decoder;
 }
 #endif

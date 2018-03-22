@@ -420,10 +420,8 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
-    : make_context_current_cb_(make_context_current_cb),
-      bind_image_cb_(bind_image_cb),
+    : bind_image_cb_(bind_image_cb),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
@@ -465,7 +463,7 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
   DVLOG(1) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  if (make_context_current_cb_.is_null() || bind_image_cb_.is_null()) {
+  if (bind_image_cb_.is_null()) {
     NOTREACHED() << "GL callbacks are required for this VDA";
     return false;
   }
@@ -1239,12 +1237,6 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   DCHECK(!picture_info->cv_image);
   DCHECK(!picture_info->gl_image);
 
-  if (!make_context_current_cb_.Run()) {
-    DLOG(ERROR) << "Failed to make GL context current";
-    NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-    return false;
-  }
-
   scoped_refptr<gl::GLImageIOSurface> gl_image(
       gl::GLImageIOSurface::Create(frame.image_size, GL_BGRA_EXT));
   if (!gl_image->InitializeWithCVPixelBuffer(
@@ -1330,8 +1322,6 @@ void VTVideoDecodeAccelerator::Destroy() {
 
   // For a graceful shutdown, return assigned buffers and flush before
   // destructing |this|.
-  // TODO(sandersd): Prevent the decoder from reading buffers before discarding
-  // them.
   for (int32_t bitstream_id : assigned_bitstream_ids_)
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);
   assigned_bitstream_ids_.clear();
