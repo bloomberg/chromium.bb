@@ -116,6 +116,8 @@ viz_component("common") {
     "resources/resource.h",
     "resources/resource_fence.h",
     "resources/resource_id.h",
+    "resources/resource_metadata.cc",
+    "resources/resource_metadata.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
     "resources/resource_sizes.h",

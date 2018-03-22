@@ -9,6 +9,7 @@
 #include "cc/output/overlay_candidate.h"
 #include "cc/resources/resource_provider.h"
 #include "components/viz/common/resources/resource_fence.h"
+#include "components/viz/common/resources/resource_metadata.h"
 
 namespace viz {
 class SharedBitmapManager;
@@ -55,6 +56,14 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
 
   // Checks whether a resource is in use.
   bool InUse(viz::ResourceId id);
+
+  // Get the resource metadata for external use.
+  // The |release_sync_token| should be one that can be waited on in a command
+  // buffer to ensure that any external use of it is completed, before reusing
+  // the resource's backing.
+  viz::ResourceMetadata GetResourceMetadataForExternalUse(
+      viz::ResourceId id,
+      const gpu::SyncToken& release_sync_token);
 
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
