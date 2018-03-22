@@ -57,6 +57,10 @@ class AssistantManagerServiceImpl
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
 
+  void StartAssistantInternal(const std::string& access_token,
+                              const std::string& arc_version);
+  std::string BuildUserAgent(const std::string& arc_version) const;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);
 };
 
