@@ -82,6 +82,7 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
         mHorizontalPadding = paddingRect.right + paddingRect.left;
         mAnchoredPopupWindow.setPreferredHorizontalOrientation(
                 AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
+        mAnchoredPopupWindow.setFocusable(true);
     }
 
     /**
