@@ -2993,12 +2993,6 @@ jumbo_split_static_library("browser") {
       "QuartzCore.framework",
       "SecurityInterface.framework",
     ]
-
-    if (mac_views_browser) {
-      sources += [ "global_keyboard_shortcuts_views_mac.mm" ]
-    } else {
-      sources += [ "global_keyboard_shortcuts_cocoa_mac.mm" ]
-    }
   }
 
   if (is_linux) {
