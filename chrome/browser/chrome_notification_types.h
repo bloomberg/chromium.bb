@@ -75,12 +75,6 @@ enum NotificationType {
   // Source<ThemeService>. There are no details.
   NOTIFICATION_BROWSER_THEME_CHANGED,
 
-#if defined(USE_AURA)
-  // The user has changed the fling curve configuration.
-  // Source<GesturePrefsObserver>. There are no details.
-  NOTIFICATION_BROWSER_FLING_CURVE_PARAMETERS_CHANGED,
-#endif  // defined(USE_AURA)
-
   // Sent when the renderer returns focus to the browser, as part of focus
   // traversal. The source is the browser, there are no details.
   NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
