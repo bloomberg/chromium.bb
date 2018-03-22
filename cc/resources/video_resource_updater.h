@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -40,6 +41,7 @@ class RenderPass;
 }
 
 namespace cc {
+class LayerTreeFrameSink;
 class LayerTreeResourceProvider;
 
 class CC_EXPORT VideoFrameExternalResources {
@@ -53,17 +55,10 @@ class CC_EXPORT VideoFrameExternalResources {
     RGBA_PREMULTIPLIED_RESOURCE,
     RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
-
-    SOFTWARE_RESOURCE
   };
   ResourceType type = NONE;
   std::vector<viz::TransferableResource> resources;
   std::vector<viz::ReleaseCallback> release_callbacks;
-
-  // TODO(danakj): Remove these and use TransferableResources to send
-  // software things too.
-  unsigned software_resource = viz::kInvalidResourceId;
-  viz::ReleaseCallback software_release_callback;
 
   // Used by hardware textures which do not return values in the 0-1 range.
   // After a lookup, subtract offset and multiply by multiplier.
@@ -79,12 +74,22 @@ class CC_EXPORT VideoFrameExternalResources {
 
 // VideoResourceUpdater is used by the video system to produce frame content as
 // resources consumable by the compositor.
-class CC_EXPORT VideoResourceUpdater {
+class CC_EXPORT VideoResourceUpdater
+    : public base::trace_event::MemoryDumpProvider {
  public:
+  // For GPU compositing |context_provider| should be provided and for software
+  // compositing |layer_tree_frame_sink| should be provided. If there is a
+  // non-null |context_provider| we assume GPU compositing.
+  // TODO(kylechar): Don't use LayerTreeFrameSink for the software compositing
+  // path. The UseSurfaceLayerForVideo path isn't compatible with this. We can
+  // maybe use mojom::CompositorFrameSink instead.
   VideoResourceUpdater(viz::ContextProvider* context_provider,
+                       LayerTreeFrameSink* layer_tree_frame_sink,
                        LayerTreeResourceProvider* resource_provider,
-                       bool use_stream_video_draw_quad);
-  ~VideoResourceUpdater();
+                       bool use_stream_video_draw_quad,
+                       bool use_gpu_memory_buffer_resources);
+
+  ~VideoResourceUpdater() override;
 
   // For each CompositorFrame the following sequence is expected:
   // 1. ObtainFrameResources(): Import resources for the next video frame with
@@ -111,60 +116,10 @@ class CC_EXPORT VideoResourceUpdater {
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame);
 
-  void SetUseR16ForTesting(bool use_r16_for_testing) {
-    use_r16_for_testing_ = use_r16_for_testing;
-  }
-
  private:
-  // Resource for a video plane allocated and owned by VideResourceUpdater.
-  // There can be multiple plane resources for each video frame, depending on
-  // the format. These will be reused when possible.
-  class PlaneResource {
-   public:
-    PlaneResource(viz::ResourceId resource_id,
-                  const gfx::Size& resource_size,
-                  viz::ResourceFormat resource_format,
-                  gpu::Mailbox mailbox);
-
-    // Returns true if this resource matches the unique identifiers of another
-    // VideoFrame resource.
-    bool Matches(int unique_frame_id, size_t plane_index);
-
-    // Sets the unique identifiers for this resource, may only be called when
-    // there is a single reference to the resource (i.e. |ref_count_| == 1).
-    void SetUniqueId(int unique_frame_id, size_t plane_index);
-
-    // Accessors for resource identifiers provided at construction time.
-    viz::ResourceId resource_id() const { return resource_id_; }
-    const gfx::Size& resource_size() const { return resource_size_; }
-    viz::ResourceFormat resource_format() const { return resource_format_; }
-    const gpu::Mailbox& mailbox() const { return mailbox_; }
-
-    // Various methods for managing references. See |ref_count_| for details.
-    void add_ref() { ++ref_count_; }
-    void remove_ref() { --ref_count_; }
-    void clear_refs() { ref_count_ = 0; }
-    bool has_refs() const { return ref_count_ != 0; }
-
-   private:
-    // The balance between the number of times this resource has been returned
-    // from CreateForSoftwarePlanes vs released in RecycleResource.
-    int ref_count_ = 0;
-
-    // These two members are used for identifying the data stored in this
-    // resource; they uniquely identify a media::VideoFrame plane.
-    int unique_frame_id_ = 0;
-    size_t plane_index_ = 0u;
-    // Indicates if the above two members have been set or not.
-    bool has_unique_frame_id_and_plane_index_ = false;
-
-    const viz::ResourceId resource_id_;
-    const gfx::Size resource_size_;
-    const viz::ResourceFormat resource_format_;
-    const gpu::Mailbox mailbox_;
-
-    DISALLOW_COPY_AND_ASSIGN(PlaneResource);
-  };
+  class PlaneResource;
+  class HardwarePlaneResource;
+  class SoftwarePlaneResource;
 
   // A resource that will be embedded in a DrawQuad in the next CompositorFrame.
   // Each video plane will correspond to one FrameResource.
@@ -173,9 +128,7 @@ class CC_EXPORT VideoResourceUpdater {
     gfx::Size size_in_pixels;
   };
 
-  // This needs to be a container where iterators can be erased without
-  // invalidating other iterators.
-  typedef std::list<PlaneResource> ResourceList;
+  bool software_compositor() const { return context_provider_ == nullptr; }
 
   // Obtain a resource of the right format by either recycling an
   // unreferenced but appropriately formatted resource, or by
@@ -185,18 +138,14 @@ class CC_EXPORT VideoResourceUpdater {
   // used for reading, and so is returned even if it is still referenced.
   // Passing -1 for |plane_index| avoids returning referenced
   // resources.
-  ResourceList::iterator RecycleOrAllocateResource(
-      const gfx::Size& resource_size,
-      viz::ResourceFormat resource_format,
-      const gfx::ColorSpace& color_space,
-      bool software_resource,
-      int unique_id,
-      int plane_index);
-  ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
-                                          viz::ResourceFormat format,
-                                          const gfx::ColorSpace& color_space,
-                                          bool software_resource);
-  void DeleteResource(ResourceList::iterator resource_it);
+  PlaneResource* RecycleOrAllocateResource(const gfx::Size& resource_size,
+                                           viz::ResourceFormat resource_format,
+                                           const gfx::ColorSpace& color_space,
+                                           int unique_id,
+                                           int plane_index);
+  PlaneResource* AllocateResource(const gfx::Size& plane_size,
+                                  viz::ResourceFormat format,
+                                  const gfx::ColorSpace& color_space);
 
   // Create a copy of a texture-backed source video frame in a new GL_TEXTURE_2D
   // texture. This is used when there are multiple GPU threads (Android WebView)
@@ -219,25 +168,30 @@ class CC_EXPORT VideoResourceUpdater {
   VideoFrameExternalResources CreateForSoftwarePlanes(
       scoped_refptr<media::VideoFrame> video_frame);
 
-  void RecycleResource(viz::ResourceId resource_id,
+  void RecycleResource(uint32_t plane_resource_id,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
   void ReturnTexture(const scoped_refptr<media::VideoFrame>& video_frame,
                      const gpu::SyncToken& sync_token,
                      bool lost_resource);
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
   viz::ContextProvider* const context_provider_;
+  LayerTreeFrameSink* const layer_tree_frame_sink_;
   LayerTreeResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;
+  const bool use_gpu_memory_buffer_resources_;
+  const int tracing_id_;
   std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
+  uint32_t next_plane_resource_id_ = 1;
+
+  // Temporary pixel buffer when converting between formats.
   std::vector<uint8_t> upload_pixels_;
-  bool use_r16_for_testing_ = false;
 
   VideoFrameExternalResources::ResourceType frame_resource_type_;
-  // TODO(danakj): Remove these, use TransferableResource for software path too.
-  viz::ResourceId software_resource_;
-  // Called once for |software_resource_|.
-  viz::ReleaseCallback software_release_callback_;
 
   float frame_resource_offset_;
   float frame_resource_multiplier_;
@@ -249,7 +203,7 @@ class CC_EXPORT VideoResourceUpdater {
 
   // Resources allocated by VideoResourceUpdater. Used to recycle resources so
   // we can reduce the number of allocations and data transfers.
-  ResourceList all_resources_;
+  std::vector<std::unique_ptr<PlaneResource>> all_resources_;
 
   base::WeakPtrFactory<VideoResourceUpdater> weak_ptr_factory_;
 
