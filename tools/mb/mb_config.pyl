@@ -482,7 +482,7 @@
       'Linux Builder': 'release_bot_chrome_with_codecs',
       'Linux Builder (Chromium w/o WebRTC)': 'release_bot_chrome_with_codecs_disable_webrtc',
       'Mac Builder': 'release_bot_chrome_with_codecs',
-      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks',
+      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
     },
 
     'chromium.webrtc.fyi': {
@@ -493,8 +493,8 @@
       'Linux Builder (dbg)': 'debug_bot',
       'Mac Builder': 'release_bot_chrome_with_codecs',
       'Mac Builder (dbg)': 'debug_bot',
-      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks',
-      'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols_no_com_init_hooks',
+      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
+      'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
     },
 
     'chromium.win': {
@@ -1272,8 +1272,8 @@
     'debug_bot_minimal_symbols': [ 'debug_bot', 'minimal_symbols' ],
     'debug_bot_x86_minimal_symbols': [ 'debug_bot', 'x86', 'minimal_symbols' ],
 
-    'debug_bot_x86_minimal_symbols_no_com_init_hooks': [
-      'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks'
+    'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
+      'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'proprietary_codecs'
     ],
 
     'debug_libfuzzer_asan': [
@@ -1572,8 +1572,8 @@
       'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression'
     ],
 
-    'release_bot_x86_minimal_symbols_no_com_init_hooks': [
-      'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks'
+    'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
+      'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'proprietary_codecs'
     ],
 
     # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
