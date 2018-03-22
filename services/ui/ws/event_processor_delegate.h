@@ -14,6 +14,7 @@ class PointF;
 }
 
 namespace viz {
+class FrameSinkId;
 class HitTestQuery;
 }
 
@@ -25,8 +26,9 @@ namespace ws {
 
 class ServerWindow;
 
-// Used by EventProcessor for dispatching of events, as well as to inform the
-// delegate of various state changes.
+// Notified of various state changes to EventProcessor. This is also used to
+// obtain ServerWindows matching certain criteria (such as the ServerWindow for
+// a display).
 class EventProcessorDelegate {
  public:
   virtual void SetFocusedWindowFromEventProcessor(ServerWindow* window) = 0;

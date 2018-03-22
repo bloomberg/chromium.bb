@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/access_policy_delegate.h"
+#include "services/ui/ws/async_event_dispatcher.h"
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/drag_target_connection.h"
 #include "services/ui/ws/ids.h"
@@ -74,7 +75,8 @@ class WindowTree : public mojom::WindowTree,
                    public AccessPolicyDelegate,
                    public mojom::WindowManagerClient,
                    public DragSource,
-                   public DragTargetConnection {
+                   public DragTargetConnection,
+                   public AsyncEventDispatcher {
  public:
   WindowTree(WindowServer* window_server,
              bool is_for_embedding,
@@ -206,14 +208,6 @@ class WindowTree : public mojom::WindowTree,
                          const WindowTreeAndWindowId& tree_and_window_id,
                          const base::UnguessableToken& token);
 
-  // Dispatches an event to the client. |callback| is run with the result from
-  // the client.
-  using DispatchEventCallback = base::OnceCallback<void(mojom::EventResult)>;
-  void DispatchInputEvent(ServerWindow* target,
-                          const ui::Event& event,
-                          const EventLocation& event_location,
-                          DispatchEventCallback callback);
-
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
   viz::FrameSinkId OnWindowManagerCreatedTopLevelWindow(
       uint32_t wm_change_id,
@@ -229,9 +223,6 @@ class WindowTree : public mojom::WindowTree,
   using AcceleratorCallback = base::OnceCallback<void(
       mojom::EventResult,
       const std::unordered_map<std::string, std::vector<uint8_t>>&)>;
-  void OnAccelerator(uint32_t accelerator_id,
-                     const ui::Event& event,
-                     AcceleratorCallback callback);
   void OnEventOccurredOutsideOfModalWindow(const ServerWindow* modal_window);
 
   // Called when the cursor touch visibility bit changes. This is only called
@@ -422,10 +413,10 @@ class WindowTree : public mojom::WindowTree,
   // |event_ack_id_| and returns it.
   uint32_t GenerateEventAckId();
 
-  void DispatchInputEventImpl(ServerWindow* target,
-                              const ui::Event& event,
-                              const EventLocation& event_location,
-                              DispatchEventCallback callback);
+  void DispatchEventImpl(ServerWindow* target,
+                         const ui::Event& event,
+                         const EventLocation& event_location,
+                         DispatchEventCallback callback);
 
   // Returns true if the client has a pointer watcher and this event matches.
   bool EventMatchesPointerWatcher(const ui::Event& event) const;
@@ -464,6 +455,15 @@ class WindowTree : public mojom::WindowTree,
   // ScheduleEmbed() and the ancestor to communicate the token with the client.
   mojom::WindowTreeClientPtr GetAndRemoveScheduledEmbedWindowTreeClient(
       const base::UnguessableToken& token);
+
+  // AsyncEventDispatcher:
+  void DispatchEvent(ServerWindow* target,
+                     const ui::Event& event,
+                     const EventLocation& event_location,
+                     DispatchEventCallback callback) override;
+  void DispatchAccelerator(uint32_t accelerator_id,
+                           const ui::Event& event,
+                           AcceleratorCallback callback) override;
 
   // WindowTree:
   void NewWindow(uint32_t change_id,

@@ -476,6 +476,41 @@ bool WindowTree::ReleaseCapture(const ClientWindowId& client_window_id) {
                                                           kInvalidClientId);
 }
 
+void WindowTree::DispatchEvent(ServerWindow* target,
+                               const ui::Event& event,
+                               const EventLocation& event_location,
+                               DispatchEventCallback callback) {
+  if (event_ack_id_ || !event_queue_.empty()) {
+    // Either awaiting an ack, or there are events in the queue. Store the event
+    // for processing when the ack is received.
+    event_queue_.push(std::make_unique<TargetedEvent>(
+        target, event, event_location, std::move(callback)));
+    // TODO(sad): If the |event_queue_| grows too large, then this should notify
+    // Display, so that it can stop sending events.
+    return;
+  }
+
+  DispatchEventImpl(target, event, event_location, std::move(callback));
+}
+
+void WindowTree::DispatchAccelerator(uint32_t accelerator_id,
+                                     const ui::Event& event,
+                                     AcceleratorCallback callback) {
+  DVLOG(3) << "OnAccelerator client=" << id_;
+  DCHECK(window_manager_internal_);  // Only valid for the window manager.
+  if (callback) {
+    GenerateEventAckId();
+    accelerator_ack_callback_ = std::move(callback);
+  } else {
+    DCHECK_EQ(0u, event_ack_id_);
+    DCHECK(!accelerator_ack_callback_);
+  }
+  // TODO: https://crbug.com/617167. Don't clone event once we map mojom::Event
+  // directly to ui::Event.
+  window_manager_internal_->OnAccelerator(event_ack_id_, accelerator_id,
+                                          ui::Event::Clone(event));
+}
+
 bool WindowTree::NewWindow(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
@@ -730,31 +765,6 @@ bool WindowTree::EmbedExistingTree(
   return true;
 }
 
-void WindowTree::DispatchInputEvent(ServerWindow* target,
-                                    const ui::Event& event,
-                                    const EventLocation& event_location,
-                                    DispatchEventCallback callback) {
-  if (event_ack_id_) {
-    // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(std::make_unique<TargetedEvent>(
-        target, event, event_location, std::move(callback)));
-    // TODO(sad): If the |event_queue_| grows too large, then this should notify
-    // Display, so that it can stop sending events.
-    return;
-  }
-
-  // If there are events in the queue, then store this new event in the queue,
-  // and dispatch the latest event from the queue instead that still has a live
-  // target.
-  if (!event_queue_.empty()) {
-    event_queue_.push(std::make_unique<TargetedEvent>(
-        target, event, event_location, std::move(callback)));
-    return;
-  }
-
-  DispatchInputEventImpl(target, event, event_location, std::move(callback));
-}
-
 bool WindowTree::IsWaitingForNewTopLevelWindow(uint32_t wm_change_id) {
   return waiting_for_top_level_window_info_ &&
          waiting_for_top_level_window_info_->wm_change_id == wm_change_id;
@@ -797,24 +807,6 @@ void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
 
 void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
   client()->OnChangeCompleted(change_id, success);
-}
-
-void WindowTree::OnAccelerator(uint32_t accelerator_id,
-                               const ui::Event& event,
-                               AcceleratorCallback callback) {
-  DVLOG(3) << "OnAccelerator client=" << id_;
-  DCHECK(window_manager_internal_);  // Only valid for the window manager.
-  if (callback) {
-    GenerateEventAckId();
-    accelerator_ack_callback_ = std::move(callback);
-  } else {
-    DCHECK_EQ(0u, event_ack_id_);
-    DCHECK(!accelerator_ack_callback_);
-  }
-  // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
-  // mojom::Event directly to ui::Event.
-  window_manager_internal_->OnAccelerator(event_ack_id_, accelerator_id,
-                                          ui::Event::Clone(event));
 }
 
 void WindowTree::OnEventOccurredOutsideOfModalWindow(
@@ -1515,12 +1507,12 @@ uint32_t WindowTree::GenerateEventAckId() {
   return event_ack_id_;
 }
 
-void WindowTree::DispatchInputEventImpl(ServerWindow* target,
-                                        const ui::Event& event,
-                                        const EventLocation& event_location,
-                                        DispatchEventCallback callback) {
-  // DispatchInputEventImpl() is called so often that log level 4 is used.
-  DVLOG(4) << "DispatchInputEventImpl client=" << id_;
+void WindowTree::DispatchEventImpl(ServerWindow* target,
+                                   const ui::Event& event,
+                                   const EventLocation& event_location,
+                                   DispatchEventCallback callback) {
+  // DispatchEventImpl() is called so often that log level 4 is used.
+  DVLOG(4) << "DispatchEventImpl client=" << id_;
   GenerateEventAckId();
   event_ack_callback_ = std::move(callback);
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(target);
@@ -1922,7 +1914,7 @@ void WindowTree::SetImeVisibility(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
-  // DispatchInputEventImpl() is called so often that log level 4 is used.
+  // DispatchEventImpl() is called so often that log level 4 is used.
   DVLOG(4) << "OnWindowInputEventAck client=" << id_;
   if (event_ack_id_ == 0 || event_id != event_ack_id_ || !event_ack_callback_) {
     // TODO(sad): Something bad happened. Kill the client?
@@ -1956,8 +1948,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
       callback = targeted_event->TakeCallback();
     } while (!event_queue_.empty() && !GetDisplay(target));
     if (GetDisplay(target)) {
-      DispatchInputEventImpl(target, *event, event_location,
-                             std::move(callback));
+      DispatchEventImpl(target, *event, event_location, std::move(callback));
     } else {
       // If the window is no longer valid (or not in a display), then there is
       // no point in dispatching to the client, but we need to run the callback
