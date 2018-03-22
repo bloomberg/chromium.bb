@@ -462,17 +462,18 @@ public class ShareHelper {
             }
         });
 
-        if (callback != null) {
-            dialog.setOnDismissListener(new OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    if (!callbackCalled[0]) {
-                        callback.onCancel();
-                        callbackCalled[0] = true;
-                    }
+        dialog.setOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (callback != null && !callbackCalled[0]) {
+                    callback.onCancel();
+                    callbackCalled[0] = true;
                 }
-            });
-        }
+                if (params.getOnDialogDismissed() != null) {
+                    params.getOnDialogDismissed().run();
+                }
+            }
+        });
 
         if (sFakeIntentReceiverForTesting != null) {
             sFakeIntentReceiverForTesting.onCustomChooserShown(dialog);
