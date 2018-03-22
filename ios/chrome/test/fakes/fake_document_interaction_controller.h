@@ -21,6 +21,9 @@
 
 @property(nonatomic, weak) id<UIDocumentInteractionControllerDelegate> delegate;
 
+// Whether or not this controller can present Open In... menu. Defaults to YES.
+@property(nonatomic) BOOL presentsOpenInMenu;
+
 // Menu that is currently being presented.
 @property(nonatomic, readonly) OpenInMenu* presentedOpenInMenu;
 

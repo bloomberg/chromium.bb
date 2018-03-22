@@ -23,10 +23,23 @@
 
 @implementation FakeDocumentInteractionController
 @synthesize delegate = _delegate;
+@synthesize presentsOpenInMenu = _presentsOpenInMenu;
 @synthesize presentedOpenInMenu = _presentedOpenInMenu;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _presentsOpenInMenu = YES;
+  }
+  return self;
+}
+
 - (BOOL)presentOpenInMenuFromRect:(CGRect)rect
                            inView:(UIView*)view
                          animated:(BOOL)animated {
+  if (!_presentsOpenInMenu)
+    return NO;
+
   _presentedOpenInMenu = [[OpenInMenu alloc] init];
   _presentedOpenInMenu.rect = rect;
   _presentedOpenInMenu.view = view;

@@ -537,6 +537,52 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInOtherApp) {
       1);
 }
 
+// Tests the failure to present Open In... menu. Typically happens on iOS 10
+// where Files app is not installed.
+TEST_F(DownloadManagerCoordinatorTest, OpenInFailure) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start and complete the download.
+  base::FilePath path;
+  ASSERT_TRUE(base::GetTempDir(&path));
+  task.Start(std::make_unique<net::URLFetcherFileWriter>(
+      base::ThreadTaskRunnerHandle::Get(), path));
+
+  // Stub UIDocumentInteractionController.
+  id document_interaction_controller =
+      [[FakeDocumentInteractionController alloc] init];
+  [document_interaction_controller setPresentsOpenInMenu:NO];
+  OCMStub([document_interaction_controller_class_
+              interactionControllerWithURL:[OCMArg any]])
+      .andReturn(document_interaction_controller);
+
+  // Attempt to present Open In... menu.
+  ASSERT_FALSE([document_interaction_controller presentedOpenInMenu]);
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate downloadManagerViewController:viewController
+                          presentOpenInMenuWithLayoutGuide:nil];
+  }
+  ASSERT_FALSE([document_interaction_controller presentedOpenInMenu]);
+
+  // Verify that UIAlert is presented.
+  ASSERT_TRUE([base_view_controller_.presentedViewController
+      isKindOfClass:[UIAlertController class]]);
+  UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
+      base_view_controller_.presentedViewController);
+  EXPECT_NSEQ(@"Unable to Open File", alert.title);
+  EXPECT_NSEQ(@"No application on this device can open the file.",
+              alert.message);
+}
+
 // Tests closing view controller while the download is in progress. Coordinator
 // should present the confirmation dialog.
 TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
