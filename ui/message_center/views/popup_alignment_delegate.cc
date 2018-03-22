@@ -14,7 +14,7 @@ PopupAlignmentDelegate::~PopupAlignmentDelegate() {}
 
 void PopupAlignmentDelegate::DoUpdateIfPossible() {
   if (collection_)
-    collection_->DoUpdateIfPossible();
+    collection_->DoUpdate();
 }
 
 }  // namespace message_center

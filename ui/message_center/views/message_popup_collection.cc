@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -39,11 +38,6 @@
 namespace message_center {
 namespace {
 
-// Timeout between the last user-initiated close of the toast and the moment
-// when normal layout/update of the toast stack continues. If the last toast was
-// just closed, the timeout is shorter.
-const int kMouseExitedDeferTimeoutMs = 200;
-
 // The margin between messages (and between the anchor unless
 // first_item_has_no_margin was specified).
 const int kToastMarginY = kMarginBetweenPopups;
@@ -58,7 +52,6 @@ MessagePopupCollection::MessagePopupCollection(
       tray_(tray),
       alignment_delegate_(alignment_delegate) {
   DCHECK(message_center_);
-  defer_timer_.reset(new base::OneShotTimer);
   message_center_->AddObserver(this);
   alignment_delegate_->set_collection(this);
 #if !defined(OS_CHROMEOS)
@@ -238,9 +231,6 @@ void MessagePopupCollection::OnMouseEntered(ToastContentsView* toast_entered) {
   latest_toast_entered_ = toast_entered;
 
   PausePopupTimers();
-
-  if (user_is_closing_toasts_by_clicking_)
-    defer_timer_->Stop();
 }
 
 void MessagePopupCollection::OnMouseExited(ToastContentsView* toast_exited) {
@@ -250,15 +240,7 @@ void MessagePopupCollection::OnMouseExited(ToastContentsView* toast_exited) {
     return;
   latest_toast_entered_ = NULL;
 
-  if (user_is_closing_toasts_by_clicking_) {
-    defer_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kMouseExitedDeferTimeoutMs),
-        this,
-        &MessagePopupCollection::OnDeferTimerExpired);
-  } else {
-    RestartPopupTimers();
-  }
+  RestartPopupTimers();
 }
 
 std::set<std::string> MessagePopupCollection::CloseAllWidgets() {
@@ -325,50 +307,6 @@ void MessagePopupCollection::RepositionWidgets() {
   }
 }
 
-void MessagePopupCollection::RepositionWidgetsWithTarget() {
-  if (toasts_.empty())
-    return;
-
-  bool top_down = alignment_delegate_->IsTopDown();
-
-  // Nothing to do if there are no widgets above target if bottom-aligned or no
-  // widgets below target if top-aligned.
-  if (top_down == (GetBaselineForToast(toasts_.back()) <
-                   last_removed_notification_baseline_)) {
-    return;
-  }
-
-  Toasts::reverse_iterator iter = toasts_.rbegin();
-  for (; iter != toasts_.rend(); ++iter) {
-    // We only reposition widgets above target if bottom-aligned or widgets
-    // below target if top-aligned.
-    if (top_down ==
-        (GetBaselineForToast(*iter) < last_removed_notification_baseline_)) {
-      break;
-    }
-  }
-  --iter;
-
-  // Slide length is the number of pixels the widgets should move so that their
-  // bottom edge (top-edge if top-aligned) touches the target.
-  int slide_length = std::abs(last_removed_notification_baseline_ -
-                              GetBaselineForToast(*iter));
-  for (;; --iter) {
-    gfx::Rect bounds((*iter)->bounds());
-
-    // If top-aligned, shift widgets upwards by slide_length. If bottom-aligned,
-    // shift them downwards by slide_length.
-    if (top_down)
-      bounds.set_y(bounds.y() - slide_length);
-    else
-      bounds.set_y(bounds.y() + slide_length);
-    (*iter)->SetBoundsWithAnimation(bounds);
-
-    if (iter == toasts_.rbegin())
-      break;
-  }
-}
-
 int MessagePopupCollection::GetBaseline() const {
   if (toasts_.empty())
     return alignment_delegate_->GetBaseline();
@@ -389,7 +327,7 @@ int MessagePopupCollection::GetBaselineForToast(
 
 void MessagePopupCollection::OnNotificationAdded(
     const std::string& notification_id) {
-  DoUpdateIfPossible();
+  DoUpdate();
 }
 
 void MessagePopupCollection::OnNotificationRemoved(
@@ -404,35 +342,10 @@ void MessagePopupCollection::OnNotificationRemoved(
   if (iter == toasts_.end())
     return;
 
-  last_removed_notification_baseline_ = GetBaselineForToast(*iter);
-
-  if (by_user && !user_is_closing_toasts_by_clicking_) {
-    // [Re] start a timeout after which the toasts re-position to their
-    // normal locations after tracking the mouse pointer for easy deletion.
-    // This provides a period of time when toasts are easy to remove because
-    // they re-position themselves to have Close button right under the mouse
-    // pointer. If the user continue to remove the toasts, the delay is reset.
-    // Once user stopped removing the toasts, the toasts re-populate/rearrange
-    // after the specified delay.
-    user_is_closing_toasts_by_clicking_ = true;
-    IncrementDeferCounter();
-  }
-
-  // CloseWithAnimation ultimately causes a call to RemoveToast, which calls
-  // OnMouseExited.  This means that |user_is_closing_toasts_by_clicking_| must
-  // have been set before this call, otherwise it will remain true even after
-  // the toast is closed, since the defer timer won't be started.
   RemoveToast(*iter, /*mark_as_shown=*/true);
 
   if (by_user)
-    RepositionWidgetsWithTarget();
-}
-
-void MessagePopupCollection::OnDeferTimerExpired() {
-  user_is_closing_toasts_by_clicking_ = false;
-  DecrementDeferCounter();
-
-  RestartPopupTimers();
+    RepositionWidgets();
 }
 
 void MessagePopupCollection::OnNotificationUpdated(
@@ -477,10 +390,7 @@ void MessagePopupCollection::OnNotificationUpdated(
   if (!updated)
     RemoveToast(*toast_iter, /*mark_as_shown=*/true);
 
-  if (user_is_closing_toasts_by_clicking_)
-    RepositionWidgetsWithTarget();
-  else
-    DoUpdateIfPossible();
+  DoUpdate();
 }
 
 ToastContentsView* MessagePopupCollection::FindToast(
@@ -493,42 +403,16 @@ ToastContentsView* MessagePopupCollection::FindToast(
   return NULL;
 }
 
-void MessagePopupCollection::IncrementDeferCounter() {
-  defer_counter_++;
-}
-
-void MessagePopupCollection::DecrementDeferCounter() {
-  defer_counter_--;
-  DCHECK(defer_counter_ >= 0);
-  DoUpdateIfPossible();
-}
-
 // This is the main sequencer of tasks. It does a step, then waits for
 // all started transitions to play out before doing the next step.
 // First, remove all expired toasts.
-// Then, reposition widgets (the reposition on close happens before all
-// deferred tasks are even able to run)
+// Then, reposition widgets.
 // Then, see if there is vacant space for new toasts.
-void MessagePopupCollection::DoUpdateIfPossible() {
-  if (defer_counter_ > 0)
-    return;
-
+void MessagePopupCollection::DoUpdate() {
   RepositionWidgets();
-
-  if (defer_counter_ > 0)
-    return;
 
   // Reposition could create extra space which allows additional widgets.
   UpdateWidgets();
-
-  if (defer_counter_ > 0)
-    return;
-
-  // Test support. Quit the test run loop when no more updates are deferred,
-  // meaining th echeck for updates did not cause anything to change so no new
-  // transition animations were started.
-  if (run_loop_for_test_.get())
-    run_loop_for_test_->Quit();
 }
 
 void MessagePopupCollection::OnDisplayMetricsChanged(
@@ -546,17 +430,7 @@ views::Widget* MessagePopupCollection::GetWidgetForTest(const std::string& id)
   return NULL;
 }
 
-void MessagePopupCollection::CreateRunLoopForTest() {
-  run_loop_for_test_.reset(new base::RunLoop());
-}
-
-void MessagePopupCollection::WaitForTest() {
-  run_loop_for_test_->Run();
-  run_loop_for_test_.reset();
-}
-
 gfx::Rect MessagePopupCollection::GetToastRectAt(size_t index) const {
-  DCHECK(defer_counter_ == 0) << "Fetching the bounds with animations active.";
   size_t i = 0;
   for (Toasts::const_iterator iter = toasts_.begin(); iter != toasts_.end();
        ++iter) {

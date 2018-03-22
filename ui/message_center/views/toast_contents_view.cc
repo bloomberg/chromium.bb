@@ -164,9 +164,6 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
   animated_bounds_start_ = GetWidget()->GetWindowBoundsInScreen();
   animated_bounds_end_ = new_bounds;
 
-  if (collection_)
-    collection_->IncrementDeferCounter();
-
   if (bounds_animation_.get())
     bounds_animation_->Stop();
 
@@ -175,9 +172,6 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
 }
 
 void ToastContentsView::StartFadeIn() {
-  // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
-  if (collection_)
-    collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
   GetWidget()->SetOpacity(0);
@@ -187,9 +181,6 @@ void ToastContentsView::StartFadeIn() {
 }
 
 void ToastContentsView::StartFadeOut() {
-  // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
-  if (collection_)
-    collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
   closing_animation_ = (is_closing_ ? fade_animation_.get() : nullptr);
@@ -219,13 +210,6 @@ void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
 
     widget->Close();
   }
-
-  // This cannot be called before GetWidget()->Close(). Decrementing defer count
-  // will invoke update, which may invoke another close animation with
-  // incrementing defer counter. Close() after such process will cause a
-  // mismatch between increment/decrement. See crbug.com/238477
-  if (collection_)
-    collection_->DecrementDeferCounter();
 }
 
 // gfx::AnimationDelegate
@@ -251,7 +235,7 @@ void ToastContentsView::AnimationCanceled(
 
 // views::WidgetDelegate
 void ToastContentsView::WindowClosing() {
-  if (!is_closing_ && collection_.get())
+  if (!is_closing_ && collection_)
     collection_->ForgetToast(this);
 }
 

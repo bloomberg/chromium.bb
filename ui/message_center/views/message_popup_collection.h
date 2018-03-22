@@ -22,10 +22,6 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace base {
-class RunLoop;
-}
-
 namespace display {
 class Display;
 }
@@ -74,17 +70,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void OnMouseEntered(ToastContentsView* toast_entered);
   void OnMouseExited(ToastContentsView* toast_exited);
 
-  // Invoked by toasts when they start/finish their animations.
-  // While "defer counter" is greater than zero, the popup collection does
-  // not perform updates. It is used to wait for various animations and user
-  // actions like serial closing of the toasts, when the remaining toasts "flow
-  // under the mouse".
-  void IncrementDeferCounter();
-  void DecrementDeferCounter();
-
-  // Runs the next step in update/animate sequence, if the defer counter is not
-  // zero. Otherwise, simply waits when it becomes zero.
-  void DoUpdateIfPossible();
+  // Runs the next step in update/animate sequence.
+  void DoUpdate();
 
   // Removes the toast from our internal list of toasts; this is called when the
   // toast is irrevocably closed (such as within RemoveToast).
@@ -110,11 +97,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Repositions all of the widgets based on the current work area.
   void RepositionWidgets();
 
-  // Repositions widgets to the top edge of the notification toast that was
-  // just removed, so that the user can click close button without mouse moves.
-  // See crbug.com/224089
-  void RepositionWidgetsWithTarget();
-
   // The baseline is an (imaginary) line that would touch the bottom of the
   // next created notification if bottom-aligned or its top if top-aligned.
   int GetBaseline() const;
@@ -139,8 +121,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // "ForTest" methods.
   views::Widget* GetWidgetForTest(const std::string& id) const;
-  void CreateRunLoopForTest();
-  void WaitForTest();
   gfx::Rect GetToastRectAt(size_t index) const;
 
   MessageCenter* message_center_;
@@ -149,31 +129,13 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   PopupAlignmentDelegate* alignment_delegate_;
 
-  int defer_counter_ = 0;
-
   // This is only used to compare with incoming events, do not assume that
   // the toast will be valid if this pointer is non-NULL.
   ToastContentsView* latest_toast_entered_ = nullptr;
 
-  // Denotes a mode when user is clicking the Close button of toasts in a
-  // sequence, w/o moving the mouse. We reposition the toasts so the next one
-  // happens to be right under the mouse, and the user can just dispose of
-  // multipel toasts by clicking. The mode ends when defer_timer_ expires.
-  bool user_is_closing_toasts_by_clicking_ = false;
-  std::unique_ptr<base::OneShotTimer> defer_timer_;
-
-  // The y axis baseline of the last removed notification.
-  // Depending on the alignment specified by IsTopDown(), it's the origin y or
-  // the bottom y of the notification.
-  // Only to be used when |user_is_closing_toasts_by_clicking_| is true.
-  int last_removed_notification_baseline_ = 0;
-
   // This is the number of pause request for timer. If it's more than zero, the
   // timer is paused. If zero, the timer is not paused.
   int timer_pause_counter_ = 0;
-
-  // Weak, only exists temporarily in tests.
-  std::unique_ptr<base::RunLoop> run_loop_for_test_;
 
   std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
 
