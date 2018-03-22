@@ -3361,3 +3361,4 @@ crbug.com/824830 [ Win ] fast/peerconnection/RTCPeerConnection-many.html [ Timeo
 crbug.com/824848 [ Linux Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
 crbug.com/824930 svg/animations/getCurrentTime-pause-unpause.html [ Pass Failure ]
+crbug.com/824955 external/wpt/css/css-font-loading/idlharness.https.html [ Pass Failure ]
