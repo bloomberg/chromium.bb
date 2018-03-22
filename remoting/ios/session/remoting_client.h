@@ -75,6 +75,8 @@ extern NSString* const kHostSessionPin;
 
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale;
 
+- (void)setVideoChannelEnabled:(BOOL)enabled;
+
 // Creates a feedback data and returns it to the callback.
 - (void)createFeedbackDataWithCallback:
     (void (^)(const remoting::FeedbackData&))callback;

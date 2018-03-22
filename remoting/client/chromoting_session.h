@@ -130,7 +130,7 @@ class ChromotingSession : public ClientInputInjector {
 
   void SendClientResolution(int dips_width, int dips_height, int scale);
 
-  // Enables or disables the video channel. May be called from any thread.
+  // Enables or disables the video channel.
   void EnableVideoChannel(bool enable);
 
   void SendClientMessage(const std::string& type, const std::string& data);

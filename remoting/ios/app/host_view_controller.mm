@@ -640,6 +640,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     LOG(DFATAL) << "Blur view does not exist.";
     return;
   }
+  [_client setVideoChannelEnabled:YES];
   [_blurView removeFromSuperview];
   _blurView = nil;
 }
@@ -660,6 +661,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     [_blurView.topAnchor constraintEqualToAnchor:_hostView.topAnchor],
     [_blurView.bottomAnchor constraintEqualToAnchor:_hostView.bottomAnchor],
   ]];
+  [_client setVideoChannelEnabled:NO];
 }
 
 @end
