@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/automation_controller.h"
@@ -128,8 +129,10 @@ class SettingsAppMonitor::AutomationControllerDelegate
   // Only used to post callbacks to |monitor_runner_|;
   const base::WeakPtr<SettingsAppMonitor> monitor_;
 
+  // Protect against concurrent accesses to |last_focused_element_|.
+  mutable base::Lock last_focused_element_lock_;
+
   // State to suppress duplicate "focus changed" events.
-  // Only accessed by OnFocusChangedEvent().
   mutable ElementType last_focused_element_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationControllerDelegate);
@@ -195,11 +198,14 @@ void SettingsAppMonitor::AutomationControllerDelegate::OnAutomationEvent(
 void SettingsAppMonitor::AutomationControllerDelegate::OnFocusChangedEvent(
     IUIAutomation* automation,
     IUIAutomationElement* sender) const {
-  // Duplicate focus changed events are suppressed.
   ElementType element_type = DetectElementType(automation, sender);
-  if (last_focused_element_ == element_type)
-    return;
-  last_focused_element_ = element_type;
+  {
+    // Duplicate focus changed events are suppressed.
+    base::AutoLock auto_lock(last_focused_element_lock_);
+    if (last_focused_element_ == element_type)
+      return;
+    last_focused_element_ = element_type;
+  }
 
   if (element_type == ElementType::DEFAULT_BROWSER) {
     monitor_runner_->PostTask(

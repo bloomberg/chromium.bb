@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/automation_controller.h"
@@ -150,8 +151,10 @@ class UninstallAppController::AutomationControllerDelegate
   // The task runner on which the UninstallAppController lives.
   scoped_refptr<base::SequencedTaskRunner> controller_runner_;
 
-  // Called once when the automation work is done. Only used by
-  // OnFocusChangedEvent().
+  // Protect against concurrent accesses to |on_automation_finished_|.
+  mutable base::Lock on_automation_finished_lock_;
+
+  // Called once when the automation work is done.
   mutable base::OnceClosure on_automation_finished_;
 
   const base::string16 application_name_;
@@ -194,9 +197,15 @@ void UninstallAppController::AutomationControllerDelegate::OnAutomationEvent(
 void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
     IUIAutomation* automation,
     IUIAutomationElement* sender) const {
+  base::OnceClosure callback;
+  {
+    base::AutoLock auto_lock(on_automation_finished_lock_);
+    callback = std::move(on_automation_finished_);
+  }
+
   // This callback can be null if the application name was already written in
   // the search box and this instance is awaiting destruction.
-  if (!on_automation_finished_)
+  if (!callback)
     return;
 
   base::string16 combo_box_id(
@@ -217,7 +226,7 @@ void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
   CComBSTR bstr(application_name_.c_str());
   value_pattern->SetValue(bstr);
 
-  controller_runner_->PostTask(FROM_HERE, std::move(on_automation_finished_));
+  controller_runner_->PostTask(FROM_HERE, std::move(callback));
 }
 
 }  // namespace
