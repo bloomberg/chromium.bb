@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
@@ -172,6 +173,11 @@ bool CreateWebURLRequest(PP_Instance instance,
       frame->GetDocument().CompleteURL(WebString::FromUTF8(data->url)));
   dest->SetDownloadToFile(data->stream_to_file);
   dest->SetReportUploadProgress(data->record_upload_progress);
+
+  if (data->stream_to_file) {
+    frame->BlinkFeatureUsageReport({static_cast<int>(
+        blink::mojom::WebFeature::kPPAPIURLRequestStreamToFile)});
+  }
 
   if (!data->method.empty())
     dest->SetHTTPMethod(WebString::FromUTF8(data->method));
