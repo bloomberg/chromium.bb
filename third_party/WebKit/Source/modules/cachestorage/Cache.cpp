@@ -181,7 +181,7 @@ void RecordResponseTypeForAdd(const Member<Response>& response) {
        static_cast<int>(network::mojom::FetchResponseType::kLast) + 1));
   response_type_histogram.Count(
       static_cast<int>(response->GetResponse()->GetType()));
-};
+}
 
 bool VaryHeaderContainsAsterisk(const Response* response) {
   const FetchHeaderList* headers = response->headers()->HeaderList();
