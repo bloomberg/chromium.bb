@@ -107,7 +107,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   _viewController.delegate = self;
   _mediator.SetDownloadTask(_downloadTask);
   _mediator.SetConsumer(_viewController);
-  _unopenedDownloads.Add(_downloadTask);
 
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.presentedViewController = _viewController;
@@ -247,6 +246,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
     (DownloadManagerViewController*)controller {
   if (_downloadTask->GetErrorCode() != net::OK) {
     base::RecordAction(base::UserMetricsAction("MobileDownloadRetryDownload"));
+  } else {
+    _unopenedDownloads.Add(_downloadTask);
   }
   _mediator.StartDowloading();
 }
