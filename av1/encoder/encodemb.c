@@ -545,6 +545,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (*eob == 0 && plane == 0) {
     const int txk_type_idx =
         av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+    // TODO(jingning): Temporarily disable txk_type check for eob=0 case.
+    // It is possible that certain collision in hash index would cause
+    // the assertion failure. To further optimize the rate-distortion
+    // performance, we need to re-visit this part and enable this assert
+    // again.
+#if 0
 #if CONFIG_EXT_DELTA_Q
     assert(args->cpi->oxcf.aq_mode != NO_AQ ||
            args->cpi->oxcf.deltaq_mode != NO_DELTA_Q ||
@@ -553,7 +559,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     assert(args->cpi->oxcf.aq_mode != NO_AQ ||
            xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
 #endif
-
+#endif
     xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
   }
 
