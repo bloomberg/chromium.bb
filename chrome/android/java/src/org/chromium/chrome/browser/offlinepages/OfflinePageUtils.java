@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -369,19 +370,27 @@ public class OfflinePageUtils {
         OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(tab.getWebContents());
         String offlinePath = offlinePage.getFilePath();
 
-        if (!isOfflinePageShareable(offlinePageBridge, offlinePage)) return false;
+        final String pageUrl = tab.getUrl();
+
+        if (!isOfflinePageShareable(offlinePageBridge, offlinePage, pageUrl)) return false;
 
         final String tabTitle = tab.getTitle();
-        final String tabUrl = tab.getUrl();
         final File offlinePageFile = new File(offlinePath);
         AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
             @Override
             protected Uri doInBackground(Void... v) {
+                // If we have a content or file URI, we will not have a filename, just return the
+                // URI.
+                if (offlinePath.isEmpty()) {
+                    Uri uri = Uri.parse(pageUrl);
+                    assert(isSchemeContentOrFile(uri));
+                    return uri;
+                }
                 return ChromeFileProvider.generateUri(activity, offlinePageFile);
             }
             @Override
             protected void onPostExecute(Uri uri) {
-                ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, tabUrl)
+                ShareParams shareParams = new ShareParams.Builder(activity, tabTitle, pageUrl)
                                                   .setShareDirectly(false)
                                                   .setOfflineUri(uri)
                                                   .build();
@@ -396,17 +405,29 @@ public class OfflinePageUtils {
     /**
      * Check to see if the offline page is sharable.
      * @param offlinePage Page to check for sharability.
+     * @param pageUri Uri of the page to check
      * @return true if this page can be shared.
      */
     public static boolean isOfflinePageShareable(
-            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage) {
+            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage, String pageUri) {
         // Return false if there is no offline page or sharing is not enabled.
         if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
 
-        // We cannot share a file without a file path, so return false.
-        // TODO(petewil) Allow sharing if there is a content or file URI, even if there is no path.
-        // https://crbug.com/817608
         String offlinePath = offlinePage.getFilePath();
+        Uri uri = Uri.parse(pageUri);
+
+        // If we have a content or file Uri, then we can share the page.
+        if (isSchemeContentOrFile(uri)) {
+            assert offlinePath.isEmpty();
+            return true;
+        }
+
+        // If the scheme is not one we recognize, return false.
+        if (!TextUtils.equals(uri.getScheme(), UrlConstants.HTTP_SCHEME)
+                && !TextUtils.equals(uri.getScheme(), UrlConstants.HTTPS_SCHEME))
+            return false;
+
+        // If we have a http or https page with no file path, we cannot share it.
         if (offlinePath.isEmpty()) {
             Log.w(TAG, "Tried to share a page with no path.");
             return false;
@@ -416,6 +437,14 @@ public class OfflinePageUtils {
         if (offlinePageBridge.isInPrivateDirectory(offlinePath)) return false;
 
         return true;
+    }
+
+    // Returns true if the scheme of the URI is either content or file.
+    private static boolean isSchemeContentOrFile(Uri uri) {
+        boolean isContentScheme = TextUtils.equals(uri.getScheme(), UrlConstants.CONTENT_SCHEME);
+        boolean isFileScheme = TextUtils.equals(uri.getScheme(), UrlConstants.FILE_SCHEME);
+
+        return isContentScheme || isFileScheme;
     }
 
     /**
