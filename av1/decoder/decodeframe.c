@@ -2659,12 +2659,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     int frame_id_length = cm->seq_params.frame_id_length;
     int diff_len = cm->seq_params.delta_frame_id_length;
     int prev_frame_id = 0;
-    if (cm->frame_type != KEY_FRAME) {
+    if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
       prev_frame_id = cm->current_frame_id;
     }
     cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
 
-    if (cm->frame_type != KEY_FRAME) {
+    if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
       int diff_frame_id;
       if (cm->current_frame_id > prev_frame_id) {
         diff_frame_id = cm->current_frame_id - prev_frame_id;
@@ -2681,7 +2681,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
     /* Check if some frames need to be marked as not valid for referencing */
     for (int i = 0; i < REF_FRAMES; i++) {
-      if (cm->frame_type == KEY_FRAME) {
+      if (cm->frame_type == KEY_FRAME && cm->show_frame) {
         cm->valid_for_referencing[i] = 0;
       } else if (cm->current_frame_id - (1 << diff_len) > 0) {
         if (cm->ref_frame_id[i] > cm->current_frame_id ||
