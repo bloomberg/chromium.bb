@@ -2340,11 +2340,8 @@ void Document::UpdateStyleAndLayout() {
   ScriptForbiddenScope forbid_script;
 
   LocalFrameView* frame_view = View();
-  if (frame_view && frame_view->IsInPerformLayout()) {
-    // View layout should not be re-entrant.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(!frame_view || !frame_view->IsInPerformLayout())
+      << "View layout should not be re-entrant";
 
   if (HTMLFrameOwnerElement* owner = LocalOwner())
     owner->GetDocument().UpdateStyleAndLayout();
@@ -2354,17 +2351,17 @@ void Document::UpdateStyleAndLayout() {
   if (!IsActive())
     return;
 
-  if (frame_view->NeedsLayout())
+  if (frame_view && frame_view->NeedsLayout())
     frame_view->UpdateLayout();
 
-  if (goto_anchor_needed_after_stylesheets_load_)
+  if (frame_view && goto_anchor_needed_after_stylesheets_load_)
     frame_view->ProcessUrlFragment(url_);
 
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
-  if (LocalFrameView* frame_view = View())
-    frame_view->PerformScrollAnchoringAdjustments();
+  if (LocalFrameView* frame_view_anchored = View())
+    frame_view_anchored->PerformScrollAnchoringAdjustments();
 }
 
 void Document::LayoutUpdated() {
