@@ -14,6 +14,10 @@ ModelTaskTestBase::~ModelTaskTestBase() {}
 void ModelTaskTestBase::SetUp() {
   TaskTestBase::SetUp();
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(private_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(public_dir_.CreateUniqueTempDir());
+  archive_manager_ = std::make_unique<ArchiveManager>(
+      TemporaryDir(), PrivateDir(), PublicDir(), task_runner());
   generator()->SetArchiveDirectory(TemporaryDir());
   store_test_util_.BuildStoreInMemory();
 }
@@ -36,8 +40,20 @@ OfflinePageItem ModelTaskTestBase::AddPageWithoutFile() {
   return page;
 }
 
+OfflinePageItem ModelTaskTestBase::AddPageWithoutDBEntry() {
+  return generator_.CreateItemWithTempFile();
+}
+
 const base::FilePath& ModelTaskTestBase::TemporaryDir() {
   return temporary_dir_.GetPath();
+}
+
+const base::FilePath& ModelTaskTestBase::PrivateDir() {
+  return private_dir_.GetPath();
+}
+
+const base::FilePath& ModelTaskTestBase::PublicDir() {
+  return public_dir_.GetPath();
 }
 
 }  // namespace offline_pages

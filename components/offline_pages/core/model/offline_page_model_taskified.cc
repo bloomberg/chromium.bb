@@ -22,13 +22,11 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/add_page_task.h"
-#include "components/offline_pages/core/model/clear_legacy_temporary_pages_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
-#include "components/offline_pages/core/model/persistent_pages_consistency_check_task.h"
-#include "components/offline_pages/core/model/temporary_pages_consistency_check_task.h"
+#include "components/offline_pages/core/model/startup_maintenance_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -574,21 +572,12 @@ void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
 void OfflinePageModelTaskified::RunMaintenanceTasks(const base::Time now,
                                                     bool first_run) {
   DCHECK(!skip_maintenance_tasks_for_testing_);
-  // If this is the first run of this session, enqueue the run-once tasks.
+  // If this is the first run of this session, enqueue the startup maintenance
+  // task, including consistency checks, legacy archive directory cleaning and
+  // reporting storage usage UMA.
   if (first_run) {
-    // TODO(romax): When we have external directory, adding the support of
-    // getting 'legacy' directory and replace the persistent one here.
-    // TODO(carlosk): these tasks implementations look very similar so we should
-    // probably consolidate them all into a single one.
-    task_queue_.AddTask(std::make_unique<ClearLegacyTemporaryPagesTask>(
-        store_.get(), policy_controller_.get(),
-        archive_manager_->GetPrivateArchivesDir()));
-    task_queue_.AddTask(std::make_unique<TemporaryPagesConsistencyCheckTask>(
-        store_.get(), policy_controller_.get(),
-        archive_manager_->GetTemporaryArchivesDir()));
-    task_queue_.AddTask(std::make_unique<PersistentPagesConsistencyCheckTask>(
-        store_.get(), policy_controller_.get(),
-        archive_manager_->GetPrivateArchivesDir()));
+    task_queue_.AddTask(std::make_unique<StartupMaintenanceTask>(
+        store_.get(), archive_manager_.get(), policy_controller_.get()));
   }
 
   task_queue_.AddTask(std::make_unique<ClearStorageTask>(
