@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/bad_message.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
@@ -65,8 +64,7 @@ class CONTENT_EXPORT CacheStorageCache {
  public:
   using ErrorCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError)>;
-  using BadMessageCallback =
-      base::OnceCallback<void(bad_message::BadMessageReason)>;
+  using BadMessageCallback = base::OnceCallback<void()>;
   using ResponseCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
                               std::unique_ptr<ServiceWorkerResponse>,

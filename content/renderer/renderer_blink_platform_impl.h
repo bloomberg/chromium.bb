@@ -25,6 +25,8 @@
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h"
@@ -45,16 +47,12 @@ class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebSecurityOrigin;
 class WebServiceWorkerCacheStorage;
-}
+}  // namespace blink
 
 namespace device {
 class Gamepads;
 class MotionData;
 class OrientationData;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace content {
@@ -134,7 +132,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebScrollbarBehavior* ScrollbarBehavior() override;
   blink::WebIDBFactory* IdbFactory() override;
   std::unique_ptr<blink::WebServiceWorkerCacheStorage> CreateCacheStorage(
-      const blink::WebSecurityOrigin& security_origin) override;
+      service_manager::InterfaceProvider* mojo_provider) override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;

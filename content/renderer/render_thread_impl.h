@@ -133,7 +133,6 @@ class AecDumpMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
-class CacheStorageDispatcher;
 class CategorizedWorkerPool;
 class DomStorageDispatcher;
 class FileSystemDispatcher;
@@ -641,7 +640,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
-  std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 

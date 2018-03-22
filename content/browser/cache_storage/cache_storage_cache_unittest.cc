@@ -286,9 +286,8 @@ std::unique_ptr<crypto::SymmetricKey> CreateTestPaddingKey() {
                                       "abc123");
 }
 
-void OnBadMessage(base::Optional<bad_message::BadMessageReason>* result,
-                  bad_message::BadMessageReason reason) {
-  *result = reason;
+void OnBadMessage(std::string* result) {
+  *result = "CSDH_UNEXPECTED_OPERATION";
 }
 
 // A CacheStorageCache that can optionally delay during backend creation.
@@ -772,7 +771,7 @@ class CacheStorageCacheTest : public testing::Test {
   std::unique_ptr<ServiceWorkerResponse> callback_response_;
   std::unique_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
-  base::Optional<bad_message::BadMessageReason> bad_message_reason_;
+  std::string bad_message_reason_;
   bool callback_closed_ = false;
   int64_t callback_size_ = 0;
 };
@@ -941,7 +940,7 @@ TEST_P(CacheStorageCacheTestP, PutBadMessage) {
   std::vector<CacheStorageBatchOperation> operations =
       std::vector<CacheStorageBatchOperation>(2, operation);
   EXPECT_EQ(CacheStorageError::kErrorStorage, BatchOperation(operations));
-  EXPECT_EQ(bad_message::CSDH_UNEXPECTED_OPERATION, *bad_message_reason_);
+  EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
 }
@@ -1562,7 +1561,7 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
   std::vector<CacheStorageBatchOperation> operations =
       std::vector<CacheStorageBatchOperation>(1, operation);
   EXPECT_EQ(CacheStorageError::kErrorStorage, BatchOperation(operations));
-  EXPECT_EQ(bad_message::CSDH_UNEXPECTED_OPERATION, *bad_message_reason_);
+  EXPECT_EQ("CSDH_UNEXPECTED_OPERATION", bad_message_reason_);
 
   EXPECT_FALSE(Match(body_request_));
 }

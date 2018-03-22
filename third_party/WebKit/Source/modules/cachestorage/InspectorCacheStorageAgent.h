@@ -12,6 +12,7 @@
 #include "core/inspector/protocol/CacheStorage.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
 namespace blink {
 
@@ -20,6 +21,9 @@ class InspectedFrames;
 class MODULES_EXPORT InspectorCacheStorageAgent final
     : public InspectorBaseAgent<protocol::CacheStorage::Metainfo> {
  public:
+  using CachesMap =
+      HashMap<String, std::unique_ptr<WebServiceWorkerCacheStorage>>;
+
   static InspectorCacheStorageAgent* Create(InspectedFrames* frames) {
     return new InspectorCacheStorageAgent(frames);
   }
@@ -47,6 +51,8 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   explicit InspectorCacheStorageAgent(InspectedFrames*);
 
   Member<InspectedFrames> frames_;
+
+  CachesMap caches_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorCacheStorageAgent);
 };

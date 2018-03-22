@@ -13,6 +13,8 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -23,6 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
+#include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
@@ -391,6 +394,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   bool is_initialized() const { return is_initialized_; }
 
+  // Binds Mojo request to Mojo implementation CacheStorageDispatcherHost
+  // instance, binding is sent to IO thread.
+  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
+                        const url::Origin& origin);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -751,6 +759,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
       indexed_db_factory_;
+
+  scoped_refptr<CacheStorageDispatcherHost> cache_storage_dispatcher_host_;
 
   bool channel_connected_;
   bool sent_render_process_ready_;

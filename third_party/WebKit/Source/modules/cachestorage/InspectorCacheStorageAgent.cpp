@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -60,6 +61,8 @@ using RequestCachedResponseCallback =
     blink::protocol::CacheStorage::Backend::RequestCachedResponseCallback;
 using BatchOperation = blink::WebServiceWorkerCache::BatchOperation;
 
+using WebServiceWorkerCacheStorage = ::blink::WebServiceWorkerCacheStorage;
+
 namespace blink {
 
 namespace {
@@ -82,9 +85,27 @@ ProtocolResponse ParseCacheId(const String& id,
   return ProtocolResponse::OK();
 }
 
+ProtocolResponse GetExecutionContext(InspectedFrames* frames,
+                                     const String& security_origin,
+                                     ExecutionContext** context) {
+  LocalFrame* frame = frames->FrameWithSecurityOrigin(security_origin);
+  if (!frame)
+    return ProtocolResponse::Error("No frame with origin " + security_origin);
+
+  blink::Document* document = frame->GetDocument();
+  if (!document)
+    return ProtocolResponse::Error("No execution context found");
+
+  *context = document;
+
+  return ProtocolResponse::OK();
+}
+
 ProtocolResponse AssertCacheStorage(
     const String& security_origin,
-    std::unique_ptr<WebServiceWorkerCacheStorage>* result) {
+    InspectedFrames* frames,
+    InspectorCacheStorageAgent::CachesMap* caches,
+    WebServiceWorkerCacheStorage** result) {
   scoped_refptr<const SecurityOrigin> sec_origin =
       SecurityOrigin::CreateFromString(security_origin);
 
@@ -94,24 +115,42 @@ ProtocolResponse AssertCacheStorage(
         sec_origin->IsPotentiallyTrustworthyErrorMessage());
   }
 
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache =
-      Platform::Current()->CreateCacheStorage(WebSecurityOrigin(sec_origin));
-  if (!cache)
-    return ProtocolResponse::Error("Could not find cache storage.");
-  *result = std::move(cache);
+  ExecutionContext* context = nullptr;
+  ProtocolResponse response =
+      GetExecutionContext(frames, security_origin, &context);
+  if (!response.isSuccess())
+    return response;
+
+  auto it = caches->find(security_origin);
+
+  if (it == caches->end()) {
+    std::unique_ptr<WebServiceWorkerCacheStorage> cache_storage =
+        Platform::Current()->CreateCacheStorage(
+            context->GetInterfaceProvider());
+    if (!cache_storage) {
+      return ProtocolResponse::Error("Could not find cache storage.");
+    }
+    *result = cache_storage.get();
+    caches->Set(security_origin, std::move(cache_storage));
+  } else {
+    *result = it->value.get();
+  }
+
   return ProtocolResponse::OK();
 }
 
 ProtocolResponse AssertCacheStorageAndNameForId(
     const String& cache_id,
+    InspectedFrames* frames,
     String* cache_name,
-    std::unique_ptr<WebServiceWorkerCacheStorage>* result) {
+    InspectorCacheStorageAgent::CachesMap* caches,
+    WebServiceWorkerCacheStorage** result) {
   String security_origin;
   ProtocolResponse response =
       ParseCacheId(cache_id, &security_origin, cache_name);
   if (!response.isSuccess())
     return response;
-  return AssertCacheStorage(security_origin, result);
+  return AssertCacheStorage(security_origin, frames, caches, result);
 }
 
 CString CacheStorageErrorString(mojom::CacheStorageError error) {
@@ -327,7 +366,6 @@ class GetCacheKeysForRequestData
     scoped_refptr<ResponsesAccumulator> accumulator =
         base::AdoptRef(new ResponsesAccumulator(requests.size(), params_,
                                                 std::move(callback_)));
-
     for (size_t i = 0; i < requests.size(); i++) {
       const auto& request = requests[i];
       auto cache_request = std::make_unique<GetCacheResponsesForRequestData>(
@@ -567,14 +605,17 @@ void InspectorCacheStorageAgent::requestCacheNames(
     return;
   }
 
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache;
-  ProtocolResponse response = AssertCacheStorage(security_origin, &cache);
+  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+
+  ProtocolResponse response =
+      AssertCacheStorage(security_origin, frames_, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchKeys(std::make_unique<RequestCacheNames>(security_origin,
-                                                          std::move(callback)));
+
+  cache_storage->DispatchKeys(std::make_unique<RequestCacheNames>(
+      security_origin, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestEntries(
@@ -583,9 +624,9 @@ void InspectorCacheStorageAgent::requestEntries(
     int page_size,
     std::unique_ptr<RequestEntriesCallback> callback) {
   String cache_name;
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache;
-  ProtocolResponse response =
-      AssertCacheStorageAndNameForId(cache_id, &cache_name, &cache);
+  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  ProtocolResponse response = AssertCacheStorageAndNameForId(
+      cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
@@ -594,7 +635,8 @@ void InspectorCacheStorageAgent::requestEntries(
   params.cache_name = cache_name;
   params.page_size = page_size;
   params.skip_count = skip_count;
-  cache->DispatchOpen(
+
+  cache_storage->DispatchOpen(
       std::make_unique<GetCacheForRequestData>(params, std::move(callback)),
       WebString(cache_name));
 }
@@ -603,15 +645,16 @@ void InspectorCacheStorageAgent::deleteCache(
     const String& cache_id,
     std::unique_ptr<DeleteCacheCallback> callback) {
   String cache_name;
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache;
-  ProtocolResponse response =
-      AssertCacheStorageAndNameForId(cache_id, &cache_name, &cache);
+  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  ProtocolResponse response = AssertCacheStorageAndNameForId(
+      cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchDelete(std::make_unique<DeleteCache>(std::move(callback)),
-                        WebString(cache_name));
+  cache_storage->DispatchDelete(
+      std::make_unique<DeleteCache>(std::move(callback)),
+      WebString(cache_name));
 }
 
 void InspectorCacheStorageAgent::deleteEntry(
@@ -619,16 +662,16 @@ void InspectorCacheStorageAgent::deleteEntry(
     const String& request,
     std::unique_ptr<DeleteEntryCallback> callback) {
   String cache_name;
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache;
-  ProtocolResponse response =
-      AssertCacheStorageAndNameForId(cache_id, &cache_name, &cache);
+  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  ProtocolResponse response = AssertCacheStorageAndNameForId(
+      cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchOpen(std::make_unique<GetCacheForDeleteEntry>(
-                          request, cache_name, std::move(callback)),
-                      WebString(cache_name));
+  cache_storage->DispatchOpen(std::make_unique<GetCacheForDeleteEntry>(
+                                  request, cache_name, std::move(callback)),
+                              WebString(cache_name));
 }
 
 void InspectorCacheStorageAgent::requestCachedResponse(
@@ -636,16 +679,16 @@ void InspectorCacheStorageAgent::requestCachedResponse(
     const String& request_url,
     std::unique_ptr<RequestCachedResponseCallback> callback) {
   String cache_name;
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache;
-  ProtocolResponse response =
-      AssertCacheStorageAndNameForId(cache_id, &cache_name, &cache);
+  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  ProtocolResponse response = AssertCacheStorageAndNameForId(
+      cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
   WebServiceWorkerRequest request;
   request.SetURL(KURL(request_url));
-  cache->DispatchMatch(
+  cache_storage->DispatchMatch(
       std::make_unique<CachedResponseMatchCallback>(std::move(callback)),
       request, WebServiceWorkerCache::QueryParams());
 }
