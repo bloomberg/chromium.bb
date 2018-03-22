@@ -670,6 +670,9 @@ class HostResolverImpl::RequestImpl : public HostResolver::Request {
 
 // Calls HostResolverProc in TaskScheduler. Performs retries if necessary.
 //
+// In non-test code, the HostResolverProc is always SystemHostResolverProc,
+// which calls a platform API that implements host resolution.
+//
 // Whenever we try to resolve the host, we post a delayed task to check if host
 // resolution (OnLookupComplete) is completed or not. If the original attempt
 // hasn't completed, then we start another attempt for host resolution. We take
@@ -966,7 +969,11 @@ class HostResolverImpl::ProcTask
 
 //-----------------------------------------------------------------------------
 
-// Resolves the hostname using DnsTransaction.
+// Resolves the hostname using DnsTransaction, which is a full implementation of
+// a DNS stub resolver. One DnsTransaction is created for each resolution
+// needed, which for AF_UNSPEC resolutions includes both A and AAAA. The
+// transactions are scheduled separately and started separately.
+//
 // TODO(szym): This could be moved to separate source file as well.
 class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
  public:
