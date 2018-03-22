@@ -71,11 +71,11 @@ insight. At the time of this writing, heap dumps from the wild have resulted in
 real, high impact bugs being found in Chrome code ~90% of the time.
 
 * The first thing to do upon receiving a heap dump is to open it in the [trace
-  viewer](/docs/memory-infra/README.md). This will tell us the counts, sizes, and
-  allocating stack traces of the potentially leaked objects. Look for stacks
-  that result in >100 MB of live memory. Frequently, sets of objects will be
-  leaked with similar counts. This can provide insight into the nature of the
-  leak.
+  viewer](/docs/memory-infra/heap_profiler.md#how-to-manually-browse-a-heap-dump).
+  This will tell us the counts, sizes, and allocating stack traces of the
+  potentially leaked objects. Look for stacks that result in >100 MB of live
+  memory. Frequently, sets of objects will be leaked with similar counts. This
+  can provide insight into the nature of the leak.
     * Important note: Heap profiling in the field uses
       [poison process sampling](https://bugs.chromium.org/p/chromium/issues/detail?id=810748)
       with a rate parameter of 10000. This means that for large/frequent allocations
