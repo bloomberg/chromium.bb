@@ -207,8 +207,9 @@ def main():
     for benchmark in sharding:
       return_code = (execute_benchmark(
           benchmark, isolated_out_dir, args, rest_args, False) or return_code)
-      return_code = (execute_benchmark(
-          benchmark, isolated_out_dir, args, rest_args, True) or return_code)
+      # We ignore the return code of the reference build since we do not
+      # monitor it.
+      execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
 
   return return_code
 
