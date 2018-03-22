@@ -10,16 +10,22 @@ group("demo") {
 
 executable("ozone_demo") {
   sources = [
+    "demo_window.cc",
+    "demo_window.h",
     "ozone_demo.cc",
     "renderer.h",
     "renderer_base.cc",
     "renderer_base.h",
+    "renderer_factory.cc",
+    "renderer_factory.h",
     "skia_renderer.cc",
     "skia_renderer.h",
     "software_renderer.cc",
     "software_renderer.h",
     "surfaceless_skia_renderer.cc",
     "surfaceless_skia_renderer.h",
+    "window_manager.cc",
+    "window_manager.h",
   ]
 
   deps = [
