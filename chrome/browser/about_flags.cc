@@ -2333,6 +2333,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflinePagesRenovationsName,
      flag_descriptions::kOfflinePagesRenovationsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesRenovationsFeature)},
+    {"offline-pages-in-downloads-home-open-in-cct",
+     flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctName,
+     flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesInDownloadHomeOpenInCctFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,

@@ -24,6 +24,7 @@ extern const base::Feature kOfflinePagesResourceBasedSnapshotFeature;
 extern const base::Feature kOfflinePagesPrefetchingUIFeature;
 extern const base::Feature kOfflinePagesLimitlessPrefetchingFeature;
 extern const base::Feature kOfflinePagesDescriptivePendingStatusFeature;
+extern const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature;
 
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.
@@ -80,6 +81,10 @@ bool IsOfflinePagesCTV2Enabled();
 // Returns true if descriptive pending download status texts should be used in
 // notifications and Downloads Home.
 bool IsOfflinePagesDescriptivePendingStatusEnabled();
+
+// Controls whether offline pages opened from the Downloads Home should be
+// opened in CCTs instead of new tabs.
+bool ShouldOfflinePagesInDownloadHomeOpenInCct();
 
 // Returns an experiment tag provided by the field trial. This experiment tag
 // will be included in a custom header in all requests sent to Offline Prefetch

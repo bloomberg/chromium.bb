@@ -63,6 +63,9 @@ const base::Feature kOfflinePagesLimitlessPrefetchingFeature{
 const base::Feature kOfflinePagesDescriptivePendingStatusFeature{
     "OfflinePagesDescriptivePendingStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature{
+    "OfflinePagesInDownloadHomeOpenInCct", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOfflineBookmarksEnabled() {
@@ -129,6 +132,11 @@ bool IsOfflinePagesCTV2Enabled() {
 bool IsOfflinePagesDescriptivePendingStatusEnabled() {
   return base::FeatureList::IsEnabled(
       kOfflinePagesDescriptivePendingStatusFeature);
+}
+
+bool ShouldOfflinePagesInDownloadHomeOpenInCct() {
+  return base::FeatureList::IsEnabled(
+      kOfflinePagesInDownloadHomeOpenInCctFeature);
 }
 
 std::string GetPrefetchingOfflinePagesExperimentTag() {

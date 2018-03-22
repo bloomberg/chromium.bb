@@ -26009,6 +26009,8 @@ from previous Chrome versions.
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
+  <int value="-1290053302"
+      label="OfflinePagesInDownloadHomeOpenInCct:disabled"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
   <int value="-1288130734" label="OpenVR:disabled"/>
   <int value="-1287511172"
@@ -26870,6 +26872,7 @@ from previous Chrome versions.
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
+  <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>

@@ -2144,6 +2144,12 @@ const char kOfflinePagesDescriptivePendingStatusDescription[] =
     "Enables pending download status text in notifications and Downloads Home "
     "to state the reason the request is pending.";
 
+const char kOfflinePagesInDownloadHomeOpenInCctName[] =
+    "Enables offline pages in the downloads home to be opened in CCT.";
+const char kOfflinePagesInDownloadHomeOpenInCctDescription[] =
+    "When enabled offline pages launched from the Downloads Home will be "
+    "opened in Chrome Custom Tabs (CCT) instead of regular tabs.";
+
 const char kOfflinePagesPrefetchingName[] =
     "Enables suggested offline pages to be prefetched.";
 const char kOfflinePagesPrefetchingDescription[] =
