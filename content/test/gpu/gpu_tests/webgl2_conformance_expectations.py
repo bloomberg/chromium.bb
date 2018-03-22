@@ -236,6 +236,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Recent AMD drivers seem to have a regression with 3D textures.
     self.Fail('conformance2/textures/canvas_sub_rectangle/tex-3d-*',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('conformance2/textures/image/tex-3d-*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
     self.Fail('conformance2/textures/image_data/tex-3d-*',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -250,7 +252,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'basic_teximage3d_3d_*',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
     self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_texsubimage3d_*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_pbo_3d*',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texsubimage3d_unpack_params.html',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
 
     # Have seen this time out. Think it may be because it's currently
