@@ -161,7 +161,7 @@ check_targets = [
   "//third_party/snappy/*",
 
   #"//third_party/WebKit/*",  # Errors: https://crbug.com/800764
-  #"//third_party/webrtc/*",
+  #"//third_party/webrtc/*",  # Errors: https://crbug.com/824831
   "//third_party/webrtc_overrides/*",
   "//tools/*",
 
