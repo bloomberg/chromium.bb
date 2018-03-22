@@ -1429,7 +1429,7 @@ class PreCQLauncherStage(SyncStage):
     return config_buildbucket_id_map
 
   def _LaunchTrybots(self, pool, configs, plan=None,
-                     sanity_check_build=False, swarming=False):
+                     sanity_check_build=False, swarming=True):
     """Launch tryjobs on the configs with patches if provided.
 
     Args:
