@@ -163,6 +163,8 @@ class MoveBlinkSource(object):
             ('third_party/WebKit/Tools/Scripts/audit-non-blink-usage.py',
              [('third_party/WebKit/Source', 'third_party/blink/renderer'),
               ('ls-files third_party/WebKit', 'ls-files third_party/blink')]),
+            ('third_party/WebKit/Tools/Scripts/webkitpy/style/checker.py',
+             [('Source/', 'renderer/')]),
             ('third_party/WebKit/public/BUILD.gn',
              [('$root_gen_dir/third_party/WebKit',
                '$root_gen_dir/third_party/blink')]),
