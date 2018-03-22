@@ -359,6 +359,10 @@ static void ResolveFeedbackDataCallback(
                                  scale);
 }
 
+- (void)setVideoChannelEnabled:(BOOL)enabled {
+  _session->EnableVideoChannel(enabled);
+}
+
 - (void)createFeedbackDataWithCallback:
     (void (^)(const remoting::FeedbackData&))callback {
   if (!_session) {
