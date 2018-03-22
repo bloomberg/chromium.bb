@@ -21,7 +21,6 @@
 namespace media {
 
 // This is a CdmAllocator that creates buffers using mojo shared memory.
-// The internal logic is similar to ppapi_cdm_buffer.cc.
 class MEDIA_MOJO_EXPORT MojoCdmAllocator : public CdmAllocator {
  public:
   MojoCdmAllocator();

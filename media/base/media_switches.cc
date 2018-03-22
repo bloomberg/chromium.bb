@@ -73,18 +73,14 @@ const char kUseCras[] = "use-cras";
 const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
     "unsafely-allow-protected-media-identifier-for-domain";
 
-#if !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 // Enable a internal audio focus management between tabs in such a way that two
 // tabs can't  play on top of each other.
 // The allowed values are: "" (empty) or |kEnableAudioFocusDuckFlash|.
 const char kEnableAudioFocus[] = "enable-audio-focus";
-#endif  // !defined(OS_ANDROID) || BUILDFLAG(ENABLE_PLUGINS)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
 // This value is used as an option for |kEnableAudioFocus|. Flash will
 // be ducked when losing audio focus.
 const char kEnableAudioFocusDuckFlash[] = "duck-flash";
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
 // Rather than use the renderer hosted remotely in the media service, fall back
@@ -350,13 +346,11 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 #endif
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
 MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
              switches::kEnableAudioFocus) ==
          switches::kEnableAudioFocusDuckFlash;
 }
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // Adds icons to the overflow menu on the native media controls.
 const base::Feature kOverflowIconsForMediaControls{

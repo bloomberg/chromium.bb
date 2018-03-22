@@ -105,9 +105,6 @@ component("media") {
   public_deps += [
     ":media_features",
     ":shared_memory_support",
-
-    # media_switches.h needs ppapi/features/features.h.
-    "//ppapi/features",
     "//ui/gfx:color_space",
   ]
 

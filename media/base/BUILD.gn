@@ -286,7 +286,6 @@ source_set("base") {
   deps = [
     "//base/allocator:buildflags",
     "//gpu/command_buffer/common",
-    "//ppapi/features",
     "//skia",
     "//third_party/libaom:av1_features",
     "//third_party/libyuv",
