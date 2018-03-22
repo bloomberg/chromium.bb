@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Text.h"
 #include "core/editing/PositionWithAffinity.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/forms/TextControlElement.h"
@@ -220,6 +221,26 @@ TEST_F(VisibleUnitsTest, endOfDocument) {
       PositionInFlatTree(one->firstChild(), 1),
       EndOfDocument(CreateVisiblePositionInFlatTree(*two->firstChild(), 1))
           .DeepEquivalent());
+}
+
+TEST_F(VisibleUnitsTest, HonorEditingBoundaryAtOrAfterNestedEditable) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<div contenteditable>"
+      "abc"
+      "<span contenteditable=\"false\">A^BC</span>"
+      "d|ef"
+      "</div>");
+  const PositionWithAffinity& result = HonorEditingBoundaryAtOrAfter(
+      PositionWithAffinity(selection.Extent()), selection.Base());
+  ASSERT_TRUE(result.IsNotNull());
+  EXPECT_EQ(
+      "<div contenteditable>"
+      "abc"
+      "<span contenteditable=\"false\">ABC|</span>"
+      "def"
+      "</div>",
+      GetCaretTextFromBody(result.GetPosition()));
+  EXPECT_EQ(TextAffinity::kDownstream, result.Affinity());
 }
 
 TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContent) {

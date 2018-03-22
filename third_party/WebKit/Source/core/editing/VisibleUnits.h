@@ -304,8 +304,8 @@ Position PreviousBoundary(const VisiblePosition&, BoundarySearchFunction);
 PositionInFlatTree PreviousBoundary(const VisiblePositionInFlatTree&,
                                     BoundarySearchFunction);
 
-PositionWithAffinity HonorEditingBoundaryAtOrAfter(const PositionWithAffinity&,
-                                                   const Position&);
+CORE_EXPORT PositionWithAffinity
+HonorEditingBoundaryAtOrAfter(const PositionWithAffinity&, const Position&);
 
 PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrAfter(
     const PositionInFlatTreeWithAffinity&,

@@ -255,11 +255,18 @@ HonorEditingBoundaryAtOrAfterTemplate(
   if (HighestEditableRoot(pos.GetPosition()) == highest_root)
     return pos;
 
-  // Return empty position if this position is non-editable, but |pos| is
-  // editable.
-  // TODO(yosin) Move to the next non-editable region.
-  if (!highest_root)
+  // Returns the last position in the highest non-editable ancestor of |anchor|.
+  if (!highest_root) {
+    const Node* last_non_editable = anchor.ComputeContainerNode();
+    for (const Node& ancestor : Strategy::AncestorsOf(*last_non_editable)) {
+      if (HasEditableStyle(ancestor)) {
+        return PositionWithAffinityTemplate<Strategy>(
+            PositionTemplate<Strategy>::LastPositionInNode(*last_non_editable));
+      }
+      last_non_editable = &ancestor;
+    }
     return PositionWithAffinityTemplate<Strategy>();
+  }
 
   // Return the next position after |pos| that is in the same editable region
   // as this position
