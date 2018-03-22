@@ -78,6 +78,11 @@
       ->AddObserver(_fullscreenObserver.get());
 }
 
+- (void)stop {
+  [super stop];
+  [self.locationBarCoordinator stop];
+}
+
 #pragma mark - PrimaryToolbarCoordinator
 
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
