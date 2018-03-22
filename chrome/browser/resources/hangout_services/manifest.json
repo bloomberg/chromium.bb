@@ -9,7 +9,9 @@
   "manifest_version": 2,
   "externally_connectable": {
     "matches": [
-      "https://*.google.com/*"
+      "https://*.google.com/*",
+      // For tests.
+      "*://localhost/*"
     ]
   },
   "background": {
