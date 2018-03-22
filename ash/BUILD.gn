@@ -1595,6 +1595,7 @@ test("ash_unittests") {
     "system/tray_caps_lock_unittest.cc",
     "system/tray_tracing_unittest.cc",
     "system/unified/accessibility_feature_pod_controller_unittest.cc",
+    "system/unified/feature_pods_container_view_unittest.cc",
     "system/unified/top_shortcuts_view_unittest.cc",
     "system/unified/unified_system_info_view_unittest.cc",
     "system/update/tray_update_unittest.cc",

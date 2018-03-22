@@ -78,7 +78,8 @@ void UnifiedSystemTrayController::HandlePowerAction() {
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
-  // TODO(tetsui): Implement.
+  expanded_ = !expanded_;
+  unified_view_->SetExpanded(expanded_);
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {

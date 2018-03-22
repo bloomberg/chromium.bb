@@ -24,6 +24,9 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
   ~TopShortcutsView() override;
 
+  // Change the expanded state. CollapseButton icon will change.
+  void SetExpanded(bool expanded);
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

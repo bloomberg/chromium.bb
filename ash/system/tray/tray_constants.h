@@ -153,10 +153,14 @@ constexpr int kUnifiedSystemInfoSpacing = 8;
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr int kUnifiedFeaturePodIconSize = 48;
 constexpr gfx::Size kUnifiedFeaturePodSize(80, 88);
+constexpr gfx::Size kUnifiedFeaturePodCollapsedSize(48, 48);
 constexpr int kUnifiedFeaturePodVerticalPadding = 28;
 constexpr int kUnifiedFeaturePodHorizontalSidePadding = 28;
 constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 32;
+constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;
+constexpr int kUnifiedFeaturePodCollapsedHorizontalPadding = 24;
 constexpr int kUnifiedFeaturePodItemsInRow = 3;
+constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 
 }  // namespace ash
 

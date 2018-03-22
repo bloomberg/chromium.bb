@@ -133,6 +133,21 @@ void FeaturePodButton::SetToggled(bool toggled) {
   icon_button_->SetToggled(toggled);
 }
 
+void FeaturePodButton::SetExpanded(bool expanded) {
+  label_->SetVisible(expanded);
+  if (sub_label_)
+    sub_label_->SetVisible(expanded);
+}
+
+void FeaturePodButton::SetVisibleByContainer(bool visible) {
+  View::SetVisible(visible);
+}
+
+void FeaturePodButton::SetVisible(bool visible) {
+  visible_preferred_ = visible;
+  View::SetVisible(visible);
+}
+
 void FeaturePodButton::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   controller_->OnPressed();
