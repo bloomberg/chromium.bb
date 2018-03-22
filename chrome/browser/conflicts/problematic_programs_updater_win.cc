@@ -15,7 +15,6 @@
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/module_database_win.h"
-#include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "chrome/common/pref_names.h"
@@ -160,11 +159,9 @@ ProblematicProgramsUpdater::ProblematicProgram::operator=(
 // ProblematicProgramsUpdater --------------------------------------------------
 
 ProblematicProgramsUpdater::ProblematicProgramsUpdater(
-    const CertificateInfo& exe_certificate_info,
     const ModuleListFilter& module_list_filter,
     const InstalledPrograms& installed_programs)
-    : exe_certificate_info_(exe_certificate_info),
-      module_list_filter_(module_list_filter),
+    : module_list_filter_(module_list_filter),
       installed_programs_(installed_programs) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -215,16 +212,7 @@ void ProblematicProgramsUpdater::OnNewModuleFound(
   if ((module_data.module_types & ModuleInfoData::kTypeLoadedModule) == 0)
     return;
 
-  // Explicitly whitelist modules whose signing cert's Subject field matches the
-  // one in the current executable. No attempt is made to check the validity of
-  // module signatures or of signing certs.
-  if (exe_certificate_info_.type != CertificateType::NO_CERTIFICATE &&
-      exe_certificate_info_.subject ==
-          module_data.inspection_result->certificate_info.subject) {
-    return;
-  }
-
-  // Skip modules whitelisted by the Module List component.
+  // Skip explicitely whitelisted modules.
   if (module_list_filter_.IsWhitelisted(module_key, module_data))
     return;
 
