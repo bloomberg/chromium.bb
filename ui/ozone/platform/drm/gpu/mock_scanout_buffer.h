@@ -38,6 +38,7 @@ class MockScanoutBuffer : public ScanoutBuffer {
   uint32_t format_;
   uint64_t modifier_;
   uint32_t id_;
+  uint32_t opaque_id_;
   scoped_refptr<DrmDevice> drm_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScanoutBuffer);

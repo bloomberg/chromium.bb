@@ -25,13 +25,13 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   HardwareDisplayPlaneAtomic(uint32_t plane_id, uint32_t possible_crtcs);
   ~HardwareDisplayPlaneAtomic() override;
 
-  bool SetPlaneData(drmModeAtomicReq* property_set,
-                    uint32_t crtc_id,
-                    uint32_t framebuffer,
-                    const gfx::Rect& crtc_rect,
-                    const gfx::Rect& src_rect,
-                    const gfx::OverlayTransform transform,
-                    int in_fence_fd);
+  virtual bool SetPlaneData(drmModeAtomicReq* property_set,
+                            uint32_t crtc_id,
+                            uint32_t framebuffer,
+                            const gfx::Rect& crtc_rect,
+                            const gfx::Rect& src_rect,
+                            const gfx::OverlayTransform transform,
+                            int in_fence_fd);
 
   void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
   CrtcController* crtc() const { return crtc_; }

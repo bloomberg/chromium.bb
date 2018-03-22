@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/fake_plane_info.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
@@ -360,6 +361,46 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
   task_env_.RunUntilIdle();
 
   EXPECT_TRUE(callback_called);
+}
+
+class HardwareDisplayPlaneAtomicMock : public ui::HardwareDisplayPlaneAtomic {
+ public:
+  HardwareDisplayPlaneAtomicMock() : ui::HardwareDisplayPlaneAtomic(0, ~0) {}
+  ~HardwareDisplayPlaneAtomicMock() override {}
+
+  bool SetPlaneData(drmModeAtomicReq* property_set,
+                    uint32_t crtc_id,
+                    uint32_t framebuffer,
+                    const gfx::Rect& crtc_rect,
+                    const gfx::Rect& src_rect,
+                    const gfx::OverlayTransform transform,
+                    int in_fence_fd) override {
+    framebuffer_ = framebuffer;
+    return true;
+  }
+  uint32_t framebuffer() const { return framebuffer_; }
+
+ private:
+  uint32_t framebuffer_ = 0;
+};
+
+TEST(HardwareDisplayPlaneManagerAtomic, EnableBlend) {
+  auto plane_manager =
+      std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>();
+  ui::HardwareDisplayPlaneList plane_list;
+  HardwareDisplayPlaneAtomicMock hw_plane;
+  scoped_refptr<ui::ScanoutBuffer> buffer =
+      new ui::MockScanoutBuffer(kDefaultBufferSize);
+  ui::OverlayPlane overlay(buffer, base::kInvalidPlatformFile);
+  overlay.enable_blend = true;
+  plane_manager->SetPlaneData(&plane_list, &hw_plane, overlay, 1, gfx::Rect(),
+                              nullptr);
+  EXPECT_EQ(hw_plane.framebuffer(), buffer->GetFramebufferId());
+
+  overlay.enable_blend = false;
+  plane_manager->SetPlaneData(&plane_list, &hw_plane, overlay, 1, gfx::Rect(),
+                              nullptr);
+  EXPECT_EQ(hw_plane.framebuffer(), buffer->GetOpaqueFramebufferId());
 }
 
 }  // namespace
