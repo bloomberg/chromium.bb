@@ -716,7 +716,15 @@ inline void CopyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection,
   typedef
       typename HashMap<T, U, V, W, X, Y>::const_iterator::KeysIterator iterator;
 
-  vector.resize(collection.size());
+  {
+    // Disallow GC during resize allocation; see crbugs 568173 and 823612.
+    // The element copy doesn't need to be in this scope because garbage
+    // collection can only remove elements from collection if its keys are
+    // WeakMembers, in which case copying them doesn't perform a heap
+    // allocation.
+    typename Z::GCForbiddenScope scope;
+    vector.resize(collection.size());
+  }
 
   iterator it = collection.begin().Keys();
   iterator end = collection.end().Keys();
@@ -735,6 +743,11 @@ inline void CopyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection,
                                Z& vector) {
   typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::ValuesIterator
       iterator;
+
+  // Disallow GC during resize allocation and copy operations (which may also
+  // perform allocations and therefore cause elements of collection to be
+  // removed); see crbugs 568173 and 823612.
+  typename Z::GCForbiddenScope scope;
 
   vector.resize(collection.size());
 
