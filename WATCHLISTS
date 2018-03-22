@@ -765,6 +765,9 @@
     'cros_benchmarks': {
       'filepath': 'tools/perf/contrib/cros_benchmarks',
     },
+    'crostini': {
+      'filepath': 'chrome/browser/ui/app_list/crostini',
+    },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
@@ -1998,6 +2001,7 @@
     'cros_benchmarks': ['cros-perf-detectives@google.com',
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
+    'crostini': ['crostini-ui@chromium.org'],
     'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org'],
     'data_reduction_proxy': ['tbansal+watch-data-reduction-proxy@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
