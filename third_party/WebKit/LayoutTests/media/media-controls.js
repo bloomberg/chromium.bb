@@ -385,6 +385,11 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
   ], callback);
 }
 
+function singleTapOnControl(control, callback) {
+  const coordinates = elementCoordinates(control);
+  singleTapAtCoordinates(coordinates[0], coordinates[1], callback);
+}
+
 function singleTouchAtCoordinates(xPos, yPos, callback) {
   chrome.gpuBenchmarking.pointerActionSequence([
     {

@@ -749,13 +749,23 @@ void MediaControlsImpl::Reset() {
         ShouldShowPictureInPictureButton(MediaElement()));
   }
 
+  UpdateCSSClassFromState();
   OnControlsListUpdated();
 }
 
 void MediaControlsImpl::OnControlsListUpdated() {
   BatchedControlUpdate batch(this);
 
-  fullscreen_button_->SetIsWanted(ShouldShowFullscreenButton(MediaElement()));
+  if (ShouldShowDisabledControls()) {
+    fullscreen_button_->SetIsWanted(true);
+    fullscreen_button_->setAttribute(HTMLNames::disabledAttr,
+                                     ShouldShowFullscreenButton(MediaElement())
+                                         ? AtomicString()
+                                         : AtomicString(""));
+  } else {
+    fullscreen_button_->SetIsWanted(ShouldShowFullscreenButton(MediaElement()));
+    fullscreen_button_->removeAttribute(HTMLNames::disabledAttr);
+  }
 
   RefreshCastButtonVisibilityWithoutUpdate();
 
@@ -1360,7 +1370,15 @@ void MediaControlsImpl::OnVolumeChange() {
   BatchedControlUpdate batch(this);
   volume_slider_->SetIsWanted(MediaElement().HasAudio() &&
                               !PreferHiddenVolumeControls(GetDocument()));
-  mute_button_->SetIsWanted(MediaElement().HasAudio());
+  if (ShouldShowDisabledControls()) {
+    mute_button_->SetIsWanted(true);
+    mute_button_->setAttribute(
+        HTMLNames::disabledAttr,
+        MediaElement().HasAudio() ? AtomicString() : AtomicString(""));
+  } else {
+    mute_button_->SetIsWanted(MediaElement().HasAudio());
+    mute_button_->removeAttribute(HTMLNames::disabledAttr);
+  }
 }
 
 void MediaControlsImpl::OnFocusIn() {
@@ -1720,8 +1738,7 @@ void MediaControlsImpl::StartActingAsAudioControls() {
 
   is_acting_as_audio_controls_ = true;
   PopulatePanel();
-  UpdateCSSClassFromState();
-  UpdateOverflowMenuWanted();
+  Reset();
 }
 
 void MediaControlsImpl::StopActingAsAudioControls() {
@@ -1730,8 +1747,12 @@ void MediaControlsImpl::StopActingAsAudioControls() {
 
   is_acting_as_audio_controls_ = false;
   PopulatePanel();
-  UpdateCSSClassFromState();
-  UpdateOverflowMenuWanted();
+  Reset();
+}
+
+bool MediaControlsImpl::ShouldShowDisabledControls() const {
+  return IsModern() && MediaElement().IsHTMLVideoElement() &&
+         !is_acting_as_audio_controls_;
 }
 
 void MediaControlsImpl::Invalidate(Element* element) {
