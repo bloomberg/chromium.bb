@@ -45,7 +45,7 @@ void AffiliatedCloudPolicyInvalidator::CreateInvalidator(
   DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
       type_, core_, base::ThreadTaskRunnerHandle::Get(),
-      std::unique_ptr<base::Clock>(new base::DefaultClock()),
+      base::DefaultClock::GetInstance(),
       highest_handled_invalidation_version_));
   invalidator_->Initialize(invalidation_service);
 }

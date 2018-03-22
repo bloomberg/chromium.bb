@@ -29,7 +29,7 @@ namespace off_hours {
 
 DeviceOffHoursController::DeviceOffHoursController()
     : timer_(std::make_unique<base::OneShotTimer>()),
-      clock_(std::make_unique<base::DefaultClock>()) {
+      clock_(base::DefaultClock::GetInstance()) {
   // IsInitialized() check is used for testing. Otherwise it has to be already
   // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
@@ -65,9 +65,9 @@ void DeviceOffHoursController::RemoveObserver(Observer* observer) {
 }
 
 void DeviceOffHoursController::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     base::TickClock* timer_clock) {
-  clock_ = std::move(clock);
+  clock_ = clock;
   timer_ = std::make_unique<base::OneShotTimer>(timer_clock);
 }
 
@@ -105,9 +105,8 @@ void DeviceOffHoursController::UpdateOffHoursPolicy(
         device_settings_proto.device_off_hours());
     base::Optional<std::string> timezone = ExtractTimezoneFromProto(container);
     if (timezone) {
-      off_hours_intervals =
-          ConvertIntervalsToGmt(ExtractOffHoursIntervalsFromProto(container),
-                                clock_.get(), *timezone);
+      off_hours_intervals = ConvertIntervalsToGmt(
+          ExtractOffHoursIntervalsFromProto(container), clock_, *timezone);
     }
   }
   off_hours_intervals_.swap(off_hours_intervals);
@@ -142,7 +141,7 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
     SetOffHoursMode(false);
     return;
   }
-  WeeklyTime current_time = WeeklyTime::GetCurrentWeeklyTime(clock_.get());
+  WeeklyTime current_time = WeeklyTime::GetCurrentWeeklyTime(clock_);
   for (const auto& interval : off_hours_intervals_) {
     if (interval.Contains(current_time)) {
       base::TimeDelta remaining_off_hours_duration =

@@ -193,7 +193,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   CloudPolicyCore core_;
   MockCloudPolicyClient* client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
 
   // The invalidator which will be tested.
   std::unique_ptr<CloudPolicyInvalidator> invalidator_;
@@ -218,14 +218,13 @@ CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
             loop_.task_runner()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
-      clock_(new base::SimpleTestClock()),
       object_id_a_(135, "asdf"),
       object_id_b_(246, "zxcv"),
       policy_value_a_("asdf"),
       policy_value_b_("zxcv"),
       policy_value_cur_(policy_value_a_) {
-  clock_->SetNow(
-      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(987654321));
+  clock_.SetNow(base::Time::UnixEpoch() +
+                base::TimeDelta::FromSeconds(987654321));
 }
 
 void CloudPolicyInvalidatorTest::TearDown() {
@@ -239,8 +238,7 @@ void CloudPolicyInvalidatorTest::StartInvalidator(
     bool start_refresh_scheduler,
     int64_t highest_handled_invalidation_version) {
   invalidator_.reset(
-      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_,
-                                 std::unique_ptr<base::Clock>(clock_),
+      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_, &clock_,
                                  highest_handled_invalidation_version));
   if (start_refresh_scheduler) {
     ConnectCore();
@@ -388,11 +386,11 @@ int64_t CloudPolicyInvalidatorTest::GetHighestHandledInvalidationVersion()
 }
 
 void CloudPolicyInvalidatorTest::AdvanceClock(base::TimeDelta delta) {
-  clock_->Advance(delta);
+  clock_.Advance(delta);
 }
 
 base::Time CloudPolicyInvalidatorTest::Now() {
-  return clock_->Now();
+  return clock_.Now();
 }
 
 int64_t CloudPolicyInvalidatorTest::V(int version) {

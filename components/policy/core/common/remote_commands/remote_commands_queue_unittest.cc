@@ -109,7 +109,7 @@ RemoteCommandsQueueTest::RemoteCommandsQueueTest()
 void RemoteCommandsQueueTest::SetUp() {
   clock_ = task_runner_->GetMockTickClock();
   test_start_time_ = clock_->NowTicks();
-  queue_.SetClockForTesting(task_runner_->DeprecatedGetMockTickClock());
+  queue_.SetClockForTesting(clock_);
   queue_.AddObserver(&observer_);
 }
 

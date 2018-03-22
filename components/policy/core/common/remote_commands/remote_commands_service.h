@@ -51,7 +51,7 @@ class POLICY_EXPORT RemoteCommandsService
   }
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
+  void SetClockForTesting(base::TickClock* clock);
 
  private:
   // Helper function to enqueue a command which we get from server.

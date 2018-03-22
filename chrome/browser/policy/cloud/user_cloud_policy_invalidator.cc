@@ -21,12 +21,11 @@ namespace policy {
 UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
     CloudPolicyManager* policy_manager)
-    : CloudPolicyInvalidator(
-          GetPolicyType(),
-          policy_manager->core(),
-          base::ThreadTaskRunnerHandle::Get(),
-          std::unique_ptr<base::Clock>(new base::DefaultClock()),
-          0 /* highest_handled_invalidation_version */),
+    : CloudPolicyInvalidator(GetPolicyType(),
+                             policy_manager->core(),
+                             base::ThreadTaskRunnerHandle::Get(),
+                             base::DefaultClock::GetInstance(),
+                             0 /* highest_handled_invalidation_version */),
       profile_(profile) {
   DCHECK(profile);
 

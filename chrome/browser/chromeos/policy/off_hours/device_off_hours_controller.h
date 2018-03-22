@@ -83,8 +83,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // |timer_clock| is not owned and its lifetime should cover lifetime of
   // DeviceOffHoursContoller.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock,
-                          base::TickClock* timer_clock);
+  void SetClockForTesting(base::Clock* clock, base::TickClock* timer_clock);
 
  private:
   // Run OnOffHoursEndTimeChanged() for observers.
@@ -134,7 +133,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // Used for testing purposes, otherwise it's an instance of
   // base::DefaultClock.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Value is false until the system time is synchronized with network time.
   bool network_synchronized_ = false;
