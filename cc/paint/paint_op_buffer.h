@@ -896,14 +896,21 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   void UpdateSaveLayerBounds(size_t offset, const SkRect& bounds) {
     CHECK_LT(offset, used_);
-    CHECK_LE(offset + sizeof(SaveLayerOp), used_);
+    CHECK_LE(offset + sizeof(PaintOp), used_);
 
-    auto* op = reinterpret_cast<SaveLayerOp*>(data_.get() + offset);
-    CHECK_EQ(op->type, static_cast<uint32_t>(SaveLayerOp::kType));
-    size_t skip = op->skip;
-    DCHECK_EQ(skip, ComputeOpSkip(sizeof(SaveLayerOp)));
-
-    op->bounds = bounds;
+    auto* op = reinterpret_cast<PaintOp*>(data_.get() + offset);
+    switch (op->GetType()) {
+      case SaveLayerOp::kType:
+        CHECK_LE(offset + sizeof(SaveLayerOp), used_);
+        static_cast<SaveLayerOp*>(op)->bounds = bounds;
+        break;
+      case SaveLayerAlphaOp::kType:
+        CHECK_LE(offset + sizeof(SaveLayerAlphaOp), used_);
+        static_cast<SaveLayerAlphaOp*>(op)->bounds = bounds;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   template <typename T>
