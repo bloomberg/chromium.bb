@@ -46,6 +46,11 @@ void AttestationObject::EraseAttestationStatement() {
 #endif
 }
 
+bool AttestationObject::IsAttestationCertificateInappropriatelyIdentifying() {
+  return attestation_statement_
+      ->IsAttestationCertificateInappropriatelyIdentifying();
+}
+
 std::vector<uint8_t> AttestationObject::SerializeToCBOREncodedBytes() const {
   cbor::CBORValue::MapValue map;
   map[cbor::CBORValue(kFormatKey)] =

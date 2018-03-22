@@ -89,6 +89,12 @@ void RegisterResponseData::EraseAttestationStatement() {
   attestation_object_->EraseAttestationStatement();
 }
 
+bool RegisterResponseData::
+    IsAttestationCertificateInappropriatelyIdentifying() {
+  return attestation_object_
+      ->IsAttestationCertificateInappropriatelyIdentifying();
+}
+
 std::vector<uint8_t> RegisterResponseData::GetCBOREncodedAttestationObject()
     const {
   return attestation_object_->SerializeToCBOREncodedBytes();

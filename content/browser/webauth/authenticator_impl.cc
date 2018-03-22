@@ -591,13 +591,36 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     // timeout run out.
     // See https://w3c.github.io/webauthn/#sec-assertion-privacy.
     return;
-  } else {
-    InvokeCallbackAndCleanup(
-        std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::SUCCESS,
-        CreateMakeCredentialResponse(std::move(client_data_json_),
-                                     std::move(response_data)));
   }
+
+  // The check for IsAttestationCertificateInappropriatelyIdentifying is
+  // performed after the permissions prompt, even though we know the answer
+  // before, because this still effectively discloses the make & model of the
+  // authenticator: If an RP sees a "none" attestation from Chrome after
+  // requesting direct attestation then it knows that it was one of the tokens
+  // with inappropriate certs.
+  if (response_data.IsAttestationCertificateInappropriatelyIdentifying() &&
+      !GetContentClient()
+           ->browser()
+           ->ShouldPermitIndividualAttestationForWebauthnRPID(
+               render_frame_host_->GetProcess()->GetBrowserContext(),
+               relying_party_id_)) {
+    // The attestation response is incorrectly individually identifiable, but
+    // the consent is for make & model information about a token, not for
+    // individually-identifiable information. Erase the attestation to stop it
+    // begin a tracking signal.
+
+    // The only way to get the underlying attestation will be to list the RP ID
+    // in the enterprise policy, because that enables the individual attestation
+    // bit in the register request and permits individual attestation generally.
+    response_data.EraseAttestationStatement();
+  }
+
+  InvokeCallbackAndCleanup(
+      std::move(make_credential_response_callback_),
+      webauth::mojom::AuthenticatorStatus::SUCCESS,
+      CreateMakeCredentialResponse(std::move(client_data_json_),
+                                   std::move(response_data)));
 }
 
 void AuthenticatorImpl::OnSignResponse(

@@ -31,6 +31,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationStatement {
   // nested within another CBOR object and encoded then.
   virtual cbor::CBORValue::MapValue GetAsCBORMap() = 0;
 
+  // Returns true if the attestation is known to be inappropriately identifying.
+  // Some tokens return unique attestation certificates even when the bit to
+  // request that is not set. (Normal attestation certificates are not
+  // indended to be trackable.)
+  virtual bool IsAttestationCertificateInappropriatelyIdentifying() = 0;
+
   const std::string& format_name() { return format_; }
 
  protected:
@@ -52,6 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) NoneAttestationStatement
 
   ~NoneAttestationStatement() override;
   cbor::CBORValue::MapValue GetAsCBORMap() override;
+  bool IsAttestationCertificateInappropriatelyIdentifying() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoneAttestationStatement);
