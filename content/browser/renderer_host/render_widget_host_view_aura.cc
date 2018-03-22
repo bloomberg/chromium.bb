@@ -1386,7 +1386,7 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
 }
 
 void RenderWidgetHostViewAura::OnInputMethodChanged() {
-  // TODO(suzhe): implement the newly added “locale” property of HTML DOM
+  // TODO(suzhe): implement the newly added "locale" property of HTML DOM
   // TextEvent.
 }
 
