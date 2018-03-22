@@ -41,9 +41,24 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   // Stops tracking this download task.
   void Remove(web::DownloadTask* task) { task->RemoveObserver(this); }
   // DownloadTaskObserver overrides:
+  void OnDownloadUpdated(web::DownloadTask* task) override {
+    if (task->IsDone()) {
+      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
+                                task->GetErrorCode()
+                                    ? DownloadFileResult::Failure
+                                    : DownloadFileResult::Completed,
+                                DownloadFileResult::Count);
+    }
+  }
   void OnDownloadDestroyed(web::DownloadTask* task) override {
     // This download task was never open by the user.
     task->RemoveObserver(this);
+
+    if (task->GetState() == web::DownloadTask::State::kInProgress) {
+      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
+                                DownloadFileResult::Other,
+                                DownloadFileResult::Count);
+    }
 
     if (task->IsDone() && task->GetErrorCode() == net::OK) {
       UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction",
@@ -206,6 +221,11 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
                                message:nil
                      completionHandler:^(BOOL confirmed) {
                        if (confirmed) {
+                         UMA_HISTOGRAM_ENUMERATION(
+                             "Download.IOSDownloadFileResult",
+                             DownloadFileResult::Cancelled,
+                             DownloadFileResult::Count);
+
                          [weakSelf cancelDownload];
                        }
                      }];
