@@ -4586,14 +4586,14 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
                                             int page_number,
                                             const RenderingSettings& settings,
                                             HDC dc) {
-  FPDF_DOCUMENT doc = FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr);
+  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+      FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
-  FPDF_PAGE page = FPDF_LoadPage(doc, page_number);
-  if (!page) {
-    FPDF_CloseDocument(doc);
+  FPDF_PAGE page = FPDF_LoadPage(doc.get(), page_number);
+  if (!page)
     return false;
-  }
+
   RenderingSettings new_settings = settings;
   // calculate the page size
   if (new_settings.dpi_x == -1)
@@ -4646,7 +4646,6 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   }
   RestoreDC(dc, save_state);
   FPDF_ClosePage(page);
-  FPDF_CloseDocument(doc);
   return true;
 }
 
@@ -4671,15 +4670,13 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
     int page_number,
     const RenderingSettings& settings,
     void* bitmap_buffer) {
-  FPDF_DOCUMENT doc =
-      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr);
+  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
   if (!doc)
     return false;
-  FPDF_PAGE page = FPDF_LoadPage(doc, page_number);
-  if (!page) {
-    FPDF_CloseDocument(doc);
+  FPDF_PAGE page = FPDF_LoadPage(doc.get(), page_number);
+  if (!page)
     return false;
-  }
 
   pp::Rect dest;
   int rotate = CalculatePosition(page, settings, &dest);
@@ -4697,7 +4694,6 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
                         FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
   FPDFBitmap_Destroy(bitmap);
   FPDF_ClosePage(page);
-  FPDF_CloseDocument(doc);
   return true;
 }
 
@@ -4705,10 +4701,11 @@ bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
                                         int buffer_size,
                                         int* page_count,
                                         double* max_page_width) {
-  FPDF_DOCUMENT doc = FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr);
+  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+      FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
-  int page_count_local = FPDF_GetPageCount(doc);
+  int page_count_local = FPDF_GetPageCount(doc.get());
   if (page_count) {
     *page_count = page_count_local;
   }
@@ -4717,13 +4714,13 @@ bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
     for (int page_number = 0; page_number < page_count_local; page_number++) {
       double page_width = 0;
       double page_height = 0;
-      FPDF_GetPageSizeByIndex(doc, page_number, &page_width, &page_height);
+      FPDF_GetPageSizeByIndex(doc.get(), page_number, &page_width,
+                              &page_height);
       if (page_width > *max_page_width) {
         *max_page_width = page_width;
       }
     }
   }
-  FPDF_CloseDocument(doc);
   return true;
 }
 
@@ -4732,13 +4729,11 @@ bool PDFiumEngineExports::GetPDFPageSizeByIndex(const void* pdf_buffer,
                                                 int page_number,
                                                 double* width,
                                                 double* height) {
-  FPDF_DOCUMENT doc =
-      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr);
+  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+      FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
   if (!doc)
     return false;
-  bool success = FPDF_GetPageSizeByIndex(doc, page_number, width, height) != 0;
-  FPDF_CloseDocument(doc);
-  return success;
+  return FPDF_GetPageSizeByIndex(doc.get(), page_number, width, height) != 0;
 }
 
 }  // namespace chrome_pdf
