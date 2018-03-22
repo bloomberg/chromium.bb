@@ -202,8 +202,8 @@ void LayoutSVGText::UpdateLayout() {
     // the bounding box below, and after that we clear the
     // |needs_transform_update_| flag.
     if (needs_transform_update_) {
-      local_transform_ = ToSVGTextElement(GetNode())->CalculateTransform(
-          SVGElement::kIncludeMotionTransform);
+      local_transform_ =
+          GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
     }
 
     UpdateFontAndMetrics(*this);
@@ -267,8 +267,8 @@ void LayoutSVGText::UpdateLayout() {
   // changed too, since the transform could depend on the bounding
   // box.
   if (bounds_changed || needs_transform_update_) {
-    local_transform_ = ToSVGTextElement(GetNode())->CalculateTransform(
-        SVGElement::kIncludeMotionTransform);
+    local_transform_ =
+        GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
     needs_transform_update_ = false;
     update_parent_boundaries = true;
   }
@@ -331,7 +331,7 @@ bool LayoutSVGText::NodeAtFloatPoint(HitTestResult& result,
         const LayoutPoint& local_layout_point = LayoutPoint(local_point);
         UpdateHitTestResult(result, local_layout_point);
         if (result.AddNodeToListBasedTestResult(
-                GetNode(), local_layout_point) == kStopHitTesting)
+                GetElement(), local_layout_point) == kStopHitTesting)
           return true;
       }
     }
@@ -386,9 +386,8 @@ FloatRect LayoutSVGText::StrokeBoundingBox() const {
   if (!svg_style.HasStroke())
     return stroke_boundaries;
 
-  DCHECK(GetNode());
-  DCHECK(GetNode()->IsSVGElement());
-  SVGLengthContext length_context(ToSVGElement(GetNode()));
+  DCHECK(GetElement());
+  SVGLengthContext length_context(GetElement());
   stroke_boundaries.Inflate(
       length_context.ValueForLength(svg_style.StrokeWidth()));
   return stroke_boundaries;

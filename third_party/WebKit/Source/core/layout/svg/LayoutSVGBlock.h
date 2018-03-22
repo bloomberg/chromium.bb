@@ -55,6 +55,8 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
+  SVGElement* GetElement() const;
+
  protected:
   void WillBeDestroyed() override;
   bool MapToVisualRectInAncestorSpaceInternal(
@@ -71,6 +73,9 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
  private:
+  // LayoutSVGBlock subclasses should use GetElement() instead.
+  void GetNode() const = delete;
+
   LayoutRect AbsoluteVisualRect() const final;
 
   void AbsoluteRects(Vector<IntRect>&,

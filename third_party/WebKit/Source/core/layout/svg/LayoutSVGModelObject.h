@@ -92,7 +92,7 @@ class LayoutSVGModelObject : public LayoutObject {
   void WillBeDestroyed() override;
 
  private:
-  // LayoutSVGModelObject subclasses should use element() instead.
+  // LayoutSVGModelObject subclasses should use GetElement() instead.
   void GetNode() const = delete;
 
   // This method should never be called, SVG uses a different nodeAtPoint method

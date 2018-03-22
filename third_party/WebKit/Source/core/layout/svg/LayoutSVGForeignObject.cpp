@@ -48,26 +48,26 @@ void LayoutSVGForeignObject::Paint(const PaintInfo& paint_info,
 
 LayoutUnit LayoutSVGForeignObject::ElementX() const {
   return LayoutUnit(
-      roundf(SVGLengthContext(ToSVGElement(GetNode()))
+      roundf(SVGLengthContext(GetElement())
                  .ValueForLength(StyleRef().SvgStyle().X(), StyleRef(),
                                  SVGLengthMode::kWidth)));
 }
 
 LayoutUnit LayoutSVGForeignObject::ElementY() const {
   return LayoutUnit(
-      roundf(SVGLengthContext(ToSVGElement(GetNode()))
+      roundf(SVGLengthContext(GetElement())
                  .ValueForLength(StyleRef().SvgStyle().Y(), StyleRef(),
                                  SVGLengthMode::kHeight)));
 }
 
 LayoutUnit LayoutSVGForeignObject::ElementWidth() const {
-  return LayoutUnit(SVGLengthContext(ToSVGElement(GetNode()))
+  return LayoutUnit(SVGLengthContext(GetElement())
                         .ValueForLength(StyleRef().Width(), StyleRef(),
                                         SVGLengthMode::kWidth));
 }
 
 LayoutUnit LayoutSVGForeignObject::ElementHeight() const {
-  return LayoutUnit(SVGLengthContext(ToSVGElement(GetNode()))
+  return LayoutUnit(SVGLengthContext(GetElement())
                         .ValueForLength(StyleRef().Height(), StyleRef(),
                                         SVGLengthMode::kHeight));
 }
@@ -89,7 +89,7 @@ void LayoutSVGForeignObject::ComputeLogicalHeight(
 void LayoutSVGForeignObject::UpdateLayout() {
   DCHECK(NeedsLayout());
 
-  SVGForeignObjectElement* foreign = ToSVGForeignObjectElement(GetNode());
+  SVGForeignObjectElement* foreign = ToSVGForeignObjectElement(GetElement());
 
   bool update_cached_boundaries_in_parents = false;
   if (needs_transform_update_) {
