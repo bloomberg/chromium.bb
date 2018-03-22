@@ -118,6 +118,8 @@ static_library("test_support") {
     "device_to_device_responder_operations.h",
     "fake_authenticator.cc",
     "fake_authenticator.h",
+    "fake_background_eid_generator.cc",
+    "fake_background_eid_generator.h",
     "fake_connection.cc",
     "fake_connection.h",
     "fake_cryptauth_device_manager.cc",
