@@ -83,9 +83,28 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
       const std::vector<base::ProcessId>& ids,
       const RequestOSMemoryDumpCallback& callback) override;
 
+  struct OSMemoryDumpArgs {
+    OSMemoryDumpArgs();
+    OSMemoryDumpArgs(const OSMemoryDumpArgs&);
+    ~OSMemoryDumpArgs();
+    bool want_mmaps = false;
+    std::vector<base::ProcessId> pids;
+    RequestOSMemoryDumpCallback callback;
+  };
+  void PerformOSMemoryDump(OSMemoryDumpArgs args);
+
   // Map containing pending chrome memory callbacks indexed by dump guid.
   // This must be destroyed after |binding_|.
   std::map<uint64_t, RequestChromeMemoryDumpCallback> pending_chrome_callbacks_;
+
+  // On macOS, we must wait for the most recent RequestChromeMemoryDumpCallback
+  // to complete before running the OS calculations. The key to this map is the
+  // dump_guid of that RequestChromeMemoryDumpCallback, the value a vector of
+  // callbacks to calculate and run. For more details, see
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=812346#c16.
+  std::map<uint64_t, std::vector<OSMemoryDumpArgs>>
+      delayed_os_memory_dump_callbacks_;
+  base::Optional<uint64_t> most_recent_chrome_memory_dump_guid_;
 
   mojom::CoordinatorPtr coordinator_;
   mojo::Binding<mojom::ClientProcess> binding_;

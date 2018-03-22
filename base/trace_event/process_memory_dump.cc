@@ -84,7 +84,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
   DCHECK_EQ(0u, start_pointer % page_size);
 
   size_t offset = 0;
-  size_t total_resident_size = 0;
+  size_t total_resident_pages = 0;
   bool failure = false;
 
   // An array as large as number of pages in memory segment needs to be passed
@@ -150,16 +150,16 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
     if (failure)
       break;
 
-    total_resident_size += resident_page_count * page_size;
+    total_resident_pages += resident_page_count * page_size;
     offset += kMaxChunkSize;
   }
 
   DCHECK(!failure);
   if (failure) {
-    total_resident_size = 0;
+    total_resident_pages = 0;
     LOG(ERROR) << "CountResidentBytes failed. The resident size is invalid";
   }
-  return total_resident_size;
+  return total_resident_pages;
 }
 
 // static
@@ -180,9 +180,49 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
     return base::Optional<size_t>();
   }
 
-  size_t resident_size =
+  size_t resident_pages =
       info.private_pages_resident + info.shared_pages_resident;
-  return resident_size * PAGE_SIZE;
+
+  // On macOS, measurements for private memory footprint overcount by
+  // faulted pages in anonymous shared memory. To discount for this, we touch
+  // all the resident pages in anonymous shared memory here, thus making them
+  // faulted as well. This relies on two assumptions:
+  //
+  // 1) Consumers use shared memory from front to back. Thus, if there are
+  // (N) resident pages, those pages represent the first N * PAGE_SIZE bytes in
+  // the shared memory region.
+  //
+  // 2) This logic is run shortly before the logic that calculates
+  // phys_footprint, thus ensuring that the discrepancy between faulted and
+  // resident pages is minimal.
+  //
+  // The performance penalty is expected to be small.
+  //
+  // * Most of the time, we expect the pages to already be resident and faulted,
+  // thus incurring a cache penalty read hit [since we read from each resident
+  // page].
+  //
+  // * Rarely, we expect the pages to be resident but not faulted, resulting in
+  // soft faults + cache penalty.
+  //
+  // * If assumption (1) is invalid, this will potentially fault some
+  // previously non-resident pages, thus increasing memory usage, without fixing
+  // the accounting.
+  //
+  // Sanity check in case the mapped size is less than the total size of the
+  // region.
+  size_t pages_to_fault =
+      std::min(resident_pages,
+               (shared_memory.mapped_size() + PAGE_SIZE - 1) / PAGE_SIZE);
+
+  volatile char* base_address = static_cast<char*>(shared_memory.memory());
+  for (size_t i = 0; i < pages_to_fault; ++i) {
+    // Reading from a volatile is a visible side-effect for the purposes of
+    // optimization. This guarantees that the optimizer will not kill this line.
+    base_address[i * PAGE_SIZE];
+  }
+
+  return resident_pages * PAGE_SIZE;
 #else
   return CountResidentBytes(shared_memory.memory(),
                             shared_memory.mapped_size());
