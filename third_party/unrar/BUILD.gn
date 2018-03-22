@@ -33,7 +33,6 @@ if (safe_browsing_mode == 1) {
       "src/options.cpp",
       "src/pathfn.cpp",
       "src/qopen.cpp",
-      "src/rar.cpp",
       "src/rarvm.cpp",
       "src/rawread.cpp",
       "src/rdwrfn.cpp",
@@ -71,9 +70,10 @@ if (safe_browsing_mode == 1) {
       "_FILE_OFFSET_BITS=64",
       "LARGEFILE_SOURCE",
       "RAR_SMP",
+
       # The following is set to disable certain macro definitions in the unrar
       # source code.
-      "CHROMIUM_UNRAR"
+      "CHROMIUM_UNRAR",
     ]
   }
 }
