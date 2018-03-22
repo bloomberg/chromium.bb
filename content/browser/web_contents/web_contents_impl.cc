@@ -4068,6 +4068,16 @@ void WebContentsImpl::PrintCrossProcessSubframe(
     const gfx::Rect& rect,
     int document_cookie,
     RenderFrameHost* subframe_host) {
+  auto* outer_contents = GetOuterWebContents();
+  if (outer_contents) {
+    // When an extension or app page is printed, the content should be
+    // composited with outer content, so the outer contents should handle the
+    // print request.
+    outer_contents->PrintCrossProcessSubframe(rect, document_cookie,
+                                              subframe_host);
+    return;
+  }
+
   // If there is no delegate such as in tests or during deletion, do nothing.
   if (!delegate_)
     return;

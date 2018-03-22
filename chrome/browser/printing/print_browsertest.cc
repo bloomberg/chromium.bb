@@ -5,13 +5,19 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.cc"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -23,8 +29,13 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/aura/env.h"
+#endif
 
 namespace printing {
 
@@ -230,6 +241,51 @@ class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
 };
 
 constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
+
+class PrintExtensionBrowserTest : public ExtensionBrowserTest {
+ public:
+  PrintExtensionBrowserTest() {}
+  ~PrintExtensionBrowserTest() override {}
+
+  void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
+    PrintPreviewObserver print_preview_observer;
+
+    printing::StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+                         /*print_preview_disabled=*/false,
+                         print_only_selection);
+
+    print_preview_observer.WaitUntilPreviewIsReady();
+  }
+
+  void LoadExtensionAndNavigateToOptionPage() {
+    const extensions::Extension* extension = nullptr;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      base::FilePath test_data_dir;
+      PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+      extension = LoadExtension(
+          test_data_dir.AppendASCII("printing").AppendASCII("test_extension"));
+      ASSERT_TRUE(extension);
+    }
+
+    GURL url(chrome::kChromeUIExtensionsURL);
+    std::string query =
+        base::StringPrintf("options=%s", extension->id().c_str());
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(query);
+    url = url.ReplaceComponents(replacements);
+    ui_test_utils::NavigateToURL(browser(), url);
+  }
+};
+
+class SitePerProcessPrintExtensionBrowserTest
+    : public PrintExtensionBrowserTest {
+ public:
+  // content::BrowserTestBase
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    content::IsolateAllSitesForTesting(command_line);
+  }
+};
 
 // Printing only a selection containing iframes is partially supported.
 // Iframes aren't currently displayed. This test passes whenever the print
@@ -491,6 +547,33 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, OopifPrinting) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(IsOopifEnabled());
+}
+
+// Printing an extension option page.
+// The test should not crash or timeout.
+IN_PROC_BROWSER_TEST_F(PrintExtensionBrowserTest, PrintOptionPage) {
+#if defined(OS_CHROMEOS)
+  // Mus can not support this test now https://crbug.com/823782.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+#endif
+
+  LoadExtensionAndNavigateToOptionPage();
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+// Printing an extension option page with site per process is enabled.
+// The test should not crash or timeout.
+IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
+                       PrintOptionPage) {
+#if defined(OS_CHROMEOS)
+  // Mus can not support this test now https://crbug.com/823782.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+#endif
+
+  LoadExtensionAndNavigateToOptionPage();
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }
 
 }  // namespace printing

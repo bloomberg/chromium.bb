@@ -170,11 +170,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // TODO(creis): Remove this now that we can get to it via FrameTreeNode.
   RenderFrameHostManager* GetRenderManagerForTesting();
 
-  // Returns the outer WebContents of this WebContents if any.
-  // Note that without --site-per-process, this will return the WebContents
-  // of the BrowserPluginEmbedder, if |this| is a guest.
-  WebContentsImpl* GetOuterWebContents();
-
   // Returns guest browser plugin object, or NULL if this WebContents is not a
   // guest.
   BrowserPluginGuest* GetBrowserPluginGuest() const;
@@ -373,7 +368,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void AttachToOuterWebContentsFrame(
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;
+  WebContentsImpl* GetOuterWebContents() override;
   void DidChangeVisibleSecurityState() override;
+
   void Stop() override;
   void FreezePage() override;
   WebContents* Clone() override;
