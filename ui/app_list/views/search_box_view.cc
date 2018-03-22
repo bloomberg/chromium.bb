@@ -38,6 +38,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -328,7 +329,8 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
   UpdateSearchIcon();
   close_button()->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kIcCloseIcon, kCloseIconSize, search_box_color()));
+      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
+                            search_box_color()));
   search_box()->set_placeholder_text_color(search_box_color());
   UpdateBackgroundColor(background_color());
   SchedulePaint();
@@ -374,9 +376,9 @@ void SearchBoxView::SetupBackButton() {
 
 void SearchBoxView::SetupCloseButton() {
   views::ImageButton* close = close_button();
-  close->SetImage(
-      views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(kIcCloseIcon, kCloseIconSize, search_box_color()));
+  close->SetImage(views::ImageButton::STATE_NORMAL,
+                  gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseIconSize,
+                                        search_box_color()));
   close->SetVisible(false);
   close->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));

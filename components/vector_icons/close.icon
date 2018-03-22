@@ -16,3 +16,12 @@ LINE_TO, 17.59f, 19,
 LINE_TO, 19, 17.59f,
 LINE_TO, 13.41f, 12,
 CLOSE
+
+// A variant of ic_close with rounded corners and optimized for 1x scale factor
+// devices.
+CANVAS_DIMENSIONS, 16,
+STROKE, 1.85f,
+MOVE_TO, 4, 4,
+R_LINE_TO, 8, 8,
+MOVE_TO, 4, 12,
+R_LINE_TO, 8, -8

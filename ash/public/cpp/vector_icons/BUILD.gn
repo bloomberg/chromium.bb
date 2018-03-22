@@ -10,7 +10,6 @@ aggregate_vector_icons("ash_public_vector_icons") {
 
   icons = [
     "notification_captive_portal.icon",
-    "notification_cellular_alert.1x.icon",
     "notification_cellular_alert.icon",
     "notification_google.icon",
     "notification_image.icon",
@@ -27,25 +26,15 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "notification_wifi_off.icon",
     "notification_download.icon",
     "notification_end_of_support.icon",
-    "window_control_left_snapped.1x.icon",
     "window_control_left_snapped.icon",
-    "window_control_right_snapped.1x.icon",
     "window_control_right_snapped.icon",
-    "window_control_close.1x.icon",
     "window_control_close.icon",
-    "window_control_maximize.1x.icon",
     "window_control_maximize.icon",
-    "window_control_minimize.1x.icon",
     "window_control_minimize.icon",
-    "window_control_restore.1x.icon",
     "window_control_restore.icon",
-    "window_control_back.1x.icon",
     "window_control_back.icon",
-    "window_control_menu.1x.icon",
     "window_control_menu.icon",
-    "window_control_zoom.1x.icon",
     "window_control_zoom.icon",
-    "window_control_dezoom.1x.icon",
     "window_control_dezoom.icon",
   ]
 }

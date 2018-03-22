@@ -10,3 +10,11 @@ STROKE, 3,
 MOVE_TO, 8.5f, 19.5f,
 R_LINE_TO, 7.5f, -8,
 R_LINE_TO, 7.5f, 8,
+
+// A variant of ic_expand_less with rounded corners and optimized for 1x
+// scale factor devices.
+CANVAS_DIMENSIONS, 16,
+STROKE, 1.765f,
+MOVE_TO, 4, 10,
+R_LINE_TO, 4, -4,
+R_LINE_TO, 4, 4,
