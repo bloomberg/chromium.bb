@@ -109,6 +109,8 @@ check_targets = [
   "//extensions:extensions_unittests",
   "//extensions/browser:browser_tests",
   "//extensions/browser:unit_tests",
+  "//extensions/browser/install:*",
+  "//extensions/common:common",
   "//extensions/common:unit_tests",
   "//extensions/renderer:unit_tests",
   "//extensions/shell/*",
@@ -133,6 +135,7 @@ check_targets = [
   #"//pdf/*",  # Medium-hard.
   #"//ppapi/*",  # Lots of errors.
   "//ppapi/examples/*",
+  "//ppapi/tests/*",
   "//printing/*",
 
   #"//remoting/*",  # Medium-hard.

@@ -13,4 +13,9 @@ source_set("install") {
     "extension_install_ui.cc",
     "extension_install_ui.h",
   ]
+
+  deps = [
+    "//base",
+    "//ui/gfx:native_widget_types",
+  ]
 }
