@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -127,9 +127,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   // with MusClientTestingState::CREATE_TESTING_STATE.
   ui::mojom::WindowServerTest* GetTestingInterface() const;
 
-  // Returns an interface to dispatch events in the mus server. Only available
-  // when created with MusClientTestingState::CREATE_TESTING_STATE.
-  ui::mojom::RemoteEventDispatcher* GetTestingEventDispater() const;
+  // Returns an interface to inject events into the Window Service. Only
+  // available when created with MusClientTestingState::CREATE_TESTING_STATE.
+  ui::mojom::EventInjector* GetTestingEventInjector() const;
 
  private:
   friend class AuraInit;
@@ -182,7 +182,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
 
   ui::mojom::WindowServerTestPtr server_test_ptr_;
-  ui::mojom::RemoteEventDispatcherPtr remote_event_dispatcher_ptr_;
+  ui::mojom::EventInjectorPtr event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

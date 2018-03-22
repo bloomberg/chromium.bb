@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/remote_event_dispatcher.h"
+#include "services/ui/ws/event_injector.h"
 
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -13,14 +13,12 @@
 namespace ui {
 namespace ws {
 
-RemoteEventDispatcherImpl::RemoteEventDispatcherImpl(WindowServer* server)
-    : window_server_(server) {}
+EventInjector::EventInjector(WindowServer* server) : window_server_(server) {}
 
-RemoteEventDispatcherImpl::~RemoteEventDispatcherImpl() {}
+EventInjector::~EventInjector() {}
 
-void RemoteEventDispatcherImpl::AdjustEventLocationForPixelLayout(
-    Display* display,
-    ui::LocatedEvent* event) {
+void EventInjector::AdjustEventLocationForPixelLayout(Display* display,
+                                                      ui::LocatedEvent* event) {
   WindowManagerState* window_manager_state =
       window_server_->GetWindowManagerState();
   if (!window_manager_state)
@@ -51,19 +49,19 @@ void RemoteEventDispatcherImpl::AdjustEventLocationForPixelLayout(
   event->set_root_location_f(capture_relative_location);
 }
 
-void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
-                                              std::unique_ptr<ui::Event> event,
-                                              DispatchEventCallback cb) {
+void EventInjector::InjectEvent(int64_t display_id,
+                                std::unique_ptr<ui::Event> event,
+                                InjectEventCallback cb) {
   DisplayManager* manager = window_server_->display_manager();
   if (!manager) {
-    DVLOG(1) << "No display manager in DispatchEvent.";
+    DVLOG(1) << "No display manager in InjectEvent.";
     std::move(cb).Run(false);
     return;
   }
 
   Display* display = manager->GetDisplayById(display_id);
   if (!display) {
-    DVLOG(1) << "Invalid display_id in DispatchEvent.";
+    DVLOG(1) << "Invalid display_id in InjectEvent.";
     std::move(cb).Run(false);
     return;
   }
@@ -71,7 +69,7 @@ void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
   if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = event->AsLocatedEvent();
     if (located_event->root_location_f() != located_event->location_f()) {
-      DVLOG(1) << "RemoteEventDispatcher::DispatchEvent locations must match";
+      DVLOG(1) << "EventInjector::InjectEvent locations must match";
       std::move(cb).Run(false);
       return;
     }

@@ -26,9 +26,9 @@
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
-#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
@@ -167,8 +167,7 @@ class Service : public service_manager::Service,
 
   void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
 
-  void BindRemoteEventDispatcherRequest(
-      mojom::RemoteEventDispatcherRequest request);
+  void BindEventInjectorRequest(mojom::EventInjectorRequest request);
 
   void BindVideoDetectorRequest(mojom::VideoDetectorRequest request);
 

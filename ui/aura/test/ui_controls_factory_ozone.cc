@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
+#include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -211,7 +211,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
         event_to_send = ui::Event::Clone(*event);
       }
 
-      GetRemoteEventDispatcher()->DispatchEvent(
+      GetEventInjector()->InjectEvent(
           host_->GetDisplayId(), std::move(event_to_send),
           base::BindOnce(&OnWindowServiceProcessedEvent, std::move(closure)));
       return;
@@ -276,22 +276,22 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     SendEventToSink(&mouse_event2, std::move(closure));
   }
 
-  // Returns the ui::mojom::RemoteEventDispatcher, which is used to send events
+  // Returns the ui::mojom::EventInjector, which is used to send events
   // to the Window Service for dispatch.
-  ui::mojom::RemoteEventDispatcher* GetRemoteEventDispatcher() {
+  ui::mojom::EventInjector* GetEventInjector() {
     DCHECK_EQ(aura::Env::Mode::MUS, aura::Env::GetInstance()->mode());
-    if (!remote_event_dispatcher_) {
+    if (!event_injector_) {
       DCHECK(aura::test::EnvTestHelper().GetWindowTreeClient());
       aura::test::EnvTestHelper()
           .GetWindowTreeClient()
           ->connector()
-          ->BindInterface(ui::mojom::kServiceName, &remote_event_dispatcher_);
+          ->BindInterface(ui::mojom::kServiceName, &event_injector_);
     }
-    return remote_event_dispatcher_.get();
+    return event_injector_.get();
   }
 
   WindowTreeHost* host_;
-  ui::mojom::RemoteEventDispatcherPtr remote_event_dispatcher_;
+  ui::mojom::EventInjectorPtr event_injector_;
 
   // Mask of the mouse buttons currently down. This is static as it needs to
   // track the state globally for all displays. A UIControlsOzone instance is

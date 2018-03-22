@@ -108,6 +108,6 @@ details:
 EventDispatcherImpl and EventProcessor both have delegates that can impact
 targetting, as well as being notified during the lifecycle of processing.
 
-RemoteEventDispatcher is not a core part of event processing. It allows remote
-clients to inject events for testing and remoting. Events injected via
-RemoteEventDispatcher end up going to EventProcessor.
+EventInjector is not a core part of event processing. It allows remote clients
+to inject events for testing, remoting and similar use cases. Events injected
+via EventInjector end up going to EventProcessor.

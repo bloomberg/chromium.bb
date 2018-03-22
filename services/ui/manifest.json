@@ -30,7 +30,7 @@
           "ui::ozone::mojom::DrmDevice"
         ],
         "test": [
-          "ui::mojom::RemoteEventDispatcher",
+          "ui::mojom::EventInjector",
           "ui::mojom::WindowServerTest"
         ],
         "discardable_memory": [
@@ -56,7 +56,7 @@
         ],
         "privileged": [
           // Injecting events is security-sensitive.
-          "ui::mojom::RemoteEventDispatcher"
+          "ui::mojom::EventInjector"
         ],
         "window_manager": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
@@ -65,11 +65,11 @@
           "ui::mojom::AccessibilityManager",
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayManager",
+          "ui::mojom::EventInjector",
           "ui::mojom::Gpu",
           "ui::mojom::IMEDriver",
           "ui::mojom::InputDeviceController",
           "ui::mojom::InputDeviceServer",
-          "ui::mojom::RemoteEventDispatcher",
           "ui::mojom::TouchDeviceServer",
           "ui::mojom::UserActivityMonitor",
           "ui::mojom::WindowManagerWindowTreeFactory"
