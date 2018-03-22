@@ -38,9 +38,11 @@ const int kLinearRegressionDataLifetimeUs = 500000;
 constexpr base::TimeDelta kAvSyncUpkeepInterval =
     base::TimeDelta::FromMilliseconds(10);
 
+#if DCHECK_IS_ON()
 // Time interval between checking playbacks statistics.
 constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
     base::TimeDelta::FromSeconds(1);
+#endif
 
 // When we're in sync (i.e. the apts and vpts difference is
 // < kSoftCorrectionThresholdUs), if the apts and vpts slopes are different by
