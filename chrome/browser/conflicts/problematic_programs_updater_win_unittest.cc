@@ -72,16 +72,34 @@ class MockInstalledPrograms : public InstalledPrograms {
   DISALLOW_COPY_AND_ASSIGN(MockInstalledPrograms);
 };
 
+constexpr wchar_t kCertificatePath[] = L"CertificatePath";
+constexpr wchar_t kCertificateSubject[] = L"CertificateSubject";
+
+constexpr wchar_t kDllPath1[] = L"c:\\path\\to\\module.dll";
+constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
+
 // Returns a new ModuleInfoData marked as loaded into the process but otherwise
 // empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_types |= ModuleInfoData::kTypeLoadedModule;
+  module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
   return module_data;
 }
 
-constexpr wchar_t kDllPath1[] = L"c:\\path\\to\\module.dll";
-constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
+// Returns a new ModuleInfoData marked as loaded into the process with a
+// CertificateInfo that matches kCertificateSubject.
+ModuleInfoData CreateSignedLoadedModuleInfoData() {
+  ModuleInfoData module_data = CreateLoadedModuleInfoData();
+
+  module_data.inspection_result->certificate_info.type =
+      CertificateType::CERTIFICATE_IN_FILE;
+  module_data.inspection_result->certificate_info.path =
+      base::FilePath(kCertificatePath);
+  module_data.inspection_result->certificate_info.subject = kCertificateSubject;
+
+  return module_data;
+}
 
 }  // namespace
 
@@ -90,7 +108,11 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
   ProblematicProgramsUpdaterTest()
       : dll1_(kDllPath1),
         dll2_(kDllPath2),
-        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
+        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+    exe_certificate_info_.type = CertificateType::CERTIFICATE_IN_FILE;
+    exe_certificate_info_.path = base::FilePath(kCertificatePath);
+    exe_certificate_info_.subject = kCertificateSubject;
+  }
 
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
@@ -120,6 +142,7 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
     }
   }
 
+  CertificateInfo& exe_certificate_info() { return exe_certificate_info_; }
   MockModuleListFilter& module_list_filter() { return module_list_filter_; }
   MockInstalledPrograms& installed_programs() { return installed_programs_; }
 
@@ -131,6 +154,7 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
   ScopedTestingLocalState scoped_testing_local_state_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 
+  CertificateInfo exe_certificate_info_;
   MockModuleListFilter module_list_filter_;
   MockInstalledPrograms installed_programs_;
 
@@ -148,8 +172,8 @@ TEST_F(ProblematicProgramsUpdaterTest, EmptyCache) {
 // installed programs.
 TEST_F(ProblematicProgramsUpdaterTest, NoProblematicPrograms) {
   auto problematic_programs_updater =
-      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
-                                                   installed_programs());
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
 
   // Simulate some arbitrary module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -164,8 +188,8 @@ TEST_F(ProblematicProgramsUpdaterTest, OneConflict) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto problematic_programs_updater =
-      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
-                                                   installed_programs());
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -183,8 +207,8 @@ TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {
   AddProblematicProgram(dll2_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
   auto problematic_programs_updater =
-      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
-                                                   installed_programs());
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -211,8 +235,8 @@ TEST_F(ProblematicProgramsUpdaterTest, PersistsThroughRestarts) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto problematic_programs_updater =
-      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
-                                                   installed_programs());
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
 
   // Simulate the module loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -233,8 +257,8 @@ TEST_F(ProblematicProgramsUpdaterTest, StaleEntriesRemoved) {
   AddProblematicProgram(dll2_, L"Bar", Option::NO_REGISTRY_ENTRY);
 
   auto problematic_programs_updater =
-      std::make_unique<ProblematicProgramsUpdater>(module_list_filter(),
-                                                   installed_programs());
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
 
   // Simulate the modules loading into the process.
   problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
@@ -247,4 +271,22 @@ TEST_F(ProblematicProgramsUpdaterTest, StaleEntriesRemoved) {
   auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
   ASSERT_EQ(1u, program_names.size());
   EXPECT_EQ(L"Foo", program_names[0].info.name);
+}
+
+// Tests that modules with a matching certificate subject are whitelisted.
+TEST_F(ProblematicProgramsUpdaterTest, WhitelistMatchingCertificateSubject) {
+  AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
+
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
+
+  // Simulate the module loading into the process.
+  problematic_programs_updater->OnNewModuleFound(
+      ModuleInfoKey(dll1_, 0, 0, 0), CreateSignedLoadedModuleInfoData());
+  problematic_programs_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(ProblematicProgramsUpdater::HasCachedPrograms());
+  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(0u, program_names.size());
 }
