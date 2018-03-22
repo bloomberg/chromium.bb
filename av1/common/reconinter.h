@@ -133,7 +133,6 @@ typedef struct {
   int bits;
   const wedge_code_type *codebook;
   uint8_t *signflip;
-  int smoother;
   wedge_masks_type *masks;
 } wedge_params_type;
 
