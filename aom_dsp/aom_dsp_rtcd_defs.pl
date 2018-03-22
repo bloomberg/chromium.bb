@@ -191,6 +191,11 @@ specialize qw/aom_smooth_predictor_64x64 ssse3/;
 specialize qw/aom_smooth_predictor_64x32 ssse3/;
 specialize qw/aom_smooth_predictor_64x16 ssse3/;
 
+specialize qw/aom_smooth_v_predictor_8x4 ssse3/;
+specialize qw/aom_smooth_v_predictor_8x8 ssse3/;
+specialize qw/aom_smooth_v_predictor_8x16 ssse3/;
+specialize qw/aom_smooth_v_predictor_8x32 ssse3/;
+
 specialize qw/aom_smooth_v_predictor_16x4 ssse3/;
 specialize qw/aom_smooth_v_predictor_16x8 ssse3/;
 specialize qw/aom_smooth_v_predictor_16x16 ssse3/;

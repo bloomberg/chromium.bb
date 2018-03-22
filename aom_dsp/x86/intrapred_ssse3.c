@@ -834,6 +834,144 @@ void aom_smooth_predictor_16x64_ssse3(uint8_t *dst, ptrdiff_t stride,
 // -----------------------------------------------------------------------------
 // SMOOTH_V_PRED
 
+// pixels[0]: above and below_pred interleave vector, first half
+// pixels[1]: above and below_pred interleave vector, second half
+static INLINE void load_pixel_v_w8(const uint8_t *above, const uint8_t *left,
+                                   int height, __m128i *pixels) {
+  const __m128i zero = _mm_setzero_si128();
+  __m128i d = _mm_loadl_epi64((const __m128i *)above);
+  const __m128i bp = _mm_set1_epi16((uint16_t)left[height - 1]);
+  d = _mm_unpacklo_epi8(d, zero);
+  pixels[0] = _mm_unpacklo_epi16(d, bp);
+  pixels[1] = _mm_unpackhi_epi16(d, bp);
+}
+
+// weight_h[0]: weight_h vector
+// weight_h[1]: scale - weight_h vector
+// weight_h[2]: same as [0], offset 8
+// weight_h[3]: same as [1], offset 8
+// weight_h[4]: same as [0], offset 16
+// weight_h[5]: same as [1], offset 16
+// weight_h[6]: same as [0], offset 24
+// weight_h[7]: same as [1], offset 24
+static INLINE void load_weight_v_w8(const uint8_t *weight_array, int height,
+                                    __m128i *weight_h) {
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i d = _mm_set1_epi16((uint16_t)(1 << sm_weight_log2_scale));
+
+  if (height < 16) {
+    const int offset = height < 8 ? 4 : 8;
+    const __m128i weight =
+        _mm_loadu_si128((const __m128i *)&weight_array[offset]);
+    weight_h[0] = _mm_unpacklo_epi8(weight, zero);
+    weight_h[1] = _mm_sub_epi16(d, weight_h[0]);
+  } else if (height == 16) {
+    const __m128i weight = _mm_loadu_si128((const __m128i *)&weight_array[16]);
+    weight_h[0] = _mm_unpacklo_epi8(weight, zero);
+    weight_h[1] = _mm_sub_epi16(d, weight_h[0]);
+    weight_h[2] = _mm_unpackhi_epi8(weight, zero);
+    weight_h[3] = _mm_sub_epi16(d, weight_h[2]);
+  } else {
+    const __m128i weight_lo =
+        _mm_loadu_si128((const __m128i *)&weight_array[32]);
+    weight_h[0] = _mm_unpacklo_epi8(weight_lo, zero);
+    weight_h[1] = _mm_sub_epi16(d, weight_h[0]);
+    weight_h[2] = _mm_unpackhi_epi8(weight_lo, zero);
+    weight_h[3] = _mm_sub_epi16(d, weight_h[2]);
+    const __m128i weight_hi =
+        _mm_loadu_si128((const __m128i *)&weight_array[32 + 16]);
+    weight_h[4] = _mm_unpacklo_epi8(weight_hi, zero);
+    weight_h[5] = _mm_sub_epi16(d, weight_h[4]);
+    weight_h[6] = _mm_unpackhi_epi8(weight_hi, zero);
+    weight_h[7] = _mm_sub_epi16(d, weight_h[6]);
+  }
+}
+
+static INLINE void smooth_v_pred_8xh(const __m128i *pixels, const __m128i *wh,
+                                     int h, uint8_t *dst, ptrdiff_t stride) {
+  const __m128i pred_round = _mm_set1_epi32((1 << (sm_weight_log2_scale - 1)));
+  const __m128i inc = _mm_set1_epi16(0x202);
+  const __m128i gat = _mm_set_epi32(0, 0, 0xe0c0a08, 0x6040200);
+  __m128i d = _mm_set1_epi16(0x100);
+
+  for (int i = 0; i < h; ++i) {
+    const __m128i wg_wg = _mm_shuffle_epi8(wh[0], d);
+    const __m128i sc_sc = _mm_shuffle_epi8(wh[1], d);
+    const __m128i wh_sc = _mm_unpacklo_epi16(wg_wg, sc_sc);
+    __m128i s0 = _mm_madd_epi16(pixels[0], wh_sc);
+    __m128i s1 = _mm_madd_epi16(pixels[1], wh_sc);
+
+    s0 = _mm_add_epi32(s0, pred_round);
+    s0 = _mm_srai_epi32(s0, sm_weight_log2_scale);
+
+    s1 = _mm_add_epi32(s1, pred_round);
+    s1 = _mm_srai_epi32(s1, sm_weight_log2_scale);
+
+    __m128i sum01 = _mm_packus_epi16(s0, s1);
+    sum01 = _mm_shuffle_epi8(sum01, gat);
+    _mm_storel_epi64((__m128i *)dst, sum01);
+    dst += stride;
+
+    d = _mm_add_epi16(d, inc);
+  }
+}
+
+void aom_smooth_v_predictor_8x4_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m128i pixels[2];
+  load_pixel_v_w8(above, left, 4, pixels);
+
+  __m128i wh[2];
+  load_weight_v_w8(sm_weight_arrays, 4, wh);
+
+  smooth_v_pred_8xh(pixels, wh, 4, dst, stride);
+}
+
+void aom_smooth_v_predictor_8x8_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m128i pixels[2];
+  load_pixel_v_w8(above, left, 8, pixels);
+
+  __m128i wh[2];
+  load_weight_v_w8(sm_weight_arrays, 8, wh);
+
+  smooth_v_pred_8xh(pixels, wh, 8, dst, stride);
+}
+
+void aom_smooth_v_predictor_8x16_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                       const uint8_t *above,
+                                       const uint8_t *left) {
+  __m128i pixels[2];
+  load_pixel_v_w8(above, left, 16, pixels);
+
+  __m128i wh[4];
+  load_weight_v_w8(sm_weight_arrays, 16, wh);
+
+  smooth_v_pred_8xh(pixels, wh, 8, dst, stride);
+  dst += stride << 3;
+  smooth_v_pred_8xh(pixels, &wh[2], 8, dst, stride);
+}
+
+void aom_smooth_v_predictor_8x32_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                       const uint8_t *above,
+                                       const uint8_t *left) {
+  __m128i pixels[2];
+  load_pixel_v_w8(above, left, 32, pixels);
+
+  __m128i wh[8];
+  load_weight_v_w8(sm_weight_arrays, 32, wh);
+
+  smooth_v_pred_8xh(pixels, &wh[0], 8, dst, stride);
+  dst += stride << 3;
+  smooth_v_pred_8xh(pixels, &wh[2], 8, dst, stride);
+  dst += stride << 3;
+  smooth_v_pred_8xh(pixels, &wh[4], 8, dst, stride);
+  dst += stride << 3;
+  smooth_v_pred_8xh(pixels, &wh[6], 8, dst, stride);
+}
+
 static INLINE void smooth_v_predictor_wxh(uint8_t *dst, ptrdiff_t stride,
                                           const uint8_t *above,
                                           const uint8_t *left, uint32_t bw,
