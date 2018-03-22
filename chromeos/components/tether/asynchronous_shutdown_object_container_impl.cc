@@ -97,6 +97,7 @@ AsynchronousShutdownObjectContainerImpl::
       ble_scanner_(BleScannerImpl::Factory::NewInstance(
           adapter,
           local_device_data_provider_.get(),
+          remote_beacon_seed_fetcher_.get(),
           ble_synchronizer_.get(),
           tether_host_fetcher_)),
       ad_hoc_ble_advertiser_(std::make_unique<AdHocBleAdvertiserImpl>(

@@ -11,14 +11,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/ble_scanner.h"
+#include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/foreground_eid_generator.h"
-#include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace base {
 class TaskRunner;
 }  // namespace base
+
+namespace cryptauth {
+class LocalDeviceDataProvider;
+class RemoteBeaconSeedFetcher;
+}  // namespace cryptauth
 
 namespace device {
 class BluetoothDevice;
@@ -41,6 +46,7 @@ class BleScannerImpl : public BleScanner,
     static std::unique_ptr<BleScanner> NewInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+        cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
         BleSynchronizerBase* ble_synchronizer,
         TetherHostFetcher* tether_host_fetcher);
 
@@ -50,6 +56,7 @@ class BleScannerImpl : public BleScanner,
     virtual std::unique_ptr<BleScanner> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+        cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
         BleSynchronizerBase* ble_synchronizer,
         TetherHostFetcher* tether_host_fetcher);
 
@@ -67,6 +74,7 @@ class BleScannerImpl : public BleScanner,
  protected:
   BleScannerImpl(scoped_refptr<device::BluetoothAdapter> adapter,
                  cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+                 cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
                  BleSynchronizerBase* ble_synchronizer,
                  TetherHostFetcher* tether_host_fetcher);
 
@@ -96,7 +104,10 @@ class BleScannerImpl : public BleScanner,
 
   void SetTestDoubles(
       std::unique_ptr<ServiceDataProvider> service_data_provider,
-      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
+      std::unique_ptr<cryptauth::BackgroundEidGenerator>
+          background_eid_generator,
+      std::unique_ptr<cryptauth::ForegroundEidGenerator>
+          foreground_eid_generator,
       scoped_refptr<base::TaskRunner> test_task_runner);
 
   bool IsDeviceRegistered(const std::string& device_id);
@@ -130,11 +141,13 @@ class BleScannerImpl : public BleScanner,
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
+  cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
   BleSynchronizerBase* ble_synchronizer_;
   TetherHostFetcher* tether_host_fetcher_;
 
   std::unique_ptr<ServiceDataProvider> service_data_provider_;
-  std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
+  std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator_;
+  std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;
 
   std::vector<std::string> registered_remote_device_ids_;
 

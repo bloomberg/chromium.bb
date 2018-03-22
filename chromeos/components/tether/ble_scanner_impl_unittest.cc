@@ -13,8 +13,10 @@
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
+#include "components/cryptauth/fake_background_eid_generator.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
+#include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -114,7 +116,8 @@ class MockBluetoothDeviceWithServiceData : public device::MockBluetoothDevice {
   std::vector<uint8_t> service_data_;
 };
 
-const size_t kMinNumBytesInServiceData = 4;
+const size_t kNumBytesInBackgroundAdvertisementServiceData = 2;
+const size_t kMinNumBytesInForegroundAdvertisementServiceData = 4;
 
 const char kDefaultBluetoothAddress[] = "11:22:33:44:55:66";
 
@@ -200,6 +203,9 @@ class BleScannerImplTest : public testing::Test {
         std::make_unique<std::vector<cryptauth::BeaconSeed>>(
             test_beacon_seeds_));
 
+    mock_seed_fetcher_ =
+        std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
+
     fake_ble_synchronizer_ = std::make_unique<FakeBleSynchronizer>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
@@ -212,16 +218,22 @@ class BleScannerImplTest : public testing::Test {
 
     ble_scanner_ = base::WrapUnique(new BleScannerImpl(
         mock_adapter_, mock_local_device_data_provider_.get(),
-        fake_ble_synchronizer_.get(), fake_tether_host_fetcher_.get()));
+        mock_seed_fetcher_.get(), fake_ble_synchronizer_.get(),
+        fake_tether_host_fetcher_.get()));
 
-    mock_eid_generator_ = new cryptauth::MockForegroundEidGenerator();
-    mock_eid_generator_->set_background_scan_filter(
+    mock_foreground_eid_generator_ =
+        new cryptauth::MockForegroundEidGenerator();
+    mock_foreground_eid_generator_->set_background_scan_filter(
         CreateFakeBackgroundScanFilter());
+    fake_background_eid_generator_ =
+        new cryptauth::FakeBackgroundEidGenerator();
     test_service_data_provider_ = new TestServiceDataProvider();
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    ble_scanner_->SetTestDoubles(base::WrapUnique(test_service_data_provider_),
-                                 base::WrapUnique(mock_eid_generator_),
-                                 test_task_runner_);
+
+    ble_scanner_->SetTestDoubles(
+        base::WrapUnique(test_service_data_provider_),
+        base::WrapUnique(fake_background_eid_generator_),
+        base::WrapUnique(mock_foreground_eid_generator_), test_task_runner_);
 
     test_observer_ = std::make_unique<TestBleScannerObserver>();
     ble_scanner_->AddObserver(test_observer_.get());
@@ -282,6 +294,7 @@ class BleScannerImplTest : public testing::Test {
 
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_device_data_provider_;
+  std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
 
@@ -289,7 +302,8 @@ class BleScannerImplTest : public testing::Test {
   device::MockBluetoothDiscoverySession* mock_discovery_session_;
 
   TestServiceDataProvider* test_service_data_provider_;
-  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
+  cryptauth::MockForegroundEidGenerator* mock_foreground_eid_generator_;
+  cryptauth::FakeBackgroundEidGenerator* fake_background_eid_generator_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<TestBleScannerObserver> test_observer_;
@@ -313,7 +327,7 @@ TEST_F(BleScannerImplTest, TestNoLocalBeaconSeeds) {
 }
 
 TEST_F(BleScannerImplTest, TestNoBackgroundScanFilter) {
-  mock_eid_generator_->set_background_scan_filter(nullptr);
+  mock_foreground_eid_generator_->set_background_scan_filter(nullptr);
   EXPECT_FALSE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
@@ -364,13 +378,14 @@ TEST_F(BleScannerImplTest, TestDiscovery_NoServiceData) {
   MockBluetoothDeviceWithServiceData device(
       mock_adapter_.get(), kDefaultBluetoothAddress, empty_service_data);
   DeviceAdded(&device);
-  EXPECT_FALSE(mock_eid_generator_->num_identify_calls());
+  EXPECT_FALSE(mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(0u, test_observer_->device_addresses().size());
 }
 
 TEST_F(BleScannerImplTest, TestDiscovery_ServiceDataTooShort) {
   std::string short_service_data = "abc";
-  ASSERT_TRUE(short_service_data.size() < kMinNumBytesInServiceData);
+  ASSERT_TRUE(short_service_data.size() <
+              kMinNumBytesInForegroundAdvertisementServiceData);
 
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
@@ -383,14 +398,14 @@ TEST_F(BleScannerImplTest, TestDiscovery_ServiceDataTooShort) {
   MockBluetoothDeviceWithServiceData device(
       mock_adapter_.get(), kDefaultBluetoothAddress, short_service_data);
   DeviceAdded(&device);
-  EXPECT_FALSE(mock_eid_generator_->num_identify_calls());
+  EXPECT_FALSE(mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(0u, test_observer_->device_addresses().size());
 }
 
 TEST_F(BleScannerImplTest, TestDiscovery_LocalDeviceDataCannotBeFetched) {
   std::string valid_service_data_for_other_device = "abcd";
   ASSERT_TRUE(valid_service_data_for_other_device.size() >=
-              kMinNumBytesInServiceData);
+              kMinNumBytesInForegroundAdvertisementServiceData);
 
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
@@ -406,14 +421,14 @@ TEST_F(BleScannerImplTest, TestDiscovery_LocalDeviceDataCannotBeFetched) {
       mock_adapter_.get(), kDefaultBluetoothAddress,
       valid_service_data_for_other_device);
   DeviceAdded(&device);
-  EXPECT_FALSE(mock_eid_generator_->num_identify_calls());
+  EXPECT_FALSE(mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(0u, test_observer_->device_addresses().size());
 }
 
 TEST_F(BleScannerImplTest, TestDiscovery_ScanSuccessfulButNoRegisteredDevice) {
   std::string valid_service_data_for_other_device = "abcd";
   ASSERT_TRUE(valid_service_data_for_other_device.size() >=
-              kMinNumBytesInServiceData);
+              kMinNumBytesInForegroundAdvertisementServiceData);
 
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
@@ -431,14 +446,14 @@ TEST_F(BleScannerImplTest, TestDiscovery_ScanSuccessfulButNoRegisteredDevice) {
       mock_adapter_.get(), kDefaultBluetoothAddress,
       valid_service_data_for_other_device);
   DeviceAdded(&device);
-  EXPECT_EQ(1, mock_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1, mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(0u, test_observer_->device_addresses().size());
 }
 
 TEST_F(BleScannerImplTest, TestDiscovery_Success) {
   std::string valid_service_data_for_registered_device = "abcde";
   ASSERT_TRUE(valid_service_data_for_registered_device.size() >=
-              kMinNumBytesInServiceData);
+              kMinNumBytesInForegroundAdvertisementServiceData);
 
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
@@ -450,9 +465,10 @@ TEST_F(BleScannerImplTest, TestDiscovery_Success) {
   MockBluetoothDeviceWithServiceData device(
       mock_adapter_.get(), kDefaultBluetoothAddress,
       valid_service_data_for_registered_device);
-  mock_eid_generator_->set_identified_device_id(test_devices_[0].GetDeviceId());
+  mock_foreground_eid_generator_->set_identified_device_id(
+      test_devices_[0].GetDeviceId());
   DeviceAdded(&device);
-  EXPECT_EQ(1, mock_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1, mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(1u, test_observer_->device_addresses().size());
   EXPECT_EQ(device.GetAddress(), test_observer_->device_addresses()[0]);
   EXPECT_EQ(1u, test_observer_->devices().size());
@@ -461,7 +477,7 @@ TEST_F(BleScannerImplTest, TestDiscovery_Success) {
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
   EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(
       test_devices_[0].GetDeviceId()));
-  EXPECT_EQ(1, mock_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1, mock_foreground_eid_generator_->num_identify_calls());
   EXPECT_EQ(1u, test_observer_->device_addresses().size());
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
 }
@@ -478,7 +494,8 @@ TEST_F(BleScannerImplTest, TestDiscovery_MultipleObservers) {
 
   MockBluetoothDeviceWithServiceData mock_bluetooth_device(
       mock_adapter_.get(), kDefaultBluetoothAddress, "fakeServiceData");
-  mock_eid_generator_->set_identified_device_id(test_devices_[0].GetDeviceId());
+  mock_foreground_eid_generator_->set_identified_device_id(
+      test_devices_[0].GetDeviceId());
   DeviceAdded(&mock_bluetooth_device);
 
   EXPECT_EQ(1u, test_observer_->device_addresses().size());
@@ -755,6 +772,41 @@ TEST_F(BleScannerImplTest, ObserverDeletesObjectWhenNotified) {
   ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0].GetDeviceId());
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   test_task_runner_->RunUntilIdle();
+}
+
+TEST_F(BleScannerImplTest, TestDiscovery_HostIsBackgroundAdvertising) {
+  std::string valid_service_data_for_registered_device = "ab";
+  ASSERT_TRUE(valid_service_data_for_registered_device.size() ==
+              kNumBytesInBackgroundAdvertisementServiceData);
+
+  EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(
+      test_devices_[0].GetDeviceId()));
+  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
+
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
+
+  // Registered device connects.
+  MockBluetoothDeviceWithServiceData device(
+      mock_adapter_.get(), kDefaultBluetoothAddress,
+      valid_service_data_for_registered_device);
+  fake_background_eid_generator_->set_identified_device_id(
+      test_devices_[0].GetDeviceId());
+
+  DeviceAdded(&device);
+  EXPECT_EQ(0, mock_foreground_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1, fake_background_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1u, test_observer_->device_addresses().size());
+  EXPECT_EQ(device.GetAddress(), test_observer_->device_addresses()[0]);
+  EXPECT_EQ(1u, test_observer_->devices().size());
+  EXPECT_EQ(test_devices_[0], test_observer_->devices()[0]);
+
+  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
+  EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(
+      test_devices_[0].GetDeviceId()));
+  EXPECT_EQ(0, mock_foreground_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1, fake_background_eid_generator_->num_identify_calls());
+  EXPECT_EQ(1u, test_observer_->device_addresses().size());
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
 }
 
 }  // namespace tether
