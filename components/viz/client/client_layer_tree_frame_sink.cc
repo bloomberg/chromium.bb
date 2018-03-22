@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
+#include "components/viz/client/hit_test_data_provider_surface_layer.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -106,6 +107,12 @@ void ClientLayerTreeFrameSink::DetachFromClient() {
   compositor_frame_sink_associated_.reset();
   compositor_frame_sink_ptr_ = nullptr;
   cc::LayerTreeFrameSink::DetachFromClient();
+}
+
+void ClientLayerTreeFrameSink::UpdateHitTestData(
+    const cc::LayerTreeHostImpl* host_impl) {
+  if (hit_test_data_provider_)
+    hit_test_data_provider_->UpdateLayerTreeHostImpl(host_impl);
 }
 
 void ClientLayerTreeFrameSink::SetLocalSurfaceId(

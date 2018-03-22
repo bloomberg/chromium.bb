@@ -54,6 +54,14 @@ void SurfaceLayerImpl::SetStretchContentToFillBounds(bool stretch_content) {
   NoteLayerPropertyChanged();
 }
 
+void SurfaceLayerImpl::SetHitTestable(bool hit_testable) {
+  if (hit_testable_ == hit_testable)
+    return;
+
+  hit_testable_ = hit_testable;
+  NoteLayerPropertyChanged();
+}
+
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
@@ -63,6 +71,7 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
+  layer_impl->SetHitTestable(hit_testable_);
 }
 
 void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
@@ -91,6 +100,10 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   // Unless the client explicitly specifies otherwise, don't block on
   // |primary_surface_id_| more than once.
   deadline_in_frames_ = 0u;
+}
+
+bool SurfaceLayerImpl::is_surface_layer() const {
+  return true;
 }
 
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(

@@ -50,11 +50,15 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
     return stretch_content_to_fill_bounds_;
   }
 
+  void SetHitTestable(bool hit_testable);
+  bool hit_testable() const { return hit_testable_; }
+
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
+  bool is_surface_layer() const override;
 
  protected:
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -75,6 +79,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   base::Optional<uint32_t> deadline_in_frames_;
 
   bool stretch_content_to_fill_bounds_ = false;
+  bool hit_testable_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };

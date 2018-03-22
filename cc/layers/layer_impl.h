@@ -446,6 +446,9 @@ class CC_EXPORT LayerImpl {
 
   void EnsureValidPropertyTreeIndices() const;
 
+  // TODO(sunxd): Remove this function and replace it with visitor pattern.
+  virtual bool is_surface_layer() const;
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,

@@ -37,6 +37,9 @@ const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
 const base::Feature kEnableVizHitTestDrawQuad{
     "VizHitTestDrawQuad", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableVizHitTestSurfaceLayer{
+    "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsSurfaceSynchronizationEnabled() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
@@ -64,7 +67,8 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
   // TODO(riajiang): Check kVizDisplayCompositor feature when it works with
   // that config.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseVizHitTestSurfaceLayer);
+             switches::kUseVizHitTestSurfaceLayer) ||
+         base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
 }
 
 bool IsDrawOcclusionEnabled() {

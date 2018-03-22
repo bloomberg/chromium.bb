@@ -60,6 +60,13 @@ void SurfaceLayer::SetStretchContentToFillBounds(
   SetNeedsPushProperties();
 }
 
+void SurfaceLayer::SetHitTestable(bool hit_testable) {
+  if (hit_testable_ == hit_testable)
+    return;
+  hit_testable_ = hit_testable;
+  SetNeedsPushProperties();
+}
+
 std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SurfaceLayerImpl::Create(tree_impl, id());
@@ -94,6 +101,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
+  layer_impl->SetHitTestable(hit_testable_);
 }
 
 }  // namespace cc

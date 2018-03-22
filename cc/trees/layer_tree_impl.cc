@@ -577,6 +577,14 @@ LayerImplList::const_iterator LayerTreeImpl::end() const {
   return layer_list_.cend();
 }
 
+LayerImplList::const_reverse_iterator LayerTreeImpl::rbegin() const {
+  return layer_list_.crbegin();
+}
+
+LayerImplList::const_reverse_iterator LayerTreeImpl::rend() const {
+  return layer_list_.crend();
+}
+
 LayerImplList::reverse_iterator LayerTreeImpl::rbegin() {
   return layer_list_.rbegin();
 }

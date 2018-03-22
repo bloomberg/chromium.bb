@@ -939,4 +939,8 @@ void LayerImpl::EnsureValidPropertyTreeIndices() const {
   DCHECK(GetScrollTree().Node(scroll_tree_index()));
 }
 
+bool LayerImpl::is_surface_layer() const {
+  return false;
+}
+
 }  // namespace cc

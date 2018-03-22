@@ -438,7 +438,7 @@ bool ConvertJSONToRect(const std::string& str, gfx::Rect* rect) {
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
-    : public testing::WithParamInterface<std::tuple<bool, float>>,
+    : public testing::WithParamInterface<std::tuple<int, float>>,
       public SitePerProcessBrowserTest {
  public:
   SitePerProcessHitTestBrowserTest() {}
@@ -446,8 +446,11 @@ class SitePerProcessHitTestBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    if (std::get<0>(GetParam())) {
+    if (std::get<0>(GetParam()) == 1) {
       feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+    } else if (std::get<0>(GetParam()) == 2) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnableVizHitTestSurfaceLayer);
     }
   }
 
@@ -3494,11 +3497,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   }
 }
 
+static const int kHitTestOption[] = {0, 1, 2};
 static const float kOneScale[] = {1.f};
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 // TODO(wjmaclean): Since the next two test fixtures only differ in DSF
 // values, should we combine them into one using kMultiScale? This
@@ -3506,26 +3510,26 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
 // particular platforms.
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessHighDPIHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 #if defined(USE_AURA)
 static const float kMultiScale[] = {1.f, 1.5f, 2.f};
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessInternalsHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kMultiScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessMouseWheelHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessGestureHitTestBrowserTest,
-                        testing::Combine(testing::Bool(),
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 #endif
 
