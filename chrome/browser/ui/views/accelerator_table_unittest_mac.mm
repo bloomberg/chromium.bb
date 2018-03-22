@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -105,6 +106,7 @@ TEST(AcceleratorTableTest, CheckMacOSAltAccelerators) {
 // Verifies that we're not processing any duplicate accelerators in
 // global_keyboard_shortcuts_mac.mm functions.
 TEST(AcceleratorTableTest, CheckNoDuplicatesGlobalKeyboardShortcutsMac) {
+  test::ScopedMacViewsBrowserMode views_mode_{true};
   VerifyTableDoesntHaveDuplicates(GetWindowKeyboardShortcutTable(),
                                   "WindowKeyboardShortcutTable");
   VerifyTableDoesntHaveDuplicates(GetDelayedWindowKeyboardShortcutTable(),
