@@ -29,13 +29,9 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -103,17 +99,9 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 }
 
 IdentityAPI::IdentityAPI(content::BrowserContext* context)
-    : browser_context_(context),
-      profile_identity_provider_(
-          SigninManagerFactory::GetForProfile(
-              Profile::FromBrowserContext(context)),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(context)),
-          LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
-              Profile::FromBrowserContext(context))),
-      account_tracker_(&profile_identity_provider_,
-                       g_browser_process->system_request_context()) {
-  account_tracker_.AddObserver(this);
+    : profile_(Profile::FromBrowserContext(context)) {
+  AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 IdentityAPI::~IdentityAPI() {}
@@ -155,8 +143,9 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 
 void IdentityAPI::Shutdown() {
   on_shutdown_callback_list_.Notify();
-  account_tracker_.RemoveObserver(this);
-  account_tracker_.Shutdown();
+  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->RemoveObserver(
+      this);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI>>::
@@ -167,31 +156,41 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_identity_api_factory.Pointer();
 }
 
-void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
-                                         bool is_signed_in) {
-  api::identity::AccountInfo account_info;
-  account_info.id = ids.gaia;
+void IdentityAPI::OnRefreshTokenAvailable(const std::string& account_id) {
+  const AccountInfo& account_info =
+      AccountTrackerServiceFactory::GetForProfile(profile_)->GetAccountInfo(
+          account_id);
+
+  // Refresh tokens are sometimes made available in contexts where
+  // AccountTrackerService is not tracking the account in question (one example
+  // is SupervisedUserService::InitSync()). Bail out in these cases.
+  if (account_info.gaia.empty())
+    return;
+
+  FireOnAccountSignInChanged(account_info.gaia, true);
+}
+
+void IdentityAPI::OnAccountRemoved(const AccountInfo& account_info) {
+  DCHECK(!account_info.gaia.empty());
+  FireOnAccountSignInChanged(account_info.gaia, false);
+}
+
+void IdentityAPI::FireOnAccountSignInChanged(const std::string& gaia_id,
+                                             bool is_signed_in) {
+  DCHECK(!gaia_id.empty());
+  api::identity::AccountInfo api_account_info;
+  api_account_info.id = gaia_id;
 
   std::unique_ptr<base::ListValue> args =
-      api::identity::OnSignInChanged::Create(account_info, is_signed_in);
-  std::unique_ptr<Event> event(
-      new Event(events::IDENTITY_ON_SIGN_IN_CHANGED,
-                api::identity::OnSignInChanged::kEventName, std::move(args),
-                browser_context_));
+      api::identity::OnSignInChanged::Create(api_account_info, is_signed_in);
+  std::unique_ptr<Event> event(new Event(
+      events::IDENTITY_ON_SIGN_IN_CHANGED,
+      api::identity::OnSignInChanged::kEventName, std::move(args), profile_));
 
   if (on_signin_changed_callback_for_testing_)
     on_signin_changed_callback_for_testing_.Run(event.get());
 
-  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
-}
-
-void IdentityAPI::SetAccountStateForTesting(const std::string& account_id,
-                                         bool signed_in) {
-  gaia::AccountIds ids;
-  ids.account_key = account_id;
-  ids.email = account_id;
-  ids.gaia = account_id;
-  account_tracker_.SetAccountStateForTest(ids, signed_in);
+  EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }
 
 template <>
@@ -199,9 +198,7 @@ void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 
   DependsOn(ChromeSigninClientFactory::GetInstance());
-  DependsOn(LoginUIServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 }  // namespace extensions

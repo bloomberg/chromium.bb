@@ -27,16 +27,17 @@
 #include "chrome/browser/extensions/api/identity/identity_remove_cached_auth_token_function.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
-#include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace content {
 class BrowserContext;
 }
+
+class Profile;
 
 namespace extensions {
 
@@ -72,7 +73,8 @@ class IdentityTokenCacheValue {
 };
 
 class IdentityAPI : public BrowserContextKeyedAPI,
-                    public gaia::AccountTracker::Observer {
+                    public AccountTrackerService::Observer,
+                    public OAuth2TokenService::Observer {
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
@@ -92,23 +94,14 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   const CachedTokens& GetAllCachedTokens();
 
-  // BrowserContextKeyedAPI implementation.
+  // BrowserContextKeyedAPI:
   void Shutdown() override;
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
-
-  // gaia::AccountTracker::Observer implementation:
-  void OnAccountSignInChanged(const gaia::AccountIds& ids,
-                              bool is_signed_in) override;
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
   RegisterOnShutdownCallback(const base::Closure& cb) {
     return on_shutdown_callback_list_.Add(cb);
   }
-
-  // TODO(blundell): Eliminate this method once this class is no longer using
-  // AccountTracker.
-  // Makes |account_tracker_| aware of this account.
-  void SetAccountStateForTesting(const std::string& account_id, bool signed_in);
 
   // Callback that is used in testing contexts to test the implementation of
   // the chrome.identity.onSignInChanged event. Note that the passed-in Event is
@@ -122,15 +115,31 @@ class IdentityAPI : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
 
-  // BrowserContextKeyedAPI implementation.
+  // BrowserContextKeyedAPI:
   static const char* service_name() { return "IdentityAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  content::BrowserContext* browser_context_;
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  // AccountTrackerService::Observer:
+  // NOTE: This class listens for signout events via this callback (which itself
+  // is triggered by O2TS::OnRefreshTokenRevoked()) rather than directly via
+  // OnRefreshTokenRevoked() in order to obtain the Gaia ID of the signed-out
+  // account, which is needed to send as input to the
+  // chrome.identity.onSigninChanged event. That Gaia ID is not guaranteed to be
+  // available from O2TS::OnRefreshTokenRevoked().
+  // TODO(blundell): Eliminate this kludge by porting this class to interact
+  // with IdentityManager.
+  void OnAccountRemoved(const AccountInfo& info) override;
+
+  // Fires the chrome.identity.onSignInChanged event.
+  void FireOnAccountSignInChanged(const std::string& gaia_id,
+                                  bool is_signed_in);
+
+  Profile* profile_;
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
-  ProfileIdentityProvider profile_identity_provider_;
-  gaia::AccountTracker account_tracker_;
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 
