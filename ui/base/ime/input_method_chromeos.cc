@@ -703,9 +703,9 @@ void InputMethodChromeOS::ExtractCompositionText(
         continue;
       ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
                                 char16_offsets[start], char16_offsets[end],
-                                text_ime_text_spans[i].underline_color,
                                 text_ime_text_spans[i].thickness,
                                 text_ime_text_spans[i].background_color);
+      ime_text_span.underline_color = text_ime_text_spans[i].underline_color;
       out_composition->ime_text_spans.push_back(ime_text_span);
     }
   }
@@ -716,7 +716,7 @@ void InputMethodChromeOS::ExtractCompositionText(
     const uint32_t end = text.selection.end();
     ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
                               char16_offsets[start], char16_offsets[end],
-                              SK_ColorBLACK, ui::ImeTextSpan::Thickness::kThick,
+                              ui::ImeTextSpan::Thickness::kThick,
                               SK_ColorTRANSPARENT);
     out_composition->ime_text_spans.push_back(ime_text_span);
 
@@ -734,9 +734,9 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   // Use a black thin underline by default.
   if (out_composition->ime_text_spans.empty()) {
-    out_composition->ime_text_spans.push_back(ImeTextSpan(
-        ui::ImeTextSpan::Type::kComposition, 0, length, SK_ColorBLACK,
-        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+    out_composition->ime_text_spans.push_back(
+        ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, length,
+                    ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
   }
 }
 

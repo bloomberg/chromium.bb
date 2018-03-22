@@ -113,9 +113,11 @@ void ExtractUnderlines(NSAttributedString* string,
       ui::ImeTextSpan::Thickness thickness =
           [style intValue] > 1 ? ui::ImeTextSpan::Thickness::kThick
                                : ui::ImeTextSpan::Thickness::kThin;
-      ime_text_spans->push_back(ui::ImeTextSpan(
-          ui::ImeTextSpan::Type::kComposition, range.location,
-          NSMaxRange(range), color, thickness, SK_ColorTRANSPARENT));
+      ui::ImeTextSpan ui_ime_text_span =
+          ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, range.location,
+                          NSMaxRange(range), thickness, SK_ColorTRANSPARENT);
+      ui_ime_text_span.underline_color = color;
+      ime_text_spans->push_back(ui_ime_text_span);
     }
     i = range.location + range.length;
   }
@@ -1738,7 +1740,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   } else {
     // Use a thin black underline by default.
     ime_text_spans_.push_back(ui::ImeTextSpan(
-        ui::ImeTextSpan::Type::kComposition, 0, length, SK_ColorBLACK,
+        ui::ImeTextSpan::Type::kComposition, 0, length,
         ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
   }
 

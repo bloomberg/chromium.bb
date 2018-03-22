@@ -1676,7 +1676,7 @@ public class ImeTest {
                                         + "  document.getElementById('div').firstChild, "
                                         + "  'composition', 1)")));
 
-        Assert.assertEquals(0x0000000L,
+        Assert.assertEquals(0xFF000000L,
                 (long) Double.parseDouble(
                         JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
                                 "internals.markerUnderlineColorForNode("

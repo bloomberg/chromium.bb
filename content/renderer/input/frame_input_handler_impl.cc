@@ -80,20 +80,9 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
     return;
 
   ImeEventGuard guard(render_frame_->GetRenderWidget());
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  for (const auto& ime_text_span : ui_ime_text_spans) {
-    blink::WebImeTextSpan blink_ime_text_span(
-        ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
-        ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color,
-        ConvertUiThicknessToUiImeTextSpanThickness(ime_text_span.thickness),
-        ime_text_span.background_color,
-        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions);
-    ime_text_spans.push_back(blink_ime_text_span);
-  }
 
-  render_frame_->GetWebFrame()->SetCompositionFromExistingText(start, end,
-                                                               ime_text_spans);
+  render_frame_->GetWebFrame()->SetCompositionFromExistingText(
+      start, end, ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans));
 }
 
 void FrameInputHandlerImpl::ExtendSelectionAndDelete(int32_t before,

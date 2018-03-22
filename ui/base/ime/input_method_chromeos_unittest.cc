@@ -547,8 +547,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
   CompositionText composition_text;
   composition_text.text = kSampleText;
   ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
-                        SK_ColorBLACK, ui::ImeTextSpan::Thickness::kThin,
-                        SK_ColorTRANSPARENT);
+                        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
   CompositionText composition_text2;
@@ -578,7 +577,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
   CompositionText composition_text;
   composition_text.text = kSampleText;
   ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
-                        SK_ColorBLACK, ui::ImeTextSpan::Thickness::kThick,
+                        ui::ImeTextSpan::Thickness::kThick,
                         SK_ColorTRANSPARENT);
   composition_text.ime_text_spans.push_back(underline);
 
@@ -608,8 +607,9 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
   composition_text.text = kSampleText;
-  ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL, SK_ColorRED,
+  ImeTextSpan underline(ImeTextSpan::Type::kComposition, 1UL, 4UL,
                         ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
+  underline.underline_color = SK_ColorRED;
   composition_text.ime_text_spans.push_back(underline);
 
   CompositionText composition_text2;

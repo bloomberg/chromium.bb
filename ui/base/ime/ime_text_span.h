@@ -42,13 +42,11 @@ struct UI_BASE_IME_EXPORT ImeTextSpan {
   // TODO(huangs): remove this constructor.
   ImeTextSpan(uint32_t start_offset,
               uint32_t end_offset,
-              SkColor underline_color,
               Thickness thickness);
   ImeTextSpan(
       Type type,
       uint32_t start_offset,
       uint32_t end_offset,
-      SkColor underline_color,
       Thickness thickness,
       SkColor background_color,
       SkColor suggestion_highlight_color = SK_ColorTRANSPARENT,
@@ -75,7 +73,7 @@ struct UI_BASE_IME_EXPORT ImeTextSpan {
   Type type;
   uint32_t start_offset;
   uint32_t end_offset;
-  SkColor underline_color;
+  SkColor underline_color = SK_ColorBLACK;
   Thickness thickness;
   SkColor background_color;
   SkColor suggestion_highlight_color;

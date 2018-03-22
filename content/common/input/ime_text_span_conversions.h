@@ -18,6 +18,14 @@ ui::mojom::ImeTextSpanThickness ConvertUiThicknessToUiImeTextSpanThickness(
     ui::ImeTextSpan::Thickness thickness);
 ui::ImeTextSpan::Thickness ConvertUiImeTextSpanThicknessToUiThickness(
     ui::mojom::ImeTextSpanThickness thickness);
+blink::WebImeTextSpan ConvertUiImeTextSpanToBlinkImeTextSpan(
+    const ui::ImeTextSpan&);
+ui::ImeTextSpan ConvertBlinkImeTextSpanToUiImeTextSpan(
+    const blink::WebImeTextSpan&);
+std::vector<blink::WebImeTextSpan> ConvertUiImeTextSpansToBlinkImeTextSpans(
+    const std::vector<ui::ImeTextSpan>&);
+std::vector<ui::ImeTextSpan> ConvertBlinkImeTextSpansToUiImeTextSpans(
+    const std::vector<blink::WebImeTextSpan>&);
 
 }  // namespace content
 
