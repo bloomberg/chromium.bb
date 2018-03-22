@@ -173,20 +173,20 @@ bool DOMTokenList::toggle(const AtomicString& token,
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-replace
-void DOMTokenList::replace(const AtomicString& token,
+bool DOMTokenList::replace(const AtomicString& token,
                            const AtomicString& new_token,
                            ExceptionState& exception_state) {
   // 1. If either token or newToken is the empty string, then throw a
   // SyntaxError.
   if (!CheckEmptyToken(token, exception_state) ||
       !CheckEmptyToken(new_token, exception_state))
-    return;
+    return false;
 
   // 2. If either token or newToken contains any ASCII whitespace, then throw an
   // InvalidCharacterError.
   if (!CheckTokenWithWhitespace(token, exception_state) ||
       !CheckTokenWithWhitespace(new_token, exception_state))
-    return;
+    return false;
 
   // https://infra.spec.whatwg.org/#set-replace
   // To replace within an ordered set set, given item and replacement: if set
@@ -217,13 +217,14 @@ void DOMTokenList::replace(const AtomicString& token,
     }
   }
 
-  // TODO(tkent): This check doesn't conform to the DOM specification, but it's
-  // interoperable with Firefox and Safari.
-  // https://github.com/whatwg/dom/issues/462
+  // 3. If context object's token set does not contain token, then return false.
   if (!did_update)
-    return;
+    return false;
 
   UpdateWithTokenSet(token_set_);
+
+  // 6. Return true.
+  return true;
 }
 
 bool DOMTokenList::supports(const AtomicString& token,

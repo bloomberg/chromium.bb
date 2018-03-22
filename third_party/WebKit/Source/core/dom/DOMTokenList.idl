@@ -34,7 +34,7 @@
     [RaisesException, CEReactions, CustomElementCallbacks] void add(DOMString... tokens);
     [RaisesException, CEReactions, CustomElementCallbacks] void remove(DOMString... tokens);
     [RaisesException, CEReactions, CustomElementCallbacks] boolean toggle(DOMString token, optional boolean force);
-    [RaisesException, CEReactions] void replace(DOMString token, DOMString newToken);
+    [RaisesException, CEReactions] boolean replace(DOMString token, DOMString newToken);
     [RaisesException, CustomElementCallbacks] boolean supports(DOMString token);
     [CEReactions] attribute DOMString value;
     stringifier;
