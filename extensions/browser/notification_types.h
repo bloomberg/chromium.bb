@@ -98,11 +98,6 @@ enum NotificationType {
   // Sent when a background page is ready so other components can load.
   NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
 
-  // Sent when the count of page actions has changed. Note that some of them
-  // may not apply to the current page. The source is a LocationBar*. There
-  // are no details.
-  NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-
   // Sent when an extension command has been removed. The source is the
   // BrowserContext* and the details is an ExtensionCommandRemovedDetails
   // consisting of std::strings representing an extension ID, the name of the
