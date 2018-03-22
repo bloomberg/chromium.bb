@@ -3177,6 +3177,7 @@
       keywords: ["none", "all"],
       default_value: "none",
       getter: "GetColumnSpan",
+      typedom_types: ["Keyword"],
     },
     {
       name: "column-width",
