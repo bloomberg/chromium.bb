@@ -406,10 +406,9 @@ const base::Feature kMultiDeviceApi{"MultiDeviceApi",
 #endif
 
 // Enables the use of native notification centers instead of using the Message
-// Center for displaying the toasts.
+// Center for displaying the toasts. Note that OS_LINUX includes Chrome OS.
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_LINUX)
 const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #else
