@@ -29,7 +29,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           assistant_client::AssistantManager::Create(&platform_api_,
                                                      kDefaultConfigStr)),
       assistant_manager_internal_(
-          UnwrapAssistantManagerInternal(assistant_manager_.get())) {}
+          UnwrapAssistantManagerInternal(assistant_manager_.get())),
+      display_connection_(std::make_unique<CrosDisplayConnection>(this)) {}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -55,6 +56,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
     DVLOG(2) << "set options: " << success;
   });
 
+  assistant_manager_internal_->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
 
   SetAccessToken(access_token);
@@ -120,6 +122,9 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
   subscribers_.ForAllPtrs(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
+
+void AssistantManagerServiceImpl::onSpeechLevelUpdated(
+    const float speech_level) {}
 
 }  // namespace assistant
 }  // namespace chromeos
