@@ -704,7 +704,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
   NSMutableArray<UIKeyCommand*>* commands = [[self upDownCommands] mutableCopy];
-  if ([self isPreEditing]) {
+  if ([self isPreEditing] || [self hasAutocompleteText]) {
     [commands addObjectsFromArray:[self leftRightCommands]];
   }
 
@@ -719,10 +719,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [self.suggestionCommandsEndpoint highlightPreviousSuggestion];
 }
 
-#pragma mark preedit-only key commands
+#pragma mark preedit and inline autocomplete key commands
 
 // React to left and right keys when in preedit state to exit preedit and put
-// cursor to the beginning/end of the textfield.
+// cursor to the beginning/end of the textfield; or if there is inline
+// suggestion displayed, accept it and put the cursor before/after the
+// suggested text.
 - (NSArray<UIKeyCommand*>*)leftRightCommands {
   UIKeyCommand* commandLeft =
       [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow
@@ -737,20 +739,55 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (void)keyCommandLeft {
-  [self exitPreEditState];
-  UITextPosition* beginning = self.beginningOfDocument;
-  UITextRange* textRange =
-      [self textRangeFromPosition:beginning toPosition:beginning];
+  DCHECK([self isPreEditing] || [self hasAutocompleteText]);
 
+  // Cursor offset.
+  NSInteger offset = 0;
+  if ([self isPreEditing]) {
+    [self exitPreEditState];
+  }
+
+  if ([self hasAutocompleteText]) {
+    // The cursor should stay in the end of the user input.
+    offset = self.text.length;
+
+    // Accept autocomplete suggestion.
+    [self acceptAutocompleteText];
+  }
+
+  UITextPosition* beginning = self.beginningOfDocument;
+  UITextPosition* cursorPosition =
+      [self positionFromPosition:beginning offset:offset];
+  UITextRange* textRange =
+      [self textRangeFromPosition:cursorPosition toPosition:cursorPosition];
   self.selectedTextRange = textRange;
 }
 
 - (void)keyCommandRight {
-  [self exitPreEditState];
+  DCHECK([self isPreEditing] || [self hasAutocompleteText]);
+
+  if ([self isPreEditing]) {
+    [self exitPreEditState];
+  }
+
+  if ([self hasAutocompleteText]) {
+    [self acceptAutocompleteText];
+  }
+
+  // Put the cursor to the end of the input.
   UITextPosition* end = self.endOfDocument;
   UITextRange* textRange = [self textRangeFromPosition:end toPosition:end];
 
   self.selectedTextRange = textRange;
+}
+
+// A helper to accept the current autocomplete text.
+- (void)acceptAutocompleteText {
+  DCHECK([self hasAutocompleteText]);
+  // Strip attributes and set text as if the user typed it.
+  NSAttributedString* string =
+      [[NSAttributedString alloc] initWithString:_selection.text];
+  [self setText:string userTextLength:string.length];
 }
 
 #pragma mark - helpers
