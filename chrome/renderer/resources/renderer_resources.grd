@@ -41,7 +41,6 @@
         <include name="IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\developer_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_CUSTOM_BINDINGS_JS" file="extensions\downloads_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS" file="extensions\easy_unlock_proximity_required.js" type="BINDATA" />
-        <include name="IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\feedback_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_GCM_CUSTOM_BINDINGS_JS" file="extensions\gcm_custom_bindings.js" type="BINDATA" />
         <include name="IDR_IDENTITY_CUSTOM_BINDINGS_JS" file="extensions\identity_custom_bindings.js" type="BINDATA" />
         <include name="IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\image_writer_private_custom_bindings.js" type="BINDATA" />

@@ -659,6 +659,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"extensionViewConstants", IDR_EXTENSION_VIEW_CONSTANTS_JS},
       {"extensionViewEvents", IDR_EXTENSION_VIEW_EVENTS_JS},
       {"extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
+      {"feedbackPrivate", IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS},
       {"fileEntryBindingUtil", IDR_FILE_ENTRY_BINDING_UTIL_JS},
       {"fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS},
       {"guestView", IDR_GUEST_VIEW_JS},

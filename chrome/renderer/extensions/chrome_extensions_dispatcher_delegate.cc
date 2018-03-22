@@ -181,8 +181,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("developerPrivate",
                              IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("downloads", IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("feedbackPrivate",
-                             IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("gcm", IDR_GCM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("identity", IDR_IDENTITY_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("imageWriterPrivate",
