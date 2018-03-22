@@ -87,7 +87,8 @@ using base::UserMetricsAction;
                                                       originPoint:origin]];
       break;
     case PopupMenuActionReadLater:
-      // TODO(crbug.com/822703): Add metric and action.
+      base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
+      // TODO(crbug.com/822703): Add action.
       break;
     case PopupMenuActionRequestDesktop:
       base::RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
@@ -98,7 +99,8 @@ using base::UserMetricsAction;
       [self.dispatcher requestMobileSite];
       break;
     case PopupMenuActionSiteInformation:
-      // TODO(crbug.com/822703): Add metric and action.
+      base::RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
+      // TODO(crbug.com/822703): Add action.
       break;
     case PopupMenuActionReportIssue:
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
