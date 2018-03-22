@@ -43,6 +43,8 @@
 - (ToolbarButton*)backButton;
 // Forward ToolbarButton.
 - (ToolbarButton*)forwardButton;
+// Forward ToolbarButton, to be positioned on the trailing side of the toolbar.
+- (ToolbarButton*)forwardButtonTrailingPosition;
 // Tab Grid ToolbarButton.
 - (ToolbarTabGridButton*)tabGridButton;
 // StackView ToolbarButton.

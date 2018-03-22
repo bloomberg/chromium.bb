@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -23,10 +25,18 @@
 - (ToolbarComponentVisibility)backButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways &
-             ~ToolbarComponentVisibilitySplit;
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilityAlways;
+      } else {
+        return ToolbarComponentVisibilityAlways &
+               ~ToolbarComponentVisibilitySplit;
+      }
     case SECONDARY:
-      return ToolbarComponentVisibilitySplit;
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilityNone;
+      } else {
+        return ToolbarComponentVisibilitySplit;
+      }
     case LEGACY:
       return ToolbarComponentVisibilityAlways;
   }
@@ -38,7 +48,27 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      return ToolbarComponentVisibilitySplit;
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilityNone;
+      } else {
+        return ToolbarComponentVisibilitySplit;
+      }
+    case LEGACY:
+      return ToolbarComponentVisibilityOnlyWhenEnabled |
+             ToolbarComponentVisibilityRegularWidthRegularHeight;
+  }
+}
+
+- (ToolbarComponentVisibility)forwardButtonTrailingPositionVisibility {
+  switch (self.type) {
+    case PRIMARY:
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilitySplit;
+      } else {
+        return ToolbarComponentVisibilityNone;
+      }
+    case SECONDARY:
+      return ToolbarComponentVisibilityNone;
     case LEGACY:
       return ToolbarComponentVisibilityOnlyWhenEnabled |
              ToolbarComponentVisibilityRegularWidthRegularHeight;
@@ -72,10 +102,19 @@
 - (ToolbarComponentVisibility)shareButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways &
-             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
+      if (PositionForCurrentProcess() ==
+          ToolbarButtonPositionNavigationBottomShareTop) {
+        return ToolbarComponentVisibilityAlways;
+      } else {
+        return ToolbarComponentVisibilityAlways &
+               ~ToolbarComponentVisibilitySplit;
+      }
     case SECONDARY:
-      return ToolbarComponentVisibilityNone;
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilitySplit;
+      } else {
+        return ToolbarComponentVisibilityNone;
+      }
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
@@ -109,7 +148,11 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
-      return ToolbarComponentVisibilityNone;
+      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
+        return ToolbarComponentVisibilitySplit;
+      } else {
+        return ToolbarComponentVisibilityNone;
+      }
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthCompactHeight |
              ToolbarComponentVisibilityRegularWidthRegularHeight;

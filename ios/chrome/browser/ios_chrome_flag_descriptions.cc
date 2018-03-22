@@ -126,6 +126,10 @@ const char kTabSwitcherPresentsBVCDescription[] =
     "BVC is visible, the tab switcher will remain in the VC hierarchy "
     "underneath it.";
 
+const char kToolbarButtonPositionsName[] = "Toolbar's buttons positions";
+const char kToolbarButtonPositionsDescription[] =
+    "Position of the toolbars buttons.";
+
 const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
 const char kUIRefreshPhase1Description[] =
     "When enabled, the first phase of the iOS UI refresh will be displayed.";

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
@@ -52,6 +53,10 @@
 @property(nonatomic, strong, readwrite) ToolbarButton* backButton;
 // Button to navigate forward, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarButton* forwardButton;
+// Button to navigate forward, positioned on the trailing side of the toolbar
+// relatively to the omnibox, redefined as readwrite.
+@property(nonatomic, strong, readwrite)
+    ToolbarButton* forwardButtonTrailingPosition;
 // Button to display the TabGrid, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarTabGridButton* tabGridButton;
 // Button to stop the loading of the page, redefined as readwrite.
@@ -92,6 +97,7 @@
 @synthesize leadingStackViewButtons = _leadingStackViewButtons;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
+@synthesize forwardButtonTrailingPosition = _forwardButtonTrailingPosition;
 @synthesize tabGridButton = _tabGridButton;
 @synthesize stopButton = _stopButton;
 @synthesize reloadButton = _reloadButton;
@@ -222,12 +228,16 @@
 
 // Sets the trailing stack view.
 - (void)setUpTrailingStackView {
+  self.forwardButtonTrailingPosition =
+      [self.buttonFactory forwardButtonTrailingPosition];
   self.shareButton = [self.buttonFactory shareButton];
   self.bookmarkButton = [self.buttonFactory bookmarkButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
-  self.trailingStackViewButtons =
-      @[ self.shareButton, self.bookmarkButton, self.toolsMenuButton ];
+  self.trailingStackViewButtons = @[
+    self.forwardButtonTrailingPosition, self.shareButton, self.bookmarkButton,
+    self.toolsMenuButton
+  ];
   self.trailingStackView = [[UIStackView alloc]
       initWithArrangedSubviews:self.trailingStackViewButtons];
   self.trailingStackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -285,14 +295,43 @@
         constraintEqualToAnchor:self.leadingStackView.trailingAnchor
                        constant:kContractedLocationBarHorizontalMargin],
   ]];
-  [self.contractedNoMarginConstraints addObjectsFromArray:@[
-    [self.locationBarContainer.leadingAnchor
-        constraintEqualToAnchor:safeArea.leadingAnchor
-                       constant:kExpandedLocationBarHorizontalMargin],
-    [self.locationBarContainer.trailingAnchor
-        constraintEqualToAnchor:safeArea.trailingAnchor
-                       constant:-kExpandedLocationBarHorizontalMargin]
-  ]];
+
+  // Constraints for contractedNoMarginConstraints, depending on the flag.
+  switch (PositionForCurrentProcess()) {
+    case ToolbarButtonPositionNavigationBottomNoTop:
+      [self.contractedNoMarginConstraints addObjectsFromArray:@[
+        [self.locationBarContainer.leadingAnchor
+            constraintEqualToAnchor:safeArea.leadingAnchor
+                           constant:kExpandedLocationBarHorizontalMargin],
+        [self.locationBarContainer.trailingAnchor
+            constraintEqualToAnchor:safeArea.trailingAnchor
+                           constant:-kExpandedLocationBarHorizontalMargin]
+      ]];
+
+      break;
+
+    case ToolbarButtonPositionNavigationBottomShareTop:
+      [self.contractedNoMarginConstraints addObjectsFromArray:@[
+        [self.locationBarContainer.leadingAnchor
+            constraintEqualToAnchor:safeArea.leadingAnchor
+                           constant:kExpandedLocationBarHorizontalMargin],
+        [self.locationBarContainer.trailingAnchor
+            constraintEqualToAnchor:self.trailingStackView.leadingAnchor
+                           constant:-kExpandedLocationBarHorizontalMargin],
+      ]];
+      break;
+    case ToolbarButtonPositionNavigationTop:
+      [self.contractedNoMarginConstraints addObjectsFromArray:@[
+        [self.locationBarContainer.leadingAnchor
+            constraintEqualToAnchor:self.leadingStackView.trailingAnchor
+                           constant:kContractedLocationBarHorizontalMargin],
+        [self.locationBarContainer.trailingAnchor
+            constraintEqualToAnchor:self.trailingStackView.leadingAnchor
+                           constant:-kContractedLocationBarHorizontalMargin],
+      ]];
+      break;
+  }
+
   [self.expandedConstraints addObjectsFromArray:@[
     [self.locationBarContainer.trailingAnchor
         constraintEqualToAnchor:self.cancelButton.leadingAnchor],

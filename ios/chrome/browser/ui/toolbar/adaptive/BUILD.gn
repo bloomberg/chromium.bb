@@ -78,6 +78,7 @@ source_set("adaptive_ui") {
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/third_party/material_components_ios",
