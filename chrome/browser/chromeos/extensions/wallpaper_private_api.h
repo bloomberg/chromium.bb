@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/wallpaper/wallpaper_files_id.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace backdrop_wallpaper_handlers {
@@ -173,7 +172,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
   AccountId account_id_ = EmptyAccountId();
 
   // User id hash of the logged in user.
-  wallpaper::WallpaperFilesId wallpaper_files_id_;
+  std::string wallpaper_files_id_;
 };
 
 class WallpaperPrivateSetCustomWallpaperLayoutFunction

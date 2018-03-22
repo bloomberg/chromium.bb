@@ -104,7 +104,6 @@ component("app_list") {
     "//chromeos:chromeos",
     "//components/keyed_service/core",
     "//components/sync",
-    "//components/wallpaper",
     "//mojo/public/cpp/bindings",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",

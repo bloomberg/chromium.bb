@@ -1,25 +1,25 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wallpaper/wallpaper_color_calculator.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator.h"
 
 #include <string>
 #include <utility>
 
+#include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_color_extraction_result.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "components/wallpaper/wallpaper_color_calculator_observer.h"
-#include "components/wallpaper/wallpaper_color_extraction_result.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
 
 using LumaRange = color_utils::LumaRange;
 using SaturationRange = color_utils::SaturationRange;
 
-namespace wallpaper {
+namespace ash {
 
 namespace {
 
@@ -163,4 +163,4 @@ void WallpaperColorCalculator::NotifyCalculationComplete(
   // This could be deleted!
 }
 
-}  // namespace wallpaper
+}  // namespace ash

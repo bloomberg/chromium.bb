@@ -122,7 +122,6 @@ components/user_manager/user_image/user_image.h
 components/user_manager/user_manager.h
 components/viz/display_compositor/display_provider.h
 components/viz/viz_export.h
-components/wallpaper/wallpaper_export.h
 components/wifi/wifi_export.h
 components/wifi/wifi_service.h
 content/browser/background_fetch/background_fetch_constants.h

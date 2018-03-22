@@ -1,16 +1,16 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WALLPAPER_WALLPAPER_COLOR_CALCULATOR_H_
-#define COMPONENTS_WALLPAPER_WALLPAPER_COLOR_CALCULATOR_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_CALCULATOR_H_
+#define ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_CALCULATOR_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/wallpaper/wallpaper_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -22,11 +22,12 @@ namespace color_utils {
 struct ColorProfile;
 }
 
-namespace wallpaper {
+namespace ash {
+
 class WallpaperColorCalculatorObserver;
 
 // Calculates colors based on a wallpaper image.
-class WALLPAPER_EXPORT WallpaperColorCalculator {
+class ASH_EXPORT WallpaperColorCalculator {
  public:
   // |image|, |color_profiles| are the input parameters to the color calculation
   // that is executed on the |task_runner|.
@@ -84,6 +85,6 @@ class WALLPAPER_EXPORT WallpaperColorCalculator {
   DISALLOW_COPY_AND_ASSIGN(WallpaperColorCalculator);
 };
 
-}  // namespace wallpaper
+}  // namespace ash
 
-#endif  // COMPONENTS_WALLPAPER_WALLPAPER_COLOR_CALCULATOR_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_UTILS_WALLPAPER_COLOR_CALCULATOR_H_

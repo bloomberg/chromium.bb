@@ -1,23 +1,23 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wallpaper/wallpaper_resizer.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 
 #include <utility>
 
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
-#include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 
-namespace wallpaper {
+namespace ash {
 namespace {
 
 // Resizes |image| to |target_size| using |layout| and stores the
@@ -116,8 +116,7 @@ WallpaperResizer::WallpaperResizer(const gfx::ImageSkia& image,
   image_.MakeThreadSafe();
 }
 
-WallpaperResizer::~WallpaperResizer() {
-}
+WallpaperResizer::~WallpaperResizer() {}
 
 void WallpaperResizer::StartResize() {
   start_calculation_time_ = base::TimeTicks::Now();
@@ -152,4 +151,4 @@ void WallpaperResizer::OnResizeFinished(SkBitmap* resized_bitmap) {
     observer.OnWallpaperResized();
 }
 
-}  // namespace wallpaper
+}  // namespace ash

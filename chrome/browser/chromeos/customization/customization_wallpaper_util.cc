@@ -39,13 +39,13 @@ bool ResizeAndSaveCustomizedDefaultWallpaper(
   bool success = true;
 
   success &= ash::WallpaperController::ResizeAndSaveWallpaper(
-      *image, resized_small_path, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      *image, resized_small_path, ash::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kSmallWallpaperMaxWidth,
       ash::WallpaperController::kSmallWallpaperMaxHeight,
       nullptr /*output_skia=*/);
 
   success &= ash::WallpaperController::ResizeAndSaveWallpaper(
-      *image, resized_large_path, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      *image, resized_large_path, ash::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kLargeWallpaperMaxWidth,
       ash::WallpaperController::kLargeWallpaperMaxHeight,
       nullptr /*output_skia=*/);

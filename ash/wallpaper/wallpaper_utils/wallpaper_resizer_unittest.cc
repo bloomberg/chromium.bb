@@ -1,21 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/wallpaper/wallpaper_resizer.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 
 #include <stdint.h>
 
 #include <memory>
 
+#include "ash/public/cpp/wallpaper_types.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
+namespace ash {
 namespace {
 
 const int kTestImageWidth = 5;
@@ -63,9 +65,7 @@ class WallpaperResizerTest : public testing::Test,
   WallpaperResizerTest() : worker_thread_("WallpaperResizerTest") {}
   ~WallpaperResizerTest() override {}
 
-  void SetUp() override {
-    ASSERT_TRUE(worker_thread_.Start());
-  }
+  void SetUp() override { ASSERT_TRUE(worker_thread_.Start()); }
 
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
@@ -73,8 +73,7 @@ class WallpaperResizerTest : public testing::Test,
     std::unique_ptr<WallpaperResizer> resizer;
     resizer.reset(new WallpaperResizer(
         image, target_size,
-        wallpaper::WallpaperInfo("", layout, DEFAULT,
-                                 base::Time::Now().LocalMidnight()),
+        WallpaperInfo("", layout, DEFAULT, base::Time::Now().LocalMidnight()),
         task_runner()));
     resizer->AddObserver(this);
     resizer->StartResize();
@@ -105,10 +104,8 @@ class WallpaperResizerTest : public testing::Test,
 TEST_F(WallpaperResizerTest, BasicResize) {
   // Keeps in sync with WallpaperLayout enum.
   WallpaperLayout layouts[4] = {
-      WALLPAPER_LAYOUT_CENTER,
-      WALLPAPER_LAYOUT_CENTER_CROPPED,
-      WALLPAPER_LAYOUT_STRETCH,
-      WALLPAPER_LAYOUT_TILE,
+      WALLPAPER_LAYOUT_CENTER, WALLPAPER_LAYOUT_CENTER_CROPPED,
+      WALLPAPER_LAYOUT_STRETCH, WALLPAPER_LAYOUT_TILE,
   };
   const int length = arraysize(layouts);
 
@@ -169,4 +166,5 @@ TEST_F(WallpaperResizerTest, ImageId) {
   EXPECT_EQ(WallpaperResizer::GetImageId(image), resizer.original_image_id());
 }
 
+}  // namespace wallpaper
 }  // namespace ash

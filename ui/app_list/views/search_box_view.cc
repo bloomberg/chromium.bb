@@ -11,8 +11,8 @@
 
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
-#include "components/wallpaper/wallpaper_color_profile.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -41,7 +41,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using wallpaper::ColorProfileType;
+using ash::ColorProfileType;
 
 namespace app_list {
 

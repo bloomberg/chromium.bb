@@ -5,7 +5,6 @@ include_rules = [
   "+components/login",
   "+components/toolbar",
   "+components/user_manager",
-  "+components/wallpaper",
   "+extensions/components/native_app_window",
   "+services/audio/public/cpp",
   "+services/device/public/mojom",

@@ -30,7 +30,6 @@ source_set("chromeos") {
     "//chrome/app/theme:theme_resources",
     "//chromeos:power_manager_proto",
     "//components/policy/proto",
-    "//components/wallpaper",
     "//content/app/resources",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",

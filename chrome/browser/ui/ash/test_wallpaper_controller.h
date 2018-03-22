@@ -45,13 +45,13 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void SetCustomWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
-                          wallpaper::WallpaperLayout layout,
+                          ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const gfx::ImageSkia& image,
                           const std::string& url,
-                          wallpaper::WallpaperLayout layout,
+                          ash::WallpaperLayout layout,
                           bool preview_mode) override;
   void SetDefaultWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
@@ -67,14 +67,14 @@ class TestWallpaperController : ash::mojom::WallpaperController {
       ash::mojom::WallpaperUserInfoPtr user_info,
       const std::string& wallpaper_files_id,
       const std::string& file_name,
-      wallpaper::WallpaperLayout layout,
+      ash::WallpaperLayout layout,
       const gfx::ImageSkia& image,
       ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback)
       override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCustomWallpaperLayout(ash::mojom::WallpaperUserInfoPtr user_info,
-                                   wallpaper::WallpaperLayout layout) override;
+                                   ash::WallpaperLayout layout) override;
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,

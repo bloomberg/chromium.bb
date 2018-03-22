@@ -11,7 +11,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "url/mojom/url.mojom";
 
-// These values match wallpaper::WallpaperLayout.
+// These values match ash::WallpaperLayout.
 enum WallpaperLayout {
   CENTER,
   CENTER_CROPPED,
