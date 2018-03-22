@@ -17,16 +17,22 @@ namespace cryptauth {
 
 class BeaconSeed;
 class RawEidGenerator;
+class RemoteBeaconSeedFetcher;
 
 // Generates ephemeral ID (EID) values that are broadcast for background BLE
 // advertisements in the ProximityAuth protocol.
+//
+// Background BLE advertisements, because they're generally being advertised for
+// extended periods of time, use a frequently rotating EID rotation scheme, for
+// privacy reasons (EIDs should rotate more frequently to prevent others from
+// tracking this device or user).
 //
 // When advertising in background mode, we offload advertising to the hardware
 // in order to conserve battery. We assume, however, that the scanning side is
 // not bound by battery constraints.
 //
-// For the inverse of this model, in which advertising is battery-sensitive, see
-// ForegroundEidGenerator.
+// For the inverse of this model, in which advertising is neither privacy- nor
+// battery-sensitive, see ForegroundEidGenerator.
 class BackgroundEidGenerator {
  public:
   BackgroundEidGenerator();
@@ -36,6 +42,15 @@ class BackgroundEidGenerator {
   // list of EIDs is sorted from earliest timestamp to latest.
   virtual std::vector<DataWithTimestamp> GenerateNearestEids(
       const std::vector<BeaconSeed>& beacon_seed) const;
+
+  // Given an incoming background advertisement with |service_data|, identifies
+  // which device (if any) sent the advertisement. Returns a device ID which
+  // identifies the device. If no device can be identified, returns an empty
+  // string.
+  virtual std::string IdentifyRemoteDeviceByAdvertisement(
+      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+      const std::string& advertisement_service_data,
+      const std::vector<std::string>& device_ids) const;
 
  private:
   friend class CryptAuthBackgroundEidGeneratorTest;

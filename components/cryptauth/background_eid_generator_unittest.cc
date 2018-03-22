@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "components/cryptauth/mock_remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
 #include "components/cryptauth/remote_device.h"
@@ -37,6 +38,9 @@ const std::string kSecondSeed = "secondSeed";
 const std::string kThirdSeed = "thirdSeed";
 const std::string kFourthSeed = "fourthSeed";
 
+const std::string kDeviceId1 = "deviceId1";
+const std::string kDeviceId2 = "deviceId2";
+
 BeaconSeed CreateBeaconSeed(const std::string& data,
                             const int64_t start_timestamp_ms,
                             const int64_t end_timestamp_ms) {
@@ -47,15 +51,18 @@ BeaconSeed CreateBeaconSeed(const std::string& data,
   return seed;
 }
 
-DataWithTimestamp CreateEid(const std::string& eid_seed,
-                            int64_t start_of_period_timestamp_ms) {
-  std::string data =
-      eid_seed + "|" + std::to_string(start_of_period_timestamp_ms);
+DataWithTimestamp CreateDataWithTimestamp(
+    const std::string& eid_seed,
+    int64_t start_of_period_timestamp_ms) {
+  std::unique_ptr<RawEidGenerator> raw_eid_generator =
+      std::make_unique<RawEidGeneratorImpl>();
+  std::string data = raw_eid_generator->GenerateEid(
+      eid_seed, start_of_period_timestamp_ms, nullptr /* extra_entropy */);
   return DataWithTimestamp(data, start_of_period_timestamp_ms,
                            start_of_period_timestamp_ms + kEidPeriodMs);
 }
 
-class TestRawEidGenerator : public RawEidGenerator {
+class TestRawEidGenerator : public RawEidGeneratorImpl {
  public:
   TestRawEidGenerator() {}
   ~TestRawEidGenerator() override {}
@@ -65,7 +72,8 @@ class TestRawEidGenerator : public RawEidGenerator {
                           int64_t start_of_period_timestamp_ms,
                           std::string const* extra_entropy) override {
     EXPECT_FALSE(extra_entropy);
-    return CreateEid(eid_seed, start_of_period_timestamp_ms).data;
+    return RawEidGeneratorImpl::GenerateEid(
+        eid_seed, start_of_period_timestamp_ms, extra_entropy);
   }
 
  private:
@@ -92,6 +100,9 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
   void SetUp() override {
     SetTestTime(kCurrentTimeMs);
 
+    mock_seed_fetcher_ =
+        std::make_unique<cryptauth::MockRemoteBeaconSeedFetcher>();
+
     eid_generator_.reset(new BackgroundEidGenerator(
         std::make_unique<TestRawEidGenerator>(), &test_clock_));
   }
@@ -103,11 +114,13 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
   }
 
   std::unique_ptr<BackgroundEidGenerator> eid_generator_;
+  std::unique_ptr<MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   base::SimpleTestClock test_clock_;
   std::vector<BeaconSeed> beacon_seeds_;
 };
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, BeaconSeedsExpired) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_BeaconSeedsExpired) {
   SetTestTime(beacon_seeds_[beacon_seeds_.size() - 1].end_time_millis() +
               kEidCount * kEidPeriodMs);
   std::vector<DataWithTimestamp> eids =
@@ -115,14 +128,16 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, BeaconSeedsExpired) {
   EXPECT_EQ(0u, eids.size());
 }
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, BeaconSeedsValidInFuture) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_BeaconSeedsValidInFuture) {
   SetTestTime(beacon_seeds_[0].start_time_millis() - kEidCount * kEidPeriodMs);
   std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
   EXPECT_EQ(0u, eids.size());
 }
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsUseSameBeaconSeed) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_EidsUseSameBeaconSeed) {
   int64_t start_period_ms =
       beacon_seeds_[0].start_time_millis() + kEidCount * kEidPeriodMs;
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
@@ -132,14 +147,20 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsUseSameBeaconSeed) {
 
   std::string seed = beacon_seeds_[0].data();
   EXPECT_EQ(kEidCount, eids.size());
-  EXPECT_EQ(CreateEid(seed, start_period_ms - 2 * kEidPeriodMs), eids[0]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms - 1 * kEidPeriodMs), eids[1]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 0 * kEidPeriodMs), eids[2]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 1 * kEidPeriodMs), eids[3]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 2 * kEidPeriodMs), eids[4]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms - 2 * kEidPeriodMs),
+            eids[0]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms - 1 * kEidPeriodMs),
+            eids[1]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 0 * kEidPeriodMs),
+            eids[2]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 1 * kEidPeriodMs),
+            eids[3]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 2 * kEidPeriodMs),
+            eids[4]);
 }
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsAcrossBeaconSeeds) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_EidsAcrossBeaconSeeds) {
   int64_t end_period_ms = beacon_seeds_[0].end_time_millis();
   int64_t start_period_ms = beacon_seeds_[1].start_time_millis();
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
@@ -150,14 +171,20 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsAcrossBeaconSeeds) {
   std::string seed0 = beacon_seeds_[0].data();
   std::string seed1 = beacon_seeds_[1].data();
   EXPECT_EQ(kEidCount, eids.size());
-  EXPECT_EQ(CreateEid(seed0, end_period_ms - 2 * kEidPeriodMs), eids[0]);
-  EXPECT_EQ(CreateEid(seed0, end_period_ms - 1 * kEidPeriodMs), eids[1]);
-  EXPECT_EQ(CreateEid(seed1, start_period_ms + 0 * kEidPeriodMs), eids[2]);
-  EXPECT_EQ(CreateEid(seed1, start_period_ms + 1 * kEidPeriodMs), eids[3]);
-  EXPECT_EQ(CreateEid(seed1, start_period_ms + 2 * kEidPeriodMs), eids[4]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed0, end_period_ms - 2 * kEidPeriodMs),
+            eids[0]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed0, end_period_ms - 1 * kEidPeriodMs),
+            eids[1]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed1, start_period_ms + 0 * kEidPeriodMs),
+            eids[2]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed1, start_period_ms + 1 * kEidPeriodMs),
+            eids[3]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed1, start_period_ms + 2 * kEidPeriodMs),
+            eids[4]);
 }
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtStartOfRange) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_CurrentTimeAtStartOfRange) {
   int64_t start_period_ms = beacon_seeds_[0].start_time_millis();
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
@@ -166,12 +193,16 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtStartOfRange) {
 
   std::string seed = beacon_seeds_[0].data();
   EXPECT_EQ(3u, eids.size());
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 0 * kEidPeriodMs), eids[0]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 1 * kEidPeriodMs), eids[1]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms + 2 * kEidPeriodMs), eids[2]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 0 * kEidPeriodMs),
+            eids[0]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 1 * kEidPeriodMs),
+            eids[1]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms + 2 * kEidPeriodMs),
+            eids[2]);
 }
 
-TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtEndOfRange) {
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       GenerateNearestEids_CurrentTimeAtEndOfRange) {
   int64_t start_period_ms = beacon_seeds_[3].end_time_millis() - kEidPeriodMs;
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
@@ -180,9 +211,40 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtEndOfRange) {
 
   std::string seed = beacon_seeds_[3].data();
   EXPECT_EQ(3u, eids.size());
-  EXPECT_EQ(CreateEid(seed, start_period_ms - 2 * kEidPeriodMs), eids[0]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms - 1 * kEidPeriodMs), eids[1]);
-  EXPECT_EQ(CreateEid(seed, start_period_ms - 0 * kEidPeriodMs), eids[2]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms - 2 * kEidPeriodMs),
+            eids[0]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms - 1 * kEidPeriodMs),
+            eids[1]);
+  EXPECT_EQ(CreateDataWithTimestamp(seed, start_period_ms - 0 * kEidPeriodMs),
+            eids[2]);
+}
+
+// Test the case where the account has other devices, but their beacon seeds
+// don't match the incoming advertisement. |beacon_seeds_[0]| corresponds to
+// |kDeviceId1|. Since |kDeviceId1| is not present in the device ids passed to
+// IdentifyRemoteDeviceByAdvertisement(), no match is expected to be found.
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       IdentifyRemoteDeviceByAdvertisement_NoMatchingRemoteDevices) {
+  SetTestTime(kStartPeriodMs + kEidPeriodMs / 2);
+  DataWithTimestamp advertisement_eid = CreateDataWithTimestamp(
+      beacon_seeds_[0].data(), kStartPeriodMs - kEidPeriodMs);
+  mock_seed_fetcher_->SetSeedsForDeviceId(kDeviceId1, &beacon_seeds_);
+
+  EXPECT_EQ(std::string(), eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+                               mock_seed_fetcher_.get(), advertisement_eid.data,
+                               {kDeviceId2}));
+}
+
+TEST_F(CryptAuthBackgroundEidGeneratorTest,
+       IdentifyRemoteDeviceByAdvertisement_Success) {
+  SetTestTime(kStartPeriodMs + kEidPeriodMs / 2);
+  DataWithTimestamp advertisement_eid = CreateDataWithTimestamp(
+      beacon_seeds_[0].data(), kStartPeriodMs - kEidPeriodMs);
+  mock_seed_fetcher_->SetSeedsForDeviceId(kDeviceId1, &beacon_seeds_);
+
+  EXPECT_EQ(kDeviceId1, eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+                            mock_seed_fetcher_.get(), advertisement_eid.data,
+                            {kDeviceId1, kDeviceId2}));
 }
 
 }  // namespace cryptauth
