@@ -76,7 +76,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.collectionView reloadData];
-  self.collectionView.backgroundView.hidden = (self.items.count > 0);
+  self.emptyStateView.hidden = (self.items.count > 0);
   // Selection is invalid if there are no items.
   if (self.items.count == 0)
     return;
@@ -221,7 +221,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
   auto performAllUpdates = ^{
     performDataSourceUpdates();
-    self.collectionView.backgroundView.hidden = YES;
+    self.emptyStateView.hidden = YES;
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
   auto completion = ^(BOOL finished) {
@@ -249,6 +249,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   auto performAllUpdates = ^{
     performDataSourceUpdates();
     [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+    if (self.items.count == 0) {
+      [self animateEmptyStateIntoView];
+    }
   };
   auto completion = ^(BOOL finished) {
     if (self.items.count > 0) {
@@ -256,8 +259,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
           selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                        animated:YES
                  scrollPosition:UICollectionViewScrollPositionNone];
-    } else {
-      self.collectionView.backgroundView.hidden = NO;
     }
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
@@ -317,6 +318,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Invoking the view method causes the view to load (if it is not loaded)
   // which is unnecessary.
   return (self.isViewLoaded && self.view.window);
+}
+
+// Animates the empty state into view.
+- (void)animateEmptyStateIntoView {
+  // TODO(crbug.com/820410) : Polish the animation, and put constants where they
+  // belong.
+  CGFloat scale = 0.8f;
+  CGAffineTransform originalTransform = self.emptyStateView.transform;
+  self.emptyStateView.transform =
+      CGAffineTransformScale(self.emptyStateView.transform, scale, scale);
+  self.emptyStateView.alpha = 0.0f;
+  self.emptyStateView.hidden = NO;
+  [UIView animateWithDuration:1.0f
+                        delay:0.0f
+       usingSpringWithDamping:1.0f
+        initialSpringVelocity:0.7f
+                      options:UIViewAnimationCurveEaseOut
+                   animations:^{
+                     self.emptyStateView.alpha = 1.0f;
+                     self.emptyStateView.transform = originalTransform;
+                   }
+                   completion:nil];
 }
 
 @end
