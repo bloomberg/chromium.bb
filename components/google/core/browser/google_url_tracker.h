@@ -51,6 +51,8 @@ class GoogleURLTracker
   static const char kDefaultGoogleHomepage[];
 
   // Only the GoogleURLTrackerFactory and tests should call this.
+  // Note: In UNIT_TEST_MODE, you *must* manually call Shutdown() before this
+  // instance gets destroyed!
   GoogleURLTracker(std::unique_ptr<GoogleURLTrackerClient> client, Mode mode);
 
   ~GoogleURLTracker() override;
