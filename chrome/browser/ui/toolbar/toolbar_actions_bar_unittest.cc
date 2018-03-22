@@ -237,7 +237,8 @@ INSTANTIATE_TEST_CASE_P(
     ,
     ToolbarActionsBarUnitTest,
     testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
-                    ui::MaterialDesignController::MATERIAL_HYBRID));
+                    ui::MaterialDesignController::MATERIAL_HYBRID,
+                    ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED));
 
 TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have
@@ -252,16 +253,14 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
 
   // By default, all three actions should be visible.
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
-  // Check the widths. IconWidth(true) includes the spacing to the left of
-  // each icon and |item_spacing| accounts for the spacing to the right
-  // of the rightmost icon.
-  int expected_width =
-      3 * ToolbarActionsBar::IconWidth(true) + platform_settings.item_spacing;
+  const gfx::Size view_size = ToolbarActionsBar::GetViewSize();
+  // Check the widths.
+  int expected_width = 3 * view_size.width();
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // Since all icons are showing, the current width should be the max width.
   int maximum_width = expected_width;
   EXPECT_EQ(maximum_width, toolbar_actions_bar()->GetMaximumWidth());
-  // The minimum width should be be non-zero (as long as there are any icons) so
+  // The minimum width should be non-zero (as long as there are any icons) so
   // we can render the grippy to allow the user to drag to adjust the width.
   int minimum_width = platform_settings.item_spacing;
   EXPECT_EQ(minimum_width, toolbar_actions_bar()->GetMinimumWidth());
@@ -272,11 +271,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
 
   // The current width should now be enough for two icons.
-  // IconWidth(true) includes the spacing to the left of each icon and
-  // |item_spacing| accounts for the spacing to the right of the rightmost
-  // icon.
-  expected_width = 2 * ToolbarActionsBar::IconWidth(true) +
-                   platform_settings.item_spacing;
+  expected_width = 2 * view_size.width();
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // The maximum and minimum widths should have remained constant (since we have
   // the same number of actions).
@@ -333,7 +328,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
 
   // If we resize by enough to include a new icon, width and icon count should
   // both increase.
-  width += ToolbarActionsBar::IconWidth(true);
+  width += view_size.width();
   toolbar_actions_bar()->OnResizeComplete(width);
   EXPECT_EQ(width, toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
@@ -341,7 +336,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // If we shrink the bar so that a full icon can't fit, it should resize to
   // hide that icon.
   toolbar_actions_bar()->OnResizeComplete(width - 1);
-  width -= ToolbarActionsBar::IconWidth(true);
+  width -= view_size.width();
   EXPECT_EQ(width, toolbar_actions_bar()->GetFullSize().width());
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 }
@@ -446,14 +441,13 @@ TEST_P(ToolbarActionsBarUnitTest, TestHighlightMode) {
 
 // Test the bounds calculation for different indices.
 TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
-  const int kIconWidth = ToolbarActionsBar::IconWidth(false);
-  const int kIconHeight = ToolbarActionsBar::IconHeight();
-  const int kIconWidthWithPadding = ToolbarActionsBar::IconWidth(true);
-  const int kIconSpacing = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-  const int kIconsPerOverflowRow = 3;
-  const int kNumExtensions = 7;
-  const int kSpacing =
-      toolbar_actions_bar()->platform_settings().item_spacing;
+  const auto icon_rect = [](int x, int y) {
+    const auto size = ToolbarActionsBar::GetViewSize();
+    return gfx::Rect(gfx::Point(x * size.width(), y * size.height()), size);
+  };
+
+  constexpr int kIconsPerOverflowRow = 3;
+  constexpr int kNumExtensions = 7;
 
   // Initialization: 7 total extensions, with 3 visible per row in overflow.
   // Start with all visible on the main bar.
@@ -462,20 +456,16 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
                           ActionType::BROWSER_ACTION);
   }
   toolbar_model()->SetVisibleIconCount(kNumExtensions);
-  overflow_bar()->SetOverflowRowWidth(
-      kIconWidthWithPadding * kIconsPerOverflowRow + kIconSpacing);
+  const int icon_width = ToolbarActionsBar::GetViewSize().width();
+  overflow_bar()->SetOverflowRowWidth(icon_width * kIconsPerOverflowRow);
   EXPECT_EQ(kIconsPerOverflowRow,
             overflow_bar()->platform_settings().icons_per_overflow_menu_row);
 
   // Check main bar calculations. Actions should be laid out in a line, so
   // all on the same (0) y-axis.
-  EXPECT_EQ(gfx::Rect(kSpacing, 0, kIconWidth, kIconHeight),
-            toolbar_actions_bar()->GetFrameForIndex(0));
-  EXPECT_EQ(gfx::Rect(kSpacing + kIconWidthWithPadding, 0, kIconWidth,
-                      kIconHeight),
-            toolbar_actions_bar()->GetFrameForIndex(1));
-  EXPECT_EQ(gfx::Rect(kSpacing + kIconWidthWithPadding * (kNumExtensions - 1),
-                      0, kIconWidth, kIconHeight),
+  EXPECT_EQ(icon_rect(0, 0), toolbar_actions_bar()->GetFrameForIndex(0));
+  EXPECT_EQ(icon_rect(1, 0), toolbar_actions_bar()->GetFrameForIndex(1));
+  EXPECT_EQ(icon_rect(kNumExtensions - 1, 0),
             toolbar_actions_bar()->GetFrameForIndex(kNumExtensions - 1));
 
   // Check overflow bar calculations.
@@ -488,30 +478,21 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
   // Other actions should start from their relative index; that is, the first
   // action shown should be in the first spot's bounds, even though it's the
   // third action by index.
-  EXPECT_EQ(gfx::Rect(kSpacing, 0, kIconWidth, kIconHeight),
-            overflow_bar()->GetFrameForIndex(3));
-  EXPECT_EQ(gfx::Rect(kSpacing + kIconWidthWithPadding, 0, kIconWidth,
-                      kIconHeight),
-            overflow_bar()->GetFrameForIndex(4));
-  EXPECT_EQ(gfx::Rect(kSpacing + kIconWidthWithPadding * 2, 0, kIconWidth,
-                      kIconHeight),
-            overflow_bar()->GetFrameForIndex(5));
+  EXPECT_EQ(icon_rect(0, 0), overflow_bar()->GetFrameForIndex(3));
+  EXPECT_EQ(icon_rect(1, 0), overflow_bar()->GetFrameForIndex(4));
+  EXPECT_EQ(icon_rect(2, 0), overflow_bar()->GetFrameForIndex(5));
   // And the actions should wrap, so that it starts back at the left on a new
   // row.
-  EXPECT_EQ(gfx::Rect(kSpacing, kIconHeight, kIconWidth, kIconHeight),
-            overflow_bar()->GetFrameForIndex(6));
+  EXPECT_EQ(icon_rect(0, 1), overflow_bar()->GetFrameForIndex(6));
 
   // Check with > 2 rows.
   toolbar_model()->SetVisibleIconCount(0);
-  EXPECT_EQ(gfx::Rect(kSpacing, 0, kIconWidth, kIconHeight),
-            overflow_bar()->GetFrameForIndex(0));
-  EXPECT_EQ(gfx::Rect(kSpacing, kIconHeight * 2, kIconWidth, kIconHeight),
-            overflow_bar()->GetFrameForIndex(6));
+  EXPECT_EQ(icon_rect(0, 0), overflow_bar()->GetFrameForIndex(0));
+  EXPECT_EQ(icon_rect(0, 2), overflow_bar()->GetFrameForIndex(6));
 }
 
 TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
-  const int kIconWidthWithPadding = ToolbarActionsBar::IconWidth(true);
-  const int kIconSpacing = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+  const int icon_width = ToolbarActionsBar::GetViewSize().width();
 
   for (int i = 0; i < 3; ++i) {
     CreateAndAddExtension(base::StringPrintf("extension %d", i),
@@ -527,8 +508,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
   EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
 
   // Shrink the width of the view to be a little over enough for one icon.
-  browser_action_test_util()->SetWidth(kIconWidthWithPadding +
-                                       kIconSpacing + 2);
+  browser_action_test_util()->SetWidth(icon_width + 2);
   // Tricky: GetIconCount() is what we use to determine our preferred size,
   // stored pref size, etc, and should not be affected by a minimum size that is
   // too small to show everything. It should remain constant.
@@ -543,7 +523,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
 
   // Shrink the container again to be too small to display even one icon.
   // The overflow container should be displaying everything.
-  browser_action_test_util()->SetWidth(kIconWidthWithPadding - 10);
+  browser_action_test_util()->SetWidth(icon_width - 10);
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetEndIndexInBounds());

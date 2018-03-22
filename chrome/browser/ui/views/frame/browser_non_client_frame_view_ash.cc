@@ -110,7 +110,7 @@ void SetRightSide(gfx::Rect* rect, int x) {
 }
 
 void AlignVerticalCenterWith(gfx::Rect* rect, const gfx::Rect& sibling) {
-  rect->set_y(sibling.y() + (sibling.height() - rect->height()) / 2);
+  rect->set_y(sibling.CenterPoint().y() - rect->height() / 2);
   DCHECK_EQ(rect->CenterPoint().y(), sibling.CenterPoint().y());
 }
 

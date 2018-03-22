@@ -422,10 +422,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (void)addViewForAction:(ToolbarActionViewController*)action
                withIndex:(NSUInteger)index {
-  NSRect buttonFrame = NSMakeRect(NSMaxX([containerView_ bounds]),
-                                  0,
-                                  ToolbarActionsBar::IconWidth(false),
-                                  ToolbarActionsBar::IconHeight());
+  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  NSRect buttonFrame = NSMakeRect(NSMaxX([containerView_ bounds]), 0,
+                                  size.width(), size.height());
   BrowserActionButton* newButton =
       [[[BrowserActionButton alloc]
          initWithFrame:buttonFrame
@@ -701,12 +700,13 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Calculate the row index and the index in the row. We bound the latter
   // because the view can go farther right than the right-most icon in the last
   // row of the overflow menu.
-  NSInteger rowIndex = midPoint.y / ToolbarActionsBar::IconHeight();
+  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  NSInteger rowIndex = midPoint.y / size.height();
   int icons_per_row = isOverflow_ ?
       toolbarActionsBar_->platform_settings().icons_per_overflow_menu_row :
       toolbarActionsBar_->GetIconCount();
-  NSInteger indexInRow = std::min(icons_per_row - 1,
-      static_cast<int>(midPoint.x / ToolbarActionsBar::IconWidth(true)));
+  NSInteger indexInRow =
+      std::min(icons_per_row - 1, static_cast<int>(midPoint.x / size.width()));
 
   // Find the desired index for the button.
   NSInteger maxIndex = [buttons_ count] - 1;
@@ -733,15 +733,15 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (NSRect)frameForIndex:(NSUInteger)index {
   gfx::Rect frameRect = toolbarActionsBar_->GetFrameForIndex(index);
-  int iconWidth = ToolbarActionsBar::IconWidth(false);
+  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  int iconWidth = size.width();
   // The toolbar actions bar will return an empty rect if the index is for an
   // action that is before range we show (i.e., is for a button that's on the
   // main bar, and this is the overflow). Set the frame to be outside the bounds
   // of the view.
-  NSRect frame = frameRect.IsEmpty() ?
-      NSMakeRect(-iconWidth - 1, 0, iconWidth,
-                 ToolbarActionsBar::IconHeight()) :
-      NSRectFromCGRect(frameRect.ToCGRect());
+  NSRect frame = frameRect.IsEmpty()
+                     ? NSMakeRect(-iconWidth - 1, 0, iconWidth, size.height())
+                     : NSRectFromCGRect(frameRect.ToCGRect());
   // We need to flip the y coordinate for Cocoa's view system.
   frame.origin.y = NSHeight([containerView_ frame]) - NSMaxY(frame);
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())

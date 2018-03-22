@@ -93,15 +93,22 @@ int GetLayoutConstant(LayoutConstant constant) {
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
+  const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
     case TAB: {
       constexpr int kTabHorizontalInset[] = {16, 18, 24};
-      return gfx::Insets(
-          1, kTabHorizontalInset[ui::MaterialDesignController::GetMode()]);
+      return gfx::Insets(1, kTabHorizontalInset[mode]);
     }
     case TOOLBAR_BUTTON:
       return gfx::Insets(
           ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 12 : 6);
+
+    case TOOLBAR_ACTION_VIEW: {
+      // TODO(afakhry): Unify all toolbar button sizes on all platforms.
+      // https://crbug.com/822967.
+      constexpr int kToolbarActionsInsets[] = {2, 4, 10};
+      return gfx::Insets(kToolbarActionsInsets[mode]);
+    }
   }
   NOTREACHED();
   return gfx::Insets();

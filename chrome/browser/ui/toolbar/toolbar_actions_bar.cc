@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/location.h"
+#include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -124,19 +125,16 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 }
 
 // static
-int ToolbarActionsBar::IconWidth(bool include_padding) {
-  return IconHeight() +
-         (include_padding ? GetLayoutConstant(TOOLBAR_STANDARD_SPACING) : 0);
-}
-
-// static
-int ToolbarActionsBar::IconHeight() {
+gfx::Size ToolbarActionsBar::GetViewSize() {
 #if defined(OS_MACOSX)
   // On the Mac, the spec is a 24x24 button in a 28x28 space.
-  return 24;
+  constexpr gfx::Size kSize(24, 24);
 #else
-  return 28;
+  constexpr gfx::Size kSize(28, 28);
 #endif
+  gfx::Rect rect(kSize);
+  rect.Inset(-GetLayoutInsets(TOOLBAR_ACTION_VIEW));
+  return rect.size();
 }
 
 // static
@@ -151,25 +149,25 @@ void ToolbarActionsBar::RegisterProfilePrefs(
 }
 
 gfx::Size ToolbarActionsBar::GetFullSize() const {
+  // If there are no actions to show (and this isn't an overflow container),
+  // then don't show the container at all.
+  if (toolbar_actions_.empty() && !in_overflow_mode())
+    return gfx::Size();
+
+  int num_icons = GetIconCount();
+  int num_rows = 1;
+
   if (in_overflow_mode()) {
     // In overflow, we always have a preferred size of a full row (even if we
     // don't use it), and always of at least one row. The parent may decide to
     // show us even when empty, e.g. as a drag target for dragging in icons from
     // the main container.
-    int icon_count = GetEndIndexInBounds() - GetStartIndexInBounds();
-    int row_count = ((std::max(0, icon_count - 1)) /
-        platform_settings_.icons_per_overflow_menu_row) + 1;
-    return gfx::Size(
-        IconCountToWidth(platform_settings_.icons_per_overflow_menu_row),
-        row_count * IconHeight());
+    num_icons = platform_settings_.icons_per_overflow_menu_row;
+    const int icon_count = GetEndIndexInBounds() - GetStartIndexInBounds();
+    num_rows += (std::max(0, icon_count - 1) / num_icons);
   }
 
-  // If there are no actions to show (and this isn't an overflow container),
-  // then don't show the container at all.
-  if (toolbar_actions_.empty())
-    return gfx::Size();
-
-  return gfx::Size(IconCountToWidth(GetIconCount()), IconHeight());
+  return gfx::ScaleToFlooredSize(GetViewSize(), num_icons, num_rows);
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
@@ -177,24 +175,16 @@ int ToolbarActionsBar::GetMinimumWidth() const {
 }
 
 int ToolbarActionsBar::GetMaximumWidth() const {
-  return IconCountToWidth(-1);
+  return IconCountToWidth(toolbar_actions_.size());
 }
 
-int ToolbarActionsBar::IconCountToWidth(int icons) const {
-  if (icons < 0)
-    icons = toolbar_actions_.size();
-  return icons * IconWidth(true) + platform_settings_.item_spacing;
+int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
+  return icons * GetViewSize().width();
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
-  // Check for widths large enough to show the entire icon set.
-  if (pixels >= IconCountToWidth(-1))
-    return toolbar_actions_.size();
-
-  // Now we add an extra between-item padding value so the space can be divided
-  // evenly by (size of icon with padding).
-  return static_cast<size_t>(std::max(
-      0, pixels - platform_settings_.item_spacing) / IconWidth(true));
+  return base::ClampToRange(pixels / GetViewSize().width(), 0,
+                            static_cast<int>(toolbar_actions_.size()));
 }
 
 size_t ToolbarActionsBar::GetIconCount() const {
@@ -274,18 +264,18 @@ gfx::Rect ToolbarActionsBar::GetFrameForIndex(
   if (index < start_index)
     return gfx::Rect();
 
-  size_t relative_index = index - start_index;
-  int icons_per_overflow_row = platform_settings().icons_per_overflow_menu_row;
-  size_t row_index = in_overflow_mode() ?
-      relative_index / icons_per_overflow_row : 0;
-  size_t index_in_row = in_overflow_mode() ?
-      relative_index % icons_per_overflow_row : relative_index;
+  const size_t relative_index = index - start_index;
+  const int icons_per_overflow_row =
+      platform_settings().icons_per_overflow_menu_row;
+  const size_t row_index =
+      in_overflow_mode() ? relative_index / icons_per_overflow_row : 0;
+  const size_t index_in_row = in_overflow_mode()
+                                  ? relative_index % icons_per_overflow_row
+                                  : relative_index;
 
-  return gfx::Rect(platform_settings().item_spacing +
-                       index_in_row * IconWidth(true),
-                   row_index * IconHeight(),
-                   IconWidth(false),
-                   IconHeight());
+  const auto size = GetViewSize();
+  return gfx::Rect(
+      gfx::Point(index_in_row * size.width(), row_index * size.height()), size);
 }
 
 std::vector<ToolbarActionViewController*>
@@ -382,7 +372,7 @@ bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode());
   platform_settings_.icons_per_overflow_menu_row =
-      std::max((width - platform_settings_.item_spacing) / IconWidth(true), 1);
+      std::max(width / GetViewSize().width(), 1);
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {
