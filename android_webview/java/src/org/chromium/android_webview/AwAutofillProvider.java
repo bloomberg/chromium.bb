@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.FormData;
@@ -262,7 +263,9 @@ public class AwAutofillProvider extends AutofillProvider {
         // Check focusField inside short value?
         // Autofill Manager might have session that wasn't started by WebView,
         // we just always cancel existing session here.
-        mAutofillManager.cancel();
+        if (!BuildInfo.isAtLeastP()) {
+            mAutofillManager.cancel();
+        }
         Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
         mRequest = new AutofillRequest(formData, new FocusField((short) focus, absBound));
         int virtualId = mRequest.getVirtualId((short) focus);
