@@ -526,8 +526,7 @@ ChromotingSession::ChromotingSession(
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
     base::WeakPtr<protocol::AudioStub> audio_player,
     const ConnectToHostInfo& info,
-    const protocol::ClientAuthenticationConfig& client_auth_config)
-    : weak_factory_(this) {
+    const protocol::ClientAuthenticationConfig& client_auth_config) {
   DCHECK(delegate);
   DCHECK(cursor_shape_stub);
   DCHECK(video_renderer);
@@ -535,7 +534,6 @@ ChromotingSession::ChromotingSession(
 
   runtime_ = ChromotingClientRuntime::GetInstance();
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   logger_ = std::make_unique<ClientTelemetryLogger>(
       runtime_->log_writer(), ChromotingEvent::Mode::ME2ME);
