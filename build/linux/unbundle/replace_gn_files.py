@@ -25,7 +25,7 @@ REPLACEMENTS = {
   'icu': 'third_party/icu/BUILD.gn',
   'libdrm': 'third_party/libdrm/BUILD.gn',
   'libevent': 'base/third_party/libevent/BUILD.gn',
-  'libjpeg': 'build/secondary/third_party/libjpeg_turbo/BUILD.gn',
+  'libjpeg': 'third_party/libjpeg.gni',
   'libpng': 'third_party/libpng/BUILD.gn',
   'libvpx': 'third_party/libvpx/BUILD.gn',
   'libwebp': 'third_party/libwebp/BUILD.gn',
