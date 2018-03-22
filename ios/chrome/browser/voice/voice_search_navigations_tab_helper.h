@@ -22,6 +22,10 @@ class VoiceSearchNavigationTabHelper
   // search.
   void WillLoadVoiceSearchResult();
 
+  // Returns whether the next committed navigation item is the result of a voice
+  // search.
+  bool IsExpectingVoiceSearch() const;
+
   // Returns whether |item| was created for a voice search query.
   bool IsNavigationFromVoiceSearch(const web::NavigationItem* item) const;
 
