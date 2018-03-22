@@ -146,9 +146,10 @@ class EulaTest : public OobeBaseTest {
     auto* const owner_contents = GetLoginUI()->GetWebContents();
     auto* const manager = guest_view::GuestViewManager::FromBrowserContext(
         owner_contents->GetBrowserContext());
-    manager->ForEachGuest(owner_contents,
-                          base::Bind(&AddNamedWebContentsToSet, &frame_set,
-                                     kUniqueEulaWebviewName));
+    manager->ForEachGuest(
+        owner_contents,
+        base::BindRepeating(&AddNamedWebContentsToSet, &frame_set,
+                            kUniqueEulaWebviewName));
     EXPECT_EQ(1u, frame_set.size());
     return *frame_set.begin();
   }

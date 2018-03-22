@@ -12,9 +12,8 @@ WebContents* BrowserPluginGuestManager::GetGuestByInstanceID(
   return nullptr;
 }
 
-bool BrowserPluginGuestManager::ForEachGuest(
-    WebContents* embedder_web_contents,
-    const GuestCallback& callback) {
+bool BrowserPluginGuestManager::ForEachGuest(WebContents* embedder_web_contents,
+                                             const GuestCallback& callback) {
   return false;
 }
 

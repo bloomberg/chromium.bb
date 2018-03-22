@@ -215,8 +215,9 @@ class WebviewLoginTest : public OobeBaseTest {
         guest_view::GuestViewManager::FromBrowserContext(browser_context);
     guest_view_manager->ForEachGuest(
         web_contents,
-        base::Bind(&WebviewLoginTest::WebViewVisited, base::Unretained(this),
-                   browser_context, storage_partition, &web_view_found));
+        base::BindRepeating(&WebviewLoginTest::WebViewVisited,
+                            base::Unretained(this), browser_context,
+                            storage_partition, &web_view_found));
 
     return web_view_found;
   }

@@ -110,8 +110,9 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
       return false;
     };
     guest_view::GuestViewManager::FromBrowserContext(browser_context())
-        ->ForEachGuest(GetSenderWebContents(),
-                       base::Bind(get_guest, &guests_found, &target_host));
+        ->ForEachGuest(
+            GetSenderWebContents(),
+            base::BindRepeating(get_guest, &guests_found, &target_host));
     if (!target_host) {
       SetError("No webview render process found");
       return nullptr;

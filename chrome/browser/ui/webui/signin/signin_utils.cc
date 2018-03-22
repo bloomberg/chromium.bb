@@ -43,9 +43,9 @@ content::WebContents* GetAuthFrameWebContents(
   auto* manager = guest_view::GuestViewManager::FromBrowserContext(
       web_contents->GetBrowserContext());
   if (manager) {
-    manager->ForEachGuest(
-        web_contents,
-        base::Bind(&AddWebContentsToSet, &frame_set, parent_frame_name));
+    manager->ForEachGuest(web_contents,
+                          base::BindRepeating(&AddWebContentsToSet, &frame_set,
+                                              parent_frame_name));
   }
   DCHECK_GE(1U, frame_set.size());
   if (!frame_set.empty())
