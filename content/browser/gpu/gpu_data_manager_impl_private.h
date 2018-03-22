@@ -42,6 +42,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void BlacklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
   bool GpuAccessAllowed(std::string* reason) const;
+  bool GpuProcessStartAllowed() const;
   void RequestCompleteGpuInfoIfNeeded();
   bool IsEssentialGpuInfoAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
@@ -55,6 +56,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void DisableHardwareAcceleration();
   bool HardwareAccelerationEnabled() const;
   void BlockSwiftShader();
+  bool SwiftShaderAllowed() const;
 
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
@@ -144,8 +146,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
-  // Called when gpu process becomes blocked.
-  void OnGpuProcessBlocked();
+  // Called when GPU access (hardware acceleration and swiftshader) becomes
+  // blocked.
+  void OnGpuBlocked();
 
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;

@@ -89,6 +89,11 @@ void GpuDataManagerImpl::BlockSwiftShader() {
   private_->BlockSwiftShader();
 }
 
+bool GpuDataManagerImpl::SwiftShaderAllowed() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->SwiftShaderAllowed();
+}
+
 bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
   base::AutoLock auto_lock(lock_);
   return private_->HardwareAccelerationEnabled();
@@ -98,6 +103,11 @@ void GpuDataManagerImpl::GetDisabledExtensions(
     std::string* disabled_extensions) const {
   base::AutoLock auto_lock(lock_);
   private_->GetDisabledExtensions(disabled_extensions);
+}
+
+bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GpuProcessStartAllowed();
 }
 
 void GpuDataManagerImpl::GetDisabledWebGLExtensions(
