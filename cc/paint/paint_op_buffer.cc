@@ -1236,6 +1236,8 @@ void DrawRecordOp::Raster(const DrawRecordOp* op,
                           SkCanvas* canvas,
                           const PlaybackParams& params) {
   // Don't use drawPicture here, as it adds an implicit clip.
+  // TODO(enne): Temporary CHECK debugging for http://crbug.com/823835
+  CHECK(op->record);
   op->record->Playback(canvas, params);
 }
 
