@@ -19,9 +19,6 @@ Cache
   Application Cache
 Frames
   top
-    Scripts
-      json-value.js
-    inspected-page.html
 Found: true
 Database created state:
 Application
@@ -43,9 +40,6 @@ Cache
   Application Cache
 Frames
   top
-    Scripts
-      json-value.js
-    inspected-page.html
 Table added:
 Application
   Manifest
@@ -67,7 +61,4 @@ Cache
   Application Cache
 Frames
   top
-    Scripts
-      json-value.js
-    inspected-page.html
 

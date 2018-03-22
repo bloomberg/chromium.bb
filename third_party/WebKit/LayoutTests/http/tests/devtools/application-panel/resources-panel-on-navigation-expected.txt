@@ -21,7 +21,6 @@ Cache
   Application Cache
 Frames
   top
-    inspected-page.html
 Visible view is a query view: true
 Page reloaded.
 After navigation:
@@ -44,6 +43,5 @@ Cache
   Application Cache
 Frames
   top
-    inspected-page.html
 Visible view is a query view: false
 
