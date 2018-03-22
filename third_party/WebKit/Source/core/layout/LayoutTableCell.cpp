@@ -312,21 +312,39 @@ void LayoutTableCell::UpdateLayout() {
 }
 
 LayoutUnit LayoutTableCell::PaddingTop() const {
-  return ComputedCSSPaddingTop() + LogicalIntrinsicPaddingToPhysical().Top();
+  auto result =
+      ComputedCSSPaddingTop() + LogicalIntrinsicPaddingToPhysical().Top();
+  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
+  // sub-pixel aware.
+  return Style()->IsHorizontalWritingMode() ? LayoutUnit(result.ToInt())
+                                            : result;
 }
 
 LayoutUnit LayoutTableCell::PaddingBottom() const {
-  return ComputedCSSPaddingBottom() +
-         LogicalIntrinsicPaddingToPhysical().Bottom();
+  auto result =
+      ComputedCSSPaddingBottom() + LogicalIntrinsicPaddingToPhysical().Bottom();
+  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
+  // sub-pixel aware.
+  return Style()->IsHorizontalWritingMode() ? LayoutUnit(result.ToInt())
+                                            : result;
 }
 
 LayoutUnit LayoutTableCell::PaddingLeft() const {
-  return ComputedCSSPaddingLeft() + LogicalIntrinsicPaddingToPhysical().Left();
+  auto result =
+      ComputedCSSPaddingLeft() + LogicalIntrinsicPaddingToPhysical().Left();
+  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
+  // sub-pixel aware.
+  return Style()->IsHorizontalWritingMode() ? result
+                                            : LayoutUnit(result.ToInt());
 }
 
 LayoutUnit LayoutTableCell::PaddingRight() const {
-  return ComputedCSSPaddingRight() +
-         LogicalIntrinsicPaddingToPhysical().Right();
+  auto result =
+      ComputedCSSPaddingRight() + LogicalIntrinsicPaddingToPhysical().Right();
+  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
+  // sub-pixel aware.
+  return Style()->IsHorizontalWritingMode() ? result
+                                            : LayoutUnit(result.ToInt());
 }
 
 void LayoutTableCell::SetOverrideLogicalContentHeightFromRowHeight(
