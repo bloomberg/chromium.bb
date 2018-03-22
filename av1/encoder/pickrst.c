@@ -1266,6 +1266,7 @@ static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
+  assert(!cm->all_lossless);
 
   int ntiles[2];
   for (int is_uv = 0; is_uv < 2; ++is_uv)

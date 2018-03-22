@@ -4061,18 +4061,20 @@ static void superres_post_encode(AV1_COMP *cpi) {
 static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
+
+  assert(IMPLIES(is_lossless_requested(&cpi->oxcf), cm->all_lossless));
+
   struct loopfilter *lf = &cm->lf;
   int no_loopfilter = 0;
   int no_restoration = !cpi->oxcf.using_restoration;
 
-  if (is_lossless_requested(&cpi->oxcf) || cm->large_scale_tile) {
+  if (cm->all_lossless || cm->large_scale_tile) {
     no_loopfilter = 1;
     no_restoration = 1;
   }
 
   int no_cdef = 0;
-  if (is_lossless_requested(&cpi->oxcf) || !cpi->oxcf.using_cdef ||
-      cm->large_scale_tile) {
+  if (cm->all_lossless || !cpi->oxcf.using_cdef || cm->large_scale_tile) {
     no_cdef = 1;
   }
 
