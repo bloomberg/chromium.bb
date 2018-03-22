@@ -35,6 +35,8 @@ class VrInputConnection {
                        const base::android::JavaParamRef<jobject>& obj,
                        jstring jtext);
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
   std::queue<vr::TextStateUpdateCallback> text_state_update_callbacks_;

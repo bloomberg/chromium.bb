@@ -524,6 +524,16 @@ bool VrShell::IsDisplayingUrlForTesting(
   return ShouldDisplayURL();
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+VrShell::GetVrInputConnectionForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  if (!vr_input_connection_)
+    return nullptr;
+
+  return vr_input_connection_->GetJavaObject();
+}
+
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     double progress) {

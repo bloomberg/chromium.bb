@@ -192,5 +192,16 @@ public class EmulatedVrController {
                 new float[] {startAngles[2], endAngles[2]}, steps, delayBetweenSteps);
     }
 
+    /**
+     * Touch and release the touchpad to perform a controller click.
+     */
+    public void performControllerClick() {
+        // pressReleaseTouchpadButton() appears to be flaky for clicking on things, as sometimes
+        // it happens too fast for Chrome to register. So, manually press and release with a delay
+        sendClickButtonToggleEvent();
+        SystemClock.sleep(50);
+        sendClickButtonToggleEvent();
+    }
+
     // TODO(bsheedy): Add support for more complex actions, e.g. click/drag/release
 }

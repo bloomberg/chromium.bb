@@ -72,4 +72,8 @@ void VrInputConnection::UpdateTextState(
       .Run(base::UTF8ToUTF16(text));
 }
 
+base::android::ScopedJavaLocalRef<jobject> VrInputConnection::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(j_object_);
+}
+
 }  // namespace vr

@@ -120,6 +120,8 @@ public class VrShellImpl
     private ModalDialogManager mVrModalDialogManager;
     private VrModalPresenter mVrModalPresenter;
 
+    private VrInputMethodManagerWrapper mInputMethodManagerWrapper;
+
     public VrShellImpl(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
         super(activity);
@@ -421,8 +423,8 @@ public class VrShellImpl
         if (mTab.getWebContents() == null) return;
         ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
         if (imeAdapter != null) {
-            imeAdapter.setInputMethodManagerWrapper(
-                    new VrInputMethodManagerWrapper(mActivity, this));
+            mInputMethodManagerWrapper = new VrInputMethodManagerWrapper(mActivity, this);
+            imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
         }
     }
 
@@ -434,6 +436,7 @@ public class VrShellImpl
             imeAdapter.setInputMethodManagerWrapper(
                     ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
         }
+        mInputMethodManagerWrapper = null;
     }
 
     private void restoreTabFromVR() {
@@ -808,6 +811,12 @@ public class VrShellImpl
         return nativeIsDisplayingUrlForTesting(mNativeVrShell);
     }
 
+    @VisibleForTesting
+    public VrInputConnection getVrInputConnectionForTesting() {
+        assert mNativeVrShell != 0;
+        return nativeGetVrInputConnectionForTesting(mNativeVrShell);
+    }
+
     @Override
     public FrameLayout getContainer() {
         return this;
@@ -1034,6 +1043,11 @@ public class VrShellImpl
                 mNativeVrShell, selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
 
+    @VisibleForTesting
+    public VrInputMethodManagerWrapper getInputMethodManageWrapperForTesting() {
+        return mInputMethodManagerWrapper;
+    }
+
     @Override
     public void acceptDoffPromptForTesting() {
         nativeAcceptDoffPromptForTesting(mNativeVrShell);
@@ -1076,6 +1090,7 @@ public class VrShellImpl
     private native void nativeShowSoftInput(long nativeVrShell, boolean show);
     private native void nativeUpdateWebInputIndices(long nativeVrShell, int selectionStart,
             int selectionEnd, int compositionStart, int compositionEnd);
+    private native VrInputConnection nativeGetVrInputConnectionForTesting(long nativeVrShell);
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
     private native void nativeResumeContentRendering(long nativeVrShell);
 }

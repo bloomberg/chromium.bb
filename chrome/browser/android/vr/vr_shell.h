@@ -105,6 +105,9 @@ class VrShell : device::GvrGamepadDataProvider,
   bool IsDisplayingUrlForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetVrInputConnectionForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void OnFullscreenChanged(bool enabled);
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
