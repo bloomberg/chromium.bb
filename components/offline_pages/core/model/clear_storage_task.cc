@@ -110,10 +110,10 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
   // just expired pages to make the storage usage below the threshold.
   bool quota_based_clearing =
       stats.temporary_archives_size >=
-      (stats.temporary_archives_size + stats.free_disk_space) *
+      (stats.temporary_archives_size + stats.internal_free_disk_space) *
           kOfflinePageStorageLimit;
   int64_t max_allowed_size =
-      (stats.temporary_archives_size + stats.free_disk_space) *
+      (stats.temporary_archives_size + stats.internal_free_disk_space) *
       kOfflinePageStorageClearThreshold;
 
   // Initialize the counting map with 0s.
