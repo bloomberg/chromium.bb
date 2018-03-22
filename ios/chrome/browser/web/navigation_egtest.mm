@@ -7,6 +7,7 @@
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -22,6 +23,7 @@
 using chrome_test_util::ContentSuggestionCollectionView;
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
+using chrome_test_util::PurgeCachedWebViewPages;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 
@@ -590,6 +592,42 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that navigating forward from a WebUI URL works when resuming from
+// session restore. This is a regression test for https://crbug.com/814790.
+- (void)testRestoreHistoryToWebUIAndNavigateForward {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [ChromeEarlGrey loadURL:destinationURL];
+  [ChromeEarlGrey goBack];
+
+  GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
+
+  [ChromeEarlGrey waitForWebViewContainingText:"Revision"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that navigating forward from NTP works when resuming from session
+// restore. This is a regression test for https://crbug.com/814790.
+- (void)testRestoreHistoryToNTPAndNavigateForward {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
+  [ChromeEarlGrey loadURL:destinationURL];
+  [ChromeEarlGrey goBack];
+
+  GREYAssert(PurgeCachedWebViewPages(), @"History not restored");
+
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebViewContainingText:"pony"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

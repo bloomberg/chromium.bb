@@ -4929,11 +4929,28 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webViewLoadingStateDidChange {
-  if ([_webView isLoading] || ![self isCurrentNavigationBackForward]) {
+  if (_webView.loading)
+    return;
+
+  GURL webViewURL = net::GURLWithNSURL([_webView URL]);
+
+  // When traversing history restored from a previous session, WKWebView does
+  // not fire 'pageshow', 'onload', 'popstate' or any of the
+  // WKNavigationDelegate callbacks for back/forward navigation from an
+  // app-specific URL to another entry. Loading state KVO is the only observable
+  // event in this scenario, so force a reload to trigger redirect from
+  // restore_session.html to the restored URL.
+  bool previousURLIsAppSpecific =
+      IsPlaceholderUrl(_documentURL) ||
+      web::GetWebClient()->IsAppSpecificURL(_documentURL);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      web::IsRestoreSessionUrl(webViewURL) && previousURLIsAppSpecific) {
+    [_webView reload];
     return;
   }
 
-  GURL webViewURL = net::GURLWithNSURL([_webView URL]);
+  if (![self isCurrentNavigationBackForward])
+    return;
 
   // For failed navigations, WKWebView will sometimes revert to the previous URL
   // before committing the current navigation or resetting the web view's
