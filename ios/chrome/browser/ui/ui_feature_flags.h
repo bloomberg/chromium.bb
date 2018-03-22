@@ -7,6 +7,11 @@
 
 #include "base/feature_list.h"
 
+// Used to enable the UI Refresh omnibox popup presentation. This flag should
+// not be used directly. Instead use
+// ui_util::IsRefreshPopupPresentationEnabled().
+extern const base::Feature kRefreshPopupPresentation;
+
 // Used to enable the first phase of the UI refresh. This flag should not be
 // used directly. Instead use ui_util::IsUIRefreshPhase1Enabled().
 extern const base::Feature kUIRefreshPhase1;
