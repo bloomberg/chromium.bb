@@ -67,8 +67,9 @@ void RTCSessionDescriptionRequestImpl::RequestSucceeded(
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
   if (should_fire_callback && success_callback_) {
-    success_callback_->InvokeAndReportException(
-        nullptr, RTCSessionDescription::Create(web_session_description));
+    auto description = RTCSessionDescription::Create(web_session_description);
+    requester_->NoteSdpCreated(*description);
+    success_callback_->InvokeAndReportException(nullptr, description);
   }
   Clear();
 }

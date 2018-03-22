@@ -190,6 +190,9 @@ class MODULES_EXPORT RTCPeerConnection final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel);
 
+  // Utility to note result of CreateOffer / CreateAnswer
+  void NoteSdpCreated(const RTCSessionDescription&);
+
   // MediaStreamObserver
   void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) override;
   void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) override;
@@ -304,6 +307,10 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void RecordRapporMetrics();
 
+  DOMException* checkSdpForStateErrors(ExecutionContext*,
+                                       const RTCSessionDescriptionInit&,
+                                       String* sdp);
+
   SignalingState signaling_state_;
   ICEGatheringState ice_gathering_state_;
   ICEConnectionState ice_connection_state_;
@@ -328,6 +335,10 @@ class MODULES_EXPORT RTCPeerConnection final
   bool negotiation_needed_;
   bool stopped_;
   bool closed_;
+
+  // Internal state [[LastOffer]] and [[LastAnswer]]
+  String last_offer_;
+  String last_answer_;
 
   bool has_data_channels_;  // For RAPPOR metrics
 };

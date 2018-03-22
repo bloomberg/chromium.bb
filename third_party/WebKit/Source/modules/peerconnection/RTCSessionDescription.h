@@ -50,10 +50,10 @@ class RTCSessionDescription final : public ScriptWrappable {
                                        const RTCSessionDescriptionInit&);
   static RTCSessionDescription* Create(WebRTCSessionDescription);
 
-  String type();
+  String type() const;
   void setType(const String&);
 
-  String sdp();
+  String sdp() const;
   void setSdp(const String&);
 
   ScriptValue toJSONForBinding(ScriptState*);

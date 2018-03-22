@@ -34,7 +34,9 @@ RTCSessionDescriptionRequestPromiseImpl::
 void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
     const WebRTCSessionDescription& web_session_description) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    resolver_->Resolve(RTCSessionDescription::Create(web_session_description));
+    auto description = RTCSessionDescription::Create(web_session_description);
+    requester_->NoteSdpCreated(*description);
+    resolver_->Resolve(description);
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.

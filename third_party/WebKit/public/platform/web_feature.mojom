@@ -1882,6 +1882,7 @@ enum WebFeature {
   kVRDisplayGetFrameData = 2390,
   kXMLHttpRequestResponseXML = 2391,
   kMessagePortTransferClosedPort = 2392,
+  kRTCLocalSdpModification = 2393,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

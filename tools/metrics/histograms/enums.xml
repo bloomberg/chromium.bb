@@ -17976,6 +17976,7 @@ Called by update_net_error_codes.py.-->
   <int value="2390" label="VRDisplayGetFrameData"/>
   <int value="2391" label="XMLHttpRequestResponseXML"/>
   <int value="2392" label="MessagePortTransferClosedPort"/>
+  <int value="2393" label="RTCLocalSdpModification"/>
 </enum>
 
 <enum name="FeedbackSource">

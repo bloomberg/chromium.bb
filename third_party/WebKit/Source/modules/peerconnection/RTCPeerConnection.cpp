@@ -118,6 +118,14 @@ namespace {
 
 const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
+const char kSignalingStatePreventsOfferMessage[] =
+    "The RTCPeerConnection's signalingState must be 'stable' or "
+    "'have-local-offer' to apply an offer";
+const char kSignalingStatePreventsAnswerMessage[] =
+    "The RTCPeerConnection's signalingState must be 'have-remote-offer' or "
+    "'have-local-pranswer' to apply an answer";
+const char kModifiedSdpMessage[] =
+    "The SDP does not match the previously generated SDP for this type";
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const long kMaxPeerConnections = 500;
@@ -437,6 +445,30 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
   Persistent<ScriptPromiseResolver> resolver_;
 };
 
+bool FingerprintMismatch(String old_sdp, String new_sdp) {
+  // Check special case of externally generated SDP without fingerprints.
+  // It's impossible to generate a valid fingerprint without createOffer
+  // or createAnswer, so this only applies when there are no fingerprints.
+  // This is allowed.
+  const size_t new_fingerprint_pos = new_sdp.Find("\na=fingerprint:");
+  if (new_fingerprint_pos == kNotFound)
+    return false;
+  // Look for fingerprint having been added. Not allowed.
+  const size_t old_fingerprint_pos = old_sdp.Find("\na=fingerprint:");
+  if (old_fingerprint_pos == kNotFound) {
+    return true;
+  }
+  // Look for fingerprint being modified. Not allowed.
+  const size_t old_fingerprint_end =
+      old_sdp.Find("\n", old_fingerprint_pos + 1);
+  const size_t new_fingerprint_end =
+      new_sdp.Find("\n", new_fingerprint_pos + 1);
+  return old_sdp.Substring(old_fingerprint_pos,
+                           old_fingerprint_end - old_fingerprint_pos) !=
+         new_sdp.Substring(new_fingerprint_pos,
+                           new_fingerprint_end - new_fingerprint_pos);
+}
+
 }  // namespace
 
 RTCPeerConnection::EventWrapper::EventWrapper(Event* event,
@@ -735,20 +767,71 @@ ScriptPromise RTCPeerConnection::createAnswer(
   return ScriptPromise::CastUndefined(script_state);
 }
 
+DOMException* RTCPeerConnection::checkSdpForStateErrors(
+    ExecutionContext* context,
+    const RTCSessionDescriptionInit& session_description_init,
+    String* sdp) {
+  if (signaling_state_ == kSignalingStateClosed) {
+    return DOMException::Create(kInvalidStateError,
+                                kSignalingStateClosedMessage);
+  }
+
+  *sdp = session_description_init.sdp();
+  if (session_description_init.type() == "offer") {
+    if (signaling_state_ != kSignalingStateStable &&
+        signaling_state_ != kSignalingStateHaveLocalOffer) {
+      return DOMException::Create(kInvalidStateError,
+                                  kSignalingStatePreventsOfferMessage);
+    }
+    if (sdp->IsNull() || sdp->IsEmpty()) {
+      *sdp = last_offer_;
+    } else if (session_description_init.sdp() != last_offer_) {
+      if (FingerprintMismatch(last_offer_, *sdp)) {
+        return DOMException::Create(kInvalidModificationError,
+                                    kModifiedSdpMessage);
+      } else {
+        UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
+        return nullptr;
+        // TODO(https://crbug.com/823036): Return failure for all modification.
+      }
+    }
+  } else if (session_description_init.type() == "answer" ||
+             session_description_init.type() == "pranswer") {
+    if (signaling_state_ != kSignalingStateHaveRemoteOffer &&
+        signaling_state_ != kSignalingStateHaveLocalPrAnswer) {
+      return DOMException::Create(kInvalidStateError,
+                                  kSignalingStatePreventsAnswerMessage);
+    }
+    if (sdp->IsNull() || sdp->IsEmpty()) {
+      *sdp = last_answer_;
+    } else if (session_description_init.sdp() != last_answer_) {
+      if (FingerprintMismatch(last_answer_, *sdp)) {
+        return DOMException::Create(kInvalidModificationError,
+                                    kModifiedSdpMessage);
+      } else {
+        UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
+        return nullptr;
+        // TODO(https://crbug.com/823036): Return failure for all modification.
+      }
+    }
+  }
+  return nullptr;
+}
+
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
-  if (signaling_state_ == kSignalingStateClosed)
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
-
+  String sdp;
+  DOMException* exception = checkSdpForStateErrors(
+      ExecutionContext::From(script_state), session_description_init, &sdp);
+  if (exception) {
+    return ScriptPromise::RejectWithDOMException(script_state, exception);
+  }
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
   peer_handler_->SetLocalDescription(
-      request, WebRTCSessionDescription(session_description_init.type(),
-                                        session_description_init.sdp()));
+      request, WebRTCSessionDescription(session_description_init.type(), sdp));
   return promise;
 }
 
@@ -775,8 +858,14 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
               kRTCPeerConnectionSetLocalDescriptionLegacyNoFailureCallback);
   }
 
-  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
+  String sdp;
+  DOMException* exception =
+      checkSdpForStateErrors(context, session_description_init, &sdp);
+  if (exception) {
+    if (error_callback)
+      AsyncCallErrorCallback(error_callback, exception);
     return ScriptPromise::CastUndefined(script_state);
+  }
 
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
       GetExecutionContext(), this, success_callback, error_callback);
@@ -1452,6 +1541,14 @@ void RTCPeerConnection::close() {
     return;
 
   CloseInternal();
+}
+
+void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
+  if (desc.type() == "offer") {
+    last_offer_ = desc.sdp();
+  } else if (desc.type() == "answer") {
+    last_answer_ = desc.sdp();
+  }
 }
 
 void RTCPeerConnection::OnStreamAddTrack(MediaStream* stream,
