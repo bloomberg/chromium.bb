@@ -143,6 +143,7 @@ static const char* g_ui_element_name_strings[] = {
     "kControllerTrackpadRepositionLabel",
     "kControllerExitButtonLabel",
     "kControllerBackButtonLabel",
+    "kControllerRepositionFinishLabel",
     "kControllerTouchpadButton",
     "kControllerAppButton",
     "kControllerHomeButton",

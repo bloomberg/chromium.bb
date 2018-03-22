@@ -1193,7 +1193,7 @@ TEST_F(UiTest, ControllerLabels) {
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_TRUE(IsVisible(kControllerTrackpadRepositionLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
-  EXPECT_TRUE(IsVisible(kControllerBackButtonLabel));
+  EXPECT_TRUE(IsVisible(kControllerRepositionFinishLabel));
 
   model_->controller.resting_in_viewport = false;
   EXPECT_FALSE(IsVisible(kControllerTrackpadRepositionLabel));

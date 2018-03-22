@@ -1646,9 +1646,15 @@ void UiSceneCreator::CreateController() {
       kControllerBackButtonLabel, kControllerBackButtonOffset,
       l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model_);
   VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled() ||
-                                            model->voice_search_enabled() ||
-                                            model->reposition_window_enabled());
+                                            model->voice_search_enabled());
   callout_group->AddChild(std::move(back_button_label));
+
+  auto reposition_finish_button = CreateControllerLabel(
+      kControllerRepositionFinishLabel, kControllerBackButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_APP_REPOSITION), model_);
+  VR_BIND_VISIBILITY(reposition_finish_button,
+                     model->reposition_window_enabled());
+  callout_group->AddChild(std::move(reposition_finish_button));
 
   controller->AddChild(std::move(callout_group));
 

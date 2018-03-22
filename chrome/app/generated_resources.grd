@@ -10924,11 +10924,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_BUTTON_BACK" desc="The label for the back button on the VR controller -- shown when the keyboard is visible, we are in voice search, or we are repositioning.">
         Back
       </message>
-      <message name="IDS_VR_BUTTON_TRACKPAD_REPOSITION" desc="The label for the trackpad while in window repositioning mode.">
-        Finish repositioning
+      <message name="IDS_VR_BUTTON_TRACKPAD_REPOSITION" desc="The label for the trackpad while in window repositioning/resizing mode.">
+        Touch to resize
       </message>
-      <message name="IDS_VR_REPOSITION_LABEL" desc="This text appears over a window to explain to the user how to manipulate the window.">
-        Move the controller to reposition. Click to finish.
+      <message name="IDS_VR_BUTTON_APP_REPOSITION" desc="This is the label for the app button while in reposition mode">
+        Finish
       </message>
       <message name="IDS_VR_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new incognito tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]">
         New incognito tab
