@@ -20,11 +20,15 @@ ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
     // a mess. We decode image shaders at the correct scale but ignore that
     // during serialization and just use the original image.
     decode_stashing_image_provider_.emplace(image_provider);
-    DecodeImageShader(ctm);
-    DecodeRecordShader(ctm, create_skia_shader);
-    DecodeFilter();
 
     // We skip the op if any images fail to decode.
+    DecodeImageShader(ctm);
+    if (decode_failed_)
+      return;
+    DecodeRecordShader(ctm, create_skia_shader);
+    if (decode_failed_)
+      return;
+    DecodeFilter();
     if (decode_failed_)
       return;
   }
