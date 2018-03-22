@@ -391,12 +391,18 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestMenuKeyboardOpenDismiss) {
 }
 #endif
 
+#if defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_ReserveKeyboardAccelerators DISABLED_ReserveKeyboardAccelerators
+#else
+#define MAYBE_ReserveKeyboardAccelerators ReserveKeyboardAccelerators
+#endif
 // Test that JavaScript cannot intercept reserved keyboard accelerators like
 // ctrl-t to open a new tab or ctrl-f4 to close a tab.
 // TODO(isherman): This test times out on ChromeOS.  We should merge it with
 // BrowserKeyEventsTest.ReservedAccelerators, but just disable for now.
 // If this flakes, use http://crbug.com/62311.
-IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_ReserveKeyboardAccelerators) {
   const std::string kBadPage =
       "<html><script>"
       "document.onkeydown = function() {"

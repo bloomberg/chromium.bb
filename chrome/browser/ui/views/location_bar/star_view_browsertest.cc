@@ -47,6 +47,9 @@ class StarViewTest : public InProcessBrowserTest {
 // bubble.
 #if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
 #define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
+#elif defined(OS_MACOSX)
+// Focusing or input is not completely working on Mac: http://crbug.com/824418
+#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
 #else
 #define MAYBE_HideOnSecondClick HideOnSecondClick
 #endif
